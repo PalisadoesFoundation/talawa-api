@@ -40,9 +40,7 @@ beforeAll(async () => {
     name: "Sample Agenda Category",
     organization: testOrganization?._id,
     createdBy: testAdminUser?._id,
-    updatedBy: testAdminUser?._id,
     createdAt: new Date(),
-    updatedAt: new Date(),
   });
 });
 
@@ -109,23 +107,15 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
 
   it("deletes an agenda category successfully", async () => {
     const args = {
-      id: sampleAgendaCategory._id,
+      id: sampleAgendaCategory?._id,
     };
-
     const context = {
       userId: testAdminUser?._id,
     };
-
-    if (deleteAgendaCategory) {
-      const result = await deleteAgendaCategory({}, args, context);
-
-      expect(result).toEqual(args.id);
-
-      // Verify that the agenda category is deleted from the database
-      const deletedAgendaCategory = await AgendaCategoryModel.findById(args.id);
-      expect(deletedAgendaCategory).toBeNull();
-    } else {
-      throw new Error("deleteAgendaCategory resolver is undefined");
-    }
+    const result = await deleteAgendaCategory?.({}, args, context);
+    expect(result).toEqual(args.id);
+    // Verify that the agenda category is deleted from the database
+    const deletedAgendaCategory = await AgendaCategoryModel.findById(args.id);
+    expect(deletedAgendaCategory).toBeNull();
   });
 });

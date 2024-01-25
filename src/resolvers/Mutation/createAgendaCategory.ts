@@ -26,7 +26,7 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
   async (_parent, args, context) => {
     // Find the current user based on the provided createdBy ID or use the context userId
 
-    const userId = args.input.createdBy;
+    const userId = context.userId;
 
     const currentUser = await User.findById(userId).lean();
 
@@ -39,7 +39,7 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
     }
     // Check if the organization exists
     const relatedOrganization = await Organization.findById(
-      args.input.organizationId
+      args.input.organization
     ).lean();
 
     // If the organization is not found, throw a NotFoundError
@@ -52,26 +52,12 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
     }
 
     // Check if the current user has the necessary permissions
-    const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-      (organization) => organization.equals(relatedOrganization)
-    );
-    console.log(currentUserIsOrganizationAdmin);
-    if (
-      !currentUserIsOrganizationAdmin ||
-      !(currentUser.userType === "SUPERADMIN")
-    ) {
-      throw new errors.UnauthorizedError(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-        USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
-      );
-    }
+    await adminCheck(args.input.createdBy, relatedOrganization);
     // Create a new AgendaCategory using the Mongoose model
     const createdAgendaCategory = await AgendaCategoryModel.create({
       ...args.input,
       createdBy: args.input.createdBy,
       createdAt: new Date(),
-      updatedAt: new Date(),
     });
     await Organization.findByIdAndUpdate(
       relatedOrganization._id,

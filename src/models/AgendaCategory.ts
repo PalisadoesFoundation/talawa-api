@@ -37,7 +37,6 @@ export const AgendaCategorySchema = new Schema({
   organization: {
     type: Schema.Types.ObjectId,
     ref: "Organization",
-    required: true,
   },
   createdBy: {
     type: Schema.Types.ObjectId,
@@ -47,7 +46,6 @@ export const AgendaCategorySchema = new Schema({
   updatedBy: {
     type: Schema.Types.ObjectId,
     ref: "User",
-    required: true,
   },
   createdAt: {
     type: Date,
@@ -56,7 +54,7 @@ export const AgendaCategorySchema = new Schema({
   },
   updatedAt: {
     type: Date,
-    required: true,
+
     default: Date.now,
   },
 });

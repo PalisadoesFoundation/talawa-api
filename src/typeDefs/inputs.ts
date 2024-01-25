@@ -444,7 +444,7 @@ export const inputs = gql`
   input CreateAgendaCategoryInput {
     name: String!
     description: String
-    organizationId: ID!
+    organization: ID!
     createdBy: ID!
   }
 

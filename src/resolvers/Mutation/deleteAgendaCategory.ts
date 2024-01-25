@@ -23,19 +23,31 @@ import {
 export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
   async (_parent, args, context) => {
     const categoryId = args.id;
-    const agendaCategory = await AgendaCategoryModel.findById(args.id).lean();
+    const agendaCategory = await AgendaCategoryModel.findById(args.id);
 
     const userId = context.userId;
 
     // Fetch the user to get the organization ID
-    const user = await User.findById(userId);
+    const currentUser = await User.findById(userId);
 
     // If the user is not found, throw a NotFoundError
-    if (!user) {
+    if (!currentUser) {
       throw new errors.NotFoundError(
         USER_NOT_FOUND_ERROR.MESSAGE,
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM
+      );
+    }
+
+    // If the user is a normal user, throw an error
+    if (
+      agendaCategory?.createdBy !== context.userId &&
+      currentUser.userType !== "SUPERADMIN"
+    ) {
+      throw new errors.UnauthorizedError(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 
@@ -44,18 +56,6 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
         AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
         AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
         AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
-      );
-    }
-
-    // If the user is a normal user, throw an error
-    if (
-      user.userType !== "SUPERADMIN" ||
-      agendaCategory?.createdBy !== userId
-    ) {
-      throw new errors.UnauthorizedError(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-        USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 

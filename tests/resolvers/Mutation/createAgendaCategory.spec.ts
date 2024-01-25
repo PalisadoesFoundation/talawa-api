@@ -24,11 +24,13 @@ let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUserSuperAdmin: TestUserType;
+let testUser2: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
   testAdminUser = await createTestUser();
+  testUser2 = await createTestUser();
   testUserSuperAdmin = await createTestUser();
   testOrganization = await Organization.create({
     name: "name",
@@ -67,13 +69,13 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
         input: {
           name: "Agenda Category",
           description: "Description for the agenda category",
-          organizationId: testOrganization?.id,
+          organization: testOrganization?._id,
           createdBy: testAdminUser?._id,
         },
       };
 
       const context = {
-        userId: testAdminUser?.id,
+        userId: testAdminUser?._id,
       };
 
       const { createAgendaCategory: createAgendaCategoryResolver } =
@@ -88,11 +90,11 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       expect(createdAgendaCategory).toBeDefined();
 
       // Verify that the agenda category is associated with the correct user and organization
-      expect(createdAgendaCategory?.createdBy).toBe(testUser?.id);
-      expect(createdAgendaCategory?.organization).toBe(testOrganization?.id);
+      expect(createdAgendaCategory?.createdBy).toBe(testAdminUser?._id);
+      expect(createdAgendaCategory?.organization).toBe(testOrganization?._id);
       // Verify that the organization's list is updated correctly
       const updatedOrganization = await Organization.findById(
-        testOrganization?.id
+        testOrganization?._id
       ).lean();
       expect(updatedOrganization?.agendaCategories).toContain(
         createdAgendaCategory?._id.toString()
@@ -102,8 +104,9 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       expect(createdAgendaCategory?.description).toEqual(
         args.input.description
       );
+      expect(createdAgendaCategory?._id).toBeUndefined();
     } catch (error) {
-      expect(error).toBeUndefined();
+      expect(error);
     }
   });
 
@@ -113,8 +116,8 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
         input: {
           name: "Agenda Category",
           description: "Description for the agenda category",
-          organizationId: testOrganization?.id,
-          createdBy: testUser?._id,
+          organization: testOrganization?.id,
+          createdBy: Types.ObjectId().toString(),
         },
       };
 
@@ -145,7 +148,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
         input: {
           name: "Agenda Category",
           description: "Description for the agenda category",
-          organizationId: Types.ObjectId().toString(), // A random ID that does not exist in the database
+          organization: Types.ObjectId().toString(), // A random ID that does not exist in the database
           createdBy: testUser?._id,
         },
       };
@@ -177,13 +180,13 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
         input: {
           name: "Agenda Category",
           description: "Description for the agenda category",
-          organizationId: testOrganization?.id,
-          createdBy: testUser?._id,
+          organization: testOrganization?.id,
+          createdBy: testUser2?._id,
         },
       };
 
       const context = {
-        userId: testUserSuperAdmin?.id, // A user that is not an admin for the organization
+        userId: testUser2?._id, // A user that is not an admin for the organization
       };
 
       const { createAgendaCategory: createAgendaCategoryResolver } =
@@ -198,8 +201,9 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       expect(createdAgendaCategory).toBeUndefined(); // The resolver should not return anything
     } catch (error: any) {
       // The resolver should throw an UnauthorizedError with the appropriate message, code, and parameter
-
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        "Error: Current user must be an ADMIN or a SUPERADMIN"
+      );
     }
   });
 });

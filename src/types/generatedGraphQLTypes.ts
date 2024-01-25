@@ -205,7 +205,7 @@ export type CreateAgendaCategoryInput = {
   createdBy: Scalars['ID'];
   description?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
-  organizationId: Scalars['ID'];
+  organization: Scalars['ID'];
 };
 
 export type CreateAgendaItemInput = {

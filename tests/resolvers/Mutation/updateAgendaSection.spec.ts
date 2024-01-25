@@ -1,6 +1,9 @@
 import { Types } from "mongoose";
 import type mongoose from "mongoose";
-import type { MutationResolvers , MutationUpdateAgendaSectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  MutationResolvers,
+  MutationUpdateAgendaSectionArgs,
+} from "../../../src/types/generatedGraphQLTypes";
 import {
   AGENDA_SECTION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,

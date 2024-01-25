@@ -145,7 +145,7 @@ input CreateAgendaCategoryInput {
   createdBy: ID!
   description: String
   name: String!
-  organizationId: ID!
+  organization: ID!
 }
 
 input CreateAgendaItemInput {
