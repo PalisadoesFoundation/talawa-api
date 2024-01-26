@@ -318,6 +318,8 @@ export const inputs = gql`
     lastName: String
     maritalStatus: MaritalStatus
     phone: UserPhoneInput
+    applangcode: String
+    id: ID
   }
 
   input UpdateUserPasswordInput {

@@ -22,7 +22,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   context
 ) => {
   const currentUser = await User.findOne({
-    _id: context.userId,
+    _id: args.data?.id || context.userId,
   });
 
   if (!currentUser) {
@@ -59,7 +59,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   // Update User
   const updatedUser = await User.findOneAndUpdate(
     {
-      _id: context.userId,
+      _id: args.data?.id || context.userId,
     },
     {
       $set: {
@@ -102,6 +102,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         firstName: args.data?.firstName
           ? args.data.firstName
           : currentUser?.firstName,
+        appLanguageCode: args.data?.applangcode
+          ? args.data.applangcode
+          : currentUser?.appLanguageCode,
         gender: args.data?.gender ? args.data.gender : currentUser?.gender,
         image: args.file ? uploadImageFileName : currentUser.image,
         lastName: args.data?.lastName
@@ -128,6 +131,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       runValidators: true,
     }
   ).lean();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   updatedUser!.image = updatedUser?.image
     ? `${context.apiRootUrl}${updatedUser?.image}`
     : null;

@@ -930,12 +930,14 @@ input UpdateOrganizationInput {
 
 input UpdateUserInput {
   address: AddressInput
+  applangcode: String
   birthDate: Date
   educationGrade: EducationGrade
   email: EmailAddress
   employmentStatus: EmploymentStatus
   firstName: String
   gender: Gender
+  id: ID
   lastName: String
   maritalStatus: MaritalStatus
   phone: UserPhoneInput
