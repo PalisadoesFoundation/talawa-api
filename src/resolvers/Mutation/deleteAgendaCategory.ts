@@ -38,6 +38,13 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
         USER_NOT_FOUND_ERROR.PARAM
       );
     }
+    if (!agendaCategory) {
+      throw new errors.NotFoundError(
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
+      );
+    }
 
     // If the user is a normal user, throw an error
     if (
@@ -51,17 +58,6 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
       );
     }
 
-    if (!agendaCategory) {
-      throw new errors.NotFoundError(
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
-      );
-    }
-
-    // If the AgendaCategory is not found, throw a NotFoundError
-
-    // Delete the AgendaCategory
     await AgendaCategoryModel.findByIdAndDelete(args.id);
     return categoryId;
   };
