@@ -35,4 +35,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/logout.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/resolvers/Mutation/logout.ts#L13)
+[src/resolvers/Mutation/logout.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/resolvers/Mutation/logout.ts#L13)

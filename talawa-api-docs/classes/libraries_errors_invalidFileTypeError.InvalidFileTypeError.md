@@ -57,7 +57,7 @@ This class detects invalid file type errors and sends those errors to the superc
 
 #### Defined in
 
-[src/libraries/errors/invalidFileTypeError.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/libraries/errors/invalidFileTypeError.ts#L6)
+[src/libraries/errors/invalidFileTypeError.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/libraries/errors/invalidFileTypeError.ts#L6)
 
 ## Properties
 
@@ -71,7 +71,7 @@ This class detects invalid file type errors and sends those errors to the superc
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/libraries/errors/applicationError.ts#L11)
+[src/libraries/errors/applicationError.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/libraries/errors/applicationError.ts#L11)
 
 ___
 
@@ -85,7 +85,7 @@ ___
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/libraries/errors/applicationError.ts#L12)
+[src/libraries/errors/applicationError.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/libraries/errors/applicationError.ts#L12)
 
 ___
 
@@ -168,7 +168,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:27
+node_modules/@types/node/globals.d.ts:28
 
 ___
 
@@ -182,7 +182,7 @@ ___
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:29
+node_modules/@types/node/globals.d.ts:30
 
 ## Methods
 
@@ -209,4 +209,4 @@ Create .stack property on a target object
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:20
+node_modules/@types/node/globals.d.ts:21

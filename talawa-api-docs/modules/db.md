@@ -4,10 +4,24 @@
 
 ## Table of contents
 
+### Variables
+
+- [session](db.md#session)
+
 ### Functions
 
 - [connect](db.md#connect)
 - [disconnect](db.md#disconnect)
+
+## Variables
+
+### session
+
+• **session**: `mongoose.ClientSession`
+
+#### Defined in
+
+[src/db.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/db.ts#L5)
 
 ## Functions
 
@@ -21,7 +35,7 @@
 
 #### Defined in
 
-[src/db.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/db.ts#L5)
+[src/db.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/db.ts#L7)
 
 ___
 
@@ -35,4 +49,4 @@ ___
 
 #### Defined in
 
-[src/db.ts:47](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/db.ts#L47)
+[src/db.ts:50](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/db.ts#L50)

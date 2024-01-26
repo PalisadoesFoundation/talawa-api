@@ -16,7 +16,7 @@
 
 ### mailer
 
-▸ **mailer**(`mailFields`): `Promise`\<`any`\>
+▸ **mailer**(`mailFields`): `Promise`\<`string` \| `SentMessageInfo`\>
 
 This function sends emails to the specified user using the node mailer module.
 
@@ -28,7 +28,7 @@ This function sends emails to the specified user using the node mailer module.
 
 #### Returns
 
-`Promise`\<`any`\>
+`Promise`\<`string` \| `SentMessageInfo`\>
 
 Promise along with resolve and reject methods.
 
@@ -38,4 +38,4 @@ This is a utility method.
 
 #### Defined in
 
-[src/utilities/mailer.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/utilities/mailer.ts#L23)
+[src/utilities/mailer.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/utilities/mailer.ts#L24)

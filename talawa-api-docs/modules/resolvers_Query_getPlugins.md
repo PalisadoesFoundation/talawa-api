@@ -18,4 +18,4 @@ This function returns list of plugins from the database.
 
 #### Defined in
 
-[src/resolvers/Query/getPlugins.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/resolvers/Query/getPlugins.ts#L8)
+[src/resolvers/Query/getPlugins.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/resolvers/Query/getPlugins.ts#L8)
