@@ -53,7 +53,6 @@ export const createOrganization: MutationResolvers["createOrganization"] =
 
     if (args.data?.address) {
       validationResultAddress = validateAddress(args.data?.address);
-      console.log(validateAddress(args.data?.address));
     }
 
     if (!validationResultName.isLessThanMaxLength) {
