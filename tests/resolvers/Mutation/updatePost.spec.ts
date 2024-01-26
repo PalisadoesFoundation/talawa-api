@@ -10,13 +10,16 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
-import type { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost, createTestSinglePost } from "../../helpers/posts";
 
 let testUser: TestUserType;
 let testPost: TestPostType;
-let testOrganization: TestOrganizationType
+let testOrganization: TestOrganizationType;
 let testPost2: TestPostType;
 
 beforeEach(async () => {
@@ -25,7 +28,7 @@ beforeEach(async () => {
   testUser = temp[0];
   testOrganization = temp[1];
   testPost = temp[2];
-  testPost2 = await createTestSinglePost(testUser?.id, testOrganization?.id)
+  testPost2 = await createTestSinglePost(testUser?.id, testOrganization?.id);
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
@@ -215,7 +218,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
         id: testPost2?._id,
         data: {
           title: "Test title",
-          text: "Test text"
+          text: "Test text",
         },
       };
 
@@ -231,7 +234,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
     } catch (error: any) {
       expect(error.message).toEqual(
         `Post needs to be pinned inorder to add a title`
-      )
+      );
     }
   });
 
@@ -244,7 +247,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
       const args: MutationUpdatePostArgs = {
         id: testPost?._id,
         data: {
-          text:"Testing text",
+          text: "Testing text",
         },
       };
 
@@ -258,9 +261,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(
-        `Please provide a title to pin post`
-      );
+      expect(error.message).toEqual(`Please provide a title to pin post`);
     }
   });
 });

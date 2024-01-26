@@ -72,16 +72,12 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   // Check title and pinpost
   if (args.data?.title && !post.pinned) {
     throw new errors.InputValidationError(
-      requestContext.translate(
-        POST_NEEDS_TO_BE_PINNED.MESSAGE
-      ),
+      requestContext.translate(POST_NEEDS_TO_BE_PINNED.MESSAGE),
       POST_NEEDS_TO_BE_PINNED.CODE
     );
   } else if (!args.data?.title && post.pinned) {
     throw new errors.InputValidationError(
-      requestContext.translate(
-        PLEASE_PROVIDE_TITLE.MESSAGE
-      ),
+      requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
       PLEASE_PROVIDE_TITLE.CODE
     );
   }

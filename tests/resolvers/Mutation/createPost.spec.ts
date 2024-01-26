@@ -356,7 +356,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     } catch (error: any) {
       expect(error.message).toEqual(
         `Post needs to be pinned inorder to add a title`
-      )
+      );
     }
   });
 
@@ -384,9 +384,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(
-        `Please provide a title to pin post`
-      )
+      expect(error.message).toEqual(`Please provide a title to pin post`);
     }
   });
 });

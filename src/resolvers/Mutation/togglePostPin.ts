@@ -121,7 +121,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       {
         $set: {
           pinned: false,
-          title: '',
+          title: "",
         },
       }
     ).lean();
@@ -132,12 +132,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
 
     return updatedPost!;
   } else {
-
     if (!args.title) {
       throw new errors.InputValidationError(
-        requestContext.translate(
-          PLEASE_PROVIDE_TITLE.MESSAGE
-        ),
+        requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
         PLEASE_PROVIDE_TITLE.CODE
       );
     }
@@ -178,7 +175,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       {
         $set: {
           pinned: true,
-          title: args?.title
+          title: args?.title,
         },
       }
     ).lean();

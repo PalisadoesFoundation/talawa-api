@@ -222,9 +222,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
 
       await togglePostPinResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(
-        `Please provide a title to pin post`
-      )
+      expect(error.message).toEqual(`Please provide a title to pin post`);
     }
   });
 
