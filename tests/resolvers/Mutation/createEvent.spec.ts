@@ -103,7 +103,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startTime: "",
           title: "",
           recurrance: "DAILY",
-          images: ["image_url_1", "image_url_2"],
         },
       };
 
@@ -144,7 +143,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startDate: "",
           startTime: "",
           title: "",
-          images: ["image_url_1", "image_url_2"],
           recurrance: "ONCE",
         },
       };
@@ -198,7 +196,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate: new Date("2023-01-01T00:00:00Z"),
         startTime: new Date().toUTCString(),
         title: "newTitle",
-        images: ["image_url_1", "image_url_2"],
         recurrance: "ONCE",
       },
     };
@@ -226,7 +223,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
-        images: ["image_url_1", "image_url_2"],
       })
     );
 
@@ -677,55 +673,6 @@ describe("Check for validation conditions", () => {
       } else {
         fail(`Expected DateValidationError, but got ${error}`);
       }
-    }
-  });
-  it(`throws Image Validation error if greater then 5 images are uploaded`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateEventArgs = {
-        data: {
-          organizationId: testOrganization?.id,
-          allDay: false,
-          description: "newDescription",
-          endDate: new Date().toUTCString(),
-          endTime: new Date().toUTCString(),
-          isPublic: false,
-          isRegisterable: false,
-          latitude: 1,
-          longitude: 1,
-          location: "newLocation",
-          recurring: false,
-          startDate: new Date().toUTCString(),
-          startTime: new Date().toUTCString(),
-          title: "newTitle",
-          recurrance: "DAILY",
-          images: [
-            "image_url_1",
-            "image_url_2",
-            "image_url_3",
-            "image_url_4",
-            "image_url_5",
-            "image_url_6",
-          ],
-        },
-      };
-
-      const context = {
-        userId: testUser?.id,
-      };
-
-      const { createEvent: createEventResolverError } = await import(
-        "../../../src/resolvers/Mutation/createEvent"
-      );
-
-      await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `Event validation failed: images: Up to 5 images are allowed.`
-      );
     }
   });
 });
