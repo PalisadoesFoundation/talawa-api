@@ -1,7 +1,9 @@
+import { TestOrganizationType } from "./../../helpers/userAndOrg";
+import { TestVenueType, createTestVenue } from "./../../helpers/venue";
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event } from "../../../src/models";
+import { User, Event, Organization } from "../../../src/models";
 import type { MutationUpdateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -10,7 +12,9 @@ import {
   LENGTH_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
+  VENUE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { NotFoundError } from "../../../src/libraries/errors";
 import {
   beforeAll,
   afterAll,
@@ -24,16 +28,19 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
+import { fail } from "assert";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testEvent: TestEventType;
+let testVenue: TestVenueType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
-  const testOrganization = temp[1];
+  testOrganization = temp[1];
   testEvent = await Event.create({
     creatorId: testUser?._id,
     registrants: [{ userId: testUser?._id, user: testUser?._id }],
@@ -45,6 +52,7 @@ beforeAll(async () => {
     allDay: true,
     startDate: new Date().toString(),
   });
+  testVenue = await createTestVenue();
 
   await User.updateOne(
     {
@@ -154,32 +162,91 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     }
   });
 
-  it(`updates the event with _id === args.id and returns the updated event`, async () => {
-    const updatedEvent = await Event.findOneAndUpdate(
-      {
-        _id: testEvent?._id,
-      },
-      {
-        $push: {
-          admins: testUser?._id,
+  it(`throws NotFoundError if the provided venue doesn't exist in the organization`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+    try {
+      const updatedEvent = await Event.findOneAndUpdate(
+        {
+          _id: testEvent?._id,
         },
-      },
-      {
-        new: true,
+        {
+          $push: {
+            admins: testUser?._id,
+          },
+        },
+        {
+          new: true,
+        }
+      ).lean();
+
+      if (updatedEvent !== null) {
+        await cacheEvents([updatedEvent]);
       }
-    ).lean();
 
-    if (updatedEvent !== null) {
-      await cacheEvents([updatedEvent]);
+      await User.updateOne(
+        {
+          _id: testUser?._id,
+        },
+        {
+          $push: {
+            eventAdmin: testEvent?._id,
+          },
+        }
+      );
+
+      const args: MutationUpdateEventArgs = {
+        id: testEvent?._id,
+        data: {
+          allDay: false,
+          description: "newDescription",
+          endDate: new Date().toUTCString(),
+          endTime: new Date().toUTCString(),
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "newLocation",
+          recurring: false,
+          startDate: new Date().toUTCString(),
+          startTime: new Date().toUTCString(),
+          title: "newTitle",
+          recurrance: "DAILY",
+          venue: testVenue?.id,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { updateEvent: updateEventResolver } = await import(
+        "../../../src/resolvers/Mutation/updateEvent"
+      );
+
+      const updateEventPayload = await updateEventResolver?.({}, args, context);
+
+      const testUpdateEventPayload = await Event.findOne({
+        _id: testEvent?._id,
+      }).lean();
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(VENUE_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${VENUE_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
+  });
 
-    await User.updateOne(
+  it(`updates the event with _id === args.id and returns the updated event`, async () => {
+    await Organization.updateOne(
       {
-        _id: testUser?._id,
+        _id: testOrganization?._id,
       },
       {
         $push: {
-          eventAdmin: testEvent?._id,
+          venues: testVenue?._id,
         },
       }
     );
@@ -201,6 +268,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         startTime: new Date().toUTCString(),
         title: "newTitle",
         recurrance: "DAILY",
+        venue: testVenue?._id,
       },
     };
 
@@ -247,6 +315,7 @@ describe("Check for validation conditions", () => {
           title:
             "AfGtN9o7IJXH9Xr5P4CcKTWMVWKOOHTldleLrWfZcThgoX5scPE5o0jARvtVA8VhneyxXquyhWb5nluW2jtP0Ry1zIOUFYfJ6BUXvpo4vCw4GVleGBnoKwkFLp5oW9L8OsEIrjVtYBwaOtXZrkTEBySZ1prr0vFcmrSoCqrCTaChNOxL3tDoHK6h44ChFvgmoVYMSq3IzJohKtbBn68D9NfEVMEtoimkGarUnVBAOsGkKv0mIBJaCl2pnR8Xwq1cG1",
           recurrance: "DAILY",
+          venue: testVenue?._id,
         },
       };
 
@@ -289,6 +358,7 @@ describe("Check for validation conditions", () => {
           startTime: "",
           title: "Random",
           recurrance: "DAILY",
+          venue: testVenue?._id,
         },
       };
 
@@ -330,6 +400,7 @@ describe("Check for validation conditions", () => {
           startTime: "",
           title: "Random",
           recurrance: "DAILY",
+          venue: testVenue?._id,
         },
       };
 
@@ -371,6 +442,7 @@ describe("Check for validation conditions", () => {
           startTime: "",
           title: "Random",
           recurrance: "DAILY",
+          venue: testVenue?._id,
         },
       };
 

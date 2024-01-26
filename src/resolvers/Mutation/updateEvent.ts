@@ -7,7 +7,6 @@ import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
   VENUE_NOT_FOUND_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
@@ -74,15 +73,6 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     .populate("venues")
     .lean();
 
-  // Checks whether organization exists.
-  if (!organization) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
   const currentUserIsEventAdmin = event.admins.some(
     (admin) =>
       admin === context.userID || Types.ObjectId(admin).equals(context.userId)
@@ -144,7 +134,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   // Checks if the venue is provided and whether that venue exists in the organization
   if (
     args.data?.venue &&
-    !organization.venues?.some((venue) => venue._id.equals(args.data?.venue))
+    !organization?.venues?.some((venue) => venue._id.equals(args.data?.venue))
   ) {
     throw new errors.NotFoundError(
       requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),

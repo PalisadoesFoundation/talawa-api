@@ -4,10 +4,10 @@ import {
   VENUE_ALREADY_EXISTS_ERROR,
   VENUE_NAME_MISSING_ERROR,
   VENUE_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "./../../constants";
 import { Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { Venue } from "../../models/Venue";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
