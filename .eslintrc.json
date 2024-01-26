@@ -11,9 +11,12 @@
   "overrides": [
     {
       "files": ["./src/typeDefs/**/*.ts"],
-      "processor": "@graphql-eslint/graphql"
+      // "processor": "@graphql-eslint/graphql"
+      "parser": "@graphql-eslint/eslint-plugin",
+      "plugins": ["@graphql-eslint"]
     },
     {
+      "extends": ["plugin:@typescript-eslint/disable-type-checked"],
       "files": ["./src/typeDefs/**/*.graphql"],
       "parser": "@graphql-eslint/eslint-plugin",
       "plugins": ["@graphql-eslint"],
