@@ -474,5 +474,15 @@ export const REDIS_HOST = process.env.REDIS_HOST || "";
 export const REDIS_PORT = Number(process.env.REDIS_PORT);
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
-export const key = process.env.ENCRYPTION_KEY as string;
+export const key = ENV.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");
+
+export const LOG = ENV.LOG === "true";
+
+export const LOG_PATH = ENV.LOG_PATH;
+
+export enum TransactionLogTypes {
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+}
