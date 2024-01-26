@@ -174,6 +174,7 @@ export type CreateAdvertisementInput = {
 
 export type CreateAdvertisementPayload = {
   __typename?: 'CreateAdvertisementPayload';
+  _id: Scalars['ID']['output'];
   advertisement?: Maybe<Advertisement>;
 };
 

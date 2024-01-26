@@ -55,7 +55,6 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
   });
 
   it(`creates the ad and then deleting the ad`, async () => {
-
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`
     );

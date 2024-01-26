@@ -19,9 +19,9 @@ afterAll(async () => {
 
 describe("resolvers -> Query -> getAdvertisment", () => {
   const context = {
-    apiRootUrl: ''
+    apiRootUrl: "",
   };
-  
+
   it(`returns list of all existing advertisement`, async () => {
     const adsPayload = await getAdvertisements?.({}, {}, context);
 

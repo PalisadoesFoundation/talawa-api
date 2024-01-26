@@ -52,7 +52,6 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
   });
 
   it(`should create the ad and returns `, async () => {
-
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`
     );
@@ -80,7 +79,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       args,
       context
     );
-    
+
     expect(createdAdvertisementPayload).toHaveProperty("name", "myad");
 
     expect(createdAdvertisementPayload).toHaveProperty("type", "POPUP");

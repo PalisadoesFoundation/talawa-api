@@ -53,11 +53,10 @@ describe("resolvers -> Mutation -> getAdvertisement", () => {
   });
 
   it(`shouldl return the created ad from the list`, async () => {
-
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`
     );
-    
+
     const args: MutationCreateAdvertisementArgs = {
       input: {
         name: "myad",
