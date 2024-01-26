@@ -188,7 +188,7 @@ export const mutations = gql`
 
     signUp(data: UserInput!, file: String): AuthData!
 
-    togglePostPin(id: ID!): Post! @auth
+    togglePostPin(id: ID!, title: String): Post! @auth
 
     unassignUserTag(input: ToggleUserTagAssignInput!): User @auth
 

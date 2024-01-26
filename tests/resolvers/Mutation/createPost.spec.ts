@@ -210,6 +210,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         text: "text",
         videoUrl: "videoUrl",
         title: "title",
+        pinned: true,
       },
     };
 
@@ -277,6 +278,7 @@ describe("resolvers -> Mutation -> createPost", () => {
           title:
             "AfGtN9o7IJXH9Xr5P4CcKTWMVWKOOHTldleLrWfZcThgoX5scPE5o0jARvtVA8VhneyxXquyhWb5nluW2jtP0Ry1zIOUFYfJ6BUXvpo4vCw4GVleGBnoKwkFLp5oW9L8OsEIrjVtYBwaOtXZrkTEBySZ1prr0vFcmrSoCqrCTaChNOxL3tDoHK6h44ChFvgmoVYMSq3IzJohKtbBn68D9NfEVMEtoimkGarUnVBAOsGkKv0mIBJaCl2pnR8Xwq1cG1",
           imageUrl: null,
+          pinned: true,
         },
       };
 
@@ -308,6 +310,7 @@ describe("resolvers -> Mutation -> createPost", () => {
           videoUrl: "",
           title: "random",
           imageUrl: null,
+          pinned: true,
         },
       };
 
@@ -324,6 +327,66 @@ describe("resolvers -> Mutation -> createPost", () => {
       expect(error.message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
       );
+    }
+  });
+
+  it("throws error if title is provided and post is not pinned", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => message
+    );
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: testOrganization?._id,
+          title: "Test title",
+          text: "Test text",
+          pinned: false,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
+      );
+      await createPostResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Post needs to be pinned inorder to add a title`
+      )
+    }
+  });
+
+  it("throws error if title is not provided and post is pinned", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => message
+    );
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: testOrganization?._id,
+          title: "",
+          text: "Test text",
+          pinned: true,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
+      );
+      await createPostResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Please provide a title to pin post`
+      )
     }
   });
 });
