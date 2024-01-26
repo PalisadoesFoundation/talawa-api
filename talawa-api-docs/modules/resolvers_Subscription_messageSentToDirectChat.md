@@ -29,7 +29,7 @@ You can learn about `subscription` [here](https://www.apollographql.com/docs/apo
 
 #### Defined in
 
-[src/resolvers/Subscription/messageSentToDirectChat.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/resolvers/Subscription/messageSentToDirectChat.ts#L21)
+[src/resolvers/Subscription/messageSentToDirectChat.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/resolvers/Subscription/messageSentToDirectChat.ts#L21)
 
 ## Functions
 
@@ -50,4 +50,4 @@ You can learn about `subscription` [here](https://www.apollographql.com/docs/apo
 
 #### Defined in
 
-[src/resolvers/Subscription/messageSentToDirectChat.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/resolvers/Subscription/messageSentToDirectChat.ts#L6)
+[src/resolvers/Subscription/messageSentToDirectChat.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/resolvers/Subscription/messageSentToDirectChat.ts#L6)

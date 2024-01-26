@@ -27,4 +27,4 @@
 
 #### Defined in
 
-[src/utilities/encodedVideoStorage/uploadEncodedVideo.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/utilities/encodedVideoStorage/uploadEncodedVideo.ts#L11)
+[src/utilities/encodedVideoStorage/uploadEncodedVideo.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/encodedVideoStorage/uploadEncodedVideo.ts#L11)

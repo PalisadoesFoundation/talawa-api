@@ -33,7 +33,7 @@ This is an interface that represents a database(MongoDB) document for Post.
 
 #### Defined in
 
-[src/models/Post.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L10)
+[src/models/Post.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L10)
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L11)
+[src/models/Post.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L11)
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L12)
+[src/models/Post.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L12)
 
 ___
 
@@ -63,7 +63,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L13)
+[src/models/Post.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L13)
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L14)
+[src/models/Post.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L14)
 
 ___
 
@@ -83,7 +83,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L15)
+[src/models/Post.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L15)
 
 ___
 
@@ -93,7 +93,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L16)
+[src/models/Post.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L16)
 
 ___
 
@@ -103,7 +103,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L17)
+[src/models/Post.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L17)
 
 ___
 
@@ -113,7 +113,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L18)
+[src/models/Post.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L18)
 
 ___
 
@@ -123,7 +123,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L19)
+[src/models/Post.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L19)
 
 ___
 
@@ -133,7 +133,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L20)
+[src/models/Post.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L20)
 
 ___
 
@@ -143,7 +143,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L21)
+[src/models/Post.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L21)
 
 ___
 
@@ -153,7 +153,7 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:22](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L22)
+[src/models/Post.ts:22](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L22)
 
 ___
 
@@ -163,4 +163,4 @@ ___
 
 #### Defined in
 
-[src/models/Post.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Post.ts#L23)
+[src/models/Post.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Post.ts#L23)

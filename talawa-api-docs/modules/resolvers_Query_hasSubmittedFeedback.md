@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Query/hasSubmittedFeedback.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/resolvers/Query/hasSubmittedFeedback.ts#L11)
+[src/resolvers/Query/hasSubmittedFeedback.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/resolvers/Query/hasSubmittedFeedback.ts#L11)
