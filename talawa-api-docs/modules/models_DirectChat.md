@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/models/DirectChat.ts:70](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/models/DirectChat.ts#L70)
+[src/models/DirectChat.ts:70](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/DirectChat.ts#L70)

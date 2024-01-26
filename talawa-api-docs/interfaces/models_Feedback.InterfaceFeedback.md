@@ -23,7 +23,7 @@
 
 #### Defined in
 
-[src/models/Feedback.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/models/Feedback.ts#L6)
+[src/models/Feedback.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Feedback.ts#L6)
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 #### Defined in
 
-[src/models/Feedback.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/models/Feedback.ts#L10)
+[src/models/Feedback.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Feedback.ts#L10)
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 #### Defined in
 
-[src/models/Feedback.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/models/Feedback.ts#L7)
+[src/models/Feedback.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Feedback.ts#L7)
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 #### Defined in
 
-[src/models/Feedback.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/models/Feedback.ts#L8)
+[src/models/Feedback.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Feedback.ts#L8)
 
 ___
 
@@ -63,7 +63,7 @@ ___
 
 #### Defined in
 
-[src/models/Feedback.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/models/Feedback.ts#L9)
+[src/models/Feedback.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Feedback.ts#L9)
 
 ___
 
@@ -73,4 +73,4 @@ ___
 
 #### Defined in
 
-[src/models/Feedback.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/models/Feedback.ts#L11)
+[src/models/Feedback.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/models/Feedback.ts#L11)

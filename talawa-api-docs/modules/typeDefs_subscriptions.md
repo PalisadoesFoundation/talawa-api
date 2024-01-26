@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/typeDefs/subscriptions.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/typeDefs/subscriptions.ts#L4)
+[src/typeDefs/subscriptions.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/typeDefs/subscriptions.ts#L4)

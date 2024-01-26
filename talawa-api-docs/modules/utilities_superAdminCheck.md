@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/utilities/superAdminCheck.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/cba820f/src/utilities/superAdminCheck.ts#L5)
+[src/utilities/superAdminCheck.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/3a8a11a/src/utilities/superAdminCheck.ts#L5)
