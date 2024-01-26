@@ -82,7 +82,7 @@ export const queries = gql`
       first: Int
       skip: Int
       orderBy: PostOrderByInput
-    ): PostConnection
+    ): PostsConnection
 
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
 

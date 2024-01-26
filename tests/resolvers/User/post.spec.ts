@@ -7,7 +7,7 @@ import {
   hasPreviousPage,
   posts as postResolver,
 } from "../../../src/resolvers/User/post";
-import type { PostConnection } from "../../../src/types/generatedGraphQLTypes";
+import type { PostsConnection } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
@@ -33,7 +33,7 @@ describe("resolvers -> User -> post", () => {
     const result = await postResolver?.(parent, {}, {});
 
     if (result) {
-      const postConnection = result as unknown as PostConnection;
+      const postConnection = result as unknown as PostsConnection;
       console.log(postConnection.edges[0].node);
       expect(postConnection.edges).toHaveLength(1);
       expect(

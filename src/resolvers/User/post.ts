@@ -7,36 +7,32 @@ import type { UserResolvers } from "../../types/generatedGraphQLTypes";
  */
 
 export const posts: UserResolvers["posts"] = async (parent, args) => {
-  const pageSize: number =
-    (args as { first?: number; last?: number; after?: string; before?: string })
-      .first ||
-    (args as { first?: number; last?: number; after?: string; before?: string })
-      .last ||
-    10;
+  const pageSize: number = args.first || args.last || 10;
+
   const query: Record<string, unknown> = {
     creatorId: parent._id,
   };
-  if ((args as { after?: string }).after) {
-    query._id = { $gt: (args as { after?: string }).after };
-  } else if ((args as { before?: string }).before) {
-    query._id = { $lt: (args as { before?: string }).before };
+  if (args.after) {
+    query._id = { $gt: args.after };
+  } else if (args.before) {
+    query._id = { $lt: args.before };
   }
   const posts = await Post.find(query)
-    .sort({ _id: (args as { before?: string }).before ? -1 : 1 })
+    .sort({ _id: args.before ? -1 : 1 })
     .limit(pageSize)
     .lean();
 
   const pageInfo = {
     hasNextPage: await hasNextPage(
       parent._id.toString(),
-      (args as { after?: string }).after || "",
-      (args as { before?: string }).before || "",
+      args.after || "",
+      args.before || "",
       pageSize
     ),
     hasPreviousPage: await hasPreviousPage(
       parent._id.toString(),
-      (args as { after?: string }).after || "",
-      (args as { before?: string }).before || "",
+      args.after || "",
+      args.before || "",
       pageSize
     ),
     startCursor: posts[0]?._id.toString(),

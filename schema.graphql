@@ -732,18 +732,6 @@ type Post {
   videoUrl: URL
 }
 
-type PostConnection {
-  edges: [PostEdge!]!
-  pageInfo: PostConnectionInfo!
-}
-
-type PostConnectionInfo {
-  endCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-  startCursor: String
-}
-
 type PostEdge {
   cursor: String!
   node: Post!
@@ -806,6 +794,11 @@ input PostWhereInput {
   title_starts_with: String
 }
 
+type PostsConnection {
+  edges: [PostEdge!]!
+  pageInfo: ConnectionPageInfo!
+}
+
 type Query {
   adminPlugin(orgId: ID!): [Plugin]
   checkAuth: User!
@@ -833,7 +826,7 @@ type Query {
   plugin(orgId: ID!): [Plugin]
   post(id: ID!): Post
   postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
-  postsByOrganizationConnection(first: Int, id: ID!, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): PostConnection
+  postsByOrganizationConnection(first: Int, id: ID!, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): PostsConnection
   registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
   registrantsByEvent(id: ID!): [User]
   user(id: ID!): User!
@@ -989,7 +982,7 @@ type User {
   organizationsBlockedBy: [Organization]
   phone: UserPhone
   pluginCreationAllowed: Boolean!
-  posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostConnection
+  posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostsConnection
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!

@@ -363,7 +363,7 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
-    ): PostConnection
+    ): PostsConnection
     eventAdmin: [Event]
     firstName: String!
     gender: Gender
@@ -387,19 +387,13 @@ export const types = gql`
     updatedAt: DateTime!
     userType: UserType!
   }
-  type PostConnection {
+  type PostsConnection {
     edges: [PostEdge!]!
-    pageInfo: PostConnectionInfo!
+    pageInfo: ConnectionPageInfo!
   }
   type PostEdge {
     node: Post!
     cursor: String!
-  }
-  type PostConnectionInfo {
-    hasNextPage: Boolean!
-    hasPreviousPage: Boolean!
-    startCursor: String
-    endCursor: String
   }
 
   type UserCustomData {
