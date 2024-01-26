@@ -1,18 +1,18 @@
 import { nanoid } from "nanoid";
 import {
+  CampaignPledge,
   Fund,
   FundCampaign,
   type InterfaceFundCampaign,
 } from "../../src/models";
 import type { Document } from "mongoose";
-import mongoose from "mongoose";
 import type { TestUserType } from "./user";
-import { createTestUser } from "./user";
 import { createTestFund, type TestFundType } from "./fund";
 import {
   createTestUserAndOrganization,
   type TestOrganizationType,
 } from "./userAndOrg";
+import type { TestCampaignPledgeType } from "./campaignPledge";
 
 export type TestFundCampaignType =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,15 +47,31 @@ export const createTestFundCampaign = async (): Promise<
 };
 
 export const createTestFundAndFundCampaign = async (): Promise<
-  [TestUserType, TestFundCampaignType, TestOrganizationType, TestFundType]
+  [
+    TestUserType,
+    TestFundCampaignType,
+    TestOrganizationType,
+    TestFundType,
+    TestCampaignPledgeType
+  ]
 > => {
   const testUserandOrg = await createTestUserAndOrganization();
 
   const testUser = testUserandOrg[0];
   const testOrg = testUserandOrg[1];
 
+  const date: Date = new Date();
+  date.setDate(date.getDate() + 2);
+
+  const testPledge = await CampaignPledge.create({
+    creatorId: testUser?._id,
+    amount: 90000,
+    currency: "USD",
+    endDate: date,
+    members: [testUser?.id],
+  });
+
   const testFund = await Fund.create({
-    // _id: new mongoose.Types.ObjectId().toString(),
     creatorId: testUser?._id,
     organizationId: testOrg?._id,
     archived: false,
@@ -64,12 +80,9 @@ export const createTestFundAndFundCampaign = async (): Promise<
     name: `testFund${nanoid().toLowerCase()}`,
   });
 
-  const date: Date = new Date();
-  date.setDate(date.getDate() + 2);
-
   const testFundCampaign = await FundCampaign.create({
     creatorId: testUser?._id,
-    goalAmount: Math.floor(Math.random() * 10000),
+    goalAmount: 90000,
     currency: "USD",
     name: `fund${nanoid().toLowerCase()}`,
     endDate: date,
@@ -85,5 +98,14 @@ export const createTestFundAndFundCampaign = async (): Promise<
     }
   );
 
-  return [testUser, testFundCampaign, testOrg, newTestFund];
+  const newTestPledge = await CampaignPledge.findByIdAndUpdate(
+    {
+      _id: testPledge._id,
+    },
+    {
+      $push: { campaigns: testFundCampaign._id },
+    }
+  );
+
+  return [testUser, testFundCampaign, testOrg, newTestFund, newTestPledge];
 };

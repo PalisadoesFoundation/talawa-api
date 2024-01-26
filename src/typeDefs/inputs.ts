@@ -139,6 +139,16 @@ export const inputs = gql`
     endDate: DateTime
   }
 
+  input addParentFund {
+    parentFundId: ID!
+    fundCampaignId: ID!
+  }
+
+  input addPledge {
+    pledgeId: ID!
+    fundCampaignId: ID!
+  }
+
   input ForgotPasswordData {
     userOtp: String!
     newPassword: String!

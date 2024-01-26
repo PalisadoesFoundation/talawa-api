@@ -607,6 +607,8 @@ export type Mutation = {
   addLanguageTranslation: Language;
   addOrganizationCustomField: OrganizationCustomField;
   addOrganizationImage: Organization;
+  addParentFundtoCampaign?: Maybe<FundCampaign>;
+  addPledgeIDtoCampaign?: Maybe<FundCampaign>;
   addUserCustomData: UserCustomData;
   addUserImage: User;
   addUserToGroupChat: GroupChat;
@@ -727,6 +729,16 @@ export type MutationAddOrganizationCustomFieldArgs = {
 export type MutationAddOrganizationImageArgs = {
   file: Scalars['String']['input'];
   organizationId: Scalars['String']['input'];
+};
+
+
+export type MutationAddParentFundtoCampaignArgs = {
+  data?: InputMaybe<AddParentFund>;
+};
+
+
+export type MutationAddPledgeIDtoCampaignArgs = {
+  data?: InputMaybe<AddPledge>;
 };
 
 
@@ -1944,6 +1956,16 @@ export type UsersConnectionResult = {
   errors: Array<ConnectionError>;
 };
 
+export type AddParentFund = {
+  fundCampaignId: Scalars['ID']['input'];
+  parentFundId: Scalars['ID']['input'];
+};
+
+export type AddPledge = {
+  fundCampaignId: Scalars['ID']['input'];
+  pledgeId: Scalars['ID']['input'];
+};
+
 export type CreateChatInput = {
   organizationId: Scalars['ID']['input'];
   userIds: Array<Scalars['ID']['input']>;
@@ -2166,6 +2188,8 @@ export type ResolversTypes = {
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
+  addParentFund: AddParentFund;
+  addPledge: AddPledge;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -2293,6 +2317,8 @@ export type ResolversParentTypes = {
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
+  addParentFund: AddParentFund;
+  addPledge: AddPledge;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -2687,6 +2713,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addLanguageTranslation?: Resolver<ResolversTypes['Language'], ParentType, ContextType, RequireFields<MutationAddLanguageTranslationArgs, 'data'>>;
   addOrganizationCustomField?: Resolver<ResolversTypes['OrganizationCustomField'], ParentType, ContextType, RequireFields<MutationAddOrganizationCustomFieldArgs, 'name' | 'organizationId' | 'type'>>;
   addOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationAddOrganizationImageArgs, 'file' | 'organizationId'>>;
+  addParentFundtoCampaign?: Resolver<Maybe<ResolversTypes['FundCampaign']>, ParentType, ContextType, Partial<MutationAddParentFundtoCampaignArgs>>;
+  addPledgeIDtoCampaign?: Resolver<Maybe<ResolversTypes['FundCampaign']>, ParentType, ContextType, Partial<MutationAddPledgeIDtoCampaignArgs>>;
   addUserCustomData?: Resolver<ResolversTypes['UserCustomData'], ParentType, ContextType, RequireFields<MutationAddUserCustomDataArgs, 'dataName' | 'dataValue' | 'organizationId'>>;
   addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
   addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;

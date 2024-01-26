@@ -543,6 +543,8 @@ type Mutation {
   addLanguageTranslation(data: LanguageInput!): Language!
   addOrganizationCustomField(name: String!, organizationId: ID!, type: String!): OrganizationCustomField!
   addOrganizationImage(file: String!, organizationId: String!): Organization!
+  addParentFundtoCampaign(data: addParentFund): FundCampaign
+  addPledgeIDtoCampaign(data: addPledge): FundCampaign
   addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
   addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
@@ -1207,6 +1209,16 @@ input UsersConnectionInput {
 type UsersConnectionResult {
   data: UsersConnection
   errors: [ConnectionError!]!
+}
+
+input addParentFund {
+  fundCampaignId: ID!
+  parentFundId: ID!
+}
+
+input addPledge {
+  fundCampaignId: ID!
+  pledgeId: ID!
 }
 
 input createChatInput {

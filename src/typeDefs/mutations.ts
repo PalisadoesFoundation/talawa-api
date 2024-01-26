@@ -24,6 +24,10 @@ export const mutations = gql`
     addOrganizationImage(file: String!, organizationId: String!): Organization!
       @auth
 
+    addParentFundtoCampaign(data: addParentFund): FundCampaign @auth
+
+    addPledgeIDtoCampaign(data: addPledge): FundCampaign @auth
+
     addUserCustomData(
       organizationId: ID!
       dataName: String!

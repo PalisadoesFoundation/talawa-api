@@ -40,6 +40,32 @@ export const FUND_CAMPAIGN_NOT_FOUND = {
   PARAM: "fundCampaign",
 };
 
+export const FUND_NOT_FOUND = {
+  DESC: "Fund not found",
+  CODE: "fund.notFound",
+  MESSAGE: "fund.notFound",
+  PARAM: "fund",
+};
+
+export const PLEDGE_NOT_FOUND = {
+  DESC: "Pledge not found",
+  CODE: "pledge.notFound",
+  MESSAGE: "pledge.notFound",
+  PARAM: "CampaignPledge",
+};
+
+export const PLEDGE_ID_NOT_NULL = {
+  MESSAGE: "Campaign is already having a pledge Id",
+  CODE: "campaign.PledgeIDNotNull",
+  PARAM: "campaign.PledgeIDNotNull",
+};
+
+export const PARENT_FUND_NOT_NULL = {
+  MESSAGE: "Campaign is already having a parent fund Id",
+  CODE: "campaign.ParentFundIDNotNull",
+  PARAM: "campaign.ParentFundIDNotNull",
+};
+
 export const INVALID_OTP = "Invalid OTP";
 
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";
