@@ -150,9 +150,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     assignerId: context.userId,
     actionItemCategoryId: args.actionItemCategoryId,
     preCompletionNotes: args.data.preCompletionNotes,
-    postCompletionNotes: args.data.postCompletionNotes,
     dueDate: args.data.dueDate,
-    completionDate: args.data.completionDate,
     eventId: args.data.eventId,
     creatorId: context.userId,
   });

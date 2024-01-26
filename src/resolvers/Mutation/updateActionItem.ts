@@ -31,6 +31,7 @@ type UpdateActionItemInputType = {
   preCompletionNotes: string;
   postCompletionNotes: string;
   dueDate: Date;
+  completionDate: Date;
   isCompleted: boolean;
 };
 
@@ -167,7 +168,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     ? actionItem.assignmentDate
     : new Date();
 
-  const updatedAssignedBy = sameAssignedUser
+  const updatedAssigner = sameAssignedUser
     ? actionItem.assignerId
     : context.userId;
 
@@ -178,7 +179,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     {
       ...(args.data as UpdateActionItemInputType),
       assignmentDate: updatedAssignmentDate,
-      assignerId: updatedAssignedBy,
+      assignerId: updatedAssigner,
     },
     {
       new: true,

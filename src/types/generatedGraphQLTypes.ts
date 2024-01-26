@@ -196,12 +196,8 @@ export type ConnectionPageInfo = {
 
 export type CreateActionItemInput = {
   assigneeId: Scalars['ID']['input'];
-  assignmentDate?: InputMaybe<Scalars['Date']['input']>;
-  completionDate?: InputMaybe<Scalars['Date']['input']>;
   dueDate?: InputMaybe<Scalars['Date']['input']>;
   eventId?: InputMaybe<Scalars['ID']['input']>;
-  isCompleted?: InputMaybe<Scalars['Boolean']['input']>;
-  postCompletionNotes?: InputMaybe<Scalars['String']['input']>;
   preCompletionNotes?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -1684,6 +1680,7 @@ export type UpdateActionItemCategoryInput = {
 
 export type UpdateActionItemInput = {
   assigneeId?: InputMaybe<Scalars['ID']['input']>;
+  completionDate?: InputMaybe<Scalars['Date']['input']>;
   dueDate?: InputMaybe<Scalars['Date']['input']>;
   isCompleted?: InputMaybe<Scalars['Boolean']['input']>;
   postCompletionNotes?: InputMaybe<Scalars['String']['input']>;
