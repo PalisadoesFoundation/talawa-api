@@ -158,10 +158,10 @@ const eventSchema = new Schema(
       enum: ["ACTIVE", "BLOCKED", "DELETED"],
       default: "ACTIVE",
     },
-  venue: {
-    type: Schema.Types.ObjectId,
-    ref: "Venue",
-  },
+    venue: {
+      type: Schema.Types.ObjectId,
+      ref: "Venue",
+    },
   },
   {
     timestamps: true,

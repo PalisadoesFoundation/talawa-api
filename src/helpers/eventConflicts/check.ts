@@ -1,7 +1,5 @@
 import { Event, InterfaceEvent } from "../../models";
-import {
-  MutationCreateEventArgs,
-} from "./../../types/generatedGraphQLTypes";
+import { MutationCreateEventArgs } from "./../../types/generatedGraphQLTypes";
 export async function check(
   args: Partial<MutationCreateEventArgs>
 ): Promise<InterfaceEvent[]> {
@@ -70,7 +68,7 @@ export async function check(
             ],
           },
     ],
-  })
+  });
   return Array.isArray(conflictingEvents)
     ? conflictingEvents
     : [conflictingEvents];

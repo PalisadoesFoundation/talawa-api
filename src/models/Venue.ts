@@ -23,7 +23,7 @@ const venueSchema = new Schema({
     required: true,
   },
   description: {
-    type: String
+    type: String,
   },
   capacity: {
     type: Number,

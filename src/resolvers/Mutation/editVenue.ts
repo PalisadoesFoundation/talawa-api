@@ -45,7 +45,6 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     _id: args.data?._id,
   }).lean();
 
-  
   const organization = await Organization.findOne({
     _id: args.data?.organizationId,
   }).lean();
@@ -56,16 +55,16 @@ export const editVenue: MutationResolvers["editVenue"] = async (
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
       ORGANIZATION_NOT_FOUND_ERROR.PARAM
-      );
-    }
-    
-    if (!venue) {
-      throw new errors.NotFoundError(
-        requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
-        VENUE_NOT_FOUND_ERROR.CODE,
-        VENUE_NOT_FOUND_ERROR.PARAM
-      );
-    }
+    );
+  }
+
+  if (!venue) {
+    throw new errors.NotFoundError(
+      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
+      VENUE_NOT_FOUND_ERROR.CODE,
+      VENUE_NOT_FOUND_ERROR.PARAM
+    );
+  }
 
   // Checks Whether the user is admin or superadmin or not
   if (

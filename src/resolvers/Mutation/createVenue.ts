@@ -78,7 +78,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
       VENUE_NAME_MISSING_ERROR.PARAM
     );
   }
-  
+
   // Check if a venue with the same place already exists in the organization
   if (organization.venues?.some((venue) => venue.name === args.data?.name)) {
     throw new errors.ConflictError(
