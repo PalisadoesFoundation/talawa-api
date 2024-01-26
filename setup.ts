@@ -669,22 +669,35 @@ async function importDefaultOrganization() {
     console.log("Couldn't find mongodb url");
     return;
   }
-  const shouldImport = await shouldWipeExistingData(process.env.MONGO_DB_URL);
-  if (shouldImport) {
-    await exec(
-      "npm run import:sample-data-defaultOrg",
-      (error: { message: string }, stdout: string, stderr: string) => {
-        if (error) {
-          console.error(`Error: ${error.message}`);
-          abort();
+  const client = new mongodb.MongoClient(process.env.MONGO_DB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  try {
+    await client.connect();
+    const db = client.db();
+    const collections = await db.listCollections().toArray();
+    if (collections.length > 0) {
+      return;
+    } else {
+      await exec(
+        "npm run import:sample-data-defaultOrg",
+        (error: { message: string }, stdout: string, stderr: string) => {
+          if (error) {
+            console.error(`Error: ${error.message}`);
+            abort();
+          }
+          if (stderr) {
+            console.error(`Error: ${stderr}`);
+            abort();
+          }
+          console.log(`Output: ${stdout}`);
         }
-        if (stderr) {
-          console.error(`Error: ${stderr}`);
-          abort();
-        }
-        console.log(`Output: ${stdout}`);
-      }
-    );
+      );
+    }
+    client.close();
+  } catch (e: any) {
+    console.log(`Couldn't import the default Organization`);
   }
 }
 
