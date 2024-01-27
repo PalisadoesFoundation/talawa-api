@@ -1,8 +1,9 @@
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUserAndOrganization } from "./userAndOrg";
 import type { InterfaceEvent } from "../../src/models";
-import { Event, EventAttendee, User } from "../../src/models";
+import { Event, EventAttendee, Organization, User } from "../../src/models";
 import type { Document } from "mongoose";
+import { createTestVenue } from "./venue";
 
 export type TestEventType =
   | (InterfaceEvent & Document<any, any, InterfaceEvent>)
@@ -12,7 +13,7 @@ export const createTestEventWithRegistrants = async (
   isAdmin = true
 ): Promise<[TestUserType, TestOrganizationType, TestEventType]> => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
-
+  const testVenue = await createTestVenue();
   const testEvent = await Event.create({
     creatorId: testUser!._id,
     admins: [testUser!._id],
@@ -22,8 +23,20 @@ export const createTestEventWithRegistrants = async (
     title: "title",
     description: "description",
     allDay: true,
+    venue: testVenue!._id,
     startDate: new Date().toString(),
   });
+
+  await Organization.updateOne(
+    {
+      _id: testOrganization?._id,
+    },
+    {
+      $push: {
+        venues: testVenue?._id,
+      },
+    }
+  );
 
   await EventAttendee.create({
     userId: testUser!._id,

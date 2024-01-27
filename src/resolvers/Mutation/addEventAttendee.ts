@@ -7,7 +7,7 @@ import {
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event, EventAttendee } from "../../models";
+import { User, Event, EventAttendee, Venue } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
@@ -75,6 +75,22 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM
+    );
+  }
+
+  event = await Event.findById({ _id: args.data.eventId });
+
+  const venue = await Venue.findById({
+    _id: event?.venue,
+  }).lean();
+
+  const eventId = args.data?.eventId;
+  const count = await EventAttendee.countDocuments({ eventId });
+  if (venue && count >= venue.capacity) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 

@@ -18,8 +18,11 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
- * 2. Whether the user is admin or superadmin or not
+ * 2. If the organization exists
  * 3. If the venue exists
+ * 4. If the user is authorized
+ * 5. If the venue details are valid
+ * 5. If the venue already exists
  * @returns Updated venue
  */
 

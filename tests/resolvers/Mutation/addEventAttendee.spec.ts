@@ -1,7 +1,8 @@
+import { TestVenueType } from "./../../helpers/venue";
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { EventAttendee, User } from "../../../src/models";
+import { Event, EventAttendee, User, Venue } from "../../../src/models";
 import type { MutationAddEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import {
@@ -13,16 +14,19 @@ import {
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
+import { createTestVenue } from "../../helpers/venue";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let randomTestUser: TestUserType;
 let testEvent: TestEventType;
+let testVenue: TestVenueType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   randomTestUser = await createTestUser();
   [testUser, , testEvent] = await createTestEvent();
+  testVenue = await createTestVenue();
 });
 
 afterAll(async () => {
@@ -150,7 +154,54 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
     }
   });
 
+  it(`throws error if the capacity of the event venue is already full`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    testVenue = await Venue.findOneAndUpdate(
+      { _id: testVenue?.id },
+      { capacity: 0 },
+      { new: true }
+    );
+
+    await Event.updateOne({ _id: testEvent?.id }, { venue: testVenue?.id });
+
+    testEvent = await Event.findById(testEvent?.id);
+
+    try {
+      const args: MutationAddEventAttendeeArgs = {
+        data: {
+          userId: testUser!._id,
+          eventId: testEvent!._id,
+        },
+      };
+
+      const context = { userId: testUser!._id };
+
+      const { addEventAttendee: addEventAttendeeResolver } = await import(
+        "../../../src/resolvers/Mutation/addEventAttendee"
+      );
+
+      await addEventAttendeeResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    }
+  });
+
   it(`registers the request user for the event successfully and returns the request user`, async () => {
+
+    testVenue = await Venue.findOneAndUpdate(
+      { _id: testVenue?.id },
+      { capacity: 5 },
+      { new: true }
+    );
+
     const args: MutationAddEventAttendeeArgs = {
       data: {
         userId: testUser!._id,

@@ -10,7 +10,7 @@ export const createTestVenue = async (): Promise<TestVenueType> => {
   const testVenue = await Venue.create({
     name: nanoid().toLowerCase(),
     description: nanoid().toLowerCase(),
-    capacity: Math.floor(Math.random() * 100),
+    capacity: 5 + Math.floor(Math.random() * 100),
     imageUrl: null,
   });
   return testVenue;

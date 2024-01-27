@@ -116,5 +116,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
     }
   );
 
+  await Event.updateOne({ _id: args.data.eventId }, { $inc: { checkIns: 1 } });
+
   return checkIn.toObject();
 };
