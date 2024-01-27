@@ -132,42 +132,35 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   if (session) {
     session.startTransaction();
   }
-  try {
-    let createdEvent!: InterfaceEvent[];
 
-    if (args.file) {
-      const dataUrlPrefix = "data:";
-      const supportedImageFormats = ["jpeg", "jpg", "png"];
+  let uploadImageFileName = null;
+  const dataUrlPrefix = "data:";
+  const supportedImageFormats = ["jpg", "jpeg", "png"];
+
+  if (!args.data?.images) {
+    throw new Error("Please upload images");
+  } else {
+    try {
+      const imageDataURL = args.data.images[0];
 
       if (
-        args.file.startsWith(dataUrlPrefix) &&
-        supportedImageFormats.some((format) =>
-          args.file?.includes(format)
-        )
+        imageDataURL &&
+        imageDataURL.startsWith(dataUrlPrefix) &&
+        supportedImageFormats.some((format) => imageDataURL.includes(format))
       ) {
-        const uploadImageFileName = await uploadEncodedImage(
-          args.file,
-          null
-        );
-        createdEvent = await Event.create([
-          {
-            title: args.data?.title,
-            description: args.data?.description,
-            location: args.data?.location,
-            startDate: args.data?.startDate,
-            endDate: args.data?.endDate,
-            images: [uploadImageFileName],
-            organizationId: organization._id,
-          },
-        ]);
+        uploadImageFileName = await uploadEncodedImage(imageDataURL, null);
       } else {
-        throw new errors.InputValidationError(
-          "Unsupported file type. Supported formats: jpeg, jpg, png",
-          "UNSUPPORTED_FILE_TYPE"
-        );
+        throw new Error("Unsupported file type.");
       }
-      return createdEvent[0];
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw new Error("Failed to upload image");
     }
+  }
+
+
+  try {
+    let createdEvent!: InterfaceEvent[];
     if (args.data?.recurring) {
       switch (args.data?.recurrance) {
         case "ONCE":
