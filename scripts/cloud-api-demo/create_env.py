@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import os
 
 
 def main():
@@ -59,7 +60,8 @@ def main():
 
     # Write the .env file
     try:
-        with open(".env", "w") as f:
+        home = os.path.expanduser("~")
+        with open(os.path.join(home, "develop", ".env"), "w") as f:
             f.write(env_contents)
     except IOError as e:
         print(f"Error occurred: {e}")
