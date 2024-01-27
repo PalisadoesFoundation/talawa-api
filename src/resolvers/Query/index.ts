@@ -2,6 +2,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { actionItem } from "./actionItem";
 import { actionItemsByEvent } from "./actionItemsByEvent";
 import { actionItemCategory } from "./actionItemCategory";
+import { actionItemsByOrganization } from "./actionItemsByOrganization";
 import { actionItemCategoriesByOrganization } from "./actionItemCategoriesByOrganization";
 import { checkAuth } from "./checkAuth";
 import { customDataByOrganization } from "./customDataByOrganization";
@@ -36,6 +37,7 @@ export const Query: QueryResolvers = {
   actionItem,
   actionItemsByEvent,
   actionItemCategory,
+  actionItemsByOrganization,
   actionItemCategoriesByOrganization,
   checkAuth,
   customFieldsByOrganization,

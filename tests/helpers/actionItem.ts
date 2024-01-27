@@ -64,7 +64,7 @@ export const createNewTestActionItem = async ({
 };
 
 export const createTestActionItems = async (): Promise<
-  [TestUserType, TestEventType]
+  [TestUserType, TestEventType, TestOrganizationType]
 > => {
   const randomUser = await createTestUser();
   const [testUser, testOrganization, testCategory] = await createTestCategory();
@@ -115,5 +115,5 @@ export const createTestActionItems = async (): Promise<
     }
   );
 
-  return [testUser, testEvent];
+  return [testUser, testEvent, testOrganization];
 };
