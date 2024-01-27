@@ -171,6 +171,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Execute remote ssh commands 
+      uses: appleboy/ssh-action@v1.0.0
       env:
         ACCESS_TOKEN_SECRET: ${{ secrets.API_DEMO_ACCESS_TOKEN_SECRET }}
         REFRESH_TOKEN_SECRET: ${{ secrets.API_DEMO_REFRESH_TOKEN_SECRET }}
@@ -178,7 +179,6 @@ jobs:
         MAIL_USERNAME: ${{ secrets.API_DEMO_MAIL_USERNAME }}
         MAIL_PASSWORD: ${{ secrets.API_DEMO_MAIL_PASSWORD }}
         LAST_RESORT_SUPERADMIN_EMAIL: ${{ secrets.API_DEMO_LAST_RESORT_SUPERADMIN_EMAIL }}
-      uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.API_DEMO_HOST }}
         username: ${{ secrets.API_DEMO_USERNAME }}
