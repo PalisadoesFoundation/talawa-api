@@ -1926,13 +1926,13 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping of union types */
 export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
-  ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
+  ConnectionError: (InvalidCursor) | (MaximumValueError);
 };
 
 /** Mapping of interface types */
 export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
-  Error: ( UnauthenticatedError ) | ( UnauthorizedError );
-  FieldError: ( InvalidCursor ) | ( MaximumLengthError ) | ( MaximumValueError ) | ( MinimumLengthError ) | ( MinimumValueError );
+  Error: (UnauthenticatedError) | (UnauthorizedError);
+  FieldError: (InvalidCursor) | (MaximumLengthError) | (MaximumValueError) | (MinimumLengthError) | (MinimumValueError);
 };
 
 /** Mapping between all available schema types and the resolvers types */
@@ -2189,7 +2189,7 @@ export type ResolversParentTypes = {
   createGroupChatInput: CreateGroupChatInput;
 };
 
-export type AuthDirectiveArgs = { };
+export type AuthDirectiveArgs = {};
 
 export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = AuthDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
