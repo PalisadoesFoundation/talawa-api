@@ -165,6 +165,12 @@ export type ConnectionPageInfo = {
 
 export type CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError;
 
+export type CreateMemberPayload = {
+  __typename?: 'CreateMemberPayload';
+  organization?: Maybe<Organization>;
+  userErrors: Array<CreateMemberError>;
+};
+
 export type CreateUserTagInput = {
   name: Scalars['String']['input'];
   organizationId: Scalars['ID']['input'];
@@ -569,7 +575,7 @@ export type Mutation = {
   createDonation: Donation;
   createEvent: Event;
   createGroupChat: GroupChat;
-  createMember: Organization;
+  createMember: CreateMemberPayload;
   createMessageChat: MessageChat;
   createOrganization: Organization;
   createPlugin: Plugin;
@@ -1970,6 +1976,7 @@ export type ResolversTypes = {
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
   CreateMemberError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateMemberError']>;
+  CreateMemberPayload: ResolverTypeWrapper<Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversTypes['Organization']>, userErrors: Array<ResolversTypes['CreateMemberError']> }>;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
@@ -2107,6 +2114,7 @@ export type ResolversParentTypes = {
   ConnectionPageInfo: ConnectionPageInfo;
   CountryCode: Scalars['CountryCode']['output'];
   CreateMemberError: ResolversUnionTypes<ResolversParentTypes>['CreateMemberError'];
+  CreateMemberPayload: Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversParentTypes['Organization']>, userErrors: Array<ResolversParentTypes['CreateMemberError']> };
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
@@ -2319,6 +2327,12 @@ export interface CountryCodeScalarConfig extends GraphQLScalarTypeConfig<Resolve
 
 export type CreateMemberErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateMemberError'] = ResolversParentTypes['CreateMemberError']> = {
   __resolveType: TypeResolveFn<'MemberAlreadyInOrganizationError' | 'OrganizationNotFoundError' | 'UserNotFoundError', ParentType, ContextType>;
+};
+
+export type CreateMemberPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateMemberPayload'] = ResolversParentTypes['CreateMemberPayload']> = {
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  userErrors?: Resolver<Array<ResolversTypes['CreateMemberError']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
@@ -2581,7 +2595,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
   createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, Partial<MutationCreateEventArgs>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
-  createMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
+  createMember?: Resolver<ResolversTypes['CreateMemberPayload'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginName'>>;
@@ -2954,6 +2968,7 @@ export type Resolvers<ContextType = any> = {
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
   CountryCode?: GraphQLScalarType;
   CreateMemberError?: CreateMemberErrorResolvers<ContextType>;
+  CreateMemberPayload?: CreateMemberPayloadResolvers<ContextType>;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
   DeletePayload?: DeletePayloadResolvers<ContextType>;

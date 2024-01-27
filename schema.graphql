@@ -112,6 +112,11 @@ scalar CountryCode
 
 union CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError
 
+type CreateMemberPayload {
+  organization: Organization
+  userErrors: [CreateMemberError!]!
+}
+
 input CreateUserTagInput {
   name: String!
   organizationId: ID!
@@ -506,7 +511,7 @@ type Mutation {
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput): Event!
   createGroupChat(data: createGroupChatInput!): GroupChat!
-  createMember(input: UserAndOrganizationInput!): Organization!
+  createMember(input: UserAndOrganizationInput!): CreateMemberPayload!
   createMessageChat(data: MessageChatInput!): MessageChat!
   createOrganization(data: OrganizationInput, file: String): Organization!
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!

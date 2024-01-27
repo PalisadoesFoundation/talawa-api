@@ -1,6 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
+import { requestContext } from "../../libraries";
 import { User, Organization } from "../../models";
+import type { InterfaceOrganization } from "../../models";
 import { superAdminCheck } from "../../utilities";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -32,11 +33,20 @@ export const createMember: MutationResolvers["createMember"] = async (
   });
 
   if (!currentUser) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+    //   USER_NOT_FOUND_ERROR.CODE,
+    //   USER_NOT_FOUND_ERROR.PARAM
+    // );
+    return {
+      organization: new Organization(),
+      userErrors: [
+        {
+          __typename: "UserNotFoundError",
+          message: requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
   superAdminCheck(currentUser);
 
@@ -54,15 +64,26 @@ export const createMember: MutationResolvers["createMember"] = async (
       _id: args.input.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    await cacheOrganizations([organization as InterfaceOrganization]);
   }
 
   if (!organization) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+    //   ORGANIZATION_NOT_FOUND_ERROR.CODE,
+    //   ORGANIZATION_NOT_FOUND_ERROR.PARAM
+    // );
+    return {
+      organization: new Organization(),
+      userErrors: [
+        {
+          __typename: "OrganizationNotFoundError",
+          message: requestContext.translate(
+            ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+          ),
+        },
+      ],
+    };
   }
 
   const user = await User.findOne({
@@ -71,24 +92,42 @@ export const createMember: MutationResolvers["createMember"] = async (
 
   // Checks whether curent user exists
   if (!user) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+    //   USER_NOT_FOUND_ERROR.CODE,
+    //   USER_NOT_FOUND_ERROR.PARAM
+    // );
+    return {
+      organization: new Organization(),
+      userErrors: [
+        {
+          __typename: "UserNotFoundError",
+          message: requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
 
   const userIsOrganizationMember = organization?.members.some((member) =>
-    member.equals(user._id)
+    member.equals(user?._id)
   );
 
   // Checks whether user with _id === args.input.userId is already an member of organization.
   if (userIsOrganizationMember) {
-    throw new errors.NotFoundError(
-      requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
-      MEMBER_NOT_FOUND_ERROR.CODE,
-      MEMBER_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+    //   MEMBER_NOT_FOUND_ERROR.CODE,
+    //   MEMBER_NOT_FOUND_ERROR.PARAM
+    // );
+    return {
+      organization: new Organization(),
+      userErrors: [
+        {
+          __typename: "MemberAlreadyInOrganizationError",
+          message: requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
 
   // add organization's id from joinedOrganizations list on user.
@@ -125,5 +164,10 @@ export const createMember: MutationResolvers["createMember"] = async (
     await cacheOrganizations([updatedOrganization]);
   }
 
-  return updatedOrganization!;
+  {
+    return {
+      organization: updatedOrganization,
+      userErrors: [],
+    };
+  }
 };
