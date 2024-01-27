@@ -36,4 +36,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/removeUserImage.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/resolvers/Mutation/removeUserImage.ts#L19)
+[src/resolvers/Mutation/removeUserImage.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/resolvers/Mutation/removeUserImage.ts#L19)

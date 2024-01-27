@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/services/PostCache/deletePostFromCache.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/services/PostCache/deletePostFromCache.ts#L3)
+[src/services/PostCache/deletePostFromCache.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/services/PostCache/deletePostFromCache.ts#L3)

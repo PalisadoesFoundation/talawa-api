@@ -24,7 +24,7 @@
 
 #### Defined in
 
-[src/utilities/createSampleOrganizationUtil.ts:213](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/createSampleOrganizationUtil.ts#L213)
+[src/utilities/createSampleOrganizationUtil.ts:215](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/utilities/createSampleOrganizationUtil.ts#L215)
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 #### Defined in
 
-[src/utilities/createSampleOrganizationUtil.ts:62](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/createSampleOrganizationUtil.ts#L62)
+[src/utilities/createSampleOrganizationUtil.ts:64](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/utilities/createSampleOrganizationUtil.ts#L64)
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 #### Defined in
 
-[src/utilities/createSampleOrganizationUtil.ts:126](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/createSampleOrganizationUtil.ts#L126)
+[src/utilities/createSampleOrganizationUtil.ts:128](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/utilities/createSampleOrganizationUtil.ts#L128)
 
 ___
 
@@ -87,7 +87,7 @@ ___
 
 #### Defined in
 
-[src/utilities/createSampleOrganizationUtil.ts:183](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/createSampleOrganizationUtil.ts#L183)
+[src/utilities/createSampleOrganizationUtil.ts:185](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/utilities/createSampleOrganizationUtil.ts#L185)
 
 ___
 
@@ -108,4 +108,4 @@ ___
 
 #### Defined in
 
-[src/utilities/createSampleOrganizationUtil.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/createSampleOrganizationUtil.ts#L8)
+[src/utilities/createSampleOrganizationUtil.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/utilities/createSampleOrganizationUtil.ts#L10)

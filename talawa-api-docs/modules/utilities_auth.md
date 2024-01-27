@@ -37,7 +37,7 @@ JSON Web Token string payload
 
 #### Defined in
 
-[src/utilities/auth.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/auth.ts#L19)
+[src/utilities/auth.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/utilities/auth.ts#L19)
 
 ___
 
@@ -57,7 +57,7 @@ ___
 
 #### Defined in
 
-[src/utilities/auth.ts:35](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/auth.ts#L35)
+[src/utilities/auth.ts:35](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/utilities/auth.ts#L35)
 
 ___
 
@@ -77,4 +77,4 @@ ___
 
 #### Defined in
 
-[src/utilities/auth.ts:51](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/auth.ts#L51)
+[src/utilities/auth.ts:51](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/utilities/auth.ts#L51)

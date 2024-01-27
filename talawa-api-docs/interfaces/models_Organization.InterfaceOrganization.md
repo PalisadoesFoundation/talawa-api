@@ -11,6 +11,7 @@ This is an interface that represents a database(MongoDB) document for Organizati
 ### Properties
 
 - [\_id](models_Organization.InterfaceOrganization.md#_id)
+- [address](models_Organization.InterfaceOrganization.md#address)
 - [admins](models_Organization.InterfaceOrganization.md#admins)
 - [apiUrl](models_Organization.InterfaceOrganization.md#apiurl)
 - [blockedUsers](models_Organization.InterfaceOrganization.md#blockedusers)
@@ -20,7 +21,6 @@ This is an interface that represents a database(MongoDB) document for Organizati
 - [description](models_Organization.InterfaceOrganization.md#description)
 - [groupChats](models_Organization.InterfaceOrganization.md#groupchats)
 - [image](models_Organization.InterfaceOrganization.md#image)
-- [location](models_Organization.InterfaceOrganization.md#location)
 - [members](models_Organization.InterfaceOrganization.md#members)
 - [membershipRequests](models_Organization.InterfaceOrganization.md#membershiprequests)
 - [name](models_Organization.InterfaceOrganization.md#name)
@@ -39,7 +39,30 @@ This is an interface that represents a database(MongoDB) document for Organizati
 
 #### Defined in
 
-[src/models/Organization.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L12)
+[src/models/Organization.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L12)
+
+___
+
+### address
+
+• **address**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `city` | `string` |
+| `countryCode` | `string` |
+| `dependentLocality` | `string` |
+| `line1` | `string` |
+| `line2` | `string` |
+| `postalCode` | `string` |
+| `sortingCode` | `string` |
+| `state` | `string` |
+
+#### Defined in
+
+[src/models/Organization.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L17)
 
 ___
 
@@ -49,7 +72,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L21)
+[src/models/Organization.ts:30](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L30)
 
 ___
 
@@ -59,7 +82,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L13)
+[src/models/Organization.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L13)
 
 ___
 
@@ -69,7 +92,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L26)
+[src/models/Organization.ts:35](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L35)
 
 ___
 
@@ -79,7 +102,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L28)
+[src/models/Organization.ts:37](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L37)
 
 ___
 
@@ -89,7 +112,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L18)
+[src/models/Organization.ts:27](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L27)
 
 ___
 
@@ -99,7 +122,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:27](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L27)
+[src/models/Organization.ts:36](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L36)
 
 ___
 
@@ -109,7 +132,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L16)
+[src/models/Organization.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L16)
 
 ___
 
@@ -119,7 +142,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:22](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L22)
+[src/models/Organization.ts:31](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L31)
 
 ___
 
@@ -129,17 +152,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L14)
-
-___
-
-### location
-
-• **location**: `undefined` \| `string`
-
-#### Defined in
-
-[src/models/Organization.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L17)
+[src/models/Organization.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L14)
 
 ___
 
@@ -149,7 +162,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L20)
+[src/models/Organization.ts:29](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L29)
 
 ___
 
@@ -159,7 +172,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L25)
+[src/models/Organization.ts:34](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L34)
 
 ___
 
@@ -169,7 +182,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L15)
+[src/models/Organization.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L15)
 
 ___
 
@@ -179,7 +192,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L24)
+[src/models/Organization.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L33)
 
 ___
 
@@ -189,7 +202,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L23)
+[src/models/Organization.ts:32](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L32)
 
 ___
 
@@ -199,7 +212,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L19)
+[src/models/Organization.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L28)
 
 ___
 
@@ -209,7 +222,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:29](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L29)
+[src/models/Organization.ts:38](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L38)
 
 ___
 
@@ -219,7 +232,7 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:30](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L30)
+[src/models/Organization.ts:39](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L39)
 
 ___
 
@@ -229,4 +242,4 @@ ___
 
 #### Defined in
 
-[src/models/Organization.ts:31](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/Organization.ts#L31)
+[src/models/Organization.ts:40](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/Organization.ts#L40)

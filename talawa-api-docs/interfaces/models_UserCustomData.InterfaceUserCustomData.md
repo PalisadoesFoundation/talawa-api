@@ -23,7 +23,7 @@ This is an interface representing a document for custom field in the database(Mo
 
 #### Defined in
 
-[src/models/UserCustomData.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/UserCustomData.ts#L8)
+[src/models/UserCustomData.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/UserCustomData.ts#L8)
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 #### Defined in
 
-[src/models/UserCustomData.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/UserCustomData.ts#L9)
+[src/models/UserCustomData.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/UserCustomData.ts#L9)
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 #### Defined in
 
-[src/models/UserCustomData.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/UserCustomData.ts#L11)
+[src/models/UserCustomData.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/UserCustomData.ts#L11)
 
 ___
 
@@ -53,4 +53,4 @@ ___
 
 #### Defined in
 
-[src/models/UserCustomData.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/UserCustomData.ts#L10)
+[src/models/UserCustomData.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/UserCustomData.ts#L10)

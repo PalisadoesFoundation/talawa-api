@@ -24,4 +24,4 @@ An object that contains `orderBy` to sort the object as specified and `id` of th
 
 #### Defined in
 
-[src/resolvers/Query/eventsByOrganization.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/resolvers/Query/eventsByOrganization.ts#L10)
+[src/resolvers/Query/eventsByOrganization.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/resolvers/Query/eventsByOrganization.ts#L10)

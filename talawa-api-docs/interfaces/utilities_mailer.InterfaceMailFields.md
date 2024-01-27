@@ -20,7 +20,7 @@
 
 #### Defined in
 
-[src/utilities/mailer.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/mailer.ts#L14)
+[src/utilities/mailer.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/utilities/mailer.ts#L14)
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 #### Defined in
 
-[src/utilities/mailer.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/mailer.ts#L12)
+[src/utilities/mailer.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/utilities/mailer.ts#L12)
 
 ___
 
@@ -40,4 +40,4 @@ ___
 
 #### Defined in
 
-[src/utilities/mailer.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/utilities/mailer.ts#L13)
+[src/utilities/mailer.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/utilities/mailer.ts#L13)
