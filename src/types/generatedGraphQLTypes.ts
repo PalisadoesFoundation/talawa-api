@@ -759,7 +759,8 @@ export type MutationCreateDonationArgs = {
 
 
 export type MutationCreateEventArgs = {
-  data?: InputMaybe<EventInput>;
+  data?: EventInput | null;
+  file?: Scalars['String']['input'] | null;
 };
 
 
@@ -1926,13 +1927,13 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping of union types */
 export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
-  ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
+  ConnectionError: (InvalidCursor) | (MaximumValueError);
 };
 
 /** Mapping of interface types */
 export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
-  Error: ( UnauthenticatedError ) | ( UnauthorizedError );
-  FieldError: ( InvalidCursor ) | ( MaximumLengthError ) | ( MaximumValueError ) | ( MinimumLengthError ) | ( MinimumValueError );
+  Error: (UnauthenticatedError) | (UnauthorizedError);
+  FieldError: (InvalidCursor) | (MaximumLengthError) | (MaximumValueError) | (MinimumLengthError) | (MinimumValueError);
 };
 
 /** Mapping between all available schema types and the resolvers types */
@@ -2189,7 +2190,7 @@ export type ResolversParentTypes = {
   createGroupChatInput: CreateGroupChatInput;
 };
 
-export type AuthDirectiveArgs = { };
+export type AuthDirectiveArgs = {};
 
 export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = AuthDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
@@ -2548,7 +2549,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
-  createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, Partial<MutationCreateEventArgs>>;
+  createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationCreateEventArgs, never>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
   createMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
