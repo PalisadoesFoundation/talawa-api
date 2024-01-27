@@ -195,7 +195,6 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
   });
 
   it(`registers the request user for the event successfully and returns the request user`, async () => {
-
     testVenue = await Venue.findOneAndUpdate(
       { _id: testVenue?.id },
       { capacity: 5 },
