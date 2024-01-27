@@ -106,6 +106,49 @@ async function mongoDB(): Promise<void> {
   }
 }
 
+//image check for size and format
+
+async function imageValidation(): Promise<void> {
+  const { maxImageSize, maxImageWidth, maxImageHeight, supportedImageFormats } =
+    await inquirer.prompt([
+      {
+        type: "input",
+        name: "maxImageSize",
+        message: "Enter the maximum allowed image size in bytes:",
+        default: process.env.MAX_IMAGE_SIZE || "5242880",
+      },
+      {
+        type: "input",
+        name: "maxImageWidth",
+        message: "Enter the maximum allowed image width after resizing:",
+        default: process.env.MAX_IMAGE_WIDTH || "800",
+      },
+      {
+        type: "input",
+        name: "maxImageHeight",
+        message: "Enter the maximum allowed image height after resizing:",
+        default: process.env.MAX_IMAGE_HEIGHT || "600",
+      },
+      {
+        type: "input",
+        name: "supportedImageFormats",
+        message: "Enter the supported image formats (comma-separated):",
+        default: process.env.SUPPORTED_IMAGE_FORMATS || "jpg,jpeg,png",
+      },
+    ]);
+
+  const config = dotenv.parse(fs.readFileSync(".env"));
+  config.MAX_IMAGE_SIZE = maxImageSize;
+  config.MAX_IMAGE_WIDTH = maxImageWidth;
+  config.MAX_IMAGE_HEIGHT = maxImageHeight;
+  config.SUPPORTED_IMAGE_FORMATS = supportedImageFormats;
+
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+}
+
 //Get recaptcha details
 async function recaptcha(): Promise<void> {
   console.log(
@@ -421,6 +464,19 @@ async function main(): Promise<void> {
     if (shouldRunDataImport) {
       await importData();
     }
+  }
+
+  const { standarizeUpload } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "shouldSetImageValidation",
+      message: "Would you like to standarize upload settings?",
+      default: true,
+    },
+  ]);
+
+  if (standarizeUpload) {
+    await imageValidation();
   }
 
   console.log(

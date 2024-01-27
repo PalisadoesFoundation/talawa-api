@@ -5,6 +5,7 @@ import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { adminCheck } from "../../utilities";
 
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { validateImage } from "../../utilities/imageCheck";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 /**
@@ -48,8 +49,9 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
 
     let uploadImageFileName;
     if (args.file) {
+      const resizedImageBuffer = await validateImage(args.file); // Resize image and check for image type
       uploadImageFileName = await uploadEncodedImage(
-        args.file,
+        resizedImageBuffer,
         organization?.image
       );
     }

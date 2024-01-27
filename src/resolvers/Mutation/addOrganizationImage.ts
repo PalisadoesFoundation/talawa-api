@@ -7,6 +7,7 @@ import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { validateImage } from "../../utilities/imageCheck";
 /**
  * This function adds Organization Image.
  * @param _parent - parent of current request
@@ -47,10 +48,16 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
     await adminCheck(context.userId, organization);
 
     // Upload Image
-    const uploadImageFileName = await uploadEncodedImage(
-      args.file,
-      organization.image
-    );
+
+    let uploadImageFileName;
+    if (args.file) {
+      const resizedImageBuffer = await validateImage(args.file); // Resize image and check for image type
+      uploadImageFileName = await uploadEncodedImage(
+        resizedImageBuffer,
+        organization.image
+      );
+    }
+
     // Updates the organization with new image and returns the updated organization.
     const updatedOrganization = await Organization.findOneAndUpdate(
       {

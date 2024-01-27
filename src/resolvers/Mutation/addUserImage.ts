@@ -3,6 +3,7 @@ import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { validateImage } from "../../utilities/imageCheck";
 /**
  * This function adds User Image.
  * @param _parent - parent of current request
@@ -30,10 +31,14 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
     );
   }
 
-  const imageToUploadFilePath = await uploadEncodedImage(
-    args.file,
-    currentUser.image
-  );
+  let imageToUploadFilePath;
+  if (args.file) {
+    const resizedImageBuffer = await validateImage(args.file); // Resize image and check for image type
+    imageToUploadFilePath = await uploadEncodedImage(
+      resizedImageBuffer,
+      currentUser?.image
+    );
+  }
 
   // Updates the user with new image and returns the updated user.
   return await User.findOneAndUpdate(

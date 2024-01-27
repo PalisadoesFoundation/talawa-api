@@ -6,6 +6,7 @@ import { LENGTH_VALIDATION_ERROR } from "../../constants";
 import { superAdminCheck } from "../../utilities";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { validateImage } from "../../utilities/imageCheck";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function enables to create an organization.
@@ -27,9 +28,14 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     }
 
     //Upload file
-    let uploadImageFileName = null;
+
+    let uploadImageFileName;
     if (args.file) {
-      uploadImageFileName = await uploadEncodedImage(args.file, null);
+      const resizedImageBuffer = await validateImage(args.file); // Resize image and check for image type
+      uploadImageFileName = await uploadEncodedImage(
+        resizedImageBuffer,
+        currentUser?.image
+      );
     }
 
     // Checks if the recieved arguments are valid according to standard input norms

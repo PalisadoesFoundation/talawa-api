@@ -7,6 +7,9 @@ import { errors, requestContext } from "../../libraries";
 import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+
+import { validateImage } from "../../utilities/imageCheck";
+
 /**
  * This function enables to update user profile.
  * @param _parent - parent of current request
@@ -48,10 +51,12 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   }
 
   // Upload file
+
   let uploadImageFileName;
   if (args.file) {
+    const resizedImageBuffer = await validateImage(args.file); // Resize image and check for image type
     uploadImageFileName = await uploadEncodedImage(
-      args.file,
+      resizedImageBuffer,
       currentUser?.image
     );
   }

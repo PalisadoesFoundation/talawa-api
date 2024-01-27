@@ -6,14 +6,14 @@ export const encodedImageExtentionCheck = (encodedUrl: string): boolean => {
 
   console.log(extension);
 
-  const isValidImage =
-    extension === "image/png" ||
-    extension === "image/jpg" ||
-    extension === "image/jpeg";
+  // const isValidImage =
+  //   extension === "image/png" ||
+  //   extension === "image/jpg" ||
+  //   extension === "image/jpeg";
 
-  if (isValidImage) {
-    return true;
-  }
+  // if (isValidImage) {
+  return true;
+  // }
 
-  return false;
+  // return false;
 };

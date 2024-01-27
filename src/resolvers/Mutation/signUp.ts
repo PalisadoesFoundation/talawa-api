@@ -15,6 +15,7 @@ import {
   copyToClipboard,
 } from "../../utilities";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { validateImage } from "../../utilities/imageCheck";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 //import { isValidString } from "../../libraries/validators/validateString";
@@ -112,9 +113,11 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
   // Upload file
+
   let uploadImageFileName;
   if (args.file) {
-    uploadImageFileName = await uploadEncodedImage(args.file, null);
+    const resizedImageBuffer = await validateImage(args.file); // Resize image and check for image type
+    uploadImageFileName = await uploadEncodedImage(resizedImageBuffer, null);
   }
 
   const isLastResortSuperAdmin =
