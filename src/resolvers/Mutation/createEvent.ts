@@ -132,22 +132,21 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   if (session) {
     session.startTransaction();
   }
-
   try {
     let createdEvent!: InterfaceEvent[];
 
-    if (args.data?.images) {
+    if (args.file) {
       const dataUrlPrefix = "data:";
       const supportedImageFormats = ["jpeg", "jpg", "png"];
 
       if (
-        args.data?.images.startsWith(dataUrlPrefix) &&
+        args.file.startsWith(dataUrlPrefix) &&
         supportedImageFormats.some((format) =>
-          args.data?.images.includes(format)
+          args.file?.includes(format)
         )
       ) {
         const uploadImageFileName = await uploadEncodedImage(
-          args.data?.images,
+          args.file,
           null
         );
         createdEvent = await Event.create([
