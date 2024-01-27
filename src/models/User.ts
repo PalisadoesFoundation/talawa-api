@@ -336,7 +336,6 @@ export interface InterfaceUserToReturn {
 const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
 
-
 const userToReturnModel = (): PaginateModel<InterfaceUserToReturn> =>
   model<InterfaceUserToReturn, PaginateModel<InterfaceUserToReturn>>(
     "UserToReturn",
@@ -344,7 +343,6 @@ const userToReturnModel = (): PaginateModel<InterfaceUserToReturn> =>
   );
 
 createLoggingMiddleware(userSchema, "User");
-
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const User = (models.User || userModel()) as ReturnType<

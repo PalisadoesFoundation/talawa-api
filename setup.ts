@@ -1,4 +1,3 @@
-
 import { loadDefaultOrganization } from "./src/utilities/loadDefaultOrganization";
 
 const dotenv = require("dotenv");
