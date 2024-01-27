@@ -171,6 +171,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Execute remote ssh commands 
+      env:
+        ACCESS_TOKEN_SECRET: ${{ secrets.API_DEMO_ACCESS_TOKEN_SECRET }}
+        REFRESH_TOKEN_SECRET: ${{ secrets.API_DEMO_REFRESH_TOKEN_SECRET }}
+        RECAPTCHA_SECRET_KEY: ${{ secrets.API_DEMO_RECAPTCHA_SECRET_KEY }}
+        MAIL_USERNAME: ${{ secrets.API_DEMO_MAIL_USERNAME }}
+        MAIL_PASSWORD: ${{ secrets.API_DEMO_MAIL_PASSWORD }}
+        LAST_RESORT_SUPERADMIN_EMAIL: ${{ secrets.API_DEMO_LAST_RESORT_SUPERADMIN_EMAIL }}
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.API_DEMO_HOST }}
@@ -179,5 +186,5 @@ jobs:
         port: ${{ secrets.API_DEMO_PORT }}
         command_timeout: 30m
         script: |
-          /usr/local/bin/deploy.sh
-      
+          python3 create_env.py --access_token_secret $ACCESS_TOKEN_SECRET --refresh_token_secret $REFRESH_TOKEN_SECRET --recaptcha_secret_key $RECAPTCHA_SECRET_KEY --mail_username $MAIL_USERNAME --mail_password $MAIL_PASSWORD --last_resort_superadmin_email $LAST_RESORT_SUPERADMIN_EMAIL
+          python3 deploy.py --path ~/develop --branch develop

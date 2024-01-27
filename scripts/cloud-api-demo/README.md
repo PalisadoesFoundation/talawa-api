@@ -216,36 +216,38 @@ To enable continuous integration with GitHub Actions, you need to set up the nec
     
 4. Click on the "New repository secret" button.
     
-    - For the first secret:
-        
-        - Name: `API_DEMO_HOST`
-        - Value: `api-demo.talawa.io` (Replace with your hostname)
-    - For the second secret:
-        - Name: `API_DEMO_USERNAME`
-        - Value: `talawa-api`
-    - For the third secret:
-        - Name: `API_DEMO_SSH_KEY`
-        - Value: (Paste the **private** SSH key you copied in previous step )
-    - For the fourth secret:
-        - Name: `API_DEMO_PORT`
-        - Value: `22`
+The application requires the following secrets to be set:
+
+- `API_DEMO_HOST`: Your hostname (e.g., `api-demo.talawa.io`)
+- `API_DEMO_USERNAME`: Your API username (e.g., `talawa-api`)
+- `API_DEMO_SSH_KEY`: Your **private** SSH key
+- `API_DEMO_PORT`: Your port number (e.g., `22`)
+- `API_DEMO_ACCESS_TOKEN_SECRET`: Your access token secret
+- `API_DEMO_REFRESH_TOKEN_SECRET`: Your refresh token secret
+- `API_DEMO_RECAPTCHA_SECRET_KEY`: Your reCAPTCHA secret key
+- `API_DEMO_MAIL_USERNAME`: Your mail username
+- `API_DEMO_MAIL_PASSWORD`: Your mail password (Not your main passowrd, App password you created)
+- `API_DEMO_LAST_RESORT_SUPERADMIN_EMAIL`: Your last resort superadmin email
+
+Please replace the example values with your actual values.
 
 These secrets are crucial for the GitHub Actions workflow to connect securely to your VPS and deploy the Talawa API.
 
 ## 10. Cron Jobs
 
 ### 10.1 Setting up Scripts:
-Copy the following scripts from **/home/talawa-api/develop/talawa-api/scripts/cloud-api-demo** to **/usr/local/bin**:
-`cert_renew.sh`
-`check_permissions.sh`
-`deploy.sh`
-`reset_mongo.sh`
+Copy the following scripts from **/home/talawa-api/develop/talawa-api/scripts/cloud-api-demo** to **/usr/local/bin/scripts**:
+`renew_certificates.py`
+`correct_permissions.py`
+`deploy.py`
+`reset_database.py`
+`create_env.py`
 
 #### 10.1.1 Setting Permissions and Owner for check_permissions.sh:
 
 ```bash
-sudo chmod 700 /usr/local/bin/check_permissions.sh
-sudo chown talawa-api /usr/local/bin/check_permissions.sh
+sudo chmod 700 /usr/local/bin/scripts/check_permissions.sh
+sudo chown talawa-api /usr/local/bin/scripts/check_permissions.sh
 ```
 
 #### 10.1.2 Modify sudoers file to allow talawa-api to run chmod and chown without password prompt:
@@ -258,7 +260,7 @@ talawa-api ALL=(ALL) NOPASSWD: /bin/chmod, /bin/chown
 
 #### 10.1.3 Run check_permissions.sh once to correct permissions for other scripts:
 ```bash
-/usr/local/bin/check_permissions.sh
+/usr/local/bin/scripts/check_permissions.sh
 ```
 Executing check_permissions.sh once will ensure that the correct permissions are applied to the other scripts in the specified directory.
 
