@@ -88,12 +88,16 @@ import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
 import { deleteAdvertisementById } from "./deleteAdvertisementById";
 import { updateAdvertisement } from "./updateAdvertisement";
+import { addParentFundtoCampaign } from "./addParentFundtoCampaign";
+import { addPledgeIDtoCampaign } from "./addPledgeIDtoCampaign";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
   acceptMembershipRequest,
   addEventAttendee,
   addFeedback,
+  addParentFundtoCampaign,
+  addPledgeIDtoCampaign,
   addLanguageTranslation,
   addOrganizationCustomField,
   addOrganizationImage,

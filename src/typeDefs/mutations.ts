@@ -77,7 +77,7 @@ export const mutations = gql`
 
     # createFund(data: FundInput): Fund! @auth
 
-    createFundCampaign(data: FundCampaignInput!): FundCampaign!
+    createFundCampaign(data: FundCampaignInput!): FundCampaign! @auth
 
     createGroupChat(data: createGroupChatInput!): GroupChat! @auth
 
@@ -156,7 +156,7 @@ export const mutations = gql`
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
 
-    removeFundCampaign(id: ID!): FundCampaign!
+    removeFundCampaign(id: ID!): FundCampaign! @auth
 
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
@@ -217,6 +217,7 @@ export const mutations = gql`
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
 
     updateFundCampaign(id: ID!, data: UpdateFundCampaignInput): FundCampaign!
+      @auth
 
     updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 
