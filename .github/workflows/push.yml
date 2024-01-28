@@ -183,7 +183,7 @@ jobs:
           host: ${{ secrets.API_DEMO_HOST }}
           username: ${{ secrets.API_DEMO_USERNAME }}
           key: ${{ secrets.API_DEMO_SSH_KEY }}
-          port: ${{ secrets.API_DEMO_PORT }}
+          port: ${{ secrets.API_DEMO_SSH_PORT}}
           allenvs: true
           command_timeout: 30m
           script: |
