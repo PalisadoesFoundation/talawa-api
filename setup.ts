@@ -1,3 +1,4 @@
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -116,6 +117,24 @@ async function accessAndRefreshTokens(
   }
 }
 
+//set the image size upload environment variable
+/**
+ * The function `setImageUploadSize` sets the image upload size environment variable and changes the .env file
+ * @returns The function `checkExistingRedis` returns a void Promise.
+ */
+async function setImageUploadSize(size: number): Promise<void> {
+  if (size > MAXIMUM_IMAGE_SIZE_LIMIT_KB) {
+    size = MAXIMUM_IMAGE_SIZE_LIMIT_KB;
+  }
+  const config = dotenv.parse(fs.readFileSync(".env"));
+
+  config.IMAGE_SIZE_LIMIT_KB = size.toString();
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+}
+
 function transactionLogPath(logPath: string | null): void {
   const config = dotenv.parse(fs.readFileSync(".env"));
   config.LOG = "true";
@@ -141,10 +160,6 @@ function transactionLogPath(logPath: string | null): void {
       });
     }
     config.LOG_PATH = logPath;
-  }
-  fs.writeFileSync(".env", "");
-  for (const key in config) {
-    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
   }
 }
 
@@ -593,6 +608,16 @@ function isValidEmail(email: string): boolean {
 function validateRecaptcha(string: string): boolean {
   const pattern = /^[a-zA-Z0-9_-]{40}$/;
   return pattern.test(string);
+}
+
+/**
+ * The function validates whether a given image size is less than 20 and greater than 0.
+ * @param string - The `number` parameter represents the input size of the string
+ * validated. In this case, it is expected to be a number less than 20 and greater than 0.
+ * @returns a boolean value.
+ */
+function validateImageFileSize(size: number): boolean {
+  return size > 0;
 }
 
 /**
@@ -1139,6 +1164,24 @@ async function main(): Promise<void> {
       await importDefaultOrganization();
     }
   }
+
+  const { imageSizeLimit } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "imageSizeLimit",
+      message: `Enter the maximum size limit of Images uploaded (in MB) max: ${
+        MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+      }`,
+      default: 3,
+      validate: (input: number) =>
+        validateImageFileSize(input) ||
+        `Enter a valid number between 0 and ${
+          MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+        }`,
+    },
+  ]);
+
+  await setImageUploadSize(imageSizeLimit * 1000);
 
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
