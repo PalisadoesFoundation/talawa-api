@@ -545,7 +545,7 @@ type Mutation {
   sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage!
   sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
   signUp(data: UserInput!, file: String): AuthData!
-  togglePostPin(id: ID!): Post!
+  togglePostPin(id: ID!, title: String): Post!
   unassignUserTag(input: ToggleUserTagAssignInput!): User
   unblockUser(organizationId: ID!, userId: ID!): User!
   unlikeComment(id: ID!): Comment
@@ -1019,8 +1019,8 @@ input UserInput {
   email: EmailAddress!
   firstName: String!
   lastName: String!
-  organizationUserBelongsToId: ID
   password: String!
+  selectedOrgainzation: ID!
 }
 
 enum UserOrderByInput {
@@ -1076,6 +1076,37 @@ input UserTagsConnectionInput {
 type UserTagsConnectionResult {
   data: UserTagsConnection
   errors: [ConnectionError!]!
+}
+
+type UserToReturn {
+  _id: ID!
+  address: Address
+  adminApproved: Boolean
+  adminFor: [Organization]
+  appLanguageCode: String!
+  birthDate: Date
+  createdAt: DateTime!
+  createdEvents: [Event]
+  createdOrganizations: [Organization]
+  educationGrade: EducationGrade
+  email: EmailAddress!
+  employmentStatus: EmploymentStatus
+  eventAdmin: [Event]
+  firstName: String!
+  gender: Gender
+  image: String
+  joinedOrganizations: [Organization]
+  lastName: String!
+  maritalStatus: MaritalStatus
+  membershipRequests: [MembershipRequest]
+  organizationsBlockedBy: [Organization]
+  phone: UserPhone
+  pluginCreationAllowed: Boolean!
+  registeredEvents: [Event]
+  tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
+  tokenVersion: Int!
+  updatedAt: DateTime!
+  userType: UserType!
 }
 
 enum UserType {
