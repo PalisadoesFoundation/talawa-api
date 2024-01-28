@@ -230,6 +230,18 @@ export const ADMIN_CANNOT_CHANGE_ITS_ROLE = {
   PARAM: "admin.changeOwnRole",
 };
 
+export const POST_NEEDS_TO_BE_PINNED = {
+  MESSAGE: "Post needs to be pinned inorder to add a title",
+  CODE: "post.notAllowedToAddTitle",
+  PARAM: "post.notAllowedToAddTitle",
+};
+
+export const PLEASE_PROVIDE_TITLE = {
+  MESSAGE: "Please provide a title to pin post",
+  CODE: "post.provideTitle",
+  PARAM: "post.provideTitle",
+};
+
 export const USER_NOT_AUTHORIZED_TO_PIN = {
   MESSAGE:
     "The user must be a superadmin or an admin of the organization to pin/unpin posts",
