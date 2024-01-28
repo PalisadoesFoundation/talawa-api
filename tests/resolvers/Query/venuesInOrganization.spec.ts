@@ -13,6 +13,8 @@ import type {
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { Types } from "mongoose";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../../src/constants";
+import { fail } from "assert";
+
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testVenue1: TestVenueType;
