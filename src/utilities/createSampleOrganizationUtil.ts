@@ -5,6 +5,8 @@ import { faker } from "@faker-js/faker";
 import type mongoose from "mongoose";
 import { SampleData } from "../models/SampleData";
 
+/* eslint-disable */
+
 export const generateUserData = async (
   organizationId: string,
   userType: string
@@ -214,11 +216,33 @@ export const createSampleOrganization = async (): Promise<void> => {
   const _id = faker.database.mongodbObjectId();
   const creator = await generateUserData(_id, "ADMIN");
 
+  interface Address {
+    city: string;
+    countryCode: string;
+    dependentLocality: string;
+    line1: string;
+    line2: string;
+    postalCode: string;
+    sortingCode: string;
+    state: string;
+  }
+
+  const address: Address = {
+    city: faker.address.city(),
+    countryCode: faker.address.countryCode(),
+    dependentLocality: faker.address.secondaryAddress(),
+    line1: faker.address.streetAddress(),
+    line2: faker.address.secondaryAddress(),
+    postalCode: faker.address.zipCode(),
+    sortingCode: faker.address.zipCode(),
+    state: faker.address.state(),
+  };
+
   const organization = new Organization({
     _id,
     name: faker.company.name(),
     description: faker.lorem.sentences(),
-    location: `${faker.location.country()}, ${faker.location.city()}`,
+    address,
     userRegistrationRequired: false,
     creatorId: creator._id,
     status: "ACTIVE",

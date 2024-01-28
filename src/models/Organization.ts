@@ -15,7 +15,16 @@ export interface InterfaceOrganization {
   image: string | undefined;
   name: string;
   description: string;
-  location: string | undefined;
+  address: {
+    city: string;
+    countryCode: string;
+    dependentLocality: string;
+    line1: string;
+    line2: string;
+    postalCode: string;
+    sortingCode: string;
+    state: string;
+  };
   creatorId: PopulatedDoc<InterfaceUser & Document>;
   status: string;
   members: PopulatedDoc<InterfaceUser & Document>[];
@@ -38,7 +47,7 @@ export interface InterfaceOrganization {
  * @param image - Organization image URL.
  * @param name - Organization name.
  * @param description - Organization description.
- * @param location - Organization location.
+ * @param address - Organization address, stored as an object.
  * @param creatorId - Organization creator, referring to `User` model.
  * @param status - Status.
  * @param members - Collection of members, each object refer to `User` model.
@@ -52,7 +61,6 @@ export interface InterfaceOrganization {
  * @param venues - All the available venues in the organization
  * @param updatedAt - Time stamp of data updation.
  */
-
 const organizationSchema = new Schema(
   {
     apiUrl: {
@@ -69,8 +77,31 @@ const organizationSchema = new Schema(
       type: String,
       required: true,
     },
-    location: {
-      type: String,
+    address: {
+      city: {
+        type: String,
+      },
+      countryCode: {
+        type: String,
+      },
+      dependentLocality: {
+        type: String,
+      },
+      line1: {
+        type: String,
+      },
+      line2: {
+        type: String,
+      },
+      postalCode: {
+        type: String,
+      },
+      sortingCode: {
+        type: String,
+      },
+      state: {
+        type: String,
+      },
     },
     userRegistrationRequired: {
       type: Boolean,

@@ -235,7 +235,7 @@ export const types = gql`
     _id: ID!
     name: String!
     description: String!
-    location: String
+    address: Address
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -357,7 +357,7 @@ export const types = gql`
 
   type Address {
     city: String
-    countryCode: CountryCode
+    countryCode: String
     dependentLocality: String
     line1: String
     line2: String
