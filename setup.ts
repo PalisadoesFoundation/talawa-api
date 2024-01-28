@@ -1,14 +1,5 @@
 import { loadDefaultOrganization } from "./src/utilities/loadDefaultOrganization";
 
-const dotenv = require("dotenv");
-const fs = require("fs");
-const cryptolib = require("crypto");
-const inquirer = require("inquirer");
-const mongodb = require("mongodb");
-const redis = require("redis");
-const { exec } = require("child_process");
-const nodemailer = require("nodemailer");
-
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -758,7 +749,7 @@ async function importDefaultOrganization(): Promise<void> {
       } else {
         await exec(
           "npm run import:sample-data-defaultOrg",
-          (error: { message: string }, stdout: string, stderr: string) => {
+          (error: ExecException | null, stdout: string, stderr: string) => {
             if (error) {
               console.error(`Error: ${error.message}`);
               abort();
