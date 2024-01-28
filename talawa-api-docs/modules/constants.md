@@ -4,6 +4,10 @@
 
 ## Table of contents
 
+### Enumerations
+
+- [TransactionLogTypes](../enums/constants.TransactionLogTypes.md)
+
 ### Variables
 
 - [ACCESS\_TOKEN\_SECRET](constants.md#access_token_secret)
@@ -20,10 +24,13 @@
 - [CUSTOM\_FIELD\_NOT\_FOUND](constants.md#custom_field_not_found)
 - [CUSTOM\_FIELD\_TYPE\_MISSING](constants.md#custom_field_type_missing)
 - [EMAIL\_ALREADY\_EXISTS\_ERROR](constants.md#email_already_exists_error)
+- [END\_DATE\_VALIDATION\_ERROR](constants.md#end_date_validation_error)
 - [ERROR\_IN\_SENDING\_MAIL](constants.md#error_in_sending_mail)
 - [EVENT\_NOT\_FOUND\_ERROR](constants.md#event_not_found_error)
 - [FEEDBACK\_ALREADY\_SUBMITTED](constants.md#feedback_already_submitted)
+- [FIELD\_NON\_EMPTY\_ERROR](constants.md#field_non_empty_error)
 - [INCORRECT\_TAG\_INPUT](constants.md#incorrect_tag_input)
+- [INPUT\_NOT\_FOUND\_ERROR](constants.md#input_not_found_error)
 - [INTERNAL\_SERVER\_ERROR](constants.md#internal_server_error)
 - [INVALID\_CREDENTIALS\_ERROR](constants.md#invalid_credentials_error)
 - [INVALID\_FILE\_TYPE](constants.md#invalid_file_type)
@@ -34,6 +41,8 @@
 - [IN\_PRODUCTION](constants.md#in_production)
 - [LAST\_RESORT\_SUPERADMIN\_EMAIL](constants.md#last_resort_superadmin_email)
 - [LENGTH\_VALIDATION\_ERROR](constants.md#length_validation_error)
+- [LOG](constants.md#log)
+- [LOG\_PATH](constants.md#log_path)
 - [MAIL\_PASSWORD](constants.md#mail_password)
 - [MAIL\_USERNAME](constants.md#mail_username)
 - [MAXIMUM\_FETCH\_LIMIT](constants.md#maximum_fetch_limit)
@@ -46,6 +55,9 @@
 - [ORGANIZATION\_MEMBER\_NOT\_FOUND\_ERROR](constants.md#organization_member_not_found_error)
 - [ORGANIZATION\_NOT\_AUTHORIZED\_ERROR](constants.md#organization_not_authorized_error)
 - [ORGANIZATION\_NOT\_FOUND\_ERROR](constants.md#organization_not_found_error)
+- [PLEASE\_PROVIDE\_TITLE](constants.md#please_provide_title)
+- [PLUGIN\_NOT\_FOUND](constants.md#plugin_not_found)
+- [POST\_NEEDS\_TO\_BE\_PINNED](constants.md#post_needs_to_be_pinned)
 - [POST\_NOT\_FOUND\_ERROR](constants.md#post_not_found_error)
 - [RECAPTCHA\_SECRET\_KEY](constants.md#recaptcha_secret_key)
 - [REDIS\_HOST](constants.md#redis_host)
@@ -57,6 +69,7 @@
 - [SAME\_FILE\_ERROR](constants.md#same_file_error)
 - [SAMPLE\_ORGANIZATION\_ALREADY\_EXISTS](constants.md#sample_organization_already_exists)
 - [SMTP\_OPTIONS](constants.md#smtp_options)
+- [START\_DATE\_VALIDATION\_ERROR](constants.md#start_date_validation_error)
 - [STATUS\_ACTIVE](constants.md#status_active)
 - [SUPERADMIN\_CANT\_CHANGE\_OWN\_ROLE](constants.md#superadmin_cant_change_own_role)
 - [TAG\_ALREADY\_EXISTS](constants.md#tag_already_exists)
@@ -98,7 +111,7 @@
 
 #### Defined in
 
-[src/constants.ts:419](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L419)
+[src/constants.ts:461](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L461)
 
 ___
 
@@ -116,7 +129,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:202](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L202)
+[src/constants.ts:227](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L227)
 
 ___
 
@@ -134,7 +147,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:195](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L195)
+[src/constants.ts:220](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L220)
 
 ___
 
@@ -152,7 +165,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:183](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L183)
+[src/constants.ts:208](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L208)
 
 ___
 
@@ -170,7 +183,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:189](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L189)
+[src/constants.ts:214](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L214)
 
 ___
 
@@ -189,7 +202,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:276](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L276)
+[src/constants.ts:313](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L313)
 
 ___
 
@@ -199,7 +212,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:417](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L417)
+[src/constants.ts:459](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L459)
 
 ___
 
@@ -218,7 +231,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L10)
+[src/constants.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L10)
 
 ___
 
@@ -237,7 +250,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L16)
+[src/constants.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L16)
 
 ___
 
@@ -255,7 +268,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:391](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L391)
+[src/constants.ts:433](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L433)
 
 ___
 
@@ -273,7 +286,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:403](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L403)
+[src/constants.ts:445](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L445)
 
 ___
 
@@ -291,7 +304,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:397](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L397)
+[src/constants.ts:439](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L439)
 
 ___
 
@@ -309,7 +322,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:409](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L409)
+[src/constants.ts:451](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L451)
 
 ___
 
@@ -328,7 +341,25 @@ ___
 
 #### Defined in
 
-[src/constants.ts:357](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L357)
+[src/constants.ts:399](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L399)
+
+___
+
+### END\_DATE\_VALIDATION\_ERROR
+
+• `Const` **END\_DATE\_VALIDATION\_ERROR**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `CODE` | `string` |
+| `MESSAGE` | `string` |
+| `PARAM` | `string` |
+
+#### Defined in
+
+[src/constants.ts:128](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L128)
 
 ___
 
@@ -338,7 +369,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:22](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L22)
+[src/constants.ts:22](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L22)
 
 ___
 
@@ -357,7 +388,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L23)
+[src/constants.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L23)
 
 ___
 
@@ -375,7 +406,25 @@ ___
 
 #### Defined in
 
-[src/constants.ts:30](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L30)
+[src/constants.ts:30](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L30)
+
+___
+
+### FIELD\_NON\_EMPTY\_ERROR
+
+• `Const` **FIELD\_NON\_EMPTY\_ERROR**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `CODE` | `string` |
+| `MESSAGE` | `string` |
+| `PARAM` | `string` |
+
+#### Defined in
+
+[src/constants.ts:140](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L140)
 
 ___
 
@@ -393,7 +442,25 @@ ___
 
 #### Defined in
 
-[src/constants.ts:235](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L235)
+[src/constants.ts:272](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L272)
+
+___
+
+### INPUT\_NOT\_FOUND\_ERROR
+
+• `Const` **INPUT\_NOT\_FOUND\_ERROR**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `CODE` | `string` |
+| `MESSAGE` | `string` |
+| `PARAM` | `string` |
+
+#### Defined in
+
+[src/constants.ts:319](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L319)
 
 ___
 
@@ -411,7 +478,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:110](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L110)
+[src/constants.ts:116](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L116)
 
 ___
 
@@ -430,7 +497,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:337](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L337)
+[src/constants.ts:379](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L379)
 
 ___
 
@@ -448,7 +515,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:91](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L91)
+[src/constants.ts:97](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L97)
 
 ___
 
@@ -458,7 +525,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:36](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L36)
+[src/constants.ts:36](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L36)
 
 ___
 
@@ -477,7 +544,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:343](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L343)
+[src/constants.ts:385](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L385)
 
 ___
 
@@ -496,7 +563,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:97](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L97)
+[src/constants.ts:103](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L103)
 
 ___
 
@@ -514,7 +581,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:228](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L228)
+[src/constants.ts:265](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L265)
 
 ___
 
@@ -524,7 +591,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:38](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L38)
+[src/constants.ts:38](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L38)
 
 ___
 
@@ -534,7 +601,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:431](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L431)
+[src/constants.ts:473](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L473)
 
 ___
 
@@ -552,7 +619,27 @@ ___
 
 #### Defined in
 
-[src/constants.ts:122](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L122)
+[src/constants.ts:147](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L147)
+
+___
+
+### LOG
+
+• `Const` **LOG**: `boolean`
+
+#### Defined in
+
+[src/constants.ts:492](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L492)
+
+___
+
+### LOG\_PATH
+
+• `Const` **LOG\_PATH**: `undefined` \| `string` = `ENV.LOG_PATH`
+
+#### Defined in
+
+[src/constants.ts:494](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L494)
 
 ___
 
@@ -562,7 +649,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:429](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L429)
+[src/constants.ts:471](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L471)
 
 ___
 
@@ -572,7 +659,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:427](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L427)
+[src/constants.ts:469](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L469)
 
 ___
 
@@ -582,7 +669,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:415](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L415)
+[src/constants.ts:457](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L457)
 
 ___
 
@@ -592,7 +679,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:51](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L51)
+[src/constants.ts:51](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L51)
 
 ___
 
@@ -611,7 +698,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:45](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L45)
+[src/constants.ts:45](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L45)
 
 ___
 
@@ -630,7 +717,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:39](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L39)
+[src/constants.ts:39](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L39)
 
 ___
 
@@ -640,7 +727,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:423](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L423)
+[src/constants.ts:465](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L465)
 
 ___
 
@@ -658,7 +745,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:241](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L241)
+[src/constants.ts:278](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L278)
 
 ___
 
@@ -677,7 +764,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:72](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L72)
+[src/constants.ts:72](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L72)
 
 ___
 
@@ -696,7 +783,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:54](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L54)
+[src/constants.ts:54](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L54)
 
 ___
 
@@ -715,7 +802,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:60](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L60)
+[src/constants.ts:60](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L60)
 
 ___
 
@@ -734,7 +821,62 @@ ___
 
 #### Defined in
 
-[src/constants.ts:66](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L66)
+[src/constants.ts:66](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L66)
+
+___
+
+### PLEASE\_PROVIDE\_TITLE
+
+• `Const` **PLEASE\_PROVIDE\_TITLE**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `CODE` | `string` |
+| `MESSAGE` | `string` |
+| `PARAM` | `string` |
+
+#### Defined in
+
+[src/constants.ts:239](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L239)
+
+___
+
+### PLUGIN\_NOT\_FOUND
+
+• `Const` **PLUGIN\_NOT\_FOUND**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `CODE` | `string` |
+| `DESC` | `string` |
+| `MESSAGE` | `string` |
+| `PARAM` | `string` |
+
+#### Defined in
+
+[src/constants.ts:78](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L78)
+
+___
+
+### POST\_NEEDS\_TO\_BE\_PINNED
+
+• `Const` **POST\_NEEDS\_TO\_BE\_PINNED**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `CODE` | `string` |
+| `MESSAGE` | `string` |
+| `PARAM` | `string` |
+
+#### Defined in
+
+[src/constants.ts:233](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L233)
 
 ___
 
@@ -753,7 +895,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:78](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L78)
+[src/constants.ts:84](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L84)
 
 ___
 
@@ -763,7 +905,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:425](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L425)
+[src/constants.ts:467](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L467)
 
 ___
 
@@ -773,7 +915,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:443](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L443)
+[src/constants.ts:485](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L485)
 
 ___
 
@@ -783,7 +925,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:445](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L445)
+[src/constants.ts:487](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L487)
 
 ___
 
@@ -793,7 +935,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:444](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L444)
+[src/constants.ts:486](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L486)
 
 ___
 
@@ -803,7 +945,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:421](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L421)
+[src/constants.ts:463](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L463)
 
 ___
 
@@ -821,7 +963,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:128](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L128)
+[src/constants.ts:153](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L153)
 
 ___
 
@@ -840,7 +982,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:84](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L84)
+[src/constants.ts:90](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L90)
 
 ___
 
@@ -858,7 +1000,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:104](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L104)
+[src/constants.ts:110](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L110)
 
 ___
 
@@ -877,7 +1019,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:384](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L384)
+[src/constants.ts:426](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L426)
 
 ___
 
@@ -889,16 +1031,34 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `IS_SMTP` | `undefined` \| `string` |
+| `IS_SMTP` | `boolean` |
 | `SMTP_HOST` | `undefined` \| `string` |
 | `SMTP_PASSWORD` | `undefined` \| `string` |
 | `SMTP_PORT` | `undefined` \| `string` |
-| `SMTP_SSL_TLS` | `undefined` \| `string` |
+| `SMTP_SSL_TLS` | `boolean` |
 | `SMTP_USERNAME` | `undefined` \| `string` |
 
 #### Defined in
 
-[src/constants.ts:434](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L434)
+[src/constants.ts:476](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L476)
+
+___
+
+### START\_DATE\_VALIDATION\_ERROR
+
+• `Const` **START\_DATE\_VALIDATION\_ERROR**: `Object`
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `CODE` | `string` |
+| `MESSAGE` | `string` |
+| `PARAM` | `string` |
+
+#### Defined in
+
+[src/constants.ts:134](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L134)
 
 ___
 
@@ -908,7 +1068,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:282](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L282)
+[src/constants.ts:324](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L324)
 
 ___
 
@@ -926,7 +1086,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:325](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L325)
+[src/constants.ts:367](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L367)
 
 ___
 
@@ -944,7 +1104,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:248](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L248)
+[src/constants.ts:285](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L285)
 
 ___
 
@@ -962,7 +1122,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:215](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L215)
+[src/constants.ts:252](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L252)
 
 ___
 
@@ -981,7 +1141,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:331](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L331)
+[src/constants.ts:373](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L373)
 
 ___
 
@@ -999,7 +1159,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:116](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L116)
+[src/constants.ts:122](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L122)
 
 ___
 
@@ -1009,7 +1169,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:284](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L284)
+[src/constants.ts:326](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L326)
 
 ___
 
@@ -1027,7 +1187,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:378](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L378)
+[src/constants.ts:420](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L420)
 
 ___
 
@@ -1045,7 +1205,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:262](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L262)
+[src/constants.ts:299](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L299)
 
 ___
 
@@ -1064,7 +1224,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:289](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L289)
+[src/constants.ts:331](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L331)
 
 ___
 
@@ -1082,7 +1242,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:146](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L146)
+[src/constants.ts:171](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L171)
 
 ___
 
@@ -1101,7 +1261,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:295](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L295)
+[src/constants.ts:337](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L337)
 
 ___
 
@@ -1119,7 +1279,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:170](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L170)
+[src/constants.ts:195](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L195)
 
 ___
 
@@ -1137,7 +1297,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:221](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L221)
+[src/constants.ts:258](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L258)
 
 ___
 
@@ -1155,7 +1315,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:269](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L269)
+[src/constants.ts:306](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L306)
 
 ___
 
@@ -1173,7 +1333,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:140](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L140)
+[src/constants.ts:165](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L165)
 
 ___
 
@@ -1192,7 +1352,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:301](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L301)
+[src/constants.ts:343](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L343)
 
 ___
 
@@ -1210,7 +1370,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:134](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L134)
+[src/constants.ts:159](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L159)
 
 ___
 
@@ -1228,7 +1388,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:255](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L255)
+[src/constants.ts:292](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L292)
 
 ___
 
@@ -1246,7 +1406,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:208](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L208)
+[src/constants.ts:245](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L245)
 
 ___
 
@@ -1264,7 +1424,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:158](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L158)
+[src/constants.ts:183](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L183)
 
 ___
 
@@ -1283,7 +1443,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:307](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L307)
+[src/constants.ts:349](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L349)
 
 ___
 
@@ -1302,7 +1462,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:313](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L313)
+[src/constants.ts:355](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L355)
 
 ___
 
@@ -1320,7 +1480,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:164](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L164)
+[src/constants.ts:189](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L189)
 
 ___
 
@@ -1338,7 +1498,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:152](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L152)
+[src/constants.ts:177](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L177)
 
 ___
 
@@ -1357,7 +1517,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:350](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L350)
+[src/constants.ts:392](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L392)
 
 ___
 
@@ -1375,7 +1535,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:176](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L176)
+[src/constants.ts:201](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L201)
 
 ___
 
@@ -1394,7 +1554,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:319](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L319)
+[src/constants.ts:361](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L361)
 
 ___
 
@@ -1413,7 +1573,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:364](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L364)
+[src/constants.ts:406](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L406)
 
 ___
 
@@ -1432,7 +1592,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:371](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L371)
+[src/constants.ts:413](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L413)
 
 ___
 
@@ -1442,7 +1602,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:448](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L448)
+[src/constants.ts:490](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L490)
 
 ___
 
@@ -1452,4 +1612,4 @@ ___
 
 #### Defined in
 
-[src/constants.ts:447](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/constants.ts#L447)
+[src/constants.ts:489](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/constants.ts#L489)

@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Organization/pinnedPosts.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/resolvers/Organization/pinnedPosts.ts#L6)
+[src/resolvers/Organization/pinnedPosts.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/resolvers/Organization/pinnedPosts.ts#L6)

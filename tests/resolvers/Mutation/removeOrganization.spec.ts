@@ -35,7 +35,7 @@ import {
 import { createTestUserFunc } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
-
+/* eslint-disable */
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
 let testOrganization: InterfaceOrganization &
@@ -52,6 +52,15 @@ beforeAll(async () => {
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
+    address: {
+      countryCode: `US`,
+      city: `SAMPLE`,
+      dependentLocality: "TEST",
+      line1: "TEST",
+      postalCode: "110001",
+      sortingCode: "ABC-123",
+      state: "Delhi",
+    },
     isPublic: true,
     creatorId: testUsers[0]?._id,
     admins: [testUsers[0]?._id],
@@ -333,6 +342,15 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     const newTestOrganization = await Organization.create({
       name: "name",
       description: "description",
+      address: {
+        countryCode: `US`,
+        city: `SAMPLE`,
+        dependentLocality: "TEST",
+        line1: "TEST",
+        postalCode: "110001",
+        sortingCode: "ABC-123",
+        state: "Delhi",
+      },
       isPublic: true,
       creatorId: testUsers[0]?._id,
       admins: [testUsers[0]?._id],
