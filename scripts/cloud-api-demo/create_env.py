@@ -36,7 +36,7 @@ def main():
 
     # Define the .env file contents
     env_contents = f"""
-    NODE_ENV=production
+    NODE_ENV=
     ACCESS_TOKEN_SECRET={args.access_token_secret}
     REFRESH_TOKEN_SECRET={args.refresh_token_secret}
     MONGO_DB_URL=mongodb://localhost:27017/talawa-api
