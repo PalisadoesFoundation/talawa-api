@@ -37,4 +37,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/rejectAdmin.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/resolvers/Mutation/rejectAdmin.ts#L17)
+[src/resolvers/Mutation/rejectAdmin.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/resolvers/Mutation/rejectAdmin.ts#L17)

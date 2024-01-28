@@ -1,55 +1,55 @@
-[talawa-api](../README.md) / [Exports](../modules.md) / [libraries/errors/unauthorizedError](../modules/libraries_errors_unauthorizedError.md) / UnauthorizedError
+[talawa-api](../README.md) / [Exports](../modules.md) / [libraries/errors/ImageSizeLimitExceeded](../modules/libraries_errors_ImageSizeLimitExceeded.md) / ImageSizeLimitExceeded
 
-# Class: UnauthorizedError
+# Class: ImageSizeLimitExceeded
 
-[libraries/errors/unauthorizedError](../modules/libraries_errors_unauthorizedError.md).UnauthorizedError
+[libraries/errors/ImageSizeLimitExceeded](../modules/libraries_errors_ImageSizeLimitExceeded.md).ImageSizeLimitExceeded
 
-This class detects unauthorized errors and sends those errors to the superclass ApplicationError.
+This class detects invalid file type errors and sends those errors to the superclass ApplicationError.
 
 ## Hierarchy
 
 - [`ApplicationError`](libraries_errors_applicationError.ApplicationError.md)
 
-  ↳ **`UnauthorizedError`**
+  ↳ **`ImageSizeLimitExceeded`**
 
 ## Table of contents
 
 ### Constructors
 
-- [constructor](libraries_errors_unauthorizedError.UnauthorizedError.md#constructor)
+- [constructor](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md#constructor)
 
 ### Properties
 
-- [errors](libraries_errors_unauthorizedError.UnauthorizedError.md#errors)
-- [httpCode](libraries_errors_unauthorizedError.UnauthorizedError.md#httpcode)
-- [message](libraries_errors_unauthorizedError.UnauthorizedError.md#message)
-- [name](libraries_errors_unauthorizedError.UnauthorizedError.md#name)
-- [stack](libraries_errors_unauthorizedError.UnauthorizedError.md#stack)
-- [prepareStackTrace](libraries_errors_unauthorizedError.UnauthorizedError.md#preparestacktrace)
-- [stackTraceLimit](libraries_errors_unauthorizedError.UnauthorizedError.md#stacktracelimit)
+- [errors](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md#errors)
+- [httpCode](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md#httpcode)
+- [message](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md#message)
+- [name](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md#name)
+- [stack](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md#stack)
+- [prepareStackTrace](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md#preparestacktrace)
+- [stackTraceLimit](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md#stacktracelimit)
 
 ### Methods
 
-- [captureStackTrace](libraries_errors_unauthorizedError.UnauthorizedError.md#capturestacktrace)
+- [captureStackTrace](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md#capturestacktrace)
 
 ## Constructors
 
 ### constructor
 
-• **new UnauthorizedError**(`message?`, `code?`, `param?`, `metadata?`): [`UnauthorizedError`](libraries_errors_unauthorizedError.UnauthorizedError.md)
+• **new ImageSizeLimitExceeded**(`message?`, `code?`, `param?`, `metadata?`): [`ImageSizeLimitExceeded`](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md)
 
 #### Parameters
 
 | Name | Type | Default value |
 | :------ | :------ | :------ |
-| `message` | `string` | `"UnauthorizedError"` |
+| `message` | `string` | `"Image Size Limit Exceeded"` |
 | `code` | ``null`` \| `string` | `null` |
 | `param` | ``null`` \| `string` | `null` |
 | `metadata` | `Record`\<`any`, `any`\> | `{}` |
 
 #### Returns
 
-[`UnauthorizedError`](libraries_errors_unauthorizedError.UnauthorizedError.md)
+[`ImageSizeLimitExceeded`](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md)
 
 #### Overrides
 
@@ -57,7 +57,7 @@ This class detects unauthorized errors and sends those errors to the superclass 
 
 #### Defined in
 
-[src/libraries/errors/unauthorizedError.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/libraries/errors/unauthorizedError.ts#L6)
+[src/libraries/errors/ImageSizeLimitExceeded.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/libraries/errors/ImageSizeLimitExceeded.ts#L6)
 
 ## Properties
 

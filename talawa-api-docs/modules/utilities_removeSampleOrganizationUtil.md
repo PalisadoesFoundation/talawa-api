@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/utilities/removeSampleOrganizationUtil.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/utilities/removeSampleOrganizationUtil.ts#L3)
+[src/utilities/removeSampleOrganizationUtil.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/utilities/removeSampleOrganizationUtil.ts#L3)

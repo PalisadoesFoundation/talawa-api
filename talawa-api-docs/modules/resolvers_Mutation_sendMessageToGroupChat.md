@@ -37,4 +37,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/sendMessageToGroupChat.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/resolvers/Mutation/sendMessageToGroupChat.ts#L20)
+[src/resolvers/Mutation/sendMessageToGroupChat.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/resolvers/Mutation/sendMessageToGroupChat.ts#L20)
