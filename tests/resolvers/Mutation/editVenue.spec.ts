@@ -245,9 +245,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
       await editVenue?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof ConflictError) {
-        expect(error.message).toEqual(
-          VENUE_ALREADY_EXISTS_ERROR.MESSAGE
-        );
+        expect(error.message).toEqual(VENUE_ALREADY_EXISTS_ERROR.MESSAGE);
       } else {
         fail(`Expected InputValidationError, but got ${error}`);
       }
