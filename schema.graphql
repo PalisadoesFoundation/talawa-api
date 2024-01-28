@@ -4,7 +4,7 @@ directive @role(requires: UserType) on FIELD_DEFINITION
 
 type Address {
   city: String
-  countryCode: CountryCode
+  countryCode: String
   dependentLocality: String
   line1: String
   line2: String
@@ -15,7 +15,7 @@ type Address {
 
 input AddressInput {
   city: String
-  countryCode: CountryCode
+  countryCode: String
   dependentLocality: String
   line1: String
   line2: String
@@ -56,7 +56,7 @@ scalar Any
 type AuthData {
   accessToken: String!
   refreshToken: String!
-  user: User!
+  user: UserToReturn!
 }
 
 type CheckIn {
@@ -570,6 +570,7 @@ input OTPInput {
 
 type Organization {
   _id: ID!
+  address: Address
   admins(adminId: ID): [User!]
   apiUrl: URL!
   blockedUsers: [User]
@@ -578,7 +579,6 @@ type Organization {
   customFields: [OrganizationCustomField!]!
   description: String!
   image: String
-  location: String
   members: [User]
   membershipRequests: [MembershipRequest]
   name: String!
@@ -608,11 +608,11 @@ type OrganizationInfoNode {
 }
 
 input OrganizationInput {
+  address: AddressInput!
   apiUrl: URL
   attendees: String
   description: String!
   image: String
-  location: String
   name: String!
   userRegistrationRequired: Boolean
   visibleInSearch: Boolean
@@ -920,8 +920,8 @@ input UpdateEventInput {
 }
 
 input UpdateOrganizationInput {
+  address: AddressInput
   description: String
-  location: String
   name: String
   userRegistrationRequired: Boolean
   visibleInSearch: Boolean

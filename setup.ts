@@ -1,11 +1,14 @@
-const dotenv = require("dotenv");
-const fs = require("fs");
-const cryptolib = require("crypto");
-const inquirer = require("inquirer");
-const mongodb = require("mongodb");
-const redis = require("redis");
-const { exec } = require("child_process");
-const nodemailer = require("nodemailer");
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
+import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
+import * as cryptolib from "crypto";
+import inquirer from "inquirer";
+import mongodb from "mongodb";
+import * as redis from "redis";
+import { exec } from "child_process";
+import nodemailer from "nodemailer";
+import type { ExecException } from "child_process";
 
 dotenv.config();
 
@@ -112,6 +115,84 @@ async function accessAndRefreshTokens(
     config.REFRESH_TOKEN_SECRET = refreshTokenSecret;
     updateEnvVariable(config);
   }
+}
+
+//set the image size upload environment variable
+/**
+ * The function `setImageUploadSize` sets the image upload size environment variable and changes the .env file
+ * @returns The function `checkExistingRedis` returns a void Promise.
+ */
+async function setImageUploadSize(size: number): Promise<void> {
+  if (size > MAXIMUM_IMAGE_SIZE_LIMIT_KB) {
+    size = MAXIMUM_IMAGE_SIZE_LIMIT_KB;
+  }
+  const config = dotenv.parse(fs.readFileSync(".env"));
+
+  config.IMAGE_SIZE_LIMIT_KB = size.toString();
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+}
+
+function transactionLogPath(logPath: string | null): void {
+  const config = dotenv.parse(fs.readFileSync(".env"));
+  config.LOG = "true";
+  if (!logPath) {
+    // Check if the logs/transaction.log file exists, if not, create it
+    const defaultLogPath = path.resolve(__dirname, "logs");
+    const defaultLogFile = path.join(defaultLogPath, "transaction.log");
+    if (!fs.existsSync(defaultLogPath)) {
+      console.log("Creating logs/transaction.log file...");
+      fs.mkdirSync(defaultLogPath);
+    }
+
+    config.LOG_PATH = defaultLogFile;
+  } else {
+    // Remove the logs files, if exists
+    const logsDirPath = path.resolve(__dirname, "logs");
+    if (fs.existsSync(logsDirPath)) {
+      fs.readdirSync(logsDirPath).forEach((file: string) => {
+        if (file !== "README.md") {
+          const curPath = path.join(logsDirPath, file);
+          fs.unlinkSync(curPath);
+        }
+      });
+    }
+    config.LOG_PATH = logPath;
+  }
+}
+
+async function askForTransactionLogPath(): Promise<string> {
+  let logPath: string | null;
+  // Keep asking for path, until user gives a valid path
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const response = await inquirer.prompt([
+      {
+        type: "input",
+        name: "logPath",
+        message: "Enter absolute path of log file:",
+        default: null,
+      },
+    ]);
+    logPath = response.logPath;
+    if (logPath && fs.existsSync(logPath)) {
+      try {
+        fs.accessSync(logPath, fs.constants.R_OK | fs.constants.W_OK);
+        break;
+      } catch {
+        console.error(
+          "The file is not readable/writable. Please enter a valid file path."
+        );
+      }
+    } else {
+      console.error(
+        "Invalid path or file does not exist. Please enter a valid file path."
+      );
+    }
+  }
+  return logPath;
 }
 
 // Check connection to Redis with the specified URL.
@@ -253,7 +334,7 @@ async function redisConfiguration(): Promise<void> {
     // Update the .env file
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.REDIS_HOST = host;
-    config.REDIS_PORT = port;
+    config.REDIS_PORT = port.toString();
     config.REDIS_PASSWORD = password;
     updateEnvVariable(config);
   } catch (err) {
@@ -530,6 +611,16 @@ function validateRecaptcha(string: string): boolean {
 }
 
 /**
+ * The function validates whether a given image size is less than 20 and greater than 0.
+ * @param string - The `number` parameter represents the input size of the string
+ * validated. In this case, it is expected to be a number less than 20 and greater than 0.
+ * @returns a boolean value.
+ */
+function validateImageFileSize(size: number): boolean {
+  return size > 0;
+}
+
+/**
  * The `abort` function logs a message and exits the process.
  */
 function abort(): void {
@@ -640,7 +731,7 @@ async function importData(): Promise<void> {
     console.log("Importing sample data...");
     await exec(
       "npm run import:sample-data",
-      (error: { message: string }, stdout: string, stderr: string) => {
+      (error: ExecException | null, stdout: string, stderr: string) => {
         if (error) {
           console.error(`Error: ${error.message}`);
           abort();
@@ -655,9 +746,57 @@ async function importData(): Promise<void> {
   }
 }
 
+//Import sample data
+/**
+ * The function `importDefaultOrganization` will import the default organization
+ * with wiping of existing data.
+ * @returns The function returns a Promise that resolves to `void`.
+ */
+
+async function importDefaultOrganization(): Promise<void> {
+  return new Promise<void>(async (resolve, reject) => {
+    if (!process.env.MONGO_DB_URL) {
+      console.log("Couldn't find mongodb url");
+      return;
+    }
+    const client = new mongodb.MongoClient(process.env.MONGO_DB_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    try {
+      await client.connect();
+      const db = client.db();
+      const collections = await db.listCollections().toArray();
+      if (collections.length > 0) {
+        resolve;
+      } else {
+        await exec(
+          "npm run import:sample-data-defaultOrg",
+          (error: ExecException | null, stdout: string, stderr: string) => {
+            if (error) {
+              console.error(`Error: ${error.message}`);
+              abort();
+            }
+            if (stderr) {
+              console.error(`Error: ${stderr}`);
+              abort();
+            }
+            console.log(`Output: ${stdout}`);
+            resolve;
+          }
+        );
+      }
+      client.close();
+    } catch (e: any) {
+      console.log(`Couldn't import the default Organization`);
+      reject;
+    }
+  });
+}
+
 type VerifySmtpConnectionReturnType = {
   success: boolean;
-  error: any;
+  error: unknown;
 };
 
 /**
@@ -687,7 +826,7 @@ async function verifySmtpConnection(
     await transporter.verify();
     console.log("SMTP connection verified successfully.");
     return { success: true, error: null };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("SMTP connection verification failed:");
     return { success: false, error };
   } finally {
@@ -749,7 +888,9 @@ async function configureSmtp(): Promise<void> {
     console.error(
       "SMTP configuration verification failed. Please check your SMTP settings."
     );
-    console.log(error.message);
+    if (error instanceof Error) {
+      console.log(error.message);
+    }
     return;
   }
 
@@ -814,6 +955,33 @@ async function main(): Promise<void> {
   }
 
   accessAndRefreshTokens(accessToken, refreshToken);
+
+  const { shouldLog } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldLog",
+    message: "Would you like to enable logging for the database transactions?",
+    default: true,
+  });
+
+  if (shouldLog) {
+    if (process.env.LOG_PATH) {
+      console.log(
+        `\n Log path already exists with the value:\n${process.env.LOG_PATH}`
+      );
+    }
+    let logPath: string | null = null;
+    const { shouldUseCustomLogPath } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldUseCustomLogPath",
+      message: "Would you like to provide a custom path for storing logs?",
+      default: false,
+    });
+
+    if (shouldUseCustomLogPath) {
+      logPath = await askForTransactionLogPath();
+    }
+    transactionLogPath(logPath);
+  }
 
   const { isDockerInstallation } = await inquirer.prompt({
     type: "confirm",
@@ -990,11 +1158,30 @@ async function main(): Promise<void> {
         default: false,
       },
     ]);
-
     if (shouldRunDataImport) {
       await importData();
+    } else {
+      await importDefaultOrganization();
     }
   }
+
+  const { imageSizeLimit } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "imageSizeLimit",
+      message: `Enter the maximum size limit of Images uploaded (in MB) max: ${
+        MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+      }`,
+      default: 3,
+      validate: (input: number) =>
+        validateImageFileSize(input) ||
+        `Enter a valid number between 0 and ${
+          MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+        }`,
+    },
+  ]);
+
+  await setImageUploadSize(imageSizeLimit * 1000);
 
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
