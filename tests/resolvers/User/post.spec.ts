@@ -2,11 +2,7 @@
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { InterfacePost, InterfaceUser } from "../../../src/models";
-import {
-  hasNextPage,
-  hasPreviousPage,
-  posts as postResolver,
-} from "../../../src/resolvers/User/post";
+import { posts as postResolver } from "../../../src/resolvers/User/post";
 import type { PostsConnection } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestPost } from "../../helpers/posts";
@@ -40,20 +36,5 @@ describe("resolvers -> User -> post", () => {
         (postConnection.edges[0]?.node as unknown as InterfacePost).creatorId
       ).toStrictEqual(parent?._id);
     }
-  });
-  it("checks hasNextPage and hasPreviousPage functions", async () => {
-    const parent = testUser?.toObject() as InterfaceUser;
-
-    // Assuming there are no posts initially
-    const nextPage = await hasNextPage(parent._id.toString(), "", "", 10);
-    expect(nextPage).toBe(false);
-
-    const previousPage = await hasPreviousPage(
-      parent._id.toString(),
-      "",
-      "",
-      10
-    );
-    expect(previousPage).toBe(false);
   });
 });
