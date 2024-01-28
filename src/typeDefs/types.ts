@@ -11,9 +11,37 @@ export const types = gql`
   }
 
   type AuthData {
-    user: User!
+    user: UserToReturn!
     accessToken: String!
     refreshToken: String!
+  }
+
+  type ActionItemCategory {
+    _id: ID!
+    name: String!
+    organization: Organization
+    isDisabled: Boolean!
+    creator: User
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  # Action Item for a ActionItemCategory
+  type ActionItem {
+    _id: ID!
+    assignee: User
+    assigner: User
+    actionItemCategory: ActionItemCategory
+    preCompletionNotes: String
+    postCompletionNotes: String
+    assignmentDate: Date!
+    dueDate: Date!
+    completionDate: Date!
+    isCompleted: Boolean!
+    event: Event
+    creator: User
+    createdAt: Date!
+    updatedAt: Date!
   }
 
   # Stores the detail of an check in of an user in an event
@@ -140,6 +168,7 @@ export const types = gql`
     attendees: [User]
     # For each attendee, gives information about whether he/she has checked in yet or not
     attendeesCheckInStatus: [CheckInStatus!]!
+    actionItems: [ActionItem]
     admins(adminId: ID): [User!]
     status: Status!
     feedback: [Feedback!]!
@@ -230,11 +259,12 @@ export const types = gql`
     _id: ID!
     name: String!
     description: String!
-    location: String
+    address: Address
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!
     members: [User]
+    actionItemCategories: [ActionItemCategory]
     admins(adminId: ID): [User!]
     membershipRequests: [MembershipRequest]
     userRegistrationRequired: Boolean!
@@ -352,7 +382,7 @@ export const types = gql`
 
   type Address {
     city: String
-    countryCode: CountryCode
+    countryCode: String
     dependentLocality: String
     line1: String
     line2: String
@@ -429,6 +459,43 @@ export const types = gql`
     parentTag: UserTag
     childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
     usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!
+  }
+
+  type UserToReturn {
+    _id: ID!
+    address: Address
+    adminApproved: Boolean
+    adminFor: [Organization]
+    appLanguageCode: String!
+    birthDate: Date
+    createdAt: DateTime!
+    createdEvents: [Event]
+    createdOrganizations: [Organization]
+    educationGrade: EducationGrade
+    email: EmailAddress!
+    employmentStatus: EmploymentStatus
+    eventAdmin: [Event]
+    firstName: String!
+    gender: Gender
+    image: String
+    joinedOrganizations: [Organization]
+    lastName: String!
+    maritalStatus: MaritalStatus
+    membershipRequests: [MembershipRequest]
+    organizationsBlockedBy: [Organization]
+    phone: UserPhone
+    pluginCreationAllowed: Boolean!
+    registeredEvents: [Event]
+    tagsAssignedWith(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+      organizationId: ID
+    ): UserTagsConnection
+    tokenVersion: Int!
+    updatedAt: DateTime!
+    userType: UserType!
   }
 
   type UsersConnectionResult {
