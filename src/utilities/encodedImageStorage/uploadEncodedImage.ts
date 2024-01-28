@@ -12,6 +12,17 @@ const checkImageSizeLimit = (size: number): boolean => {
   return size > 0 && size <= 20000;
 };
 
+const base64SizeInKb = (base64String: string): number => {
+  // Count the number of Base64 characters
+  var numBase64Chars = base64String.length;
+  // Calculate the size in bytes
+  var sizeInBytes = (numBase64Chars * 3) / 4;
+  // Convert to kilobytes
+  var sizeInKB = sizeInBytes / 1024;
+
+  return sizeInKB;
+};
+
 export const uploadEncodedImage = async (
   encodedImageURL: string,
   previousImagePath?: string | null
@@ -19,9 +30,7 @@ export const uploadEncodedImage = async (
   const isURLValidImage = encodedImageExtentionCheck(encodedImageURL);
 
   const data = encodedImageURL.replace(/^data:image\/\w+;base64,/, "");
-  const stringLength = data.length;
-  const sizeInKb =
-    (4 * Math.ceil(stringLength / 3) * 0.5624896334383812) / 1000;
+  const sizeInKb = base64SizeInKb(data);
   const limit = checkImageSizeLimit(Number(process.env.IMAGE_SIZE_LIMIT_KB))
     ? Number(process.env.IMAGE_SIZE_LIMIT_KB)
     : 3000;

@@ -57,7 +57,6 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
     const size = Number(process.env.IMAGE_SIZE_LIMIT_KB);
     try {
       const img = "data:image/jpg;base64," + generateRandomString(size + 1000);
-      console.log(img.length);
       await uploadEncodedImage(img, null);
     } catch (error: any) {
       expect(error.message).toEqual(IMAGE_SIZE_LIMIT_KB.MESSAGE);
