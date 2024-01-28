@@ -93,7 +93,7 @@ export const types = gql`
   type Advertisement {
     _id: ID!
     name: String!
-    organizationId: ID!
+    organization: Organization!
     mediaUrl: URL!
     type: AdvertisementType!
     startDate: Date!

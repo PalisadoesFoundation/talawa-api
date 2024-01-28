@@ -6,7 +6,7 @@ import type { InterfaceUser } from "./User";
  */
 export interface InterfaceAdvertisement {
   _id: string;
-  organizationId: string;
+  organization: any;
   name: string;
   mediaUrl: string;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
@@ -66,8 +66,9 @@ const advertisementSchema = new Schema(
       type: String,
       required: true,
     },
-    organizationId: {
-      type: String,
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
       required: true,
     },
     creatorId: {

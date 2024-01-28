@@ -82,7 +82,7 @@ export type Advertisement = {
   endDate: Scalars['Date']['output'];
   mediaUrl: Scalars['URL']['output'];
   name: Scalars['String']['output'];
-  organizationId: Scalars['ID']['output'];
+  organization: Organization;
   startDate: Scalars['Date']['output'];
   type: AdvertisementType;
   updatedAt: Scalars['DateTime']['output'];
@@ -1946,7 +1946,7 @@ export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
 export type ResolversTypes = {
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
-  Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'creator'> & { creator?: Maybe<ResolversTypes['User']> }>;
+  Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'creator' | 'organization'> & { creator?: Maybe<ResolversTypes['User']>, organization: ResolversTypes['Organization'] }>;
   AdvertisementType: AdvertisementType;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
@@ -2082,7 +2082,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   Address: Address;
   AddressInput: AddressInput;
-  Advertisement: Omit<Advertisement, 'creator'> & { creator?: Maybe<ResolversParentTypes['User']> };
+  Advertisement: Omit<Advertisement, 'creator' | 'organization'> & { creator?: Maybe<ResolversParentTypes['User']>, organization: ResolversParentTypes['Organization'] };
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any']['output'];
@@ -2229,7 +2229,7 @@ export type AdvertisementResolvers<ContextType = any, ParentType extends Resolve
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   mediaUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  organizationId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['AdvertisementType'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

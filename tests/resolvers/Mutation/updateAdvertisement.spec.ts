@@ -176,7 +176,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       expectedAdvertisement = {
         _id: updatedTestAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
         name: updatedTestAdvertisement.name,
-        organizationId: updatedTestAdvertisement.organizationId.toString(),
+        organization: updatedTestAdvertisement.organization,
         mediaUrl: updatedTestAdvertisement.mediaUrl,
         type: updatedTestAdvertisement.type,
         startDate: updatedTestAdvertisement.startDate,

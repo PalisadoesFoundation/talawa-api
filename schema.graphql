@@ -31,7 +31,7 @@ type Advertisement {
   endDate: Date!
   mediaUrl: URL!
   name: String!
-  organizationId: ID!
+  organization: Organization!
   startDate: Date!
   type: AdvertisementType!
   updatedAt: DateTime!

@@ -124,7 +124,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
     const updatedAdvertisementPayload = {
       _id: updatedAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
       name: updatedAdvertisement.name,
-      organizationId: updatedAdvertisement.organizationId.toString(),
+      organization: updatedAdvertisement.organization,
       mediaUrl: updatedAdvertisement.mediaUrl,
       type: updatedAdvertisement.type,
       startDate: updatedAdvertisement.startDate,
