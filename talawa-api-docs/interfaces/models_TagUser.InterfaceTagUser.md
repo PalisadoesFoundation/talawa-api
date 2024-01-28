@@ -20,7 +20,7 @@
 
 #### Defined in
 
-[src/models/TagUser.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/TagUser.ts#L7)
+[src/models/TagUser.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/TagUser.ts#L7)
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 #### Defined in
 
-[src/models/TagUser.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/TagUser.ts#L9)
+[src/models/TagUser.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/TagUser.ts#L9)
 
 ___
 
@@ -40,4 +40,4 @@ ___
 
 #### Defined in
 
-[src/models/TagUser.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/models/TagUser.ts#L8)
+[src/models/TagUser.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/TagUser.ts#L8)
