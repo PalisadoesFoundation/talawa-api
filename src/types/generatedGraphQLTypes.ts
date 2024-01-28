@@ -85,7 +85,7 @@ export type ActionItemCategory = {
 export type Address = {
   __typename?: 'Address';
   city?: Maybe<Scalars['String']['output']>;
-  countryCode?: Maybe<Scalars['CountryCode']['output']>;
+  countryCode?: Maybe<Scalars['String']['output']>;
   dependentLocality?: Maybe<Scalars['String']['output']>;
   line1?: Maybe<Scalars['String']['output']>;
   line2?: Maybe<Scalars['String']['output']>;
@@ -96,7 +96,7 @@ export type Address = {
 
 export type AddressInput = {
   city?: InputMaybe<Scalars['String']['input']>;
-  countryCode?: InputMaybe<Scalars['CountryCode']['input']>;
+  countryCode?: InputMaybe<Scalars['String']['input']>;
   dependentLocality?: InputMaybe<Scalars['String']['input']>;
   line1?: InputMaybe<Scalars['String']['input']>;
   line2?: InputMaybe<Scalars['String']['input']>;
@@ -1151,6 +1151,7 @@ export type Organization = {
   __typename?: 'Organization';
   _id: Scalars['ID']['output'];
   actionItemCategories?: Maybe<Array<Maybe<ActionItemCategory>>>;
+  address?: Maybe<Address>;
   admins?: Maybe<Array<User>>;
   apiUrl: Scalars['URL']['output'];
   blockedUsers?: Maybe<Array<Maybe<User>>>;
@@ -1159,7 +1160,6 @@ export type Organization = {
   customFields: Array<OrganizationCustomField>;
   description: Scalars['String']['output'];
   image?: Maybe<Scalars['String']['output']>;
-  location?: Maybe<Scalars['String']['output']>;
   members?: Maybe<Array<Maybe<User>>>;
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String']['output'];
@@ -1204,11 +1204,11 @@ export type OrganizationInfoNode = {
 };
 
 export type OrganizationInput = {
+  address: AddressInput;
   apiUrl?: InputMaybe<Scalars['URL']['input']>;
   attendees?: InputMaybe<Scalars['String']['input']>;
   description: Scalars['String']['input'];
   image?: InputMaybe<Scalars['String']['input']>;
-  location?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   userRegistrationRequired?: InputMaybe<Scalars['Boolean']['input']>;
   visibleInSearch?: InputMaybe<Scalars['Boolean']['input']>;
@@ -1725,8 +1725,8 @@ export type UpdateEventInput = {
 };
 
 export type UpdateOrganizationInput = {
+  address?: InputMaybe<AddressInput>;
   description?: InputMaybe<Scalars['String']['input']>;
-  location?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   userRegistrationRequired?: InputMaybe<Scalars['Boolean']['input']>;
   visibleInSearch?: InputMaybe<Scalars['Boolean']['input']>;
@@ -2355,7 +2355,7 @@ export type ActionItemCategoryResolvers<ContextType = any, ParentType extends Re
 
 export type AddressResolvers<ContextType = any, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
   city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  countryCode?: Resolver<Maybe<ResolversTypes['CountryCode']>, ParentType, ContextType>;
+  countryCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   dependentLocality?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   line1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   line2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2776,6 +2776,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   actionItemCategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItemCategory']>>>, ParentType, ContextType>;
+  address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
   apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
@@ -2784,7 +2785,6 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   customFields?: Resolver<Array<ResolversTypes['OrganizationCustomField']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   members?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

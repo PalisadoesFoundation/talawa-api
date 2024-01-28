@@ -483,19 +483,29 @@ export const LAST_RESORT_SUPERADMIN_EMAIL =
   process.env.LAST_RESORT_SUPERADMIN_EMAIL;
 
 export const SMTP_OPTIONS = {
-  IS_SMTP: process.env.IS_SMTP,
+  IS_SMTP: process.env.IS_SMTP === "true",
   SMTP_HOST: process.env.SMTP_HOST,
   SMTP_PASSWORD: process.env.SMTP_PASSWORD,
   SMTP_USERNAME: process.env.SMTP_USERNAME,
   SMTP_PORT: process.env.SMTP_PORT,
-  SMTP_SSL_TLS: process.env.SMTP_SSL_TLS,
+  SMTP_SSL_TLS: process.env.SMTP_SSL_TLS === "true",
 };
 
-export const REDIS_HOST = process.env.REDIS_HOST!;
+export const REDIS_HOST = process.env.REDIS_HOST || "";
 export const REDIS_PORT = Number(process.env.REDIS_PORT);
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
 export const MILLISECONDS_IN_A_WEEK = 7 * 24 * 60 * 60 * 1000;
 
-export const key = process.env.ENCRYPTION_KEY as string;
+export const key = ENV.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");
+
+export const LOG = ENV.LOG === "true";
+
+export const LOG_PATH = ENV.LOG_PATH;
+
+export enum TransactionLogTypes {
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+}
