@@ -47,16 +47,9 @@ beforeAll(async () => {
     creatorId: Types.ObjectId().toString(),
     admins: [Types.ObjectId().toString()],
     members: [Types.ObjectId().toString()],
+    venues: [testVenue?.id],
     visibleInSearch: true,
   });
-  await Organization.findByIdAndUpdate(
-    { _id: testOrganization.id },
-    {
-      $push: {
-        venues: [testVenue?._id],
-      },
-    }
-  );
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
@@ -76,7 +69,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
           _id: Types.ObjectId().toString(),
           capacity: 10,
           name: "testVenue",
-          description: "newDescription",
+          description: "description",
           organizationId: testOrganization?.id,
         },
       };
@@ -107,7 +100,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
           _id: Types.ObjectId().toString(),
           capacity: 10,
           name: "testVenue",
-          description: "newDescription",
+          description: "description",
           organizationId: Types.ObjectId().toString(),
         },
       };
@@ -137,7 +130,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
           _id: Types.ObjectId().toString(),
           capacity: 10,
           name: "testVenue",
-          description: "newDescription",
+          description: "description",
           organizationId: testOrganization?.id,
         },
       };
@@ -166,7 +159,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
           _id: testVenue?.id,
           capacity: 10,
           name: "testVenue",
-          description: "newDescription",
+          description: "description",
           organizationId: testOrganization?.id,
         },
       };
@@ -192,7 +185,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
 
   it(`throws InputValidationError if the provided venue is empty string`, async () => {
     try {
-      await Organization.findByIdAndUpdate(
+      testOrganization = await Organization.findByIdAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -200,14 +193,15 @@ describe("resolvers -> Mutation -> editVenue", () => {
           $push: {
             admins: [testUser?.id],
           },
-        }
+        },
+        { new: true }
       );
       const args: MutationEditVenueArgs = {
         data: {
           _id: testVenue?.id,
           capacity: 10,
           name: "",
-          description: "newDescription",
+          description: "description",
           organizationId: testOrganization?.id,
         },
       };
@@ -236,7 +230,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
           _id: testVenue?.id,
           capacity: 10,
           name: "testVenue",
-          description: "newDescription",
+          description: "description",
           organizationId: testOrganization?.id,
         },
       };
@@ -251,7 +245,9 @@ describe("resolvers -> Mutation -> editVenue", () => {
       await editVenue?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof ConflictError) {
-        expect(error.message).toEqual(VENUE_ALREADY_EXISTS_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          VENUE_ALREADY_EXISTS_ERROR.MESSAGE
+        );
       } else {
         fail(`Expected InputValidationError, but got ${error}`);
       }

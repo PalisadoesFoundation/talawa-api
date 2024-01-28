@@ -69,7 +69,5 @@ export async function check(
           },
     ],
   });
-  return Array.isArray(conflictingEvents)
-    ? conflictingEvents
-    : [conflictingEvents];
+  return conflictingEvents;
 }

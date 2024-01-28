@@ -50,7 +50,9 @@ export const editVenue: MutationResolvers["editVenue"] = async (
 
   const organization = await Organization.findOne({
     _id: args.data?.organizationId,
-  }).lean();
+  })
+    .populate("venues")
+    .lean();
 
   // Checks whether organization exists.
   if (!organization) {
