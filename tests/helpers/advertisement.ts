@@ -11,6 +11,7 @@ export type TestAdvertisementType = {
   type: string;
   startDate: string;
   endDate: string;
+  organization: any;
 };
 
 // Function to create test advertisement
@@ -18,7 +19,7 @@ export const createTestAdvertisement =
   async (): Promise<TestAdvertisementType> => {
     const testAdvertisementData = {
       name: "Test Advertisement",
-      mediaUrl: "https://example.com",
+      mediaUrl: "data:image/png;base64,bWVkaWEgY29udG",
       type: "POPUP",
       startDate: "2023-01-01",
       endDate: "2023-01-31",

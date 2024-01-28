@@ -40,7 +40,7 @@ export const createAdvertisement: MutationResolvers["createAdvertisement"] =
       ...args.input,
       mediaUrl: uploadMediaFile,
       creatorId: _context.userId,
-      organization: args.input.organizationId
+      organization: args.input.organizationId,
     });
     // Returns createdAd.
     return {
