@@ -3,6 +3,7 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceActionItemCategory } from "./ActionItemCategory";
+import { MILLISECONDS_IN_A_WEEK } from "../constants";
 
 /**
  * This is an interface that represents a database(MongoDB) document for ActionItem.
@@ -73,12 +74,12 @@ const actionItemSchema = new Schema(
     dueDate: {
       type: Date,
       required: true,
-      default: Date.now() + 7 * 24 * 60 * 60 * 1000,
+      default: Date.now() + MILLISECONDS_IN_A_WEEK,
     },
     completionDate: {
       type: Date,
       required: true,
-      default: Date.now() + 7 * 24 * 60 * 60 * 1000,
+      default: Date.now() + MILLISECONDS_IN_A_WEEK,
     },
     isCompleted: {
       type: Boolean,
