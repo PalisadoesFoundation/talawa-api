@@ -21,9 +21,10 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import type {
-  TestUserType,
-  TestOrganizationType,
+import {
+  type TestUserType,
+  type TestOrganizationType,
+  createAdminApprovedTestUser,
 } from "../../helpers/userAndOrg";
 import type { TestMembershipRequestType } from "../../helpers/membershipRequests";
 import { createTestMembershipRequest } from "../../helpers/membershipRequests";
@@ -248,7 +249,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     }
   });
 
-  it(`accepts the membershipRequest and returns it`, async () => {
+  it(`accepts the membershipRequest for a newly created member and returns it`, async () => {
     await Organization.updateOne(
       {
         _id: testOrganization?._id,
@@ -292,12 +293,67 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["joinedOrganizations", "membershipRequests"])
+      .select(["joinedOrganizations", "membershipRequests", "adminApproved"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         joinedOrganizations: expect.arrayContaining([testOrganization?._id]),
+        membershipRequests: expect.arrayContaining([]),
+      })
+    );
+    expect(updatedTestUser?.adminApproved).toBe(true);
+  });
+  it(`accepts the membershipRequest for already existing member and returns it`, async () => {
+    const testUser = await createAdminApprovedTestUser();
+    const localTestData = await createTestMembershipRequest(testUser);
+    await Organization.updateOne(
+      {
+        _id: localTestData[1]?._id,
+      },
+      {
+        $set: {
+          members: [],
+        },
+      }
+    );
+
+    const args: MutationAcceptMembershipRequestArgs = {
+      membershipRequestId: localTestData[2]?.id,
+    };
+
+    const context = {
+      userId: localTestData[0]?.id,
+    };
+    const { acceptMembershipRequest: acceptMembershipRequestResolver } =
+      await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
+    const acceptMembershipRequestPayload =
+      await acceptMembershipRequestResolver?.({}, args, context);
+
+    expect(String(acceptMembershipRequestPayload?._id)).toBe(
+      String(localTestData[2]?.id)
+    );
+
+    const updatedTestOrganization = await Organization.findOne({
+      _id: localTestData[1]?.id,
+    })
+      .select(["members", "membershipRequests"])
+      .lean();
+    expect(updatedTestOrganization?.members.length).toBe(1);
+    expect(String(updatedTestOrganization?.members[0])).toEqual(
+      String(localTestData[0]?.id)
+    );
+    expect(updatedTestOrganization?.membershipRequests.length).toEqual(0);
+
+    const updatedTestUser = await User.findOne({
+      _id: localTestData[0]?.id,
+    })
+      .select(["joinedOrganizations", "membershipRequests", "adminApproved"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        joinedOrganizations: expect.arrayContaining([localTestData[1]?._id]),
         membershipRequests: expect.arrayContaining([]),
       })
     );

@@ -1,5 +1,10 @@
 import { venuesInOrganization } from "./venuesInOrganization";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import { actionItem } from "./actionItem";
+import { actionItemsByEvent } from "./actionItemsByEvent";
+import { actionItemCategory } from "./actionItemCategory";
+import { actionItemsByOrganization } from "./actionItemsByOrganization";
+import { actionItemCategoriesByOrganization } from "./actionItemCategoriesByOrganization";
 import { checkAuth } from "./checkAuth";
 import { checkVenue } from "./checkVenue";
 import { customDataByOrganization } from "./customDataByOrganization";
@@ -31,6 +36,11 @@ import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
 
 export const Query: QueryResolvers = {
+  actionItem,
+  actionItemsByEvent,
+  actionItemCategory,
+  actionItemsByOrganization,
+  actionItemCategoriesByOrganization,
   checkAuth,
   checkVenue,
   customFieldsByOrganization,

@@ -1,7 +1,8 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User } from "../../../src/models";
+import { Organization, User } from "../../../src/models";
 import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import {
@@ -60,7 +61,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     vi.restoreAllMocks();
   });
 
-  it(`creates the user and returns the created user with accessToken, refreshToken`, async () => {
+  it(`creates the user and returns the created with adminAprooved=true, accessToken and refreshToken when organization doesn't require user registration`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
 
     const args: MutationSignUpArgs = {
@@ -70,7 +71,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: undefined,
+        selectedOrgainzation: testOrganization?._id.toString(),
       },
     };
     const { signUp: signUpResolver } = await import(
@@ -90,6 +91,12 @@ describe("resolvers -> Mutation -> signUp", () => {
     }).toEqual({
       user: createdUser,
     });
+
+    const updatedOrganization = await Organization.findById(
+      testOrganization?._id
+    ).select("members");
+    expect(updatedOrganization?.members.includes(testUser?._id)).toBe(true);
+    expect(createdUser?.adminApproved).toBe(true);
 
     expect(typeof signUpPayload?.accessToken).toEqual("string");
     expect(signUpPayload?.accessToken.length).toBeGreaterThan(1);
@@ -98,10 +105,13 @@ describe("resolvers -> Mutation -> signUp", () => {
     expect(signUpPayload?.refreshToken.length).toBeGreaterThan(1);
   });
 
-  it(`creates the user with provided organizationUserBelongsToId and returns the
-  created user  with accessToken, refreshToken`, async () => {
+  it(`creates the user and returns the created with a membership request, adminAprooved=false, accessToken and refreshToken when organization require user registration`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-
+    const localTestOrganization = await createTestUserAndOrganization(
+      true,
+      true,
+      true
+    );
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -109,7 +119,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization?.id,
+        selectedOrgainzation: localTestOrganization[1]?.id,
       },
     };
     const { signUp: signUpResolver } = await import(
@@ -123,13 +133,22 @@ describe("resolvers -> Mutation -> signUp", () => {
     })
       .select("-password")
       .lean();
-
     expect({
       user: signUpPayload?.user,
     }).toEqual({
       user: createdUser,
     });
-
+    const password = await User.findOne({
+      email,
+    })
+      .select("password")
+      .lean();
+    const ifRightPassword = await bcrypt.compare(
+      args.data.password,
+      password?.password!
+    );
+    expect(ifRightPassword).toBe(true);
+    expect(createdUser?.adminApproved).toBe(false);
     expect(typeof signUpPayload?.accessToken).toEqual("string");
     expect(signUpPayload?.accessToken.length).toBeGreaterThan(1);
 
@@ -150,7 +169,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization?.id,
+        selectedOrgainzation: testOrganization?.id,
       },
       file: testImagePath,
     };
@@ -176,7 +195,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: undefined,
+        selectedOrgainzation: testOrganization?.id,
       },
     };
     const { signUp: signUpResolver } = await import(
@@ -190,6 +209,11 @@ describe("resolvers -> Mutation -> signUp", () => {
     expect(createdUser?.adminApproved).toBeTruthy();
   });
   it(`Check if the User is not being promoted to SUPER ADMIN automatically`, async () => {
+    const localTestOrganization = await createTestUserAndOrganization(
+      true,
+      true,
+      true
+    );
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
     const args: MutationSignUpArgs = {
       data: {
@@ -198,7 +222,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: undefined,
+        selectedOrgainzation: localTestOrganization[1]?.id,
       },
     };
     const { signUp: signUpResolver } = await import(
@@ -233,7 +257,7 @@ describe("resolvers -> Mutation -> signUp", () => {
           lastName: "lastName",
           password: "password",
           appLanguageCode: "en",
-          organizationUserBelongsToId: undefined,
+          selectedOrgainzation: testOrganization?.id,
         },
       };
 
@@ -262,7 +286,7 @@ describe("resolvers -> Mutation -> signUp", () => {
           lastName: "lastName",
           password: "password",
           appLanguageCode: "en",
-          organizationUserBelongsToId: Types.ObjectId().toString(),
+          selectedOrgainzation: Types.ObjectId().toString(),
         },
       };
 

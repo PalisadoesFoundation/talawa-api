@@ -1,3 +1,4 @@
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -116,6 +117,24 @@ async function accessAndRefreshTokens(
   }
 }
 
+//set the image size upload environment variable
+/**
+ * The function `setImageUploadSize` sets the image upload size environment variable and changes the .env file
+ * @returns The function `checkExistingRedis` returns a void Promise.
+ */
+async function setImageUploadSize(size: number): Promise<void> {
+  if (size > MAXIMUM_IMAGE_SIZE_LIMIT_KB) {
+    size = MAXIMUM_IMAGE_SIZE_LIMIT_KB;
+  }
+  const config = dotenv.parse(fs.readFileSync(".env"));
+
+  config.IMAGE_SIZE_LIMIT_KB = size.toString();
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+}
+
 function transactionLogPath(logPath: string | null): void {
   const config = dotenv.parse(fs.readFileSync(".env"));
   config.LOG = "true";
@@ -141,10 +160,6 @@ function transactionLogPath(logPath: string | null): void {
       });
     }
     config.LOG_PATH = logPath;
-  }
-  fs.writeFileSync(".env", "");
-  for (const key in config) {
-    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
   }
 }
 
@@ -596,6 +611,16 @@ function validateRecaptcha(string: string): boolean {
 }
 
 /**
+ * The function validates whether a given image size is less than 20 and greater than 0.
+ * @param string - The `number` parameter represents the input size of the string
+ * validated. In this case, it is expected to be a number less than 20 and greater than 0.
+ * @returns a boolean value.
+ */
+function validateImageFileSize(size: number): boolean {
+  return size > 0;
+}
+
+/**
  * The `abort` function logs a message and exits the process.
  */
 function abort(): void {
@@ -719,6 +744,54 @@ async function importData(): Promise<void> {
       }
     );
   }
+}
+
+//Import sample data
+/**
+ * The function `importDefaultOrganization` will import the default organization
+ * with wiping of existing data.
+ * @returns The function returns a Promise that resolves to `void`.
+ */
+
+async function importDefaultOrganization(): Promise<void> {
+  return new Promise<void>(async (resolve, reject) => {
+    if (!process.env.MONGO_DB_URL) {
+      console.log("Couldn't find mongodb url");
+      return;
+    }
+    const client = new mongodb.MongoClient(process.env.MONGO_DB_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    try {
+      await client.connect();
+      const db = client.db();
+      const collections = await db.listCollections().toArray();
+      if (collections.length > 0) {
+        resolve;
+      } else {
+        await exec(
+          "npm run import:sample-data-defaultOrg",
+          (error: ExecException | null, stdout: string, stderr: string) => {
+            if (error) {
+              console.error(`Error: ${error.message}`);
+              abort();
+            }
+            if (stderr) {
+              console.error(`Error: ${stderr}`);
+              abort();
+            }
+            console.log(`Output: ${stdout}`);
+            resolve;
+          }
+        );
+      }
+      client.close();
+    } catch (e: any) {
+      console.log(`Couldn't import the default Organization`);
+      reject;
+    }
+  });
 }
 
 type VerifySmtpConnectionReturnType = {
@@ -1085,11 +1158,30 @@ async function main(): Promise<void> {
         default: false,
       },
     ]);
-
     if (shouldRunDataImport) {
       await importData();
+    } else {
+      await importDefaultOrganization();
     }
   }
+
+  const { imageSizeLimit } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "imageSizeLimit",
+      message: `Enter the maximum size limit of Images uploaded (in MB) max: ${
+        MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+      }`,
+      default: 3,
+      validate: (input: number) =>
+        validateImageFileSize(input) ||
+        `Enter a valid number between 0 and ${
+          MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+        }`,
+    },
+  ]);
+
+  await setImageUploadSize(imageSizeLimit * 1000);
 
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"

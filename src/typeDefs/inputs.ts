@@ -44,6 +44,13 @@ export const inputs = gql`
     organizationId: ID!
   }
 
+  input CreateActionItemInput {
+    assigneeId: ID!
+    preCompletionNotes: String
+    dueDate: Date
+    eventId: ID
+  }
+
   input CursorPaginationInput {
     cursor: String
     direction: PaginationDirection!
@@ -264,6 +271,15 @@ export const inputs = gql`
     tagId: ID!
   }
 
+  input UpdateActionItemInput {
+    assigneeId: ID
+    preCompletionNotes: String
+    postCompletionNotes: String
+    dueDate: Date
+    completionDate: Date
+    isCompleted: Boolean
+  }
+
   input UpdateEventInput {
     title: String
     description: String
@@ -318,6 +334,11 @@ export const inputs = gql`
     name: String!
   }
 
+  input UpdateActionItemCategoryInput {
+    name: String
+    isDisabled: Boolean
+  }
+
   input AddressInput {
     city: String
     countryCode: String
@@ -370,7 +391,7 @@ export const inputs = gql`
     email: EmailAddress!
     password: String!
     appLanguageCode: String
-    organizationUserBelongsToId: ID
+    selectedOrgainzation: ID!
   }
 
   input UserWhereInput {

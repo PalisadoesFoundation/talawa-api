@@ -9,6 +9,18 @@ export const queries = gql`
 
     checkVenue(data: CheckVenueInput): [Venue]!
 
+    actionItem(id: ID!): ActionItem
+
+    actionItemsByEvent(eventId: ID!): [ActionItem]
+
+    actionItemsByOrganization(organizationId: ID!): [ActionItem]
+
+    actionItemCategory(id: ID!): ActionItemCategory
+
+    actionItemCategoriesByOrganization(
+      organizationId: ID!
+    ): [ActionItemCategory]
+
     checkAuth: User! @auth
 
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]
