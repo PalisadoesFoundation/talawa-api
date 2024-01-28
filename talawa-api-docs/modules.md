@@ -21,6 +21,7 @@
 - [helpers/eventInstances/weekly](modules/helpers_eventInstances_weekly.md)
 - [index](modules/index.md)
 - [libraries](modules/libraries.md)
+- [libraries/dbLogger](modules/libraries_dbLogger.md)
 - [libraries/errors](modules/libraries_errors.md)
 - [libraries/errors/applicationError](modules/libraries_errors_applicationError.md)
 - [libraries/errors/conflictError](modules/libraries_errors_conflictError.md)
