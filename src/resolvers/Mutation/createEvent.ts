@@ -1,7 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent, InterfaceUser } from "../../models";
-import { User, Organization } from "../../models";
+import { User, Organization , Event } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -16,7 +16,6 @@ import type mongoose from "mongoose";
 import { session } from "../../db";
 import { Weekly, Once } from "../../helpers/eventInstances";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-import { Event } from "../../models";
 /**
  * This function enables to create an event.
  * @param _parent - parent of current request
@@ -157,7 +156,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       throw new Error("Failed to upload image");
     }
   }
-
 
   try {
     let createdEvent!: InterfaceEvent[];
