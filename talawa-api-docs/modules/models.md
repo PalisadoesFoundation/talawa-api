@@ -48,6 +48,7 @@
 - [InterfaceSampleData](models.md#interfacesampledata)
 - [InterfaceTagUser](models.md#interfacetaguser)
 - [InterfaceUser](models.md#interfaceuser)
+- [InterfaceUserToReturn](models.md#interfaceusertoreturn)
 - [Language](models.md#language)
 - [MembershipRequest](models.md#membershiprequest)
 - [Message](models.md#message)
@@ -61,6 +62,7 @@
 - [SampleData](models.md#sampledata)
 - [TagUser](models.md#taguser)
 - [User](models.md#user)
+- [UserToReturn](models.md#usertoreturn)
 
 ## References
 
@@ -316,6 +318,12 @@ Re-exports [InterfaceUser](../interfaces/models_User.InterfaceUser.md)
 
 ___
 
+### InterfaceUserToReturn
+
+Re-exports [InterfaceUserToReturn](../interfaces/models_User.InterfaceUserToReturn.md)
+
+___
+
 ### Language
 
 Re-exports [Language](models_Language.md#language)
@@ -391,3 +399,9 @@ ___
 ### User
 
 Re-exports [User](models_User.md#user)
+
+___
+
+### UserToReturn
+
+Re-exports [UserToReturn](models_User.md#usertoreturn)

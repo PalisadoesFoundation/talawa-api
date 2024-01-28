@@ -27,7 +27,7 @@ This is an interface representing a document for a donation in the database(Mong
 
 #### Defined in
 
-[src/models/Donation.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/Donation.ts#L12)
+[src/models/Donation.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Donation.ts#L12)
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 #### Defined in
 
-[src/models/Donation.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/Donation.ts#L13)
+[src/models/Donation.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Donation.ts#L13)
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 #### Defined in
 
-[src/models/Donation.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/Donation.ts#L9)
+[src/models/Donation.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Donation.ts#L9)
 
 ___
 
@@ -57,7 +57,7 @@ ___
 
 #### Defined in
 
-[src/models/Donation.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/Donation.ts#L11)
+[src/models/Donation.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Donation.ts#L11)
 
 ___
 
@@ -67,7 +67,7 @@ ___
 
 #### Defined in
 
-[src/models/Donation.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/Donation.ts#L8)
+[src/models/Donation.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Donation.ts#L8)
 
 ___
 
@@ -77,7 +77,7 @@ ___
 
 #### Defined in
 
-[src/models/Donation.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/Donation.ts#L10)
+[src/models/Donation.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Donation.ts#L10)
 
 ___
 
@@ -87,7 +87,7 @@ ___
 
 #### Defined in
 
-[src/models/Donation.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/Donation.ts#L14)
+[src/models/Donation.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Donation.ts#L14)
 
 ___
 
@@ -97,4 +97,4 @@ ___
 
 #### Defined in
 
-[src/models/Donation.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/Donation.ts#L7)
+[src/models/Donation.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Donation.ts#L7)
