@@ -19,7 +19,7 @@ import type { InterfacePlugin as InterfacePluginModel } from '../models/Plugin';
 import type { InterfacePluginField as InterfacePluginFieldModel } from '../models/PluginField';
 import type { InterfacePost as InterfacePostModel } from '../models/Post';
 import type { InterfaceOrganizationTagUser as InterfaceOrganizationTagUserModel } from '../models/OrganizationTagUser';
-import type { InterfaceUser as InterfaceUserModel } from '../models/User';
+import type { InterfaceUser as InterfaceUserModel, InterfaceUserToReturn as InterfaceUserToReturnModel } from '../models/User';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -107,7 +107,7 @@ export type AuthData = {
   __typename?: 'AuthData';
   accessToken: Scalars['String']['output'];
   refreshToken: Scalars['String']['output'];
-  user: User;
+  user: UserToReturn;
 };
 
 export type CheckIn = {
@@ -1716,8 +1716,8 @@ export type UserInput = {
   email: Scalars['EmailAddress']['input'];
   firstName: Scalars['String']['input'];
   lastName: Scalars['String']['input'];
-  organizationUserBelongsToId?: InputMaybe<Scalars['ID']['input']>;
   password: Scalars['String']['input'];
+  selectedOrgainzation: Scalars['ID']['input'];
 };
 
 export type UserOrderByInput =
@@ -1787,6 +1787,47 @@ export type UserTagsConnectionResult = {
   __typename?: 'UserTagsConnectionResult';
   data?: Maybe<UserTagsConnection>;
   errors: Array<ConnectionError>;
+};
+
+export type UserToReturn = {
+  __typename?: 'UserToReturn';
+  _id: Scalars['ID']['output'];
+  address?: Maybe<Address>;
+  adminApproved?: Maybe<Scalars['Boolean']['output']>;
+  adminFor?: Maybe<Array<Maybe<Organization>>>;
+  appLanguageCode: Scalars['String']['output'];
+  birthDate?: Maybe<Scalars['Date']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  createdEvents?: Maybe<Array<Maybe<Event>>>;
+  createdOrganizations?: Maybe<Array<Maybe<Organization>>>;
+  educationGrade?: Maybe<EducationGrade>;
+  email: Scalars['EmailAddress']['output'];
+  employmentStatus?: Maybe<EmploymentStatus>;
+  eventAdmin?: Maybe<Array<Maybe<Event>>>;
+  firstName: Scalars['String']['output'];
+  gender?: Maybe<Gender>;
+  image?: Maybe<Scalars['String']['output']>;
+  joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
+  lastName: Scalars['String']['output'];
+  maritalStatus?: Maybe<MaritalStatus>;
+  membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
+  organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
+  phone?: Maybe<UserPhone>;
+  pluginCreationAllowed: Scalars['Boolean']['output'];
+  registeredEvents?: Maybe<Array<Maybe<Event>>>;
+  tagsAssignedWith?: Maybe<UserTagsConnection>;
+  tokenVersion: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  userType: UserType;
+};
+
+
+export type UserToReturnTagsAssignedWithArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['PositiveInt']['input']>;
+  last?: InputMaybe<Scalars['PositiveInt']['input']>;
+  organizationId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type UserType =
@@ -1942,7 +1983,7 @@ export type ResolversTypes = {
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   Any: ResolverTypeWrapper<Scalars['Any']['output']>;
-  AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
+  AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['UserToReturn'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
   CheckInInput: CheckInInput;
@@ -2058,6 +2099,7 @@ export type ResolversTypes = {
   UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversTypes['UserTagEdge']> }>;
   UserTagsConnectionInput: UserTagsConnectionInput;
   UserTagsConnectionResult: ResolverTypeWrapper<Omit<UserTagsConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UserTagsConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
+  UserToReturn: ResolverTypeWrapper<InterfaceUserToReturnModel>;
   UserType: UserType;
   UserWhereInput: UserWhereInput;
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
@@ -2075,7 +2117,7 @@ export type ResolversParentTypes = {
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any']['output'];
-  AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
+  AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['UserToReturn'] };
   Boolean: Scalars['Boolean']['output'];
   CheckIn: InterfaceCheckInModel;
   CheckInInput: CheckInInput;
@@ -2179,6 +2221,7 @@ export type ResolversParentTypes = {
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserTagEdge']> };
   UserTagsConnectionInput: UserTagsConnectionInput;
   UserTagsConnectionResult: Omit<UserTagsConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UserTagsConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
+  UserToReturn: InterfaceUserToReturnModel;
   UserWhereInput: UserWhereInput;
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
   UsersConnectionInput: UsersConnectionInput;
@@ -2240,7 +2283,7 @@ export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
 export type AuthDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthData'] = ResolversParentTypes['AuthData']> = {
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['UserToReturn'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2884,6 +2927,38 @@ export type UserTagsConnectionResultResolvers<ContextType = any, ParentType exte
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserToReturnResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserToReturn'] = ResolversParentTypes['UserToReturn']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
+  adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  birthDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  createdOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  educationGrade?: Resolver<Maybe<ResolversTypes['EducationGrade']>, ParentType, ContextType>;
+  email?: Resolver<ResolversTypes['EmailAddress'], ParentType, ContextType>;
+  employmentStatus?: Resolver<Maybe<ResolversTypes['EmploymentStatus']>, ParentType, ContextType>;
+  eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  firstName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  gender?: Resolver<Maybe<ResolversTypes['Gender']>, ParentType, ContextType>;
+  image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  lastName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  maritalStatus?: Resolver<Maybe<ResolversTypes['MaritalStatus']>, ParentType, ContextType>;
+  membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
+  organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  phone?: Resolver<Maybe<ResolversTypes['UserPhone']>, ParentType, ContextType>;
+  pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserToReturnTagsAssignedWithArgs>>;
+  tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  userType?: Resolver<ResolversTypes['UserType'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
   edges?: Resolver<Array<ResolversTypes['UserEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
@@ -2967,6 +3042,7 @@ export type Resolvers<ContextType = any> = {
   UserTagEdge?: UserTagEdgeResolvers<ContextType>;
   UserTagsConnection?: UserTagsConnectionResolvers<ContextType>;
   UserTagsConnectionResult?: UserTagsConnectionResultResolvers<ContextType>;
+  UserToReturn?: UserToReturnResolvers<ContextType>;
   UsersConnection?: UsersConnectionResolvers<ContextType>;
   UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
 };

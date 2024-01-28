@@ -342,7 +342,7 @@ export const inputs = gql`
     email: EmailAddress!
     password: String!
     appLanguageCode: String
-    organizationUserBelongsToId: ID
+    selectedOrgainzation: ID!
   }
 
   input UserWhereInput {

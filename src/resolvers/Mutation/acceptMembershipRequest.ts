@@ -21,6 +21,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
  * 3. Whether the user exists
  * 4. whether currentUser with _id === context.userId is an admin of organization.
  * 5. Whether user is already a member of organization.
+ * 6. Whether the user is a new user or not
  */
 export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest"] =
   async (_parent, args, context) => {
@@ -102,22 +103,39 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
-    }
-
-    // Update the user
-    await User.updateOne(
-      {
-        _id: user._id,
-      },
-      {
-        $push: {
-          joinedOrganizations: organization._id,
-        },
-        $pull: {
-          membershipRequests: membershipRequest._id,
-        },
+      // If adminAprooved is false, it means it is the very first request or a very fresh member has made the request! Hence we need to update this variable also
+      if (user.adminApproved == false) {
+        await User.updateOne(
+          {
+            _id: user._id,
+          },
+          {
+            $set: {
+              adminApproved: true,
+            },
+            $push: {
+              joinedOrganizations: organization._id,
+            },
+            $pull: {
+              membershipRequests: membershipRequest._id,
+            },
+          }
+        );
+      } else {
+        await User.updateOne(
+          {
+            _id: user._id,
+          },
+          {
+            $push: {
+              joinedOrganizations: organization._id,
+            },
+            $pull: {
+              membershipRequests: membershipRequest._id,
+            },
+          }
+        );
       }
-    );
-
+    }
     return membershipRequest;
   };
