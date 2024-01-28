@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Mutation/updatePost.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/resolvers/Mutation/updatePost.ts#L16)
+[src/resolvers/Mutation/updatePost.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/resolvers/Mutation/updatePost.ts#L18)

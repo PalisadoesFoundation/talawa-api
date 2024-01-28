@@ -24,4 +24,4 @@ An object that contains `id` of the Post.
 
 #### Defined in
 
-[src/resolvers/Query/post.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/resolvers/Query/post.ts#L11)
+[src/resolvers/Query/post.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/resolvers/Query/post.ts#L11)

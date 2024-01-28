@@ -263,7 +263,7 @@ ___
 
 #### Defined in
 
-[src/libraries/dbLogger.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/libraries/dbLogger.ts#L33)
+[src/libraries/dbLogger.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/libraries/dbLogger.ts#L33)
 
 ___
 

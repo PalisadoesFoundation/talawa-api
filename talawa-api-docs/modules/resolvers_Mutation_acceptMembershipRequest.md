@@ -39,4 +39,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/acceptMembershipRequest.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/resolvers/Mutation/acceptMembershipRequest.ts#L25)
+[src/resolvers/Mutation/acceptMembershipRequest.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/resolvers/Mutation/acceptMembershipRequest.ts#L25)

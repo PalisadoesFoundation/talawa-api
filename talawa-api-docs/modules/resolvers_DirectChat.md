@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/DirectChat/index.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/resolvers/DirectChat/index.ts#L7)
+[src/resolvers/DirectChat/index.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/resolvers/DirectChat/index.ts#L7)

@@ -26,4 +26,4 @@ payload provided with the request
 
 #### Defined in
 
-[src/resolvers/Mutation/recaptcha.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/fcc2f8f/src/resolvers/Mutation/recaptcha.ts#L10)
+[src/resolvers/Mutation/recaptcha.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/resolvers/Mutation/recaptcha.ts#L10)
