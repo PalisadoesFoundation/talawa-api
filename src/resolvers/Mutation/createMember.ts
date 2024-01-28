@@ -113,7 +113,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   );
 
   // Checks whether user with _id === args.input.userId is already an member of organization.
-  if (userIsOrganizationMember) {
+  if (!userIsOrganizationMember) {
     // throw new errors.NotFoundError(
     //   requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
     //   MEMBER_NOT_FOUND_ERROR.CODE,

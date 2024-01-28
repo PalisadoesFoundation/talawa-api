@@ -40,124 +40,128 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> createAdmin", () => {
   it(`throws User not found error if user with _id === context.userId does not exist`, async () => {
-    try {
-      await Organization.updateOne(
-        {
-          _id: testOrganization?._id,
+    await Organization.updateOne(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $set: {
+          creatorId: Types.ObjectId().toString(),
         },
-        {
-          $set: {
-            creatorId: Types.ObjectId().toString(),
-          },
-        }
-      );
+      }
+    );
 
-      const args: MutationCreateMemberArgs = {
-        input: {
-          organizationId: testOrganization?.id,
-          userId: testUser?.id,
-        },
-      };
+    const args: MutationCreateMemberArgs = {
+      input: {
+        organizationId: testOrganization?.id,
+        userId: testUser?.id,
+      },
+    };
 
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
+    const context = {
+      userId: Types.ObjectId().toString(),
+    };
 
-      await createMemberResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
+    const result = await createMemberResolver?.({}, args, context);
+
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "UserNotFoundError",
+      message: USER_NOT_FOUND_ERROR.MESSAGE,
+    });
   });
 
   it(`throws NotFoundError if no user exists with _id === args.input.userId`, async () => {
-    try {
-      await Organization.updateOne(
-        {
-          _id: testOrganization?._id,
+    await Organization.updateOne(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $set: {
+          creatorId: testUser?._id,
         },
-        {
-          $set: {
-            creatorId: testUser?._id,
-          },
-        }
-      );
+      }
+    );
 
-      await User.updateOne(
-        {
-          _id: testUser?._id,
+    await User.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $set: {
+          userType: "SUPERADMIN",
         },
-        {
-          $set: {
-            userType: "SUPERADMIN",
-          },
-        }
-      );
+      }
+    );
 
-      const args: MutationCreateMemberArgs = {
-        input: {
-          organizationId: testOrganization?.id,
-          userId: Types.ObjectId().toString(),
-        },
-      };
+    const args: MutationCreateMemberArgs = {
+      input: {
+        organizationId: testOrganization?.id,
+        userId: Types.ObjectId().toString(),
+      },
+    };
 
-      const context = {
-        userId: testUser?.id,
-      };
+    const context = {
+      userId: testUser?.id,
+    };
 
-      await createMemberResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
+    const result = await createMemberResolver?.({}, args, context);
+
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "UserNotFoundError",
+      message: USER_NOT_FOUND_ERROR.MESSAGE,
+    });
   });
 
   it(`throws NotFoundError if no organization exists with _id === args.input.organizationId`, async () => {
-    try {
-      const args: MutationCreateMemberArgs = {
-        input: {
-          organizationId: Types.ObjectId().toString(),
-          userId: "",
-        },
-      };
+    const args: MutationCreateMemberArgs = {
+      input: {
+        organizationId: Types.ObjectId().toString(),
+        userId: "",
+      },
+    };
 
-      const context = {
-        userId: testUser?.id,
-      };
+    const context = {
+      userId: testUser?.id,
+    };
 
-      await createMemberResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-    }
+    const result = await createMemberResolver?.({}, args, context);
+
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "OrganizationNotFoundError",
+      message: ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+    });
   });
 
   it(`throws UnauthorizedError if user with _id === args.input.userId is already an member
   of organzation with _id === args.input.organizationId`, async () => {
-    try {
-      await Organization.updateOne(
-        {
-          _id: testOrganization?._id,
+    await Organization.updateOne(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $push: {
+          members: testUser?._id,
         },
-        {
-          $push: {
-            members: testUser?._id,
-          },
-        }
-      );
+      }
+    );
 
-      const args: MutationCreateMemberArgs = {
-        input: {
-          organizationId: testOrganization?.id,
-          userId: testUser?.id,
-        },
-      };
-
-      const context = {
+    const args: MutationCreateMemberArgs = {
+      input: {
+        organizationId: testOrganization?.id,
         userId: testUser?.id,
-      };
+      },
+    };
 
-      await createMemberResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
-    }
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const result = await createMemberResolver?.({}, args, context);
+
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "MemberAlreadyInOrganizationError",
+      message: MEMBER_NOT_FOUND_ERROR.MESSAGE,
+    });
   });
 
   it(`Verify that the organization's members list now contains the user's ID`, async () => {
