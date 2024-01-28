@@ -279,7 +279,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
       if (error instanceof InvalidFileTypeError) {
         expect(error.message).toEqual(INVALID_FILE_TYPE.MESSAGE);
       } else {
-        fail(`Expected InputValidationError, but got ${error}`);
+        fail(`Expected InvalidFileTypeError, but got ${error}`);
       }
     }
   });

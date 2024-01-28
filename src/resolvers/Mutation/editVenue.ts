@@ -120,7 +120,9 @@ export const editVenue: MutationResolvers["editVenue"] = async (
         name: args.data?.name,
         capacity: args.data?.capacity,
         description: args.data?.description,
-        imageUrl: `${context.apiRootUrl}${uploadImageFileName}`,
+        imageUrl: uploadImageFileName
+          ? `${context.apiRootUrl}${uploadImageFileName}`
+          : null,
       },
     },
     { new: true }

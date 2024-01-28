@@ -53,5 +53,5 @@ export async function generateEvents(
   //Bulk insertion in database
   const weeklyEvents = await Event.insertMany(recurringEvents, { session });
 
-  return Array.isArray(weeklyEvents) ? weeklyEvents : [weeklyEvents];
+  return weeklyEvents;
 }

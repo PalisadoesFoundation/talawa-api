@@ -100,7 +100,9 @@ export const createVenue: MutationResolvers["createVenue"] = async (
 
   const newVenue = await Venue.create({
     ...args.data,
-    imageUrl: `${context.apiRootUrl}${uploadImageFileName}`,
+    imageUrl: uploadImageFileName
+      ? `${context.apiRootUrl}${uploadImageFileName}`
+      : null,
   });
 
   // Add the new venue to the venues inside the organization
