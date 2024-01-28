@@ -220,8 +220,6 @@ The application requires the following secrets to be set:
 - `API_DEMO_USERNAME`: Your API username (e.g., `talawa-api`)
 - `API_DEMO_SSH_KEY`: Your **private** SSH key
 - `API_DEMO_SSH_PORT`: Your port number (e.g., `22`)
-- `API_DEMO_ACCESS_TOKEN_SECRET`: Your access token secret
-- `API_DEMO_REFRESH_TOKEN_SECRET`: Your refresh token secret
 - `API_DEMO_RECAPTCHA_SECRET_KEY`: Your reCAPTCHA secret key
 - `API_DEMO_MAIL_USERNAME`: Your mail username
 - `API_DEMO_MAIL_PASSWORD`: Your mail password (Not your main passowrd, App password you created)
