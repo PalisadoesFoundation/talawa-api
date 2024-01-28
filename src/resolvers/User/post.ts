@@ -1,14 +1,12 @@
 import { Post } from "../../models";
-import type {
-  UserPostsArgs,
-  UserResolvers,
-} from "../../types/generatedGraphQLTypes";
+import type { UserResolvers } from "../../types/generatedGraphQLTypes";
 import { parseConnectionArguments } from "../../utilities/validateConnectionArgs";
 /**
  * This resolver function will fetch and return the post created by the user from database.
  * @param parent - An object that is the return value of the resolver for this field's parent.
  * @returns An array which conatins the post created by the user.
  */
+
 export const posts: UserResolvers["posts"] = async (parent, args) => {
   const paginationArgs = parseConnectionArguments(args);
 

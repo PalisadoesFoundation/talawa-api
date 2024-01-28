@@ -21,7 +21,7 @@ export type ParsedRelayConnectionArguments = {
 // that can be returned in one connection query for the corresponding record
 // replace this with an environment variable preferably
 const env = {
-  LIMIT: 0,
+  LIMIT: 50,
 };
 
 export function parseConnectionArguments(
