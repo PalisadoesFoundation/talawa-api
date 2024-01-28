@@ -1,3 +1,4 @@
+import { InvalidFileTypeError } from "./../../../src/libraries/errors/invalidFileTypeError";
 import { ConflictError } from "./../../../src/libraries/errors/conflictError";
 import { TestVenueType } from "./../../helpers/venue";
 import "dotenv/config";
@@ -8,6 +9,7 @@ import type { MutationEditVenueArgs } from "../../../src/types/generatedGraphQLT
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  INVALID_FILE_TYPE,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -246,6 +248,36 @@ describe("resolvers -> Mutation -> editVenue", () => {
     } catch (error: unknown) {
       if (error instanceof ConflictError) {
         expect(error.message).toEqual(VENUE_ALREADY_EXISTS_ERROR.MESSAGE);
+      } else {
+        fail(`Expected InputValidationError, but got ${error}`);
+      }
+    }
+  });
+
+  it(`throws error for invalid file type`, async () => {
+    try {
+      const args: MutationEditVenueArgs = {
+        data: {
+          _id: testVenue?.id,
+          capacity: 90,
+          name: "newTestVenue",
+          description: "newDescription",
+          organizationId: testOrganization?.id,
+        },
+        file: "data:image/",
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { editVenue } = await import(
+        "../../../src/resolvers/Mutation/editVenue"
+      );
+      await editVenue?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof InvalidFileTypeError) {
+        expect(error.message).toEqual(INVALID_FILE_TYPE.MESSAGE);
       } else {
         fail(`Expected InputValidationError, but got ${error}`);
       }

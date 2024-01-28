@@ -1,5 +1,7 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
+import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
+import { errors, requestContext } from "../../libraries";
 
 /**
  * This query will fetch the list of all venues within an Organization from database.
@@ -16,5 +18,13 @@ export const venuesInOrganization: QueryResolvers["venuesInOrganization"] =
       .populate("venues")
       .lean();
 
-    return organization?.venues || [];
+    if (!organization) {
+      throw new errors.NotFoundError(
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      );
+    }
+
+    return organization?.venues;
   };

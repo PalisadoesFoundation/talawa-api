@@ -1,3 +1,4 @@
+import { NotFoundError } from "./../../../src/libraries/errors/notFoundError";
 import { QueryVenuesInOrganizationArgs } from "./../../../src/types/generatedGraphQLTypes";
 import { TestVenueType, createTestVenue } from "./../../helpers/venue";
 import "dotenv/config";
@@ -10,6 +11,8 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { Types } from "mongoose";
+import { ORGANIZATION_NOT_FOUND_ERROR } from "../../../src/constants";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testVenue1: TestVenueType;
@@ -44,6 +47,30 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> venuesInOrganization", () => {
+  it(`throws NotFoundError if no organization exists`, async () => {
+    try {
+      const args: QueryVenuesInOrganizationArgs = {
+        id: Types.ObjectId().toString(),
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { venuesInOrganization } = await import(
+        "../../../src/resolvers/Query/venuesInOrganization"
+      );
+
+      await venuesInOrganization?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
+  });
+
   it(`returns list of all existing venues present in the organization`, async () => {
     const args: QueryVenuesInOrganizationArgs = {
       id: testOrganization?.id,

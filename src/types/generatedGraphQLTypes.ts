@@ -283,7 +283,6 @@ export type Event = {
   attendees?: Maybe<Array<Maybe<User>>>;
   attendeesCheckInStatus: Array<CheckInStatus>;
   averageFeedbackScore?: Maybe<Scalars['Float']['output']>;
-  checkIns?: Maybe<Scalars['Int']['output']>;
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   description: Scalars['String']['output'];
@@ -2429,7 +2428,6 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   attendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   attendeesCheckInStatus?: Resolver<Array<ResolversTypes['CheckInStatus']>, ParentType, ContextType>;
   averageFeedbackScore?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  checkIns?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
