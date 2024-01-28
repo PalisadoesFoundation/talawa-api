@@ -3,7 +3,7 @@ import { createTestUserAndOrganization } from "./userAndOrg";
 import type { InterfaceEvent } from "../../src/models";
 import { Event, EventAttendee, Organization, User } from "../../src/models";
 import type { Document } from "mongoose";
-import { createTestVenue } from "./venue";
+import { createTestVenue, TestVenueType } from "./venue";
 
 export type TestEventType =
   | (InterfaceEvent & Document<any, any, InterfaceEvent>)
@@ -11,7 +11,9 @@ export type TestEventType =
 
 export const createTestEventWithRegistrants = async (
   isAdmin = true
-): Promise<[TestUserType, TestOrganizationType, TestEventType]> => {
+): Promise<
+  [TestUserType, TestOrganizationType, TestEventType, TestVenueType]
+> => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   const testVenue = await createTestVenue();
   const testEvent = await Event.create({
@@ -56,5 +58,5 @@ export const createTestEventWithRegistrants = async (
     }
   );
 
-  return [testUser, testOrganization, testEvent];
+  return [testUser, testOrganization, testEvent, testVenue];
 };

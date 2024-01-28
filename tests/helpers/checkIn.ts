@@ -38,7 +38,5 @@ export const createEventWithCheckedInUser = async (): Promise<
     }
   );
 
-  await Event.updateOne({ _id: testEvent!._id }, { $inc: { checkIns: 1 } });
-
   return [testUser, testOrg, testEvent, checkIn];
 };

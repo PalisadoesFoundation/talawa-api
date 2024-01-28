@@ -1,10 +1,11 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event, EventAttendee } from "../../models";
+import { User, Event, EventAttendee, Venue } from "../../models";
 import {
   EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
@@ -61,6 +62,22 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
       requestContext.translate(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE),
       REGISTRANT_ALREADY_EXIST_ERROR.CODE,
       REGISTRANT_ALREADY_EXIST_ERROR.PARAM
+    );
+  }
+
+  // event = await Event.findById({ _id: args.id });
+
+  const venue = await Venue.findById({
+    _id: event?.venue,
+  }).lean();
+
+  const eventId = args.id;
+  const count = await EventAttendee.countDocuments({ eventId });
+  if (venue && count >= venue.capacity) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 

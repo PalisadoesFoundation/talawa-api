@@ -148,7 +148,6 @@ export const types = gql`
     admins(adminId: ID): [User!]
     status: Status!
     feedback: [Feedback!]!
-    checkIns: Int
     averageFeedbackScore: Float
   }
 

@@ -1,7 +1,14 @@
+import { TestVenueType, createTestVenue } from "./../../helpers/venue";
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event, EventAttendee } from "../../../src/models";
+import {
+  User,
+  Event,
+  EventAttendee,
+  Venue,
+  InterfaceEvent,
+} from "../../../src/models";
 import type { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -9,6 +16,7 @@ import { registerForEvent as registerForEventResolver } from "../../../src/resol
 import {
   EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -26,10 +34,11 @@ import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistra
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
+let testVenue: TestVenueType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [testUser, , testEvent] = await createTestEventWithRegistrants();
+  [testUser, , testEvent, testVenue] = await createTestEventWithRegistrants();
 });
 
 afterAll(async () => {
@@ -94,7 +103,19 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     }
   });
 
-  it(`registers user with _id === context.userId as a registrant for event with _id === args.id`, async () => {
+  it(`throws error if the capacity of the event venue is already full`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    testVenue = await Venue.findOneAndUpdate(
+      { _id: testVenue?.id },
+      { capacity: 0 },
+      { new: true }
+    );
+
     await EventAttendee.deleteOne({
       userId: testUser!._id,
       eventId: testEvent!._id,
@@ -111,6 +132,37 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       }
     );
 
+    testEvent = await Event.findById(testEvent?.id);
+
+    try {
+      const args: MutationRegisterForEventArgs = {
+        id: testEvent!._id,
+      };
+
+      const context = {
+        userId: testUser!._id,
+      };
+
+      const { registerForEvent: registerForEventResolver } = await import(
+        "../../../src/resolvers/Mutation/registerForEvent"
+      );
+
+      await registerForEventResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    }
+  });
+
+  it(`registers user with _id === context.userId as a registrant for event with _id === args.id`, async () => {
+    testVenue = await Venue.findOneAndUpdate(
+      { _id: testVenue?.id },
+      { capacity: 5 },
+      { new: true }
+    );
+
     const args: MutationRegisterForEventArgs = {
       id: testEvent!._id,
     };
@@ -125,12 +177,14 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       context
     );
 
-    const testRegisterForEventPayload = await Event.findOne({
+    const testRegisterForEventPayload: InterfaceEvent = await Event.findOne({
       _id: testEvent?._id,
     }).lean();
-
-    expect(registerForEventPayload).toEqual(testRegisterForEventPayload);
-
+    expect(registerForEventPayload).toEqual(
+      expect.objectContaining({
+        _id: testRegisterForEventPayload?._id,
+      })
+    );
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })

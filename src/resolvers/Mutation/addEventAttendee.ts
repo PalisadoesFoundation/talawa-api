@@ -86,6 +86,8 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
 
   const eventId = args.data?.eventId;
   const count = await EventAttendee.countDocuments({ eventId });
+
+  // Decline request for new event attendee if the venue capacity is reached
   if (venue && count >= venue.capacity) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
