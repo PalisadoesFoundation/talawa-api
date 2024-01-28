@@ -3,7 +3,6 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceActionItemCategory } from "./ActionItemCategory";
-import { MILLISECONDS_IN_A_WEEK } from "../constants";
 
 /**
  * This is an interface that represents a database(MongoDB) document for ActionItem.
@@ -34,8 +33,8 @@ export interface InterfaceActionItem {
  * @param preCompletionNotes - Notes prior to completion.
  * @param postCompletionNotes - Notes on completion.
  * @param assignmentDate - Date of assignment.
- * @param dueDate - Due date (defaults to one week from creation).
- * @param completionDate - Completion date (defaults to one week from creation).
+ * @param dueDate - Due date.
+ * @param completionDate - Completion date.
  * @param isCompleted - Whether the ActionItem has been completed.
  * @param eventId - Event to which the ActionItem is related, refer to the `Event` model.
  * @param creatorId - User who created the ActionItem, refer to the `User` model.
@@ -74,12 +73,12 @@ const actionItemSchema = new Schema(
     dueDate: {
       type: Date,
       required: true,
-      default: Date.now() + MILLISECONDS_IN_A_WEEK,
+      default: Date.now() + 7 * 24 * 60 * 60 * 1000,
     },
     completionDate: {
       type: Date,
       required: true,
-      default: Date.now() + MILLISECONDS_IN_A_WEEK,
+      default: Date.now() + 7 * 24 * 60 * 60 * 1000,
     },
     isCompleted: {
       type: Boolean,
