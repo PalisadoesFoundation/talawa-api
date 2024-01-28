@@ -6,10 +6,12 @@ import { image } from "./image";
 import { members } from "./members";
 import { pinnedPosts } from "./pinnedPosts";
 import { membershipRequests } from "./membershipRequests";
+import { actionItemCategories } from "./actionItemCategories";
 // import { userTags } from "./userTags";
 
 export const Organization: OrganizationResolvers = {
   admins,
+  actionItemCategories,
   blockedUsers,
   creator,
   image,
