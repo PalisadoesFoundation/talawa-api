@@ -1,5 +1,3 @@
-import { loadDefaultOrganization } from "./src/utilities/loadDefaultOrganization";
-
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
