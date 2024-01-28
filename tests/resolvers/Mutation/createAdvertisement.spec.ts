@@ -21,6 +21,11 @@ import {
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { requestContext } from "../../../src/libraries";
+import { Types } from "mongoose";
+import { BASE_URL, USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { createAdvertisement } from "../../../src/resolvers/Mutation/createAdvertisement";
+import { ApplicationError } from "../../../src/libraries/errors";
 let testUser: TestUserType;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let randomUser: TestUserType;
@@ -49,6 +54,102 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
     vi.resetAllMocks();
+  });
+
+  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationCreateAdvertisementArgs = {
+        input: {
+          name: "myad",
+          organizationId: "64d1f8cb77a4b61004f824b8",
+          type: "POPUP",
+          mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
+          startDate: "2023-10-08T13:02:29.000Z",
+          endDate: "2023-10-08T13:02:29.000Z",
+        },
+      };
+
+      const context = {
+        userId: Types.ObjectId().toString(),
+      };
+
+      const { createAdvertisement: createAdvertisementResolver } = await import(
+        "../../../src/resolvers/Mutation/createAdvertisement"
+      );
+
+      await createAdvertisementResolver?.({}, args, context);
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
+    }
+  });
+
+  it(`creates the post and returns it when image is not provided`, async () => {
+    const args: MutationCreateAdvertisementArgs = {
+      input: {
+        name: "myad",
+        organizationId: "64d1f8cb77a4b61004f824b8",
+        type: "POPUP",
+        mediaFile: "data:video/mp4;base64,bWVkaWEgY29udGVudA==",
+        startDate: "2023-10-08T13:02:29.000Z",
+        endDate: "2023-10-08T13:02:29.000Z",
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const { createAdvertisement: createAdvertisementResolver } = await import(
+      "../../../src/resolvers/Mutation/createAdvertisement"
+    );
+
+    const createdAdvertisementPayload = await createAdvertisementResolver?.(
+      {},
+      args,
+      context
+    );
+
+    expect(createdAdvertisementPayload).toHaveProperty("name", "myad");
+
+    expect(createdAdvertisementPayload).toHaveProperty("type", "POPUP");
+  });
+
+  it(`creates the post and throws an error for unsupported file type`, async () => {
+    const args: MutationCreateAdvertisementArgs = {
+      input: {
+        name: "myad",
+        organizationId: "64d1f8cb77a4b61004f824b8",
+        type: "POPUP",
+        mediaFile: "unsupportedFile.txt",
+        startDate: "2023-10-08T13:02:29.000Z",
+        endDate: "2023-10-08T13:02:29.000Z",
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+      apiRootUrl: BASE_URL,
+    };
+
+    // Mock the uploadEncodedImage function to throw an error for unsupported file types
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      () => {
+        throw new Error("Unsupported file type.");
+      }
+    );
+
+    // Ensure that an error is thrown when createPostResolverImage is called
+    await expect(createAdvertisement?.({}, args, context)).rejects.toThrowError(
+      "Unsupported file type."
+    );
   });
 
   it(`should create the ad and returns `, async () => {

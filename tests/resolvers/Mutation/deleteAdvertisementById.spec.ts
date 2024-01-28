@@ -1,32 +1,21 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceAdvertisement } from "../../../src/models";
-import { Advertisement } from "../../../src/models";
 import type { MutationDeleteAdvertisementByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { deleteAdvertisementById } from "../../../src/resolvers/Mutation/deleteAdvertisementById";
+import {
+  TestAdvertisementType,
+  createTestAdvertisement,
+} from "../../helpers/advertisement";
 
-let testAdvertisement: InterfaceAdvertisement &
-  Document<any, any, InterfaceAdvertisement>;
+let testAdvertisement: TestAdvertisementType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestUserAndOrganization();
-  const testOrganization = temp[1];
-  testAdvertisement = await Advertisement.create({
-    organizationId: testOrganization?._id,
-    endDate: new Date(),
-    startDate: new Date(),
-    type: "POPUP",
-    name: "Cookies at just $5 for a packet",
-    mediaUrl: "data:image/png;base64,bWVkaWEgY29udGVudA==",
-    creatorId: temp[0]?._id,
-  });
+  testAdvertisement = await createTestAdvertisement();
 });
 
 afterAll(async () => {

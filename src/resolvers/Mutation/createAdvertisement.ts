@@ -45,8 +45,6 @@ export const createAdvertisement: MutationResolvers["createAdvertisement"] =
     // Returns createdAd.
     return {
       ...createdAdvertisement.toObject(),
-      mediaUrl: uploadMediaFile
-        ? `${_context.apiRootUrl}${uploadMediaFile}`
-        : null,
+      mediaUrl: `${_context.apiRootUrl}${uploadMediaFile}`,
     };
   };

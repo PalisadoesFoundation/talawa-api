@@ -14,9 +14,7 @@ export const getAdvertisements: QueryResolvers["getAdvertisements"] = async (
   const advertisementsWithMediaURLResolved = advertisements.map(
     (advertisement) => ({
       ...advertisement,
-      mediaUrl: advertisement.mediaUrl
-        ? `${context.apiRootUrl}${advertisement.mediaUrl}`
-        : null,
+      mediaUrl: `${context.apiRootUrl}${advertisement.mediaUrl}`,
     })
   );
 
