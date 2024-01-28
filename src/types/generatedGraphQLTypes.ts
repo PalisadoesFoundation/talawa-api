@@ -979,6 +979,7 @@ export type MutationSignUpArgs = {
 
 export type MutationTogglePostPinArgs = {
   id: Scalars['ID']['input'];
+  title?: InputMaybe<Scalars['String']['input']>;
 };
 
 
