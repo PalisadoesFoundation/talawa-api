@@ -495,5 +495,7 @@ export const REDIS_HOST = process.env.REDIS_HOST!;
 export const REDIS_PORT = Number(process.env.REDIS_PORT);
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
+export const MILLISECONDS_IN_A_WEEK = 7 * 24 * 60 * 60 * 1000;
+
 export const key = process.env.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");
