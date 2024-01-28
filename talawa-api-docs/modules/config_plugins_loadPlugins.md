@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/config/plugins/loadPlugins.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/config/plugins/loadPlugins.ts#L7)
+[src/config/plugins/loadPlugins.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/config/plugins/loadPlugins.ts#L7)

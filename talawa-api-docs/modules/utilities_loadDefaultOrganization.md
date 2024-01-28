@@ -21,7 +21,7 @@
 
 #### Defined in
 
-[src/utilities/loadDefaultOrganization.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/utilities/loadDefaultOrganization.ts#L14)
+[src/utilities/loadDefaultOrganization.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/utilities/loadDefaultOrganization.ts#L14)
 
 ___
 
@@ -39,4 +39,4 @@ a Promise that resolves to void
 
 #### Defined in
 
-[src/utilities/loadDefaultOrganization.ts:30](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/utilities/loadDefaultOrganization.ts#L30)
+[src/utilities/loadDefaultOrganization.ts:30](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/utilities/loadDefaultOrganization.ts#L30)

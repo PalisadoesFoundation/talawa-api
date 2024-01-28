@@ -6,6 +6,8 @@
 
 ### References
 
+- [ActionItem](models.md#actionitem)
+- [ActionItemCategory](models.md#actionitemcategory)
 - [Advertisement](models.md#advertisement)
 - [CheckIn](models.md#checkin)
 - [Comment](models.md#comment)
@@ -20,6 +22,8 @@
 - [GroupChat](models.md#groupchat)
 - [GroupChatMessage](models.md#groupchatmessage)
 - [ImageHash](models.md#imagehash)
+- [InterfaceActionItem](models.md#interfaceactionitem)
+- [InterfaceActionItemCategory](models.md#interfaceactionitemcategory)
 - [InterfaceAdvertisement](models.md#interfaceadvertisement)
 - [InterfaceCheckIn](models.md#interfacecheckin)
 - [InterfaceComment](models.md#interfacecomment)
@@ -65,6 +69,18 @@
 - [UserToReturn](models.md#usertoreturn)
 
 ## References
+
+### ActionItem
+
+Re-exports [ActionItem](models_ActionItem.md#actionitem)
+
+___
+
+### ActionItemCategory
+
+Re-exports [ActionItemCategory](models_ActionItemCategory.md#actionitemcategory)
+
+___
 
 ### Advertisement
 
@@ -147,6 +163,18 @@ ___
 ### ImageHash
 
 Re-exports [ImageHash](models_ImageHash.md#imagehash)
+
+___
+
+### InterfaceActionItem
+
+Re-exports [InterfaceActionItem](../interfaces/models_ActionItem.InterfaceActionItem.md)
+
+___
+
+### InterfaceActionItemCategory
+
+Re-exports [InterfaceActionItemCategory](../interfaces/models_ActionItemCategory.InterfaceActionItemCategory.md)
 
 ___
 

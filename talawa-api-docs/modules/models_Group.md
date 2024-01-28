@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/models/Group.ts:64](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Group.ts#L64)
+[src/models/Group.ts:64](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/models/Group.ts#L64)

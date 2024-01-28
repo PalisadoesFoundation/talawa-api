@@ -20,7 +20,7 @@
 
 #### Defined in
 
-[src/resolvers/Subscription/onPluginUpdate.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/resolvers/Subscription/onPluginUpdate.ts#L28)
+[src/resolvers/Subscription/onPluginUpdate.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/resolvers/Subscription/onPluginUpdate.ts#L28)
 
 ## Functions
 
@@ -50,4 +50,4 @@ You can learn about `subscription` [here](https://www.apollographql.com/docs/apo
 
 #### Defined in
 
-[src/resolvers/Subscription/onPluginUpdate.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/resolvers/Subscription/onPluginUpdate.ts#L19)
+[src/resolvers/Subscription/onPluginUpdate.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/resolvers/Subscription/onPluginUpdate.ts#L19)

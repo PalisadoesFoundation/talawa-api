@@ -23,7 +23,7 @@ This is an interface that represents a database document.
 
 #### Defined in
 
-[src/models/Language.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Language.ts#L10)
+[src/models/Language.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/models/Language.ts#L10)
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 #### Defined in
 
-[src/models/Language.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Language.ts#L7)
+[src/models/Language.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/models/Language.ts#L7)
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 #### Defined in
 
-[src/models/Language.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Language.ts#L8)
+[src/models/Language.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/models/Language.ts#L8)
 
 ___
 
@@ -53,4 +53,4 @@ ___
 
 #### Defined in
 
-[src/models/Language.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/0075fca/src/models/Language.ts#L9)
+[src/models/Language.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/de4debc/src/models/Language.ts#L9)
