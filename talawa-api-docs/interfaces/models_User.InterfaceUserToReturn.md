@@ -50,7 +50,7 @@ Although this is a poor way, a better way will include implementing this Model w
 
 #### Defined in
 
-[src/models/User.ts:292](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L292)
+[src/models/User.ts:292](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L292)
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:293](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L293)
+[src/models/User.ts:293](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L293)
 
 ___
 
@@ -83,7 +83,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:303](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L303)
+[src/models/User.ts:303](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L303)
 
 ___
 
@@ -93,7 +93,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:304](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L304)
+[src/models/User.ts:304](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L304)
 
 ___
 
@@ -103,7 +103,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:305](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L305)
+[src/models/User.ts:305](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L305)
 
 ___
 
@@ -113,7 +113,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:306](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L306)
+[src/models/User.ts:306](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L306)
 
 ___
 
@@ -123,7 +123,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:307](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L307)
+[src/models/User.ts:307](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L307)
 
 ___
 
@@ -133,7 +133,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:308](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L308)
+[src/models/User.ts:308](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L308)
 
 ___
 
@@ -143,7 +143,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:309](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L309)
+[src/models/User.ts:309](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L309)
 
 ___
 
@@ -153,7 +153,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:310](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L310)
+[src/models/User.ts:310](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L310)
 
 ___
 
@@ -163,7 +163,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:311](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L311)
+[src/models/User.ts:311](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L311)
 
 ___
 
@@ -173,7 +173,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:312](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L312)
+[src/models/User.ts:312](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L312)
 
 ___
 
@@ -183,7 +183,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:313](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L313)
+[src/models/User.ts:313](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L313)
 
 ___
 
@@ -193,7 +193,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:314](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L314)
+[src/models/User.ts:314](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L314)
 
 ___
 
@@ -203,7 +203,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:315](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L315)
+[src/models/User.ts:315](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L315)
 
 ___
 
@@ -213,7 +213,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:316](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L316)
+[src/models/User.ts:316](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L316)
 
 ___
 
@@ -223,7 +223,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:317](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L317)
+[src/models/User.ts:317](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L317)
 
 ___
 
@@ -233,7 +233,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:318](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L318)
+[src/models/User.ts:318](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L318)
 
 ___
 
@@ -243,7 +243,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:319](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L319)
+[src/models/User.ts:319](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L319)
 
 ___
 
@@ -253,7 +253,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:320](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L320)
+[src/models/User.ts:320](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L320)
 
 ___
 
@@ -263,7 +263,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:321](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L321)
+[src/models/User.ts:321](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L321)
 
 ___
 
@@ -281,7 +281,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:322](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L322)
+[src/models/User.ts:322](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L322)
 
 ___
 
@@ -291,7 +291,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:327](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L327)
+[src/models/User.ts:327](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L327)
 
 ___
 
@@ -301,7 +301,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:328](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L328)
+[src/models/User.ts:328](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L328)
 
 ___
 
@@ -311,7 +311,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:329](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L329)
+[src/models/User.ts:329](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L329)
 
 ___
 
@@ -321,7 +321,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:330](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L330)
+[src/models/User.ts:330](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L330)
 
 ___
 
@@ -331,7 +331,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:331](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L331)
+[src/models/User.ts:331](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L331)
 
 ___
 
@@ -341,7 +341,7 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:332](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L332)
+[src/models/User.ts:332](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L332)
 
 ___
 
@@ -351,4 +351,4 @@ ___
 
 #### Defined in
 
-[src/models/User.ts:333](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/User.ts#L333)
+[src/models/User.ts:333](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/User.ts#L333)

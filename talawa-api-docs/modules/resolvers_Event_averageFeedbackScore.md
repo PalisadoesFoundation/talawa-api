@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Event/averageFeedbackScore.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/resolvers/Event/averageFeedbackScore.ts#L4)
+[src/resolvers/Event/averageFeedbackScore.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/resolvers/Event/averageFeedbackScore.ts#L4)

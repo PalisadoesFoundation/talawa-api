@@ -26,4 +26,4 @@ payload provided with the request
 
 #### Defined in
 
-[src/resolvers/Mutation/revokeRefreshTokenForUser.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/resolvers/Mutation/revokeRefreshTokenForUser.ts#L9)
+[src/resolvers/Mutation/revokeRefreshTokenForUser.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/resolvers/Mutation/revokeRefreshTokenForUser.ts#L9)

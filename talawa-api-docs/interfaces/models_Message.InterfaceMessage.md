@@ -28,7 +28,7 @@ This is an interface that represents a database(MongoDB) document for Message.
 
 #### Defined in
 
-[src/models/Message.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Message.ts#L9)
+[src/models/Message.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Message.ts#L9)
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 #### Defined in
 
-[src/models/Message.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Message.ts#L13)
+[src/models/Message.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Message.ts#L13)
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 #### Defined in
 
-[src/models/Message.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Message.ts#L15)
+[src/models/Message.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Message.ts#L15)
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 #### Defined in
 
-[src/models/Message.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Message.ts#L16)
+[src/models/Message.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Message.ts#L16)
 
 ___
 
@@ -68,7 +68,7 @@ ___
 
 #### Defined in
 
-[src/models/Message.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Message.ts#L11)
+[src/models/Message.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Message.ts#L11)
 
 ___
 
@@ -78,7 +78,7 @@ ___
 
 #### Defined in
 
-[src/models/Message.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Message.ts#L17)
+[src/models/Message.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Message.ts#L17)
 
 ___
 
@@ -88,7 +88,7 @@ ___
 
 #### Defined in
 
-[src/models/Message.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Message.ts#L10)
+[src/models/Message.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Message.ts#L10)
 
 ___
 
@@ -98,7 +98,7 @@ ___
 
 #### Defined in
 
-[src/models/Message.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Message.ts#L14)
+[src/models/Message.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Message.ts#L14)
 
 ___
 
@@ -108,4 +108,4 @@ ___
 
 #### Defined in
 
-[src/models/Message.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Message.ts#L12)
+[src/models/Message.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Message.ts#L12)

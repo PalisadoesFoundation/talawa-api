@@ -48,4 +48,4 @@
 
 #### Defined in
 
-[src/resolvers/middleware/currentUserExists.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/resolvers/middleware/currentUserExists.ts#L8)
+[src/resolvers/middleware/currentUserExists.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/resolvers/middleware/currentUserExists.ts#L8)

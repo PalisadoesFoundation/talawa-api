@@ -27,7 +27,7 @@ This is an interface representing a document for a group in the database(MongoDB
 
 #### Defined in
 
-[src/models/Group.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Group.ts#L9)
+[src/models/Group.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Group.ts#L9)
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 #### Defined in
 
-[src/models/Group.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Group.ts#L14)
+[src/models/Group.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Group.ts#L14)
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 #### Defined in
 
-[src/models/Group.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Group.ts#L15)
+[src/models/Group.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Group.ts#L15)
 
 ___
 
@@ -57,7 +57,7 @@ ___
 
 #### Defined in
 
-[src/models/Group.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Group.ts#L11)
+[src/models/Group.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Group.ts#L11)
 
 ___
 
@@ -67,7 +67,7 @@ ___
 
 #### Defined in
 
-[src/models/Group.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Group.ts#L12)
+[src/models/Group.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Group.ts#L12)
 
 ___
 
@@ -77,7 +77,7 @@ ___
 
 #### Defined in
 
-[src/models/Group.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Group.ts#L13)
+[src/models/Group.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Group.ts#L13)
 
 ___
 
@@ -87,7 +87,7 @@ ___
 
 #### Defined in
 
-[src/models/Group.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Group.ts#L10)
+[src/models/Group.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Group.ts#L10)
 
 ___
 
@@ -97,4 +97,4 @@ ___
 
 #### Defined in
 
-[src/models/Group.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/Group.ts#L16)
+[src/models/Group.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/models/Group.ts#L16)

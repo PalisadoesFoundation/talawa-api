@@ -39,4 +39,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/addUserToGroupChat.ts:27](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/resolvers/Mutation/addUserToGroupChat.ts#L27)
+[src/resolvers/Mutation/addUserToGroupChat.ts:27](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/resolvers/Mutation/addUserToGroupChat.ts#L27)
