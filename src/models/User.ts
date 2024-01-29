@@ -283,8 +283,64 @@ const userSchema = new Schema(
 
 userSchema.plugin(mongoosePaginate);
 
+/**
+ * This is an interface of the user that will be returned to the client side.
+ * The differrence between this interface and the real User Interface is that it doesn't contains password field
+ * Although this is a poor way, a better way will include implementing this Model with inclusion of password field and then using that model everywhere.
+ */
+export interface InterfaceUserToReturn {
+  _id: Types.ObjectId;
+  address: {
+    city: string;
+    countryCode: string;
+    dependentLocality: string;
+    line1: string;
+    line2: string;
+    postalCode: string;
+    sortingCode: string;
+    state: string;
+  };
+  adminApproved: boolean;
+  adminFor: PopulatedDoc<InterfaceOrganization & Document>[];
+  appLanguageCode: string;
+  birthDate: Date;
+  createdAt: Date;
+  createdEvents: PopulatedDoc<InterfaceEvent & Document>[];
+  createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
+  educationGrade: string;
+  email: string;
+  employmentStatus: string;
+  eventAdmin: PopulatedDoc<InterfaceEvent & Document>[];
+  firstName: string;
+  gender: string;
+  image: string | undefined | null;
+  joinedOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
+  lastName: string;
+  maritalStatus: string;
+  membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
+  organizationsBlockedBy: PopulatedDoc<InterfaceOrganization & Document>[];
+  phone: {
+    home: string;
+    mobile: string;
+    work: string;
+  };
+  pluginCreationAllowed: boolean;
+  registeredEvents: PopulatedDoc<InterfaceEvent & Document>[];
+  status: string;
+  token: string | undefined;
+  tokenVersion: number;
+  updatedAt: Date;
+  userType: string;
+}
+
 const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
+
+const userToReturnModel = (): PaginateModel<InterfaceUserToReturn> =>
+  model<InterfaceUserToReturn, PaginateModel<InterfaceUserToReturn>>(
+    "UserToReturn",
+    userSchema
+  );
 
 createLoggingMiddleware(userSchema, "User");
 
@@ -292,3 +348,5 @@ createLoggingMiddleware(userSchema, "User");
 export const User = (models.User || userModel()) as ReturnType<
   typeof userModel
 >;
+export const UserToReturn = (models.UserToReturn ||
+  userToReturnModel()) as ReturnType<typeof userToReturnModel>;

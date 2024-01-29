@@ -7,6 +7,27 @@ if (!issues) {
   ENV = envSchema.parse(process.env);
 }
 
+export const ACTION_ITEM_NOT_FOUND_ERROR = {
+  DESC: "ActionItem not found",
+  CODE: "actionItem.notFound",
+  MESSAGE: "actionItem.notFound",
+  PARAM: "actionItem",
+};
+
+export const ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR = {
+  DESC: "ActionItemCategory not found",
+  CODE: "actionItemCategory.notFound",
+  MESSAGE: "actionItemCategory.notFound",
+  PARAM: "actionItemCategory",
+};
+
+export const ACTION_ITEM_CATEGORY_ALREADY_EXISTS = {
+  DESC: "Action Item Category already exists",
+  CODE: "actionItemCategory.alreadyExists",
+  MESSAGE: "actionItemCategory.alreadyExists",
+  PARAM: "actionItemCategory",
+};
+
 export const CHAT_NOT_FOUND_ERROR = {
   DESC: "Chat not found",
   CODE: "chat.notFound",
@@ -96,6 +117,12 @@ export const REGISTRANT_ALREADY_EXIST_ERROR = {
 
 export const INVALID_FILE_TYPE = {
   MESSAGE: "invalid.fileType",
+  CODE: "internalServerError",
+  PARAM: "internalServerError",
+};
+
+export const IMAGE_SIZE_LIMIT_KB = {
+  MESSAGE: "The Image Size Limit has been exceeded",
   CODE: "internalServerError",
   PARAM: "internalServerError",
 };
@@ -456,6 +483,8 @@ export const CUSTOM_FIELD_TYPE_MISSING = {
 
 export const MAXIMUM_FETCH_LIMIT = 100;
 
+export const MAXIMUM_IMAGE_SIZE_LIMIT_KB = 20000;
+
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
 export const ACCESS_TOKEN_SECRET = ENV.ACCESS_TOKEN_SECRET;
@@ -485,6 +514,8 @@ export const SMTP_OPTIONS = {
 export const REDIS_HOST = process.env.REDIS_HOST || "";
 export const REDIS_PORT = Number(process.env.REDIS_PORT);
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
+
+export const MILLISECONDS_IN_A_WEEK = 7 * 24 * 60 * 60 * 1000;
 
 export const key = ENV.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");

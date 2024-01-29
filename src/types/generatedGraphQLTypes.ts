@@ -1,4 +1,6 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
+import type { InterfaceActionItem as InterfaceActionItemModel } from '../models/ActionItem';
+import type { InterfaceActionItemCategory as InterfaceActionItemCategoryModel } from '../models/ActionItemCategory';
 import type { InterfaceCheckIn as InterfaceCheckInModel } from '../models/CheckIn';
 import type { InterfaceMessageChat as InterfaceMessageChatModel } from '../models/MessageChat';
 import type { InterfaceComment as InterfaceCommentModel } from '../models/Comment';
@@ -19,7 +21,7 @@ import type { InterfacePlugin as InterfacePluginModel } from '../models/Plugin';
 import type { InterfacePluginField as InterfacePluginFieldModel } from '../models/PluginField';
 import type { InterfacePost as InterfacePostModel } from '../models/Post';
 import type { InterfaceOrganizationTagUser as InterfaceOrganizationTagUserModel } from '../models/OrganizationTagUser';
-import type { InterfaceUser as InterfaceUserModel } from '../models/User';
+import type { InterfaceUser as InterfaceUserModel, InterfaceUserToReturn as InterfaceUserToReturnModel } from '../models/User';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -49,6 +51,35 @@ export type Scalars = {
   Time: { input: any; output: any; }
   URL: { input: any; output: any; }
   Upload: { input: any; output: any; }
+};
+
+export type ActionItem = {
+  __typename?: 'ActionItem';
+  _id: Scalars['ID']['output'];
+  actionItemCategory?: Maybe<ActionItemCategory>;
+  assignee?: Maybe<User>;
+  assigner?: Maybe<User>;
+  assignmentDate: Scalars['Date']['output'];
+  completionDate: Scalars['Date']['output'];
+  createdAt: Scalars['Date']['output'];
+  creator?: Maybe<User>;
+  dueDate: Scalars['Date']['output'];
+  event?: Maybe<Event>;
+  isCompleted: Scalars['Boolean']['output'];
+  postCompletionNotes?: Maybe<Scalars['String']['output']>;
+  preCompletionNotes?: Maybe<Scalars['String']['output']>;
+  updatedAt: Scalars['Date']['output'];
+};
+
+export type ActionItemCategory = {
+  __typename?: 'ActionItemCategory';
+  _id: Scalars['ID']['output'];
+  createdAt: Scalars['Date']['output'];
+  creator?: Maybe<User>;
+  isDisabled: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  organization?: Maybe<Organization>;
+  updatedAt: Scalars['Date']['output'];
 };
 
 export type Address = {
@@ -107,7 +138,7 @@ export type AuthData = {
   __typename?: 'AuthData';
   accessToken: Scalars['String']['output'];
   refreshToken: Scalars['String']['output'];
-  user: User;
+  user: UserToReturn;
 };
 
 export type CheckIn = {
@@ -161,6 +192,13 @@ export type ConnectionPageInfo = {
   hasNextPage: Scalars['Boolean']['output'];
   hasPreviousPage: Scalars['Boolean']['output'];
   startCursor?: Maybe<Scalars['String']['output']>;
+};
+
+export type CreateActionItemInput = {
+  assigneeId: Scalars['ID']['input'];
+  dueDate?: InputMaybe<Scalars['Date']['input']>;
+  eventId?: InputMaybe<Scalars['ID']['input']>;
+  preCompletionNotes?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateUserTagInput = {
@@ -260,6 +298,7 @@ export type Error = {
 export type Event = {
   __typename?: 'Event';
   _id: Scalars['ID']['output'];
+  actionItems?: Maybe<Array<Maybe<ActionItem>>>;
   admins?: Maybe<Array<User>>;
   allDay: Scalars['Boolean']['output'];
   attendees?: Maybe<Array<Maybe<User>>>;
@@ -555,6 +594,8 @@ export type Mutation = {
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
   checkIn: CheckIn;
+  createActionItem: ActionItem;
+  createActionItemCategory: ActionItemCategory;
   createAdmin: User;
   createAdvertisement: Advertisement;
   createComment?: Maybe<Comment>;
@@ -584,6 +625,7 @@ export type Mutation = {
   registerForEvent: Event;
   rejectAdmin: Scalars['Boolean']['output'];
   rejectMembershipRequest: MembershipRequest;
+  removeActionItem: ActionItem;
   removeAdmin: User;
   removeAdvertisement?: Maybe<Advertisement>;
   removeComment?: Maybe<Comment>;
@@ -613,6 +655,8 @@ export type Mutation = {
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
   unregisterForEventByUser: Event;
+  updateActionItem?: Maybe<ActionItem>;
+  updateActionItemCategory?: Maybe<ActionItemCategory>;
   updateAdvertisement?: Maybe<UpdateAdvertisementPayload>;
   updateEvent: Event;
   updateLanguage: User;
@@ -717,6 +761,18 @@ export type MutationCancelMembershipRequestArgs = {
 
 export type MutationCheckInArgs = {
   data: CheckInInput;
+};
+
+
+export type MutationCreateActionItemArgs = {
+  actionItemCategoryId: Scalars['ID']['input'];
+  data: CreateActionItemInput;
+};
+
+
+export type MutationCreateActionItemCategoryArgs = {
+  name: Scalars['String']['input'];
+  organizationId: Scalars['ID']['input'];
 };
 
 
@@ -871,6 +927,11 @@ export type MutationRejectMembershipRequestArgs = {
 };
 
 
+export type MutationRemoveActionItemArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationRemoveAdminArgs = {
   data: UserAndOrganizationInput;
 };
@@ -1009,6 +1070,18 @@ export type MutationUnregisterForEventByUserArgs = {
 };
 
 
+export type MutationUpdateActionItemArgs = {
+  data: UpdateActionItemInput;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdateActionItemCategoryArgs = {
+  data: UpdateActionItemCategoryInput;
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationUpdateAdvertisementArgs = {
   input: UpdateAdvertisementInput;
 };
@@ -1078,6 +1151,7 @@ export type OtpInput = {
 export type Organization = {
   __typename?: 'Organization';
   _id: Scalars['ID']['output'];
+  actionItemCategories?: Maybe<Array<Maybe<ActionItemCategory>>>;
   address?: Maybe<Address>;
   admins?: Maybe<Array<User>>;
   apiUrl: Scalars['URL']['output'];
@@ -1320,6 +1394,11 @@ export type PostWhereInput = {
 
 export type Query = {
   __typename?: 'Query';
+  actionItem?: Maybe<ActionItem>;
+  actionItemCategoriesByOrganization?: Maybe<Array<Maybe<ActionItemCategory>>>;
+  actionItemCategory?: Maybe<ActionItemCategory>;
+  actionItemsByEvent?: Maybe<Array<Maybe<ActionItem>>>;
+  actionItemsByOrganization?: Maybe<Array<Maybe<ActionItem>>>;
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   checkAuth: User;
   customDataByOrganization: Array<UserCustomData>;
@@ -1353,6 +1432,31 @@ export type Query = {
   userLanguage?: Maybe<Scalars['String']['output']>;
   users?: Maybe<Array<Maybe<User>>>;
   usersConnection: Array<Maybe<User>>;
+};
+
+
+export type QueryActionItemArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryActionItemCategoriesByOrganizationArgs = {
+  organizationId: Scalars['ID']['input'];
+};
+
+
+export type QueryActionItemCategoryArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryActionItemsByEventArgs = {
+  eventId: Scalars['ID']['input'];
+};
+
+
+export type QueryActionItemsByOrganizationArgs = {
+  organizationId: Scalars['ID']['input'];
 };
 
 
@@ -1576,6 +1680,20 @@ export type UnauthorizedError = Error & {
   message: Scalars['String']['output'];
 };
 
+export type UpdateActionItemCategoryInput = {
+  isDisabled?: InputMaybe<Scalars['Boolean']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateActionItemInput = {
+  assigneeId?: InputMaybe<Scalars['ID']['input']>;
+  completionDate?: InputMaybe<Scalars['Date']['input']>;
+  dueDate?: InputMaybe<Scalars['Date']['input']>;
+  isCompleted?: InputMaybe<Scalars['Boolean']['input']>;
+  postCompletionNotes?: InputMaybe<Scalars['String']['input']>;
+  preCompletionNotes?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type UpdateAdvertisementInput = {
   _id: Scalars['ID']['input'];
   endDate?: InputMaybe<Scalars['Date']['input']>;
@@ -1718,8 +1836,8 @@ export type UserInput = {
   email: Scalars['EmailAddress']['input'];
   firstName: Scalars['String']['input'];
   lastName: Scalars['String']['input'];
-  organizationUserBelongsToId?: InputMaybe<Scalars['ID']['input']>;
   password: Scalars['String']['input'];
+  selectedOrgainzation: Scalars['ID']['input'];
 };
 
 export type UserOrderByInput =
@@ -1789,6 +1907,47 @@ export type UserTagsConnectionResult = {
   __typename?: 'UserTagsConnectionResult';
   data?: Maybe<UserTagsConnection>;
   errors: Array<ConnectionError>;
+};
+
+export type UserToReturn = {
+  __typename?: 'UserToReturn';
+  _id: Scalars['ID']['output'];
+  address?: Maybe<Address>;
+  adminApproved?: Maybe<Scalars['Boolean']['output']>;
+  adminFor?: Maybe<Array<Maybe<Organization>>>;
+  appLanguageCode: Scalars['String']['output'];
+  birthDate?: Maybe<Scalars['Date']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  createdEvents?: Maybe<Array<Maybe<Event>>>;
+  createdOrganizations?: Maybe<Array<Maybe<Organization>>>;
+  educationGrade?: Maybe<EducationGrade>;
+  email: Scalars['EmailAddress']['output'];
+  employmentStatus?: Maybe<EmploymentStatus>;
+  eventAdmin?: Maybe<Array<Maybe<Event>>>;
+  firstName: Scalars['String']['output'];
+  gender?: Maybe<Gender>;
+  image?: Maybe<Scalars['String']['output']>;
+  joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
+  lastName: Scalars['String']['output'];
+  maritalStatus?: Maybe<MaritalStatus>;
+  membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
+  organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
+  phone?: Maybe<UserPhone>;
+  pluginCreationAllowed: Scalars['Boolean']['output'];
+  registeredEvents?: Maybe<Array<Maybe<Event>>>;
+  tagsAssignedWith?: Maybe<UserTagsConnection>;
+  tokenVersion: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  userType: UserType;
+};
+
+
+export type UserToReturnTagsAssignedWithArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['PositiveInt']['input']>;
+  last?: InputMaybe<Scalars['PositiveInt']['input']>;
+  organizationId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type UserType =
@@ -1937,6 +2096,8 @@ export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  ActionItem: ResolverTypeWrapper<InterfaceActionItemModel>;
+  ActionItemCategory: ResolverTypeWrapper<InterfaceActionItemCategoryModel>;
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
   Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'creator'> & { creator?: Maybe<ResolversTypes['User']> }>;
@@ -1944,7 +2105,7 @@ export type ResolversTypes = {
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   Any: ResolverTypeWrapper<Scalars['Any']['output']>;
-  AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
+  AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['UserToReturn'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
   CheckInInput: CheckInInput;
@@ -1954,6 +2115,7 @@ export type ResolversTypes = {
   ConnectionError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['ConnectionError']>;
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
+  CreateActionItemInput: CreateActionItemInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
@@ -2037,6 +2199,8 @@ export type ResolversTypes = {
   URL: ResolverTypeWrapper<Scalars['URL']['output']>;
   UnauthenticatedError: ResolverTypeWrapper<UnauthenticatedError>;
   UnauthorizedError: ResolverTypeWrapper<UnauthorizedError>;
+  UpdateActionItemCategoryInput: UpdateActionItemCategoryInput;
+  UpdateActionItemInput: UpdateActionItemInput;
   UpdateAdvertisementInput: UpdateAdvertisementInput;
   UpdateAdvertisementPayload: ResolverTypeWrapper<Omit<UpdateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   UpdateEventInput: UpdateEventInput;
@@ -2060,6 +2224,7 @@ export type ResolversTypes = {
   UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversTypes['UserTagEdge']> }>;
   UserTagsConnectionInput: UserTagsConnectionInput;
   UserTagsConnectionResult: ResolverTypeWrapper<Omit<UserTagsConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UserTagsConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
+  UserToReturn: ResolverTypeWrapper<InterfaceUserToReturnModel>;
   UserType: UserType;
   UserWhereInput: UserWhereInput;
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
@@ -2071,13 +2236,15 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  ActionItem: InterfaceActionItemModel;
+  ActionItemCategory: InterfaceActionItemCategoryModel;
   Address: Address;
   AddressInput: AddressInput;
   Advertisement: Omit<Advertisement, 'creator'> & { creator?: Maybe<ResolversParentTypes['User']> };
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any']['output'];
-  AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
+  AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['UserToReturn'] };
   Boolean: Scalars['Boolean']['output'];
   CheckIn: InterfaceCheckInModel;
   CheckInInput: CheckInInput;
@@ -2087,6 +2254,7 @@ export type ResolversParentTypes = {
   ConnectionError: ResolversUnionTypes<ResolversParentTypes>['ConnectionError'];
   ConnectionPageInfo: ConnectionPageInfo;
   CountryCode: Scalars['CountryCode']['output'];
+  CreateActionItemInput: CreateActionItemInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
@@ -2159,6 +2327,8 @@ export type ResolversParentTypes = {
   URL: Scalars['URL']['output'];
   UnauthenticatedError: UnauthenticatedError;
   UnauthorizedError: UnauthorizedError;
+  UpdateActionItemCategoryInput: UpdateActionItemCategoryInput;
+  UpdateActionItemInput: UpdateActionItemInput;
   UpdateAdvertisementInput: UpdateAdvertisementInput;
   UpdateAdvertisementPayload: Omit<UpdateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   UpdateEventInput: UpdateEventInput;
@@ -2181,6 +2351,7 @@ export type ResolversParentTypes = {
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserTagEdge']> };
   UserTagsConnectionInput: UserTagsConnectionInput;
   UserTagsConnectionResult: Omit<UserTagsConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UserTagsConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
+  UserToReturn: InterfaceUserToReturnModel;
   UserWhereInput: UserWhereInput;
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
   UsersConnectionInput: UsersConnectionInput;
@@ -2198,6 +2369,35 @@ export type RoleDirectiveArgs = {
 };
 
 export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = RoleDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type ActionItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ActionItem'] = ResolversParentTypes['ActionItem']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  actionItemCategory?: Resolver<Maybe<ResolversTypes['ActionItemCategory']>, ParentType, ContextType>;
+  assignee?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  assigner?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  assignmentDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  completionDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  dueDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
+  isCompleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  postCompletionNotes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  preCompletionNotes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ActionItemCategoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['ActionItemCategory'] = ResolversParentTypes['ActionItemCategory']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  isDisabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export type AddressResolvers<ContextType = any, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
   city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2242,7 +2442,7 @@ export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
 export type AuthDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthData'] = ResolversParentTypes['AuthData']> = {
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['UserToReturn'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2353,6 +2553,7 @@ export type ErrorResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type EventResolvers<ContextType = any, ParentType extends ResolversParentTypes['Event'] = ResolversParentTypes['Event']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  actionItems?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType, Partial<EventAdminsArgs>>;
   allDay?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   attendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
@@ -2542,6 +2743,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
+  createActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationCreateActionItemArgs, 'actionItemCategoryId' | 'data'>>;
+  createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'name' | 'organizationId'>>;
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'endDate' | 'link' | 'name' | 'orgId' | 'startDate' | 'type'>>;
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
@@ -2571,6 +2774,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   registerForEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
   rejectAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectAdminArgs, 'id'>>;
   rejectMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationRejectMembershipRequestArgs, 'membershipRequestId'>>;
+  removeActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationRemoveActionItemArgs, 'id'>>;
   removeAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveAdminArgs, 'data'>>;
   removeAdvertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType, RequireFields<MutationRemoveAdvertisementArgs, 'id'>>;
   removeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationRemoveCommentArgs, 'id'>>;
@@ -2600,6 +2804,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
+  updateActionItem?: Resolver<Maybe<ResolversTypes['ActionItem']>, ParentType, ContextType, RequireFields<MutationUpdateActionItemArgs, 'data' | 'id'>>;
+  updateActionItemCategory?: Resolver<Maybe<ResolversTypes['ActionItemCategory']>, ParentType, ContextType, RequireFields<MutationUpdateActionItemCategoryArgs, 'data' | 'id'>>;
   updateAdvertisement?: Resolver<Maybe<ResolversTypes['UpdateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationUpdateAdvertisementArgs, 'input'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
@@ -2615,6 +2821,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  actionItemCategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItemCategory']>>>, ParentType, ContextType>;
   address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
   apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
@@ -2721,6 +2928,11 @@ export type PostConnectionResolvers<ContextType = any, ParentType extends Resolv
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  actionItem?: Resolver<Maybe<ResolversTypes['ActionItem']>, ParentType, ContextType, RequireFields<QueryActionItemArgs, 'id'>>;
+  actionItemCategoriesByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItemCategory']>>>, ParentType, ContextType, RequireFields<QueryActionItemCategoriesByOrganizationArgs, 'organizationId'>>;
+  actionItemCategory?: Resolver<Maybe<ResolversTypes['ActionItemCategory']>, ParentType, ContextType, RequireFields<QueryActionItemCategoryArgs, 'id'>>;
+  actionItemsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByEventArgs, 'eventId'>>;
+  actionItemsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByOrganizationArgs, 'organizationId'>>;
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
@@ -2886,6 +3098,38 @@ export type UserTagsConnectionResultResolvers<ContextType = any, ParentType exte
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserToReturnResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserToReturn'] = ResolversParentTypes['UserToReturn']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
+  adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  birthDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  createdOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  educationGrade?: Resolver<Maybe<ResolversTypes['EducationGrade']>, ParentType, ContextType>;
+  email?: Resolver<ResolversTypes['EmailAddress'], ParentType, ContextType>;
+  employmentStatus?: Resolver<Maybe<ResolversTypes['EmploymentStatus']>, ParentType, ContextType>;
+  eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  firstName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  gender?: Resolver<Maybe<ResolversTypes['Gender']>, ParentType, ContextType>;
+  image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  lastName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  maritalStatus?: Resolver<Maybe<ResolversTypes['MaritalStatus']>, ParentType, ContextType>;
+  membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
+  organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  phone?: Resolver<Maybe<ResolversTypes['UserPhone']>, ParentType, ContextType>;
+  pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserToReturnTagsAssignedWithArgs>>;
+  tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  userType?: Resolver<ResolversTypes['UserType'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
   edges?: Resolver<Array<ResolversTypes['UserEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
@@ -2899,6 +3143,8 @@ export type UsersConnectionResultResolvers<ContextType = any, ParentType extends
 };
 
 export type Resolvers<ContextType = any> = {
+  ActionItem?: ActionItemResolvers<ContextType>;
+  ActionItemCategory?: ActionItemCategoryResolvers<ContextType>;
   Address?: AddressResolvers<ContextType>;
   Advertisement?: AdvertisementResolvers<ContextType>;
   AggregatePost?: AggregatePostResolvers<ContextType>;
@@ -2969,6 +3215,7 @@ export type Resolvers<ContextType = any> = {
   UserTagEdge?: UserTagEdgeResolvers<ContextType>;
   UserTagsConnection?: UserTagsConnectionResolvers<ContextType>;
   UserTagsConnectionResult?: UserTagsConnectionResultResolvers<ContextType>;
+  UserToReturn?: UserToReturnResolvers<ContextType>;
   UsersConnection?: UsersConnectionResolvers<ContextType>;
   UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
 };

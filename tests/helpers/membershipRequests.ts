@@ -10,10 +10,10 @@ export type TestMembershipRequestType =
       Document<any, any, InterfaceMembershipRequest>)
   | null;
 
-export const createTestMembershipRequest = async (): Promise<
-  [TestUserType, TestOrganizationType, TestMembershipRequestType]
-> => {
-  const testUser = await createTestUser();
+export const createTestMembershipRequest = async (
+  givenUser?: TestUserType
+): Promise<[TestUserType, TestOrganizationType, TestMembershipRequestType]> => {
+  const testUser = givenUser == null ? await createTestUser() : givenUser;
 
   if (testUser) {
     const testOrganization = await Organization.create({

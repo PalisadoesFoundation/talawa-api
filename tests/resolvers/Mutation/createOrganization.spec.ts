@@ -1,6 +1,6 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { User } from "../../../src/models";
+import { ActionItemCategory, User } from "../../../src/models";
 import type { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -176,6 +176,18 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         joinedOrganizations: [createOrganizationPayload?._id],
         createdOrganizations: [createOrganizationPayload?._id],
         adminFor: [createOrganizationPayload?._id],
+      })
+    );
+
+    const defaultCategory = await ActionItemCategory.findOne({
+      organizationId: createOrganizationPayload?._id,
+    }).lean();
+
+    expect(defaultCategory).toEqual(
+      expect.objectContaining({
+        organizationId: createOrganizationPayload?._id,
+        name: "Default",
+        isDisabled: false,
       })
     );
   });

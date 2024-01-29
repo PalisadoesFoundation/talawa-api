@@ -6,6 +6,8 @@
 
 ### References
 
+- [ActionItem](models.md#actionitem)
+- [ActionItemCategory](models.md#actionitemcategory)
 - [Advertisement](models.md#advertisement)
 - [CheckIn](models.md#checkin)
 - [Comment](models.md#comment)
@@ -20,6 +22,8 @@
 - [GroupChat](models.md#groupchat)
 - [GroupChatMessage](models.md#groupchatmessage)
 - [ImageHash](models.md#imagehash)
+- [InterfaceActionItem](models.md#interfaceactionitem)
+- [InterfaceActionItemCategory](models.md#interfaceactionitemcategory)
 - [InterfaceAdvertisement](models.md#interfaceadvertisement)
 - [InterfaceCheckIn](models.md#interfacecheckin)
 - [InterfaceComment](models.md#interfacecomment)
@@ -48,6 +52,7 @@
 - [InterfaceSampleData](models.md#interfacesampledata)
 - [InterfaceTagUser](models.md#interfacetaguser)
 - [InterfaceUser](models.md#interfaceuser)
+- [InterfaceUserToReturn](models.md#interfaceusertoreturn)
 - [Language](models.md#language)
 - [MembershipRequest](models.md#membershiprequest)
 - [Message](models.md#message)
@@ -61,8 +66,21 @@
 - [SampleData](models.md#sampledata)
 - [TagUser](models.md#taguser)
 - [User](models.md#user)
+- [UserToReturn](models.md#usertoreturn)
 
 ## References
+
+### ActionItem
+
+Re-exports [ActionItem](models_ActionItem.md#actionitem)
+
+___
+
+### ActionItemCategory
+
+Re-exports [ActionItemCategory](models_ActionItemCategory.md#actionitemcategory)
+
+___
 
 ### Advertisement
 
@@ -145,6 +163,18 @@ ___
 ### ImageHash
 
 Re-exports [ImageHash](models_ImageHash.md#imagehash)
+
+___
+
+### InterfaceActionItem
+
+Re-exports [InterfaceActionItem](../interfaces/models_ActionItem.InterfaceActionItem.md)
+
+___
+
+### InterfaceActionItemCategory
+
+Re-exports [InterfaceActionItemCategory](../interfaces/models_ActionItemCategory.InterfaceActionItemCategory.md)
 
 ___
 
@@ -316,6 +346,12 @@ Re-exports [InterfaceUser](../interfaces/models_User.InterfaceUser.md)
 
 ___
 
+### InterfaceUserToReturn
+
+Re-exports [InterfaceUserToReturn](../interfaces/models_User.InterfaceUserToReturn.md)
+
+___
+
 ### Language
 
 Re-exports [Language](models_Language.md#language)
@@ -391,3 +427,9 @@ ___
 ### User
 
 Re-exports [User](models_User.md#user)
+
+___
+
+### UserToReturn
+
+Re-exports [UserToReturn](models_User.md#usertoreturn)
