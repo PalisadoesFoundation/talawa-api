@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/services/EventCache/deleteEventFromCache.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/services/EventCache/deleteEventFromCache.ts#L4)
+[src/services/EventCache/deleteEventFromCache.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/services/EventCache/deleteEventFromCache.ts#L4)

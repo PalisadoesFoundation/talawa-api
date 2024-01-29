@@ -24,4 +24,4 @@ An object that contains `orgId` of the Organization.
 
 #### Defined in
 
-[src/resolvers/Query/getDonationByOrgId.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/resolvers/Query/getDonationByOrgId.ts#L10)
+[src/resolvers/Query/getDonationByOrgId.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/resolvers/Query/getDonationByOrgId.ts#L10)

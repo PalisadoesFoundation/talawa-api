@@ -37,4 +37,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/updateEvent.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/resolvers/Mutation/updateEvent.ts#L26)
+[src/resolvers/Mutation/updateEvent.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/resolvers/Mutation/updateEvent.ts#L26)

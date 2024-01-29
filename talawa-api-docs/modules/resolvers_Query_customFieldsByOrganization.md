@@ -24,4 +24,4 @@ An object that contains `id` of the organization.
 
 #### Defined in
 
-[src/resolvers/Query/customFieldsByOrganization.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/c199cfb/src/resolvers/Query/customFieldsByOrganization.ts#L15)
+[src/resolvers/Query/customFieldsByOrganization.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/resolvers/Query/customFieldsByOrganization.ts#L15)
