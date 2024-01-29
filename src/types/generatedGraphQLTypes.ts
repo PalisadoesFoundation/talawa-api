@@ -1803,6 +1803,7 @@ export type UserPostsArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
   last?: InputMaybe<Scalars['PositiveInt']['input']>;
+  limit: Scalars['PositiveInt']['input'];
 };
 
 
@@ -3050,7 +3051,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['UserPhone']>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  posts?: Resolver<Maybe<ResolversTypes['PostsConnection']>, ParentType, ContextType, Partial<UserPostsArgs>>;
+  posts?: Resolver<Maybe<ResolversTypes['PostsConnection']>, ParentType, ContextType, RequireFields<UserPostsArgs, 'limit'>>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;

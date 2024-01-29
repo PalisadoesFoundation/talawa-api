@@ -9,6 +9,7 @@ export type RelayConnectionArguments = {
   before?: string | null;
   first?: number | null;
   last?: number | null;
+  limit: number;
 };
 
 export type ParsedRelayConnectionArguments = {
@@ -17,14 +18,7 @@ export type ParsedRelayConnectionArguments = {
   direction: "FORWARD" | "BACKWARD";
 };
 
-// some global or database record based hard limit for the number of records
-// that can be returned in one connection query for the corresponding record
-// replace this with an environment variable preferably
-const env = {
-  LIMIT: 50,
-};
-
-export function parseConnectionArguments(
+export function parseRelayConnectionArguments(
   args: RelayConnectionArguments
 ): ParsedRelayConnectionArguments {
   const paginationArgs: ParsedRelayConnectionArguments = {
@@ -44,9 +38,9 @@ export function parseConnectionArguments(
         "Argument before cannot be provided with argument first."
       );
     }
-    if (args.first > env.LIMIT) {
+    if (args.first > args.limit) {
       throw new GraphQLError(
-        `Argument first cannot not be greater than ${env.LIMIT}.`
+        `Argument first cannot not be greater than ${args.after}.`
       );
     }
     paginationArgs.direction = "FORWARD";
@@ -60,9 +54,9 @@ export function parseConnectionArguments(
         "Argument after cannot be provided with argument last."
       );
     }
-    if (args.last > env.LIMIT) {
+    if (args.last > args.limit) {
       throw new GraphQLError(
-        `Argument last cannot be greater than ${env.LIMIT}.`
+        `Argument last cannot be greater than ${args.limit}.`
       );
     }
     paginationArgs.direction = "BACKWARD";

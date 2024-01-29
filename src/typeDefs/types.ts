@@ -393,6 +393,7 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      limit: PositiveInt!
     ): PostsConnection
     eventAdmin: [Event]
     firstName: String!
