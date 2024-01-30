@@ -73,6 +73,7 @@ export const types = gql`
     messages: [DirectChatMessage]
     creator: User!
     organization: Organization!
+    agendacategories: [AgendaCategory]
   }
 
   type DirectChatMessage {
