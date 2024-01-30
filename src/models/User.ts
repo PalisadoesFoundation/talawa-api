@@ -7,7 +7,6 @@ import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
 import { identifier } from "./identifier";
 // import AutoIncrementFactory from "mongoose-sequence";
-// const autoIncrement = AutoIncrementFactory(mongoose);
 
 /**
  * This is an interface that represents a database(MongoDB) document for User.
@@ -294,7 +293,7 @@ const userSchema = new Schema({
 
 userSchema.plugin(mongoosePaginate);
 
-userSchema.pre("save", async function (next) {
+userSchema.pre<InterfaceUser>("save", async function (next) {
   if (!this.identifier.type) {
     const counter = await identifier.findOneAndUpdate(
       { _id: "userCounter" },
@@ -314,3 +313,4 @@ const userModel = (): PaginateModel<InterfaceUser> =>
 export const User = (models.User || userModel()) as ReturnType<
   typeof userModel
 >;
+``
