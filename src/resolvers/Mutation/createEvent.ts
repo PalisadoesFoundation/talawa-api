@@ -7,7 +7,6 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
-  VENUE_NOT_FOUND_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
@@ -121,18 +120,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     throw new errors.InputValidationError(
       requestContext.translate(compareDatesResult),
       compareDatesResult
-    );
-  }
-
-  // Checks if the venue is provided and whether that venue exists in the organization
-  if (
-    args.data?.venue &&
-    !organization.venues?.some((venue) => venue._id.equals(args.data?.venue))
-  ) {
-    throw new errors.NotFoundError(
-      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
-      VENUE_NOT_FOUND_ERROR.CODE,
-      VENUE_NOT_FOUND_ERROR.PARAM
     );
   }
 

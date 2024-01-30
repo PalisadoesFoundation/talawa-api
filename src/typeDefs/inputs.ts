@@ -89,7 +89,6 @@ export const inputs = gql`
     latitude: Latitude
     longitude: Longitude
     organizationId: ID!
-    venue: ID
   }
 
   input EventWhereInput {

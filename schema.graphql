@@ -234,7 +234,6 @@ type Event {
   status: Status!
   title: String!
   updatedAt: DateTime!
-  venue: ID
 }
 
 input EventAttendeeInput {
@@ -258,7 +257,6 @@ input EventInput {
   startDate: Date!
   startTime: Time
   title: String!
-  venue: ID
 }
 
 enum EventOrderByInput {
