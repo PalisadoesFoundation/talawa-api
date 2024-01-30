@@ -5,6 +5,7 @@ import type { InterfaceMessage } from "./Message";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
 import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
+import type { InterfaceAgendaCategory } from "./AgendaCategory";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
@@ -20,6 +21,7 @@ export interface InterfaceOrganization {
   status: string;
   members: PopulatedDoc<InterfaceUser & Document>[];
   admins: PopulatedDoc<InterfaceUser & Document>[];
+  agendaCategories: PopulatedDoc<InterfaceAgendaCategory & Document>[];
   groupChats: PopulatedDoc<InterfaceMessage & Document>[];
   posts: PopulatedDoc<InterfacePost & Document>[];
   pinnedPosts: PopulatedDoc<InterfacePost & Document>[];
@@ -75,6 +77,12 @@ const organizationSchema = new Schema({
     ref: "User",
     required: true,
   },
+  agendaCategories: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "AgendaCategory",
+    },
+  ],
   status: {
     type: String,
     required: true,

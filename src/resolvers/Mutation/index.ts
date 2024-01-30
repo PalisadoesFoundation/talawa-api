@@ -91,6 +91,7 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
 import { deleteAdvertisementById } from "./deleteAdvertisementById";
+// import { createAgendaCategory } from "./createAgendaCategory";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,

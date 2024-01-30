@@ -107,5 +107,9 @@ export const queries = gql`
       skip: Int
       orderBy: UserOrderByInput
     ): [User]! @auth
+
+    agendaCategories: [AgendaCategory]
+
+    agendaCategory(id: ID!): AgendaCategory
   }
 `;

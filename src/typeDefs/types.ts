@@ -10,6 +10,17 @@ export const types = gql`
     count: Int!
   }
 
+  type AgendaCategory {
+    _id: ID!
+    name: String!
+    description: String
+    organization: Organization
+    createdBy: User!
+    updatedBy: User
+    createdAt: Date!
+    updatedAt: Date
+  }
+
   type AuthData {
     user: User!
     accessToken: String!

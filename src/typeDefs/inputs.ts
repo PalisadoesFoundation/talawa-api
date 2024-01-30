@@ -408,4 +408,16 @@ export const inputs = gql`
     imageUrl: String
     videoUrl: String
   }
+
+  input CreateAgendaCategoryInput {
+    name: String!
+    description: String
+    organization: ID!
+  }
+
+  input UpdateAgendaCategoryInput {
+    name: String
+    description: String
+    organizationId: ID
+  }
 `;

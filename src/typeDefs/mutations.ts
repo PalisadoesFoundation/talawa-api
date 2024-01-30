@@ -97,6 +97,8 @@ export const mutations = gql`
       endDate: Date!
     ): Advertisement!
 
+    createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
+
     createPost(data: PostInput!, file: String): Post @auth
 
     createUserTag(input: CreateUserTagInput!): UserTag @auth
@@ -106,6 +108,8 @@ export const mutations = gql`
     createTask(data: TaskInput!, eventProjectId: ID!): Task! @auth
 
     deleteAdvertisementById(id: ID!): DeletePayload!
+
+    deleteAgendaCategory(id: ID!): ID!
 
     deleteDonationById(id: ID!): DeletePayload!
 
@@ -224,6 +228,11 @@ export const mutations = gql`
       data: UpdateOrganizationInput
       file: String
     ): Organization! @auth
+
+    updateAgendaCategory(
+      id: ID!
+      input: UpdateAgendaCategoryInput!
+    ): AgendaCategory!
 
     updatePluginStatus(id: ID!, orgId: ID!): Plugin!
 
