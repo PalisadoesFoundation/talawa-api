@@ -5,6 +5,7 @@ import type { InterfaceMessage } from "./Message";
 import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
+import type { InterfaceVenue } from "./Venue";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
@@ -38,6 +39,7 @@ export interface InterfaceOrganization {
   updatedAt: Date;
   userRegistrationRequired: boolean;
   visibleInSearch: boolean;
+  venues: PopulatedDoc<InterfaceVenue & Document>[];
 }
 /**
  * This describes the schema for a `Organization` that corresponds to `InterfaceOrganization` document.
@@ -56,6 +58,7 @@ export interface InterfaceOrganization {
  * @param blockedUsers - Collection of Blocked User in the Organization, each object refer to `User` model.
  * @param tags - Collection of tags.
  * @param createdAt - Time stamp of data creation.
+ * @param venues - All the available venues in the organization
  * @param updatedAt - Time stamp of data updation.
  */
 const organizationSchema = new Schema(
@@ -169,6 +172,12 @@ const organizationSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "CustomField",
+      },
+    ],
+    venues: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Venue",
       },
     ],
   },

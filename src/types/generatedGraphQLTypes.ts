@@ -268,6 +268,15 @@ export type DonationWhereInput = {
   name_of_user_starts_with?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type EditVenueInput = {
+  _id: Scalars['ID']['input'];
+  capacity: Scalars['Int']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
+  imageUrl?: InputMaybe<Scalars['URL']['input']>;
+  name: Scalars['String']['input'];
+  organizationId: Scalars['ID']['input'];
+};
+
 export type EducationGrade =
   | 'GRADE_1'
   | 'GRADE_2'
@@ -323,6 +332,7 @@ export type Event = {
   status: Status;
   title: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
+  venue?: Maybe<Scalars['ID']['output']>;
 };
 
 
@@ -351,6 +361,7 @@ export type EventInput = {
   startDate: Scalars['Date']['input'];
   startTime?: InputMaybe<Scalars['Time']['input']>;
   title: Scalars['String']['input'];
+  venue?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type EventOrderByInput =
@@ -610,8 +621,10 @@ export type Mutation = {
   createPost?: Maybe<Post>;
   createSampleOrganization: Scalars['Boolean']['output'];
   createUserTag?: Maybe<UserTag>;
+  createVenue: Venue;
   deleteAdvertisementById: DeletePayload;
   deleteDonationById: DeletePayload;
+  editVenue: Venue;
   forgotPassword: Scalars['Boolean']['output'];
   joinPublicOrganization: User;
   leaveOrganization: User;
@@ -857,6 +870,12 @@ export type MutationCreateUserTagArgs = {
 };
 
 
+export type MutationCreateVenueArgs = {
+  data: VenueInput;
+  file?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type MutationDeleteAdvertisementByIdArgs = {
   id: Scalars['ID']['input'];
 };
@@ -864,6 +883,12 @@ export type MutationDeleteAdvertisementByIdArgs = {
 
 export type MutationDeleteDonationByIdArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationEditVenueArgs = {
+  data: EditVenueInput;
+  file?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1432,6 +1457,7 @@ export type Query = {
   userLanguage?: Maybe<Scalars['String']['output']>;
   users?: Maybe<Array<Maybe<User>>>;
   usersConnection: Array<Maybe<User>>;
+  venuesInOrganization?: Maybe<Array<Maybe<Venue>>>;
 };
 
 
@@ -1627,6 +1653,11 @@ export type QueryUsersConnectionArgs = {
   orderBy?: InputMaybe<UserOrderByInput>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   where?: InputMaybe<UserWhereInput>;
+};
+
+
+export type QueryVenuesInOrganizationArgs = {
+  id: Scalars['ID']['input'];
 };
 
 export type RecaptchaVerification = {
@@ -2007,6 +2038,23 @@ export type UsersConnectionResult = {
   errors: Array<ConnectionError>;
 };
 
+export type Venue = {
+  __typename?: 'Venue';
+  _id: Scalars['ID']['output'];
+  capacity: Scalars['Int']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  imageUrl?: Maybe<Scalars['URL']['output']>;
+  name: Scalars['String']['output'];
+};
+
+export type VenueInput = {
+  capacity: Scalars['Int']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
+  imageUrl?: InputMaybe<Scalars['URL']['input']>;
+  name: Scalars['String']['input'];
+  organizationId: Scalars['ID']['input'];
+};
+
 export type CreateChatInput = {
   organizationId: Scalars['ID']['input'];
   userIds: Array<Scalars['ID']['input']>;
@@ -2123,6 +2171,7 @@ export type ResolversTypes = {
   DirectChatMessage: ResolverTypeWrapper<InterfaceDirectChatMessageModel>;
   Donation: ResolverTypeWrapper<InterfaceDonationModel>;
   DonationWhereInput: DonationWhereInput;
+  EditVenueInput: EditVenueInput;
   EducationGrade: EducationGrade;
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']['output']>;
   EmploymentStatus: EmploymentStatus;
@@ -2228,6 +2277,8 @@ export type ResolversTypes = {
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
+  Venue: ResolverTypeWrapper<Venue>;
+  VenueInput: VenueInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -2262,6 +2313,7 @@ export type ResolversParentTypes = {
   DirectChatMessage: InterfaceDirectChatMessageModel;
   Donation: InterfaceDonationModel;
   DonationWhereInput: DonationWhereInput;
+  EditVenueInput: EditVenueInput;
   EmailAddress: Scalars['EmailAddress']['output'];
   Error: ResolversInterfaceTypes<ResolversParentTypes>['Error'];
   Event: InterfaceEventModel;
@@ -2354,6 +2406,8 @@ export type ResolversParentTypes = {
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
+  Venue: Venue;
+  VenueInput: VenueInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -2576,6 +2630,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  venue?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2757,8 +2812,10 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
   createSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
+  createVenue?: Resolver<ResolversTypes['Venue'], ParentType, ContextType, RequireFields<MutationCreateVenueArgs, 'data'>>;
   deleteAdvertisementById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteAdvertisementByIdArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
+  editVenue?: Resolver<ResolversTypes['Venue'], ParentType, ContextType, RequireFields<MutationEditVenueArgs, 'data'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;
   leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'organizationId'>>;
@@ -2964,6 +3021,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   userLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryUserLanguageArgs, 'userId'>>;
   users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryUsersArgs>>;
   usersConnection?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType, Partial<QueryUsersConnectionArgs>>;
+  venuesInOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryVenuesInOrganizationArgs, 'id'>>;
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
@@ -3140,6 +3198,15 @@ export type UsersConnectionResultResolvers<ContextType = any, ParentType extends
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type VenueResolvers<ContextType = any, ParentType extends ResolversParentTypes['Venue'] = ResolversParentTypes['Venue']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  capacity?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
   ActionItem?: ActionItemResolvers<ContextType>;
   ActionItemCategory?: ActionItemCategoryResolvers<ContextType>;
@@ -3216,6 +3283,7 @@ export type Resolvers<ContextType = any> = {
   UserToReturn?: UserToReturnResolvers<ContextType>;
   UsersConnection?: UsersConnectionResolvers<ContextType>;
   UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
+  Venue?: VenueResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {

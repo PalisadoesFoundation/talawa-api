@@ -64,6 +64,15 @@ export const inputs = gql`
     name_of_user_starts_with: String
   }
 
+  input EditVenueInput {
+    _id: ID!
+    capacity: Int!
+    name: String!
+    description: String
+    organizationId: ID!
+    imageUrl: URL
+  }
+
   input EventInput {
     title: String!
     description: String!
@@ -80,6 +89,7 @@ export const inputs = gql`
     latitude: Latitude
     longitude: Longitude
     organizationId: ID!
+    venue: ID
   }
 
   input EventWhereInput {
@@ -411,5 +421,13 @@ export const inputs = gql`
     title: String
     imageUrl: String
     videoUrl: String
+  }
+
+  input VenueInput {
+    organizationId: ID!
+    name: String!
+    capacity: Int!
+    description: String
+    imageUrl: URL
   }
 `;

@@ -27,3 +27,4 @@ export * from "./Post";
 export * from "./SampleData";
 export * from "./User";
 export * from "./TagUser";
+export * from "./Venue";

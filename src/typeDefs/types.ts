@@ -168,6 +168,7 @@ export const types = gql`
     status: Status!
     feedback: [Feedback!]!
     averageFeedbackScore: Float
+    venue: ID
   }
 
   type Feedback {
@@ -296,6 +297,14 @@ export const types = gql`
 
   type OtpData {
     otpToken: String!
+  }
+
+  type Venue {
+    _id: ID!
+    name: String!
+    capacity: Int!
+    description: String
+    imageUrl: URL
   }
 
   """

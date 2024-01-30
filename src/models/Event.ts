@@ -27,6 +27,7 @@ export interface InterfaceEvent {
   admins: PopulatedDoc<InterfaceUser & Document>[];
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
+  venue: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -52,6 +53,7 @@ export interface InterfaceEvent {
  * @param admins - Admins
  * @param organization - Organization
  * @param status - whether the event is active, blocked, or deleted.
+ * @param venue - Venue
  * @param createdAt - Timestamp of event creation
  * @param updatedAt - Timestamp of event updation
  */
@@ -154,6 +156,10 @@ const eventSchema = new Schema(
       required: true,
       enum: ["ACTIVE", "BLOCKED", "DELETED"],
       default: "ACTIVE",
+    },
+    venue: {
+      type: Schema.Types.ObjectId,
+      ref: "Venue",
     },
   },
   {

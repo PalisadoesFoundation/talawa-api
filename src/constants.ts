@@ -34,6 +34,21 @@ export const CHAT_NOT_FOUND_ERROR = {
   MESSAGE: "chat.notFound",
   PARAM: "chat",
 };
+
+export const VENUE_ALREADY_EXISTS_ERROR = {
+  DESC: "Venue already exists",
+  CODE: "venue.alreadyExists",
+  MESSAGE: "venue.alreadyExists",
+  PARAM: "venue",
+};
+
+export const VENUE_NOT_FOUND_ERROR = {
+  DESC: "Venue does not exist",
+  CODE: "venue.NotFound",
+  MESSAGE: "venue.NotFound",
+  PARAM: "venue",
+};
+
 export const COMMENT_NOT_FOUND_ERROR = {
   DESC: "Comment not found",
   CODE: "comment.notFound",
@@ -90,6 +105,20 @@ export const ORGANIZATION_NOT_FOUND_ERROR = {
   MESSAGE: "organization.notFound",
   PARAM: "organization",
 };
+export const VENUE_NAME_MISSING_ERROR = {
+  DESC: "Venue name not found",
+  CODE: "venueName.notFound",
+  MESSAGE: "venueName.notFound",
+  PARAM: "venueName",
+};
+
+export const VENUE_ALREADY_SCHEDULED = {
+  DESC: "Venue is already scheduled",
+  CODE: "venue.alreadySchduled",
+  MESSAGE: "venue.alreadySchduled",
+  PARAM: "venue",
+};
+
 export const ORGANIZATION_IMAGE_NOT_FOUND_ERROR = {
   DESC: "OrganizationImage not found",
   CODE: "organizationImage.notFound",
