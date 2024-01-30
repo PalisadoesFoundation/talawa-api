@@ -117,6 +117,8 @@ export const mutations = gql`
 
     deleteDonationById(id: ID!): DeletePayload!
 
+    deleteVenue(venueId: ID!, organizationId: ID!): Venue @auth
+
     editVenue(data: EditVenueInput!, file: String): Venue! @auth
 
     forgotPassword(data: ForgotPasswordData!): Boolean!

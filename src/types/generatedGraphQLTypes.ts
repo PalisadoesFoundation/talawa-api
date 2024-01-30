@@ -624,6 +624,7 @@ export type Mutation = {
   createVenue: Venue;
   deleteAdvertisementById: DeletePayload;
   deleteDonationById: DeletePayload;
+  deleteVenue?: Maybe<Venue>;
   editVenue: Venue;
   forgotPassword: Scalars['Boolean']['output'];
   joinPublicOrganization: User;
@@ -883,6 +884,12 @@ export type MutationDeleteAdvertisementByIdArgs = {
 
 export type MutationDeleteDonationByIdArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteVenueArgs = {
+  organizationId: Scalars['ID']['input'];
+  venueId: Scalars['ID']['input'];
 };
 
 
@@ -2815,6 +2822,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createVenue?: Resolver<ResolversTypes['Venue'], ParentType, ContextType, RequireFields<MutationCreateVenueArgs, 'data'>>;
   deleteAdvertisementById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteAdvertisementByIdArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
+  deleteVenue?: Resolver<Maybe<ResolversTypes['Venue']>, ParentType, ContextType, RequireFields<MutationDeleteVenueArgs, 'organizationId' | 'venueId'>>;
   editVenue?: Resolver<ResolversTypes['Venue'], ParentType, ContextType, RequireFields<MutationEditVenueArgs, 'data'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;

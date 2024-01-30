@@ -76,6 +76,7 @@ const resolversComposition = {
   "Mutation.createGroupChat": [currentUserExists()],
   "Mutation.createOrganization": [currentUserExists()],
   "Mutation.createVenue": [currentUserExists()],
+  "Mutation.deleteVenue": [currentUserExists()],
   "Mutation.editVenue": [currentUserExists()],
   "Mutation.likeComment": [currentUserExists()],
   "Mutation.likePost": [currentUserExists()],

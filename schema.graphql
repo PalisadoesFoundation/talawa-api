@@ -539,6 +539,7 @@ type Mutation {
   createVenue(data: VenueInput!, file: String): Venue!
   deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
+  deleteVenue(venueId: ID!, organizationId: ID!): Venue
   editVenue(data: EditVenueInput!, file: String): Venue!
   forgotPassword(data: ForgotPasswordData!): Boolean!
   joinPublicOrganization(organizationId: ID!): User!
