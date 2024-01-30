@@ -27,8 +27,11 @@ import { userLanguage } from "./userLanguage";
 import { users } from "./users";
 import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
-
+import { agendaCategory } from "./getAgendaCategoryById";
+import { agendaCategories } from "./getAllAgendaCategories";
 export const Query: QueryResolvers = {
+  agendaCategories,
+  agendaCategory,
   checkAuth,
   customFieldsByOrganization,
   customDataByOrganization,

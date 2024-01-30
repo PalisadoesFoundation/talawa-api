@@ -91,7 +91,9 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
 import { deleteAdvertisementById } from "./deleteAdvertisementById";
-// import { createAgendaCategory } from "./createAgendaCategory";
+import { createAgendaCategory } from "./createAgendaCategory";
+import { updateAgendaCategory } from "./updateAgendaCategory";
+import { deleteAgendaCategory } from "./deleteAgendaCategory";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -116,6 +118,7 @@ export const Mutation: MutationResolvers = {
   createAdmin,
   createComment,
   createAdvertisement,
+  createAgendaCategory,
   createDirectChat,
   createDonation,
   createEvent,
@@ -130,6 +133,7 @@ export const Mutation: MutationResolvers = {
   createUserTag,
   deleteDonationById,
   deleteAdvertisementById,
+  deleteAgendaCategory,
   forgotPassword,
   joinPublicOrganization,
   leaveOrganization,
@@ -179,6 +183,7 @@ export const Mutation: MutationResolvers = {
   updateEventProject,
   updateLanguage,
   updateOrganization,
+  updateAgendaCategory,
   updatePluginStatus,
   updateTask,
   updateUserProfile,

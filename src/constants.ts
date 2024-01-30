@@ -211,6 +211,13 @@ export const ADMIN_CANNOT_CHANGE_ITS_ROLE = {
   PARAM: "admin.changeOwnRole",
 };
 
+export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
+  DESC: "Agenda category not found",
+  CODE: "agendaCategory.notFound",
+  MESSAGE: "agendaCategory.notFound",
+  PARAM: "agendaCategory",
+};
+
 export const USER_NOT_AUTHORIZED_TO_PIN = {
   MESSAGE:
     "The user must be a superadmin or an admin of the organization to pin/unpin posts",
