@@ -214,7 +214,7 @@ describe("resolvers -> Mutation -> createVenue", () => {
       if (error instanceof ConflictError) {
         expect(error.message).toEqual(VENUE_ALREADY_EXISTS_ERROR.MESSAGE);
       } else {
-        fail(`Expected InputValidationError, but got ${error}`);
+        fail(`Expected ConflictError, but got ${error}`);
       }
     }
   });
