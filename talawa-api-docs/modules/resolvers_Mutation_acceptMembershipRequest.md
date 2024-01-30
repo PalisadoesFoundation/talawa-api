@@ -36,8 +36,7 @@ The following checks are done:
 3. Whether the user exists
 4. whether currentUser with _id === context.userId is an admin of organization.
 5. Whether user is already a member of organization.
-6. Whether the user is a new user or not
 
 #### Defined in
 
-[src/resolvers/Mutation/acceptMembershipRequest.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/resolvers/Mutation/acceptMembershipRequest.ts#L26)
+[src/resolvers/Mutation/acceptMembershipRequest.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/resolvers/Mutation/acceptMembershipRequest.ts#L25)

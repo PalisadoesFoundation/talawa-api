@@ -38,4 +38,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/createActionItemCategory.ts:27](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/resolvers/Mutation/createActionItemCategory.ts#L27)
+[src/resolvers/Mutation/createActionItemCategory.ts:27](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/resolvers/Mutation/createActionItemCategory.ts#L27)

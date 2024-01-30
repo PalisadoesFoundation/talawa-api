@@ -29,7 +29,7 @@ This is an interface that represents a database(MongoDB) document for Advertisem
 
 #### Defined in
 
-[src/models/Advertisement.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/Advertisement.ts#L8)
+[src/models/Advertisement.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Advertisement.ts#L8)
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 #### Defined in
 
-[src/models/Advertisement.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/Advertisement.ts#L16)
+[src/models/Advertisement.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Advertisement.ts#L16)
 
 ___
 
@@ -49,7 +49,7 @@ ___
 
 #### Defined in
 
-[src/models/Advertisement.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/Advertisement.ts#L11)
+[src/models/Advertisement.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Advertisement.ts#L11)
 
 ___
 
@@ -59,7 +59,7 @@ ___
 
 #### Defined in
 
-[src/models/Advertisement.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/Advertisement.ts#L15)
+[src/models/Advertisement.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Advertisement.ts#L15)
 
 ___
 
@@ -69,7 +69,7 @@ ___
 
 #### Defined in
 
-[src/models/Advertisement.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/Advertisement.ts#L12)
+[src/models/Advertisement.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Advertisement.ts#L12)
 
 ___
 
@@ -79,7 +79,7 @@ ___
 
 #### Defined in
 
-[src/models/Advertisement.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/Advertisement.ts#L10)
+[src/models/Advertisement.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Advertisement.ts#L10)
 
 ___
 
@@ -89,7 +89,7 @@ ___
 
 #### Defined in
 
-[src/models/Advertisement.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/Advertisement.ts#L9)
+[src/models/Advertisement.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Advertisement.ts#L9)
 
 ___
 
@@ -99,7 +99,7 @@ ___
 
 #### Defined in
 
-[src/models/Advertisement.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/Advertisement.ts#L14)
+[src/models/Advertisement.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Advertisement.ts#L14)
 
 ___
 
@@ -109,7 +109,7 @@ ___
 
 #### Defined in
 
-[src/models/Advertisement.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/Advertisement.ts#L13)
+[src/models/Advertisement.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Advertisement.ts#L13)
 
 ___
 
@@ -119,4 +119,4 @@ ___
 
 #### Defined in
 
-[src/models/Advertisement.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/Advertisement.ts#L17)
+[src/models/Advertisement.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Advertisement.ts#L17)

@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/services/CommentCache/deleteCommentFromCache.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/services/CommentCache/deleteCommentFromCache.ts#L4)
+[src/services/CommentCache/deleteCommentFromCache.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/services/CommentCache/deleteCommentFromCache.ts#L4)

@@ -24,7 +24,7 @@ This is an interface that represents a database(MongoDB) document for Plugin Fie
 
 #### Defined in
 
-[src/models/PluginField.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/PluginField.ts#L7)
+[src/models/PluginField.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/PluginField.ts#L7)
 
 ___
 
@@ -34,7 +34,7 @@ ___
 
 #### Defined in
 
-[src/models/PluginField.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/PluginField.ts#L11)
+[src/models/PluginField.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/PluginField.ts#L11)
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 #### Defined in
 
-[src/models/PluginField.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/PluginField.ts#L8)
+[src/models/PluginField.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/PluginField.ts#L8)
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 #### Defined in
 
-[src/models/PluginField.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/PluginField.ts#L10)
+[src/models/PluginField.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/PluginField.ts#L10)
 
 ___
 
@@ -64,4 +64,4 @@ ___
 
 #### Defined in
 
-[src/models/PluginField.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/PluginField.ts#L9)
+[src/models/PluginField.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/PluginField.ts#L9)

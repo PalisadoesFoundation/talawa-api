@@ -33,7 +33,7 @@ This is an interface that represents a database(MongoDB) document for ActionItem
 
 #### Defined in
 
-[src/models/ActionItem.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L13)
+[src/models/ActionItem.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L13)
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L16)
+[src/models/ActionItem.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L16)
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L14)
+[src/models/ActionItem.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L14)
 
 ___
 
@@ -63,7 +63,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L15)
+[src/models/ActionItem.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L15)
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L19)
+[src/models/ActionItem.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L19)
 
 ___
 
@@ -83,7 +83,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L21)
+[src/models/ActionItem.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L21)
 
 ___
 
@@ -93,7 +93,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L25)
+[src/models/ActionItem.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L25)
 
 ___
 
@@ -103,7 +103,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L24)
+[src/models/ActionItem.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L24)
 
 ___
 
@@ -113,7 +113,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L20)
+[src/models/ActionItem.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L20)
 
 ___
 
@@ -123,7 +123,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L23)
+[src/models/ActionItem.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L23)
 
 ___
 
@@ -133,7 +133,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:22](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L22)
+[src/models/ActionItem.ts:22](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L22)
 
 ___
 
@@ -143,7 +143,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L18)
+[src/models/ActionItem.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L18)
 
 ___
 
@@ -153,7 +153,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L17)
+[src/models/ActionItem.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L17)
 
 ___
 
@@ -163,4 +163,4 @@ ___
 
 #### Defined in
 
-[src/models/ActionItem.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/ActionItem.ts#L26)
+[src/models/ActionItem.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L26)
