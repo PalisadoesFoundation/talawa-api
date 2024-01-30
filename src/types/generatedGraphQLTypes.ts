@@ -191,7 +191,7 @@ export type DeletePayload = {
 export type DirectChat = {
   __typename?: 'DirectChat';
   _id: Scalars['ID'];
-  agendacategories?: Maybe<Array<Maybe<AgendaCategory>>>;
+  agendaCategories?: Maybe<Array<Maybe<AgendaCategory>>>;
   creator: User;
   messages?: Maybe<Array<Maybe<DirectChatMessage>>>;
   organization: Organization;
@@ -2424,7 +2424,7 @@ export type DeletePayloadResolvers<ContextType = any, ParentType extends Resolve
 
 export type DirectChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['DirectChat'] = ResolversParentTypes['DirectChat']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  agendacategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaCategory']>>>, ParentType, ContextType>;
+  agendaCategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaCategory']>>>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChatMessage']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
