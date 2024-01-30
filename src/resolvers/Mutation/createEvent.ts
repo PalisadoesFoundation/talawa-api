@@ -1,7 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent, InterfaceUser } from "../../models";
-import { User, Organization, Event } from "../../models";
+import { User, Organization } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -15,7 +15,7 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import type mongoose from "mongoose";
 import { session } from "../../db";
 import { Weekly, Once } from "../../helpers/eventInstances";
-import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+
 /**
  * This function enables to create an event.
  * @param _parent - parent of current request
@@ -132,29 +132,25 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     session.startTransaction();
   }
 
-  let uploadImageFileName = null;
-  const dataUrlPrefix = "data:";
-  const supportedImageFormats = ["jpg", "jpeg", "png"];
+  const uploadImages = async (imageDataURLs: unknown): Promise<string[]> => {
+    const uploadImageFileNames: string[] = [];
 
-  if (!args.data?.images) {
-    throw new Error("Please upload images");
-  } else {
-    try {
-      const imageDataURL = args.data.images[0];
+    if (!imageDataURLs || !Array.isArray(imageDataURLs)) {
+      throw new Error("Invalid or missing image data.");
+    }
 
-      if (
-        imageDataURL &&
-        imageDataURL.startsWith(dataUrlPrefix) &&
-        supportedImageFormats.some((format) => imageDataURL.includes(format))
-      ) {
-        uploadImageFileName = await uploadEncodedImage(imageDataURL, null);
-      } else {
+    for (const imageDataURL of imageDataURLs) {
+      if (typeof imageDataURL !== "string") {
         throw new Error("Unsupported file type.");
       }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      throw new Error("Failed to upload image");
+      const uploadedFileName: string = imageDataURL;
+      uploadImageFileNames.push(uploadedFileName);
     }
+
+    return uploadImageFileNames;
+  };
+  if (args.data?.images) {
+    uploadImages(args.data?.images);
   }
 
   try {
