@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -9,6 +10,7 @@ import * as redis from "redis";
 import { exec } from "child_process";
 import nodemailer from "nodemailer";
 import type { ExecException } from "child_process";
+import crypto from "crypto";
 
 dotenv.config();
 
@@ -341,6 +343,28 @@ async function redisConfiguration(): Promise<void> {
     console.error(err);
     abort();
   }
+}
+
+/**
+ * The code checks if the environment variable 'ENCRYPTION_KEY' is already set.
+ * If 'ENCRYPTION_KEY' is set, it retrieves its value and uses it as the encryption key.
+ * If 'ENCRYPTION_KEY' is not set, a random 256-bit (32-byte) key is generated using
+ * the crypto library and set as the 'ENCRYPTION_KEY' environment variable.
+ * @remarks
+ * This ensures that a consistent encryption key is used if already set, or generates
+ * and sets a new key if one doesn't exist. The 'ENCRYPTION_KEY' is intended to be used
+ * for secure operations such as email encryption and decryption.
+ */
+let encryptionKey: string;
+
+// Checking if encryption key is already in environment variables
+if (process.env.ENCRYPTION_KEY) {
+  encryptionKey = process.env.ENCRYPTION_KEY;
+} else {
+  // Generating random key
+  encryptionKey = crypto.randomBytes(32).toString("hex");
+  // Setting the key as an environment variable
+  process.env.ENCRYPTION_KEY = encryptionKey;
 }
 
 //LAST_RESORT_SUPERADMIN_EMAIL prompt
@@ -754,6 +778,7 @@ async function importData(): Promise<void> {
  */
 
 async function importDefaultOrganization(): Promise<void> {
+  // eslint-disable-next-line
   return new Promise<void>(async (resolve, reject) => {
     if (!process.env.MONGO_DB_URL) {
       console.log("Couldn't find mongodb url");
@@ -787,6 +812,7 @@ async function importDefaultOrganization(): Promise<void> {
         );
       }
       client.close();
+      // eslint-disable-next-line
     } catch (e: any) {
       console.log(`Couldn't import the default Organization`);
       reject;

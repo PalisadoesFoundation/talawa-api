@@ -20,6 +20,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { Document } from "mongoose";
 import { omit } from "lodash";
+import { encryptEmail } from "../../utilities/encryptionModule";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -57,12 +58,13 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const isLastResortSuperAdmin =
     args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
-
+  const encryptedEmail = encryptEmail(args.data.email);
   // Upload file
   let uploadImageFileName;
   if (args.file) {
     uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
+  // eslint-disable-next-line
   let createdUser: (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
   if (organization !== null) {
@@ -148,14 +150,15 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
       ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
-
+  // eslint-disable-next-line
   const accessToken = await createAccessToken(createdUser!);
+  // eslint-disable-next-line
   const refreshToken = await createRefreshToken(createdUser!);
 
   copyToClipboard(`{
   "Authorization": "Bearer ${accessToken}"
 }`);
-
+  // eslint-disable-next-line
   const filteredCreatedUser = createdUser!.toObject();
 
   const userToBeReturned = omit(filteredCreatedUser, "password");
