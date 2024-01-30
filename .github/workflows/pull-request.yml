@@ -92,21 +92,11 @@ jobs:
       SMTP_HOST: ""
       SMTP_PASSWORD: ""
       SMTP_USERNAME: ""
-      messagingSenderId: "XXXXXXXXXXXX"
-      projectId: "appname-XXXXXX"
-      storageBucket: "appname-XXXXXX.appspot.com"
-      iOSapiKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-      iOSappId: "1:XXXXXXXXXXXX:ios:XXXXXXXXXXXXXXXXXXXXXX"
-      iOSmessagingSenderId: "XXXXXXXXXXXX"
-      iOSprojectId: "appame-XXXXXX"
-      iOSstorageBucket: "appame-XXXXXX.appspot.com"
-      iosClientId: "XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.apps.googleusercontent.com"
-      iosBundleId: "com.appname.app"
       LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
       COLORIZE_LOGS: "true"
       LOG_LEVEL: "info"
-    #       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-    #       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+      # ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+      # REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
     steps:
       - name: Checkout repository
