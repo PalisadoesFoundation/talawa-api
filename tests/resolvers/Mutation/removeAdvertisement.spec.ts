@@ -132,4 +132,33 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
       );
     }
   });
+
+  it("should throw NOT_FOUND_ERROR when id not provided", async () => {
+    // deleting
+    const { removeAdvertisement } = await import(
+      "../../../src/resolvers/Mutation/removeAdvertisement"
+    );
+    const context = {
+      userId: testUser?.id,
+    };
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message: string) => `Translated ${message}`);
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const removeAdvertisementPayload = await removeAdvertisement?.(
+        {},
+        { id: "" },
+        context
+      );
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
+      expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`
+      );
+    }
+  });
 });

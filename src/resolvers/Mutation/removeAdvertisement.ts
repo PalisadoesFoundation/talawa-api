@@ -21,7 +21,7 @@ export const removeAdvertisement: MutationResolvers["removeAdvertisement"] =
 
     // Deletes the ad.
     await Advertisement.deleteOne({
-      _id: args.id ? args.id : "",
+      _id: args.id,
     });
     // Returns deleted ad.
     return currentAd;

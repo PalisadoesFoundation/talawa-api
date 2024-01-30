@@ -194,6 +194,13 @@ export type ConnectionPageInfo = {
   startCursor?: Maybe<Scalars['String']['output']>;
 };
 
+export type CreateActionItemInput = {
+  assigneeId: Scalars['ID']['input'];
+  dueDate?: InputMaybe<Scalars['Date']['input']>;
+  eventId?: InputMaybe<Scalars['ID']['input']>;
+  preCompletionNotes?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type CreateAdvertisementInput = {
   endDate: Scalars['Date']['input'];
   mediaFile: Scalars['String']['input'];
@@ -207,13 +214,6 @@ export type CreateAdvertisementPayload = {
   __typename?: 'CreateAdvertisementPayload';
   _id: Scalars['ID']['output'];
   advertisement?: Maybe<Advertisement>;
-};
-
-export type CreateActionItemInput = {
-  assigneeId: Scalars['ID']['input'];
-  dueDate?: InputMaybe<Scalars['Date']['input']>;
-  eventId?: InputMaybe<Scalars['ID']['input']>;
-  preCompletionNotes?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateUserTagInput = {
@@ -2123,9 +2123,9 @@ export type ResolversTypes = {
   ConnectionError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['ConnectionError']>;
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
+  CreateActionItemInput: CreateActionItemInput;
   CreateAdvertisementInput: CreateAdvertisementInput;
   CreateAdvertisementPayload: ResolverTypeWrapper<Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
-  CreateActionItemInput: CreateActionItemInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
@@ -2264,9 +2264,9 @@ export type ResolversParentTypes = {
   ConnectionError: ResolversUnionTypes<ResolversParentTypes>['ConnectionError'];
   ConnectionPageInfo: ConnectionPageInfo;
   CountryCode: Scalars['CountryCode']['output'];
+  CreateActionItemInput: CreateActionItemInput;
   CreateAdvertisementInput: CreateAdvertisementInput;
   CreateAdvertisementPayload: Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
-  CreateActionItemInput: CreateActionItemInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
