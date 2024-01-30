@@ -1,12 +1,13 @@
 import type { PopulatedDoc, PaginateModel, Types, Document } from "mongoose";
-import mongoose,{ Schema, model, models } from "mongoose";
+import { Schema, model, models } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 import validator from "validator";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
-import AutoIncrementFactory from "mongoose-sequence";
-const autoIncrement = AutoIncrementFactory(mongoose);
+import { identifier } from "./identifier";
+// import AutoIncrementFactory from "mongoose-sequence";
+// const autoIncrement = AutoIncrementFactory(mongoose);
 
 /**
  * This is an interface that represents a database(MongoDB) document for User.
@@ -14,10 +15,10 @@ const autoIncrement = AutoIncrementFactory(mongoose);
 export interface InterfaceUser {
   _id: Types.ObjectId;
   identifier: {
-    type: number,
-    unique: true,
-    required: true,
-    immutable: true,
+    type: number;
+    unique: true;
+    required: true;
+    immutable: true;
   };
   address: {
     city: string;
@@ -292,7 +293,19 @@ const userSchema = new Schema({
 });
 
 userSchema.plugin(mongoosePaginate);
-userSchema.plugin(autoIncrement, { inc_field: "identifier", start_seq: 1000 });
+
+userSchema.pre("save", async function (next) {
+  if (!this.identifier.type) {
+    const counter = await identifier.findOneAndUpdate(
+      { _id: "userCounter" },
+      { $inc: { sequence_value: 1 } },
+      { new: true, upsert: true }
+    );
+
+    this.identifier.type = counter.sequence_value;
+  }
+  return next();
+});
 
 const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
