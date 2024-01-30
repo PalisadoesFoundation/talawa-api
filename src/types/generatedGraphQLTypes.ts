@@ -15,6 +15,7 @@ import type { InterfaceGroupChatMessage as InterfaceGroupChatMessageModel } from
 import type { InterfaceLanguage as InterfaceLanguageModel } from '../models/Language';
 import type { InterfaceMembershipRequest as InterfaceMembershipRequestModel } from '../models/MembershipRequest';
 import type { InterfaceMessage as InterfaceMessageModel } from '../models/Message';
+import type { InterfaceAgendaCategory as InterfaceAgendaCategoryModel } from '../models/AgendaCategory';
 import type { InterfaceOrganization as InterfaceOrganizationModel } from '../models/Organization';
 import type { InterfacePlugin as InterfacePluginModel } from '../models/Plugin';
 import type { InterfacePluginField as InterfacePluginFieldModel } from '../models/PluginField';
@@ -2033,7 +2034,7 @@ export type ResolversTypes = {
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
   Advertisement: ResolverTypeWrapper<Advertisement>;
-  AgendaCategory: ResolverTypeWrapper<Omit<AgendaCategory, 'createdBy' | 'organization' | 'updatedBy'> & { createdBy: ResolversTypes['User'], organization?: Maybe<ResolversTypes['Organization']>, updatedBy?: Maybe<ResolversTypes['User']> }>;
+  AgendaCategory: ResolverTypeWrapper<InterfaceAgendaCategoryModel>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   Any: ResolverTypeWrapper<Scalars['Any']>;
@@ -2174,7 +2175,7 @@ export type ResolversParentTypes = {
   Address: Address;
   AddressInput: AddressInput;
   Advertisement: Advertisement;
-  AgendaCategory: Omit<AgendaCategory, 'createdBy' | 'organization' | 'updatedBy'> & { createdBy: ResolversParentTypes['User'], organization?: Maybe<ResolversParentTypes['Organization']>, updatedBy?: Maybe<ResolversParentTypes['User']> };
+  AgendaCategory: InterfaceAgendaCategoryModel;
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any'];

@@ -64,6 +64,8 @@ const config: CodegenConfig = {
 
           Message: "../models/Message#InterfaceMessage",
 
+          AgendaCategory: "../models/AgendaCategory#InterfaceAgendaCategory",
+
           Organization: "../models/Organization#InterfaceOrganization",
 
           Plugin: "../models/Plugin#InterfacePlugin",
