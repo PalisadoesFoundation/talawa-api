@@ -1,3 +1,4 @@
+import { NotFoundError } from "./../../libraries/errors/notFoundError";
 import { Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import {
@@ -70,7 +71,7 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
   const venueIndex = organization.venues.indexOf(args.venueId);
 
   if (venueIndex === -1) {
-    throw new errors.UnauthorizedError(
+    throw new errors.NotFoundError(
       requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
       VENUE_NOT_FOUND_ERROR.CODE,
       VENUE_NOT_FOUND_ERROR.PARAM
