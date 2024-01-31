@@ -56,7 +56,7 @@ scalar Any
 type AuthData {
   accessToken: String!
   refreshToken: String!
-  user: UserToReturn!
+  user: User!
 }
 
 type CheckIn {
