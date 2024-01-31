@@ -16,6 +16,34 @@ export const types = gql`
     refreshToken: String!
   }
 
+  type ActionItemCategory {
+    _id: ID!
+    name: String!
+    organization: Organization
+    isDisabled: Boolean!
+    creator: User
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
+  # Action Item for a ActionItemCategory
+  type ActionItem {
+    _id: ID!
+    assignee: User
+    assigner: User
+    actionItemCategory: ActionItemCategory
+    preCompletionNotes: String
+    postCompletionNotes: String
+    assignmentDate: Date!
+    dueDate: Date!
+    completionDate: Date!
+    isCompleted: Boolean!
+    event: Event
+    creator: User
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
   # Stores the detail of an check in of an user in an event
   type CheckIn {
     _id: ID!
@@ -143,6 +171,7 @@ export const types = gql`
     attendees: [User]
     # For each attendee, gives information about whether he/she has checked in yet or not
     attendeesCheckInStatus: [CheckInStatus!]!
+    actionItems: [ActionItem]
     admins(adminId: ID): [User!]
     status: Status!
     feedback: [Feedback!]!
@@ -238,6 +267,7 @@ export const types = gql`
     createdAt: DateTime!
     updatedAt: DateTime!
     members: [User]
+    actionItemCategories: [ActionItemCategory]
     admins(adminId: ID): [User!]
     membershipRequests: [MembershipRequest]
     userRegistrationRequired: Boolean!

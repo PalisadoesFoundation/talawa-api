@@ -3,7 +3,7 @@ import type {
   MutationResolvers,
   Address,
 } from "../../types/generatedGraphQLTypes";
-import { User, Organization } from "../../models";
+import { User, Organization, ActionItemCategory } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { LENGTH_VALIDATION_ERROR } from "../../constants";
 import { superAdminCheck } from "../../utilities";
@@ -83,6 +83,13 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       creatorId: context.userId,
       admins: [context.userId],
       members: [context.userId],
+    });
+
+    // Creating a default actionItemCategory
+    await ActionItemCategory.create({
+      name: "Default",
+      organizationId: createdOrganization._id,
+      creatorId: context.userId,
     });
 
     await cacheOrganizations([createdOrganization.toObject()]);
