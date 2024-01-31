@@ -315,6 +315,14 @@ type ExtendSession {
   refreshToken: String!
 }
 
+type UserFamily {
+  _id: ID!
+  title: String!
+  users: [User!]!
+  admins: [User!]!
+  creator: User!
+}
+
 type Feedback {
   _id: ID!
   createdAt: DateTime!
@@ -486,6 +494,7 @@ type Mutation {
   addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
   addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
+  addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
   adminRemoveEvent(eventId: ID!): Event!
   adminRemoveGroup(groupId: ID!): GroupChat!
   assignUserTag(input: ToggleUserTagAssignInput!): User
@@ -500,6 +509,7 @@ type Mutation {
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput): Event!
   createGroupChat(data: createGroupChatInput!): GroupChat!
+  createUserFamily(data: createUserFamilyInput): UserFamily!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
   createOrganization(data: OrganizationInput, file: String): Organization!
@@ -528,6 +538,7 @@ type Mutation {
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
+  removeUserFamily(familyId: ID!): UserFamily!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -537,6 +548,7 @@ type Mutation {
   removeSampleOrganization: Boolean!
   removeUserCustomData(organizationId: ID!): UserCustomData!
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
+  removeUserFromUserFamily(familyId: ID!, userId: ID!): UserFamily!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
   revokeRefreshTokenForUser: Boolean!
@@ -810,6 +822,7 @@ type Query {
   event(id: ID!): Event
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
+  userFamily(id: ID!): [UserFamily]!
   getAdvertisements: [Advertisement]
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
@@ -964,11 +977,13 @@ type User {
   address: Address
   adminApproved: Boolean
   adminFor: [Organization]
+  adminForUserFamily: [UserFamily]
   appLanguageCode: String!
   birthDate: Date
   createdAt: DateTime!
   createdEvents: [Event]
   createdOrganizations: [Organization]
+  createdUserFamily: [UserFamily]
   educationGrade: EducationGrade
   email: EmailAddress!
   employmentStatus: EmploymentStatus
@@ -977,6 +992,7 @@ type User {
   gender: Gender
   image: String
   joinedOrganizations: [Organization]
+  joinedUserFamily: [UserFamily]
   lastName: String!
   maritalStatus: MaritalStatus
   membershipRequests: [MembershipRequest]
@@ -1142,6 +1158,11 @@ input createChatInput {
 
 input createGroupChatInput {
   organizationId: ID!
+  title: String!
+  userIds: [ID!]!
+}
+
+input createUserFamilyInput {
   title: String!
   userIds: [ID!]!
 }

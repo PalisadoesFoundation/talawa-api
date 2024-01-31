@@ -5,6 +5,7 @@ import validator from "validator";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
+import type { InterfaceUserFamily } from "./userFamily";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 import { LOG } from "../constants";
 
@@ -25,11 +26,13 @@ export interface InterfaceUser {
   };
   adminApproved: boolean;
   adminFor: PopulatedDoc<InterfaceOrganization & Document>[];
+  adminForUserFamily: PopulatedDoc<InterfaceUserFamily & Document>[];
   appLanguageCode: string;
   birthDate: Date;
   createdAt: Date;
   createdEvents: PopulatedDoc<InterfaceEvent & Document>[];
   createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
+  createdUserFamily: PopulatedDoc<InterfaceUserFamily & Document>[];
   educationGrade: string;
   email: string;
   employmentStatus: string;
@@ -38,6 +41,7 @@ export interface InterfaceUser {
   gender: string;
   image: string | undefined | null;
   joinedOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
+  joinedUserFamily: PopulatedDoc<InterfaceUserFamily & Document>[];
   lastName: string;
   maritalStatus: string;
   membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
@@ -126,6 +130,12 @@ const userSchema = new Schema(
         ref: "Organization",
       },
     ],
+    adminForUserFamily: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Organization",
+      },
+    ],
     appLanguageCode: {
       type: String,
       required: true,
@@ -135,6 +145,12 @@ const userSchema = new Schema(
       type: Date,
     },
     createdOrganizations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Organization",
+      },
+    ],
+    createdUserFamily: [
       {
         type: Schema.Types.ObjectId,
         ref: "Organization",
@@ -195,6 +211,12 @@ const userSchema = new Schema(
       type: String,
     },
     joinedOrganizations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Organization",
+      },
+    ],
+    joinedUserFamily: [
       {
         type: Schema.Types.ObjectId,
         ref: "Organization",
