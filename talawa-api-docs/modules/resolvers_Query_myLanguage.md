@@ -26,4 +26,4 @@ An object that contains `userId`.
 
 #### Defined in
 
-[src/resolvers/Query/myLanguage.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/resolvers/Query/myLanguage.ts#L13)
+[src/resolvers/Query/myLanguage.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/e7d3a46/src/resolvers/Query/myLanguage.ts#L13)

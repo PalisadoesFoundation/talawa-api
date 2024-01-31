@@ -34,4 +34,4 @@ The following tasks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/forgotPassword.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/resolvers/Mutation/forgotPassword.ts#L17)
+[src/resolvers/Mutation/forgotPassword.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/e7d3a46/src/resolvers/Mutation/forgotPassword.ts#L17)
