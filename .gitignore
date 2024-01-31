@@ -11,6 +11,7 @@ node_modules/**
 # No editor related files
 .idea
 .vscode
+*.swp
 
 # Don't upload configuration files
 .env
