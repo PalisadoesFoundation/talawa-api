@@ -134,7 +134,7 @@ export const mutations = gql`
 
     joinPublicOrganization(organizationId: ID!): User! @auth
 
-    inviteEventVolunteer(data: InviteEventVolunteerInput): EventVolunteer! @auth
+    createEventVolunteer(data: EventVolunteerInput!): EventVolunteer! @auth
 
     leaveOrganization(organizationId: ID!): User! @auth
 

@@ -1,4 +1,4 @@
-import type { PopulatedDoc, Document, Model , Types } from "mongoose";
+import type { PopulatedDoc, Document, Model, Types } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
@@ -26,7 +26,6 @@ const eventVolunteerSchema = new Schema(
     eventId: {
       type: Schema.Types.ObjectId,
       ref: "Event",
-      required: true,
     },
     response: {
       type: String,

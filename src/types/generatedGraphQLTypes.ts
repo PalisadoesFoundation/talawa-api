@@ -409,6 +409,11 @@ export type EventVolunteer = {
   user: User;
 };
 
+export type EventVolunteerInput = {
+  eventId: Scalars['ID']['input'];
+  userId: Scalars['ID']['input'];
+};
+
 export type EventVolunteerResponse =
   | 'NO'
   | 'YES';
@@ -521,11 +526,6 @@ export type InvalidCursor = FieldError & {
   __typename?: 'InvalidCursor';
   message: Scalars['String']['output'];
   path: Array<Scalars['String']['output']>;
-};
-
-export type InviteEventVolunteerInput = {
-  eventId?: InputMaybe<Scalars['ID']['input']>;
-  userId: Scalars['ID']['input'];
 };
 
 export type Language = {
@@ -653,6 +653,7 @@ export type Mutation = {
   createDirectChat: DirectChat;
   createDonation: Donation;
   createEvent: Event;
+  createEventVolunteer: EventVolunteer;
   createGroupChat: GroupChat;
   createMember: Organization;
   createMessageChat: MessageChat;
@@ -666,7 +667,6 @@ export type Mutation = {
   deleteAgendaCategory: Scalars['ID']['output'];
   deleteDonationById: DeletePayload;
   forgotPassword: Scalars['Boolean']['output'];
-  inviteEventVolunteer: EventVolunteer;
   joinPublicOrganization: User;
   leaveOrganization: User;
   likeComment?: Maybe<Comment>;
@@ -888,6 +888,11 @@ export type MutationCreateEventArgs = {
 };
 
 
+export type MutationCreateEventVolunteerArgs = {
+  data: EventVolunteerInput;
+};
+
+
 export type MutationCreateGroupChatArgs = {
   data: CreateGroupChatInput;
 };
@@ -950,11 +955,6 @@ export type MutationDeleteDonationByIdArgs = {
 
 export type MutationForgotPasswordArgs = {
   data: ForgotPasswordData;
-};
-
-
-export type MutationInviteEventVolunteerArgs = {
-  data?: InputMaybe<InviteEventVolunteerInput>;
 };
 
 
@@ -2261,6 +2261,7 @@ export type ResolversTypes = {
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
   EventVolunteer: ResolverTypeWrapper<InterfaceEventVolunteerModel>;
+  EventVolunteerInput: EventVolunteerInput;
   EventVolunteerResponse: EventVolunteerResponse;
   EventWhereInput: EventWhereInput;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
@@ -2277,7 +2278,6 @@ export type ResolversTypes = {
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   InvalidCursor: ResolverTypeWrapper<InvalidCursor>;
-  InviteEventVolunteerInput: InviteEventVolunteerInput;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   Language: ResolverTypeWrapper<InterfaceLanguageModel>;
   LanguageInput: LanguageInput;
@@ -2408,6 +2408,7 @@ export type ResolversParentTypes = {
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
   EventVolunteer: InterfaceEventVolunteerModel;
+  EventVolunteerInput: EventVolunteerInput;
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
   Feedback: InterfaceFeedbackModel;
@@ -2421,7 +2422,6 @@ export type ResolversParentTypes = {
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
   InvalidCursor: InvalidCursor;
-  InviteEventVolunteerInput: InviteEventVolunteerInput;
   JSON: Scalars['JSON']['output'];
   Language: InterfaceLanguageModel;
   LanguageInput: LanguageInput;
@@ -2921,7 +2921,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
-  createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationCreateEventArgs, 'data'>>;
+  createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, Partial<MutationCreateEventArgs>>;
+  createEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationCreateEventVolunteerArgs, 'data'>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
   createMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
@@ -2935,7 +2936,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteAgendaCategory?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteAgendaCategoryArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
-  inviteEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, Partial<MutationInviteEventVolunteerArgs>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;
   leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'organizationId'>>;
   likeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationLikeCommentArgs, 'id'>>;

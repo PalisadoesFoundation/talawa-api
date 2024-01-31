@@ -93,9 +93,9 @@ export const inputs = gql`
     organizationId: ID!
   }
 
-  input InviteEventVolunteerInput {
+  input EventVolunteerInput {
     userId: ID!
-    eventId: ID
+    eventId: ID!
   }
 
   input UpdateEventVolunteerInput {

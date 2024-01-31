@@ -20,7 +20,7 @@ import { errors, requestContext } from "../../libraries";
  * @returns Created event volunteer
  */
 
-export const inviteEventVolunteer: MutationResolvers["inviteEventVolunteer"] =
+export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
   async (_parent, args, context) => {
     const currentUser = await User.findOne({ _id: context.userId }).lean();
     if (!currentUser) {
@@ -49,12 +49,11 @@ export const inviteEventVolunteer: MutationResolvers["inviteEventVolunteer"] =
       }
     }
     const createdVolunteer = await EventVolunteer.create({
-      userId: args.data?.userId,
-      eventId: args.data?.eventId,
+      userId: args.data.userId,
+      eventId: args.data.eventId,
       isAssigned: false,
       isInvited: true,
       creatorId: context.userId,
     });
-    // TODO: EventVolunteerGroup will be updated
     return createdVolunteer.toObject();
   };

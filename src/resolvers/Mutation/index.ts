@@ -38,7 +38,7 @@ import { deleteDonationById } from "./deleteDonationById";
 import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { forgotPassword } from "./forgotPassword";
 import { joinPublicOrganization } from "./joinPublicOrganization";
-import { inviteEventVolunteer } from "./inviteEventVolunteer";
+import { createEventVolunteer } from "./createEventVolunteer";
 import { leaveOrganization } from "./leaveOrganization";
 import { likeComment } from "./likeComment";
 import { likePost } from "./likePost";
@@ -146,7 +146,7 @@ export const Mutation: MutationResolvers = {
   deleteAgendaCategory,
   forgotPassword,
   joinPublicOrganization,
-  inviteEventVolunteer,
+  createEventVolunteer,
   leaveOrganization,
   likeComment,
   likePost,

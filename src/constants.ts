@@ -463,13 +463,6 @@ export const EVENT_VOLUNTEER_INVITE_USER_MISTMATCH = {
   PARAM: "eventVolunteers",
 };
 
-export const EVENT_VOLUNTEER_NOT_INVITED = {
-  DESC: "User is not invited as Event Volunteer",
-  CODE: "eventVolunteer.notInvited",
-  MESSAGE: "eventVolunteer.notInvited",
-  PARAM: "eventVolunteers",
-};
-
 export const USER_ALREADY_CHECKED_IN = {
   MESSAGE: "The user has already been checked for this event.",
   CODE: "user.alreadyCheckedIn",

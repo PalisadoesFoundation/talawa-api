@@ -4,10 +4,9 @@ import {
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { InterfaceEventVolunteer} from "../../models";
-import { User , EventVolunteer } from "../../models";
+import type { InterfaceEventVolunteer } from "../../models";
+import { User, EventVolunteer } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { response } from "express";
 /**
  * This function accepts the Event Volunteer Invite sent to a user
  * @param _parent - parent of current request
@@ -45,18 +44,11 @@ export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
       );
     }
 
-    if (eventVolunteer.userId.toString() !== context.userId) {
-      throw new errors.ValidationError(
-        [
-          {
-            message: requestContext.translate(
-              EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE
-            ),
-            code: EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.CODE,
-            param: EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.PARAM,
-          },
-        ],
-        requestContext.translate(EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE)
+    if (eventVolunteer.userId.toString() !== context.userId.toString()) {
+      throw new errors.ConflictError(
+        requestContext.translate(EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE),
+        EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.CODE,
+        EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.PARAM
       );
     }
 
