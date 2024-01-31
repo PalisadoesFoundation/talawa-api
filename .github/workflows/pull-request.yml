@@ -138,3 +138,12 @@ jobs:
         if: env.RUN_JSDOCS == 'True'
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
 
+  Branch-check:
+    name: "Base branch check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check if base branch is develop"
+        if: github.event.pull_request.base.ref != 'develop'
+        run: |
+          echo "PR is not against develop branch. Please refer PR_GUIDELINES.md"
+          exit 1
