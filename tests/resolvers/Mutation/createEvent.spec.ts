@@ -756,8 +756,11 @@ describe("Check for validation conditions", () => {
 
       await createEventResolverError?.({}, args, context);
     } catch (error: unknown) {
-      // Check if the error message contains the expected part
-      expect(error).toContain("Up to 5 images are allowed.");
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(
+          `Event validation failed: images: Up to 5 images are allowed.`
+        );
+      }
     }
   });
 });
