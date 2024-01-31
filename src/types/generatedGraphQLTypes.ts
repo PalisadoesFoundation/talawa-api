@@ -793,6 +793,11 @@ export type InvalidCursor = FieldError & {
   path: Array<Scalars['String']['output']>;
 };
 
+export type InviteEventVolunteerInput = {
+  eventId?: InputMaybe<Scalars['ID']['input']>;
+  userId: Scalars['ID']['input'];
+};
+
 export type Language = {
   __typename?: 'Language';
   _id: Scalars['ID']['output'];
@@ -2644,6 +2649,7 @@ export type ResolversTypes = {
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   InvalidCursor: ResolverTypeWrapper<InvalidCursor>;
+  InviteEventVolunteerInput: InviteEventVolunteerInput;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   Language: ResolverTypeWrapper<InterfaceLanguageModel>;
   LanguageInput: LanguageInput;
@@ -2793,6 +2799,7 @@ export type ResolversParentTypes = {
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
   InvalidCursor: InvalidCursor;
+  InviteEventVolunteerInput: InviteEventVolunteerInput;
   JSON: Scalars['JSON']['output'];
   Language: InterfaceLanguageModel;
   LanguageInput: LanguageInput;
@@ -3355,7 +3362,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteAgendaCategory?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteAgendaCategoryArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
-  inviteEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationInviteEventAttendeeArgs, 'data'>>;
+  inviteEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, Partial<MutationInviteEventVolunteerArgs>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;
   leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'organizationId'>>;
   likeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationLikeCommentArgs, 'id'>>;
