@@ -140,7 +140,7 @@ docker-compose up
 
 ## Install MongoDB
 
-Talawa-api makes use of `MongoDB` for its database needs. We make use of `mongoose ODM` to interact with the MongoDB database from within the code.
+Talawa-api makes use of `MongoDB` for its database needs. We make use of `mongoose ODM` to interact with the MongoDB database from within the code. IMPORTANT: Currently, talawa-api needs to access the retry writes feature on the database. This is only available on clusters, like MongoDB Atlas, or with a local instance with a replica set. 
 
 ### Setting up the mongoDB database
 
@@ -149,6 +149,8 @@ We're listing some common approaches to set up a running instance of MongoDB dat
 1. `System native database approach:` (Highly Recommended) You can install MongoDB natively on your system and create/connect to the database. Follow the setup guide on official [MongoDB Docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
 2. `Hosted database approach:` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [MongoDB Atlas Docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
 3. `Docker container approach:` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container. You can learn about docker from [Docker docs](https://docs.docker.com/).
+
+If you chose a local instance of MongoDB, follow this guidance on how to [Convert to a Replica Set](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/). Make sure your MongoDB URL in your environment file reflects the replica set.
 
 ## Install Redis
 
