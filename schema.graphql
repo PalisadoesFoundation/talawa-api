@@ -727,11 +727,6 @@ type InvalidCursor implements FieldError {
   path: [String!]!
 }
 
-input InviteEventVolunteerInput {
-  eventId: ID
-  userId: ID!
-}
-
 scalar JSON
 
 type Language {

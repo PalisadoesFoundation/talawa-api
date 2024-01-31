@@ -68,7 +68,7 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -96,10 +96,10 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
       await updateEventVolunteerResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE,
+        EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE
       );
       expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -127,10 +127,10 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
       await updateEventVolunteerResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE,
+        EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE
       );
       expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE}`,
+        `Translated ${EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE}`
       );
     }
   });
@@ -155,7 +155,7 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
     const updatedEventVolunteer = await updateEventVolunteerResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(updatedEventVolunteer).toEqual(
@@ -164,7 +164,7 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
         response: EventVolunteerResponse.YES,
         eventId: testEvent?._id,
         isInvited: true,
-      }),
+      })
     );
   });
 
@@ -185,7 +185,7 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
     const updatedEventVolunteer = await updateEventVolunteerResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(updatedEventVolunteer).toEqual(
@@ -194,7 +194,7 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
         response: testEventVolunteer?.response,
         eventId: testEventVolunteer?.eventId,
         isInvited: testEventVolunteer?.isInvited,
-      }),
+      })
     );
   });
 });

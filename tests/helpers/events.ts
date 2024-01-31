@@ -43,7 +43,7 @@ export const createTestEvent = async (): Promise<
           createdEvents: testEvent._id,
           registeredEvents: testEvent._id,
         },
-      },
+      }
     );
 
     return [testUser, testOrganization, testEvent];
@@ -56,7 +56,7 @@ export const createEventWithRegistrant = async (
   userId: string,
   organizationId: string,
   allDay: boolean,
-  recurrance: string,
+  recurrance: string
 ): Promise<TestEventType> => {
   const testEvent = await Event.create({
     creatorId: userId,
@@ -90,7 +90,7 @@ export const createEventWithRegistrant = async (
         createdEvents: testEvent._id,
         registeredEvents: testEvent._id,
       },
-    },
+    }
   );
   return testEvent;
 };
