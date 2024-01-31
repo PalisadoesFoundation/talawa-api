@@ -20,7 +20,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { Document } from "mongoose";
 import { omit } from "lodash";
-import { encryptEmail } from "../../utilities/encryptionModule";
+import { encryptEmail, decryptEmail } from "../../utilities/encryptionModule";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -29,17 +29,28 @@ import { encryptEmail } from "../../utilities/encryptionModule";
  * @param args - payload provided with the request
  * @returns Sign up details.
  */
-export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
-  const userWithEmailExists = await User.exists({
-    email: args.data.email.toLowerCase(),
-  });
 
-  if (userWithEmailExists === true) {
-    throw new errors.ConflictError(
-      requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
-      EMAIL_ALREADY_EXISTS_ERROR.CODE,
-      EMAIL_ALREADY_EXISTS_ERROR.PARAM
-    );
+export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
+  //Fetching all the users, as emails in the DB are encrypted.
+  const allUsers = await User.find({});
+
+  for (const user of allUsers) {
+    try {
+      // Decrypting the email for each user
+      const { decrypted } = decryptEmail(user.email);
+
+      if (decrypted === args.data.email) {
+        // The decrypted email matches the user-provided email
+        throw new errors.ConflictError(
+          requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
+          EMAIL_ALREADY_EXISTS_ERROR.CODE,
+          EMAIL_ALREADY_EXISTS_ERROR.PARAM
+        );
+      }
+    } catch (error) {
+      // Handling decryption errors (e.g., incorrect encryption key)
+      console.error("Error decrypting email:", error);
+    }
   }
 
   let organization;
@@ -57,8 +68,9 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 
   const isLastResortSuperAdmin =
     args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
-  const hashedPassword = await bcrypt.hash(args.data.password, 12);
   const encryptedEmail = encryptEmail(args.data.email);
+  const hashedPassword = await bcrypt.hash(args.data.password, 12);
+
   // Upload file
   let uploadImageFileName;
   if (args.file) {
@@ -74,7 +86,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     if (organization.userRegistrationRequired == false) {
       createdUser = await User.create({
         ...args.data,
-        email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
+        email: encryptedEmail,
         image: uploadImageFileName ? uploadImageFileName : null,
         password: hashedPassword,
         userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
@@ -98,7 +110,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     } else {
       createdUser = await User.create({
         ...args.data,
-        email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
+        email: encryptedEmail,
         image: uploadImageFileName ? uploadImageFileName : null,
         password: hashedPassword,
         userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",

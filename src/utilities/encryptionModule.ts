@@ -42,7 +42,10 @@ export function encryptEmail(email: string): string {
  * @returns The decrypted email address.
  * @throws Throws an error if the encryption key is not defined.
  */
-export function decryptEmail(encryptedWithEmailSalt: string): string {
+export function decryptEmail(encryptedWithEmailSalt: string): {
+  decrypted: string;
+  salt: string;
+} {
   const encryptionKey = process.env.ENCRYPTION_KEY;
 
   if (!encryptionKey) {
@@ -66,5 +69,5 @@ export function decryptEmail(encryptedWithEmailSalt: string): string {
   let decrypted = decipher.update(encrypted, "hex", "utf-8");
   decrypted += decipher.final("utf-8");
 
-  return decrypted;
+  return { decrypted, salt };
 }
