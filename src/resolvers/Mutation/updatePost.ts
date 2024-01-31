@@ -14,6 +14,7 @@ import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
+import { validateImage } from "../../utilities/imageCheck";
 
 export const updatePost: MutationResolvers["updatePost"] = async (
   _parent,
@@ -56,8 +57,9 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   }
 
   if (args.data?.imageUrl && args.data?.imageUrl !== null) {
+    const resizedImageBuffer = await validateImage(args.data?.imageUrl); // Resize image and check for image type
     args.data.imageUrl = await uploadEncodedImage(
-      args.data.imageUrl,
+      resizedImageBuffer,
       post.imageUrl
     );
   }

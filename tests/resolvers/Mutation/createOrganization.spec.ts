@@ -129,7 +129,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         userRegistrationRequired: true,
         visibleInSearch: true,
       },
-      file: "imagePath",
+      file: "image.png",
     };
     const context = {
       userId: testUser?._id,
@@ -160,10 +160,10 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         creatorId: testUser?._id,
         admins: [testUser?._id],
         members: [testUser?._id],
-        image: "imagePath",
+        image: "image.png",
       })
     );
-    expect(createOrganizationPayload?.image).toEqual("imagePath");
+    expect(createOrganizationPayload?.image).toEqual("image.png");
 
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,

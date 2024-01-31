@@ -11,6 +11,7 @@ import {
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { validateImage } from "../../utilities/imageCheck";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
@@ -75,7 +76,11 @@ export const createPost: MutationResolvers["createPost"] = async (
   if (args.file) {
     const dataUrlPrefix = "data:";
     if (args.file.startsWith(dataUrlPrefix + "image/")) {
-      uploadImageFileName = await uploadEncodedImage(args.file, null);
+      const resizedImageBuffer = await validateImage(args.file); // Resize image and check for image type
+      uploadImageFileName = await uploadEncodedImage(
+        resizedImageBuffer,
+        currentUser?.image
+      );
     } else if (args.file.startsWith(dataUrlPrefix + "video/")) {
       uploadVideoFileName = await uploadEncodedVideo(args.file, null);
     } else {
