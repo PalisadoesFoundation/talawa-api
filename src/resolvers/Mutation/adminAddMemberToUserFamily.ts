@@ -71,8 +71,8 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
       },
       {
         $push: {
-          joinedUserFamily: args.familyId
-        }
+          joinedUserFamily: args.familyId,
+        },
       }
     );
 

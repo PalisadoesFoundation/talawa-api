@@ -4,7 +4,12 @@ import { Types } from "mongoose";
 import type { MutationCreateUserFamilyArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { LENGTH_VALIDATION_ERROR, USER_FAMILY_MIN_MEMBERS_ERROR_CODE, USER_NOT_AUTHORIZED_SUPERADMIN, USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  LENGTH_VALIDATION_ERROR,
+  USER_FAMILY_MIN_MEMBERS_ERROR_CODE,
+  USER_NOT_AUTHORIZED_SUPERADMIN,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type { TestUserType } from "../../helpers/userAndUserFamily";
 import { createTestUserFunc } from "../../helpers/userAndUserFamily";
@@ -44,7 +49,7 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
         data: {
           title: "title",
           userIds: [testUser?._id, testUser2?._id],
-        }
+        },
       };
 
       const context = {
@@ -53,7 +58,7 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
 
       const { createUserFamily: createUserFamilyResolver } = await import(
         "../../../src/resolvers/Mutation/createUserFamily"
-      )
+      );
 
       await createUserFamilyResolver?.({}, args, context);
     } catch (error: any) {
@@ -68,40 +73,43 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementation((message) => message)
+      .mockImplementation((message) => message);
     try {
       const args: MutationCreateUserFamilyArgs = {
         data: {
           title: "title",
           userIds: [testUser?._id, testUser2?._id],
-        }
-      }
+        },
+      };
 
       const context = {
-        userId: testUser2?._id
-      }
+        userId: testUser2?._id,
+      };
 
       const { createUserFamily: createUserFamilyResolver } = await import(
         "../../../src/resolvers/Mutation/createUserFamily"
-      )
+      );
 
       await createUserFamilyResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
-      expect(error.message).toEqual(`${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`);
+      expect(error.message).toEqual(
+        `${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+      );
     }
   });
 
   it(`throws String Length Validation error if name is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
-    const spy = vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => message);
     try {
       const args: MutationCreateUserFamilyArgs = {
         data: {
-          title: "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
-          userIds: [testUser?._id, testUser2?._id]
+          title:
+            "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
+          userIds: [testUser?._id, testUser2?._id],
         },
       };
       const context = {
@@ -110,11 +118,13 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
 
       const { createUserFamily: createUserFamilyResolver } = await import(
         "../../../src/resolvers/Mutation/createUserFamily"
-      )
+      );
 
       await createUserFamilyResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(`${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`);
+      expect(spy).toHaveBeenCalledWith(
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
+      );
       expect(error.message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
       );
@@ -123,9 +133,9 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
 
   it(`throws InputValidationError if userIds array has fewer than 2 members`, async () => {
     const { requestContext } = await import("../../../src/libraries");
-    const spy = vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => message);
     try {
       const args: MutationCreateUserFamilyArgs = {
         data: {
@@ -133,18 +143,20 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
           userIds: [testUser?._id],
         },
       };
-    
+
       const context = {
         userId: testUser?.id,
       };
 
       const { createUserFamily: createUserFamilyResolver } = await import(
         "../../../src/resolvers/Mutation/createUserFamily"
-      )
-    
+      );
+
       await createUserFamilyResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE);
+      expect(spy).toHaveBeenCalledWith(
+        USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE
+      );
       expect(error.code).toEqual(USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE);
     }
   });
@@ -153,7 +165,7 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
     const args: MutationCreateUserFamilyArgs = {
       data: {
         title: "title",
-        userIds: [testUser?._id,testUser2?._id],
+        userIds: [testUser?._id, testUser2?._id],
       },
     };
 
@@ -163,7 +175,7 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
 
     const { createUserFamily: createUserFamilyResolver } = await import(
       "../../../src/resolvers/Mutation/createUserFamily"
-    )
+    );
 
     const createUserFamilyPayload = await createUserFamilyResolver?.(
       {},
@@ -172,14 +184,20 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
     );
 
     const updatedUsers = await User.find({
-      _id: { $in: [testUser?._id, testUser2?._id] }
+      _id: { $in: [testUser?._id, testUser2?._id] },
     });
 
     updatedUsers.forEach((user) => {
-      expect(user.joinedUserFamily).toContainEqual(createUserFamilyPayload?._id);
-    })
-    expect(updatedUsers[0].createdUserFamily).toContainEqual(createUserFamilyPayload?._id);
-    expect(updatedUsers[0].adminForUserFamily).toContainEqual(createUserFamilyPayload?._id);
+      expect(user.joinedUserFamily).toContainEqual(
+        createUserFamilyPayload?._id
+      );
+    });
+    expect(updatedUsers[0].createdUserFamily).toContainEqual(
+      createUserFamilyPayload?._id
+    );
+    expect(updatedUsers[0].adminForUserFamily).toContainEqual(
+      createUserFamilyPayload?._id
+    );
   });
 
   it(`creates the user Family and returns it`, async () => {
@@ -196,7 +214,7 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
 
     const { createUserFamily: createUserFamilyResolver } = await import(
       "../../../src/resolvers/Mutation/createUserFamily"
-    )
+    );
 
     const createUserFamilyPayload = await createUserFamilyResolver?.(
       {},

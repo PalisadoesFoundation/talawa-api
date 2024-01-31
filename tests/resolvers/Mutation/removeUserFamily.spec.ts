@@ -20,7 +20,10 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { createTestUserFunc, type TestUserType } from "../../helpers/userAndUserFamily";
+import {
+  createTestUserFunc,
+  type TestUserType,
+} from "../../helpers/userAndUserFamily";
 import type { TestUserFamilyType } from "../../helpers/userAndUserFamily";
 import { User } from "../../../src/models";
 
@@ -38,8 +41,8 @@ beforeAll(async () => {
     title: "Family",
     admins: [tempUser1, tempUser2],
     creator: tempUser1,
-    users: [tempUser1, tempUser2]
-  })
+    users: [tempUser1, tempUser2],
+  });
 
   await User.updateOne(
     {
@@ -64,7 +67,6 @@ beforeAll(async () => {
       },
     }
   );
-  
 });
 
 afterAll(async () => {
@@ -156,9 +158,7 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
       await removeUserFamilyResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`
-      );
+      expect(error.message).toEqual(`${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`);
     }
   });
 });

@@ -21,7 +21,7 @@ export const createTestUserFunc = async (): Promise<TestUserType> => {
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
     appLanguageCode: "en",
-    userType: "SUPERADMIN"
+    userType: "SUPERADMIN",
   });
 
   return testUser;
@@ -30,17 +30,15 @@ export const createTestUserFunc = async (): Promise<TestUserType> => {
 export const createTestUserFamilyWithAdmin = async (
   userID: string,
   isMember = true,
-  isAdmin = true,
-): Promise<
-  TestUserFamilyType
-> => {
+  isAdmin = true
+): Promise<TestUserFamilyType> => {
   const testUser = await createTestUserFunc();
   if (testUser) {
     const testUserFamily = await UserFamily.create({
       title: `name${nanoid().toLocaleLowerCase()}`,
       users: isMember ? [testUser._id] : [],
       admins: isAdmin ? [testUser._id] : [],
-      creator: [testUser._id]
+      creator: [testUser._id],
     });
 
     await User.updateOne(
@@ -51,10 +49,10 @@ export const createTestUserFamilyWithAdmin = async (
         $push: {
           createdUserFamily: testUserFamily._id,
           joinedUserFamily: testUserFamily._id,
-          adminForUserFamily: testUserFamily._id
-        }
+          adminForUserFamily: testUserFamily._id,
+        },
       }
-    )
+    );
 
     return testUserFamily;
   } else {
@@ -64,10 +62,8 @@ export const createTestUserFamilyWithAdmin = async (
 
 export const createTestUserAndUserFamily = async (
   isMember = true,
-  isAdmin = true,
-): Promise<
-  [TestUserType, TestUserFamilyType]
-> => {
+  isAdmin = true
+): Promise<[TestUserType, TestUserFamilyType]> => {
   const testUser = await createTestUserFunc();
   const testUserFamily = await createTestUserFamilyWithAdmin(
     testUser?._id,

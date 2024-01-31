@@ -20,85 +20,86 @@ import { superAdminCheck } from "../../utilities";
  * 3. If there are atleast two members in the family.
  * @returns Created user Family
  */
-export const createUserFamily: MutationResolvers["createUserFamily"] =
-  async (_parent, args, context) => {
+export const createUserFamily: MutationResolvers["createUserFamily"] = async (
+  _parent,
+  args,
+  context
+) => {
+  const currentUser = await User.findById({
+    _id: context.userId,
+  });
 
-    const currentUser = await User.findById({
-      _id: context.userId,
-    });
-
-    // Checks whether user with _id === args.userId exists.
-    if (!currentUser) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
-      );
-    }
-    
-    // Check whether the user is super admin.
-    superAdminCheck(currentUser);
-    
-
-    let ValidationResultName = {
-      isLessThanMaxLength: false,
-    };
-
-    if (args && args.data && typeof args.data.title === "string") {
-      ValidationResultName = isValidString(args.data.title, 256);
-    }
-
-    if (!ValidationResultName.isLessThanMaxLength) {
-      throw new errors.InputValidationError(
-        requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
-        ),
-        LENGTH_VALIDATION_ERROR.CODE
-      );
-    }
-
-    // Check if there are at least 2 members
-    if (args.data?.userIds.length < 2) {
-      throw new errors.InputValidationError(
-        requestContext.translate(USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE),
-        USER_FAMILY_MIN_MEMBERS_ERROR_CODE.CODE,
-        USER_FAMILY_MIN_MEMBERS_ERROR_CODE.PARAM
-      );
-    }
-
-    const userfamilyTitle = args.data?.title;
-
-    const createdUserFamily = await UserFamily.create({
-      ...args.data,
-      title: userfamilyTitle,
-      users: [context.userId, ...args.data.userIds],
-      admins: [context.userId],
-      creator: context.userId,
-    });
-
-    await User.findOneAndUpdate(
-      {
-        _id: context.userId,
-      },
-      {
-        $push: {
-          adminForUserFamily: createdUserFamily,
-          joinedUserFamily: createdUserFamily,
-          createdUserFamily: createdUserFamily,
-        }
-      }
-    )
-
-    await User.updateMany(
-      {
-        _id: { $in: args.data.userIds },
-      },
-      {
-        $push: {
-          joinedUserFamily: createdUserFamily
-        }
-      },
+  // Checks whether user with _id === args.userId exists.
+  if (!currentUser) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
+  }
 
-    return createdUserFamily.toObject();
+  // Check whether the user is super admin.
+  superAdminCheck(currentUser);
+
+  let ValidationResultName = {
+    isLessThanMaxLength: false,
   };
+
+  if (args && args.data && typeof args.data.title === "string") {
+    ValidationResultName = isValidString(args.data.title, 256);
+  }
+
+  if (!ValidationResultName.isLessThanMaxLength) {
+    throw new errors.InputValidationError(
+      requestContext.translate(
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
+      ),
+      LENGTH_VALIDATION_ERROR.CODE
+    );
+  }
+
+  // Check if there are at least 2 members
+  if (args.data?.userIds.length < 2) {
+    throw new errors.InputValidationError(
+      requestContext.translate(USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE),
+      USER_FAMILY_MIN_MEMBERS_ERROR_CODE.CODE,
+      USER_FAMILY_MIN_MEMBERS_ERROR_CODE.PARAM
+    );
+  }
+
+  const userfamilyTitle = args.data?.title;
+
+  const createdUserFamily = await UserFamily.create({
+    ...args.data,
+    title: userfamilyTitle,
+    users: [context.userId, ...args.data.userIds],
+    admins: [context.userId],
+    creator: context.userId,
+  });
+
+  await User.findOneAndUpdate(
+    {
+      _id: context.userId,
+    },
+    {
+      $push: {
+        adminForUserFamily: createdUserFamily,
+        joinedUserFamily: createdUserFamily,
+        createdUserFamily: createdUserFamily,
+      },
+    }
+  );
+
+  await User.updateMany(
+    {
+      _id: { $in: args.data.userIds },
+    },
+    {
+      $push: {
+        joinedUserFamily: createdUserFamily,
+      },
+    }
+  );
+
+  return createdUserFamily.toObject();
+};

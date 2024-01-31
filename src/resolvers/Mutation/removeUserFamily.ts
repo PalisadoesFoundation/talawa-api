@@ -1,4 +1,7 @@
-import { USER_FAMILY_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import {
+  USER_FAMILY_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { UserFamily } from "../../models/userFamily";
@@ -45,10 +48,10 @@ export const removeUserFamily: MutationResolvers["removeUserFamily"] = async (
       USER_FAMILY_NOT_FOUND_ERROR.CODE,
       USER_FAMILY_NOT_FOUND_ERROR.PARAM
     );
-  };
+  }
 
-   // Update user documents to remove familyId from relevant fields
-   await User.updateMany(
+  // Update user documents to remove familyId from relevant fields
+  await User.updateMany(
     {
       $or: [
         { createdOrganizations: args.familyId },

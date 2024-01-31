@@ -10,7 +10,10 @@ import {
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../../src/constants";
-import type { TestUserFamilyType, TestUserType } from "../helpers/userAndUserFamily";
+import type {
+  TestUserFamilyType,
+  TestUserType,
+} from "../helpers/userAndUserFamily";
 import { createTestUserAndUserFamily } from "../helpers/userAndUserFamily";
 import { createTestUserFunc } from "../helpers/user";
 import mongoose from "mongoose";
@@ -47,7 +50,9 @@ describe("utilities -> adminCheck", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      const { adminCheck } = await import("../../src/utilities/userFamilyAdminCheck");
+      const { adminCheck } = await import(
+        "../../src/utilities/userFamilyAdminCheck"
+      );
       await adminCheck(
         testUser?._id,
         testUserFamily ?? ({} as InterfaceUserFamily)
@@ -74,7 +79,9 @@ describe("utilities -> adminCheck", () => {
       }
     );
 
-    const { adminCheck } = await import("../../src/utilities/userFamilyAdminCheck");
+    const { adminCheck } = await import(
+      "../../src/utilities/userFamilyAdminCheck"
+    );
 
     await expect(
       adminCheck(
@@ -113,7 +120,9 @@ describe("utilities -> adminCheck", () => {
       }
     );
 
-    const { adminCheck } = await import("../../src/utilities/userFamilyAdminCheck");
+    const { adminCheck } = await import(
+      "../../src/utilities/userFamilyAdminCheck"
+    );
 
     await expect(
       adminCheck(
@@ -130,7 +139,9 @@ describe("utilities -> adminCheck", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      const { adminCheck } = await import("../../src/utilities/userFamilyAdminCheck");
+      const { adminCheck } = await import(
+        "../../src/utilities/userFamilyAdminCheck"
+      );
       await adminCheck(
         new mongoose.Types.ObjectId(),
         testUserFamily ?? ({} as InterfaceUserFamily)

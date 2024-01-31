@@ -127,14 +127,14 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
 
     await User.updateOne(
       {
-        _id: testUser?._id
+        _id: testUser?._id,
       },
       {
         $addToSet: {
-          joinedUserFamily: testUserFamily?._id
-        }
+          joinedUserFamily: testUserFamily?._id,
+        },
       }
-    )
+    );
 
     const args: MutationAddUserToUserFamilyArgs = {
       familyId: testUserFamily?.id,
