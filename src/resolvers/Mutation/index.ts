@@ -38,6 +38,7 @@ import { deleteDonationById } from "./deleteDonationById";
 import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { forgotPassword } from "./forgotPassword";
 import { joinPublicOrganization } from "./joinPublicOrganization";
+import { inviteEventVolunteer } from "./inviteEventVolunteer";
 import { leaveOrganization } from "./leaveOrganization";
 import { likeComment } from "./likeComment";
 import { likePost } from "./likePost";
@@ -59,6 +60,7 @@ import { addUserToUserFamily } from "./addUserToUserFamily";
 import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
 import { removeUserFamily } from "./removeUserFamily";
 import { createUserFamily } from "./createUserFamily";
+import { removeEventVolunteer } from "./removeEventVolunteer";
 import { removeGroupChat } from "./removeGroupChat";
 import { removeAdvertisement } from "./removeAdvertisement";
 import { removeMember } from "./removeMember";
@@ -86,6 +88,7 @@ import { unregisterForEventByUser } from "./unregisterForEventByUser";
 import { updateActionItem } from "./updateActionItem";
 import { updateActionItemCategory } from "./updateActionItemCategory";
 import { updateEvent } from "./updateEvent";
+import { updateEventVolunteer } from "./updateEventVolunteer";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
 import { updatePluginStatus } from "./updatePluginStatus";
@@ -143,6 +146,7 @@ export const Mutation: MutationResolvers = {
   deleteAgendaCategory,
   forgotPassword,
   joinPublicOrganization,
+  inviteEventVolunteer,
   leaveOrganization,
   likeComment,
   likePost,
@@ -160,6 +164,7 @@ export const Mutation: MutationResolvers = {
   removeDirectChat,
   removeEvent,
   removeEventAttendee,
+  removeEventVolunteer,
   removeAdvertisement,
   removeGroupChat,
   removeMember,
@@ -188,6 +193,7 @@ export const Mutation: MutationResolvers = {
   updateActionItemCategory,
   updateAgendaCategory,
   updateEvent,
+  updateEventVolunteer,
   updateLanguage,
   updateOrganization,
   updatePluginStatus,

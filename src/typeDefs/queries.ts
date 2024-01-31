@@ -42,6 +42,8 @@ export const queries = gql`
       orderBy: EventOrderByInput
     ): [Event!]!
 
+    eventVolunteersByEvent(id: ID!): [EventVolunteer]
+
     getDonationById(id: ID!): Donation!
 
     getDonationByOrgId(orgId: ID!): [Donation]

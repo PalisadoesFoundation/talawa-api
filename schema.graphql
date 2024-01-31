@@ -334,6 +334,23 @@ enum EventOrderByInput {
   title_DESC
 }
 
+type EventVolunteer {
+  _id: ID!
+  createdAt: DateTime!
+  creator: User
+  event: Event
+  isAssigned: Boolean
+  isInvited: Boolean
+  response: String
+  updatedAt: DateTime!
+  user: User!
+}
+
+enum EventVolunteerResponse {
+  NO
+  YES
+}
+
 input EventWhereInput {
   description: String
   description_contains: String
@@ -438,6 +455,11 @@ type GroupChatMessage {
 type InvalidCursor implements FieldError {
   message: String!
   path: [String!]!
+}
+
+input InviteEventVolunteerInput {
+  eventId: ID
+  userId: ID!
 }
 
 scalar JSON
@@ -575,6 +597,7 @@ type Mutation {
   deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
+  inviteEventVolunteer(data: InviteEventVolunteerInput): EventVolunteer!
   joinPublicOrganization(organizationId: ID!): User!
   leaveOrganization(organizationId: ID!): User!
   likeComment(id: ID!): Comment
@@ -594,6 +617,7 @@ type Mutation {
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
+  removeEventVolunteer(id: ID!): EventVolunteer!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -624,6 +648,7 @@ type Mutation {
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
   updateEvent(data: UpdateEventInput, id: ID!): Event!
+  updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
@@ -887,6 +912,7 @@ type Query {
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
+  eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
   getAdvertisements: [Advertisement]
@@ -1024,6 +1050,13 @@ input UpdateEventInput {
   title: String
 }
 
+input UpdateEventVolunteerInput {
+  eventId: ID
+  isAssigned: Boolean
+  isInvited: Boolean
+  response: EventVolunteerResponse
+}
+
 input UpdateOrganizationInput {
   address: AddressInput
   description: String
@@ -1130,8 +1163,8 @@ input UserInput {
   email: EmailAddress!
   firstName: String!
   lastName: String!
-  organizationUserBelongsToId: ID
   password: String!
+  selectedOrgainzation: ID!
 }
 
 enum UserOrderByInput {
@@ -1187,6 +1220,37 @@ input UserTagsConnectionInput {
 type UserTagsConnectionResult {
   data: UserTagsConnection
   errors: [ConnectionError!]!
+}
+
+type UserToReturn {
+  _id: ID!
+  address: Address
+  adminApproved: Boolean
+  adminFor: [Organization]
+  appLanguageCode: String!
+  birthDate: Date
+  createdAt: DateTime!
+  createdEvents: [Event]
+  createdOrganizations: [Organization]
+  educationGrade: EducationGrade
+  email: EmailAddress!
+  employmentStatus: EmploymentStatus
+  eventAdmin: [Event]
+  firstName: String!
+  gender: Gender
+  image: String
+  joinedOrganizations: [Organization]
+  lastName: String!
+  maritalStatus: MaritalStatus
+  membershipRequests: [MembershipRequest]
+  organizationsBlockedBy: [Organization]
+  phone: UserPhone
+  pluginCreationAllowed: Boolean!
+  registeredEvents: [Event]
+  tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
+  tokenVersion: Int!
+  updatedAt: DateTime!
+  userType: UserType!
 }
 
 enum UserType {

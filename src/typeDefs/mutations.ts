@@ -134,6 +134,8 @@ export const mutations = gql`
 
     joinPublicOrganization(organizationId: ID!): User! @auth
 
+    inviteEventVolunteer(data: InviteEventVolunteerInput): EventVolunteer! @auth
+
     leaveOrganization(organizationId: ID!): User! @auth
 
     likeComment(id: ID!): Comment @auth
@@ -174,6 +176,8 @@ export const mutations = gql`
     removeEvent(id: ID!): Event! @auth
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
+
+    removeEventVolunteer(id: ID!): EventVolunteer! @auth
 
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
@@ -244,6 +248,11 @@ export const mutations = gql`
     ): UpdateAdvertisementPayload @auth
 
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
+
+    updateEventVolunteer(
+      id: ID!
+      data: UpdateEventVolunteerInput
+    ): EventVolunteer! @auth
 
     updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 

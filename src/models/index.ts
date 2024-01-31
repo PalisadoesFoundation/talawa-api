@@ -9,6 +9,7 @@ export * from "./DirectChatMessage";
 export * from "./Donation";
 export * from "./Event";
 export * from "./EventAttendee";
+export * from "./EventVolunteer";
 export * from "./Feedback";
 export * from "./File";
 export * from "./Group";
