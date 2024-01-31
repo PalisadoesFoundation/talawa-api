@@ -108,6 +108,9 @@ jobs:
           npm install typedoc-plugin-markdown
           npm i --save-dev @types/node
           npx typedoc --entryPoints src --out talawa-api-docs --plugin typedoc-plugin-markdown --theme markdown --entryPointStrategy expand
+      
+      - name: Make Markdown Files MPX Compatible
+        run: python3 .github/workflows/md_to_mpx.py --directory talawa-api-docs 
         
       - name: Checking doc updated
         id: DocUpdated
