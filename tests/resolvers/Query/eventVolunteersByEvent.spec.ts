@@ -26,7 +26,7 @@ describe("resolvers -> Mutation -> eventVolunteersByEvent", () => {
       {
         id: testEvent?._id,
       },
-      {},
+      {}
     );
 
     const volunteers = await EventVolunteer.find({
