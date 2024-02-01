@@ -74,7 +74,7 @@ Error.constructor
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/73679e2/src/libraries/errors/applicationError.ts#L14)
+[src/libraries/errors/applicationError.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/4145524/src/libraries/errors/applicationError.ts#L14)
 
 ## Properties
 
@@ -84,7 +84,7 @@ Error.constructor
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/73679e2/src/libraries/errors/applicationError.ts#L11)
+[src/libraries/errors/applicationError.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/4145524/src/libraries/errors/applicationError.ts#L11)
 
 ___
 
@@ -94,7 +94,7 @@ ___
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/73679e2/src/libraries/errors/applicationError.ts#L12)
+[src/libraries/errors/applicationError.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/4145524/src/libraries/errors/applicationError.ts#L12)
 
 ___
 

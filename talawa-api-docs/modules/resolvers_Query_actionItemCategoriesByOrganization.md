@@ -24,4 +24,4 @@ An object that contains `organizationId` which is the _id of the Organization.
 
 #### Defined in
 
-[src/resolvers/Query/actionItemCategoriesByOrganization.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/73679e2/src/resolvers/Query/actionItemCategoriesByOrganization.ts#L9)
+[src/resolvers/Query/actionItemCategoriesByOrganization.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/4145524/src/resolvers/Query/actionItemCategoriesByOrganization.ts#L9)

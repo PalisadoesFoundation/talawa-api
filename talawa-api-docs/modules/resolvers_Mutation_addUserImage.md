@@ -35,4 +35,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/addUserImage.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/73679e2/src/resolvers/Mutation/addUserImage.ts#L15)
+[src/resolvers/Mutation/addUserImage.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/4145524/src/resolvers/Mutation/addUserImage.ts#L15)
