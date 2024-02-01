@@ -28,4 +28,4 @@ The query function uses `getSort()` function to sort the data in specified order
 
 #### Defined in
 
-[src/resolvers/Query/postsByOrganization.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/4145524/src/resolvers/Query/postsByOrganization.ts#L13)
+[src/resolvers/Query/postsByOrganization.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/resolvers/Query/postsByOrganization.ts#L13)

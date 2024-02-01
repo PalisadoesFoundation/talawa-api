@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Mutation/addFeedback.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/4145524/src/resolvers/Mutation/addFeedback.ts#L11)
+[src/resolvers/Mutation/addFeedback.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/resolvers/Mutation/addFeedback.ts#L11)

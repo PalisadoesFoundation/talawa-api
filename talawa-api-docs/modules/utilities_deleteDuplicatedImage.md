@@ -28,4 +28,4 @@ This function deletes a duplicated image using the function fs.unlink().
 
 #### Defined in
 
-[src/utilities/deleteDuplicatedImage.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/4145524/src/utilities/deleteDuplicatedImage.ts#L8)
+[src/utilities/deleteDuplicatedImage.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/utilities/deleteDuplicatedImage.ts#L8)

@@ -29,4 +29,4 @@
 
 #### Defined in
 
-[src/helpers/eventInstances/weekly.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/4145524/src/helpers/eventInstances/weekly.ts#L18)
+[src/helpers/eventInstances/weekly.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/helpers/eventInstances/weekly.ts#L18)
