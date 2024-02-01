@@ -53,6 +53,8 @@ export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
       );
     }
 
+    console.log("56", args.data?.isAssigned === undefined);
+
     const updatedVolunteer = await EventVolunteer.findOneAndUpdate(
       {
         _id: args.id,
