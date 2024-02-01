@@ -1067,15 +1067,15 @@ interface ImageValidationConfig {
 
 
 async function promptMaxImageSize(existingConfig: any): Promise<string> {
-  const sizeInKB = (await inquirer.prompt({
+  const sizeInMB = (await inquirer.prompt({
     type: "input",
-    name: "maxImageSizeKB",
-    message: "Enter the maximum allowed image size in kilobytes:",
-    default: existingConfig.MAX_IMAGE_SIZE || process.env.MAX_IMAGE_SIZE || "5120", // Default: 5 MB
-  })).maxImageSizeKB;
+    name: "maxImageSizeMB",
+    message: "Enter the maximum allowed image size in MB:",
+    default: existingConfig.MAX_IMAGE_SIZE || process.env.MAX_IMAGE_SIZE || "5", // Default: 5 MB
+  })).maxImageSizeMB;
 
   // Convert size from KB to bytes
-  const sizeInBytes = String(Number(sizeInKB) * 1024);
+  const sizeInBytes = String(Number(sizeInMB) * 1024*1024);
 
   return sizeInBytes;
 }

@@ -295,7 +295,12 @@ This `.env` file must be populated with the following environment variables for 
 | REDIS HOST                   | Used for connecting talawa-api to the redis instance   |
 | REDIS_PORT                   | Specifies the port of the active redis-server          |
 | REDIS_PASSWORD(optional)     | Used for authenticating the connection request to      |
-|                              | a hosted redis-server                                  |
+|                              | a hosted redis-server 
+|MAX_IMAGE_SIZE                | Maximum allowed image size in bytes                    |
+|MAX_IMAGE_WIDTH               | Maximum allowed image width in pixels                  |
+|MAX_IMAGE_HEIGHT              | Maximum allowed image height in pixels                 |
+|SUPPORTED_IMAGE_FORMATS       | Supported image formats (comma-separated)              |
+                               
 
 The following sections will show you how to configure each of these parameters.
 
