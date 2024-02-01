@@ -1,15 +1,7 @@
-import type {
-  TestOrganizationType,
-  TestUserType} from "./userAndOrg";
-import {
-  createTestUser,
- createTestUserAndOrganization } from "./userAndOrg";
-import type {
-  InterfaceEvent,
-  InterfaceEventVolunteer} from "../../src/models";
-import {
-  EventVolunteer,
- Event, EventAttendee, User } from "../../src/models";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
+import type { InterfaceEvent, InterfaceEventVolunteer } from "../../src/models";
+import { EventVolunteer, Event, EventAttendee, User } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 

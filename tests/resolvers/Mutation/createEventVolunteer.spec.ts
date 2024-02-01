@@ -20,7 +20,7 @@ import {
 } from "../../../src/constants";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent } from "../../helpers/events";
-import type { TestEventType  } from "../../helpers/events";
+import type { TestEventType } from "../../helpers/events";
 import { createTestUser } from "../../helpers/user";
 
 let testUser1: TestUserType, testUser2: TestUserType;

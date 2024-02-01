@@ -18,11 +18,8 @@ import {
   afterEach,
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import type {
-  TestEventVolunteerType} from "../../helpers/events";
-import {
-  createTestEventAndVolunteer,
-} from "../../helpers/events";
+import type { TestEventVolunteerType } from "../../helpers/events";
+import { createTestEventAndVolunteer } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
