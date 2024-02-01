@@ -1,4 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type {
+  EventVolunteerResponse} from "../../constants";
 import {
   EVENT_VOLUNTEER_INVITE_USER_MISTMATCH,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
@@ -52,18 +54,35 @@ export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
       );
     }
 
+    console.log("56", args.data?.isAssigned === undefined);
+
     const updatedVolunteer = await EventVolunteer.findOneAndUpdate(
       {
         _id: args.id,
       },
       {
-        eventId: args.data?.eventId ?? eventVolunteer.eventId,
-        isAssigned: args.data?.isAssigned ?? eventVolunteer.isAssigned,
-        isInvited: args.data?.isInvited ?? eventVolunteer.isInvited,
-        response: args.data?.response ?? eventVolunteer.response,
+        $set: {
+          eventId:
+            args.data?.eventId === undefined
+              ? eventVolunteer.eventId
+              : (args?.data.eventId as string),
+          isAssigned:
+            args.data?.isAssigned === undefined
+              ? eventVolunteer.isAssigned
+              : (args.data?.isAssigned as boolean),
+          isInvited:
+            args.data?.isInvited === undefined
+              ? eventVolunteer.isInvited
+              : (args.data?.isInvited as boolean),
+          response:
+            args.data?.response === undefined
+              ? eventVolunteer.response
+              : (args.data?.response as EventVolunteerResponse),
+        },
       },
       {
         new: true,
+        runValidators: true,
       }
     ).lean();
 

@@ -4,6 +4,7 @@ import type { InterfaceEvent, InterfaceEventVolunteer } from "../../src/models";
 import { EventVolunteer, Event, EventAttendee, User } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
+import { EventVolunteerResponse } from "../../src/constants";
 
 export type TestEventType = (InterfaceEvent & Document) | null;
 
@@ -105,6 +106,7 @@ export const createTestEventAndVolunteer = async (): Promise<
     isInvited: true,
     isAssigned: false,
     creatorId: creatorUser?._id,
+    response: EventVolunteerResponse.NO,
   });
 
   return [volunteerUser, testEvent, testEventVolunteer];

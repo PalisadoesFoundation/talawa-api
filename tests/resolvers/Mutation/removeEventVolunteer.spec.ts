@@ -20,6 +20,7 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventVolunteerType } from "../../helpers/events";
 import { createTestEventAndVolunteer } from "../../helpers/events";
+import { User } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -55,10 +56,13 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
 
       const context = { userId: Types.ObjectId().toString() };
 
-      const { updateEventVolunteer: updateEventVolunteerResolver } =
-        await import("../../../src/resolvers/Mutation/updateEventVolunteer");
+      const u = await User.findById(context.userId);
+      console.log(u);
 
-      await updateEventVolunteerResolver?.({}, args, context);
+      const { removeEventVolunteer: removeEventVolunteerResolver } =
+        await import("../../../src/resolvers/Mutation/removeEventVolunteer");
+
+      await removeEventVolunteerResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(

@@ -18,17 +18,23 @@ import {
   afterEach,
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import type { TestEventVolunteerType } from "../../helpers/events";
+import type {
+  TestEventType,
+  TestEventVolunteerType,
+} from "../../helpers/events";
 import { createTestEventAndVolunteer } from "../../helpers/events";
+import { createTestUser } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
+let testEvent: TestEventType;
 let testEventVolunteer: TestEventVolunteerType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEventAndVolunteer();
   testUser = temp[0];
+  testEvent = temp[1];
   testEventVolunteer = temp[2];
 });
 
@@ -116,7 +122,8 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
         },
       };
 
-      const context = { userId: testUser?._id };
+      const testUser2 = await createTestUser();
+      const context = { userId: testUser2?._id };
       const { updateEventVolunteer: updateEventVolunteerResolver } =
         await import("../../../src/resolvers/Mutation/updateEventVolunteer");
 
@@ -137,6 +144,8 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
       data: {
         isAssigned: true,
         response: EventVolunteerResponse.YES,
+        isInvited: true,
+        eventId: testEvent?._id,
       },
     };
 
@@ -156,6 +165,38 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
       expect.objectContaining({
         isAssigned: true,
         response: EventVolunteerResponse.YES,
+        eventId: testEvent?._id,
+        isInvited: true,
+      })
+    );
+  });
+
+  it(`updates the Event Volunteer with _id === args.id, even if args.data is empty object`, async () => {
+    const t = await createTestEventAndVolunteer();
+    testEventVolunteer = t[2];
+    const args: MutationUpdateEventVolunteerArgs = {
+      id: testEventVolunteer?._id,
+      data: {},
+    };
+
+    const context = { userId: testEventVolunteer?.userId };
+
+    const { updateEventVolunteer: updateEventVolunteerResolver } = await import(
+      "../../../src/resolvers/Mutation/updateEventVolunteer"
+    );
+
+    const updatedEventVolunteer = await updateEventVolunteerResolver?.(
+      {},
+      args,
+      context
+    );
+
+    expect(updatedEventVolunteer).toEqual(
+      expect.objectContaining({
+        isAssigned: testEventVolunteer?.isAssigned,
+        response: testEventVolunteer?.response,
+        eventId: testEventVolunteer?.eventId,
+        isInvited: testEventVolunteer?.isInvited,
       })
     );
   });
