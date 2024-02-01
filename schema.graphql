@@ -682,6 +682,7 @@ type Organization {
     last: PositiveInt
   ): UserTagsConnection
   visibleInSearch: Boolean!
+  venues: [Venue]
 }
 
 type OrganizationCustomField {
@@ -985,7 +986,6 @@ type Query {
     skip: Int
     where: UserWhereInput
   ): [User]!
-  venuesInOrganization(id: ID!): [Venue]
 }
 
 input RecaptchaVerification {

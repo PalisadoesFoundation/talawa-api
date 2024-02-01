@@ -7,6 +7,7 @@ import { members } from "./members";
 import { pinnedPosts } from "./pinnedPosts";
 import { membershipRequests } from "./membershipRequests";
 import { actionItemCategories } from "./actionItemCategories";
+import { venues } from "./venues";
 // import { userTags } from "./userTags";
 
 export const Organization: OrganizationResolvers = {
@@ -18,5 +19,6 @@ export const Organization: OrganizationResolvers = {
   members,
   membershipRequests,
   pinnedPosts,
+  venues,
   // userTags,
 };

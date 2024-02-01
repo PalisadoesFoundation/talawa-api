@@ -275,6 +275,7 @@ export const types = gql`
       last: PositiveInt
     ): UserTagsConnection
     customFields: [OrganizationCustomField!]!
+    venues: [Venue]
   }
 
   type OrganizationCustomField {
