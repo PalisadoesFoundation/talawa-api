@@ -8,6 +8,7 @@
 
 - [ApplicationError](libraries_errors.md#applicationerror)
 - [ConflictError](libraries_errors.md#conflicterror)
+- [ImageSizeLimitExceeded](libraries_errors.md#imagesizelimitexceeded)
 - [InputValidationError](libraries_errors.md#inputvalidationerror)
 - [InterfaceError](libraries_errors.md#interfaceerror)
 - [InternalServerError](libraries_errors.md#internalservererror)
@@ -28,6 +29,12 @@ ___
 ### ConflictError
 
 Re-exports [ConflictError](../classes/libraries_errors_conflictError.ConflictError.md)
+
+___
+
+### ImageSizeLimitExceeded
+
+Re-exports [ImageSizeLimitExceeded](../classes/libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md)
 
 ___
 

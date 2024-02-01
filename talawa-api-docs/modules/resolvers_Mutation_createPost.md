@@ -36,4 +36,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/createPost.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/resolvers/Mutation/createPost.ts#L26)
+[src/resolvers/Mutation/createPost.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/resolvers/Mutation/createPost.ts#L28)
