@@ -11,11 +11,8 @@ import {
   beforeEach,
   vi,
 } from "vitest";
-import type {
-  TestEventVolunteerType} from "../../helpers/events";
-import {
-  createTestEventAndVolunteer,
-} from "../../helpers/events";
+import type { TestEventVolunteerType } from "../../helpers/events";
+import { createTestEventAndVolunteer } from "../../helpers/events";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { InterfaceEventVolunteer } from "../../../src/models";
 

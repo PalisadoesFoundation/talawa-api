@@ -5,10 +5,9 @@ import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type {
   TestEventType,
-  TestEventVolunteerType} from "../../helpers/events";
-import {
-  createTestEventAndVolunteer,
+  TestEventVolunteerType,
 } from "../../helpers/events";
+import { createTestEventAndVolunteer } from "../../helpers/events";
 import type { InterfaceEventVolunteer } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
