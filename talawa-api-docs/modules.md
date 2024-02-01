@@ -322,7 +322,6 @@
 - [utilities/graphqlConnectionFactory](modules/utilities_graphqlConnectionFactory.md)
 - [utilities/imageAlreadyInDbCheck](modules/utilities_imageAlreadyInDbCheck.md)
 - [utilities/imageExtensionCheck](modules/utilities_imageExtensionCheck.md)
-- [utilities/loadDefaultOrganization](modules/utilities_loadDefaultOrganization.md)
 - [utilities/loadSampleData](modules/utilities_loadSampleData.md)
 - [utilities/mailer](modules/utilities_mailer.md)
 - [utilities/removeSampleOrganizationUtil](modules/utilities_removeSampleOrganizationUtil.md)
