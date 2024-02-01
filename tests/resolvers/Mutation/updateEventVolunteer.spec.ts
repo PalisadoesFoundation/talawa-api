@@ -26,16 +26,14 @@ import { createTestEventAndVolunteer } from "../../helpers/events";
 import { createTestUser } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUser: TestUserType;
 let testEvent: TestEventType;
 let testEventVolunteer: TestEventVolunteerType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEventAndVolunteer();
-  testUser = temp[0];
-  testEvent = temp[1];
-  testEventVolunteer = temp[2];
+  testEvent = temp[2];
+  testEventVolunteer = temp[3];
 });
 
 afterAll(async () => {
@@ -173,7 +171,7 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
 
   it(`updates the Event Volunteer with _id === args.id, even if args.data is empty object`, async () => {
     const t = await createTestEventAndVolunteer();
-    testEventVolunteer = t[2];
+    testEventVolunteer = t[3];
     const args: MutationUpdateEventVolunteerArgs = {
       id: testEventVolunteer?._id,
       data: {},

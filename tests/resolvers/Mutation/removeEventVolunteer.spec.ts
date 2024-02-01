@@ -4,9 +4,7 @@ import type { MutationUpdateEventVolunteerArgs } from "../../../src/types/genera
 import { connect, disconnect } from "../../helpers/db";
 import {
   USER_NOT_FOUND_ERROR,
-  EventVolunteerResponse,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
-  EVENT_VOLUNTEER_INVITE_USER_MISTMATCH,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -30,7 +28,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEventAndVolunteer();
   testUser = temp[0];
-  testEventVolunteer = temp[2];
+  testEventVolunteer = temp[3];
 });
 
 afterAll(async () => {

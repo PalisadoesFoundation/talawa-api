@@ -96,10 +96,10 @@ export const createEventWithRegistrant = async (
 };
 
 export const createTestEventAndVolunteer = async (): Promise<
-  [TestUserType, TestEventType, TestEventVolunteerType]
+  [TestUserType, TestUserType, TestEventType, TestEventVolunteerType]
 > => {
-  const [volunteerUser, , testEvent] = await createTestEvent();
-  const creatorUser = await createTestUser();
+  const [creatorUser, , testEvent] = await createTestEvent();
+  const volunteerUser = await createTestUser();
   const testEventVolunteer = await EventVolunteer.create({
     userId: volunteerUser?._id,
     eventId: testEvent?._id,
@@ -109,5 +109,5 @@ export const createTestEventAndVolunteer = async (): Promise<
     response: EventVolunteerResponse.NO,
   });
 
-  return [volunteerUser, testEvent, testEventVolunteer];
+  return [volunteerUser, creatorUser, testEvent, testEventVolunteer];
 };
