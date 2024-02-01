@@ -5,8 +5,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { InterfaceUser } from "../../../src/models";
 import { posts as postResolver } from "../../../src/resolvers/User/posts";
 import type { PostsConnection } from "../../../src/types/generatedGraphQLTypes";
-import type { RelayConnectionArguments } from "../../../src/utilities/validateConnectionArgs";
-import { parseRelayConnectionArguments } from "../../../src/utilities/validateConnectionArgs";
+import type { RelayConnectionArguments } from "../../../src/utilities/parseRelayConnectionArguments";
+import { parseRelayConnectionArguments } from "../../../src/utilities/parseRelayConnectionArguments";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
@@ -31,7 +31,6 @@ describe("resolvers -> User -> post", () => {
     const args: RelayConnectionArguments = {
       first: 1,
       after: testUser?._id,
-      limit: 10,
     };
     const result = await postResolver?.(parent, args, {});
 
@@ -48,9 +47,8 @@ describe("parseConnectionArguments", () => {
     const args: RelayConnectionArguments = {
       first: 5,
       after: "cursor",
-      limit: 10,
     };
-    const result = parseRelayConnectionArguments(args);
+    const result = parseRelayConnectionArguments(args, 10);
     expect(result.direction).toBe("FORWARD");
     expect(result.limit).toBe(5);
     expect(result.cursor).toBe("cursor");
@@ -60,9 +58,8 @@ describe("parseConnectionArguments", () => {
     const args: RelayConnectionArguments = {
       last: 5,
       before: "cursor",
-      limit: 10,
     };
-    const result = parseRelayConnectionArguments(args);
+    const result = parseRelayConnectionArguments(args, 10);
     expect(result.direction).toBe("BACKWARD");
     expect(result.limit).toBe(5);
     expect(result.cursor).toBe("cursor");
@@ -72,9 +69,8 @@ describe("parseConnectionArguments", () => {
     const args: RelayConnectionArguments = {
       first: 5,
       last: 5,
-      limit: 10,
     };
-    expect(() => parseRelayConnectionArguments(args)).toThrowError(
+    expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
       GraphQLError
     );
   });
@@ -83,9 +79,8 @@ describe("parseConnectionArguments", () => {
     const args: RelayConnectionArguments = {
       first: 5,
       before: "cursor",
-      limit: 10,
     };
-    expect(() => parseRelayConnectionArguments(args)).toThrowError(
+    expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
       GraphQLError
     );
   });
@@ -94,26 +89,15 @@ describe("parseConnectionArguments", () => {
     const args: RelayConnectionArguments = {
       last: 5,
       after: "cursor",
-      limit: 10,
     };
-    expect(() => parseRelayConnectionArguments(args)).toThrowError(
-      GraphQLError
-    );
-  });
-
-  it("should throw an error when 'first' exceeds the limit", () => {
-    const args: RelayConnectionArguments = {
-      first: 100,
-      limit: 50,
-    };
-    expect(() => parseRelayConnectionArguments(args)).toThrowError(
+    expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
       GraphQLError
     );
   });
 
   it("should throw an error when neither 'first' nor 'last' are provided", () => {
-    const args: RelayConnectionArguments = { limit: 10 };
-    expect(() => parseRelayConnectionArguments(args)).toThrowError(
+    const args: RelayConnectionArguments = {};
+    expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
       GraphQLError
     );
   });

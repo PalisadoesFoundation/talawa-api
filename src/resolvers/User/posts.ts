@@ -3,7 +3,8 @@ import type {
   ConnectionPageInfo,
   UserResolvers,
 } from "../../types/generatedGraphQLTypes";
-import { parseRelayConnectionArguments } from "../../utilities/validateConnectionArgs";
+import { graphqlConnectionFactory } from "../../utilities/graphqlConnectionFactory";
+import { parseRelayConnectionArguments } from "../../utilities/parseRelayConnectionArguments";
 
 /**
  * Checks if a given cursor corresponds to a valid database object.
@@ -19,23 +20,14 @@ const isValidCursor = async (cursor: string | null): Promise<boolean> => {
  * Resolver function to fetch and return posts created by a user from the database.
  * @param parent - An object that is the return value of the resolver for this field's parent.
  * @param args - Arguments passed to the resolver.
- * @returns An object containing an array of posts and pagination information.
+ * @returns An object containing an array of posts,totalCount of post and pagination information.
  */
 export const posts: UserResolvers["posts"] = async (parent, args) => {
-  const paginationArgs = parseRelayConnectionArguments(args);
+  const paginationArgs = parseRelayConnectionArguments(args, 10);
 
   // If the cursor is not a valid database object, return default GraphQL connection.
   if (!isValidCursor(paginationArgs.cursor)) {
-    return {
-      edges: [],
-      pageInfo: {
-        hasNextPage: false,
-        hasPreviousPage: false,
-        startCursor: null,
-        endCursor: null,
-      },
-      totalCount: 0,
-    };
+    return graphqlConnectionFactory();
   }
 
   const query: Record<string, unknown> = {
@@ -48,7 +40,7 @@ export const posts: UserResolvers["posts"] = async (parent, args) => {
   } else if (paginationArgs.direction == "BACKWARD") {
     query._id = { $gt: paginationArgs.cursor };
   }
-
+  const totalCount = await Post.countDocuments(query);
   // Fetch posts from the database.
   const posts = await Post.find(query)
     .sort({ _id: paginationArgs.direction == "BACKWARD" ? 1 : -1 })
@@ -91,5 +83,6 @@ export const posts: UserResolvers["posts"] = async (parent, args) => {
   return {
     edges,
     pageInfo,
+    totalCount,
   };
 };

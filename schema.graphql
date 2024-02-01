@@ -1042,7 +1042,7 @@ type User {
   organizationsBlockedBy: [Organization]
   phone: UserPhone
   pluginCreationAllowed: Boolean!
-  posts(after: String, before: String, first: PositiveInt, last: PositiveInt, limit: PositiveInt!): PostsConnection
+  posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostsConnection
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!

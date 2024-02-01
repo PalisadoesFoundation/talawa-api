@@ -17,7 +17,6 @@ export type RelayConnectionArguments = {
   before?: string | null;
   first?: number | null;
   last?: number | null;
-  limit: number;
 };
 
 /**
@@ -36,7 +35,8 @@ export type ParsedRelayConnectionArguments = {
  * @throws GraphQLError If the arguments are invalid.
  */
 export function parseRelayConnectionArguments(
-  args: RelayConnectionArguments
+  args: RelayConnectionArguments,
+  maximumLimit: number
 ): ParsedRelayConnectionArguments {
   const paginationArgs: ParsedRelayConnectionArguments = {
     cursor: null,
@@ -55,13 +55,13 @@ export function parseRelayConnectionArguments(
         "Argument before cannot be provided with argument first."
       );
     }
-    if (args.first > args.limit) {
-      throw new GraphQLError(
-        `Argument first cannot not be greater than ${args.after}.`
-      );
+    if (args.first > maximumLimit) {
+      paginationArgs.limit = maximumLimit;
+    } else {
+      paginationArgs.limit = args.first;
     }
     paginationArgs.direction = "FORWARD";
-    paginationArgs.limit = args.first;
+
     if (isNotNullish(args.after)) {
       paginationArgs.cursor = args.after;
     }
@@ -71,13 +71,13 @@ export function parseRelayConnectionArguments(
         "Argument after cannot be provided with argument last."
       );
     }
-    if (args.last > args.limit) {
-      throw new GraphQLError(
-        `Argument last cannot be greater than ${args.limit}.`
-      );
+    if (args.last > maximumLimit) {
+      paginationArgs.limit = maximumLimit;
+    } else {
+      paginationArgs.limit = args.last;
     }
     paginationArgs.direction = "BACKWARD";
-    paginationArgs.limit = args.last;
+
     if (isNotNullish(args.before)) {
       paginationArgs.cursor = args.before;
     }

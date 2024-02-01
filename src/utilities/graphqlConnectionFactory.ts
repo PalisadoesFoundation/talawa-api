@@ -1,9 +1,9 @@
+import type { Types } from "mongoose";
 import type {
-  ConnectionPageInfo,
   ConnectionError,
+  ConnectionPageInfo,
   CursorPaginationInput,
 } from "../types/generatedGraphQLTypes";
-import type { Types } from "mongoose";
 
 interface InterfaceConnectionEdge<T> {
   cursor: string;
@@ -130,29 +130,29 @@ export function generateConnectionObject<
   }
 
   // Populate the page pointer variable
-  if (allFetchedObjects!.length === args.limit + 1) {
+  if (allFetchedObjects.length === args.limit + 1) {
     if (args.direction === "FORWARD")
       connectionObject.pageInfo.hasNextPage = true;
     else connectionObject.pageInfo.hasPreviousPage = true;
-    allFetchedObjects!.pop();
+    allFetchedObjects.pop();
   }
 
   // Reverse the order of the fetched objects in backward pagination,
   // as according to the Relay Specification, the order of
   // returned objects must always be ascending on the basis of the cursor used
   if (args.direction === "BACKWARD")
-    allFetchedObjects = allFetchedObjects!.reverse();
+    allFetchedObjects = allFetchedObjects.reverse();
 
   // Create edges from the fetched objects
-  connectionObject.edges = allFetchedObjects!.map((object: T2) => ({
+  connectionObject.edges = allFetchedObjects.map((object: T2) => ({
     node: getNodeFromResult(object),
     cursor: object._id.toString(),
   }));
 
   // Set the start and end cursor
-  connectionObject.pageInfo.startCursor = connectionObject.edges[0]!.cursor;
+  connectionObject.pageInfo.startCursor = connectionObject.edges[0].cursor;
   connectionObject.pageInfo.endCursor =
-    connectionObject.edges[connectionObject.edges.length - 1]!.cursor;
+    connectionObject.edges[connectionObject.edges.length - 1].cursor;
 
   return {
     data: connectionObject,
