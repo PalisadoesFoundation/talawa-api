@@ -1,6 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import type {
-  EventVolunteerResponse} from "../../constants";
+import type { EventVolunteerResponse } from "../../constants";
 import {
   EVENT_VOLUNTEER_INVITE_USER_MISTMATCH,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
