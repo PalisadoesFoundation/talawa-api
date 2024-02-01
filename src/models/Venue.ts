@@ -4,9 +4,10 @@ import type { Model, Types } from "mongoose";
 export interface InterfaceVenue {
   _id: Types.ObjectId;
   name: string;
-  description: string;
+  description: string | undefined | null;
   capacity: number;
   imageUrl: string | undefined | null;
+  organizationId: string;
 }
 
 /**
@@ -15,6 +16,7 @@ export interface InterfaceVenue {
  * @param description - Description of the venue.
  * @param capacity - Maximum capacity of the venue.
  * @param imageUrl - Image URL(if attached) of the venue.
+ * @param organizationId - Organization in which the venue belongs.
  */
 
 const venueSchema = new Schema({
@@ -32,6 +34,11 @@ const venueSchema = new Schema({
   imageUrl: {
     type: String,
     required: false,
+  },
+  organizationId: {
+    type: Schema.Types.ObjectId,
+    ref: "Organization",
+    required: true,
   },
 });
 

@@ -45,14 +45,12 @@ export const editVenue: MutationResolvers["editVenue"] = async (
   }
 
   const venue = await Venue.findOne({
-    _id: args.data?._id,
+    _id: args.data._id,
   }).lean();
 
   const organization = await Organization.findOne({
-    _id: args.data?.organizationId,
+    _id: args.data.organizationId,
   })
-    .populate("venues")
-    .lean();
 
   // Checks whether organization exists.
   if (!organization) {
@@ -85,8 +83,8 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     );
   }
 
-  if (!args.data?.name ?? "") {
-    // Check if the venue name provided is null, undefined or empty string
+  // Check if the venue name provided is empty string
+  if (args.data?.name === "") {
     throw new errors.InputValidationError(
       requestContext.translate(VENUE_NAME_MISSING_ERROR.MESSAGE),
       VENUE_NAME_MISSING_ERROR.CODE,
@@ -94,8 +92,16 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     );
   }
 
-  // Check if a venue with the same place already exists in the organization
-  if (organization.venues?.some((venue) => venue.name === args.data?.name)) {
+  // Check if a venue with the same organizationId and name exists
+  const venuesWithOrganization = await Venue.find({
+    organizationId: args.data?.organizationId,
+  });
+
+  const existingVenue = args.data?.name
+    ? venuesWithOrganization.filter((venue) => venue.name === args.data.name)
+    : [];
+
+  if (existingVenue.length > 0) {
     throw new errors.ConflictError(
       requestContext.translate(VENUE_ALREADY_EXISTS_ERROR.MESSAGE),
       VENUE_ALREADY_EXISTS_ERROR.CODE,
@@ -105,16 +111,16 @@ export const editVenue: MutationResolvers["editVenue"] = async (
 
   let uploadImageFileName = null;
 
-  if (args.file) {
+  if (args.data?.file) {
     const dataUrlPrefix = "data:";
-    if (args.file.startsWith(dataUrlPrefix + "image/")) {
-      uploadImageFileName = await uploadEncodedImage(args.file, null);
+    if (args.data.file.startsWith(dataUrlPrefix + "image/")) {
+      uploadImageFileName = await uploadEncodedImage(args.data.file, null);
     }
   }
 
   // Find the venue by its _id and update its place and capacity
   const updatedVenue = await Venue.findOneAndUpdate(
-    { _id: venue?._id },
+    { _id: venue._id },
     {
       $set: {
         name: args.data?.name,

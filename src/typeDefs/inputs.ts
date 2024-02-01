@@ -66,11 +66,11 @@ export const inputs = gql`
 
   input EditVenueInput {
     _id: ID!
-    capacity: Int!
-    name: String!
+    capacity: Int
+    name: String
     description: String
     organizationId: ID!
-    imageUrl: URL
+    file: String
   }
 
   input EventInput {
@@ -427,6 +427,6 @@ export const inputs = gql`
     name: String!
     capacity: Int!
     description: String
-    imageUrl: URL
+    file: String
   }
 `;

@@ -43,10 +43,8 @@ export const createVenue: MutationResolvers["createVenue"] = async (
   }
 
   const organization = await Organization.findOne({
-    _id: args.data?.organizationId,
+    _id: args.data.organizationId,
   })
-    .populate("venues")
-    .lean();
 
   // Checks whether organization exists.
   if (!organization) {
@@ -71,8 +69,8 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     );
   }
 
+  // Check if the venue name provided is empty string
   if (!args.data?.name ?? "") {
-    // Check if the venue name provided is null, undefined or empty string
     throw new errors.InputValidationError(
       requestContext.translate(VENUE_NAME_MISSING_ERROR.MESSAGE),
       VENUE_NAME_MISSING_ERROR.CODE,
@@ -80,8 +78,13 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     );
   }
 
-  // Check if a venue with the same place already exists in the organization
-  if (organization.venues?.some((venue) => venue.name === args.data?.name)) {
+  // Check if a venue with the same organizationId and name exists
+  const existingVenue = await Venue.findOne({
+    name: args.data.name,
+    organizationId: args.data.organizationId,
+  });
+
+  if (existingVenue) {
     throw new errors.ConflictError(
       requestContext.translate(VENUE_ALREADY_EXISTS_ERROR.MESSAGE),
       VENUE_ALREADY_EXISTS_ERROR.CODE,
@@ -91,10 +94,10 @@ export const createVenue: MutationResolvers["createVenue"] = async (
 
   let uploadImageFileName = null;
 
-  if (args.file) {
+  if (args.data?.file) {
     const dataUrlPrefix = "data:";
-    if (args.file.startsWith(dataUrlPrefix + "image/")) {
-      uploadImageFileName = await uploadEncodedImage(args.file, null);
+    if (args.data.file.startsWith(dataUrlPrefix + "image/")) {
+      uploadImageFileName = await uploadEncodedImage(args.data.file, null);
     }
   }
 
@@ -104,13 +107,6 @@ export const createVenue: MutationResolvers["createVenue"] = async (
       ? `${context.apiRootUrl}${uploadImageFileName}`
       : null,
   });
-
-  // Add the new venue to the venues inside the organization
-  await Organization.findOneAndUpdate(
-    { _id: organization._id },
-    { $push: { venues: newVenue._id } },
-    { new: true }
-  );
 
   return newVenue;
 };

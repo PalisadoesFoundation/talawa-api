@@ -18,7 +18,7 @@ import { Venue } from "../../models/Venue";
  * 1. If the user exists
  * 2. If the organization exists
  * 3. Whether the user is admin or superadmin or not
- * 4. If the venue exists in the organization
+ * 4. If the venue exists
  * @returns Deleted venue
  */
 
@@ -67,23 +67,19 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
     );
   }
 
-  // Find the index of the venue in the organization's venues array
-  const venueIndex = organization.venues.indexOf(args.venueId);
+  const venue = await Venue.findOne({
+    _id: args.venueId,
+  });
 
-  if (venueIndex === -1) {
+  if (!venue) {
     throw new errors.NotFoundError(
       requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
       VENUE_NOT_FOUND_ERROR.CODE,
       VENUE_NOT_FOUND_ERROR.PARAM
     );
   }
-  // Remove the venue from the organization's venues array
-  organization.venues.splice(venueIndex, 1);
-  await organization.save();
 
-  const deletedVenue = await Venue.findById(args.venueId);
+  await Venue.findByIdAndDelete(venue._id);
 
-  await Venue.findByIdAndDelete(args.venueId);
-
-  return deletedVenue;
+  return venue;
 };

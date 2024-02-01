@@ -270,10 +270,10 @@ export type DonationWhereInput = {
 
 export type EditVenueInput = {
   _id: Scalars['ID']['input'];
-  capacity: Scalars['Int']['input'];
+  capacity?: InputMaybe<Scalars['Int']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
-  imageUrl?: InputMaybe<Scalars['URL']['input']>;
-  name: Scalars['String']['input'];
+  file?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
   organizationId: Scalars['ID']['input'];
 };
 
@@ -361,7 +361,6 @@ export type EventInput = {
   startDate: Scalars['Date']['input'];
   startTime?: InputMaybe<Scalars['Time']['input']>;
   title: Scalars['String']['input'];
-  venue?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type EventOrderByInput =
@@ -621,11 +620,11 @@ export type Mutation = {
   createPost?: Maybe<Post>;
   createSampleOrganization: Scalars['Boolean']['output'];
   createUserTag?: Maybe<UserTag>;
-  createVenue: Venue;
+  createVenue?: Maybe<Venue>;
   deleteAdvertisementById: DeletePayload;
   deleteDonationById: DeletePayload;
   deleteVenue?: Maybe<Venue>;
-  editVenue: Venue;
+  editVenue?: Maybe<Venue>;
   forgotPassword: Scalars['Boolean']['output'];
   joinPublicOrganization: User;
   leaveOrganization: User;
@@ -873,7 +872,6 @@ export type MutationCreateUserTagArgs = {
 
 export type MutationCreateVenueArgs = {
   data: VenueInput;
-  file?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -895,7 +893,6 @@ export type MutationDeleteVenueArgs = {
 
 export type MutationEditVenueArgs = {
   data: EditVenueInput;
-  file?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2011,12 +2008,13 @@ export type Venue = {
   description?: Maybe<Scalars['String']['output']>;
   imageUrl?: Maybe<Scalars['URL']['output']>;
   name: Scalars['String']['output'];
+  organizationId: Scalars['ID']['output'];
 };
 
 export type VenueInput = {
   capacity: Scalars['Int']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
-  imageUrl?: InputMaybe<Scalars['URL']['input']>;
+  file?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   organizationId: Scalars['ID']['input'];
 };
@@ -2776,11 +2774,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
   createSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
-  createVenue?: Resolver<ResolversTypes['Venue'], ParentType, ContextType, RequireFields<MutationCreateVenueArgs, 'data'>>;
+  createVenue?: Resolver<Maybe<ResolversTypes['Venue']>, ParentType, ContextType, RequireFields<MutationCreateVenueArgs, 'data'>>;
   deleteAdvertisementById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteAdvertisementByIdArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   deleteVenue?: Resolver<Maybe<ResolversTypes['Venue']>, ParentType, ContextType, RequireFields<MutationDeleteVenueArgs, 'organizationId' | 'venueId'>>;
-  editVenue?: Resolver<ResolversTypes['Venue'], ParentType, ContextType, RequireFields<MutationEditVenueArgs, 'data'>>;
+  editVenue?: Resolver<Maybe<ResolversTypes['Venue']>, ParentType, ContextType, RequireFields<MutationEditVenueArgs, 'data'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;
   leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'organizationId'>>;
@@ -3137,6 +3135,7 @@ export type VenueResolvers<ContextType = any, ParentType extends ResolversParent
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  organizationId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

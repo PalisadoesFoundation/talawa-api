@@ -301,10 +301,11 @@ export const types = gql`
 
   type Venue {
     _id: ID!
-    name: String!
     capacity: Int!
     description: String
     imageUrl: URL
+    name: String!
+    organizationId: ID!
   }
 
   """
