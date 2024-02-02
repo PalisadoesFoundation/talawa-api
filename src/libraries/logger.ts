@@ -16,9 +16,12 @@ const formats = {
         `${info.level || "-"} ${info.timestamp || "-"} ${
           getTracingId() || "-"
         } ${info.message} ${
-          JSON.stringify(
-            _.omit(info, ["level", "message", "stack", "timestamp"])
-          ) || "-"
+          Object.keys(_.omit(info, ["level", "message", "stack", "timestamp"]))
+            .length === 0
+            ? ""
+            : JSON.stringify(
+                _.omit(info, ["level", "message", "stack", "timestamp"])
+              )
         } ${info.stack || ""}`
     )
   ),
@@ -31,9 +34,12 @@ const formats = {
         `${info.level || "-"} ${info.timestamp || "-"} ${
           getTracingId() || "-"
         } ${info.message} ${
-          JSON.stringify(
-            _.omit(info, ["level", "message", "stack", "timestamp"])
-          ) || "-"
+          Object.keys(_.omit(info, ["level", "message", "stack", "timestamp"]))
+            .length === 0
+            ? ""
+            : JSON.stringify(
+                _.omit(info, ["level", "message", "stack", "timestamp"])
+              )
         } ${info.stack || ""}`
     )
   ),

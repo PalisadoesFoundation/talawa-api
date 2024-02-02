@@ -11,7 +11,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-
+/* eslint-disable */
 const ORGANIZATION_ID = ((): InterfaceOrganization &
   mongoose.Document<any, any, InterfaceOrganization> => {
   const _id = faker.database.mongodbObjectId();
@@ -20,7 +20,6 @@ const ORGANIZATION_ID = ((): InterfaceOrganization &
     _id,
     name: faker.company.name(),
     description: faker.lorem.sentences(),
-    location: `${faker.location.country()}, ${faker.location.city()}`,
     isPublic: true,
     creatorId: creatorId,
     status: "ACTIVE",
@@ -90,7 +89,6 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
       _id,
       name: faker.company.name(),
       description: faker.lorem.sentences(),
-      location: `${faker.location.country()}, ${faker.location.city()}`,
       isPublic: true,
       creatorId: creatorId,
       status: "ACTIVE",
@@ -145,7 +143,6 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
       _id,
       name: faker.company.name(),
       description: faker.lorem.sentences(),
-      location: `${faker.location.country()}, ${faker.location.city()}`,
       isPublic: true,
       creatorId: creatorId,
       status: "ACTIVE",
