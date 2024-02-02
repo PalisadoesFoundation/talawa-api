@@ -1,17 +1,28 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { errors, requestContext } from "../../libraries";
 import { Advertisement } from "../../models";
+import { ADVERTISEMENT_NOT_FOUND_ERROR } from "../../constants";
 
-/**
- * This function enables to delete a donation record from the database.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @returns Boolean value denoting whether the deletion was successful or not.
- */
+// @ts-ignore
 export const deleteAdvertisementById: MutationResolvers["deleteAdvertisementById"] =
-  async (_parent: any, args: { id: any }) => {
-    const deletedAdvertisement = await Advertisement.deleteOne({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async (_parent, args, _context) => {
+    const currentAd = await Advertisement.findOne({
+      _id: args.id,
+    }).lean();
+
+    if (!currentAd) {
+      throw new errors.NotFoundError(
+        requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
+        ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
+        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM
+      );
+    }
+
+    // Deletes the ad.
+    await Advertisement.deleteOne({
       _id: args.id,
     });
-
-    return { success: deletedAdvertisement.deletedCount ? true : false };
+    // Returns deleted ad.
+    return currentAd;
   };

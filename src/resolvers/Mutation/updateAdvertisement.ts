@@ -90,7 +90,6 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       const dataUrlPrefix = "data:";
       if (args.input.mediaFile.startsWith(dataUrlPrefix + "image/")) {
         uploadMediaFile = await uploadEncodedImage(args.input.mediaFile, null);
-        console.log(uploadMediaFile, "Media File");
       } else if (args.input.mediaFile.startsWith(dataUrlPrefix + "video/")) {
         uploadMediaFile = await uploadEncodedVideo(args.input.mediaFile, null);
       } else {
@@ -124,7 +123,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
     const updatedAdvertisementPayload = {
       _id: updatedAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
       name: updatedAdvertisement.name,
-      organization: updatedAdvertisement.organization,
+      organizationId: updatedAdvertisement.organizationId,
       mediaUrl: updatedAdvertisement.mediaUrl,
       type: updatedAdvertisement.type,
       startDate: updatedAdvertisement.startDate,

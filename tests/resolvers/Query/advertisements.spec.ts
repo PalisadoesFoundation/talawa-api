@@ -3,30 +3,35 @@ import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { Advertisement } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestPlugin } from "../../helpers/plugins";
-import { getAdvertisements } from "../../../src/resolvers/Query/getAdvertisements";
+import { createTestAdvertisement } from "../../helpers/advertisement";
+import { advertisements } from "../../../src/resolvers/Query/advertisements";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await createTestPlugin();
+  await createTestAdvertisement();
 });
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Query -> getAdvertisment", () => {
+describe("resolvers -> Query -> advertisments", () => {
   const context = {
     apiRootUrl: "",
   };
 
   it(`returns list of all existing advertisement`, async () => {
-    const adsPayload = await getAdvertisements?.({}, {}, context);
+    const adsPayload = await advertisements?.({}, {}, context);
 
-    const ads = await Advertisement.find().lean();
-
+    let ads = await Advertisement.find().lean();
+    ads = ads.map((advertisement) => ({
+        ...advertisement,
+        mediaUrl: `${context.apiRootUrl}${advertisement.mediaUrl}`,
+        organization: { _id: advertisement.organizationId }
+      })
+    );
     expect(adsPayload).toEqual(ads);
   });
 });

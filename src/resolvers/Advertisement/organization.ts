@@ -5,6 +5,6 @@ export const organization: AdvertisementResolvers["organization"] = async (
   parent
 ) => {
   return Organization.findOne({
-    _id: parent.organization._id,
+    _id: parent.organizationId,
   }).lean();
 };

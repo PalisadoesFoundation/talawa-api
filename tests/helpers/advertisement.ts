@@ -8,7 +8,7 @@ import { PopulatedDoc } from "mongoose";
 
 export type TestAdvertisementType = {
   _id: string;
-  organization: any;
+  organizationId: string;
   name: string;
   mediaUrl: string;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
@@ -31,7 +31,7 @@ export const createTestAdvertisement =
       type: "POPUP",
       startDate: "2023-01-01",
       endDate: "2023-01-31",
-      organization: testOrganization?._id,
+      organizationId: testOrganization?._id,
       createdAt: "2024-01-13T18:23:00.316Z",
       updatedAt: "2024-01-13T20:28:21.292Z",
       creatorId: testUser?._id,

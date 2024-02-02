@@ -28,7 +28,7 @@ describe("resolvers -> Advertisement -> organization", () => {
     const orgPayload = await advertisementResolver?.(parent, {}, {});
 
     const orgObject = await Organization.findOne({
-      _id: testAdvertisement.organization._id,
+      _id: testAdvertisement.organizationId,
     }).lean();
 
     expect(orgPayload).toEqual(orgObject);

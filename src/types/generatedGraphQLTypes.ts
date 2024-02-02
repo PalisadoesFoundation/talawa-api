@@ -22,6 +22,7 @@ import type { InterfacePluginField as InterfacePluginFieldModel } from '../model
 import type { InterfacePost as InterfacePostModel } from '../models/Post';
 import type { InterfaceOrganizationTagUser as InterfaceOrganizationTagUserModel } from '../models/OrganizationTagUser';
 import type { InterfaceUser as InterfaceUserModel } from '../models/User';
+import type { InterfaceAdvertisement as InterfaceAdvertisementModel } from '../models/Advertisement'
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -212,7 +213,6 @@ export type CreateAdvertisementInput = {
 
 export type CreateAdvertisementPayload = {
   __typename?: 'CreateAdvertisementPayload';
-  _id: Scalars['ID']['output'];
   advertisement?: Maybe<Advertisement>;
 };
 
@@ -1418,7 +1418,7 @@ export type Query = {
   event?: Maybe<Event>;
   eventsByOrganization?: Maybe<Array<Maybe<Event>>>;
   eventsByOrganizationConnection: Array<Event>;
-  getAdvertisements?: Maybe<Array<Maybe<Advertisement>>>;
+  advertisements?: Maybe<Array<Maybe<Advertisement>>>;
   getDonationById: Donation;
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
   getDonationByOrgIdConnection: Array<Donation>;
@@ -2208,7 +2208,7 @@ export type ResolversParentTypes = {
   ActionItemCategory: InterfaceActionItemCategoryModel;
   Address: Address;
   AddressInput: AddressInput;
-  Advertisement: Omit<Advertisement, 'creator' | 'organization'> & { creator?: Maybe<ResolversParentTypes['User']>, organization: ResolversParentTypes['Organization'] };
+  Advertisement: InterfaceAdvertisementModel;
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any']['output'];
@@ -2917,7 +2917,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   eventsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsByOrganizationArgs>>;
   eventsByOrganizationConnection?: Resolver<Array<ResolversTypes['Event']>, ParentType, ContextType, Partial<QueryEventsByOrganizationConnectionArgs>>;
-  getAdvertisements?: Resolver<Maybe<Array<Maybe<ResolversTypes['Advertisement']>>>, ParentType, ContextType>;
+  advertisements?: Resolver<Maybe<Array<Maybe<ResolversTypes['Advertisement']>>>, ParentType, ContextType>;
   getDonationById?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<QueryGetDonationByIdArgs, 'id'>>;
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;

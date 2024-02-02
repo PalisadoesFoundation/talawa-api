@@ -4,6 +4,7 @@ import { actionItemsByEvent } from "./actionItemsByEvent";
 import { actionItemCategory } from "./actionItemCategory";
 import { actionItemsByOrganization } from "./actionItemsByOrganization";
 import { actionItemCategoriesByOrganization } from "./actionItemCategoriesByOrganization";
+import { advertisements } from "./advertisements";
 import { checkAuth } from "./checkAuth";
 import { customDataByOrganization } from "./customDataByOrganization";
 import { customFieldsByOrganization } from "./customFieldsByOrganization";
@@ -30,7 +31,6 @@ import { registeredEventsByUser } from "./registeredEventsByUser";
 import { user } from "./user";
 import { userLanguage } from "./userLanguage";
 import { users } from "./users";
-import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
 
 export const Query: QueryResolvers = {
@@ -48,7 +48,7 @@ export const Query: QueryResolvers = {
   eventsByOrganization,
   eventsByOrganizationConnection,
   getDonationById,
-  getAdvertisements,
+  advertisements,
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getlanguage,

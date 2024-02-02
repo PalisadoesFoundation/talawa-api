@@ -8,7 +8,7 @@ export const removeAdvertisement: MutationResolvers["removeAdvertisement"] =
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (_parent, args, _context) => {
     const currentAd = await Advertisement.findOne({
-      _id: args.id ? args.id : "",
+      _id: args.id,
     }).lean();
 
     if (!currentAd) {

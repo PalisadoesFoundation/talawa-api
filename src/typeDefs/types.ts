@@ -121,7 +121,7 @@ export const types = gql`
   type Advertisement {
     _id: ID!
     name: String!
-    organization: Organization!
+    organization: Organization
     mediaUrl: URL!
     type: AdvertisementType!
     startDate: Date!
@@ -136,7 +136,6 @@ export const types = gql`
   }
 
   type CreateAdvertisementPayload {
-    _id: ID!
     advertisement: Advertisement
   }
 

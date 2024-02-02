@@ -22,14 +22,11 @@ import {
 } from "../../helpers/userAndOrg";
 import { requestContext } from "../../../src/libraries";
 import { Types } from "mongoose";
-import { BASE_URL, USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import { BASE_URL, ORGANIZATION_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { createAdvertisement } from "../../../src/resolvers/Mutation/createAdvertisement";
 import { ApplicationError } from "../../../src/libraries/errors";
 let testUser: TestUserType;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let randomUser: TestUserType;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -39,10 +36,7 @@ vi.mock("../../utilities/uploadEncodedImage", () => ({
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestUserAndOrganization();
-  testUser = temp[0];
-  testOrganization = temp[1];
-  randomUser = await createTestUser();
+  [testUser, testOrganization] = await createTestUserAndOrganization();
 });
 
 afterAll(async () => {
@@ -56,6 +50,41 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     vi.resetAllMocks();
   });
 
+  it(`throws organization NotFoundError`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationCreateAdvertisementArgs = {
+        input: {
+          name: "myad",
+          organizationId: 'sdfghj456789',
+          type: "POPUP",
+          mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
+          startDate: "2023-10-08T13:02:29.000Z",
+          endDate: "2023-10-08T13:02:29.000Z",
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { createAdvertisement: createAdvertisementResolver } = await import(
+        "../../../src/resolvers/Mutation/createAdvertisement"
+      );
+
+      await createAdvertisementResolver?.({}, args, context);
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+      );
+    }
+  });
+
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
@@ -65,7 +94,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       const args: MutationCreateAdvertisementArgs = {
         input: {
           name: "myad",
-          organizationId: "64d1f8cb77a4b61004f824b8",
+          organizationId: testOrganization?._id,
           type: "POPUP",
           mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
           startDate: "2023-10-08T13:02:29.000Z",
@@ -95,7 +124,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     const args: MutationCreateAdvertisementArgs = {
       input: {
         name: "myad",
-        organizationId: "64d1f8cb77a4b61004f824b8",
+        organizationId: testOrganization?._id,
         type: "POPUP",
         mediaFile: "data:video/mp4;base64,bWVkaWEgY29udGVudA==",
         startDate: "2023-10-08T13:02:29.000Z",
@@ -126,7 +155,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     const args: MutationCreateAdvertisementArgs = {
       input: {
         name: "myad",
-        organizationId: "64d1f8cb77a4b61004f824b8",
+        organizationId: testOrganization?._id,
         type: "POPUP",
         mediaFile: "unsupportedFile.txt",
         startDate: "2023-10-08T13:02:29.000Z",
@@ -159,7 +188,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     const args: MutationCreateAdvertisementArgs = {
       input: {
         name: "myad",
-        organizationId: "64d1f8cb77a4b61004f824b8",
+        organizationId: testOrganization?._id,
         type: "POPUP",
         mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
         startDate: "2023-10-08T13:02:29.000Z",

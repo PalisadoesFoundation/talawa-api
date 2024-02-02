@@ -61,7 +61,7 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
     const args: MutationCreateAdvertisementArgs = {
       input: {
         name: "myad",
-        organizationId: "64d1f8cb77a4b61004f824b8",
+        organizationId: testOrganization?._id,
         type: "POPUP",
         mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
         startDate: "2023-10-08T13:02:29.000Z",

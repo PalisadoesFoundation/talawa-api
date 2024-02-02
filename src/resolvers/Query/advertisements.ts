@@ -5,7 +5,7 @@ import { Advertisement } from "../../models";
  * This function returns list of Advertisement from the database.
  * @returns An object that contains a list of Ads.
  */
-export const getAdvertisements: QueryResolvers["getAdvertisements"] = async (
+export const advertisements: QueryResolvers["advertisements"] = async (
   _parent,
   args,
   context
@@ -15,6 +15,9 @@ export const getAdvertisements: QueryResolvers["getAdvertisements"] = async (
     (advertisement) => ({
       ...advertisement,
       mediaUrl: `${context.apiRootUrl}${advertisement.mediaUrl}`,
+      organization : {
+        _id: advertisement.organizationId
+      }
     })
   );
 
