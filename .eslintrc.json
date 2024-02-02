@@ -10,6 +10,20 @@
   ],
   "overrides": [
     {
+      "files": ["./src/typeDefs/**/*.ts"],
+      "processor": "@graphql-eslint/graphql"
+    },
+    {
+      "files": ["./src/typeDefs/**/*.graphql"],
+      "parser": "@graphql-eslint/eslint-plugin",
+      "plugins": ["@graphql-eslint"],
+      // Do not apply naming conventions to .graphql files
+      "rules": {
+        "@typescript-eslint/naming-convention": "off",
+        "@typescript-eslint/consistent-type-assertions": "off"
+      }
+    },
+    {
       "files": ["tests/**/*"],
       "rules": {
         "no-restricted-imports": "off"
