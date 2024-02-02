@@ -18,4 +18,4 @@ This graphQL typeDef defines the logic for different queries defined in the tala
 
 #### Defined in
 
-[src/typeDefs/queries.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/typeDefs/queries.ts#L6)
+[src/typeDefs/queries.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/7fc03c3/src/typeDefs/queries.ts#L6)

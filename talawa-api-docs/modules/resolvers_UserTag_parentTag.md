@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/UserTag/parentTag.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/resolvers/UserTag/parentTag.ts#L4)
+[src/resolvers/UserTag/parentTag.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/7fc03c3/src/resolvers/UserTag/parentTag.ts#L4)

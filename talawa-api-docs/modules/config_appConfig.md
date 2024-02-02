@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/config/appConfig.ts:1](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/config/appConfig.ts#L1)
+[src/config/appConfig.ts:1](https://github.com/PalisadoesFoundation/talawa-api/blob/7fc03c3/src/config/appConfig.ts#L1)

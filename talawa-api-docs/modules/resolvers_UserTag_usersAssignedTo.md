@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/UserTag/usersAssignedTo.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/resolvers/UserTag/usersAssignedTo.ts#L12)
+[src/resolvers/UserTag/usersAssignedTo.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/7fc03c3/src/resolvers/UserTag/usersAssignedTo.ts#L12)

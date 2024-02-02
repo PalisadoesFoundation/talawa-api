@@ -38,4 +38,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/removeAdmin.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/resolvers/Mutation/removeAdmin.ts#L26)
+[src/resolvers/Mutation/removeAdmin.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/7fc03c3/src/resolvers/Mutation/removeAdmin.ts#L26)
