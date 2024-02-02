@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Query/getDonationByOrgIdConnection.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/resolvers/Query/getDonationByOrgIdConnection.ts#L6)
+[src/resolvers/Query/getDonationByOrgIdConnection.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/resolvers/Query/getDonationByOrgIdConnection.ts#L6)

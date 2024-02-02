@@ -25,18 +25,18 @@
 
 ### resolve
 
-• `Optional` **resolve**: [`SubscriptionResolveFn`](../modules/types_generatedGraphQLTypes.md#subscriptionresolvefn)\<`TResult`, \{ [key in string]: TResult }, `TContext`, `TArgs`\>
+• `Optional` **resolve**: [`SubscriptionResolveFn`](../modules/types_generatedGraphQLTypes.md#subscriptionresolvefn)\<`TResult`, \{ [key in string]: TResult \}, `TContext`, `TArgs`\>
 
 #### Defined in
 
-[src/types/generatedGraphQLTypes.ts:2009](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/types/generatedGraphQLTypes.ts#L2009)
+[src/types/generatedGraphQLTypes.ts:2009](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/types/generatedGraphQLTypes.ts#L2009)
 
 ___
 
 ### subscribe
 
-• **subscribe**: [`SubscriptionSubscribeFn`](../modules/types_generatedGraphQLTypes.md#subscriptionsubscribefn)\<\{ [key in string]: TResult }, `TParent`, `TContext`, `TArgs`\>
+• **subscribe**: [`SubscriptionSubscribeFn`](../modules/types_generatedGraphQLTypes.md#subscriptionsubscribefn)\<\{ [key in string]: TResult \}, `TParent`, `TContext`, `TArgs`\>
 
 #### Defined in
 
-[src/types/generatedGraphQLTypes.ts:2008](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/types/generatedGraphQLTypes.ts#L2008)
+[src/types/generatedGraphQLTypes.ts:2008](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/types/generatedGraphQLTypes.ts#L2008)

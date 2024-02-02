@@ -12,19 +12,19 @@
 
 ### currentUserExists
 
-▸ **currentUserExists**(): (`next`: (`root`: `any`, `args`: `any`, `context`: `any`, `info`: `any`) => `any`) => (`root`: `any`, `args`: `any`, `context`: \{ `userId`: `any`  }, `info`: `any`) => `Promise`\<`any`\>
+▸ **currentUserExists**(): (`next`: (`root`: `any`, `args`: `any`, `context`: `any`, `info`: `any`) =\> `any`) =\> (`root`: `any`, `args`: `any`, `context`: \{ `userId`: `any`  \}, `info`: `any`) =\> `Promise`\<`any`\>
 
 #### Returns
 
 `fn`
 
-▸ (`next`): (`root`: `any`, `args`: `any`, `context`: \{ `userId`: `any`  }, `info`: `any`) => `Promise`\<`any`\>
+▸ (`next`): (`root`: `any`, `args`: `any`, `context`: \{ `userId`: `any`  \}, `info`: `any`) =\> `Promise`\<`any`\>
 
 ##### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `next` | (`root`: `any`, `args`: `any`, `context`: `any`, `info`: `any`) => `any` |
+| `next` | (`root`: `any`, `args`: `any`, `context`: `any`, `info`: `any`) =\> `any` |
 
 ##### Returns
 
@@ -48,4 +48,4 @@
 
 #### Defined in
 
-[src/resolvers/middleware/currentUserExists.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/resolvers/middleware/currentUserExists.ts#L8)
+[src/resolvers/middleware/currentUserExists.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/resolvers/middleware/currentUserExists.ts#L8)

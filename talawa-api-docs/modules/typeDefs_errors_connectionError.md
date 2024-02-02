@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/typeDefs/errors/connectionError.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/typeDefs/errors/connectionError.ts#L3)
+[src/typeDefs/errors/connectionError.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/typeDefs/errors/connectionError.ts#L3)

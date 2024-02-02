@@ -16,8 +16,8 @@
 
 ### Organization
 
-• `Const` **Organization**: `Model`\<[`InterfaceOrganization`](../interfaces/models_Organization.InterfaceOrganization.md), {}, {}\>
+• `Const` **Organization**: `Model`\<[`InterfaceOrganization`](../interfaces/models_Organization.InterfaceOrganization.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/Organization.ts:184](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/models/Organization.ts#L184)
+[src/models/Organization.ts:184](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/models/Organization.ts#L184)

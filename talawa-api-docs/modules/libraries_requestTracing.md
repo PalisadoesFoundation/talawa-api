@@ -24,7 +24,7 @@
 
 #### Defined in
 
-[src/libraries/requestTracing.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/libraries/requestTracing.ts#L17)
+[src/libraries/requestTracing.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/requestTracing.ts#L17)
 
 ___
 
@@ -34,7 +34,7 @@ ___
 
 #### Defined in
 
-[src/libraries/requestTracing.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/libraries/requestTracing.ts#L21)
+[src/libraries/requestTracing.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/requestTracing.ts#L21)
 
 ## Functions
 
@@ -48,13 +48,13 @@ ___
 
 #### Defined in
 
-[src/libraries/requestTracing.ts:29](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/libraries/requestTracing.ts#L29)
+[src/libraries/requestTracing.ts:29](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/requestTracing.ts#L29)
 
 ___
 
 ### middleware
 
-▸ **middleware**(): (`req`: `Request`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`\>\>, `res`: `Response`\<`any`, `Record`\<`string`, `any`\>\>, `next`: `NextFunction`) => `void`
+▸ **middleware**(): (`req`: `Request`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`\>\>, `res`: `Response`\<`any`, `Record`\<`string`, `any`\>\>, `next`: `NextFunction`) =\> `void`
 
 #### Returns
 
@@ -76,7 +76,7 @@ ___
 
 #### Defined in
 
-[src/libraries/requestTracing.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/libraries/requestTracing.ts#L33)
+[src/libraries/requestTracing.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/requestTracing.ts#L33)
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 #### Defined in
 
-[src/libraries/requestTracing.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/libraries/requestTracing.ts#L25)
+[src/libraries/requestTracing.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/requestTracing.ts#L25)
 
 ___
 
@@ -115,7 +115,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `tracingId` | `string` |
-| `method` | () => `T` |
+| `method` | () =\> `T` |
 
 #### Returns
 
@@ -123,4 +123,4 @@ ___
 
 #### Defined in
 
-[src/libraries/requestTracing.ts:50](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/libraries/requestTracing.ts#L50)
+[src/libraries/requestTracing.ts:50](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/requestTracing.ts#L50)

@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Post/creator.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/resolvers/Post/creator.ts#L4)
+[src/resolvers/Post/creator.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/resolvers/Post/creator.ts#L4)

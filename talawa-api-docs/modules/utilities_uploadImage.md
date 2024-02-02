@@ -12,7 +12,7 @@
 
 ### uploadImage
 
-▸ **uploadImage**(`newImageFile`, `oldImagePath`): `Promise`\<\{ `imageAlreadyInDbPath`: `string` ; `newImagePath`: `string`  }\>
+▸ **uploadImage**(`newImageFile`, `oldImagePath`): `Promise`\<\{ `imageAlreadyInDbPath`: `string` ; `newImagePath`: `string`  \}\>
 
 This function uploads the new image and deletes the previously uploaded image if exists.
 
@@ -25,7 +25,7 @@ This function uploads the new image and deletes the previously uploaded image if
 
 #### Returns
 
-`Promise`\<\{ `imageAlreadyInDbPath`: `string` ; `newImagePath`: `string`  }\>
+`Promise`\<\{ `imageAlreadyInDbPath`: `string` ; `newImagePath`: `string`  \}\>
 
 Path of an uploaded image.
 
@@ -35,4 +35,4 @@ This is a utility method.
 
 #### Defined in
 
-[src/utilities/uploadImage.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/utilities/uploadImage.ts#L16)
+[src/utilities/uploadImage.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/utilities/uploadImage.ts#L16)

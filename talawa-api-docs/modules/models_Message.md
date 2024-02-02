@@ -16,8 +16,8 @@
 
 ### Message
 
-• `Const` **Message**: `Model`\<[`InterfaceMessage`](../interfaces/models_Message.InterfaceMessage.md), {}, {}\>
+• `Const` **Message**: `Model`\<[`InterfaceMessage`](../interfaces/models_Message.InterfaceMessage.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/Message.ts:70](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/models/Message.ts#L70)
+[src/models/Message.ts:70](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/models/Message.ts#L70)

@@ -26,4 +26,4 @@ payload provided with the request
 
 #### Defined in
 
-[src/resolvers/Mutation/refreshToken.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/resolvers/Mutation/refreshToken.ts#L23)
+[src/resolvers/Mutation/refreshToken.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/resolvers/Mutation/refreshToken.ts#L23)

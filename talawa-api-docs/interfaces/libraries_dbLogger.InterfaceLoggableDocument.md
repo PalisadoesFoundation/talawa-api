@@ -263,7 +263,7 @@ ___
 
 #### Defined in
 
-[src/libraries/dbLogger.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/libraries/dbLogger.ts#L33)
+[src/libraries/dbLogger.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/dbLogger.ts#L33)
 
 ___
 
@@ -285,7 +285,7 @@ ___
 
 ### schema
 
-• **schema**: `Schema`\<`Document`\<`any`, `any`, `any`\>, `Model`\<`Document`\<`any`, `any`, `any`\>, `any`, `any`\>, `undefined`, {}\>
+• **schema**: `Schema`\<`Document`\<`any`, `any`, `any`\>, `Model`\<`Document`\<`any`, `any`, `any`\>, `any`, `any`\>, `undefined`, \{\}\>
 
 The document's schema.
 
@@ -781,7 +781,7 @@ ___
 
 Returns the list of paths that have been directly modified. A direct
 modified path is a path that you explicitly set, whether via `doc.foo = 'bar'`,
-`Object.assign(doc, { foo: 'bar' })`, or `doc.set('foo', 'bar')`.
+`Object.assign(doc, \{ foo: 'bar' \})`, or `doc.set('foo', 'bar')`.
 
 #### Returns
 
@@ -1163,7 +1163,7 @@ Returns another Model instance.
 
 | Name | Type |
 | :------ | :------ |
-| `T` | extends `Model`\<`any`, {}, {}\> |
+| `T` | extends `Model`\<`any`, \{\}, \{\}\> |
 
 #### Parameters
 
@@ -1387,7 +1387,7 @@ ___
 
 ### replaceOne
 
-▸ **replaceOne**(`replacement?`, `options?`, `callback?`): `Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), {}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
+▸ **replaceOne**(`replacement?`, `options?`, `callback?`): `Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), \{\}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
 
 Sends a replaceOne command with this document `_id` as the query selector.
 
@@ -1401,7 +1401,7 @@ Sends a replaceOne command with this document `_id` as the query selector.
 
 #### Returns
 
-`Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), {}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
+`Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), \{\}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
 
 #### Inherited from
 
@@ -1411,7 +1411,7 @@ Document.replaceOne
 
 node_modules/mongoose/index.d.ts:713
 
-▸ **replaceOne**(`replacement?`, `options?`, `callback?`): `Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), {}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
+▸ **replaceOne**(`replacement?`, `options?`, `callback?`): `Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), \{\}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
 
 #### Parameters
 
@@ -1423,7 +1423,7 @@ node_modules/mongoose/index.d.ts:713
 
 #### Returns
 
-`Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), {}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
+`Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), \{\}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
 
 #### Inherited from
 
@@ -1705,7 +1705,7 @@ ___
 
 ### update
 
-▸ **update**(`update?`, `options?`, `callback?`): `Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), {}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
+▸ **update**(`update?`, `options?`, `callback?`): `Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), \{\}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
 
 Sends an update command with this document `_id` as the query selector.
 
@@ -1719,7 +1719,7 @@ Sends an update command with this document `_id` as the query selector.
 
 #### Returns
 
-`Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), {}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
+`Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), \{\}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
 
 #### Inherited from
 
@@ -1733,7 +1733,7 @@ ___
 
 ### updateOne
 
-▸ **updateOne**(`update?`, `options?`, `callback?`): `Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), {}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
+▸ **updateOne**(`update?`, `options?`, `callback?`): `Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), \{\}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
 
 Sends an updateOne command with this document `_id` as the query selector.
 
@@ -1747,7 +1747,7 @@ Sends an updateOne command with this document `_id` as the query selector.
 
 #### Returns
 
-`Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), {}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
+`Query`\<`any`, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md), \{\}, [`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\>
 
 #### Inherited from
 

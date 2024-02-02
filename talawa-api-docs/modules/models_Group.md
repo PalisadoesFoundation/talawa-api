@@ -16,8 +16,8 @@
 
 ### Group
 
-• `Const` **Group**: `Model`\<[`InterfaceGroup`](../interfaces/models_Group.InterfaceGroup.md), {}, {}\>
+• `Const` **Group**: `Model`\<[`InterfaceGroup`](../interfaces/models_Group.InterfaceGroup.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/Group.ts:64](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/models/Group.ts#L64)
+[src/models/Group.ts:64](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/models/Group.ts#L64)

@@ -22,7 +22,7 @@ type if not present before in the intersection type.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `T` | `unknown` | used to return an object of a generic type `FilterQuery<T>` |
+| `T` | `unknown` | used to return an object of a generic type `FilterQuery\<T\>` |
 
 #### Parameters
 
@@ -43,9 +43,9 @@ You can learn about Generics [here](https://www.typescriptlang.org/docs/handbook
 **`Example`**
 
 ```
-const inputArgs = getWhere<InterfaceEvent>(args.where);
+const inputArgs = getWhere\<InterfaceEvent\>(args.where);
 ```
 
 #### Defined in
 
-[src/resolvers/Query/helperFunctions/getWhere.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/resolvers/Query/helperFunctions/getWhere.ts#L24)
+[src/resolvers/Query/helperFunctions/getWhere.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/resolvers/Query/helperFunctions/getWhere.ts#L24)

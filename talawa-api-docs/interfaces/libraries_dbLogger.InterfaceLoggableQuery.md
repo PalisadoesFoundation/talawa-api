@@ -138,7 +138,7 @@ ___
 
 ### catch
 
-• **catch**: \<TResult\>(`onrejected?`: ``null`` \| (`reason`: `any`) => `TResult` \| `PromiseLike`\<`TResult`\>) => `Promise`\<`unknown`\>
+• **catch**: \<TResult\>(`onrejected?`: ``null`` \| (`reason`: `any`) =\> `TResult` \| `PromiseLike`\<`TResult`\>) =\> `Promise`\<`unknown`\>
 
 Executes the query returning a `Promise` which will be
 resolved with either the doc(s) or rejected with the error.
@@ -162,7 +162,7 @@ Like `.then()`, but only takes a rejection handler.
 
 | Name | Type |
 | :------ | :------ |
-| `onrejected?` | ``null`` \| (`reason`: `any`) => `TResult` \| `PromiseLike`\<`TResult`\> |
+| `onrejected?` | ``null`` \| (`reason`: `any`) =\> `TResult` \| `PromiseLike`\<`TResult`\> |
 
 ##### Returns
 
@@ -184,13 +184,13 @@ ___
 
 #### Defined in
 
-[src/libraries/dbLogger.ts:37](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/libraries/dbLogger.ts#L37)
+[src/libraries/dbLogger.ts:37](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/dbLogger.ts#L37)
 
 ___
 
 ### model
 
-• **model**: `Model`\<`any`, {}, {}\>
+• **model**: `Model`\<`any`, \{\}, \{\}\>
 
 The model this query was created from
 
@@ -206,7 +206,7 @@ ___
 
 ### then
 
-• **then**: \<TResult1, TResult2\>(`onfulfilled?`: ``null`` \| (`value`: `unknown`) => `TResult1` \| `PromiseLike`\<`TResult1`\>, `onrejected?`: ``null`` \| (`reason`: `any`) => `TResult2` \| `PromiseLike`\<`TResult2`\>) => `Promise`\<`TResult1` \| `TResult2`\>
+• **then**: \<TResult1, TResult2\>(`onfulfilled?`: ``null`` \| (`value`: `unknown`) =\> `TResult1` \| `PromiseLike`\<`TResult1`\>, `onrejected?`: ``null`` \| (`reason`: `any`) =\> `TResult2` \| `PromiseLike`\<`TResult2`\>) =\> `Promise`\<`TResult1` \| `TResult2`\>
 
 Executes the query returning a `Promise` which will be
 resolved with either the doc(s) or rejected with the error.
@@ -229,8 +229,8 @@ resolved with either the doc(s) or rejected with the error.
 
 | Name | Type |
 | :------ | :------ |
-| `onfulfilled?` | ``null`` \| (`value`: `unknown`) => `TResult1` \| `PromiseLike`\<`TResult1`\> |
-| `onrejected?` | ``null`` \| (`reason`: `any`) => `TResult2` \| `PromiseLike`\<`TResult2`\> |
+| `onfulfilled?` | ``null`` \| (`value`: `unknown`) =\> `TResult1` \| `PromiseLike`\<`TResult1`\> |
+| `onrejected?` | ``null`` \| (`reason`: `any`) =\> `TResult2` \| `PromiseLike`\<`TResult2`\> |
 
 ##### Returns
 
@@ -248,7 +248,7 @@ node_modules/mongoose/index.d.ts:2516
 
 ### $where
 
-▸ **$where**(`argument`): `Query`\<`T`[], `T`, {}, `T`\>
+▸ **$where**(`argument`): `Query`\<`T`[], `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -258,7 +258,7 @@ node_modules/mongoose/index.d.ts:2516
 
 #### Returns
 
-`Query`\<`T`[], `T`, {}, `T`\>
+`Query`\<`T`[], `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -448,7 +448,7 @@ Casts this query to the schema of `model`.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `model?` | ``null`` \| `Model`\<`any`, {}, {}\> | the model to cast to. If not set, defaults to `this.model` |
+| `model?` | ``null`` \| `Model`\<`any`, \{\}, \{\}\> | the model to cast to. If not set, defaults to `this.model` |
 | `obj?` | `any` | If not set, defaults to this query's conditions |
 
 #### Returns
@@ -568,7 +568,7 @@ ___
 
 ### count
 
-▸ **count**(`callback?`): `Query`\<`number`, `T`, {}, `T`\>
+▸ **count**(`callback?`): `Query`\<`number`, `T`, \{\}, `T`\>
 
 Specifies this query as a `count` query.
 
@@ -580,7 +580,7 @@ Specifies this query as a `count` query.
 
 #### Returns
 
-`Query`\<`number`, `T`, {}, `T`\>
+`Query`\<`number`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -590,7 +590,7 @@ Query.count
 
 node_modules/mongoose/index.d.ts:2208
 
-▸ **count**(`criteria`, `callback?`): `Query`\<`number`, `T`, {}, `T`\>
+▸ **count**(`criteria`, `callback?`): `Query`\<`number`, `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -601,7 +601,7 @@ node_modules/mongoose/index.d.ts:2208
 
 #### Returns
 
-`Query`\<`number`, `T`, {}, `T`\>
+`Query`\<`number`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -615,7 +615,7 @@ ___
 
 ### countDocuments
 
-▸ **countDocuments**(`callback?`): `Query`\<`number`, `T`, {}, `T`\>
+▸ **countDocuments**(`callback?`): `Query`\<`number`, `T`, \{\}, `T`\>
 
 Specifies this query as a `countDocuments` query.
 
@@ -627,7 +627,7 @@ Specifies this query as a `countDocuments` query.
 
 #### Returns
 
-`Query`\<`number`, `T`, {}, `T`\>
+`Query`\<`number`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -637,7 +637,7 @@ Query.countDocuments
 
 node_modules/mongoose/index.d.ts:2212
 
-▸ **countDocuments**(`criteria`, `callback?`): `Query`\<`number`, `T`, {}, `T`\>
+▸ **countDocuments**(`criteria`, `callback?`): `Query`\<`number`, `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -648,7 +648,7 @@ node_modules/mongoose/index.d.ts:2212
 
 #### Returns
 
-`Query`\<`number`, `T`, {}, `T`\>
+`Query`\<`number`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -689,7 +689,7 @@ ___
 
 ### deleteMany
 
-▸ **deleteMany**(`filter?`, `options?`, `callback?`): `Query`\<`any`, `T`, {}, `T`\>
+▸ **deleteMany**(`filter?`, `options?`, `callback?`): `Query`\<`any`, `T`, \{\}, `T`\>
 
 Declare and/or execute this query as a `deleteMany()` operation. Works like
 remove, except it deletes _every_ document that matches `filter` in the
@@ -705,7 +705,7 @@ collection, regardless of the value of `single`.
 
 #### Returns
 
-`Query`\<`any`, `T`, {}, `T`\>
+`Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -715,7 +715,7 @@ Query.deleteMany
 
 node_modules/mongoose/index.d.ts:2226
 
-▸ **deleteMany**(`filter`, `callback`): `Query`\<`any`, `T`, {}, `T`\>
+▸ **deleteMany**(`filter`, `callback`): `Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -726,7 +726,7 @@ node_modules/mongoose/index.d.ts:2226
 
 #### Returns
 
-`Query`\<`any`, `T`, {}, `T`\>
+`Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -736,7 +736,7 @@ Query.deleteMany
 
 node_modules/mongoose/index.d.ts:2227
 
-▸ **deleteMany**(`callback`): `Query`\<`any`, `T`, {}, `T`\>
+▸ **deleteMany**(`callback`): `Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -746,7 +746,7 @@ node_modules/mongoose/index.d.ts:2227
 
 #### Returns
 
-`Query`\<`any`, `T`, {}, `T`\>
+`Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -760,7 +760,7 @@ ___
 
 ### deleteOne
 
-▸ **deleteOne**(`filter?`, `options?`, `callback?`): `Query`\<`any`, `T`, {}, `T`\>
+▸ **deleteOne**(`filter?`, `options?`, `callback?`): `Query`\<`any`, `T`, \{\}, `T`\>
 
 Declare and/or execute this query as a `deleteOne()` operation. Works like
 remove, except it deletes at most one document regardless of the `single`
@@ -776,7 +776,7 @@ option.
 
 #### Returns
 
-`Query`\<`any`, `T`, {}, `T`\>
+`Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -786,7 +786,7 @@ Query.deleteOne
 
 node_modules/mongoose/index.d.ts:2235
 
-▸ **deleteOne**(`filter`, `callback`): `Query`\<`any`, `T`, {}, `T`\>
+▸ **deleteOne**(`filter`, `callback`): `Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -797,7 +797,7 @@ node_modules/mongoose/index.d.ts:2235
 
 #### Returns
 
-`Query`\<`any`, `T`, {}, `T`\>
+`Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -807,7 +807,7 @@ Query.deleteOne
 
 node_modules/mongoose/index.d.ts:2236
 
-▸ **deleteOne**(`callback`): `Query`\<`any`, `T`, {}, `T`\>
+▸ **deleteOne**(`callback`): `Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -817,7 +817,7 @@ node_modules/mongoose/index.d.ts:2236
 
 #### Returns
 
-`Query`\<`any`, `T`, {}, `T`\>
+`Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -831,7 +831,7 @@ ___
 
 ### distinct
 
-▸ **distinct**(`field`, `filter?`, `callback?`): `Query`\<`any`[], `T`, {}, `T`\>
+▸ **distinct**(`field`, `filter?`, `callback?`): `Query`\<`any`[], `T`, \{\}, `T`\>
 
 Creates a `distinct` query: returns the distinct values of the given `field` that match `filter`.
 
@@ -845,7 +845,7 @@ Creates a `distinct` query: returns the distinct values of the given `field` tha
 
 #### Returns
 
-`Query`\<`any`[], `T`, {}, `T`\>
+`Query`\<`any`[], `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -973,7 +973,7 @@ ___
 
 ### estimatedDocumentCount
 
-▸ **estimatedDocumentCount**(`options?`, `callback?`): `Query`\<`number`, `T`, {}, `T`\>
+▸ **estimatedDocumentCount**(`options?`, `callback?`): `Query`\<`number`, `T`, \{\}, `T`\>
 
 Creates a `estimatedDocumentCount` query: counts the number of documents in the collection.
 
@@ -986,7 +986,7 @@ Creates a `estimatedDocumentCount` query: counts the number of documents in the 
 
 #### Returns
 
-`Query`\<`number`, `T`, {}, `T`\>
+`Query`\<`number`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1136,7 +1136,7 @@ ___
 
 ### find
 
-▸ **find**(`callback?`): `Query`\<`T`[], `T`, {}, `T`\>
+▸ **find**(`callback?`): `Query`\<`T`[], `T`, \{\}, `T`\>
 
 Creates a `find` query: gets a list of documents that match `filter`.
 
@@ -1148,7 +1148,7 @@ Creates a `find` query: gets a list of documents that match `filter`.
 
 #### Returns
 
-`Query`\<`T`[], `T`, {}, `T`\>
+`Query`\<`T`[], `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1158,7 +1158,7 @@ Query.find
 
 node_modules/mongoose/index.d.ts:2272
 
-▸ **find**(`filter`, `callback?`): `Query`\<`T`[], `T`, {}, `T`\>
+▸ **find**(`filter`, `callback?`): `Query`\<`T`[], `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -1169,7 +1169,7 @@ node_modules/mongoose/index.d.ts:2272
 
 #### Returns
 
-`Query`\<`T`[], `T`, {}, `T`\>
+`Query`\<`T`[], `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1179,7 +1179,7 @@ Query.find
 
 node_modules/mongoose/index.d.ts:2273
 
-▸ **find**(`filter`, `projection?`, `options?`, `callback?`): `Query`\<`T`[], `T`, {}, `T`\>
+▸ **find**(`filter`, `projection?`, `options?`, `callback?`): `Query`\<`T`[], `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -1192,7 +1192,7 @@ node_modules/mongoose/index.d.ts:2273
 
 #### Returns
 
-`Query`\<`T`[], `T`, {}, `T`\>
+`Query`\<`T`[], `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1206,7 +1206,7 @@ ___
 
 ### findByIdAndDelete
 
-▸ **findByIdAndDelete**(`id?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, {}, `T`\>
+▸ **findByIdAndDelete**(`id?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 Creates a `findByIdAndDelete` query, filtering by the given `_id`.
 
@@ -1216,11 +1216,11 @@ Creates a `findByIdAndDelete` query, filtering by the given `_id`.
 | :------ | :------ |
 | `id?` | `any` |
 | `options?` | ``null`` \| `QueryOptions` |
-| `callback?` | (`err`: `CallbackError`, `doc`: ``null`` \| `T`, `res`: `any`) => `void` |
+| `callback?` | (`err`: `CallbackError`, `doc`: ``null`` \| `T`, `res`: `any`) =\> `void` |
 
 #### Returns
 
-`Query`\<``null`` \| `T`, `T`, {}, `T`\>
+`Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1234,7 +1234,7 @@ ___
 
 ### findByIdAndUpdate
 
-▸ **findByIdAndUpdate**(`id`, `update`, `options`, `callback?`): `Query`\<`FindAndModifyWriteOpResultObject`\<`T`\>, `T`, {}, `T`\>
+▸ **findByIdAndUpdate**(`id`, `update`, `options`, `callback?`): `Query`\<`FindAndModifyWriteOpResultObject`\<`T`\>, `T`, \{\}, `T`\>
 
 Creates a `findOneAndUpdate` query, filtering by the given `_id`.
 
@@ -1244,12 +1244,12 @@ Creates a `findOneAndUpdate` query, filtering by the given `_id`.
 | :------ | :------ |
 | `id` | `any` |
 | `update` | `UpdateWithAggregationPipeline` \| `UpdateQuery`\<`T`\> |
-| `options` | `QueryOptions` & \{ `rawResult`: ``true``  } |
-| `callback?` | (`err`: `CallbackError`, `doc`: `FindAndModifyWriteOpResultObject`\<`T`\>, `res`: `any`) => `void` |
+| `options` | `QueryOptions` & \{ `rawResult`: ``true``  \} |
+| `callback?` | (`err`: `CallbackError`, `doc`: `FindAndModifyWriteOpResultObject`\<`T`\>, `res`: `any`) =\> `void` |
 
 #### Returns
 
-`Query`\<`FindAndModifyWriteOpResultObject`\<`T`\>, `T`, {}, `T`\>
+`Query`\<`FindAndModifyWriteOpResultObject`\<`T`\>, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1259,7 +1259,7 @@ Query.findByIdAndUpdate
 
 node_modules/mongoose/index.d.ts:2294
 
-▸ **findByIdAndUpdate**(`id`, `update`, `options`, `callback?`): `Query`\<`T`, `T`, {}, `T`\>
+▸ **findByIdAndUpdate**(`id`, `update`, `options`, `callback?`): `Query`\<`T`, `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -1267,12 +1267,12 @@ node_modules/mongoose/index.d.ts:2294
 | :------ | :------ |
 | `id` | `any` |
 | `update` | `UpdateWithAggregationPipeline` \| `UpdateQuery`\<`T`\> |
-| `options` | `QueryOptions` & \{ `upsert`: ``true``  } & `ReturnsNewDoc` |
-| `callback?` | (`err`: `CallbackError`, `doc`: `T`, `res`: `any`) => `void` |
+| `options` | `QueryOptions` & \{ `upsert`: ``true``  \} & `ReturnsNewDoc` |
+| `callback?` | (`err`: `CallbackError`, `doc`: `T`, `res`: `any`) =\> `void` |
 
 #### Returns
 
-`Query`\<`T`, `T`, {}, `T`\>
+`Query`\<`T`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1282,7 +1282,7 @@ Query.findByIdAndUpdate
 
 node_modules/mongoose/index.d.ts:2295
 
-▸ **findByIdAndUpdate**(`id?`, `update?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, {}, `T`\>
+▸ **findByIdAndUpdate**(`id?`, `update?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -1291,11 +1291,11 @@ node_modules/mongoose/index.d.ts:2295
 | `id?` | `any` |
 | `update?` | `UpdateWithAggregationPipeline` \| `UpdateQuery`\<`T`\> |
 | `options?` | ``null`` \| `QueryOptions` |
-| `callback?` | (`err`: `CallbackError`, `doc`: ``null`` \| `T`, `res`: `any`) => `void` |
+| `callback?` | (`err`: `CallbackError`, `doc`: ``null`` \| `T`, `res`: `any`) =\> `void` |
 
 #### Returns
 
-`Query`\<``null`` \| `T`, `T`, {}, `T`\>
+`Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1309,7 +1309,7 @@ ___
 
 ### findOne
 
-▸ **findOne**(`filter?`, `projection?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, {}, `T`\>
+▸ **findOne**(`filter?`, `projection?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 Declares the query a findOne operation. When executed, the first found document is passed to the callback.
 
@@ -1324,7 +1324,7 @@ Declares the query a findOne operation. When executed, the first found document 
 
 #### Returns
 
-`Query`\<``null`` \| `T`, `T`, {}, `T`\>
+`Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1338,7 +1338,7 @@ ___
 
 ### findOneAndDelete
 
-▸ **findOneAndDelete**(`filter?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, {}, `T`\>
+▸ **findOneAndDelete**(`filter?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 Creates a `findOneAndDelete` query: atomically finds the given document, deletes it, and returns the document as it was before deletion.
 
@@ -1348,11 +1348,11 @@ Creates a `findOneAndDelete` query: atomically finds the given document, deletes
 | :------ | :------ |
 | `filter?` | `FilterQuery`\<`T`\> |
 | `options?` | ``null`` \| `QueryOptions` |
-| `callback?` | (`err`: `CallbackError`, `doc`: ``null`` \| `T`, `res`: `any`) => `void` |
+| `callback?` | (`err`: `CallbackError`, `doc`: ``null`` \| `T`, `res`: `any`) =\> `void` |
 
 #### Returns
 
-`Query`\<``null`` \| `T`, `T`, {}, `T`\>
+`Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1366,7 +1366,7 @@ ___
 
 ### findOneAndRemove
 
-▸ **findOneAndRemove**(`filter?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, {}, `T`\>
+▸ **findOneAndRemove**(`filter?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 Creates a `findOneAndRemove` query: atomically finds the given document and deletes it.
 
@@ -1376,11 +1376,11 @@ Creates a `findOneAndRemove` query: atomically finds the given document and dele
 | :------ | :------ |
 | `filter?` | `FilterQuery`\<`T`\> |
 | `options?` | ``null`` \| `QueryOptions` |
-| `callback?` | (`err`: `CallbackError`, `doc`: ``null`` \| `T`, `res`: `any`) => `void` |
+| `callback?` | (`err`: `CallbackError`, `doc`: ``null`` \| `T`, `res`: `any`) =\> `void` |
 
 #### Returns
 
-`Query`\<``null`` \| `T`, `T`, {}, `T`\>
+`Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1394,7 +1394,7 @@ ___
 
 ### findOneAndUpdate
 
-▸ **findOneAndUpdate**(`filter`, `update`, `options`, `callback?`): `Query`\<`FindAndModifyWriteOpResultObject`\<`T`\>, `T`, {}, `T`\>
+▸ **findOneAndUpdate**(`filter`, `update`, `options`, `callback?`): `Query`\<`FindAndModifyWriteOpResultObject`\<`T`\>, `T`, \{\}, `T`\>
 
 Creates a `findOneAndUpdate` query: atomically find the first document that matches `filter` and apply `update`.
 
@@ -1404,12 +1404,12 @@ Creates a `findOneAndUpdate` query: atomically find the first document that matc
 | :------ | :------ |
 | `filter` | `FilterQuery`\<`T`\> |
 | `update` | `UpdateWithAggregationPipeline` \| `UpdateQuery`\<`T`\> |
-| `options` | `QueryOptions` & \{ `rawResult`: ``true``  } |
-| `callback?` | (`err`: `CallbackError`, `doc`: `FindAndModifyWriteOpResultObject`\<`T`\>, `res`: `any`) => `void` |
+| `options` | `QueryOptions` & \{ `rawResult`: ``true``  \} |
+| `callback?` | (`err`: `CallbackError`, `doc`: `FindAndModifyWriteOpResultObject`\<`T`\>, `res`: `any`) =\> `void` |
 
 #### Returns
 
-`Query`\<`FindAndModifyWriteOpResultObject`\<`T`\>, `T`, {}, `T`\>
+`Query`\<`FindAndModifyWriteOpResultObject`\<`T`\>, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1419,7 +1419,7 @@ Query.findOneAndUpdate
 
 node_modules/mongoose/index.d.ts:2286
 
-▸ **findOneAndUpdate**(`filter`, `update`, `options`, `callback?`): `Query`\<`T`, `T`, {}, `T`\>
+▸ **findOneAndUpdate**(`filter`, `update`, `options`, `callback?`): `Query`\<`T`, `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -1427,12 +1427,12 @@ node_modules/mongoose/index.d.ts:2286
 | :------ | :------ |
 | `filter` | `FilterQuery`\<`T`\> |
 | `update` | `UpdateWithAggregationPipeline` \| `UpdateQuery`\<`T`\> |
-| `options` | `QueryOptions` & \{ `upsert`: ``true``  } & `ReturnsNewDoc` |
-| `callback?` | (`err`: `CallbackError`, `doc`: `T`, `res`: `any`) => `void` |
+| `options` | `QueryOptions` & \{ `upsert`: ``true``  \} & `ReturnsNewDoc` |
+| `callback?` | (`err`: `CallbackError`, `doc`: `T`, `res`: `any`) =\> `void` |
 
 #### Returns
 
-`Query`\<`T`, `T`, {}, `T`\>
+`Query`\<`T`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1442,7 +1442,7 @@ Query.findOneAndUpdate
 
 node_modules/mongoose/index.d.ts:2287
 
-▸ **findOneAndUpdate**(`filter?`, `update?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, {}, `T`\>
+▸ **findOneAndUpdate**(`filter?`, `update?`, `options?`, `callback?`): `Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -1451,11 +1451,11 @@ node_modules/mongoose/index.d.ts:2287
 | `filter?` | `FilterQuery`\<`T`\> |
 | `update?` | `UpdateWithAggregationPipeline` \| `UpdateQuery`\<`T`\> |
 | `options?` | ``null`` \| `QueryOptions` |
-| `callback?` | (`err`: `CallbackError`, `doc`: ``null`` \| `T`, `res`: `any`) => `void` |
+| `callback?` | (`err`: `CallbackError`, `doc`: ``null`` \| `T`, `res`: `any`) =\> `void` |
 
 #### Returns
 
-`Query`\<``null`` \| `T`, `T`, {}, `T`\>
+`Query`\<``null`` \| `T`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1844,7 +1844,7 @@ ___
 
 ### lean
 
-▸ **lean**\<`LeanResultType`\>(`val?`): `Query`\<`LeanResultType`, `T`, {}, `T`\>
+▸ **lean**\<`LeanResultType`\>(`val?`): `Query`\<`LeanResultType`, `T`, \{\}, `T`\>
 
 Sets the lean option.
 
@@ -1862,7 +1862,7 @@ Sets the lean option.
 
 #### Returns
 
-`Query`\<`LeanResultType`, `T`, {}, `T`\>
+`Query`\<`LeanResultType`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -1996,7 +1996,7 @@ ___
 
 ### map
 
-▸ **map**\<`MappedType`\>(`fn`): `Query`\<`MappedType`, `T`, {}, `T`\>
+▸ **map**\<`MappedType`\>(`fn`): `Query`\<`MappedType`, `T`, \{\}, `T`\>
 
 Runs a function `fn` and treats the return value of `fn` as the new value
 for the query to resolve to.
@@ -2011,11 +2011,11 @@ for the query to resolve to.
 
 | Name | Type |
 | :------ | :------ |
-| `fn` | (`doc`: `unknown`) => `MappedType` |
+| `fn` | (`doc`: `unknown`) =\> `MappedType` |
 
 #### Returns
 
-`Query`\<`MappedType`, `T`, {}, `T`\>
+`Query`\<`MappedType`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -2138,7 +2138,7 @@ Merges another Query or conditions object into this one.
 
 | Name | Type |
 | :------ | :------ |
-| `source` | `Query`\<`any`, `any`, {}, `any`\> \| `FilterQuery`\<`T`\> |
+| `source` | `Query`\<`any`, `any`, \{\}, `any`\> \| `FilterQuery`\<`T`\> |
 
 #### Returns
 
@@ -2423,7 +2423,7 @@ ___
 
 ### orFail
 
-▸ **orFail**(`err?`): `Query`\<{}, `T`, {}, `T`\>
+▸ **orFail**(`err?`): `Query`\<\{\}, `T`, \{\}, `T`\>
 
 Make this query throw an error if no documents match the given `filter`.
 This is handy for integrating with async/await, because `orFail()` saves you
@@ -2433,11 +2433,11 @@ an extra `if` statement to check if no document was found.
 
 | Name | Type |
 | :------ | :------ |
-| `err?` | `NativeError` \| () => `NativeError` |
+| `err?` | `NativeError` \| () =\> `NativeError` |
 
 #### Returns
 
-`Query`\<{}, `T`, {}, `T`\>
+`Query`\<\{\}, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -2508,7 +2508,7 @@ Specifies paths which should be populated with other documents.
 | :------ | :------ |
 | `path` | `any` |
 | `select?` | `any` |
-| `model?` | `string` \| `Model`\<`any`, {}, {}\> |
+| `model?` | `string` \| `Model`\<`any`, \{\}, \{\}\> |
 | `match?` | `any` |
 
 #### Returns
@@ -2673,7 +2673,7 @@ ___
 
 ### remove
 
-▸ **remove**(`filter?`, `callback?`): `Query`\<`any`, `T`, {}, `T`\>
+▸ **remove**(`filter?`, `callback?`): `Query`\<`any`, `T`, \{\}, `T`\>
 
 Declare and/or execute this query as a remove() operation. `remove()` is
 deprecated, you should use [`deleteOne()`](#query_Query-deleteOne)
@@ -2688,7 +2688,7 @@ or [`deleteMany()`](#query_Query-deleteMany) instead.
 
 #### Returns
 
-`Query`\<`any`, `T`, {}, `T`\>
+`Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -2702,7 +2702,7 @@ ___
 
 ### replaceOne
 
-▸ **replaceOne**(`filter?`, `replacement?`, `options?`, `callback?`): `Query`\<`any`, `T`, {}, `T`\>
+▸ **replaceOne**(`filter?`, `replacement?`, `options?`, `callback?`): `Query`\<`any`, `T`, \{\}, `T`\>
 
 Declare and/or execute this query as a replaceOne() operation. Same as
 `update()`, except MongoDB will replace the existing document and will
@@ -2719,7 +2719,7 @@ not accept any [atomic](https://docs.mongodb.com/manual/tutorial/model-data-for-
 
 #### Returns
 
-`Query`\<`any`, `T`, {}, `T`\>
+`Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -2729,7 +2729,7 @@ Query.replaceOne
 
 node_modules/mongoose/index.d.ts:2452
 
-▸ **replaceOne**(`filter?`, `replacement?`, `options?`, `callback?`): `Query`\<`any`, `T`, {}, `T`\>
+▸ **replaceOne**(`filter?`, `replacement?`, `options?`, `callback?`): `Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Parameters
 
@@ -2742,7 +2742,7 @@ node_modules/mongoose/index.d.ts:2452
 
 #### Returns
 
-`Query`\<`any`, `T`, {}, `T`\>
+`Query`\<`any`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -3177,7 +3177,7 @@ ___
 
 ### toConstructor
 
-▸ **toConstructor**(): (...`args`: `any`[]) => `Query`\<`unknown`, `T`, {}, `T`\>
+▸ **toConstructor**(): (...`args`: `any`[]) =\> `Query`\<`unknown`, `T`, \{\}, `T`\>
 
 Converts this query to a customized, reusable query constructor with all arguments and options retained.
 
@@ -3185,7 +3185,7 @@ Converts this query to a customized, reusable query constructor with all argumen
 
 `fn`
 
-• **new toConstructor**(`...args`): `Query`\<`unknown`, `T`, {}, `T`\>
+• **new toConstructor**(`...args`): `Query`\<`unknown`, `T`, \{\}, `T`\>
 
 ##### Parameters
 
@@ -3195,7 +3195,7 @@ Converts this query to a customized, reusable query constructor with all argumen
 
 ##### Returns
 
-`Query`\<`unknown`, `T`, {}, `T`\>
+`Query`\<`unknown`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -3209,7 +3209,7 @@ ___
 
 ### update
 
-▸ **update**(`filter?`, `update?`, `options?`, `callback?`): `Query`\<`UpdateWriteOpResult`, `T`, {}, `T`\>
+▸ **update**(`filter?`, `update?`, `options?`, `callback?`): `Query`\<`UpdateWriteOpResult`, `T`, \{\}, `T`\>
 
 Declare and/or execute this query as an update() operation.
 
@@ -3224,7 +3224,7 @@ Declare and/or execute this query as an update() operation.
 
 #### Returns
 
-`Query`\<`UpdateWriteOpResult`, `T`, {}, `T`\>
+`Query`\<`UpdateWriteOpResult`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -3238,7 +3238,7 @@ ___
 
 ### updateMany
 
-▸ **updateMany**(`filter?`, `update?`, `options?`, `callback?`): `Query`\<`UpdateWriteOpResult`, `T`, {}, `T`\>
+▸ **updateMany**(`filter?`, `update?`, `options?`, `callback?`): `Query`\<`UpdateWriteOpResult`, `T`, \{\}, `T`\>
 
 Declare and/or execute this query as an updateMany() operation. Same as
 `update()`, except MongoDB will update _all_ documents that match
@@ -3256,7 +3256,7 @@ the `multi` option.
 
 #### Returns
 
-`Query`\<`UpdateWriteOpResult`, `T`, {}, `T`\>
+`Query`\<`UpdateWriteOpResult`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -3270,7 +3270,7 @@ ___
 
 ### updateOne
 
-▸ **updateOne**(`filter?`, `update?`, `options?`, `callback?`): `Query`\<`UpdateWriteOpResult`, `T`, {}, `T`\>
+▸ **updateOne**(`filter?`, `update?`, `options?`, `callback?`): `Query`\<`UpdateWriteOpResult`, `T`, \{\}, `T`\>
 
 Declare and/or execute this query as an updateOne() operation. Same as
 `update()`, except it does not support the `multi` or `overwrite` options.
@@ -3286,7 +3286,7 @@ Declare and/or execute this query as an updateOne() operation. Same as
 
 #### Returns
 
-`Query`\<`UpdateWriteOpResult`, `T`, {}, `T`\>
+`Query`\<`UpdateWriteOpResult`, `T`, \{\}, `T`\>
 
 #### Inherited from
 
@@ -3416,7 +3416,7 @@ ___
 
 ▸ **wtimeout**(`ms`): `this`
 
-If [`w > 1`](/docs/api.html#query_Query-w), the maximum amount of time to
+If [`w \> 1`](/docs/api.html#query_Query-w), the maximum amount of time to
 wait for this write to propagate through the replica set before this
 operation fails. The default is `0`, which means no timeout.
 
