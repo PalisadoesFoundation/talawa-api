@@ -98,7 +98,7 @@
     "zod-error": "^1.5.0"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "^2.6.2",
+    "@graphql-codegen/cli": "^5.0.0",
     "@graphql-codegen/typescript": "^4.0.1",
     "@graphql-codegen/typescript-resolvers": "^4.0.1",
     "@graphql-eslint/eslint-plugin": "^3.12.0",
@@ -115,7 +115,7 @@
     "@types/lodash": "^4.14.202",
     "@types/mongoose-paginate-v2": "^1.6.5",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^20.11.12",
+    "@types/node": "^20.11.16",
     "@types/nodemailer": "^6.4.14",
     "@types/shortid": "^0.0.32",
     "@types/uuid": "^9.0.7",
