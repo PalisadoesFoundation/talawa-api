@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Mutation/removeEventAttendee.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/7fc03c3/src/resolvers/Mutation/removeEventAttendee.ts#L14)
+[src/resolvers/Mutation/removeEventAttendee.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/resolvers/Mutation/removeEventAttendee.ts#L14)

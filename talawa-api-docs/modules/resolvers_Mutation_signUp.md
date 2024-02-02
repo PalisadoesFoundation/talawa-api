@@ -26,4 +26,4 @@ payload provided with the request
 
 #### Defined in
 
-[src/resolvers/Mutation/signUp.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/7fc03c3/src/resolvers/Mutation/signUp.ts#L28)
+[src/resolvers/Mutation/signUp.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/resolvers/Mutation/signUp.ts#L28)

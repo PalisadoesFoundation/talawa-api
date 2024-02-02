@@ -22,4 +22,4 @@ An object that is the return value of the resolver for this field's parent.
 
 #### Defined in
 
-[src/resolvers/DirectChatMessage/receiver.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/7fc03c3/src/resolvers/DirectChatMessage/receiver.ts#L8)
+[src/resolvers/DirectChatMessage/receiver.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/resolvers/DirectChatMessage/receiver.ts#L8)

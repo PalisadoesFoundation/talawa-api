@@ -38,4 +38,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/cancelMembershipRequest.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/7fc03c3/src/resolvers/Mutation/cancelMembershipRequest.ts#L24)
+[src/resolvers/Mutation/cancelMembershipRequest.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/resolvers/Mutation/cancelMembershipRequest.ts#L24)

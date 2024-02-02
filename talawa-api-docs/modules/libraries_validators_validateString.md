@@ -31,4 +31,4 @@
 
 #### Defined in
 
-[src/libraries/validators/validateString.ts:1](https://github.com/PalisadoesFoundation/talawa-api/blob/7fc03c3/src/libraries/validators/validateString.ts#L1)
+[src/libraries/validators/validateString.ts:1](https://github.com/PalisadoesFoundation/talawa-api/blob/1bb35e9/src/libraries/validators/validateString.ts#L1)
