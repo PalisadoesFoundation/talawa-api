@@ -18,4 +18,4 @@ This graphQL typeDef defines the logic for different mutations defined in the ta
 
 #### Defined in
 
-[src/typeDefs/mutations.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/typeDefs/mutations.ts#L6)
+[src/typeDefs/mutations.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/typeDefs/mutations.ts#L6)

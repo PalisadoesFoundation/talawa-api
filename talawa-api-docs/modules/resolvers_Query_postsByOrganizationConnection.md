@@ -32,4 +32,4 @@ learn more about Connection [here](https://relay.dev/graphql/connections.htm).
 
 #### Defined in
 
-[src/resolvers/Query/postsByOrganizationConnection.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/resolvers/Query/postsByOrganizationConnection.ts#L19)
+[src/resolvers/Query/postsByOrganizationConnection.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/resolvers/Query/postsByOrganizationConnection.ts#L19)

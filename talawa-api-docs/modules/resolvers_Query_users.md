@@ -30,4 +30,4 @@ The query function uses `getSort()` function to sort the data in specified.
 
 #### Defined in
 
-[src/resolvers/Query/users.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/resolvers/Query/users.ts#L17)
+[src/resolvers/Query/users.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/resolvers/Query/users.ts#L17)

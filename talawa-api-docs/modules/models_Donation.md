@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/models/Donation.ts:63](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/models/Donation.ts#L63)
+[src/models/Donation.ts:63](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/models/Donation.ts#L63)

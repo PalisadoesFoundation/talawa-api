@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/GroupChatMessage/index.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/resolvers/GroupChatMessage/index.ts#L5)
+[src/resolvers/GroupChatMessage/index.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/resolvers/GroupChatMessage/index.ts#L5)

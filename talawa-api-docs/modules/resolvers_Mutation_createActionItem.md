@@ -41,4 +41,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/createActionItem.ts:32](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/resolvers/Mutation/createActionItem.ts#L32)
+[src/resolvers/Mutation/createActionItem.ts:32](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/resolvers/Mutation/createActionItem.ts#L32)
