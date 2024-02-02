@@ -109,8 +109,8 @@ jobs:
           npm i --save-dev @types/node
           npx typedoc --entryPoints src --out talawa-api-docs --plugin typedoc-plugin-markdown --theme markdown --entryPointStrategy expand
       
-      - name: Make Markdown Files MPX Compatible
-        run: python3 .github/workflows/md_to_mpx.py --directory talawa-api-docs 
+      - name: Make Markdown Files MDX Compatible
+        run: python3 .github/workflows/md_mdx_format_adjuster.py --directory talawa-api-docs 
         
       - name: Checking doc updated
         id: DocUpdated
