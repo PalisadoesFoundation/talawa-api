@@ -27,4 +27,4 @@
 
 #### Defined in
 
-[src/directives/directiveTransformer/authDirectiveTransformer.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/directives/directiveTransformer/authDirectiveTransformer.ts#L6)
+[src/directives/directiveTransformer/authDirectiveTransformer.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/directives/directiveTransformer/authDirectiveTransformer.ts#L6)

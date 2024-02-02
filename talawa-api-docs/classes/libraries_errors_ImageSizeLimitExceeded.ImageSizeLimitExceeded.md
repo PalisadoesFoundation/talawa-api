@@ -57,7 +57,7 @@ This class detects invalid file type errors and sends those errors to the superc
 
 #### Defined in
 
-[src/libraries/errors/ImageSizeLimitExceeded.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/errors/ImageSizeLimitExceeded.ts#L6)
+[src/libraries/errors/ImageSizeLimitExceeded.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/libraries/errors/ImageSizeLimitExceeded.ts#L6)
 
 ## Properties
 
@@ -71,7 +71,7 @@ This class detects invalid file type errors and sends those errors to the superc
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/errors/applicationError.ts#L11)
+[src/libraries/errors/applicationError.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/libraries/errors/applicationError.ts#L11)
 
 ___
 
@@ -85,7 +85,7 @@ ___
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/errors/applicationError.ts#L12)
+[src/libraries/errors/applicationError.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/libraries/errors/applicationError.ts#L12)
 
 ___
 

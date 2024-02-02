@@ -30,4 +30,4 @@ context of entire application
 
 #### Defined in
 
-[src/resolvers/Mutation/updatePluginStatus.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/resolvers/Mutation/updatePluginStatus.ts#L16)
+[src/resolvers/Mutation/updatePluginStatus.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/resolvers/Mutation/updatePluginStatus.ts#L16)

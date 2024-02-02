@@ -35,4 +35,4 @@ This is a utility method.
 
 #### Defined in
 
-[src/utilities/uploadImage.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/utilities/uploadImage.ts#L16)
+[src/utilities/uploadImage.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/utilities/uploadImage.ts#L16)

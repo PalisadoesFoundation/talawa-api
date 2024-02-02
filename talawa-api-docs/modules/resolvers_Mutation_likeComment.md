@@ -37,4 +37,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/likeComment.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/resolvers/Mutation/likeComment.ts#L18)
+[src/resolvers/Mutation/likeComment.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/resolvers/Mutation/likeComment.ts#L18)

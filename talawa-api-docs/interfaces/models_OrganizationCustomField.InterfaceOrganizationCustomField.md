@@ -21,7 +21,7 @@
 
 #### Defined in
 
-[src/models/OrganizationCustomField.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/models/OrganizationCustomField.ts#L5)
+[src/models/OrganizationCustomField.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/models/OrganizationCustomField.ts#L5)
 
 ___
 
@@ -31,7 +31,7 @@ ___
 
 #### Defined in
 
-[src/models/OrganizationCustomField.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/models/OrganizationCustomField.ts#L8)
+[src/models/OrganizationCustomField.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/models/OrganizationCustomField.ts#L8)
 
 ___
 
@@ -41,7 +41,7 @@ ___
 
 #### Defined in
 
-[src/models/OrganizationCustomField.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/models/OrganizationCustomField.ts#L6)
+[src/models/OrganizationCustomField.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/models/OrganizationCustomField.ts#L6)
 
 ___
 
@@ -51,4 +51,4 @@ ___
 
 #### Defined in
 
-[src/models/OrganizationCustomField.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/models/OrganizationCustomField.ts#L7)
+[src/models/OrganizationCustomField.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/models/OrganizationCustomField.ts#L7)

@@ -184,7 +184,7 @@ ___
 
 #### Defined in
 
-[src/libraries/dbLogger.ts:37](https://github.com/PalisadoesFoundation/talawa-api/blob/515781e/src/libraries/dbLogger.ts#L37)
+[src/libraries/dbLogger.ts:37](https://github.com/PalisadoesFoundation/talawa-api/blob/612a320/src/libraries/dbLogger.ts#L37)
 
 ___
 
