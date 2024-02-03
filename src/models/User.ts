@@ -5,7 +5,7 @@ import validator from "validator";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
-import { identifier } from "./identifier";
+import { identifier_count } from "./identifier_count";
 // import AutoIncrementFactory from "mongoose-sequence";
 
 /**
@@ -295,7 +295,7 @@ userSchema.plugin(mongoosePaginate);
 
 userSchema.pre<InterfaceUser>("save", async function (next) {
   if (!this.identifier.type) {
-    const counter = await identifier.findOneAndUpdate(
+    const counter = await identifier_count.findOneAndUpdate(
       { _id: "userCounter" },
       { $inc: { sequence_value: 1 } },
       { new: true, upsert: true }
@@ -313,4 +313,3 @@ const userModel = (): PaginateModel<InterfaceUser> =>
 export const User = (models.User || userModel()) as ReturnType<
   typeof userModel
 >;
-``
