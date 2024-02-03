@@ -16,8 +16,8 @@
 
 ### SampleData
 
-• `Const` **SampleData**: `Model`\<[`InterfaceSampleData`](../interfaces/models_SampleData.InterfaceSampleData.md), {}, {}\>
+• `Const` **SampleData**: `Model`\<[`InterfaceSampleData`](../interfaces/models_SampleData.InterfaceSampleData.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/SampleData.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/models/SampleData.ts#L24)
+[src/models/SampleData.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/SampleData.ts#L24)

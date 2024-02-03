@@ -16,8 +16,8 @@
 
 ### Plugin
 
-• `Const` **Plugin**: `Model`\<[`InterfacePlugin`](../interfaces/models_Plugin.InterfacePlugin.md), {}, {}\>
+• `Const` **Plugin**: `Model`\<[`InterfacePlugin`](../interfaces/models_Plugin.InterfacePlugin.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/Plugin.ts:47](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/models/Plugin.ts#L47)
+[src/models/Plugin.ts:47](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/Plugin.ts#L47)

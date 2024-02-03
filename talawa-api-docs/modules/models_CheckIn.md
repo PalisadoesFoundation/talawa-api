@@ -16,8 +16,8 @@
 
 ### CheckIn
 
-• `Const` **CheckIn**: `Model`\<[`InterfaceCheckIn`](../interfaces/models_CheckIn.InterfaceCheckIn.md), {}, {}\>
+• `Const` **CheckIn**: `Model`\<[`InterfaceCheckIn`](../interfaces/models_CheckIn.InterfaceCheckIn.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/CheckIn.ts:64](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/models/CheckIn.ts#L64)
+[src/models/CheckIn.ts:64](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/CheckIn.ts#L64)

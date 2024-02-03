@@ -12,8 +12,8 @@
 
 ### User
 
-• `Const` **User**: [`UserResolvers`](types_generatedGraphQLTypes.md#userresolvers) = `{}`
+• `Const` **User**: [`UserResolvers`](types_generatedGraphQLTypes.md#userresolvers) = `\{\}`
 
 #### Defined in
 
-[src/resolvers/User/index.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/resolvers/User/index.ts#L4)
+[src/resolvers/User/index.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/resolvers/User/index.ts#L4)
