@@ -46,7 +46,7 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     }
 
     const userIsMemberOfUserFamily = userFamily?.users.some((member) => {
-      Types.ObjectId(member).equals(user?._id);
+      return Types.ObjectId(member).equals(user?._id);
     });
 
     const userIdUserFamilyAdmin = userFamily?.admins.some((admin) => {
