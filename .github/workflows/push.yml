@@ -175,10 +175,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Generate Access Token Secret
-        run: echo "INPUT_ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+        run: |
+          secret=$(openssl rand -hex 32)
+          echo "INPUT_ACCESS_TOKEN_SECRET=$secret" >> $GITHUB_ENV
+          echo "::add-mask::$secret"
         
       - name: Generate Refresh Token Secret
-        run: echo "INPUT_REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+        run: |
+          secret=$(openssl rand -hex 32)
+          echo "INPUT_REFRESH_TOKEN_SECRET=$secret" >> $GITHUB_ENV
+          echo "::add-mask::$secret"
 
       - name: Execute remote ssh commands 
         uses: appleboy/ssh-action@v1.0.3 
@@ -198,4 +204,4 @@ jobs:
             python3 /usr/local/bin/scripts/create_env.py --access_token_secret $INPUT_ACCESS_TOKEN_SECRET --refresh_token_secret $INPUT_REFRESH_TOKEN_SECRET --recaptcha_secret_key $INPUT_RECAPTCHA_SECRET_KEY --mail_username $INPUT_MAIL_USERNAME --mail_password $INPUT_MAIL_PASSWORD --last_resort_superadmin_email $INPUT_LAST_RESORT_SUPERADMIN_EMAIL
             python3 /usr/local/bin/scripts/deploy.py --path ~/develop --branch develop
             cd ~/develop
-            npm run import:sample-data
+            python3 reset_database.py --mongo-container develop-mongodb-1 --mongo-db talawa-api --repo-dir /home/talawa-api/develop
