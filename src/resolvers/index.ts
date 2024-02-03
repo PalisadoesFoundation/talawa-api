@@ -17,6 +17,7 @@ import { Query } from "./Query";
 import { Subscription } from "./Subscription";
 import { User } from "./User";
 import { UserTag } from "./UserTag";
+import { Advertisement } from "./Advertisement";
 import { composeResolvers } from "@graphql-tools/resolvers-composition";
 import { currentUserExists } from "./middleware/currentUserExists";
 import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
@@ -35,6 +36,7 @@ import {
 const resolvers: Resolvers = {
   ActionItem,
   ActionItemCategory,
+  Advertisement,
   CheckIn,
   Comment,
   DirectChat,
@@ -87,6 +89,7 @@ const resolversComposition = {
   "Mutation.unregisterForEventByUser": [currentUserExists()],
   "Mutation.updateLanguage": [currentUserExists()],
   "Mutation.updatePost": [currentUserExists()],
+  "Mutation.createAdvertisement": [currentUserExists()],
 };
 
 export const composedResolvers: Resolvers = composeResolvers(

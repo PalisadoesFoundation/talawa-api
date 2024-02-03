@@ -1,6 +1,7 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 import type { InterfaceActionItem as InterfaceActionItemModel } from '../models/ActionItem';
 import type { InterfaceActionItemCategory as InterfaceActionItemCategoryModel } from '../models/ActionItemCategory';
+import type { InterfaceAdvertisement as InterfaceAdvertisementModel } from '../models/Advertisement';
 import type { InterfaceCheckIn as InterfaceCheckInModel } from '../models/CheckIn';
 import type { InterfaceMessageChat as InterfaceMessageChatModel } from '../models/MessageChat';
 import type { InterfaceComment as InterfaceCommentModel } from '../models/Comment';
@@ -2066,7 +2067,7 @@ export type ResolversTypes = {
   ActionItemCategory: ResolverTypeWrapper<InterfaceActionItemCategoryModel>;
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
-  Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'creator' | 'organization'> & { creator?: Maybe<ResolversTypes['User']>, organization?: Maybe<ResolversTypes['Organization']> }>;
+  Advertisement: ResolverTypeWrapper<InterfaceAdvertisementModel>;
   AdvertisementType: AdvertisementType;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
@@ -2083,7 +2084,7 @@ export type ResolversTypes = {
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
   CreateActionItemInput: CreateActionItemInput;
   CreateAdvertisementInput: CreateAdvertisementInput;
-  CreateAdvertisementPayload: ResolverTypeWrapper<Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
+  CreateAdvertisementPayload: ResolverTypeWrapper<InterfaceAdvertisementModel>;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
@@ -2170,7 +2171,7 @@ export type ResolversTypes = {
   UpdateActionItemCategoryInput: UpdateActionItemCategoryInput;
   UpdateActionItemInput: UpdateActionItemInput;
   UpdateAdvertisementInput: UpdateAdvertisementInput;
-  UpdateAdvertisementPayload: ResolverTypeWrapper<Omit<UpdateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
+  UpdateAdvertisementPayload: ResolverTypeWrapper<InterfaceAdvertisementModel>;
   UpdateEventInput: UpdateEventInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateUserInput: UpdateUserInput;
@@ -2207,7 +2208,7 @@ export type ResolversParentTypes = {
   ActionItemCategory: InterfaceActionItemCategoryModel;
   Address: Address;
   AddressInput: AddressInput;
-  Advertisement: Omit<Advertisement, 'creator' | 'organization'> & { creator?: Maybe<ResolversParentTypes['User']>, organization?: Maybe<ResolversParentTypes['Organization']> };
+  Advertisement: InterfaceAdvertisementModel;
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any']['output'];
@@ -2223,7 +2224,7 @@ export type ResolversParentTypes = {
   CountryCode: Scalars['CountryCode']['output'];
   CreateActionItemInput: CreateActionItemInput;
   CreateAdvertisementInput: CreateAdvertisementInput;
-  CreateAdvertisementPayload: Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
+  CreateAdvertisementPayload: InterfaceAdvertisementModel;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
@@ -2299,7 +2300,7 @@ export type ResolversParentTypes = {
   UpdateActionItemCategoryInput: UpdateActionItemCategoryInput;
   UpdateActionItemInput: UpdateActionItemInput;
   UpdateAdvertisementInput: UpdateAdvertisementInput;
-  UpdateAdvertisementPayload: Omit<UpdateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
+  UpdateAdvertisementPayload: InterfaceAdvertisementModel;
   UpdateEventInput: UpdateEventInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateUserInput: UpdateUserInput;

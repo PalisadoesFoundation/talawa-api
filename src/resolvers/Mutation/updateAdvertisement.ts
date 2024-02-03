@@ -130,8 +130,9 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       endDate: updatedAdvertisement.endDate,
       createdAt: updatedAdvertisement.createdAt,
       updatedAt: updatedAdvertisement.updatedAt,
+      creatorId: updatedAdvertisement.creatorId,
     };
     return {
-      advertisement: updatedAdvertisementPayload,
+      ...updatedAdvertisementPayload,
     };
   };

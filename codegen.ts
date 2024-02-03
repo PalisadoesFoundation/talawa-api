@@ -30,6 +30,14 @@ const config: CodegenConfig = {
           ActionItemCategory:
             "../models/ActionItemCategory#InterfaceActionItemCategory",
 
+          Advertisement: "../models/Advertisement#InterfaceAdvertisement",
+
+          CreateAdvertisementPayload:
+            "../models/Advertisement#InterfaceAdvertisement",
+
+          UpdateAdvertisementPayload:
+            "../models/Advertisement#InterfaceAdvertisement",
+
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
           MessageChat: "../models/MessageChat#InterfaceMessageChat",
