@@ -1,6 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { Post, Comment } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import { requestContext } from "../../libraries";
 import { POST_NOT_FOUND_ERROR } from "../../constants";
 import { cacheComments } from "../../services/CommentCache/cacheComments";
 import { cachePosts } from "../../services/PostCache/cachePosts";
@@ -25,11 +25,20 @@ export const createComment: MutationResolvers["createComment"] = async (
   });
 
   if (!postExists) {
-    throw new errors.NotFoundError(
-      requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
-      POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
+    //   POST_NOT_FOUND_ERROR.CODE,
+    //   POST_NOT_FOUND_ERROR.PARAM
+    // );
+    return {
+      comment: new Comment(),
+      userErrors: [
+        {
+          __typename: "PostNotFoundError",
+          message: requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
 
   // Creates the new comment
@@ -61,5 +70,8 @@ export const createComment: MutationResolvers["createComment"] = async (
   }
 
   // Returns the createdComment.
-  return createdComment.toObject();
+  return {
+    comment: createdComment.toObject(),
+    userErrors: [],
+  };
 };

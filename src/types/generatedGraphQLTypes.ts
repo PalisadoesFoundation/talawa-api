@@ -171,6 +171,14 @@ export type CreateAdminPayload = {
   userErrors: Array<CreateAdminError>;
 };
 
+export type CreateCommentError = PostNotFoundError;
+
+export type CreateCommentPayload = {
+  __typename?: 'CreateCommentPayload';
+  comment: Comment;
+  userErrors: Array<CreateCommentError>;
+};
+
 export type CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError;
 
 export type CreateMemberPayload = {
@@ -578,7 +586,7 @@ export type Mutation = {
   checkIn: CheckIn;
   createAdmin: CreateAdminPayload;
   createAdvertisement: Advertisement;
-  createComment?: Maybe<Comment>;
+  createComment: CreateCommentPayload;
   createDirectChat: DirectChat;
   createDonation: Donation;
   createEvent: Event;
@@ -1302,6 +1310,11 @@ export type PostInput = {
   videoUrl?: InputMaybe<Scalars['URL']['input']>;
 };
 
+export type PostNotFoundError = Error & {
+  __typename?: 'PostNotFoundError';
+  message: Scalars['String']['output'];
+};
+
 export type PostOrderByInput =
   | 'commentCount_ASC'
   | 'commentCount_DESC'
@@ -1966,12 +1979,13 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
   ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
   CreateAdminError: ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
+  CreateCommentError: ( PostNotFoundError );
   CreateMemberError: ( MemberAlreadyInOrganizationError ) | ( OrganizationNotFoundError ) | ( UserNotFoundError );
 };
 
 /** Mapping of interface types */
 export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
-  Error: ( MemberAlreadyInOrganizationError ) | ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UnauthenticatedError ) | ( UnauthorizedError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
+  Error: ( MemberAlreadyInOrganizationError ) | ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( PostNotFoundError ) | ( UnauthenticatedError ) | ( UnauthorizedError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   FieldError: ( InvalidCursor ) | ( MaximumLengthError ) | ( MaximumValueError ) | ( MinimumLengthError ) | ( MinimumValueError );
 };
 
@@ -1996,6 +2010,8 @@ export type ResolversTypes = {
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
   CreateAdminError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateAdminError']>;
   CreateAdminPayload: ResolverTypeWrapper<Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversTypes['User']>, userErrors: Array<ResolversTypes['CreateAdminError']> }>;
+  CreateCommentError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateCommentError']>;
+  CreateCommentPayload: ResolverTypeWrapper<Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment: ResolversTypes['Comment'], userErrors: Array<ResolversTypes['CreateCommentError']> }>;
   CreateMemberError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateMemberError']>;
   CreateMemberPayload: ResolverTypeWrapper<Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversTypes['Organization']>, userErrors: Array<ResolversTypes['CreateMemberError']> }>;
   CreateUserTagInput: CreateUserTagInput;
@@ -2068,6 +2084,7 @@ export type ResolversTypes = {
   Post: ResolverTypeWrapper<InterfacePostModel>;
   PostConnection: ResolverTypeWrapper<Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['Post']>> }>;
   PostInput: PostInput;
+  PostNotFoundError: ResolverTypeWrapper<PostNotFoundError>;
   PostOrderByInput: PostOrderByInput;
   PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
@@ -2138,6 +2155,8 @@ export type ResolversParentTypes = {
   CountryCode: Scalars['CountryCode']['output'];
   CreateAdminError: ResolversUnionTypes<ResolversParentTypes>['CreateAdminError'];
   CreateAdminPayload: Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversParentTypes['User']>, userErrors: Array<ResolversParentTypes['CreateAdminError']> };
+  CreateCommentError: ResolversUnionTypes<ResolversParentTypes>['CreateCommentError'];
+  CreateCommentPayload: Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment: ResolversParentTypes['Comment'], userErrors: Array<ResolversParentTypes['CreateCommentError']> };
   CreateMemberError: ResolversUnionTypes<ResolversParentTypes>['CreateMemberError'];
   CreateMemberPayload: Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversParentTypes['Organization']>, userErrors: Array<ResolversParentTypes['CreateMemberError']> };
   CreateUserTagInput: CreateUserTagInput;
@@ -2203,6 +2222,7 @@ export type ResolversParentTypes = {
   Post: InterfacePostModel;
   PostConnection: Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['Post']>> };
   PostInput: PostInput;
+  PostNotFoundError: PostNotFoundError;
   PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
   Query: {};
@@ -2362,6 +2382,16 @@ export type CreateAdminPayloadResolvers<ContextType = any, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type CreateCommentErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateCommentError'] = ResolversParentTypes['CreateCommentError']> = {
+  __resolveType: TypeResolveFn<'PostNotFoundError', ParentType, ContextType>;
+};
+
+export type CreateCommentPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateCommentPayload'] = ResolversParentTypes['CreateCommentPayload']> = {
+  comment?: Resolver<ResolversTypes['Comment'], ParentType, ContextType>;
+  userErrors?: Resolver<Array<ResolversTypes['CreateCommentError']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type CreateMemberErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateMemberError'] = ResolversParentTypes['CreateMemberError']> = {
   __resolveType: TypeResolveFn<'MemberAlreadyInOrganizationError' | 'OrganizationNotFoundError' | 'UserNotFoundError', ParentType, ContextType>;
 };
@@ -2425,7 +2455,7 @@ export interface EmailAddressScalarConfig extends GraphQLScalarTypeConfig<Resolv
 }
 
 export type ErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Error'] = ResolversParentTypes['Error']> = {
-  __resolveType: TypeResolveFn<'MemberAlreadyInOrganizationError' | 'OrganizationMemberNotFoundError' | 'OrganizationNotFoundError' | 'UnauthenticatedError' | 'UnauthorizedError' | 'UserNotAuthorizedError' | 'UserNotFoundError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'MemberAlreadyInOrganizationError' | 'OrganizationMemberNotFoundError' | 'OrganizationNotFoundError' | 'PostNotFoundError' | 'UnauthenticatedError' | 'UnauthorizedError' | 'UserNotAuthorizedError' | 'UserNotFoundError', ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 };
 
@@ -2627,7 +2657,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
   createAdmin?: Resolver<ResolversTypes['CreateAdminPayload'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'endDate' | 'link' | 'name' | 'orgId' | 'startDate' | 'type'>>;
-  createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
+  createComment?: Resolver<ResolversTypes['CreateCommentPayload'], ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
   createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, Partial<MutationCreateEventArgs>>;
@@ -2810,6 +2840,11 @@ export type PostConnectionResolvers<ContextType = any, ParentType extends Resolv
   aggregate?: Resolver<ResolversTypes['AggregatePost'], ParentType, ContextType>;
   edges?: Resolver<Array<Maybe<ResolversTypes['Post']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type PostNotFoundErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostNotFoundError'] = ResolversParentTypes['PostNotFoundError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3016,6 +3051,8 @@ export type Resolvers<ContextType = any> = {
   CountryCode?: GraphQLScalarType;
   CreateAdminError?: CreateAdminErrorResolvers<ContextType>;
   CreateAdminPayload?: CreateAdminPayloadResolvers<ContextType>;
+  CreateCommentError?: CreateCommentErrorResolvers<ContextType>;
+  CreateCommentPayload?: CreateCommentPayloadResolvers<ContextType>;
   CreateMemberError?: CreateMemberErrorResolvers<ContextType>;
   CreateMemberPayload?: CreateMemberPayloadResolvers<ContextType>;
   Date?: GraphQLScalarType;
@@ -3061,6 +3098,7 @@ export type Resolvers<ContextType = any> = {
   PositiveInt?: GraphQLScalarType;
   Post?: PostResolvers<ContextType>;
   PostConnection?: PostConnectionResolvers<ContextType>;
+  PostNotFoundError?: PostNotFoundErrorResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Time?: GraphQLScalarType;

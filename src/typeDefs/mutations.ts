@@ -56,7 +56,7 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
-    createComment(postId: ID!, data: CommentInput!): Comment @auth
+    createComment(postId: ID!, data: CommentInput!): CreateCommentPayload! @auth
 
     createDirectChat(data: createChatInput!): DirectChat! @auth
 

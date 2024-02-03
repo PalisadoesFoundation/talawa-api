@@ -117,6 +117,13 @@ type CreateAdminPayload {
   userErrors: [CreateAdminError!]!
 }
 
+union CreateCommentError = PostNotFoundError
+
+type CreateCommentPayload {
+  comment: Comment!
+  userErrors: [CreateCommentError!]!
+}
+
 union CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError
 
 type CreateMemberPayload {
@@ -513,7 +520,7 @@ type Mutation {
   checkIn(data: CheckInInput!): CheckIn!
   createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
-  createComment(data: CommentInput!, postId: ID!): Comment
+  createComment(data: CommentInput!, postId: ID!): CreateCommentPayload!
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput): Event!
@@ -777,6 +784,10 @@ input PostInput {
   text: String!
   title: String
   videoUrl: URL
+}
+
+type PostNotFoundError implements Error {
+  message: String!
 }
 
 enum PostOrderByInput {

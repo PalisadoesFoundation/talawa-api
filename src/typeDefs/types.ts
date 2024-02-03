@@ -65,6 +65,11 @@ export const types = gql`
     userErrors: [CreateAdminError!]!
   }
 
+  type CreateCommentPayload {
+    comment: Comment!
+    userErrors: [CreateCommentError!]!
+  }
+
   type DeletePayload {
     success: Boolean!
   }

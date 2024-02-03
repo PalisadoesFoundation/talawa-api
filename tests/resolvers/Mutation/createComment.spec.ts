@@ -2,6 +2,7 @@ import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { Post } from "../../../src/models";
+import type { InterfaceComment } from "../../../src/models";
 import type { MutationCreateCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -33,22 +34,25 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> createComment", () => {
   it(`throws NotFoundError if no post exists with _id === args.postId`, async () => {
-    try {
-      const args: MutationCreateCommentArgs = {
-        data: {
-          text: "",
-        },
-        postId: Types.ObjectId().toString(),
-      };
+    const args: MutationCreateCommentArgs = {
+      data: {
+        text: "",
+      },
+      postId: Types.ObjectId().toString(),
+    };
 
-      const context = {
-        userId: testUser?._id,
-      };
+    const context = {
+      userId: testUser?._id,
+    };
 
-      await createCommentResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
-    }
+    const result = await createCommentResolver?.({}, args, context);
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "PostNotFoundError",
+      message: POST_NOT_FOUND_ERROR.MESSAGE,
+    });
+    // } catch (error: any) {
+    //   expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
+    // }
   });
 
   it(`creates the comment and returns it`, async () => {
@@ -71,7 +75,8 @@ describe("resolvers -> Mutation -> createComment", () => {
 
     expect(createCommentPayload).toEqual(
       expect.objectContaining({
-        text: "text",
+        comment: expect.any(Object),
+        userErrors: expect.any(Array),
       })
     );
 
@@ -82,8 +87,9 @@ describe("resolvers -> Mutation -> createComment", () => {
       .lean();
 
     expect(testUpdatedPost?.commentCount).toEqual(1);
-    expect(createCommentPayload?.postId.toString()).toEqual(
-      testPost?._id.toString()
-    );
+    expect(
+      (createCommentPayload?.comment as InterfaceComment).postId.toString()
+    ).toEqual(testPost?._id.toString());
+    expect(createCommentPayload?.userErrors).toEqual([]);
   });
 });
