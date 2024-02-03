@@ -194,6 +194,13 @@ export type ConnectionPageInfo = {
   startCursor?: Maybe<Scalars['String']['output']>;
 };
 
+export type CreateActionItemInput = {
+  assigneeId: Scalars['ID']['input'];
+  dueDate?: InputMaybe<Scalars['Date']['input']>;
+  eventId?: InputMaybe<Scalars['ID']['input']>;
+  preCompletionNotes?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type CreateAdminError = OrganizationMemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedError | UserNotFoundError;
 
 export type CreateAdminPayload = {
@@ -218,12 +225,6 @@ export type CreateMemberPayload = {
   __typename?: 'CreateMemberPayload';
   organization?: Maybe<Organization>;
   userErrors: Array<CreateMemberError>;
-
-export type CreateActionItemInput = {
-  assigneeId: Scalars['ID']['input'];
-  dueDate?: InputMaybe<Scalars['Date']['input']>;
-  eventId?: InputMaybe<Scalars['ID']['input']>;
-  preCompletionNotes?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateUserTagInput = {
@@ -624,10 +625,9 @@ export type Mutation = {
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
   checkIn: CheckIn;
-  createAdmin: CreateAdminPayload;
   createActionItem: ActionItem;
   createActionItemCategory: ActionItemCategory;
-  createAdmin: User;
+  createAdmin: CreateAdminPayload;
   createAdvertisement: Advertisement;
   createComment: CreateCommentPayload;
   createDirectChat: CreateDirectChatPayload;
@@ -2138,6 +2138,7 @@ export type ResolversTypes = {
   ConnectionError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['ConnectionError']>;
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
+  CreateActionItemInput: CreateActionItemInput;
   CreateAdminError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateAdminError']>;
   CreateAdminPayload: ResolverTypeWrapper<Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversTypes['User']>, userErrors: Array<ResolversTypes['CreateAdminError']> }>;
   CreateCommentError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateCommentError']>;
@@ -2145,7 +2146,6 @@ export type ResolversTypes = {
   CreateDirectChatError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateDirectChatError']>;
   CreateMemberError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateMemberError']>;
   CreateMemberPayload: ResolverTypeWrapper<Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversTypes['Organization']>, userErrors: Array<ResolversTypes['CreateMemberError']> }>;
-  CreateActionItemInput: CreateActionItemInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
@@ -2290,6 +2290,7 @@ export type ResolversParentTypes = {
   ConnectionError: ResolversUnionTypes<ResolversParentTypes>['ConnectionError'];
   ConnectionPageInfo: ConnectionPageInfo;
   CountryCode: Scalars['CountryCode']['output'];
+  CreateActionItemInput: CreateActionItemInput;
   CreateAdminError: ResolversUnionTypes<ResolversParentTypes>['CreateAdminError'];
   CreateAdminPayload: Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversParentTypes['User']>, userErrors: Array<ResolversParentTypes['CreateAdminError']> };
   CreateCommentError: ResolversUnionTypes<ResolversParentTypes>['CreateCommentError'];
@@ -2297,7 +2298,6 @@ export type ResolversParentTypes = {
   CreateDirectChatError: ResolversUnionTypes<ResolversParentTypes>['CreateDirectChatError'];
   CreateMemberError: ResolversUnionTypes<ResolversParentTypes>['CreateMemberError'];
   CreateMemberPayload: Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversParentTypes['Organization']>, userErrors: Array<ResolversParentTypes['CreateMemberError']> };
-  CreateActionItemInput: CreateActionItemInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
@@ -2831,10 +2831,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
-  createAdmin?: Resolver<ResolversTypes['CreateAdminPayload'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationCreateActionItemArgs, 'actionItemCategoryId' | 'data'>>;
   createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'name' | 'organizationId'>>;
-  createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
+  createAdmin?: Resolver<ResolversTypes['CreateAdminPayload'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'endDate' | 'link' | 'name' | 'orgId' | 'startDate' | 'type'>>;
   createComment?: Resolver<ResolversTypes['CreateCommentPayload'], ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['createDirectChatPayload'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;

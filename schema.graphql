@@ -137,6 +137,13 @@ type ConnectionPageInfo {
 
 scalar CountryCode
 
+input CreateActionItemInput {
+  assigneeId: ID!
+  dueDate: Date
+  eventId: ID
+  preCompletionNotes: String
+}
+
 union CreateAdminError = OrganizationMemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedError | UserNotFoundError
 
 type CreateAdminPayload {
@@ -158,12 +165,6 @@ union CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoun
 type CreateMemberPayload {
   organization: Organization
   userErrors: [CreateMemberError!]!
-
-input CreateActionItemInput {
-  assigneeId: ID!
-  dueDate: Date
-  eventId: ID
-  preCompletionNotes: String
 }
 
 input CreateUserTagInput {
@@ -554,10 +555,9 @@ type Mutation {
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
-  createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
-  createAdmin(data: UserAndOrganizationInput!): User!
+  createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
   createComment(data: CommentInput!, postId: ID!): CreateCommentPayload!
   createDirectChat(data: createChatInput!): createDirectChatPayload!
