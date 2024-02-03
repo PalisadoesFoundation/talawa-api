@@ -185,6 +185,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         endDate: updatedTestAdvertisement.endDate,
         createdAt: updatedTestAdvertisement.createdAt,
         updatedAt: updatedTestAdvertisement.updatedAt,
+        creatorId: updatedTestAdvertisement.creatorId,
       };
     }
     expect(advertisement).toEqual(expectedAdvertisement);
@@ -233,6 +234,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         endDate: updatedTestAdvertisement.endDate,
         createdAt: updatedTestAdvertisement.createdAt,
         updatedAt: updatedTestAdvertisement.updatedAt,
+        creatorId: updatedTestAdvertisement.creatorId,
       };
     }
     expect(advertisement).toEqual(expectedAdvertisement);
