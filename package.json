@@ -88,6 +88,7 @@
     "redis": "^4.6.12",
     "sharp": "^0.33.2",
     "shortid": "^2.2.16",
+    "ts-node": "^10.9.2",
     "typedoc-plugin-markdown": "^3.17.1",
     "uuid": "^9.0.0",
     "validator": "^13.7.0",
