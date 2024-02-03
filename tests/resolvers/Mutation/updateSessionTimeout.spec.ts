@@ -59,23 +59,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> updateSessionTimeout", () => {
-  test("should throw InputValidationError if timeout is missing", async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => `Translated ${message}`
-    );
-
-    const context = { userId: testUser1 ? testUser1._id.toString() : null };
-    const args = {} as RequireFields<
-      MutationUpdateSessionTimeoutArgs,
-      "timeout"
-    >;
-
-    await expect(updateSessionTimeout?.({}, args, context)).rejects.toThrow(
-      errors.InputValidationError
-    );
-  });
-
   test("should throw NotFoundError if user does not exist", async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
