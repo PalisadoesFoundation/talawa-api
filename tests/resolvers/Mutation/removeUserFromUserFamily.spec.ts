@@ -44,30 +44,6 @@ beforeAll(async () => {
     admins: [testUsers[2]?._id, testUsers[1]?._id],
     creator: testUsers[2]?._id,
   });
-
-  await User.updateOne(
-    {
-      _id: testUsers[2]?._id,
-    },
-    {
-      $push: {
-        joinedUserFamily: testUserFamily._id,
-        adminForUserFamily: testUserFamily._id,
-        createdUserFamily: testUserFamily._id,
-      },
-    }
-  );
-
-  await User.updateMany(
-    {
-      _id: { $in: [testUsers[0]?._id, testUsers[1]?._id, testUsers[4]?._id] },
-    },
-    {
-      $push: {
-        joinedUserFamily: testUserFamily._id,
-      },
-    }
-  );
 });
 
 afterAll(async () => {
@@ -92,7 +68,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
 
       const { removeUserFromUserFamily: removeUserFromUserFamilyResolver } =
         await import(
-          "../../../src/resolvers/Mutation/adminRemoveMemberFromUserFamily"
+          "../../../src/resolvers/Mutation/removeUserFromUserFamily"
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
@@ -121,7 +97,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
 
       const { removeUserFromUserFamily: removeUserFromUserFamilyResolver } =
         await import(
-          "../../../src/resolvers/Mutation/adminRemoveMemberFromUserFamily"
+          "../../../src/resolvers/Mutation/removeUserFromUserFamily"
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
@@ -149,7 +125,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
 
       const { removeUserFromUserFamily: removeUserFromUserFamilyResolver } =
         await import(
-          "../../../src/resolvers/Mutation/adminRemoveMemberFromUserFamily"
+          "../../../src/resolvers/Mutation/removeUserFromUserFamily"
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
@@ -176,7 +152,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
 
       const { removeUserFromUserFamily: removeUserFromUserFamilyResolver } =
         await import(
-          "../../../src/resolvers/Mutation/adminRemoveMemberFromUserFamily"
+          "../../../src/resolvers/Mutation/removeUserFromUserFamily"
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
@@ -205,7 +181,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
 
       const { removeUserFromUserFamily: removeUserFromUserFamilyResolver } =
         await import(
-          "../../../src/resolvers/Mutation/adminRemoveMemberFromUserFamily"
+          "../../../src/resolvers/Mutation/removeUserFromUserFamily"
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
@@ -234,7 +210,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
 
       const { removeUserFromUserFamily: removeUserFromUserFamilyResolver } =
         await import(
-          "../../../src/resolvers/Mutation/adminRemoveMemberFromUserFamily"
+          "../../../src/resolvers/Mutation/removeUserFromUserFamily"
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
@@ -263,7 +239,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
 
       const { removeUserFromUserFamily: removeUserFromUserFamilyResolver } =
         await import(
-          "../../../src/resolvers/Mutation/adminRemoveMemberFromUserFamily"
+          "../../../src/resolvers/Mutation/removeUserFromUserFamily"
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
@@ -292,7 +268,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
 
       const { removeUserFromUserFamily: removeUserFromUserFamilyResolver } =
         await import(
-          "../../../src/resolvers/Mutation/adminRemoveMemberFromUserFamily"
+          "../../../src/resolvers/Mutation/removeUserFromUserFamily"
         );
 
       const updatedUserFamily = await removeUserFromUserFamilyResolver?.(
@@ -301,12 +277,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
         context
       );
 
-      const removedUser = await User.findOne({
-        _id: testUsers[4]?.id,
-      });
-
       expect(updatedUserFamily?.users).not.toContain(testUsers[4]?._id);
-      expect(removedUser?.joinedUserFamily).not.toContain(testUserFamily?._id);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(

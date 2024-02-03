@@ -27,10 +27,6 @@ beforeAll(async () => {
 
   testUser = resultsArray;
   testUser2 = secondUser;
-  // const { requestContext } = await import("../../../src/libraries");
-  // vi.spyOn(requestContext, "translate").mockImplementation(
-  //   (message) => message
-  // );
 });
 
 afterAll(async () => {
@@ -159,45 +155,6 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
       );
       expect(error.code).toEqual(USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE);
     }
-  });
-
-  it(`Updated the User to contain user Family`, async () => {
-    const args: MutationCreateUserFamilyArgs = {
-      data: {
-        title: "title",
-        userIds: [testUser?._id, testUser2?._id],
-      },
-    };
-
-    const context = {
-      userId: testUser?.id,
-    };
-
-    const { createUserFamily: createUserFamilyResolver } = await import(
-      "../../../src/resolvers/Mutation/createUserFamily"
-    );
-
-    const createUserFamilyPayload = await createUserFamilyResolver?.(
-      {},
-      args,
-      context
-    );
-
-    const updatedUsers = await User.find({
-      _id: { $in: [testUser?._id, testUser2?._id] },
-    });
-
-    updatedUsers.forEach((user) => {
-      expect(user.joinedUserFamily).toContainEqual(
-        createUserFamilyPayload?._id
-      );
-    });
-    expect(updatedUsers[0].createdUserFamily).toContainEqual(
-      createUserFamilyPayload?._id
-    );
-    expect(updatedUsers[0].adminForUserFamily).toContainEqual(
-      createUserFamilyPayload?._id
-    );
   });
 
   it(`creates the user Family and returns it`, async () => {

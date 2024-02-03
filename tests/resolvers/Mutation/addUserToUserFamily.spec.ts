@@ -14,7 +14,6 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type { TestUserType } from "../../helpers/userAndUserFamily";
 import type { TestUserFamilyType } from "../../helpers/userAndUserFamily";
 import { createTestUserAndUserFamily } from "../../helpers/userAndUserFamily";
-import { User } from "../../../src/models";
 
 let testUser: TestUserType;
 let testUserFamily: TestUserFamilyType;
@@ -53,7 +52,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
       };
 
       const { addUserToUserFamily } = await import(
-        "../../../src/resolvers/Mutation/adminAddMemberToUserFamily"
+        "../../../src/resolvers/Mutation/addUserToUserFamily"
       );
       await addUserToUserFamily?.({}, args, context);
     } catch (error: any) {
@@ -78,7 +77,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
       };
 
       const { addUserToUserFamily } = await import(
-        "../../../src/resolvers/Mutation/adminAddMemberToUserFamily"
+        "../../../src/resolvers/Mutation/addUserToUserFamily"
       );
       await addUserToUserFamily?.({}, args, context);
     } catch (error: any) {
@@ -104,7 +103,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
       };
 
       const { addUserToUserFamily } = await import(
-        "../../../src/resolvers/Mutation/adminAddMemberToUserFamily"
+        "../../../src/resolvers/Mutation/addUserToUserFamily"
       );
       await addUserToUserFamily?.({}, args, context);
     } catch (error: any) {
@@ -125,17 +124,6 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
       }
     );
 
-    await User.updateOne(
-      {
-        _id: testUser?._id,
-      },
-      {
-        $addToSet: {
-          joinedUserFamily: testUserFamily?._id,
-        },
-      }
-    );
-
     const args: MutationAddUserToUserFamilyArgs = {
       familyId: testUserFamily?.id,
       userId: testUser?.id,
@@ -146,7 +134,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
     };
 
     const { addUserToUserFamily } = await import(
-      "../../../src/resolvers/Mutation/adminAddMemberToUserFamily"
+      "../../../src/resolvers/Mutation/addUserToUserFamily"
     );
     const addUserToUserFamilyPayload = await addUserToUserFamily?.(
       {},

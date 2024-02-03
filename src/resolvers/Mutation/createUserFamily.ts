@@ -77,29 +77,5 @@ export const createUserFamily: MutationResolvers["createUserFamily"] = async (
     creator: context.userId,
   });
 
-  await User.findOneAndUpdate(
-    {
-      _id: context.userId,
-    },
-    {
-      $push: {
-        adminForUserFamily: createdUserFamily,
-        joinedUserFamily: createdUserFamily,
-        createdUserFamily: createdUserFamily,
-      },
-    }
-  );
-
-  await User.updateMany(
-    {
-      _id: { $in: args.data.userIds },
-    },
-    {
-      $push: {
-        joinedUserFamily: createdUserFamily,
-      },
-    }
-  );
-
   return createdUserFamily.toObject();
 };

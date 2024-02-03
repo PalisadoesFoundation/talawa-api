@@ -25,7 +25,6 @@ import {
   type TestUserType,
 } from "../../helpers/userAndUserFamily";
 import type { TestUserFamilyType } from "../../helpers/userAndUserFamily";
-import { User } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -43,30 +42,6 @@ beforeAll(async () => {
     creator: tempUser1,
     users: [tempUser1, tempUser2],
   });
-
-  await User.updateOne(
-    {
-      _id: testUsers[0]?._id,
-    },
-    {
-      $set: {
-        createdUserFamily: [testUserFamily._id],
-        adminForUserFamily: [testUserFamily._id],
-        joinedUserFamily: [testUserFamily._id],
-      },
-    }
-  );
-
-  await User.updateOne(
-    {
-      _id: testUsers[1]?._id,
-    },
-    {
-      $set: {
-        joinedUserFamily: [testUserFamily._id],
-      },
-    }
-  );
 });
 
 afterAll(async () => {

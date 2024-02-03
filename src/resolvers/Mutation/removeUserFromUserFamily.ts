@@ -110,20 +110,6 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       );
     }
 
-    //Removes familyId from user joined families.
-    await User.findOneAndUpdate(
-      {
-        _id: args.userId,
-      },
-      {
-        $set: {
-          joinedUserFamily: currentUser?.joinedUserFamily.filter(
-            (userFamily) => userFamily.toString() !== args.familyId.toString()
-          ),
-        },
-      }
-    );
-
     //Removes args.userId from users list of user family ans return the updated family.
     return await UserFamily.findOneAndUpdate(
       {

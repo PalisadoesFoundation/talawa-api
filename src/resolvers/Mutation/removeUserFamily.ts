@@ -50,24 +50,6 @@ export const removeUserFamily: MutationResolvers["removeUserFamily"] = async (
     );
   }
 
-  // Update user documents to remove familyId from relevant fields
-  await User.updateMany(
-    {
-      $or: [
-        { createdOrganizations: args.familyId },
-        { joinedOrganizations: args.familyId },
-        { adminForUserFamily: args.familyId },
-      ],
-    },
-    {
-      $pull: {
-        createdOrganizations: args.familyId,
-        joinedOrganizations: args.familyId,
-        adminForUserFamily: args.familyId,
-      },
-    }
-  );
-
   // Deletes the UserFamily.
   await UserFamily.deleteOne({
     _id: userFamily._id,
