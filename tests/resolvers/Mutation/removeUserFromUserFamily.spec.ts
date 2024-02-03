@@ -15,11 +15,11 @@ import {
   USER_REMOVING_SELF,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import {
-  createTestUserFunc,
-  type TestUserType,
+import { createTestUserFunc } from "../../helpers/userAndUserFamily";
+import type {
+  TestUserFamilyType,
+  TestUserType,
 } from "../../helpers/userAndUserFamily";
-import type { TestUserFamilyType } from "../../helpers/userAndUserFamily";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];

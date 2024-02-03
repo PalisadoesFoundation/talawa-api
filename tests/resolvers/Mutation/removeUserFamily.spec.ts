@@ -20,11 +20,11 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import {
-  createTestUserFunc,
-  type TestUserType,
+import { createTestUserFunc } from "../../helpers/userAndUserFamily";
+import type {
+  TestUserFamilyType,
+  TestUserType,
 } from "../../helpers/userAndUserFamily";
-import type { TestUserFamilyType } from "../../helpers/userAndUserFamily";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];

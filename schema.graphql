@@ -350,14 +350,6 @@ type ExtendSession {
   refreshToken: String!
 }
 
-type UserFamily {
-  _id: ID!
-  title: String!
-  users: [User!]!
-  admins: [User!]!
-  creator: User!
-}
-
 type Feedback {
   _id: ID!
   createdAt: DateTime!
@@ -546,13 +538,13 @@ type Mutation {
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput): Event!
   createGroupChat(data: createGroupChatInput!): GroupChat!
-  createUserFamily(data: createUserFamilyInput): UserFamily!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
   createOrganization(data: OrganizationInput, file: String): Organization!
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
   createPost(data: PostInput!, file: String): Post
   createSampleOrganization: Boolean!
+  createUserFamily(data: createUserFamilyInput!): UserFamily!
   createUserTag(input: CreateUserTagInput!): UserTag
   deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
@@ -576,7 +568,6 @@ type Mutation {
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
-  removeUserFamily(familyId: ID!): UserFamily!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -585,6 +576,7 @@ type Mutation {
   removePost(id: ID!): Post
   removeSampleOrganization: Boolean!
   removeUserCustomData(organizationId: ID!): UserCustomData!
+  removeUserFamily(familyId: ID!): UserFamily!
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
   removeUserFromUserFamily(familyId: ID!, userId: ID!): UserFamily!
   removeUserImage: User!
@@ -868,7 +860,6 @@ type Query {
   event(id: ID!): Event
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
-  userFamily(id: ID!): [UserFamily]!
   getAdvertisements: [Advertisement]
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
@@ -1037,13 +1028,11 @@ type User {
   address: Address
   adminApproved: Boolean
   adminFor: [Organization]
-  adminForUserFamily: [UserFamily]
   appLanguageCode: String!
   birthDate: Date
   createdAt: DateTime!
   createdEvents: [Event]
   createdOrganizations: [Organization]
-  createdUserFamily: [UserFamily]
   educationGrade: EducationGrade
   email: EmailAddress!
   employmentStatus: EmploymentStatus
@@ -1052,7 +1041,6 @@ type User {
   gender: Gender
   image: String
   joinedOrganizations: [Organization]
-  joinedUserFamily: [UserFamily]
   lastName: String!
   maritalStatus: MaritalStatus
   membershipRequests: [MembershipRequest]
@@ -1087,6 +1075,14 @@ type UserCustomData {
 type UserEdge {
   cursor: String!
   node: User!
+}
+
+type UserFamily {
+  _id: ID!
+  admins: [User!]!
+  creator: User!
+  title: String
+  users: [User!]!
 }
 
 input UserInput {
