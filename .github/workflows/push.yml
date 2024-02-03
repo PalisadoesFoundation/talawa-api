@@ -171,7 +171,7 @@ jobs:
 # You can find the deployment instructions in the scripts/cloud-api-demo/README.md file
   Deploy-Workflow:
     name: Deploying Application to Cloud VPS
-    needs: Push-Workflow
+    # needs: Push-Workflow
     runs-on: ubuntu-latest
     steps:
       - name: Generate Access Token Secret
