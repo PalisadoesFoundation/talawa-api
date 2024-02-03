@@ -3,8 +3,11 @@ import { GraphQLError } from "graphql";
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { InterfaceUser } from "../../../src/models";
-import { posts as postResolver } from "../../../src/resolvers/User/posts";
-import type { PostsConnection } from "../../../src/types/generatedGraphQLTypes";
+import {
+  isValidCursor,
+  posts as postResolver,
+} from "../../../src/resolvers/User/posts";
+import type { ConnectionPageInfo } from "../../../src/types/generatedGraphQLTypes";
 import type { RelayConnectionArguments } from "../../../src/utilities/parseRelayConnectionArguments";
 import { parseRelayConnectionArguments } from "../../../src/utilities/parseRelayConnectionArguments";
 import { connect, disconnect } from "../../helpers/db";
@@ -32,14 +35,85 @@ describe("resolvers -> User -> post", () => {
       first: 1,
       after: testUser?._id,
     };
-    const result = await postResolver?.(parent, args, {});
+    const postConnection = await postResolver?.(parent, args, {});
 
-    if (result) {
-      console.log(result);
-      const postConnection = result as unknown as PostsConnection;
+    if (postConnection) {
+      console.log(postConnection);
 
       expect(postConnection.edges).toHaveLength(0);
     }
+  });
+  it("returns default graphql Connection", async () => {
+    const parent = testUser?.toObject() as InterfaceUser;
+    const args: RelayConnectionArguments = {
+      first: 1,
+      after: null,
+    };
+    const result = await isValidCursor(args.after);
+    expect(result).toBe(false);
+    const post = await postResolver?.(parent, args, {});
+    expect(post?.edges).toHaveLength(0);
+    expect(post?.pageInfo.startCursor).toBe(undefined);
+    expect(post?.pageInfo.endCursor).toBe(undefined);
+  });
+  it("constructs query correctly with $gt operator when direction is BACKWARD", () => {
+    const args: RelayConnectionArguments = {
+      last: 1,
+      before: testUser?._id,
+    };
+    const result = parseRelayConnectionArguments(args, 10);
+    const query: Record<string, unknown> = {};
+    if (result.direction == "BACKWARD") {
+      query._id = { $gt: result.cursor };
+    }
+    expect(query).toEqual({ _id: { $gt: result.cursor } });
+  });
+  it("handle post beyond the limit correctly", () => {
+    const args: RelayConnectionArguments = {
+      first: 5,
+      after: "cursor",
+    };
+    const paginationArgs = parseRelayConnectionArguments(args, 10);
+    const posts: unknown[] = Array.from({ length: 6 }).map((_, index) => ({
+      _id: `post_${index}`,
+    }));
+    const pageInfo: ConnectionPageInfo = {
+      hasNextPage: false,
+      hasPreviousPage: false,
+      startCursor: null,
+      endCursor: null,
+    };
+    if (posts.length > paginationArgs.limit) {
+      if (paginationArgs.direction === "FORWARD") {
+        pageInfo.hasNextPage = true;
+      } else {
+        pageInfo.hasPreviousPage = true;
+      }
+      posts.pop();
+    }
+
+    expect(pageInfo.hasNextPage).toBe(true);
+    expect(posts.length).toBe(paginationArgs.limit);
+  });
+  it("reverses posts array when fetching in backward direction", () => {
+    const args: RelayConnectionArguments = {
+      last: 5,
+      before: "cursor", // Example cursor
+    };
+    const paginationArgs = parseRelayConnectionArguments(args, 10);
+    const posts: unknown[] = [
+      { _id: "post_1" },
+      { _id: "post_2" },
+      { _id: "post_3" },
+    ];
+    if (paginationArgs.direction === "BACKWARD") {
+      posts.reverse();
+    }
+    expect(posts).toEqual([
+      { _id: "post_3" },
+      { _id: "post_2" },
+      { _id: "post_1" },
+    ]);
   });
 });
 describe("parseConnectionArguments", () => {

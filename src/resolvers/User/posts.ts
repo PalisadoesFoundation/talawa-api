@@ -11,7 +11,12 @@ import { parseRelayConnectionArguments } from "../../utilities/parseRelayConnect
  * @param cursor - The cursor to check.
  * @returns A Promise that resolves to true if the cursor corresponds to a valid database object, otherwise false.
  */
-const isValidCursor = async (cursor: string | null): Promise<boolean> => {
+export const isValidCursor = async (
+  cursor: string | null | undefined
+): Promise<boolean> => {
+  if (cursor == null) {
+    return false;
+  }
   const result = await Post.findById(cursor);
   return result ? true : false;
 };
