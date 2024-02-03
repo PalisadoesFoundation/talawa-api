@@ -7,6 +7,18 @@ export const queries = gql`
   type Query {
     adminPlugin(orgId: ID!): [Plugin]
 
+    actionItem(id: ID!): ActionItem
+
+    actionItemsByEvent(eventId: ID!): [ActionItem]
+
+    actionItemsByOrganization(organizationId: ID!): [ActionItem]
+
+    actionItemCategory(id: ID!): ActionItemCategory
+
+    actionItemCategoriesByOrganization(
+      organizationId: ID!
+    ): [ActionItemCategory]
+
     checkAuth: User! @auth
 
     community: Community! @auth

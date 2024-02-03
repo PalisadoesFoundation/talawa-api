@@ -17,7 +17,7 @@
 
 #### Defined in
 
-[src/libraries/logger.ts:42](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/libraries/logger.ts#L42)
+[src/libraries/logger.ts:48](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/libraries/logger.ts#L48)
 
 ___
 
@@ -29,8 +29,8 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `write` | (`message`: ``null`` \| `string`) => `void` |
+| `write` | (`message`: ``null`` \| `string`) =\> `void` |
 
 #### Defined in
 
-[src/libraries/logger.ts:55](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/libraries/logger.ts#L55)
+[src/libraries/logger.ts:61](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/libraries/logger.ts#L61)
