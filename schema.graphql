@@ -120,9 +120,11 @@ type CreateAdminPayload {
 union CreateCommentError = PostNotFoundError
 
 type CreateCommentPayload {
-  comment: Comment!
+  comment: Comment
   userErrors: [CreateCommentError!]!
 }
+
+union CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError
 
 union CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError
 
@@ -521,7 +523,7 @@ type Mutation {
   createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
   createComment(data: CommentInput!, postId: ID!): CreateCommentPayload!
-  createDirectChat(data: createChatInput!): DirectChat!
+  createDirectChat(data: createChatInput!): createDirectChatPayload!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput): Event!
   createGroupChat(data: createGroupChatInput!): GroupChat!
@@ -1183,6 +1185,11 @@ type UsersConnectionResult {
 input createChatInput {
   organizationId: ID!
   userIds: [ID!]!
+}
+
+type createDirectChatPayload {
+  directChat: DirectChat
+  userErrors: [CreateDirectChatError!]!
 }
 
 input createGroupChatInput {

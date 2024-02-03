@@ -66,8 +66,13 @@ export const types = gql`
   }
 
   type CreateCommentPayload {
-    comment: Comment!
+    comment: Comment
     userErrors: [CreateCommentError!]!
+  }
+
+  type createDirectChatPayload {
+    directChat: DirectChat
+    userErrors: [CreateDirectChatError!]!
   }
 
   type DeletePayload {

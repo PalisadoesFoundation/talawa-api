@@ -1,12 +1,14 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization, DirectChat } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import type { InterfaceOrganization } from "../../models/";
+import { requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+
 /**
  * This function enables to create direct chat.
  * @param _parent - parent of current request
@@ -35,16 +37,27 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    await cacheOrganizations([organization as InterfaceOrganization]);
   }
 
   // Checks whether organization with _id === args.data.organizationId exists.
   if (!organization) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+    //   ORGANIZATION_NOT_FOUND_ERROR.CODE,
+    //   ORGANIZATION_NOT_FOUND_ERROR.PARAM
+    // );
+    return {
+      directChat: new DirectChat(),
+      userErrors: [
+        {
+          __typename: "OrganizationNotFoundError",
+          message: requestContext.translate(
+            ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+          ),
+        },
+      ],
+    };
   }
 
   // Variable to store list of users to be members of directChat.
@@ -58,11 +71,20 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
 
     // Checks whether user with _id === userId exists.
     if (userExists === false) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
-      );
+      // throw new errors.NotFoundError(
+      //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      //   USER_NOT_FOUND_ERROR.CODE,
+      //   USER_NOT_FOUND_ERROR.PARAM
+      // );
+      return {
+        directChat: new DirectChat(),
+        userErrors: [
+          {
+            __typename: "UserNotFoundError",
+            message: requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+          },
+        ],
+      };
     }
 
     usersInDirectChat.push(userId);
@@ -76,5 +98,5 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   });
 
   // Returns createdDirectChat.
-  return createdDirectChat.toObject();
+  return { directChat: createdDirectChat.toObject(), userErrors: [] };
 };

@@ -175,9 +175,11 @@ export type CreateCommentError = PostNotFoundError;
 
 export type CreateCommentPayload = {
   __typename?: 'CreateCommentPayload';
-  comment: Comment;
+  comment?: Maybe<Comment>;
   userErrors: Array<CreateCommentError>;
 };
+
+export type CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError;
 
 export type CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError;
 
@@ -587,7 +589,7 @@ export type Mutation = {
   createAdmin: CreateAdminPayload;
   createAdvertisement: Advertisement;
   createComment: CreateCommentPayload;
-  createDirectChat: DirectChat;
+  createDirectChat: CreateDirectChatPayload;
   createDonation: Donation;
   createEvent: Event;
   createGroupChat: GroupChat;
@@ -1906,6 +1908,12 @@ export type CreateChatInput = {
   userIds: Array<Scalars['ID']['input']>;
 };
 
+export type CreateDirectChatPayload = {
+  __typename?: 'createDirectChatPayload';
+  directChat?: Maybe<DirectChat>;
+  userErrors: Array<CreateDirectChatError>;
+};
+
 export type CreateGroupChatInput = {
   organizationId: Scalars['ID']['input'];
   title: Scalars['String']['input'];
@@ -1980,6 +1988,7 @@ export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
   ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
   CreateAdminError: ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   CreateCommentError: ( PostNotFoundError );
+  CreateDirectChatError: ( OrganizationNotFoundError ) | ( UserNotFoundError );
   CreateMemberError: ( MemberAlreadyInOrganizationError ) | ( OrganizationNotFoundError ) | ( UserNotFoundError );
 };
 
@@ -2011,7 +2020,8 @@ export type ResolversTypes = {
   CreateAdminError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateAdminError']>;
   CreateAdminPayload: ResolverTypeWrapper<Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversTypes['User']>, userErrors: Array<ResolversTypes['CreateAdminError']> }>;
   CreateCommentError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateCommentError']>;
-  CreateCommentPayload: ResolverTypeWrapper<Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment: ResolversTypes['Comment'], userErrors: Array<ResolversTypes['CreateCommentError']> }>;
+  CreateCommentPayload: ResolverTypeWrapper<Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversTypes['Comment']>, userErrors: Array<ResolversTypes['CreateCommentError']> }>;
+  CreateDirectChatError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateDirectChatError']>;
   CreateMemberError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateMemberError']>;
   CreateMemberPayload: ResolverTypeWrapper<Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversTypes['Organization']>, userErrors: Array<ResolversTypes['CreateMemberError']> }>;
   CreateUserTagInput: CreateUserTagInput;
@@ -2132,6 +2142,7 @@ export type ResolversTypes = {
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
   createChatInput: CreateChatInput;
+  createDirectChatPayload: ResolverTypeWrapper<Omit<CreateDirectChatPayload, 'directChat' | 'userErrors'> & { directChat?: Maybe<ResolversTypes['DirectChat']>, userErrors: Array<ResolversTypes['CreateDirectChatError']> }>;
   createGroupChatInput: CreateGroupChatInput;
 };
 
@@ -2156,7 +2167,8 @@ export type ResolversParentTypes = {
   CreateAdminError: ResolversUnionTypes<ResolversParentTypes>['CreateAdminError'];
   CreateAdminPayload: Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversParentTypes['User']>, userErrors: Array<ResolversParentTypes['CreateAdminError']> };
   CreateCommentError: ResolversUnionTypes<ResolversParentTypes>['CreateCommentError'];
-  CreateCommentPayload: Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment: ResolversParentTypes['Comment'], userErrors: Array<ResolversParentTypes['CreateCommentError']> };
+  CreateCommentPayload: Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversParentTypes['Comment']>, userErrors: Array<ResolversParentTypes['CreateCommentError']> };
+  CreateDirectChatError: ResolversUnionTypes<ResolversParentTypes>['CreateDirectChatError'];
   CreateMemberError: ResolversUnionTypes<ResolversParentTypes>['CreateMemberError'];
   CreateMemberPayload: Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversParentTypes['Organization']>, userErrors: Array<ResolversParentTypes['CreateMemberError']> };
   CreateUserTagInput: CreateUserTagInput;
@@ -2264,6 +2276,7 @@ export type ResolversParentTypes = {
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
   createChatInput: CreateChatInput;
+  createDirectChatPayload: Omit<CreateDirectChatPayload, 'directChat' | 'userErrors'> & { directChat?: Maybe<ResolversParentTypes['DirectChat']>, userErrors: Array<ResolversParentTypes['CreateDirectChatError']> };
   createGroupChatInput: CreateGroupChatInput;
 };
 
@@ -2387,9 +2400,13 @@ export type CreateCommentErrorResolvers<ContextType = any, ParentType extends Re
 };
 
 export type CreateCommentPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateCommentPayload'] = ResolversParentTypes['CreateCommentPayload']> = {
-  comment?: Resolver<ResolversTypes['Comment'], ParentType, ContextType>;
+  comment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType>;
   userErrors?: Resolver<Array<ResolversTypes['CreateCommentError']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CreateDirectChatErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateDirectChatError'] = ResolversParentTypes['CreateDirectChatError']> = {
+  __resolveType: TypeResolveFn<'OrganizationNotFoundError' | 'UserNotFoundError', ParentType, ContextType>;
 };
 
 export type CreateMemberErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateMemberError'] = ResolversParentTypes['CreateMemberError']> = {
@@ -2658,7 +2675,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createAdmin?: Resolver<ResolversTypes['CreateAdminPayload'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'endDate' | 'link' | 'name' | 'orgId' | 'startDate' | 'type'>>;
   createComment?: Resolver<ResolversTypes['CreateCommentPayload'], ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
-  createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
+  createDirectChat?: Resolver<ResolversTypes['createDirectChatPayload'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
   createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, Partial<MutationCreateEventArgs>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
@@ -3036,6 +3053,12 @@ export type UsersConnectionResultResolvers<ContextType = any, ParentType extends
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type CreateDirectChatPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['createDirectChatPayload'] = ResolversParentTypes['createDirectChatPayload']> = {
+  directChat?: Resolver<Maybe<ResolversTypes['DirectChat']>, ParentType, ContextType>;
+  userErrors?: Resolver<Array<ResolversTypes['CreateDirectChatError']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
   Address?: AddressResolvers<ContextType>;
   Advertisement?: AdvertisementResolvers<ContextType>;
@@ -3053,6 +3076,7 @@ export type Resolvers<ContextType = any> = {
   CreateAdminPayload?: CreateAdminPayloadResolvers<ContextType>;
   CreateCommentError?: CreateCommentErrorResolvers<ContextType>;
   CreateCommentPayload?: CreateCommentPayloadResolvers<ContextType>;
+  CreateDirectChatError?: CreateDirectChatErrorResolvers<ContextType>;
   CreateMemberError?: CreateMemberErrorResolvers<ContextType>;
   CreateMemberPayload?: CreateMemberPayloadResolvers<ContextType>;
   Date?: GraphQLScalarType;
@@ -3121,6 +3145,7 @@ export type Resolvers<ContextType = any> = {
   UserTagsConnectionResult?: UserTagsConnectionResultResolvers<ContextType>;
   UsersConnection?: UsersConnectionResolvers<ContextType>;
   UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
+  createDirectChatPayload?: CreateDirectChatPayloadResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {

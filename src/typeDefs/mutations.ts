@@ -58,7 +58,7 @@ export const mutations = gql`
 
     createComment(postId: ID!, data: CommentInput!): CreateCommentPayload! @auth
 
-    createDirectChat(data: createChatInput!): DirectChat! @auth
+    createDirectChat(data: createChatInput!): createDirectChatPayload! @auth
 
     createDonation(
       userId: ID!
