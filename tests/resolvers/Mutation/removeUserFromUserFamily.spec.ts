@@ -187,9 +187,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       await removeUserFromUserFamilyResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_REMOVING_SELF.MESSAGE}`
-      );
+      expect(error.message).toEqual(`Translated ${USER_REMOVING_SELF.MESSAGE}`);
     }
   });
 
