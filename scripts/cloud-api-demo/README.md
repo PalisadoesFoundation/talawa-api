@@ -275,7 +275,7 @@ echo "0 0 * * * talawa-api python3 renew_certificates.py --config-dir ~/.certbot
 #### 10.2.3 Cron job to run reset_database.py
 This cron job will execute `reset_database.py` every 24 hours, ensuring that the MongoDB is reset on a daily basis:
 ```bash
-echo "0 0 * * * talawa-api python3 reset_database.py --mongo-container develop-mongodb-1 --mongo-db talawa-api --repo-dir /home/talawa-api/develop" | sudo tee /etc/cron.d/reset_mongo
+echo "0 * * * * talawa-api python3 reset_database.py --mongo-container develop-mongodb-1 --mongo-db talawa-api --repo-dir /home/talawa-api/develop" | sudo tee /etc/cron.d/reset_mongo
 ```
 #### 10.3 Logging for cron jobs
 
