@@ -203,4 +203,3 @@ jobs:
           script: |
             python3 /usr/local/bin/scripts/create_env.py --access_token_secret $INPUT_ACCESS_TOKEN_SECRET --refresh_token_secret $INPUT_REFRESH_TOKEN_SECRET --recaptcha_secret_key $INPUT_RECAPTCHA_SECRET_KEY --mail_username $INPUT_MAIL_USERNAME --mail_password $INPUT_MAIL_PASSWORD --last_resort_superadmin_email $INPUT_LAST_RESORT_SUPERADMIN_EMAIL
             python3 /usr/local/bin/scripts/deploy.py --path ~/develop --branch develop
-            cd ~/develop && npm run import:sample-data
