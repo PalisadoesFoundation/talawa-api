@@ -26,6 +26,17 @@ export const types = gql`
     updatedAt: Date!
   }
 
+  type AgendaCategory {
+    _id: ID!
+    name: String!
+    description: String
+    organization: Organization
+    createdBy: User!
+    updatedBy: User
+    createdAt: Date!
+    updatedAt: Date
+  }
+
   # Action Item for a ActionItemCategory
   type ActionItem {
     _id: ID!

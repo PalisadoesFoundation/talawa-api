@@ -28,6 +28,13 @@ export const ACTION_ITEM_CATEGORY_ALREADY_EXISTS = {
   PARAM: "actionItemCategory",
 };
 
+export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
+  DESC: "Agenda category not found",
+  CODE: "agendaCategory.notFound",
+  MESSAGE: "agendaCategory.notFound",
+  PARAM: "agendaCategory",
+};
+
 export const CHAT_NOT_FOUND_ERROR = {
   DESC: "Chat not found",
   CODE: "chat.notFound",

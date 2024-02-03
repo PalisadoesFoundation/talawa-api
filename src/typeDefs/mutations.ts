@@ -66,6 +66,8 @@ export const mutations = gql`
       organizationId: ID!
     ): ActionItemCategory! @auth
 
+    createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
+
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
     createDirectChat(data: createChatInput!): DirectChat! @auth
@@ -112,6 +114,8 @@ export const mutations = gql`
     createSampleOrganization: Boolean! @auth
 
     deleteAdvertisementById(id: ID!): DeletePayload!
+
+    deleteAgendaCategory(id: ID!): ID!
 
     deleteDonationById(id: ID!): DeletePayload!
 
@@ -218,6 +222,11 @@ export const mutations = gql`
       id: ID!
       data: UpdateActionItemCategoryInput!
     ): ActionItemCategory @auth
+
+    updateAgendaCategory(
+      id: ID!
+      input: UpdateAgendaCategoryInput!
+    ): AgendaCategory!
 
     updateAdvertisement(
       input: UpdateAdvertisementInput!
