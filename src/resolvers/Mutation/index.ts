@@ -53,10 +53,6 @@ import { removeComment } from "./removeComment";
 import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
-import { addUserToUserFamily } from "./addUserToUserFamily";
-import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
-import { removeUserFamily } from "./removeUserFamily";
-import { createUserFamily } from "./createUserFamily";
 import { removeGroupChat } from "./removeGroupChat";
 import { removeAdvertisement } from "./removeAdvertisement";
 import { removeMember } from "./removeMember";
@@ -108,10 +104,6 @@ export const Mutation: MutationResolvers = {
   addUserToGroupChat,
   adminRemoveEvent,
   adminRemoveGroup,
-  addUserToUserFamily,
-  removeUserFamily,
-  removeUserFromUserFamily,
-  createUserFamily,
   assignUserTag,
   blockPluginCreationBySuperadmin,
   blockUser,
