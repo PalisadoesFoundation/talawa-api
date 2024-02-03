@@ -21,7 +21,7 @@
 
 #### Defined in
 
-[src/models/EventAttendee.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/EventAttendee.ts#L8)
+[src/models/EventAttendee.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/models/EventAttendee.ts#L8)
 
 ___
 
@@ -31,7 +31,7 @@ ___
 
 #### Defined in
 
-[src/models/EventAttendee.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/EventAttendee.ts#L11)
+[src/models/EventAttendee.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/models/EventAttendee.ts#L11)
 
 ___
 
@@ -41,7 +41,7 @@ ___
 
 #### Defined in
 
-[src/models/EventAttendee.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/EventAttendee.ts#L10)
+[src/models/EventAttendee.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/models/EventAttendee.ts#L10)
 
 ___
 
@@ -51,4 +51,4 @@ ___
 
 #### Defined in
 
-[src/models/EventAttendee.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/EventAttendee.ts#L9)
+[src/models/EventAttendee.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/models/EventAttendee.ts#L9)

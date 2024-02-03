@@ -20,7 +20,7 @@
 
 #### Defined in
 
-[src/constants.ts:540](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/constants.ts#L540)
+[src/constants.ts:540](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/constants.ts#L540)
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 #### Defined in
 
-[src/constants.ts:542](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/constants.ts#L542)
+[src/constants.ts:542](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/constants.ts#L542)
 
 ___
 
@@ -40,4 +40,4 @@ ___
 
 #### Defined in
 
-[src/constants.ts:541](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/constants.ts#L541)
+[src/constants.ts:541](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/constants.ts#L541)

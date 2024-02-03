@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/models/UserCustomData.ts:43](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/UserCustomData.ts#L43)
+[src/models/UserCustomData.ts:43](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/models/UserCustomData.ts#L43)

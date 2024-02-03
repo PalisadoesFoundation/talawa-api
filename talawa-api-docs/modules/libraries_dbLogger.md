@@ -39,7 +39,7 @@
 
 #### Defined in
 
-[src/libraries/dbLogger.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/libraries/dbLogger.ts#L5)
+[src/libraries/dbLogger.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/libraries/dbLogger.ts#L5)
 
 ## Variables
 
@@ -49,7 +49,7 @@
 
 #### Defined in
 
-[src/libraries/dbLogger.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/libraries/dbLogger.ts#L13)
+[src/libraries/dbLogger.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/libraries/dbLogger.ts#L13)
 
 ## Functions
 
@@ -76,4 +76,4 @@
 
 #### Defined in
 
-[src/libraries/dbLogger.ts:40](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/libraries/dbLogger.ts#L40)
+[src/libraries/dbLogger.ts:40](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/libraries/dbLogger.ts#L40)

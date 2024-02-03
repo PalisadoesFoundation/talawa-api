@@ -38,4 +38,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/removeUserFromGroupChat.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/resolvers/Mutation/removeUserFromGroupChat.ts#L24)
+[src/resolvers/Mutation/removeUserFromGroupChat.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/resolvers/Mutation/removeUserFromGroupChat.ts#L24)

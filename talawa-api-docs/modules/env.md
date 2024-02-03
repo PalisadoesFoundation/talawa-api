@@ -20,7 +20,7 @@
 
 #### Defined in
 
-[src/env.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/env.ts#L3)
+[src/env.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/env.ts#L3)
 
 ## Functions
 
@@ -34,4 +34,4 @@
 
 #### Defined in
 
-[src/env.ts:36](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/env.ts#L36)
+[src/env.ts:36](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/env.ts#L36)
