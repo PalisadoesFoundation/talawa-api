@@ -1,4 +1,6 @@
 import type { Resolvers } from "../types/generatedGraphQLTypes";
+import { ActionItem } from "./ActionItem";
+import { ActionItemCategory } from "./ActionItemCategory";
 import { CheckIn } from "./CheckIn";
 import { Comment } from "./Comment";
 import { DirectChat } from "./DirectChat";
@@ -31,6 +33,8 @@ import {
 } from "graphql-scalars";
 
 const resolvers: Resolvers = {
+  ActionItem,
+  ActionItemCategory,
   CheckIn,
   Comment,
   DirectChat,

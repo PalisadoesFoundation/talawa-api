@@ -5,10 +5,24 @@ import { uploadEncodedImage } from "../../../src/utilities/encodedImageStorage/u
 import { EncodedImage } from "../../../src/models/EncodedImage";
 import { connect, disconnect } from "../../helpers/db";
 import path from "path";
-import { INVALID_FILE_TYPE } from "../../../src/constants";
+import { IMAGE_SIZE_LIMIT_KB, INVALID_FILE_TYPE } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testPreviousImagePath: string;
+
+function generateRandomString(size: number): string {
+  size = (size * 1000 * 4) / 3 - "data:image/jpg;base64,".length;
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength: number = characters.length;
+  let counter = 0;
+  while (counter < size) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    counter += 1;
+  }
+  return result;
+}
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -36,6 +50,16 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
       expect(error.message).toEqual(`Translated ${INVALID_FILE_TYPE.MESSAGE}`);
 
       expect(spy).toBeCalledWith(INVALID_FILE_TYPE.MESSAGE);
+    }
+  });
+
+  it("should not create new image if it is bigger than the limit", async () => {
+    const size = Number(process.env.IMAGE_SIZE_LIMIT_KB);
+    try {
+      const img = "data:image/jpg;base64," + generateRandomString(size + 1000);
+      await uploadEncodedImage(img, null);
+    } catch (error: any) {
+      expect(error.message).toEqual(IMAGE_SIZE_LIMIT_KB.MESSAGE);
     }
   });
 

@@ -16,8 +16,8 @@
 
 ### User
 
-• `Const` **User**: `PaginateModel`\<[`InterfaceUser`](../interfaces/models_User.InterfaceUser.md), {}, {}\>
+• `Const` **User**: `PaginateModel`\<[`InterfaceUser`](../interfaces/models_User.InterfaceUser.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/User.ts:292](https://github.com/PalisadoesFoundation/talawa-api/blob/4e4f7f8/src/models/User.ts#L292)
+[src/models/User.ts:292](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/models/User.ts#L292)
