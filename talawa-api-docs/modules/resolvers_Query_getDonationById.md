@@ -24,4 +24,4 @@ An object that contains `id` of the donation.
 
 #### Defined in
 
-[src/resolvers/Query/getDonationById.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/resolvers/Query/getDonationById.ts#L11)
+[src/resolvers/Query/getDonationById.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/resolvers/Query/getDonationById.ts#L11)

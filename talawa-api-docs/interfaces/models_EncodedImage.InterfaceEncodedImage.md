@@ -23,7 +23,7 @@ This is an interface that represents a database(MongoDB) document for Encoded Im
 
 #### Defined in
 
-[src/models/EncodedImage.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/models/EncodedImage.ts#L7)
+[src/models/EncodedImage.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/models/EncodedImage.ts#L7)
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 #### Defined in
 
-[src/models/EncodedImage.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/models/EncodedImage.ts#L9)
+[src/models/EncodedImage.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/models/EncodedImage.ts#L9)
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 #### Defined in
 
-[src/models/EncodedImage.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/models/EncodedImage.ts#L8)
+[src/models/EncodedImage.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/models/EncodedImage.ts#L8)
 
 ___
 
@@ -53,4 +53,4 @@ ___
 
 #### Defined in
 
-[src/models/EncodedImage.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/models/EncodedImage.ts#L10)
+[src/models/EncodedImage.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/models/EncodedImage.ts#L10)

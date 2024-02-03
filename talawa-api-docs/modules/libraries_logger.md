@@ -17,7 +17,7 @@
 
 #### Defined in
 
-[src/libraries/logger.ts:48](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/libraries/logger.ts#L48)
+[src/libraries/logger.ts:48](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/libraries/logger.ts#L48)
 
 ___
 
@@ -33,4 +33,4 @@ ___
 
 #### Defined in
 
-[src/libraries/logger.ts:61](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/libraries/logger.ts#L61)
+[src/libraries/logger.ts:61](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/libraries/logger.ts#L61)

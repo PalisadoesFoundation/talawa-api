@@ -38,4 +38,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/removePost.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/resolvers/Mutation/removePost.ts#L28)
+[src/resolvers/Mutation/removePost.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/resolvers/Mutation/removePost.ts#L28)

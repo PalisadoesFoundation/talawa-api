@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/services/EventCache/findEventInCache.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/b1dd6c9/src/services/EventCache/findEventInCache.ts#L6)
+[src/services/EventCache/findEventInCache.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/services/EventCache/findEventInCache.ts#L6)
