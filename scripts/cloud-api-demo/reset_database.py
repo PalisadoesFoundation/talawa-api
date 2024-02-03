@@ -45,9 +45,9 @@ def main():
         [
             "docker",
             "exec",
+            "-it",
             args.mongo_container,
             "mongosh",
-            "--quiet",
             "--eval",
             f"db.getSiblingDB('{args.mongo_db}').dropDatabase()",
         ]
