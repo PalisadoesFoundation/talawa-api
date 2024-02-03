@@ -128,11 +128,12 @@ input CommentInput {
 
 type Community {
   _id: ID!
-  createdAt: DateTime
+  createdAt: DateTime!
   description: String!
-  image: String
+  logoUrl: String
   name: String!
   timeout: Int
+  updatedAt: DateTime!
   websiteLink: String
 }
 

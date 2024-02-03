@@ -63,13 +63,6 @@ export const INVALID_TIMEOUT_RANGE = {
   PARAM: "timeout",
 };
 
-export const UPDATE_SESSION_TIMEOUT_ARGUMENT_MISSING_ERROR = {
-  DESC: "timeout is required.",
-  CODE: ".arguments.isMissing",
-  MESSAGE: "arguments.isMissing",
-  PARAM: "argumentsMissing",
-};
-
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";
 export const MEMBER_NOT_FOUND_ERROR = {
   DESC: "Member not found",
@@ -549,3 +542,6 @@ export enum TransactionLogTypes {
   UPDATE = "UPDATE",
   DELETE = "DELETE",
 }
+
+export const MINIMUM_TIMEOUT_MINUTES = 15;
+export const MAXIMUM_TIMEOUT_MINUTES = 60;

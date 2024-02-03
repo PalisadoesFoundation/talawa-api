@@ -3,19 +3,13 @@ import {
   COMMUNITY_NOT_FOUND_ERROR,
   INVALID_TIMEOUT_RANGE,
   USER_NOT_FOUND_ERROR,
-  UPDATE_SESSION_TIMEOUT_ARGUMENT_MISSING_ERROR,
+  MINIMUM_TIMEOUT_MINUTES,
+  MAXIMUM_TIMEOUT_MINUTES,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { superAdminCheck } from "../../utilities";
 import { Community } from "../../models/Community";
-
-/**
- * Payload provided with the request for updating organization timeout.
- */
-interface InterfaceUpdateTimeoutArgs {
-  timeout: number;
-}
 
 /**
  * This function updates the session timeout and can only be performed by superadmin users.
@@ -29,16 +23,7 @@ interface InterfaceUpdateTimeoutArgs {
  */
 
 export const updateSessionTimeout: MutationResolvers["updateSessionTimeout"] =
-  async (_parent, args: InterfaceUpdateTimeoutArgs, context) => {
-    if (!args.timeout) {
-      throw new errors.InputValidationError(
-        requestContext.translate(
-          UPDATE_SESSION_TIMEOUT_ARGUMENT_MISSING_ERROR.MESSAGE
-        ),
-        UPDATE_SESSION_TIMEOUT_ARGUMENT_MISSING_ERROR.CODE,
-        UPDATE_SESSION_TIMEOUT_ARGUMENT_MISSING_ERROR.PARAM
-      );
-    }
+  async (_parent, args, context) => {
     const userId = context.userId;
     const user = await User.findById(userId).lean();
 
@@ -62,8 +47,11 @@ export const updateSessionTimeout: MutationResolvers["updateSessionTimeout"] =
       );
     }
 
-    // Check if the timeout is in the valid range of 15 to 60 minutes
-    if (args.timeout < 15 || args.timeout > 60 || args.timeout % 5 !== 0) {
+    if (
+      args.timeout < MINIMUM_TIMEOUT_MINUTES ||
+      args.timeout > MAXIMUM_TIMEOUT_MINUTES ||
+      args.timeout % 5 !== 0
+    ) {
       throw new errors.ValidationError([
         {
           message: requestContext.translate(INVALID_TIMEOUT_RANGE.MESSAGE),

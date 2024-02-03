@@ -66,15 +66,15 @@ describe("resolvers -> Query -> community", () => {
     expect(result).toEqual({
       ...testCommunity?.toObject(),
       _id: testCommunity?._id.toString(),
-      image: testCommunity?.image
-        ? `${context.apiRootUrl}${testCommunity?.image}`
+      logoUrl: testCommunity?.logoUrl
+        ? `${context.apiRootUrl}${testCommunity?.logoUrl}`
         : null,
     });
   });
 
-  test("should return null if community image does not exist", async () => {
+  test("should return null if community logoUrl does not exist", async () => {
     await Community.findByIdAndUpdate(testCommunity?._id, {
-      $unset: { image: "" },
+      $unset: { logoUrl: "" },
     });
     const context = {
       userId: testUser?._id.toString(),
@@ -83,7 +83,7 @@ describe("resolvers -> Query -> community", () => {
     const args = {};
 
     const result = await community?.({}, args, context);
-    expect(result?.image).toBeNull();
+    expect(result?.logoUrl).toBeNull();
   });
 
   test("should throw NotFoundError if community does not exist", async () => {

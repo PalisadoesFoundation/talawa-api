@@ -78,11 +78,12 @@ export const types = gql`
   type Community {
     _id: ID!
     name: String!
-    image: String
+    logoUrl: String
     description: String!
     websiteLink: String
     timeout: Int
-    createdAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   # A page info type adhering to Relay Specification for both cursor based pagination

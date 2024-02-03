@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import type { Document } from "mongoose";
 
 export type TestCommunityType =
-  | (InterfaceCommunity & Document<any, any, InterfaceCommunity>)
+  | (InterfaceCommunity & Document<unknown, unknown, InterfaceCommunity>)
   | null;
 
 export const createTestCommunity = async (): Promise<TestCommunityType> => {

@@ -47,6 +47,8 @@ export const community: QueryResolvers["community"] = async (
   return {
     ...community,
     _id: community._id.toString(),
-    image: community?.image ? `${context.apiRootUrl}${community?.image}` : null,
+    logoUrl: community?.logoUrl
+      ? `${context.apiRootUrl}${community?.logoUrl}`
+      : null,
   };
 };

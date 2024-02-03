@@ -1,6 +1,5 @@
 import { Schema, model, models } from "mongoose";
-import type { Types, Model, PopulatedDoc } from "mongoose";
-import type { InterfaceOrganization } from "./Organization";
+import type { Types, Model } from "mongoose";
 
 /**
  * This is an interface that represents a database(MongoDB) document for Community.
@@ -8,16 +7,17 @@ import type { InterfaceOrganization } from "./Organization";
 export interface InterfaceCommunity {
   _id: Types.ObjectId;
   name: string;
-  image: string | undefined;
+  logoUrl: string | undefined;
   description: string;
   websiteLink: string | undefined;
   timeout: number;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
  * This describes the schema for a `Community` that corresponds to `InterfaceCommunity` document.
- * @param image - Community logo URL.
+ * @param logoUrl - Community logo URL.
  * @param description - Community description.
  * @param websiteLink - Community website URL.
  * @param name - Community name.
@@ -25,32 +25,31 @@ export interface InterfaceCommunity {
  * @param createdAt - Time stamp of data creation.
  */
 
-const communitySchema = new Schema({
-  name: {
-    type: String,
-    required: true,
+const communitySchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    logoUrl: {
+      type: String,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    websiteLink: {
+      type: String,
+    },
+    timeout: {
+      type: Number,
+      default: 30,
+      min: [15, "Timeout should be at least 15 minutes."],
+      max: [60, "Timeout should not exceed 60 minutes."],
+    },
   },
-  image: {
-    type: String,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  websiteLink: {
-    type: String,
-  },
-  timeout: {
-    type: Number,
-    default: 30,
-    min: [15, "Timeout should be at least 15 minutes."],
-    max: [60, "Timeout should not exceed 60 minutes."],
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
 
 const communityModel = (): Model<InterfaceCommunity> =>
   model<InterfaceCommunity>("Community", communitySchema);
