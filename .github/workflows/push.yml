@@ -64,11 +64,9 @@ jobs:
         uses: actions/checkout@v3
         
       - name: Generate Access Token Secret
-        id: generate_access_token
         run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
         
       - name: Generate Refresh Token Secret
-        id: generate_refresh_token
         run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
 
       - name: Set up Node.js ${{ matrix.node-version }}
@@ -173,14 +171,17 @@ jobs:
 # You can find the deployment instructions in the scripts/cloud-api-demo/README.md file
   Deploy-Workflow:
     name: Deploying Application to Cloud VPS
-    # needs: Push-Workflow
     runs-on: ubuntu-latest
     steps:
+      - name: Generate Access Token Secret
+        run: echo "INPUT_ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+        
+      - name: Generate Refresh Token Secret
+        run: echo "INPUT_REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+
       - name: Execute remote ssh commands 
         uses: appleboy/ssh-action@v1.0.3 
         env:
-          INPUT_ACCESS_TOKEN_SECRET: ${{ needs.Push-Workflow.outputs.access_token_secret }}
-          INPUT_REFRESH_TOKEN_SECRET: ${{ needs.Push-Workflow.outputs.refresh_token_secret }}
           INPUT_RECAPTCHA_SECRET_KEY: ${{ secrets.API_DEMO_RECAPTCHA_SECRET_KEY }}
           INPUT_MAIL_USERNAME: ${{ secrets.API_DEMO_MAIL_USERNAME }}
           INPUT_MAIL_PASSWORD: ${{ secrets.API_DEMO_MAIL_PASSWORD }}
