@@ -355,16 +355,26 @@ async function redisConfiguration(): Promise<void> {
  * and sets a new key if one doesn't exist. The 'ENCRYPTION_KEY' is intended to be used
  * for secure operations such as email encryption and decryption.
  */
-let encryptionKey: string;
+async function setEncryptionKey() {
+  try {
+    // Checking if encryption key is already in environment variables
+    if (process.env.ENCRYPTION_KEY) {
+      console.log("Encryption Key already present.");
+    } else {
+      // Generating random key
+      const encryptionKey = await crypto.randomBytes(32).toString("hex");
 
-// Checking if encryption key is already in environment variables
-if (process.env.ENCRYPTION_KEY) {
-  encryptionKey = process.env.ENCRYPTION_KEY;
-} else {
-  // Generating random key
-  encryptionKey = crypto.randomBytes(32).toString("hex");
-  // Setting the key as an environment variable
-  process.env.ENCRYPTION_KEY = encryptionKey;
+      // Setting the key as an environment variable
+      process.env.ENCRYPTION_KEY = encryptionKey;
+
+      // Writing the key to the .env file
+      updateEnvVariable({ ENCRYPTION_KEY: encryptionKey });
+
+      console.log("Encryption key set successfully.");
+    }
+  } catch (err) {
+    console.error("An error occurred:");
+  }
 }
 
 //LAST_RESORT_SUPERADMIN_EMAIL prompt
@@ -1184,10 +1194,9 @@ async function main(): Promise<void> {
         default: false,
       },
     ]);
+
     if (shouldRunDataImport) {
       await importData();
-    } else {
-      await importDefaultOrganization();
     }
   }
 
@@ -1208,6 +1217,7 @@ async function main(): Promise<void> {
   ]);
 
   await setImageUploadSize(imageSizeLimit * 1000);
+  setEncryptionKey();
 
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"

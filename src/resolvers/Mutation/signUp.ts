@@ -8,8 +8,7 @@ import {
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceUser } from "../../models";
-import { User, Organization, MembershipRequest } from "../../models";
+import { User, Organization } from "../../models";
 import {
   createAccessToken,
   createRefreshToken,
@@ -53,22 +52,77 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     }
   }
 
+  // TODO: this check is to be removed
   let organization;
+  if (args.data.organizationUserBelongsToId) {
+    const organizationFoundInCache = await findOrganizationsInCache([
+      args.data.organizationUserBelongsToId,
+    ]);
 
-  const organizationFoundInCache = await findOrganizationsInCache([
-    args.data.selectedOrgainzation,
-  ]);
+    organization = organizationFoundInCache[0];
 
-  organization = organizationFoundInCache[0];
-  if (organizationFoundInCache[0] == null) {
-    organization = await Organization.findOne({
-      _id: args.data.selectedOrgainzation,
-    }).lean();
+    if (organizationFoundInCache[0] == null) {
+      organization = await Organization.findOne({
+        _id: args.data.organizationUserBelongsToId,
+      }).lean();
+
+      await cacheOrganizations([organization!]);
+    }
+
+    if (!organization) {
+      throw new errors.NotFoundError(
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      );
+    }
   }
 
-  const isLastResortSuperAdmin =
-    args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
   const encryptedEmail = encryptEmail(args.data.email);
+  // // Checks if the recieved arguments are valid according to standard input norms
+  // const validationResult_firstName = isValidString(args.data!.firstName, 50);
+  // const validationResult_lastName = isValidString(args.data!.lastName, 50);
+  // const validationResult_Password = validatePassword(args.data!.password!);
+  // if (!validationResult_firstName.isFollowingPattern) {
+  //   throw new errors.InputValidationError(
+  //     requestContext.translate(
+  //       `${REGEX_VALIDATION_ERROR.message} in first name`
+  //     ),
+  //     REGEX_VALIDATION_ERROR.code
+  //   );
+  // }
+  // if (!validationResult_firstName.isLessThanMaxLength) {
+  //   throw new errors.InputValidationError(
+  //     requestContext.translate(
+  //       `${LENGTH_VALIDATION_ERROR.message} 50 characters in first name`
+  //     ),
+  //     LENGTH_VALIDATION_ERROR.code
+  //   );
+  // }
+  // if (!validationResult_lastName.isFollowingPattern) {
+  //   throw new errors.InputValidationError(
+  //     requestContext.translate(
+  //       `${REGEX_VALIDATION_ERROR.message} in last name`
+  //     ),
+  //     REGEX_VALIDATION_ERROR.code
+  //   );
+  // }
+  // if (!validationResult_lastName.isLessThanMaxLength) {
+  //   throw new errors.InputValidationError(
+  //     requestContext.translate(
+  //       `${LENGTH_VALIDATION_ERROR.message} 50 characters in last name`
+  //     ),
+  //     LENGTH_VALIDATION_ERROR.code
+  //   );
+  // }
+  // if (!validationResult_Password) {
+  //   throw new errors.InputValidationError(
+  //     requestContext.translate(
+  //       `The password must contain a mixture of uppercase, lowercase, numbers, and symbols and must be greater than 8, and less than 50 characters`
+  //     ),
+  //     `Invalid Password`
+  //   );
+  // }
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
   // Upload file
@@ -76,108 +130,33 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   if (args.file) {
     uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
-  // eslint-disable-next-line
-  let createdUser: (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
-  if (organization !== null) {
-    await cacheOrganizations([organization]);
-    // If organization requested by user is a public organization, then no need of creating a membership request
+  const isLastResortSuperAdmin =
+    args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
 
-    if (organization.userRegistrationRequired == false) {
-      createdUser = await User.create({
-        ...args.data,
-        email: encryptedEmail,
-        image: uploadImageFileName ? uploadImageFileName : null,
-        password: hashedPassword,
-        userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
-        adminApproved: true,
-        joinedOrganizations: [args.data.selectedOrgainzation],
-      });
-      // Update the organization
-      await Organization.findOneAndUpdate(
-        {
-          _id: organization._id,
-        },
-        {
-          $push: {
-            members: createdUser._id,
-          },
-        },
-        {
-          new: true,
-        }
-      );
-    } else {
-      createdUser = await User.create({
-        ...args.data,
-        email: encryptedEmail,
-        image: uploadImageFileName ? uploadImageFileName : null,
-        password: hashedPassword,
-        userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
-        adminApproved: isLastResortSuperAdmin,
-      });
+  const createdUser = await User.create({
+    ...args.data,
+    email: encryptedEmail,
+    image: uploadImageFileName ? uploadImageFileName : null,
+    password: hashedPassword,
+    userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
+    adminApproved: isLastResortSuperAdmin,
+  });
 
-      // A membership request will be made to the organization
-      const createdMembershipRequest = await MembershipRequest.create({
-        user: createdUser._id,
-        organization: organization._id,
-      });
-
-      const updatedOrganization = await Organization.findOneAndUpdate(
-        {
-          _id: organization._id,
-        },
-        {
-          $push: {
-            membershipRequests: createdMembershipRequest._id,
-          },
-        },
-        {
-          new: true,
-        }
-      ).lean();
-
-      if (updatedOrganization !== null) {
-        await cacheOrganizations([updatedOrganization]);
-      }
-
-      createdUser = await User.findOneAndUpdate(
-        {
-          _id: createdUser._id,
-        },
-        {
-          $push: {
-            membershipRequests: createdMembershipRequest._id,
-          },
-        },
-        {
-          new: true,
-        }
-      );
-    }
-  } else {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
-    );
-  }
-  // eslint-disable-next-line
-  const accessToken = await createAccessToken(createdUser!);
-  // eslint-disable-next-line
-  const refreshToken = await createRefreshToken(createdUser!);
+  const accessToken = await createAccessToken(createdUser);
+  const refreshToken = await createRefreshToken(createdUser);
 
   copyToClipboard(`{
-  "Authorization": "Bearer ${accessToken}"
-}`);
-  // eslint-disable-next-line
-  const filteredCreatedUser = createdUser!.toObject();
+    "Authorization": "Bearer ${accessToken}"
+  }`);
 
-  const userToBeReturned = omit(filteredCreatedUser, "password");
+  const filteredCreatedUser = createdUser.toObject();
+
+  // @ts-ignore
+  delete filteredCreatedUser.password;
 
   return {
-    user: userToBeReturned,
-    selectedOrganization: args.data.selectedOrgainzation,
+    user: filteredCreatedUser,
     accessToken,
     refreshToken,
   };
