@@ -1596,8 +1596,8 @@ input UserInput {
   email: EmailAddress!
   firstName: String!
   lastName: String!
+  organizationUserBelongsToId: ID
   password: String!
-  selectedOrgainzation: ID!
 }
 
 enum UserOrderByInput {
