@@ -27,11 +27,10 @@ describe("resolvers -> Query -> advertisments", () => {
 
     let ads = await Advertisement.find().lean();
     ads = ads.map((advertisement) => ({
-        ...advertisement,
-        mediaUrl: `${context.apiRootUrl}${advertisement.mediaUrl}`,
-        organization: { _id: advertisement.organizationId }
-      })
-    );
+      ...advertisement,
+      mediaUrl: `${context.apiRootUrl}${advertisement.mediaUrl}`,
+      organization: { _id: advertisement.organizationId },
+    }));
     expect(adsPayload).toEqual(ads);
   });
 });

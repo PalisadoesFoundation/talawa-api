@@ -22,7 +22,6 @@ import type { InterfacePluginField as InterfacePluginFieldModel } from '../model
 import type { InterfacePost as InterfacePostModel } from '../models/Post';
 import type { InterfaceOrganizationTagUser as InterfaceOrganizationTagUserModel } from '../models/OrganizationTagUser';
 import type { InterfaceUser as InterfaceUserModel } from '../models/User';
-import type { InterfaceAdvertisement as InterfaceAdvertisementModel } from '../models/Advertisement'
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -114,7 +113,7 @@ export type Advertisement = {
   endDate: Scalars['Date']['output'];
   mediaUrl: Scalars['URL']['output'];
   name: Scalars['String']['output'];
-  organization: Organization;
+  organization?: Maybe<Organization>;
   startDate: Scalars['Date']['output'];
   type: AdvertisementType;
   updatedAt: Scalars['DateTime']['output'];
@@ -1410,6 +1409,7 @@ export type Query = {
   actionItemsByEvent?: Maybe<Array<Maybe<ActionItem>>>;
   actionItemsByOrganization?: Maybe<Array<Maybe<ActionItem>>>;
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
+  advertisements?: Maybe<Array<Maybe<Advertisement>>>;
   checkAuth: User;
   customDataByOrganization: Array<UserCustomData>;
   customFieldsByOrganization?: Maybe<Array<Maybe<OrganizationCustomField>>>;
@@ -1418,7 +1418,6 @@ export type Query = {
   event?: Maybe<Event>;
   eventsByOrganization?: Maybe<Array<Maybe<Event>>>;
   eventsByOrganizationConnection: Array<Event>;
-  advertisements?: Maybe<Array<Maybe<Advertisement>>>;
   getDonationById: Donation;
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
   getDonationByOrgIdConnection: Array<Donation>;
@@ -2067,7 +2066,7 @@ export type ResolversTypes = {
   ActionItemCategory: ResolverTypeWrapper<InterfaceActionItemCategoryModel>;
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
-  Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'creator' | 'organization'> & { creator?: Maybe<ResolversTypes['User']>, organization: ResolversTypes['Organization'] }>;
+  Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'creator' | 'organization'> & { creator?: Maybe<ResolversTypes['User']>, organization?: Maybe<ResolversTypes['Organization']> }>;
   AdvertisementType: AdvertisementType;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
@@ -2208,7 +2207,7 @@ export type ResolversParentTypes = {
   ActionItemCategory: InterfaceActionItemCategoryModel;
   Address: Address;
   AddressInput: AddressInput;
-  Advertisement: InterfaceAdvertisementModel;
+  Advertisement: Omit<Advertisement, 'creator' | 'organization'> & { creator?: Maybe<ResolversParentTypes['User']>, organization?: Maybe<ResolversParentTypes['Organization']> };
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any']['output'];
@@ -2387,7 +2386,7 @@ export type AdvertisementResolvers<ContextType = any, ParentType extends Resolve
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   mediaUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['AdvertisementType'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -2464,7 +2463,6 @@ export interface CountryCodeScalarConfig extends GraphQLScalarTypeConfig<Resolve
 }
 
 export type CreateAdvertisementPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateAdvertisementPayload'] = ResolversParentTypes['CreateAdvertisementPayload']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   advertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2909,6 +2907,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   actionItemsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByEventArgs, 'eventId'>>;
   actionItemsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByOrganizationArgs, 'organizationId'>>;
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
+  advertisements?: Resolver<Maybe<Array<Maybe<ResolversTypes['Advertisement']>>>, ParentType, ContextType>;
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
   customFieldsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['OrganizationCustomField']>>>, ParentType, ContextType, RequireFields<QueryCustomFieldsByOrganizationArgs, 'id'>>;
@@ -2917,7 +2916,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   eventsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsByOrganizationArgs>>;
   eventsByOrganizationConnection?: Resolver<Array<ResolversTypes['Event']>, ParentType, ContextType, Partial<QueryEventsByOrganizationConnectionArgs>>;
-  advertisements?: Resolver<Maybe<Array<Maybe<ResolversTypes['Advertisement']>>>, ParentType, ContextType>;
   getDonationById?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<QueryGetDonationByIdArgs, 'id'>>;
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;

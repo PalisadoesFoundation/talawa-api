@@ -15,9 +15,9 @@ export const advertisements: QueryResolvers["advertisements"] = async (
     (advertisement) => ({
       ...advertisement,
       mediaUrl: `${context.apiRootUrl}${advertisement.mediaUrl}`,
-      organization : {
-        _id: advertisement.organizationId
-      }
+      organization: {
+        _id: advertisement.organizationId,
+      },
     })
   );
 

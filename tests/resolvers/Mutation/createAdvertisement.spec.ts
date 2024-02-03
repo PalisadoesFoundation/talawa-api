@@ -22,7 +22,11 @@ import {
 } from "../../helpers/userAndOrg";
 import { requestContext } from "../../../src/libraries";
 import { Types } from "mongoose";
-import { BASE_URL, ORGANIZATION_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  BASE_URL,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { createAdvertisement } from "../../../src/resolvers/Mutation/createAdvertisement";
 import { ApplicationError } from "../../../src/libraries/errors";
@@ -59,7 +63,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       const args: MutationCreateAdvertisementArgs = {
         input: {
           name: "myad",
-          organizationId: 'sdfghj456789',
+          organizationId: "sdfghj456789",
           type: "POPUP",
           mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
           startDate: "2023-10-08T13:02:29.000Z",

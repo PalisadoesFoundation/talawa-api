@@ -1,7 +1,10 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { Advertisement, Organization, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { ORGANIZATION_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import {
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 
