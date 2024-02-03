@@ -36,4 +36,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/createDirectChat.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/resolvers/Mutation/createDirectChat.ts#L20)
+[src/resolvers/Mutation/createDirectChat.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/resolvers/Mutation/createDirectChat.ts#L20)

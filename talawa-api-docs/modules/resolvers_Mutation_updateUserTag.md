@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Mutation/updateUserTag.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/resolvers/Mutation/updateUserTag.ts#L12)
+[src/resolvers/Mutation/updateUserTag.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/resolvers/Mutation/updateUserTag.ts#L12)
