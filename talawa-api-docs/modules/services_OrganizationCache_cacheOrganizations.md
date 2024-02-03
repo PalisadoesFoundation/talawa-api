@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/services/OrganizationCache/cacheOrganizations.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/services/OrganizationCache/cacheOrganizations.ts#L6)
+[src/services/OrganizationCache/cacheOrganizations.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/services/OrganizationCache/cacheOrganizations.ts#L6)

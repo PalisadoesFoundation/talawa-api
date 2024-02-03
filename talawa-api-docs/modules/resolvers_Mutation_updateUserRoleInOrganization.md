@@ -30,4 +30,4 @@ context of entire application
 
 #### Defined in
 
-[src/resolvers/Mutation/updateUserRoleInOrganization.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/resolvers/Mutation/updateUserRoleInOrganization.ts#L23)
+[src/resolvers/Mutation/updateUserRoleInOrganization.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/resolvers/Mutation/updateUserRoleInOrganization.ts#L23)

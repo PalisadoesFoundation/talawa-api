@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/services/CommentCache/findCommentsByPostIdInCache.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/services/CommentCache/findCommentsByPostIdInCache.ts#L6)
+[src/services/CommentCache/findCommentsByPostIdInCache.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/services/CommentCache/findCommentsByPostIdInCache.ts#L6)

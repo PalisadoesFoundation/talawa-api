@@ -18,4 +18,4 @@ This function returns list of Advertisement from the database.
 
 #### Defined in
 
-[src/resolvers/Query/getAdvertisements.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/resolvers/Query/getAdvertisements.ts#L8)
+[src/resolvers/Query/getAdvertisements.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/resolvers/Query/getAdvertisements.ts#L8)

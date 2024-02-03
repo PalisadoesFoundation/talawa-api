@@ -39,7 +39,7 @@
 
 #### Defined in
 
-[src/utilities/graphqlConnectionFactory.ts:106](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/utilities/graphqlConnectionFactory.ts#L106)
+[src/utilities/graphqlConnectionFactory.ts:106](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/utilities/graphqlConnectionFactory.ts#L106)
 
 ___
 
@@ -59,7 +59,7 @@ ___
 
 #### Defined in
 
-[src/utilities/graphqlConnectionFactory.ts:75](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/utilities/graphqlConnectionFactory.ts#L75)
+[src/utilities/graphqlConnectionFactory.ts:75](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/utilities/graphqlConnectionFactory.ts#L75)
 
 ___
 
@@ -79,7 +79,7 @@ ___
 
 #### Defined in
 
-[src/utilities/graphqlConnectionFactory.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/utilities/graphqlConnectionFactory.ts#L46)
+[src/utilities/graphqlConnectionFactory.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/utilities/graphqlConnectionFactory.ts#L46)
 
 ___
 
@@ -100,7 +100,7 @@ ___
 
 #### Defined in
 
-[src/utilities/graphqlConnectionFactory.ts:53](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/utilities/graphqlConnectionFactory.ts#L53)
+[src/utilities/graphqlConnectionFactory.ts:53](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/utilities/graphqlConnectionFactory.ts#L53)
 
 ___
 
@@ -120,4 +120,4 @@ ___
 
 #### Defined in
 
-[src/utilities/graphqlConnectionFactory.ts:34](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/utilities/graphqlConnectionFactory.ts#L34)
+[src/utilities/graphqlConnectionFactory.ts:34](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/utilities/graphqlConnectionFactory.ts#L34)

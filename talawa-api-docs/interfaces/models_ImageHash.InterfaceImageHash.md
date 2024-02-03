@@ -24,7 +24,7 @@ This is an interface that represents a database(MongoDB) document for Image Hash
 
 #### Defined in
 
-[src/models/ImageHash.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/models/ImageHash.ts#L7)
+[src/models/ImageHash.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/ImageHash.ts#L7)
 
 ___
 
@@ -34,7 +34,7 @@ ___
 
 #### Defined in
 
-[src/models/ImageHash.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/models/ImageHash.ts#L9)
+[src/models/ImageHash.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/ImageHash.ts#L9)
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 #### Defined in
 
-[src/models/ImageHash.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/models/ImageHash.ts#L8)
+[src/models/ImageHash.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/ImageHash.ts#L8)
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 #### Defined in
 
-[src/models/ImageHash.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/models/ImageHash.ts#L10)
+[src/models/ImageHash.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/ImageHash.ts#L10)
 
 ___
 
@@ -64,4 +64,4 @@ ___
 
 #### Defined in
 
-[src/models/ImageHash.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/models/ImageHash.ts#L11)
+[src/models/ImageHash.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/8707a9c/src/models/ImageHash.ts#L11)
