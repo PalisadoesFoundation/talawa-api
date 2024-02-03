@@ -2,6 +2,33 @@ directive @auth on FIELD_DEFINITION
 
 directive @role(requires: UserType) on FIELD_DEFINITION
 
+type ActionItem {
+  _id: ID!
+  actionItemCategory: ActionItemCategory
+  assignee: User
+  assigner: User
+  assignmentDate: Date!
+  completionDate: Date!
+  createdAt: Date!
+  creator: User
+  dueDate: Date!
+  event: Event
+  isCompleted: Boolean!
+  postCompletionNotes: String
+  preCompletionNotes: String
+  updatedAt: Date!
+}
+
+type ActionItemCategory {
+  _id: ID!
+  createdAt: Date!
+  creator: User
+  isDisabled: Boolean!
+  name: String!
+  organization: Organization
+  updatedAt: Date!
+}
+
 type Address {
   city: String
   countryCode: String
@@ -56,7 +83,7 @@ scalar Any
 type AuthData {
   accessToken: String!
   refreshToken: String!
-  user: UserToReturn!
+  user: User!
 }
 
 type CheckIn {
@@ -109,6 +136,13 @@ type ConnectionPageInfo {
 }
 
 scalar CountryCode
+
+input CreateActionItemInput {
+  assigneeId: ID!
+  dueDate: Date
+  eventId: ID
+  preCompletionNotes: String
+}
 
 input CreateUserTagInput {
   name: String!
@@ -210,6 +244,7 @@ interface Error {
 
 type Event {
   _id: ID!
+  actionItems: [ActionItem]
   admins(adminId: ID): [User!]
   allDay: Boolean!
   attendees: [User]
@@ -493,6 +528,8 @@ type Mutation {
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
+  createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
+  createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): User!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
   createComment(data: CommentInput!, postId: ID!): Comment
@@ -522,6 +559,7 @@ type Mutation {
   registerForEvent(id: ID!): Event!
   rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+  removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): User!
   removeAdvertisement(id: ID!): Advertisement
   removeComment(id: ID!): Comment
@@ -545,12 +583,14 @@ type Mutation {
   sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage!
   sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
   signUp(data: UserInput!, file: String): AuthData!
-  togglePostPin(id: ID!): Post!
+  togglePostPin(id: ID!, title: String): Post!
   unassignUserTag(input: ToggleUserTagAssignInput!): User
   unblockUser(organizationId: ID!, userId: ID!): User!
   unlikeComment(id: ID!): Comment
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
+  updateActionItem(data: UpdateActionItemInput!, id: ID!): ActionItem
+  updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateLanguage(languageCode: String!): User!
@@ -570,6 +610,7 @@ input OTPInput {
 
 type Organization {
   _id: ID!
+  actionItemCategories: [ActionItemCategory]
   address: Address
   admins(adminId: ID): [User!]
   apiUrl: URL!
@@ -801,6 +842,11 @@ input PostWhereInput {
 }
 
 type Query {
+  actionItem(id: ID!): ActionItem
+  actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
+  actionItemCategory(id: ID!): ActionItemCategory
+  actionItemsByEvent(eventId: ID!): [ActionItem]
+  actionItemsByOrganization(organizationId: ID!): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
@@ -888,6 +934,20 @@ type UnauthenticatedError implements Error {
 
 type UnauthorizedError implements Error {
   message: String!
+}
+
+input UpdateActionItemCategoryInput {
+  isDisabled: Boolean
+  name: String
+}
+
+input UpdateActionItemInput {
+  assigneeId: ID
+  completionDate: Date
+  dueDate: Date
+  isCompleted: Boolean
+  postCompletionNotes: String
+  preCompletionNotes: String
 }
 
 input UpdateAdvertisementInput {

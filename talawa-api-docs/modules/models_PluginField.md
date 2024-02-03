@@ -16,8 +16,8 @@
 
 ### PluginField
 
-• `Const` **PluginField**: `Model`\<[`InterfacePluginField`](../interfaces/models_PluginField.InterfacePluginField.md), {}, {}\>
+• `Const` **PluginField**: `Model`\<[`InterfacePluginField`](../interfaces/models_PluginField.InterfacePluginField.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/PluginField.ts:45](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/models/PluginField.ts#L45)
+[src/models/PluginField.ts:45](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/models/PluginField.ts#L45)
