@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Mutation/removeAdvertisement.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/resolvers/Mutation/removeAdvertisement.ts#L7)
+[src/resolvers/Mutation/removeAdvertisement.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/resolvers/Mutation/removeAdvertisement.ts#L7)

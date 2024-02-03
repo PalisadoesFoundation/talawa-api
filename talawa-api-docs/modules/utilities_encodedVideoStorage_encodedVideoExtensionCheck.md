@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/utilities/encodedVideoStorage/encodedVideoExtensionCheck.ts:1](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/utilities/encodedVideoStorage/encodedVideoExtensionCheck.ts#L1)
+[src/utilities/encodedVideoStorage/encodedVideoExtensionCheck.ts:1](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/utilities/encodedVideoStorage/encodedVideoExtensionCheck.ts#L1)

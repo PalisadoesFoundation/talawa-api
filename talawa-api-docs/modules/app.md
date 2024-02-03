@@ -30,7 +30,7 @@ third argument.
 
 #### Defined in
 
-[src/app.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/app.ts#L15)
+[src/app.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/app.ts#L15)
 
 ▸ **default**(`req`, `res`, `next`): `void`
 
@@ -48,4 +48,4 @@ third argument.
 
 #### Defined in
 
-[src/app.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/app.ts#L15)
+[src/app.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/app.ts#L15)
