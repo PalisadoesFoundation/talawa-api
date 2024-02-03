@@ -186,9 +186,9 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_REMOVING_SELF.MESSAGE}`
       );
     }
   });
@@ -244,9 +244,9 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`
       );
     }
   });
