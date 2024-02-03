@@ -271,6 +271,7 @@ export const types = gql`
     updatedAt: DateTime!
     members: [User]
     actionItemCategories: [ActionItemCategory]
+    agendaCategories: [AgendaCategory]
     admins(adminId: ID): [User!]
     membershipRequests: [MembershipRequest]
     userRegistrationRequired: Boolean!
