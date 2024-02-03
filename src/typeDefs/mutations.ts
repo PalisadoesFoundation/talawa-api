@@ -52,7 +52,7 @@ export const mutations = gql`
 
     createMember(input: UserAndOrganizationInput!): CreateMemberPayload! @auth
 
-    createAdmin(data: UserAndOrganizationInput!): User!
+    createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
       @auth
       @role(requires: SUPERADMIN)
 

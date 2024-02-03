@@ -54,10 +54,17 @@ export const types = gql`
     startCursor: String
     endCursor: String
   }
+
   type CreateMemberPayload {
     organization: Organization
     userErrors: [CreateMemberError!]!
   }
+
+  type CreateAdminPayload {
+    user: User
+    userErrors: [CreateAdminError!]!
+  }
+
   type DeletePayload {
     success: Boolean!
   }

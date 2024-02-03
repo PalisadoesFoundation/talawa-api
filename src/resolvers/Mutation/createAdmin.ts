@@ -1,6 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import { requestContext } from "../../libraries";
 import { superAdminCheck } from "../../utilities";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -11,6 +11,7 @@ import {
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { Types } from "mongoose";
+import type { InterfaceOrganization } from "../../models";
 /**
  * This function enables to create an admin for an organization.
  * @param _parent - parent of current request
@@ -42,27 +43,47 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    await cacheOrganizations([organization as InterfaceOrganization]);
   }
 
   // Checks whether organization exists.
   if (!organization) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+    //   ORGANIZATION_NOT_FOUND_ERROR.CODE,
+    //   ORGANIZATION_NOT_FOUND_ERROR.PARAM
+    // );
+    return {
+      user: new User(),
+      userErrors: [
+        {
+          __typename: "OrganizationNotFoundError",
+          message: requestContext.translate(
+            ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+          ),
+        },
+      ],
+    };
   }
   // Checks whether the current user is a superAdmin
   const currentUser = await User.findById({
     _id: context.userId,
   });
   if (!currentUser) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+    //   USER_NOT_FOUND_ERROR.CODE,
+    //   USER_NOT_FOUND_ERROR.PARAM
+    // );
+    return {
+      user: new User(),
+      userErrors: [
+        {
+          __typename: "UserNotFoundError",
+          message: requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
   superAdminCheck(currentUser);
 
@@ -72,11 +93,20 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
 
   // Checks whether user with _id === args.data.userId exists.
   if (userExists === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+    //   USER_NOT_FOUND_ERROR.CODE,
+    //   USER_NOT_FOUND_ERROR.PARAM
+    // );
+    return {
+      user: new User(),
+      userErrors: [
+        {
+          __typename: "UserNotFoundError",
+          message: requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
 
   const userIsOrganizationMember = organization.members.some((member) =>
@@ -85,11 +115,22 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
 
   // Checks whether user with _id === args.data.userId is not a member of organization.
   if (userIsOrganizationMember === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_MEMBER_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_MEMBER_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE),
+    //   ORGANIZATION_MEMBER_NOT_FOUND_ERROR.CODE,
+    //   ORGANIZATION_MEMBER_NOT_FOUND_ERROR.PARAM
+    // );
+    return {
+      user: new User(),
+      userErrors: [
+        {
+          __typename: "OrganizationMemberNotFoundError",
+          message: requestContext.translate(
+            ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE
+          ),
+        },
+      ],
+    };
   }
 
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
@@ -98,11 +139,20 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
 
   // Checks whether user with _id === args.data.userId is already an admin of organization.
   if (userIsOrganizationAdmin === true) {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-      USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
-    );
+    // throw new errors.UnauthorizedError(
+    //   requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+    //   USER_NOT_AUTHORIZED_ERROR.CODE,
+    //   USER_NOT_AUTHORIZED_ERROR.PARAM
+    // );
+    return {
+      user: new User(),
+      userErrors: [
+        {
+          __typename: "UserNotAuthorizedError",
+          message: requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
 
   // Adds args.data.userId to admins list of organization's document.
@@ -128,19 +178,22 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   Adds organization._id to adminFor list on user's document with _id === args.data.userId
   and returns the updated user.
   */
-  return await User.findOneAndUpdate(
-    {
-      _id: args.data.userId,
-    },
-    {
-      $push: {
-        adminFor: organization._id,
+  return {
+    user: await User.findOneAndUpdate(
+      {
+        _id: args.data.userId,
       },
-    },
-    {
-      new: true,
-    }
-  )
-    .select(["-password"])
-    .lean();
+      {
+        $push: {
+          adminFor: organization._id,
+        },
+      },
+      {
+        new: true,
+      }
+    )
+      .select(["-password"])
+      .lean(),
+    userErrors: [],
+  };
 };

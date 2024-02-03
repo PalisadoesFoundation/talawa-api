@@ -110,6 +110,13 @@ type ConnectionPageInfo {
 
 scalar CountryCode
 
+union CreateAdminError = OrganizationMemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedError | UserNotFoundError
+
+type CreateAdminPayload {
+  user: User
+  userErrors: [CreateAdminError!]!
+}
+
 union CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError
 
 type CreateMemberPayload {
@@ -504,7 +511,7 @@ type Mutation {
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
-  createAdmin(data: UserAndOrganizationInput!): User!
+  createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
@@ -627,6 +634,10 @@ input OrganizationInput {
   name: String!
   userRegistrationRequired: Boolean
   visibleInSearch: Boolean
+}
+
+type OrganizationMemberNotFoundError implements Error {
+  message: String!
 }
 
 type OrganizationNotFoundError implements Error {
@@ -1035,6 +1046,10 @@ input UserInput {
   lastName: String!
   organizationUserBelongsToId: ID
   password: String!
+}
+
+type UserNotAuthorizedError implements Error {
+  message: String!
 }
 
 type UserNotFoundError implements Error {
