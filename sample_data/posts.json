@@ -28,7 +28,7 @@
     "title": "Thrilling Mountain Expedition",
     "creatorId": "658930fd2caa9d8d6908745c",
     "organization": "6437904485008f171cf29924",
-    "imageUrl": "https://images.pexels.com/photos/12762122/pexels-photo-12762122.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "imageUrl": null,
     "createdAt": "2023-04-13T05:17:14.396Z",
     "__v": 0
   },
@@ -44,7 +44,7 @@
     "title": "Sunset Serenity by the Sea",
     "creatorId": "658930fd2caa9d8d6908745c",
     "organization": "6537904485008f171cf29924",
-    "imageUrl": "https://images.pexels.com/photos/747016/pexels-photo-747016.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "imageUrl": null,
     "createdAt": "2023-04-13T05:17:14.396Z",
     "__v": 0
   },
@@ -60,7 +60,7 @@
     "title": "Enchanting Rainforest Discovery",
     "creatorId": "6589386a2caa9d8d69087484",
     "organization": "6437904485008f171cf29924",
-    "imageUrl": "https://images.pexels.com/photos/1026230/pexels-photo-1026230.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "imageUrl": null,
     "createdAt": "2023-04-13T05:17:14.396Z",
     "__v": 0
   },
@@ -76,7 +76,7 @@
     "title": "Artistic Coffee Moments",
     "creatorId": "6589386a2caa9d8d69087484",
     "organization": "6537904485008f171cf29924",
-    "imageUrl": "https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "imageUrl": null,
     "createdAt": "2023-04-13T05:17:14.396Z",
     "__v": 0
   },
@@ -92,7 +92,7 @@
     "title": "Urban Exploration: City Lights",
     "creatorId": "6589387e2caa9d8d69087485",
     "organization": "6437904485008f171cf29924",
-    "imageUrl": "https://images.pexels.com/photos/19558886/pexels-photo-19558886/free-photo-of-skyscrapers-on-sea-coast-in-city.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "imageUrl": null,
     "createdAt": "2023-04-13T05:17:14.396Z",
     "__v": 0
   },
@@ -108,7 +108,7 @@
     "title": "Tranquil Lakeside Retreat",
     "creatorId": "6589387e2caa9d8d69087485",
     "organization": "6537904485008f171cf29924",
-    "imageUrl": "https://images.pexels.com/photos/1743366/pexels-photo-1743366.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "imageUrl": null,
     "createdAt": "2023-04-13T05:17:14.396Z",
     "__v": 0
   },
@@ -124,7 +124,7 @@
     "title": "Aerial Adventures: Hot Air Balloon Ride",
     "creatorId": "6589388b2caa9d8d69087486",
     "organization": "6437904485008f171cf29924",
-    "imageUrl": "https://images.pexels.com/photos/2325450/pexels-photo-2325450.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "imageUrl": null,
     "createdAt": "2023-04-13T05:17:14.396Z",
     "__v": 0
   },
@@ -140,7 +140,7 @@
     "title": "Literary Escapade in Old Bookstores",
     "creatorId": "6589388b2caa9d8d69087486",
     "organization": "6537904485008f171cf29924",
-    "imageUrl": "https://images.pexels.com/photos/694740/pexels-photo-694740.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "imageUrl": null,
     "createdAt": "2023-04-13T05:17:14.396Z",
     "__v": 0
   },
