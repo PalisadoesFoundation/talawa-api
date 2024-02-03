@@ -2,9 +2,36 @@ directive @auth on FIELD_DEFINITION
 
 directive @role(requires: UserType) on FIELD_DEFINITION
 
+type ActionItem {
+  _id: ID!
+  actionItemCategory: ActionItemCategory
+  assignee: User
+  assigner: User
+  assignmentDate: Date!
+  completionDate: Date!
+  createdAt: Date!
+  creator: User
+  dueDate: Date!
+  event: Event
+  isCompleted: Boolean!
+  postCompletionNotes: String
+  preCompletionNotes: String
+  updatedAt: Date!
+}
+
+type ActionItemCategory {
+  _id: ID!
+  createdAt: Date!
+  creator: User
+  isDisabled: Boolean!
+  name: String!
+  organization: Organization
+  updatedAt: Date!
+}
+
 type Address {
   city: String
-  countryCode: CountryCode
+  countryCode: String
   dependentLocality: String
   line1: String
   line2: String
@@ -15,7 +42,7 @@ type Address {
 
 input AddressInput {
   city: String
-  countryCode: CountryCode
+  countryCode: String
   dependentLocality: String
   line1: String
   line2: String
@@ -25,13 +52,22 @@ input AddressInput {
 }
 
 type Advertisement {
-  _id: ID
+  _id: ID!
+  createdAt: DateTime!
+  creator: User
   endDate: Date!
   link: String!
   name: String!
-  orgId: ID
+  orgId: ID!
   startDate: Date!
-  type: String!
+  type: AdvertisementType!
+  updatedAt: DateTime!
+}
+
+enum AdvertisementType {
+  BANNER
+  MENU
+  POPUP
 }
 
 type AggregatePost {
@@ -54,9 +90,11 @@ type CheckIn {
   _id: ID!
   allotedRoom: String
   allotedSeat: String
+  createdAt: DateTime!
   event: Event!
   feedbackSubmitted: Boolean!
   time: DateTime!
+  updatedAt: DateTime!
   user: User!
 }
 
@@ -74,13 +112,14 @@ type CheckInStatus {
 }
 
 type Comment {
-  _id: ID
-  createdAt: DateTime
-  creator: User!
+  _id: ID!
+  createdAt: DateTime!
+  creator: User
   likeCount: Int
   likedBy: [User]
   post: Post!
   text: String!
+  updatedAt: DateTime!
 }
 
 input CommentInput {
@@ -97,6 +136,13 @@ type ConnectionPageInfo {
 }
 
 scalar CountryCode
+
+input CreateActionItemInput {
+  assigneeId: ID!
+  dueDate: Date
+  eventId: ID
+  preCompletionNotes: String
+}
 
 input CreateUserTagInput {
   name: String!
@@ -120,9 +166,11 @@ type DeletePayload {
 
 type DirectChat {
   _id: ID!
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   messages: [DirectChatMessage]
   organization: Organization!
+  updatedAt: DateTime!
   users: [User!]!
 }
 
@@ -133,15 +181,18 @@ type DirectChatMessage {
   messageContent: String!
   receiver: User!
   sender: User!
+  updatedAt: DateTime!
 }
 
 type Donation {
   _id: ID!
   amount: Float!
+  createdAt: DateTime!
   nameOfOrg: String!
   nameOfUser: String!
   orgId: ID!
   payPalId: String!
+  updatedAt: DateTime!
   userId: ID!
 }
 
@@ -193,12 +244,14 @@ interface Error {
 
 type Event {
   _id: ID!
-  admins(adminId: ID): [User]
+  actionItems: [ActionItem]
+  admins(adminId: ID): [User!]
   allDay: Boolean!
-  attendees: [User!]!
+  attendees: [User]
   attendeesCheckInStatus: [CheckInStatus!]!
   averageFeedbackScore: Float
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   description: String!
   endDate: Date!
   endTime: Time
@@ -209,13 +262,13 @@ type Event {
   location: String
   longitude: Longitude
   organization: Organization
-  projects: [EventProject]
   recurrance: Recurrance
   recurring: Boolean!
   startDate: Date!
   startTime: Time
   status: Status!
   title: String!
+  updatedAt: DateTime!
 }
 
 input EventAttendeeInput {
@@ -264,20 +317,6 @@ enum EventOrderByInput {
   title_DESC
 }
 
-type EventProject {
-  _id: ID!
-  description: String!
-  event: Event!
-  tasks: [Task]
-  title: String!
-}
-
-input EventProjectInput {
-  description: String!
-  eventId: ID!
-  title: String!
-}
-
 input EventWhereInput {
   description: String
   description_contains: String
@@ -313,9 +352,11 @@ type ExtendSession {
 
 type Feedback {
   _id: ID!
+  createdAt: DateTime!
   event: Event!
   rating: Int!
   review: String
+  updatedAt: DateTime!
 }
 
 input FeedbackInput {
@@ -342,19 +383,22 @@ enum Gender {
 }
 
 type Group {
-  _id: ID
-  admins: [User]
-  createdAt: DateTime
+  _id: ID!
+  admins: [User!]!
+  createdAt: DateTime!
   description: String
   organization: Organization!
-  title: String
+  title: String!
+  updatedAt: DateTime!
 }
 
 type GroupChat {
   _id: ID!
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   messages: [GroupChatMessage]
   organization: Organization!
+  updatedAt: DateTime!
   users: [User!]!
 }
 
@@ -364,6 +408,7 @@ type GroupChatMessage {
   groupChatMessageBelongsTo: GroupChat!
   messageContent: String!
   sender: User!
+  updatedAt: DateTime!
 }
 
 type InvalidCursor implements FieldError {
@@ -431,10 +476,11 @@ type MembershipRequest {
 
 type Message {
   _id: ID!
-  createdAt: DateTime
+  createdAt: DateTime!
   creator: User
   imageUrl: URL
-  text: String
+  text: String!
+  updatedAt: DateTime!
   videoUrl: URL
 }
 
@@ -445,6 +491,7 @@ type MessageChat {
   message: String!
   receiver: User!
   sender: User!
+  updatedAt: DateTime!
 }
 
 input MessageChatInput {
@@ -481,13 +528,14 @@ type Mutation {
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
+  createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
+  createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): User!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput): Event!
-  createEventProject(data: EventProjectInput!): EventProject!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
@@ -495,7 +543,6 @@ type Mutation {
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
   createPost(data: PostInput!, file: String): Post
   createSampleOrganization: Boolean!
-  createTask(data: TaskInput!, eventProjectId: ID!): Task!
   createUserTag(input: CreateUserTagInput!): UserTag
   deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
@@ -512,13 +559,13 @@ type Mutation {
   registerForEvent(id: ID!): Event!
   rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+  removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): User!
   removeAdvertisement(id: ID!): Advertisement
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
-  removeEventProject(id: ID!): EventProject!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -526,7 +573,6 @@ type Mutation {
   removeOrganizationImage(organizationId: String!): Organization!
   removePost(id: ID!): Post
   removeSampleOrganization: Boolean!
-  removeTask(id: ID!): Task
   removeUserCustomData(organizationId: ID!): UserCustomData!
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
   removeUserImage: User!
@@ -536,21 +582,21 @@ type Mutation {
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
   sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage!
   sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
-  setTaskVolunteers(id: ID!, volunteers: [ID]!): Task
   signUp(data: UserInput!, file: String): AuthData!
-  togglePostPin(id: ID!): Post!
+  togglePostPin(id: ID!, title: String): Post!
   unassignUserTag(input: ToggleUserTagAssignInput!): User
   unblockUser(organizationId: ID!, userId: ID!): User!
   unlikeComment(id: ID!): Comment
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
+  updateActionItem(data: UpdateActionItemInput!, id: ID!): ActionItem
+  updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
+  updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateEvent(data: UpdateEventInput, id: ID!): Event!
-  updateEventProject(data: UpdateEventProjectInput!, id: ID!): EventProject!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
-  updateTask(data: UpdateTaskInput!, id: ID!): Task
   updateUserPassword(data: UpdateUserPasswordInput!): User!
   updateUserProfile(data: UpdateUserInput, file: String): User!
   updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
@@ -564,20 +610,22 @@ input OTPInput {
 
 type Organization {
   _id: ID!
-  admins(adminId: ID): [User]
+  actionItemCategories: [ActionItemCategory]
+  address: Address
+  admins(adminId: ID): [User!]
   apiUrl: URL!
   blockedUsers: [User]
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   customFields: [OrganizationCustomField!]!
   description: String!
   image: String
-  isPublic: Boolean!
-  location: String
   members: [User]
   membershipRequests: [MembershipRequest]
   name: String!
   pinnedPosts: [Post]
+  updatedAt: DateTime!
+  userRegistrationRequired: Boolean!
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
   visibleInSearch: Boolean!
 }
@@ -592,23 +640,23 @@ type OrganizationCustomField {
 type OrganizationInfoNode {
   _id: ID!
   apiUrl: URL!
-  creator: User!
+  creator: User
   description: String!
   image: String
-  isPublic: Boolean!
   name: String!
+  userRegistrationRequired: Boolean!
   visibleInSearch: Boolean!
 }
 
 input OrganizationInput {
+  address: AddressInput!
   apiUrl: URL
   attendees: String
   description: String!
   image: String
-  isPublic: Boolean!
-  location: String
   name: String!
-  visibleInSearch: Boolean!
+  userRegistrationRequired: Boolean
+  visibleInSearch: Boolean
 }
 
 enum OrganizationOrderByInput {
@@ -643,13 +691,13 @@ input OrganizationWhereInput {
   id_not: ID
   id_not_in: [ID!]
   id_starts_with: ID
-  isPublic: Boolean
   name: String
   name_contains: String
   name_in: [String!]
   name_not: String
   name_not_in: [String!]
   name_starts_with: String
+  userRegistrationRequired: Boolean
   visibleInSearch: Boolean
 }
 
@@ -683,11 +731,11 @@ type Plugin {
   pluginCreatedBy: String!
   pluginDesc: String!
   pluginName: String!
-  uninstalledOrgs: [ID!]!
+  uninstalledOrgs: [ID!]
 }
 
 type PluginField {
-  createdAt: DateTime
+  createdAt: DateTime!
   key: String!
   status: Status!
   value: String!
@@ -712,8 +760,8 @@ type Post {
   _id: ID
   commentCount: Int
   comments: [Comment]
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   imageUrl: URL
   likeCount: Int
   likedBy: [User]
@@ -721,6 +769,7 @@ type Post {
   pinned: Boolean
   text: String!
   title: String
+  updatedAt: DateTime!
   videoUrl: URL
 }
 
@@ -793,6 +842,11 @@ input PostWhereInput {
 }
 
 type Query {
+  actionItem(id: ID!): ActionItem
+  actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
+  actionItemCategory(id: ID!): ActionItemCategory
+  actionItemsByEvent(eventId: ID!): [ActionItem]
+  actionItemsByOrganization(organizationId: ID!): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
@@ -853,37 +907,6 @@ type Subscription {
   onPluginUpdate: Plugin
 }
 
-type Task {
-  _id: ID!
-  completed: Boolean
-  createdAt: DateTime!
-  creator: User!
-  deadline: DateTime
-  description: String
-  event: Event!
-  title: String!
-  volunteers: [User]
-}
-
-input TaskInput {
-  deadline: DateTime!
-  description: String!
-  title: String!
-}
-
-enum TaskOrderByInput {
-  createdAt_ASC
-  createdAt_DESC
-  deadline_ASC
-  deadline_DESC
-  description_ASC
-  description_DESC
-  id_ASC
-  id_DESC
-  title_ASC
-  title_DESC
-}
-
 scalar Time
 
 input ToggleUserTagAssignInput {
@@ -913,6 +936,33 @@ type UnauthorizedError implements Error {
   message: String!
 }
 
+input UpdateActionItemCategoryInput {
+  isDisabled: Boolean
+  name: String
+}
+
+input UpdateActionItemInput {
+  assigneeId: ID
+  completionDate: Date
+  dueDate: Date
+  isCompleted: Boolean
+  postCompletionNotes: String
+  preCompletionNotes: String
+}
+
+input UpdateAdvertisementInput {
+  _id: ID!
+  endDate: Date
+  link: String
+  name: String
+  startDate: Date
+  type: AdvertisementType
+}
+
+type UpdateAdvertisementPayload {
+  advertisement: Advertisement
+}
+
 input UpdateEventInput {
   allDay: Boolean
   description: String
@@ -930,24 +980,12 @@ input UpdateEventInput {
   title: String
 }
 
-input UpdateEventProjectInput {
-  description: String
-  title: String
-}
-
 input UpdateOrganizationInput {
+  address: AddressInput
   description: String
-  isPublic: Boolean
-  location: String
   name: String
+  userRegistrationRequired: Boolean
   visibleInSearch: Boolean
-}
-
-input UpdateTaskInput {
-  completed: Boolean
-  deadline: DateTime
-  description: String
-  title: String
 }
 
 input UpdateUserInput {
@@ -987,9 +1025,8 @@ type User {
   adminApproved: Boolean
   adminFor: [Organization]
   appLanguageCode: String!
-  assignedTasks: [Task]
   birthDate: Date
-  createdAt: DateTime
+  createdAt: DateTime!
   createdEvents: [Event]
   createdOrganizations: [Organization]
   educationGrade: EducationGrade
@@ -1003,14 +1040,14 @@ type User {
   lastName: String!
   maritalStatus: MaritalStatus
   membershipRequests: [MembershipRequest]
-  organizationUserBelongsTo: Organization
   organizationsBlockedBy: [Organization]
   phone: UserPhone
-  pluginCreationAllowed: Boolean
+  pluginCreationAllowed: Boolean!
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!
-  userType: String
+  updatedAt: DateTime!
+  userType: UserType!
 }
 
 input UserAndOrganizationInput {
@@ -1102,6 +1139,7 @@ type UserTagsConnectionResult {
 
 enum UserType {
   ADMIN
+  NON_USER
   SUPERADMIN
   USER
 }

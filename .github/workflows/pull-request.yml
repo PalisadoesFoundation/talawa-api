@@ -26,6 +26,11 @@ jobs:
       - name: Checkout repository content
         uses: actions/checkout@v3
 
+      - name: Count number of lines
+        run: |
+          chmod +x ./.github/workflows/countline.py
+          ./.github/workflows/countline.py --lines 600 --exclude_files src/types/generatedGraphQLTypes.ts tests
+
       - name: Restore node_modules from cache
         id: cache-npm
         uses: actions/cache@v3
@@ -44,8 +49,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Run ESLint to check for linting errors
-        run: npm run lint:check
+      - name: Run ESLint to check for linting errors in modified files
+        run: npx eslint $(git diff --name-only --diff-filter=d -- '***.ts' ${{ github.event.before }} ${{ github.sha }})
 
       - name: Check for formatting errors
         run: npm run format:check
@@ -53,6 +58,31 @@ jobs:
       - name: Run Typescript Type-Checker
         run: npm run typecheck
 
+  File-count-check:
+    name: Counting files changed
+    runs-on: ubuntu-latest
+    env:
+      BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        
+      - name: Checkout code
+        run: git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-branch
+        working-directory: ${{ github.workspace }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11.6'
+
+      - name: Compare changes between Base branch and PR Head.
+        id: changed-files-base
+        run: |
+          git fetch origin $BASE_BRANCH
+          git checkout $BASE_BRANCH
+          python .github/workflows/check_files_submitted.py \
+            --base_branch $BASE_BRANCH --pr_branch pr-branch
 
   Test-Application:
     name: Testing Application
@@ -60,7 +90,7 @@ jobs:
     needs: [Code-Quality-Checks]
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [20.x]
     services:
       mongo:
         image: mongo:4.4
@@ -145,10 +175,14 @@ jobs:
             exit 1 
           fi
 
+      - name: Import Sample Data
+        run: npm run import:sample-data  
+
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
         uses: codecov/codecov-action@v3
         with:
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           name: '${{env.CODECOV_UNIQUE_NAME}}'
 
@@ -171,4 +205,16 @@ jobs:
       - name: 'Run JSDocs'
         if: env.RUN_JSDOCS == 'True'
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
+  
+  Branch-check:
+    name: "Base branch check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check if base branch is develop"
+        if: github.event.pull_request.base.ref != 'develop'
+        run: |
+          echo "PR is not against develop branch. Please refer PR_GUIDELINES.md"
+          exit 1
 
+      
+          

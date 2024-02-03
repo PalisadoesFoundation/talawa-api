@@ -5,6 +5,8 @@ import { faker } from "@faker-js/faker";
 import type mongoose from "mongoose";
 import { SampleData } from "../models/SampleData";
 
+/* eslint-disable */
+
 export const generateUserData = async (
   organizationId: string,
   userType: string
@@ -98,7 +100,7 @@ export const generateEventData = async (
     ]),
     isPublic: faker.datatype.boolean({ probability: 0.9 }),
     isRegisterable: faker.datatype.boolean(),
-    creator: faker.helpers.arrayElement(users)._id,
+    creatorId: faker.helpers.arrayElement(users)._id,
     admins: [faker.helpers.arrayElement(users)._id],
     organization: organizationId,
     status: "ACTIVE",
@@ -113,7 +115,7 @@ export const generateEventData = async (
 
   await sampleModel.save();
 
-  const creatorId = event.creator.toString();
+  const creatorId = event.creatorId.toString();
   await User.findByIdAndUpdate(
     creatorId,
     { $push: { eventsCreated: event._id } },
@@ -135,7 +137,7 @@ export const generatePostData = async (
     pinned: false,
     text: faker.lorem.sentence(),
     title: faker.lorem.words(),
-    creator: faker.helpers.arrayElement(users),
+    creatorId: faker.helpers.arrayElement(users),
     organization: organizationId,
     imageUrl: faker.image.url(),
     createdAt: faker.date.recent(),
@@ -214,13 +216,35 @@ export const createSampleOrganization = async (): Promise<void> => {
   const _id = faker.database.mongodbObjectId();
   const creator = await generateUserData(_id, "ADMIN");
 
+  interface Address {
+    city: string;
+    countryCode: string;
+    dependentLocality: string;
+    line1: string;
+    line2: string;
+    postalCode: string;
+    sortingCode: string;
+    state: string;
+  }
+
+  const address: Address = {
+    city: faker.address.city(),
+    countryCode: faker.address.countryCode(),
+    dependentLocality: faker.address.secondaryAddress(),
+    line1: faker.address.streetAddress(),
+    line2: faker.address.secondaryAddress(),
+    postalCode: faker.address.zipCode(),
+    sortingCode: faker.address.zipCode(),
+    state: faker.address.state(),
+  };
+
   const organization = new Organization({
     _id,
     name: faker.company.name(),
     description: faker.lorem.sentences(),
-    location: `${faker.location.country()}, ${faker.location.city()}`,
-    isPublic: true,
-    creator: creator._id,
+    address,
+    userRegistrationRequired: false,
+    creatorId: creator._id,
     status: "ACTIVE",
     members: [creator._id],
     admins: [creator._id],
