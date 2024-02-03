@@ -45,7 +45,6 @@ def main():
         [
             "docker",
             "exec",
-            "-it",
             args.mongo_container,
             "mongosh",
             "--eval",
