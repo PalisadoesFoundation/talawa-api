@@ -16,8 +16,8 @@
 
 ### ImageHash
 
-• `Const` **ImageHash**: `Model`\<[`InterfaceImageHash`](../interfaces/models_ImageHash.InterfaceImageHash.md), {}, {}\>
+• `Const` **ImageHash**: `Model`\<[`InterfaceImageHash`](../interfaces/models_ImageHash.InterfaceImageHash.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/ImageHash.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/ImageHash.ts#L46)
+[src/models/ImageHash.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/ImageHash.ts#L46)
