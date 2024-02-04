@@ -48,14 +48,14 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
     await adminCheck(context.userId, organization);
 
     // Upload Image
-    let uploadImageFileName;
-    
-      const resizedImageBuffer = await validateImage(args.file); // Resize image and check for image type
-      uploadImageFileName = await uploadEncodedImage(
-        resizedImageBuffer,
-        organization.image
-      );
-    
+    // let uploadImageFileName;
+
+    const resizedImageBuffer = await validateImage(args.file); // Resize image and check for image type
+    const uploadImageFileName = await uploadEncodedImage(
+      resizedImageBuffer,
+      organization.image
+    );
+
     // Updates the organization with new image and returns the updated organization.
     const updatedOrganization = await Organization.findOneAndUpdate(
       {
@@ -75,5 +75,8 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       await cacheOrganizations([updatedOrganization]);
     }
 
-    return updatedOrganization!;
+    if (!updatedOrganization) {
+      throw new Error("no such organization");
+    }
+    return updatedOrganization;
   };
