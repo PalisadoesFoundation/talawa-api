@@ -27,7 +27,7 @@
       "dependentLocality": "Some Dependent Locality",
       "line1": "123 Random Street",
       "line2": "Apartment 456",
-      "postalCode": "110011",
+      "postalCode": "10451",
       "sortingCode": "ABC-123",
       "state": "NYC"
     },
@@ -69,7 +69,7 @@
       "dependentLocality": "Some Dependent Locality",
       "line1": "123 Coffee Street",
       "line2": "Apartment 501",
-      "postalCode": "110012",
+      "postalCode": "11427",
       "sortingCode": "ABC-133",
       "state": "NYC"
     },
@@ -108,7 +108,7 @@
       "dependentLocality": "Some Dependent Locality",
       "line1": "123 church Street",
       "line2": "Apartment 499",
-      "postalCode": "110121",
+      "postalCode": "10301",
       "sortingCode": "ABC-122",
       "state": "NYC"
     },
@@ -147,7 +147,7 @@
       "dependentLocality": "Sample Dependent Locality",
       "line1": "123 Main Street",
       "line2": "Apt 456",
-      "postalCode": "11234",
+      "postalCode": "10004",
       "sortingCode": "ABC-789",
       "state": "NY"
     },
