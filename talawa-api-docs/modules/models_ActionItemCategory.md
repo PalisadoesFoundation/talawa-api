@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/models/ActionItemCategory.ts:67](https://github.com/PalisadoesFoundation/talawa-api/blob/1432ce3/src/models/ActionItemCategory.ts#L67)
+[src/models/ActionItemCategory.ts:67](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/ActionItemCategory.ts#L67)
