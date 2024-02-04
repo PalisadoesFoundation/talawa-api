@@ -16,8 +16,8 @@
 
 ### EventAttendee
 
-• `Const` **EventAttendee**: `Model`\<[`InterfaceEventAttendee`](../interfaces/models_EventAttendee.InterfaceEventAttendee.md), {}, {}\>
+• `Const` **EventAttendee**: `Model`\<[`InterfaceEventAttendee`](../interfaces/models_EventAttendee.InterfaceEventAttendee.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/EventAttendee.ts:39](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/EventAttendee.ts#L39)
+[src/models/EventAttendee.ts:39](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/EventAttendee.ts#L39)

@@ -16,8 +16,8 @@
 
 ### GroupChat
 
-• `Const` **GroupChat**: `Model`\<[`InterfaceGroupChat`](../interfaces/models_GroupChat.InterfaceGroupChat.md), {}, {}\>
+• `Const` **GroupChat**: `Model`\<[`InterfaceGroupChat`](../interfaces/models_GroupChat.InterfaceGroupChat.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/GroupChat.ts:76](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/GroupChat.ts#L76)
+[src/models/GroupChat.ts:76](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/GroupChat.ts#L76)

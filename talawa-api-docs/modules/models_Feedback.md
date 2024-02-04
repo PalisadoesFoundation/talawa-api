@@ -16,8 +16,8 @@
 
 ### Feedback
 
-• `Const` **Feedback**: `Model`\<[`InterfaceFeedback`](../interfaces/models_Feedback.InterfaceFeedback.md), {}, {}\>
+• `Const` **Feedback**: `Model`\<[`InterfaceFeedback`](../interfaces/models_Feedback.InterfaceFeedback.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/Feedback.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Feedback.ts#L46)
+[src/models/Feedback.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/Feedback.ts#L46)

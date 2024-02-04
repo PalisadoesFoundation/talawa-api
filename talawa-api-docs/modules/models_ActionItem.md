@@ -16,8 +16,8 @@
 
 ### ActionItem
 
-• `Const` **ActionItem**: `Model`\<[`InterfaceActionItem`](../interfaces/models_ActionItem.InterfaceActionItem.md), {}, {}\>
+• `Const` **ActionItem**: `Model`\<[`InterfaceActionItem`](../interfaces/models_ActionItem.InterfaceActionItem.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/ActionItem.ts:106](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItem.ts#L106)
+[src/models/ActionItem.ts:106](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/ActionItem.ts#L106)

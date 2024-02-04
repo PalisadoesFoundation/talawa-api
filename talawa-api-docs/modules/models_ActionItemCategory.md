@@ -16,8 +16,8 @@
 
 ### ActionItemCategory
 
-• `Const` **ActionItemCategory**: `Model`\<[`InterfaceActionItemCategory`](../interfaces/models_ActionItemCategory.InterfaceActionItemCategory.md), {}, {}\>
+• `Const` **ActionItemCategory**: `Model`\<[`InterfaceActionItemCategory`](../interfaces/models_ActionItemCategory.InterfaceActionItemCategory.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/ActionItemCategory.ts:67](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/ActionItemCategory.ts#L67)
+[src/models/ActionItemCategory.ts:67](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/ActionItemCategory.ts#L67)

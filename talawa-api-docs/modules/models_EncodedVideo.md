@@ -16,8 +16,8 @@
 
 ### EncodedVideo
 
-• `Const` **EncodedVideo**: `Model`\<[`InterfaceEncodedVideo`](../interfaces/models_EncodedVideo.InterfaceEncodedVideo.md), {}, {}\>
+• `Const` **EncodedVideo**: `Model`\<[`InterfaceEncodedVideo`](../interfaces/models_EncodedVideo.InterfaceEncodedVideo.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/EncodedVideo.ts:38](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/EncodedVideo.ts#L38)
+[src/models/EncodedVideo.ts:38](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/EncodedVideo.ts#L38)

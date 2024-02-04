@@ -16,8 +16,8 @@
 
 ### Comment
 
-• `Const` **Comment**: `Model`\<[`InterfaceComment`](../interfaces/models_Comment.InterfaceComment.md), {}, {}\>
+• `Const` **Comment**: `Model`\<[`InterfaceComment`](../interfaces/models_Comment.InterfaceComment.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/Comment.ts:72](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Comment.ts#L72)
+[src/models/Comment.ts:72](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/Comment.ts#L72)
