@@ -194,7 +194,7 @@ jobs:
           INPUT_MAIL_PASSWORD: ${{ secrets.API_DEMO_MAIL_PASSWORD }}
           INPUT_LAST_RESORT_SUPERADMIN_EMAIL: ${{ secrets.API_DEMO_LAST_RESORT_SUPERADMIN_EMAIL }}
         with:
-          host: ${{ secrets.API_DEMO_HOST }}
+          host: ${{secrets.API_DEMO_HOST}}
           username: ${{ secrets.API_DEMO_USERNAME }}
           key: ${{ secrets.API_DEMO_SSH_KEY }}
           port: ${{ secrets.API_DEMO_SSH_PORT}}
