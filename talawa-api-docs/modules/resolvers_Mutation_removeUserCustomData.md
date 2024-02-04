@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Mutation/removeUserCustomData.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/resolvers/Mutation/removeUserCustomData.ts#L12)
+[src/resolvers/Mutation/removeUserCustomData.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/resolvers/Mutation/removeUserCustomData.ts#L12)

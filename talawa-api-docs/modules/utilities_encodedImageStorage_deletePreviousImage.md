@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/utilities/encodedImageStorage/deletePreviousImage.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/utilities/encodedImageStorage/deletePreviousImage.ts#L5)
+[src/utilities/encodedImageStorage/deletePreviousImage.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/utilities/encodedImageStorage/deletePreviousImage.ts#L5)

@@ -22,4 +22,4 @@ An object that is the return value of the resolver for this field's parent.
 
 #### Defined in
 
-[src/resolvers/Organization/membershipRequests.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/resolvers/Organization/membershipRequests.ts#L8)
+[src/resolvers/Organization/membershipRequests.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/resolvers/Organization/membershipRequests.ts#L8)
