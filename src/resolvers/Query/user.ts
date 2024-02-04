@@ -2,6 +2,7 @@ import { USER_NOT_FOUND_ERROR } from "../../constants";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { errors } from "../../libraries";
 import { User } from "../../models";
+import { decryptEmail } from "../../utilities/encryptionModule";
 /**
  * This query fetch the user from the database.
  * @param _parent-
@@ -28,9 +29,18 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     .populate("adminFor")
     .lean();
 
+  if (!user) {
+    throw new errors.NotFoundError(
+      USER_NOT_FOUND_ERROR.DESC,
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
+    );
+  }
+  const { decrypted } = decryptEmail(user.email);
   // This Query field doesn't allow client to see organizations they are blocked by
   return {
     ...user!,
+    email: decrypted,
     image: user?.image ? `${context.apiRootUrl}${user.image}` : null,
     organizationsBlockedBy: [],
   };
