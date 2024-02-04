@@ -21,11 +21,8 @@ import {
 } from "vitest";
 import type { TestEventType } from "../../helpers/events";
 import { agendaCategories } from "../../../src/resolvers/Query/getAllAgendaCategories";
-import type {
-  TestAgendaCategoryType} from "../../helpers/agendaCategory";
-import {
-  createTestAgendaCategories,
-} from "../../helpers/agendaCategory";
+import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
+import { createTestAgendaCategories } from "../../helpers/agendaCategory";
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
