@@ -96,7 +96,7 @@ jobs:
   Generate-Documentation:
     name: Generate Documentation
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
+    # if: github.ref == 'refs/heads/automated-docs'
     needs: Push-Workflow
     steps:
       - name: Checkout repository
@@ -139,7 +139,7 @@ jobs:
           git config --global user.email "${{env.email}}"
           git add .
           git commit -m "Update documentation"
-          git push -f https://$GH_TOKEN@github.com/PalisadoesFoundation/talawa-api.git HEAD:develop
+          git push -f https://$GH_TOKEN@github.com/PalisadoesFoundation/talawa-api.git HEAD:automated-docs
           echo -e "🚀${Green} Hurrah! doc updated${NoColor}"
         env:
           ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -152,7 +152,6 @@ jobs:
   
   Copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
     needs: Generate-Documentation
     steps:
     - uses: actions/checkout@v3
@@ -194,7 +193,7 @@ jobs:
           INPUT_MAIL_PASSWORD: ${{ secrets.API_DEMO_MAIL_PASSWORD }}
           INPUT_LAST_RESORT_SUPERADMIN_EMAIL: ${{ secrets.API_DEMO_LAST_RESORT_SUPERADMIN_EMAIL }}
         with:
-          host: ${{ secrets.API_DEMO_HOST }}
+          host: ${{secrets.API_DEMO_HOST}}
           username: ${{ secrets.API_DEMO_USERNAME }}
           key: ${{ secrets.API_DEMO_SSH_KEY }}
           port: ${{ secrets.API_DEMO_SSH_PORT}}

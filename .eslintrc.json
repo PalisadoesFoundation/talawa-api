@@ -19,7 +19,8 @@
       "plugins": ["@graphql-eslint"],
       // Do not apply naming conventions to .graphql files
       "rules": {
-        "@typescript-eslint/naming-convention": "off"
+        "@typescript-eslint/naming-convention": "off",
+        "@typescript-eslint/consistent-type-assertions": "off"
       }
     },
     {
