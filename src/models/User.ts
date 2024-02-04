@@ -171,7 +171,7 @@ const userSchema = new Schema(
     email: {
       type: String,
       required: true,
-      validate: [validator.isEmail, "invalid email"],
+      // validate: [validator.isEmail, "invalid email"],
     },
     employmentStatus: {
       type: String,
