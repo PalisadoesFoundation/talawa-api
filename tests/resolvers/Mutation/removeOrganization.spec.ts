@@ -6,6 +6,8 @@ import type {
   InterfaceOrganization,
   InterfaceComment,
   InterfacePost,
+  InterfaceActionItemCategory,
+  InterfaceActionItem,
 } from "../../../src/models";
 import {
   User,
@@ -13,6 +15,8 @@ import {
   Post,
   Comment,
   MembershipRequest,
+  ActionItemCategory,
+  ActionItem,
 } from "../../../src/models";
 import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -42,6 +46,8 @@ let testOrganization: InterfaceOrganization &
   Document<any, any, InterfaceOrganization>;
 let testPost: InterfacePost & Document<any, any, InterfacePost>;
 let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
+let testCategory: InterfaceActionItemCategory & Document;
+let testActionItem: InterfaceActionItem & Document;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -114,6 +120,19 @@ beforeAll(async () => {
     text: "text",
     creatorId: testUsers[0]?._id,
     organization: testOrganization._id,
+  });
+
+  testCategory = await ActionItemCategory.create({
+    creatorId: testUsers[0]?._id,
+    organizationId: testOrganization?._id,
+    name: "Default",
+  });
+
+  testActionItem = await ActionItem.create({
+    creatorId: testUsers[0]?._id,
+    assigneeId: testUsers[1]?._id,
+    assignerId: testUsers[0]?._id,
+    actionItemCategoryId: testCategory?._id,
   });
 
   await Organization.updateOne(
@@ -331,11 +350,23 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       _id: testComment._id,
     }).lean();
 
+    const deletedTestCategories = await ActionItemCategory.find({
+      organizationId: testOrganization?._id,
+    }).lean();
+
+    const deteledTestActionItems = await ActionItem.find({
+      _id: testActionItem?._id,
+    });
+
     expect(deletedMembershipRequests).toEqual([]);
 
     expect(deletedTestPosts).toEqual([]);
 
     expect(deletedTestComments).toEqual([]);
+
+    expect(deletedTestCategories).toEqual([]);
+
+    expect(deteledTestActionItems).toEqual([]);
   });
 
   it(`removes the organization with image and returns the updated user's object with _id === context.userId`, async () => {

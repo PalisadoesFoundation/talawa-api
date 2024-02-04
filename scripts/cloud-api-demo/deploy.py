@@ -48,10 +48,10 @@ def main():
     execute_command(["git", "pull", "origin", args.branch])
 
     # Stop and remove existing containers
-    execute_command(["docker-compose", "down"])
+    execute_command(["docker","compose", "down"])
 
     # Build and launch containers in the background
-    execute_command(["docker-compose", "up", "-d", "--build"])
+    execute_command(["docker","compose", "up", "-d", "--build"])
 
     # Remove all unused containers, networks, and images (both dangling and all unused)
     execute_command(["docker", "system", "prune", "-f"])

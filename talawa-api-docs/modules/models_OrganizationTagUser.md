@@ -16,8 +16,8 @@
 
 ### OrganizationTagUser
 
-• `Const` **OrganizationTagUser**: `Model`\<[`InterfaceOrganizationTagUser`](../interfaces/models_OrganizationTagUser.InterfaceOrganizationTagUser.md), {}, {}\>
+• `Const` **OrganizationTagUser**: `Model`\<[`InterfaceOrganizationTagUser`](../interfaces/models_OrganizationTagUser.InterfaceOrganizationTagUser.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/OrganizationTagUser.ts:45](https://github.com/PalisadoesFoundation/talawa-api/blob/ac416c4/src/models/OrganizationTagUser.ts#L45)
+[src/models/OrganizationTagUser.ts:45](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/OrganizationTagUser.ts#L45)
