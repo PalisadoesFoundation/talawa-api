@@ -55,10 +55,7 @@ export const createTestFundAndFundCampaign = async (): Promise<
     TestCampaignPledgeType
   ]
 > => {
-  const testUserandOrg = await createTestUserAndOrganization();
-
-  const testUser = testUserandOrg[0];
-  const testOrg = testUserandOrg[1];
+  const [testUser, testOrganization] = await createTestUserAndOrganization();
 
   const date: Date = new Date();
   date.setDate(date.getDate() + 2);
@@ -73,7 +70,7 @@ export const createTestFundAndFundCampaign = async (): Promise<
 
   const testFund = await Fund.create({
     creatorId: testUser?._id,
-    organizationId: testOrg?._id,
+    organizationId: testOrganization?._id,
     archived: false,
     taxDeductible: true,
     defaultFund: true,
@@ -87,6 +84,7 @@ export const createTestFundAndFundCampaign = async (): Promise<
     name: `fund${nanoid().toLowerCase()}`,
     endDate: date,
     parentFund: testFund._id,
+    pledgeId: testPledge._id,
   });
 
   const newTestFund = await Fund.findByIdAndUpdate(
@@ -107,5 +105,11 @@ export const createTestFundAndFundCampaign = async (): Promise<
     }
   );
 
-  return [testUser, testFundCampaign, testOrg, newTestFund, newTestPledge];
+  return [
+    testUser,
+    testFundCampaign,
+    testOrganization,
+    newTestFund,
+    newTestPledge,
+  ];
 };

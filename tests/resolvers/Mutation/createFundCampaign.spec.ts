@@ -31,6 +31,7 @@ describe("resolvers -> Muatation -> createFundCampaign", () => {
         endDate: new Date(),
         startDate: Date.now(),
         parentFundId: new mongoose.Types.ObjectId().toString(),
+        pledgeId: new mongoose.Types.ObjectId().toString(),
       },
     };
 
