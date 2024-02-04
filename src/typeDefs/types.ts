@@ -420,6 +420,7 @@ export const types = gql`
   type PostsConnection {
     edges: [PostEdge!]!
     pageInfo: ConnectionPageInfo!
+    totalCount: PositiveInt
   }
   type PostEdge {
     node: Post!

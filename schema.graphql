@@ -838,6 +838,7 @@ input PostWhereInput {
 type PostsConnection {
   edges: [PostEdge!]!
   pageInfo: ConnectionPageInfo!
+  totalCount: PositiveInt
 }
 
 type Query {

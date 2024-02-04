@@ -3,10 +3,7 @@ import { GraphQLError } from "graphql";
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { InterfaceUser } from "../../../src/models";
-import {
-  isValidCursor,
-  posts as postResolver,
-} from "../../../src/resolvers/User/posts";
+import { posts as postResolver } from "../../../src/resolvers/User/posts";
 import type { ConnectionPageInfo } from "../../../src/types/generatedGraphQLTypes";
 import type { RelayConnectionArguments } from "../../../src/utilities/parseRelayConnectionArguments";
 import { parseRelayConnectionArguments } from "../../../src/utilities/parseRelayConnectionArguments";
@@ -49,8 +46,7 @@ describe("resolvers -> User -> post", () => {
       first: 1,
       after: null,
     };
-    const result = await isValidCursor(args.after);
-    expect(result).toBe(false);
+
     const post = await postResolver?.(parent, args, {});
     expect(post?.edges).toHaveLength(0);
     expect(post?.pageInfo.startCursor).toBe(undefined);
