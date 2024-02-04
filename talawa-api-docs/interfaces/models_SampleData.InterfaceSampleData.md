@@ -19,7 +19,7 @@
 
 #### Defined in
 
-[src/models/SampleData.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/SampleData.ts#L6)
+[src/models/SampleData.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/SampleData.ts#L6)
 
 ___
 
@@ -29,4 +29,4 @@ ___
 
 #### Defined in
 
-[src/models/SampleData.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/SampleData.ts#L5)
+[src/models/SampleData.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/SampleData.ts#L5)

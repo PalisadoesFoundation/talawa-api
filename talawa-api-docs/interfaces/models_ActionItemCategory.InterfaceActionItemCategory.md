@@ -26,7 +26,7 @@ This is an interface that represents a database(MongoDB) document for ActionItem
 
 #### Defined in
 
-[src/models/ActionItemCategory.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/ActionItemCategory.ts#L11)
+[src/models/ActionItemCategory.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/ActionItemCategory.ts#L11)
 
 ___
 
@@ -36,7 +36,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItemCategory.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/ActionItemCategory.ts#L16)
+[src/models/ActionItemCategory.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/ActionItemCategory.ts#L16)
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItemCategory.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/ActionItemCategory.ts#L15)
+[src/models/ActionItemCategory.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/ActionItemCategory.ts#L15)
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItemCategory.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/ActionItemCategory.ts#L14)
+[src/models/ActionItemCategory.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/ActionItemCategory.ts#L14)
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItemCategory.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/ActionItemCategory.ts#L12)
+[src/models/ActionItemCategory.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/ActionItemCategory.ts#L12)
 
 ___
 
@@ -76,7 +76,7 @@ ___
 
 #### Defined in
 
-[src/models/ActionItemCategory.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/ActionItemCategory.ts#L13)
+[src/models/ActionItemCategory.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/ActionItemCategory.ts#L13)
 
 ___
 
@@ -86,4 +86,4 @@ ___
 
 #### Defined in
 
-[src/models/ActionItemCategory.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/models/ActionItemCategory.ts#L17)
+[src/models/ActionItemCategory.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/ActionItemCategory.ts#L17)

@@ -29,4 +29,4 @@ You can learn about GraphQL `Resolvers`
 
 #### Defined in
 
-[src/resolvers/Query/event.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/resolvers/Query/event.ts#L13)
+[src/resolvers/Query/event.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/resolvers/Query/event.ts#L13)

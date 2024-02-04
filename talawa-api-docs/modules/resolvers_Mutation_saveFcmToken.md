@@ -35,4 +35,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/saveFcmToken.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/resolvers/Mutation/saveFcmToken.ts#L12)
+[src/resolvers/Mutation/saveFcmToken.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/resolvers/Mutation/saveFcmToken.ts#L12)

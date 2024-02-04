@@ -36,4 +36,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/addUserCustomData.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/resolvers/Mutation/addUserCustomData.ts#L20)
+[src/resolvers/Mutation/addUserCustomData.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/resolvers/Mutation/addUserCustomData.ts#L20)

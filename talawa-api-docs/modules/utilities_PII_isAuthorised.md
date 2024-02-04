@@ -27,4 +27,4 @@
 
 #### Defined in
 
-[src/utilities/PII/isAuthorised.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/utilities/PII/isAuthorised.ts#L3)
+[src/utilities/PII/isAuthorised.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/utilities/PII/isAuthorised.ts#L3)
