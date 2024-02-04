@@ -36,4 +36,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/updateOrganization.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/3ef6e18/src/resolvers/Mutation/updateOrganization.ts#L21)
+[src/resolvers/Mutation/updateOrganization.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/resolvers/Mutation/updateOrganization.ts#L21)
