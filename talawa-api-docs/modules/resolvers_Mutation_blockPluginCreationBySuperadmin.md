@@ -36,4 +36,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/blockPluginCreationBySuperadmin.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/resolvers/Mutation/blockPluginCreationBySuperadmin.ts#L16)
+[src/resolvers/Mutation/blockPluginCreationBySuperadmin.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/7d5b1e7/src/resolvers/Mutation/blockPluginCreationBySuperadmin.ts#L16)
