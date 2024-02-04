@@ -12,13 +12,8 @@ import { identifier_count } from "./identifier_count";
  * This is an interface that represents a database(MongoDB) document for User.
  */
 export interface InterfaceUser {
+  identifier: number;
   _id: Types.ObjectId;
-  identifier: {
-    type: number;
-    unique: true;
-    required: true;
-    immutable: true;
-  };
   address: {
     city: string;
     countryCode: string;
@@ -97,6 +92,12 @@ export interface InterfaceUser {
  * @param userType - User type.
  */
 const userSchema = new Schema({
+  identifier: {
+    type: Number,
+    unique: true,
+    required: true,
+    immutable: true,
+  },
   address: {
     city: {
       type: String,
@@ -294,16 +295,24 @@ const userSchema = new Schema({
 userSchema.plugin(mongoosePaginate);
 
 userSchema.pre<InterfaceUser>("save", async function (next) {
-  if (!this.identifier.type) {
-    const counter = await identifier_count.findOneAndUpdate(
-      { _id: "userCounter" },
-      { $inc: { sequence_value: 1 } },
-      { new: true, upsert: true }
-    );
 
-    this.identifier.type = counter.sequence_value;
+  console.log("running")
+  try {
+    if (!this.identifier || !this.identifier) {
+      const counter = await identifier_count.findOneAndUpdate(
+        { _id: "userCounter" },
+        { $inc: { sequence_value: 1 } },
+        { new: true, upsert: true }
+      );
+
+      this.identifier = counter.sequence_value;
+    }
+    return next();
+  } catch (error) {
+    console.log(error)
+    this.identifier = 9999;
   }
-  return next();
+
 });
 
 const userModel = (): PaginateModel<InterfaceUser> =>
