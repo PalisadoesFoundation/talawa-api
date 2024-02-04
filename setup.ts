@@ -1,4 +1,3 @@
-import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -616,9 +615,9 @@ function validateRecaptcha(string: string): boolean {
  * validated. In this case, it is expected to be a number less than 20 and greater than 0.
  * @returns a boolean value.
  */
-function validateImageFileSize(size: number): boolean {
-  return size > 0;
-}
+// function validateImageFileSize(size: number): boolean {
+//   return size > 0;
+// }
 
 /**
  * The `abort` function logs a message and exits the process.
@@ -1031,11 +1030,9 @@ async function main(): Promise<void> {
     await recaptchaSiteKey();
   }
 
-// setting the image size and format
+  // setting the image size and format
 
-console.log(
-  "\n You can configure your image upload\n"
-);
+  console.log("\n You can configure your image upload\n");
 
   // const { imageSizeLimit } = await inquirer.prompt([
   //   {
@@ -1055,121 +1052,148 @@ console.log(
 
   // await setImageUploadSize(imageSizeLimit * 1000);
 
-  
+  interface InterfaceImageValidationConfig {
+    maxImageSize: string;
+    maxImageWidth: string;
+    maxImageHeight: string;
+    supportedImageFormats: string;
+    [key: string]: string;
+  }
+  interface InterfaceImageConfig {
+    MAX_IMAGE_SIZE?: string;
+    MAX_IMAGE_WIDTH?: string;
+    MAX_IMAGE_HEIGHT?: string;
+    SUPPORTED_IMAGE_FORMATS?: string;
+  }
+  async function promptMaxImageSize(
+    existingConfig: InterfaceImageConfig
+  ): Promise<string> {
+    const sizeInMB = (
+      await inquirer.prompt({
+        type: "input",
+        name: "maxImageSizeMB",
+        message: "Enter the maximum allowed image size in MB:",
+        default:
+          existingConfig.MAX_IMAGE_SIZE || process.env.MAX_IMAGE_SIZE || "5", // Default: 5 MB
+      })
+    ).maxImageSizeMB;
 
-interface ImageValidationConfig {
-  maxImageSize: string;
-  maxImageWidth: string;
-  maxImageHeight: string;
-  supportedImageFormats: string;
-  [key: string]: string;
-}
+    // Convert size from KB to bytes
+    const sizeInBytes = String(Number(sizeInMB) * 1024 * 1024);
 
+    return sizeInBytes;
+  }
+  async function promptMaxImageWidth(
+    existingConfig: InterfaceImageConfig
+  ): Promise<string> {
+    return (
+      await inquirer.prompt({
+        type: "input",
+        name: "maxImageWidth",
+        message: "Enter the maximum allowed image width after resizing:",
+        default:
+          existingConfig.MAX_IMAGE_WIDTH ||
+          process.env.MAX_IMAGE_WIDTH ||
+          "800",
+      })
+    ).maxImageWidth;
+  }
 
-async function promptMaxImageSize(existingConfig: any): Promise<string> {
-  const sizeInMB = (await inquirer.prompt({
-    type: "input",
-    name: "maxImageSizeMB",
-    message: "Enter the maximum allowed image size in MB:",
-    default: existingConfig.MAX_IMAGE_SIZE || process.env.MAX_IMAGE_SIZE || "5", // Default: 5 MB
-  })).maxImageSizeMB;
+  async function promptMaxImageHeight(
+    existingConfig: InterfaceImageConfig
+  ): Promise<string> {
+    return (
+      await inquirer.prompt({
+        type: "input",
+        name: "maxImageHeight",
+        message: "Enter the maximum allowed image height after resizing:",
+        default:
+          existingConfig.MAX_IMAGE_HEIGHT ||
+          process.env.MAX_IMAGE_HEIGHT ||
+          "600",
+      })
+    ).maxImageHeight;
+  }
 
-  // Convert size from KB to bytes
-  const sizeInBytes = String(Number(sizeInMB) * 1024*1024);
+  async function promptSupportedImageFormats(
+    existingConfig: InterfaceImageConfig
+  ): Promise<string> {
+    return (
+      await inquirer.prompt({
+        type: "input",
+        name: "supportedImageFormats",
+        message: "Enter the supported image formats (comma-separated):",
+        default:
+          existingConfig.SUPPORTED_IMAGE_FORMATS ||
+          process.env.SUPPORTED_IMAGE_FORMATS ||
+          "jpg,jpeg,png",
+      })
+    ).supportedImageFormats;
+  }
 
-  return sizeInBytes;
-}
-async function promptMaxImageWidth(existingConfig: any): Promise<string> {
-  return (await inquirer.prompt({
-    type: "input",
-    name: "maxImageWidth",
-    message: "Enter the maximum allowed image width after resizing:",
-    default: existingConfig.MAX_IMAGE_WIDTH || process.env.MAX_IMAGE_WIDTH || "800",
-  })).maxImageWidth;
-}
+  async function getImageValidationConfig(): Promise<InterfaceImageValidationConfig> {
+    const existingConfig = dotenv.parse(fs.readFileSync(".env"));
 
-async function promptMaxImageHeight(existingConfig: any): Promise<string> {
-  return (await inquirer.prompt({
-    type: "input",
-    name: "maxImageHeight",
-    message: "Enter the maximum allowed image height after resizing:",
-    default: existingConfig.MAX_IMAGE_HEIGHT || process.env.MAX_IMAGE_HEIGHT || "600",
-  })).maxImageHeight;
-}
+    const maxImageSize = await promptMaxImageSize(existingConfig);
+    const maxImageWidth = await promptMaxImageWidth(existingConfig);
+    const maxImageHeight = await promptMaxImageHeight(existingConfig);
+    const supportedImageFormats = await promptSupportedImageFormats(
+      existingConfig
+    );
 
-async function promptSupportedImageFormats(existingConfig: any): Promise<string> {
-  return (await inquirer.prompt({
-    type: "input",
-    name: "supportedImageFormats",
-    message: "Enter the supported image formats (comma-separated):",
-    default: existingConfig.SUPPORTED_IMAGE_FORMATS || process.env.SUPPORTED_IMAGE_FORMATS || "jpg,jpeg,png",
-  })).supportedImageFormats;
-}
+    return {
+      maxImageSize,
+      maxImageWidth,
+      maxImageHeight,
+      supportedImageFormats,
+    };
+  }
 
-async function getImageValidationConfig(): Promise<ImageValidationConfig> {
-  const existingConfig = dotenv.parse(fs.readFileSync(".env"));
+  async function imageValidation(): Promise<void> {
+    const config = await getImageValidationConfig();
 
-  const maxImageSize = await promptMaxImageSize(existingConfig);
-  const maxImageWidth = await promptMaxImageWidth(existingConfig);
-  const maxImageHeight = await promptMaxImageHeight(existingConfig);
-  const supportedImageFormats = await promptSupportedImageFormats(existingConfig);
+    console.log("\nCurrent Image Validation Configurations:");
+    console.log(`  Max Image Size: ${config.maxImageSize}`);
+    console.log(`  Max Image Width: ${config.maxImageWidth}`);
+    console.log(`  Max Image Height: ${config.maxImageHeight}`);
+    console.log(`  Supported Image Formats: ${config.supportedImageFormats}`);
 
-  return {
-    maxImageSize,
-    maxImageWidth,
-    maxImageHeight,
-    supportedImageFormats,
-  } ;
-}
+    const { confirmUpdate } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "confirmUpdate",
+        message: "Do you want to update these configurations?",
+        default: false,
+      },
+    ]);
 
-async function imageValidation(): Promise<void> {
-  const config = await getImageValidationConfig();
-
-  console.log("\nCurrent Image Validation Configurations:");
-  console.log(`  Max Image Size: ${config.maxImageSize}`);
-  console.log(`  Max Image Width: ${config.maxImageWidth}`);
-  console.log(`  Max Image Height: ${config.maxImageHeight}`);
-  console.log(`  Supported Image Formats: ${config.supportedImageFormats}`);
-
-  const { confirmUpdate } = await inquirer.prompt([
+    if (confirmUpdate) {
+      fs.writeFileSync(".env", "");
+      for (const key in config) {
+        fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+      }
+      console.log("Configurations updated successfully!");
+    } else {
+      console.log("No changes made to configurations.");
+    }
+  }
+  const { shouldConfigureUpload } = await inquirer.prompt([
     {
       type: "confirm",
-      name: "confirmUpdate",
-      message: "Do you want to update these configurations?",
-      default: false,
+      name: "shouldConfigureUpload",
+      message: "Would you like to setup image upload and resize configuration?",
+      default: true,
     },
   ]);
-
-  if (confirmUpdate) {
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
-    console.log("Configurations updated successfully!");
+  if (shouldConfigureUpload) {
+    await imageValidation();
   } else {
-    console.log("No changes made to configurations.");
+    console.log("Image configuration skipped.\n");
   }
-}
-const { shouldConfigureUpload } = await inquirer.prompt([
-  {
-    type: "confirm",
-    name: "shouldConfigureUpload",
-    message: "Would you like to setup image upload and resize configuration?",
-    default: true,
-  },
-]);
-if (shouldConfigureUpload) {
-await imageValidation();
-  
-} else {
-  console.log("Image configuration skipped.\n");
-}
 
   console.log(
     "\n You can configure either SMTP or Mail for sending emails through Talawa.\n"
   );
-
-
 
   if (process.env.MAIL_USERNAME) {
     console.log(
@@ -1251,8 +1275,6 @@ await imageValidation();
       await importData();
     }
   }
-
- 
 
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"

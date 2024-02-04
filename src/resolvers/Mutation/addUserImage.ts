@@ -31,14 +31,11 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
     );
   }
 
-  let imageToUploadFilePath;
- 
-    const resizedImageBuffer = await validateImage(args.file); // Resize image and check for image type
-    imageToUploadFilePath = await uploadEncodedImage(
-      resizedImageBuffer,
-      currentUser?.image
-    );
-
+  const resizedImageBuffer = await validateImage(args.file); // Resize image and check for image type
+  const imageToUploadFilePath = await uploadEncodedImage(
+    resizedImageBuffer,
+    currentUser?.image
+  );
 
   // Updates the user with new image and returns the updated user.
   return await User.findOneAndUpdate(
