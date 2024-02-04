@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/ActionItem/assignee.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/7d5b1e7/src/resolvers/ActionItem/assignee.ts#L4)
+[src/resolvers/ActionItem/assignee.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/resolvers/ActionItem/assignee.ts#L4)

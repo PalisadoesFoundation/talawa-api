@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/models/ImageHash.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/7d5b1e7/src/models/ImageHash.ts#L46)
+[src/models/ImageHash.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ImageHash.ts#L46)
