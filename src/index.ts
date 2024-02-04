@@ -40,16 +40,15 @@ schema = roleDirectiveTransformer(schema, "role");
 const httpServer =
   process.env.NODE_ENV === "production"
     ? https.createServer(
-        {
-          //@ts-ignore
-          key: fs.readFileSync(path.join(__dirname, "../key.pem")),
-          cert: fs.readFileSync(path.join(__dirname, "../cert.pem")),
-        },
-        // :{}
-        app
-      )
+      {
+        //@ts-ignore
+        key: fs.readFileSync(path.join(__dirname, "../key.pem")),
+        cert: fs.readFileSync(path.join(__dirname, "../cert.pem")),
+      },
+      // :{}
+      app
+    )
     : http.createServer(app);
-
 const server = new ApolloServer({
   schema,
   formatError: (
@@ -129,8 +128,7 @@ async function startServer(): Promise<void> {
   await logIssues();
 
   logger.info(
-    `🚀 Server ready at ${
-      process.env.NODE_ENV === "production" ? "https" : "http"
+    `🚀 Server ready at ${process.env.NODE_ENV === "production" ? "https" : "http"
     }://localhost:4000/graphql`
   );
   logger.info(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
