@@ -8,15 +8,13 @@ const defaultSupportedFormats = (
 ).split(",");
 
 export async function validateImage(
-  file: any,
+  file: string,
   resizeConfirmation = false, // Default to false
   maxFileSize = defaultMaxFileSize,
   maxWidth = defaultMaxWidth,
   maxHeight = defaultMaxHeight,
   supportedFormats = defaultSupportedFormats
-) {
-  const dataUrlPrefix = "data:";
-
+): Promise<string> {
   if (!file) {
     throw new Error("Please upload images");
   }
@@ -39,7 +37,7 @@ export async function validateImage(
         imageDataURL.split(",")[0],
         "utf-8"
       );
-      const PrefixString: string = prefixImageBuffer.toString("utf-8");
+      const prefixString: string = prefixImageBuffer.toString("utf-8");
 
       // Check image size
       if (imageBuffer.length > maxFileSize) {
@@ -54,7 +52,7 @@ export async function validateImage(
         })
         .toBuffer();
 
-      const finalResizedImageBuffer = PrefixString.concat(
+      const finalResizedImageBuffer = prefixString.concat(
         ",",
         resizedImageBuffer.toString("base64")
       );
@@ -68,4 +66,3 @@ export async function validateImage(
     throw error;
   }
 }
-
