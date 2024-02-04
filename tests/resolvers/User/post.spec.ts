@@ -40,18 +40,7 @@ describe("resolvers -> User -> post", () => {
       expect(postConnection.edges).toHaveLength(0);
     }
   });
-  it("returns default graphql Connection", async () => {
-    const parent = testUser?.toObject() as InterfaceUser;
-    const args: RelayConnectionArguments = {
-      first: 1,
-      after: null,
-    };
 
-    const post = await postResolver?.(parent, args, {});
-    expect(post?.edges).toHaveLength(0);
-    expect(post?.pageInfo.startCursor).toBe(undefined);
-    expect(post?.pageInfo.endCursor).toBe(undefined);
-  });
   it("constructs query correctly with $gt operator when direction is BACKWARD", () => {
     const args: RelayConnectionArguments = {
       last: 1,

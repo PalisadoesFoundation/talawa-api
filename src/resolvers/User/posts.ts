@@ -36,7 +36,6 @@ export const posts: UserResolvers["posts"] = async (parent, args) => {
     .sort({ _id: paginationArgs.direction == "BACKWARD" ? 1 : -1 })
     .limit(paginationArgs.limit + 1)
     .lean();
-
   //if no posts found then return default graphqlConnection
   if (!posts || posts.length == 0) {
     return postConnection;
