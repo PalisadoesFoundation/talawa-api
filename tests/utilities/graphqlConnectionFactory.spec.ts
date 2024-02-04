@@ -1,15 +1,15 @@
-import { beforeAll, describe, expect, it } from "vitest";
-import {
-  graphqlConnectionFactory,
-  getLimit,
-  getFilterObject,
-  getSortingObject,
-  generateConnectionObject,
-} from "../../src/utilities/graphqlConnectionFactory";
-import { type CursorPaginationInput } from "../../src/types/generatedGraphQLTypes";
 import { Types } from "mongoose";
 import { nanoid } from "nanoid";
+import { beforeAll, describe, expect, it } from "vitest";
 import { MAXIMUM_FETCH_LIMIT } from "../../src/constants";
+import { type CursorPaginationInput } from "../../src/types/generatedGraphQLTypes";
+import {
+  generateConnectionObject,
+  getFilterObject,
+  getLimit,
+  getSortingObject,
+  graphqlConnectionFactory,
+} from "../../src/utilities/graphqlConnectionFactory";
 
 describe("utilities -> graphqlConnectionFactory -> graphqlConnectionFactory", () => {
   it(`Returns a connection object with default/pre-defined fields which
@@ -24,6 +24,7 @@ represents a connection that has no data at all and cannot be paginated.`, () =>
         hasNextPage: false,
         hasPreviousPage: false,
       },
+      totalCount: 0,
     });
   });
 });
