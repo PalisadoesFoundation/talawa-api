@@ -45,7 +45,7 @@ export const inputs = gql`
   input CreateAgendaCategoryInput {
     name: String!
     description: String
-    organization: ID!
+    organizationId: ID!
   }
 
   input CursorPaginationInput {

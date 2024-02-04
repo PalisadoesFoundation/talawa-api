@@ -32,8 +32,8 @@ import { userLanguage } from "./userLanguage";
 import { users } from "./users";
 import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
-import { agendaCategory } from "./getAgendaCategoryById";
-import { agendaCategories } from "./getAllAgendaCategories";
+import { agendaCategory } from "./agendaCategory";
+import { agendaCategories } from "./agendaCategories";
 export const Query: QueryResolvers = {
   actionItem,
   actionItemsByEvent,

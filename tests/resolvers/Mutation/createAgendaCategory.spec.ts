@@ -71,7 +71,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
         input: {
           name: "Agenda Category",
           description: "Description for the agenda category",
-          organization: testOrganization?._id,
+          organizationId: testOrganization?._id,
         },
       };
 
@@ -97,9 +97,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       const updatedOrganization = await Organization.findById(
         testOrganization?._id
       ).lean();
-      expect(updatedOrganization?.agendaCatgories).toContain(
-        createdAgendaCategory?._id.toString()
-      );
+
       // Verify that the properties of the returned agenda category match the expected values
       expect(createdAgendaCategory?.name).toEqual(args.input.name);
       expect(createdAgendaCategory?.description).toEqual(
@@ -117,7 +115,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
         input: {
           name: "Agenda Category",
           description: "Description for the agenda category",
-          organization: testOrganization?.id,
+          organizationId: testOrganization?.id,
         },
       };
 
@@ -148,7 +146,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
         input: {
           name: "Agenda Category",
           description: "Description for the agenda category",
-          organization: Types.ObjectId().toString(), // A random ID that does not exist in the database
+          organizationId: Types.ObjectId().toString(), // A random ID that does not exist in the database
         },
       };
 
@@ -180,7 +178,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
         input: {
           name: "Agenda Category",
           description: "Description for the agenda category",
-          organization: testOrganization?.id,
+          organizationId: testOrganization?.id,
         },
       };
 

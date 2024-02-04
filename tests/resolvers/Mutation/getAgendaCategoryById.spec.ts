@@ -11,7 +11,7 @@ import {
   type TestOrganizationType,
   type TestUserType,
 } from "../../helpers/userAndOrg";
-import { agendaCategory } from "../../../src/resolvers/Query/getAgendaCategoryById";
+import { agendaCategory } from "../../../src/resolvers/Query/agendaCategory";
 import { Types } from "mongoose";
 import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
 let testUser: TestUserType;

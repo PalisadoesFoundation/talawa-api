@@ -132,7 +132,7 @@ export type AgendaCategory = {
   createdBy: User;
   description?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
-  organization?: Maybe<Organization>;
+  organization: Organization;
   updatedAt?: Maybe<Scalars['Date']['output']>;
   updatedBy?: Maybe<User>;
 };
@@ -217,7 +217,7 @@ export type CreateActionItemInput = {
 export type CreateAgendaCategoryInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  organization: Scalars['ID']['input'];
+  organizationId: Scalars['ID']['input'];
 };
 
 export type CreateUserTagInput = {
@@ -1440,7 +1440,7 @@ export type Query = {
   actionItemsByOrganization?: Maybe<Array<Maybe<ActionItem>>>;
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   agendaCategories?: Maybe<Array<Maybe<AgendaCategory>>>;
-  agendaCategory?: Maybe<AgendaCategory>;
+  agendaCategory: AgendaCategory;
   checkAuth: User;
   customDataByOrganization: Array<UserCustomData>;
   customFieldsByOrganization?: Maybe<Array<Maybe<OrganizationCustomField>>>;
@@ -2444,7 +2444,7 @@ export type AgendaCategoryResolvers<ContextType = any, ParentType extends Resolv
   createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2964,7 +2964,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   actionItemsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByOrganizationArgs, 'organizationId'>>;
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   agendaCategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaCategory']>>>, ParentType, ContextType>;
-  agendaCategory?: Resolver<Maybe<ResolversTypes['AgendaCategory']>, ParentType, ContextType, RequireFields<QueryAgendaCategoryArgs, 'id'>>;
+  agendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<QueryAgendaCategoryArgs, 'id'>>;
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
   customFieldsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['OrganizationCustomField']>>>, ParentType, ContextType, RequireFields<QueryCustomFieldsByOrganizationArgs, 'id'>>;

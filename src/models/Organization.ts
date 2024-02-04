@@ -40,7 +40,6 @@ export interface InterfaceOrganization {
   updatedAt: Date;
   userRegistrationRequired: boolean;
   visibleInSearch: boolean;
-  agendaCatgories: PopulatedDoc<InterfaceAgendaCategory & Document>[];
 }
 /**
  * This describes the schema for a `Organization` that corresponds to `InterfaceOrganization` document.
@@ -135,12 +134,6 @@ const organizationSchema = new Schema(
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true,
-      },
-    ],
-    agendaCategories: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "AgendaCategory",
       },
     ],
     groupChats: [

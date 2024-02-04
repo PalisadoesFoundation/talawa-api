@@ -76,7 +76,7 @@ type AgendaCategory {
   createdBy: User!
   description: String
   name: String!
-  organization: Organization
+  organization: Organization!
   updatedAt: Date
   updatedBy: User
 }
@@ -158,7 +158,7 @@ input CreateActionItemInput {
 input CreateAgendaCategoryInput {
   description: String
   name: String!
-  organization: ID!
+  organizationId: ID!
 }
 
 input CreateUserTagInput {
@@ -870,7 +870,7 @@ type Query {
   actionItemsByOrganization(organizationId: ID!): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
   agendaCategories: [AgendaCategory]
-  agendaCategory(id: ID!): AgendaCategory
+  agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]

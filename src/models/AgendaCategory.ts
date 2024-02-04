@@ -34,7 +34,7 @@ export const AgendaCategorySchema = new Schema({
     type: String,
     trim: true,
   },
-  organization: {
+  organizationId: {
     type: Schema.Types.ObjectId,
     ref: "Organization",
   },

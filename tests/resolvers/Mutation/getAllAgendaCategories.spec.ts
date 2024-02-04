@@ -20,7 +20,7 @@ import {
   test,
 } from "vitest";
 import type { TestEventType } from "../../helpers/events";
-import { agendaCategories } from "../../../src/resolvers/Query/getAllAgendaCategories";
+import { agendaCategories } from "../../../src/resolvers/Query/agendaCategories";
 import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
 import { createTestAgendaCategories } from "../../helpers/agendaCategory";
 let testUser: TestUserType;

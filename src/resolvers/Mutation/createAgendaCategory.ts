@@ -47,13 +47,13 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
     }
 
     const organizationFoundInCache = await findOrganizationsInCache([
-      args.input.organization,
+      args.input.organizationId,
     ]);
 
     const organization =
       organizationFoundInCache[0] ||
       (await Organization.findOne({
-        _id: args.input.organization,
+        _id: args.input.organizationId,
       }).lean());
 
     if (organizationFoundInCache[0] == null && organization) {
