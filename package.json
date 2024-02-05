@@ -131,7 +131,7 @@
     "graphql-markdown": "^7.0.0",
     "husky": "^9.0.6",
     "lint-staged": "^15.2.1",
-    "prettier": "^2.7.1",
+    "prettier": "^3.2.5",
     "rimraf": "^5.0.5",
     "tsx": "^4.7.0",
     "typescript": "^5.3.2",
