@@ -14,7 +14,7 @@ import { superAdminCheck } from "../../utilities";
  * @context The following checks are done:
  * 1. If the user family exists
  * 2. If the user is super admin.
- * @returns Deleted user family. 
+ * @returns Deleted user family.
  */
 export const removeUserFamily: MutationResolvers["removeUserFamily"] = async (
   _parent,
