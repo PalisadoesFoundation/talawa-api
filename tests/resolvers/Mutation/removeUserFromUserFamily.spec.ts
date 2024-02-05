@@ -75,7 +75,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -159,7 +159,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -215,7 +215,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -244,7 +244,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`
+        `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`,
       );
     }
   });
@@ -272,14 +272,14 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       const updatedUserFamily = await removeUserFromUserFamilyResolver?.(
         {},
         args,
-        context
+        context,
       );
 
       expect(updatedUserFamily?.users).not.toContain(testUsers[4]?._id);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });

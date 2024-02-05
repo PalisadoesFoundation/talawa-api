@@ -32,13 +32,13 @@ const organizationTagUserSchema = new Schema({
 
 organizationTagUserSchema.index(
   { organizationId: 1, parentOrganizationTagUserId: 1, name: 1 },
-  { unique: true }
+  { unique: true },
 );
 
 const organizationTagUserModel = (): Model<InterfaceOrganizationTagUser> =>
   model<InterfaceOrganizationTagUser>(
     "OrganizationTagUser",
-    organizationTagUserSchema
+    organizationTagUserSchema,
   );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

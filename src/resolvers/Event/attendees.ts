@@ -9,6 +9,6 @@ export const attendees: EventResolvers["attendees"] = async (parent) => {
     .lean();
 
   return eventAttendeeObjects.map(
-    (eventAttendeeObject) => eventAttendeeObject.userId
+    (eventAttendeeObject) => eventAttendeeObject.userId,
   );
 };

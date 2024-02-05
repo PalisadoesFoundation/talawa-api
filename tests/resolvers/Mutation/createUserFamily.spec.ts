@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -90,7 +90,7 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+        `${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
     }
   });
@@ -119,10 +119,10 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
       await createUserFamilyResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
       );
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
       );
     }
   });
@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
       await createUserFamilyResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(
-        USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE
+        USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE,
       );
       expect(error.code).toEqual(USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE);
     }
@@ -176,13 +176,13 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
     const createUserFamilyPayload = await createUserFamilyResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createUserFamilyPayload).toEqual(
       expect.objectContaining({
         title: "title",
-      })
+      }),
     );
   });
 });

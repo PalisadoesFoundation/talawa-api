@@ -20,10 +20,10 @@ const formats = {
             .length === 0
             ? ""
             : JSON.stringify(
-                _.omit(info, ["level", "message", "stack", "timestamp"])
+                _.omit(info, ["level", "message", "stack", "timestamp"]),
               )
-        } ${info.stack || ""}`
-    )
+        } ${info.stack || ""}`,
+    ),
   ),
   non_colorized: combine(
     splat(),
@@ -38,10 +38,10 @@ const formats = {
             .length === 0
             ? ""
             : JSON.stringify(
-                _.omit(info, ["level", "message", "stack", "timestamp"])
+                _.omit(info, ["level", "message", "stack", "timestamp"]),
               )
-        } ${info.stack || ""}`
-    )
+        } ${info.stack || ""}`,
+    ),
   ),
 };
 

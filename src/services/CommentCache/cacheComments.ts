@@ -4,7 +4,7 @@ import CommentCache from "../redisCache";
 
 // Function to store comments in the cache using pipelining
 export async function cacheComments(
-  comments: InterfaceComment[]
+  comments: InterfaceComment[],
 ): Promise<void> {
   try {
     const pipeline = CommentCache.pipeline();

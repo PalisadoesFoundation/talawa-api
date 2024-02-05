@@ -35,7 +35,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
       organizationId: args.organizationId,
     });
     const actionItemCategoriesIds = actionItemCategories.map(
-      (category) => category._id
+      (category) => category._id,
     );
 
     const actionItemsByOrganizationInfo = await ActionItem.find({
@@ -43,7 +43,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
     }).lean();
 
     expect(actionItemsByOrganizationPayload).toEqual(
-      actionItemsByOrganizationInfo
+      actionItemsByOrganizationInfo,
     );
   });
 });

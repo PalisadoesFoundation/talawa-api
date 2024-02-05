@@ -121,7 +121,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
         $set: {
           users: [],
         },
-      }
+      },
     );
 
     const args: MutationAddUserToUserFamilyArgs = {
@@ -139,7 +139,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
     const addUserToUserFamilyPayload = await addUserToUserFamily?.(
       {},
       args,
-      context
+      context,
     );
     expect(addUserToUserFamilyPayload?._id).toEqual(testUserFamily?._id);
     expect(addUserToUserFamilyPayload?.users).toEqual([testUser?._id]);

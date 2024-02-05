@@ -11,13 +11,13 @@ import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
 function roleDirectiveTransformer(schema, directiveName): any {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (
-      fieldConfig: GraphQLFieldConfig<any, any>
+      fieldConfig: GraphQLFieldConfig<any, any>,
     ): any => {
       // Check whether this field has the specified directive
       const roleDirective = getDirective(
         schema,
         fieldConfig,
-        directiveName
+        directiveName,
       )?.[0];
 
       if (roleDirective) {
@@ -31,7 +31,7 @@ function roleDirectiveTransformer(schema, directiveName): any {
           root,
           args,
           context,
-          info
+          info,
         ): Promise<string> => {
           const currentUser = await User.findOne({
             _id: context.userId,
@@ -41,7 +41,7 @@ function roleDirectiveTransformer(schema, directiveName): any {
             throw new errors.NotFoundError(
               USER_NOT_FOUND_ERROR.MESSAGE,
               USER_NOT_FOUND_ERROR.CODE,
-              USER_NOT_FOUND_ERROR.PARAM
+              USER_NOT_FOUND_ERROR.PARAM,
             );
           }
 
@@ -49,7 +49,7 @@ function roleDirectiveTransformer(schema, directiveName): any {
             throw new errors.UnauthenticatedError(
               USER_NOT_AUTHORIZED_ERROR.MESSAGE,
               USER_NOT_AUTHORIZED_ERROR.CODE,
-              USER_NOT_AUTHORIZED_ERROR.PARAM
+              USER_NOT_AUTHORIZED_ERROR.PARAM,
             );
           }
 
