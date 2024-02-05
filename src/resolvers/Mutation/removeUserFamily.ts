@@ -11,8 +11,9 @@ import { superAdminCheck } from "../../utilities";
  * This function enables to remove a user family.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
- * @context The following checks are done:
- * 1. If the user family exists
+ * @param context - context of entire application.
+ * @remarks - The following checks are done:
+ * 1. If the user family exists.
  * 2. If the user is super admin.
  * @returns Deleted user family.
  */
