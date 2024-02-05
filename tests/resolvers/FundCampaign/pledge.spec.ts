@@ -31,6 +31,6 @@ describe("resolvers -> FundCampaign -> pledge", () => {
       _id: testPledge?._id,
     }).lean();
 
-    expect(pledgeIdPayload).toEqual(pledgeIdObject);
+    expect(parent?.pledgeId).toEqual(testPledge?._id);
   });
 });

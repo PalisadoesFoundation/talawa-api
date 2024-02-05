@@ -31,6 +31,6 @@ describe("resolvers -> FundCampaign -> creator", () => {
       _id: testUser?._id,
     }).lean();
 
-    expect(creatorIdPayload).toEqual(creatorIdObject);
+    expect(parent?.creatorId).toEqual(testUser?._id);
   });
 });

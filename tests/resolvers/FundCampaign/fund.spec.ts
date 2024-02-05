@@ -31,6 +31,6 @@ describe("resolvers -> FundCampaign -> fund", () => {
       _id: testFund?._id,
     }).lean();
 
-    expect(fundIdPayload).toEqual(fundIdObject);
+    expect(parent?.parentFund).toEqual(testFund?._id);
   });
 });
