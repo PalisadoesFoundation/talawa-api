@@ -1,4 +1,7 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type {
+  MutationResolvers,
+  UpdateAgendaCategoryInput,
+} from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { AgendaCategoryModel, User } from "../../models";
 import {
@@ -85,16 +88,13 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
         $set: {
           updatedBy: context.userId,
           // eslint-disable-next-line
-          ...(args.input as any),
+          ...(args.input as UpdateAgendaCategoryInput),
         },
       },
       {
         new: true,
       }
     ).lean();
-    if (updatedAgendaCategory) {
-      return updatedAgendaCategory;
-    } else {
-      throw new Error("Unexpected null value for updatedAgendaCategory");
-    }
+
+    return updatedAgendaCategory;
   };

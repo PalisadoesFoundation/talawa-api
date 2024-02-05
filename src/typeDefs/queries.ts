@@ -21,8 +21,6 @@ export const queries = gql`
 
     agendaCategory(id: ID!): AgendaCategory!
 
-    agendaCategories: [AgendaCategory]
-
     checkAuth: User! @auth
 
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]

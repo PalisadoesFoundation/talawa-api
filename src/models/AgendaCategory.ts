@@ -54,7 +54,6 @@ export const AgendaCategorySchema = new Schema({
   },
   updatedAt: {
     type: Date,
-
     default: Date.now,
   },
 });

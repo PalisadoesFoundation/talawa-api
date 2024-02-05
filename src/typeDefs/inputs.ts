@@ -320,7 +320,6 @@ export const inputs = gql`
   input UpdateAgendaCategoryInput {
     name: String
     description: String
-    organizationId: ID
   }
 
   input AddressInput {

@@ -226,7 +226,7 @@ export const mutations = gql`
     updateAgendaCategory(
       id: ID!
       input: UpdateAgendaCategoryInput!
-    ): AgendaCategory!
+    ): AgendaCategory
 
     updateAdvertisement(
       input: UpdateAdvertisementInput!

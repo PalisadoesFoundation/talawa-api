@@ -33,12 +33,11 @@ import { users } from "./users";
 import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
 import { agendaCategory } from "./agendaCategory";
-import { agendaCategories } from "./agendaCategories";
+
 export const Query: QueryResolvers = {
   actionItem,
   actionItemsByEvent,
   actionItemCategory,
-  agendaCategories,
   agendaCategory,
   actionItemsByOrganization,
   actionItemCategoriesByOrganization,
