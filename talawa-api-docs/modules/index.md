@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/index.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/4e2c75b/src/index.ts#L25)
+[src/index.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/index.ts#L25)
