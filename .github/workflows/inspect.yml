@@ -34,4 +34,4 @@ jobs:
 
       - uses: kamilkisiela/graphql-inspector@master
         with:
-          schema: develop:schema.graphql
+          schema: ${{ github.base_ref }}:schema.graphql
