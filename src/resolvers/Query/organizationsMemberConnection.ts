@@ -3,6 +3,7 @@ import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
+import { decryptEmail } from "../../utilities/encryptionModule";
 
 /**
  * This query will retrieve from the database a list of members
@@ -65,16 +66,20 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       }
 
       users = usersModel.docs.map((user) => {
+        const { decrypted } = decryptEmail(user.email);
         return {
           ...user,
+          email: decrypted,
           image: user.image ? `${context.apiRootUrl}${user.image}` : null,
           password: null,
         };
       });
     } else {
       users = usersModel.docs.map((user) => {
+        const { decrypted } = decryptEmail(user.email);
         return {
           ...user._doc,
+          email: decrypted,
           image: user.image ? `${context.apiRootUrl}${user.image}` : null,
           password: null,
         };

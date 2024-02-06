@@ -2,6 +2,7 @@ import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { decryptEmail } from "../../utilities/encryptionModule";
 /**
  * This resolver function will fetch and return the creator of the Organization from database.
  * @param parent - An object that is the return value of the resolver for this field's parent.
@@ -20,5 +21,7 @@ export const creator: OrganizationResolvers["creator"] = async (parent) => {
     );
   }
 
+  const { decrypted } = decryptEmail(user.email);
+  user.email = decrypted;
   return user;
 };

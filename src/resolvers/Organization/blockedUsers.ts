@@ -1,5 +1,6 @@
 import { User } from "../../models";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
+import { decryptEmail } from "../../utilities/encryptionModule";
 /**
  * This resolver function will fetch and return the blocked users for the Organization from database.
  * @param parent - An object that is the return value of the resolver for this field's parent.
@@ -8,9 +9,22 @@ import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 export const blockedUsers: OrganizationResolvers["blockedUsers"] = async (
   parent
 ) => {
-  return await User.find({
-    _id: {
-      $in: parent.blockedUsers,
-    },
-  }).lean();
+  try {
+    const blockedUsers = await User.find({
+      _id: {
+        $in: parent.blockedUsers,
+      },
+    }).lean();
+
+    // Decrypting email parameter for each blocked user object
+    const decryptedBlockedUsers = blockedUsers.map((blockedUser: any) => {
+      const { decrypted } = decryptEmail(blockedUser.email);
+      return { ...blockedUser, email: decrypted }; // Returning blocked user object with decrypted email
+    });
+
+    return decryptedBlockedUsers;
+  } catch (error) {
+    console.error("Error fetching blocked users:", error);
+    throw error;
+  }
 };

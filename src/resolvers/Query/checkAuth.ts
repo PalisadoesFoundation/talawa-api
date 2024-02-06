@@ -2,6 +2,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { User } from "../../models";
 import { errors } from "../../libraries";
+import { decryptEmail } from "../../utilities/encryptionModule";
 /**
  * This query determines whether or not the user exists in the database (MongoDB).
  * @param _parent - The return value of the resolver for this field's parent
@@ -26,9 +27,10 @@ export const checkAuth: QueryResolvers["checkAuth"] = async (
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
-
+  const { decrypted } = decryptEmail(currentUser.email);
   return {
     ...currentUser,
+    email: decrypted,
     image: currentUser.image
       ? `${context.apiRootUrl}${currentUser.image}`
       : null,

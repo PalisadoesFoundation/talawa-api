@@ -2,6 +2,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { errors } from "../../libraries";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { decryptEmail } from "../../utilities/encryptionModule";
 /**
  * This query fetch the current user from the database.
  * @param _parent-
@@ -30,6 +31,8 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
+  const { decrypted } = decryptEmail(currentUser.email);
+  currentUser.email = decrypted;
 
   return currentUser;
 };
