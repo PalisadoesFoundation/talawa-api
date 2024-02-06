@@ -6,7 +6,8 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { AgendaCategoryModel, Organization } from "../../../src/models";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
-import { TestUserType, createTestUser } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUser } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
@@ -22,7 +23,7 @@ beforeAll(async () => {
     isPublic: true,
     creator: testAdminUser?._id,
     admins: [testAdminUser?._id],
-    members: [ testAdminUser?._id],
+    members: [testAdminUser?._id],
     creatorId: testAdminUser?._id,
   });
   testAgendaCategory = await AgendaCategoryModel.create({
