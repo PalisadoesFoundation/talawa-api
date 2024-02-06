@@ -11,8 +11,8 @@ import {
   USER_FAMILY_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type { TestUserType } from "../../helpers/userAndUserFamily";
-import type { TestUserFamilyType } from "../../helpers/userAndUserFamily";
+import type { TestUserType , TestUserFamilyType } from "../../helpers/userAndUserFamily";
+
 import { createTestUserAndUserFamily } from "../../helpers/userAndUserFamily";
 
 let testUser: TestUserType;
