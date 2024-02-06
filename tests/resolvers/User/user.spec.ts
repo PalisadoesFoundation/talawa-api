@@ -1,9 +1,10 @@
 import "dotenv/config";
 import { connect, disconnect } from "../../helpers/db";
-import { beforeEach, describe, it, expect , beforeAll,afterAll} from "vitest";
+import { beforeEach, describe, it, expect, beforeAll, afterAll } from "vitest";
 import { User } from "../../../src/models";
 import type mongoose from "mongoose";
-
+import { createTestUserFunc } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/user";
 let MONGOOSE_INSTANCE: typeof mongoose;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -32,34 +33,37 @@ describe("User Identifier Tests", () => {
     await User.deleteMany({});
   });
   it("identifier should be a numeric value", async () => {
-    const user1 = await User.create({
-      firstName: "john",
-      lastName: "doe"
-    })
-    await user1.save()
-    expect(typeof user1.identifier === 'number').toBe(true);
-  }
-  )
-  
+    const user1: TestUserType = await createTestUserFunc();
+    if (user1) {
+      await user1.save();
+      expect(typeof user1.identifier === "number").toBe(true);
+    }
+  });
+  it("should be immutable", async () => {
+    const user1: TestUserType = await createTestUserFunc();
+    if (user1) {
+      try {
+        const updatedUser = await User.findOneAndUpdate(
+          { _id: user1._id },
+          { $set: { identifier: 1 } },
+          { new: true }
+        );
+      } catch (error) {
+        expect(error.name).to.equal('ValidationError');
+      }
+    }
+  });
   it("identifier should be sequential and incremental", async () => {
-    const user1 = await User.create({
-      firstName: "john",
-      lastName: "doe"
-    })
+    const user1: TestUserType = await createTestUserFunc();
+    const user2: TestUserType = await createTestUserFunc();
 
-    const user2 = await User.create({
-      firstName: "john",
-      lastName: "doe"
-    })
-    await user2.save()
-    await user1.save()
-    expect(user1.identifier.type).toBeGreaterThan(user2.identifier.type);
-    
-  }
-  )
+    if (user1 && user2) {
+      await user1.save();
+      expect(typeof user1.identifier === "number").toBe(true);
 
-})
-
-
-  
- 
+      await user2.save();
+      expect(typeof user2.identifier === "number").toBe(true);
+      expect(user1.identifier).toBeGreaterThan(user2.identifier);
+    }
+  });
+});

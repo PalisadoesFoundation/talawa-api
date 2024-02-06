@@ -368,6 +368,7 @@ export const types = gql`
 
   type User {
     _id: ID!
+    identifier:Int!
     address: Address
     adminApproved: Boolean
     adminFor: [Organization]
