@@ -2,7 +2,9 @@ import bcrypt from "bcryptjs";
 import { jwtDecode } from "jwt-decode";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
-import { INVALID_OTP } from "../../constants";
+import { ACCESS_TOKEN_SECRET, INVALID_OTP } from "../../constants";
+import jwt from "jsonwebtoken";
+
 /**
  * This function enables a user to restore password.
  * @param _parent - parent of current request
@@ -20,7 +22,9 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
 ) => {
   const { userOtp, newPassword, otpToken } = args.data;
 
-  // Extracts email and otp out of otpToken.
+  // To verify token's authenticity
+  jwt.verify(otpToken, ACCESS_TOKEN_SECRET as string);
+
   const { email, otp } = jwtDecode<{
     email: string;
     otp: string;
@@ -32,6 +36,23 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
   // Checks whether otp is valid.
   if (otpIsValid === false) {
     throw new Error(INVALID_OTP);
+  }
+
+  const user = await User.findOne({ email }).lean();
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+  const oldHashedPassword: string = user.password;
+
+  //Checks whether the old password is same as the new one
+  const isSameAsOldPassword = await bcrypt.compare(
+    newPassword,
+    oldHashedPassword
+  );
+
+  if (isSameAsOldPassword == false) {
+    throw new Error("New password cannot be same as old password");
   }
 
   const hashedPassword = await bcrypt.hash(newPassword, 12);
