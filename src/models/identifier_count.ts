@@ -1,5 +1,5 @@
 import mongoose, { Schema, model } from "mongoose";
-import type { Document } from "mongoose";
+import type { Document, Model } from "mongoose";
 
 interface InterfaceIdentifier extends Document{
   id: string,
@@ -11,7 +11,7 @@ const identifierSchema = new Schema<InterfaceIdentifier>({
   sequence_value: { type: Number },
 });
 
-let lastIdentifier:InterfaceIdentifier
+let lastIdentifier:Model<InterfaceIdentifier>
 if (mongoose.models.identifier_count) {
   lastIdentifier = model("identifier_count");
 }
@@ -23,3 +23,4 @@ else {
 export const identifier_count = lastIdentifier;
 
 
+  

@@ -298,7 +298,7 @@ userSchema.pre<InterfaceUser>("save", async function (next) {
 
   console.log("running")
   try {
-    if (!this.identifier || !this.identifier) {
+    if (!this.identifier) {
       const counter = await identifier_count.findOneAndUpdate(
         { _id: "userCounter" },
         { $inc: { sequence_value: 1 } },
