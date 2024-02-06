@@ -88,7 +88,7 @@ import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
-import { deleteAdvertisementById } from "./deleteAdvertisementById";
+import { deleteAdvertisement } from "./deleteAdvertisement";
 import { updateAdvertisement } from "./updateAdvertisement";
 
 export const Mutation: MutationResolvers = {
@@ -127,7 +127,7 @@ export const Mutation: MutationResolvers = {
   createActionItemCategory,
   createUserTag,
   deleteDonationById,
-  deleteAdvertisementById,
+  deleteAdvertisement,
   forgotPassword,
   joinPublicOrganization,
   leaveOrganization,
