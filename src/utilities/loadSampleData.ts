@@ -4,6 +4,8 @@ import fs from "fs/promises";
 import path from "path";
 import { connect } from "../db";
 import { User, Organization, Event, Post } from "../models";
+import { decrypt } from "dotenv";
+import { decryptEmail, encryptEmail } from "./encryptionModule";
 
 interface InterfaceArgs {
   items?: string;
@@ -57,6 +59,10 @@ async function insertCollections(collections: string[]): Promise<void> {
 
       switch (collection) {
         case "users":
+          for (const user of docs) {
+            const encryptedEmail = encryptEmail(user.email as string);
+            user.email = encryptedEmail;
+          }
           await User.insertMany(docs);
           break;
         case "organizations":
