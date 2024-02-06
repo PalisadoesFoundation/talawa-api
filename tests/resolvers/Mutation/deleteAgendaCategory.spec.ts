@@ -14,23 +14,19 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import test from "node:test";
-import { organizations } from "../../../src/resolvers/Query/organizations";
-import type { MutationDeleteAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
+ import type { MutationDeleteAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
 import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testAdminUser: TestUserType;
 let sampleAgendaCategory: TestAgendaCategoryType;
 let testOrganization: TestOrganizationType;
-let testUser2: TestUserType;
 let randomUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
   testAdminUser = await createTestUser();
-  testUser2 = await createTestUser();
   randomUser = await createTestUser();
   testOrganization = await Organization.create({
     name: "name",

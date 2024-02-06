@@ -2,12 +2,10 @@ import type { InterfaceAgendaCategory } from "../../src/models";
 import { AgendaCategoryModel, Organization } from "../../src/models";
 import type { Document } from "mongoose";
 import {
-  createTestUserAndOrganization,
   type TestOrganizationType,
   type TestUserType,
 } from "./userAndOrg";
 import { createTestUser } from "./user";
-import { Test } from "vitest";
 
 export type TestAgendaCategoryType = InterfaceAgendaCategory & Document;
 

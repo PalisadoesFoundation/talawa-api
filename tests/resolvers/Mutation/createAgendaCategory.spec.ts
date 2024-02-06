@@ -1,13 +1,9 @@
 import {
-  AGENDA_CATEGORY_NOT_FOUND_ERROR,
-  LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { expect, vi, beforeAll, afterAll, describe, it } from "vitest";
 import type { MutationCreateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
-import { createAgendaCategory } from "../../../src/resolvers/Mutation/createAgendaCategory";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestUser } from "../../helpers/userAndOrg";
 import type {
@@ -17,14 +13,12 @@ import type {
 import { Organization, User } from "../../../src/models";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { errors } from "../../../src/libraries";
-import { UnknownKeysParam } from "zod";
+ 
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUserSuperAdmin: TestUserType;
 let testUser2: TestUserType;
 
 beforeAll(async () => {
@@ -32,7 +26,6 @@ beforeAll(async () => {
   testUser = await createTestUser();
   testAdminUser = await createTestUser();
   testUser2 = await createTestUser();
-  testUserSuperAdmin = await createTestUser();
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
@@ -93,11 +86,6 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       // Verify that the agenda category is associated with the correct user and organization
       expect(createdAgendaCategory?.createdBy).toBe(testAdminUser?._id);
       expect(createdAgendaCategory?.organization).toBe(testOrganization?._id);
-      // Verify that the organization's list is updated correctly
-      const updatedOrganization = await Organization.findById(
-        testOrganization?._id
-      ).lean();
-
       // Verify that the properties of the returned agenda category match the expected values
       expect(createdAgendaCategory?.name).toEqual(args.input.name);
       expect(createdAgendaCategory?.description).toEqual(

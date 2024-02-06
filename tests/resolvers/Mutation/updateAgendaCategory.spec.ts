@@ -10,10 +10,7 @@ import {
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { updateAgendaCategory as updateAgendaCategoryResolver } from "../../../src/resolvers/Mutation/updateAgendaCategory";
-
 import { AgendaCategoryModel, Organization, User } from "../../../src/models";
-
-import { adminCheck } from "../../../src/utilities";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUser } from "../../helpers/user";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
@@ -196,13 +193,6 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
         new: true,
       }
     );
-    const newTestAgendaCategory = await AgendaCategoryModel.create({
-      name: "Sample Agenda Category",
-      organization: testOrganization?._id,
-      createdBy: superAdminTestUser?._id,
-      createdAt: Date.now(),
-    });
-
     const context = {
       userId: superAdminTestUser?._id,
     };

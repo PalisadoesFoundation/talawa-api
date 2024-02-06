@@ -3,26 +3,21 @@ import { connect, disconnect } from "../../helpers/db";
 import { createdBy as createdByResolver } from "../../../src/resolvers/AgendaCategory/createdBy";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { AgendaCategoryModel, Organization, User } from "../../../src/models";
+import {  User } from "../../../src/models";
 import type {
   TestOrganizationType,
-  createTestUser,
   TestUserType,
-  createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
 import { createTestAgendaCategory } from "../../helpers/agendaCategory";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-
-let testUser: TestUserType;
 let testAdminUser: TestUserType;
-let testOrganization: TestOrganizationType;
 let testAgendaCategory: TestAgendaCategoryType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [testUser, testAdminUser, testOrganization, testAgendaCategory] =
+  [ , testAdminUser, , testAgendaCategory] =
     await createTestAgendaCategory();
 });
 

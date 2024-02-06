@@ -2,10 +2,8 @@ import "dotenv/config";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { AgendaCategoryModel, Organization } from "../../../src/models";
-import { errors, requestContext } from "../../../src/libraries";
 import { AGENDA_CATEGORY_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestPlugin } from "../../helpers/plugins";
 import {
   createTestUser,
   type TestOrganizationType,
@@ -17,10 +15,8 @@ import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
-
 let testAgendaCategory: TestAgendaCategoryType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUser2: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
