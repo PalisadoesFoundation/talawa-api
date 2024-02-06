@@ -1,27 +1,25 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { AgendaCategoryModel, User, Organization } from "../../models";
+import { errors } from "../../libraries";
+import { AgendaCategoryModel, User } from "../../models";
 import {
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { Types } from "mongoose";
-/* eslint-disable */
 /**
- * Resolver function for the GraphQL mutation 'deleteAgendaCategory'.
+ * This is a resolver function for the GraphQL mutation 'deleteAgendaCategory'.
  *
  * This resolver deletes an agenda category if the user has the necessary permissions.
  *
- * @param {Object} _parent - The parent object, not used in this resolver.
- * @param {Object} args - The input arguments for the mutation.
- * @param {Object} context - The context object containing user information.
- * @returns {Promise<string>} A promise that resolves to the ID of the deleted agenda category.
- * @throws {NotFoundError} Throws an error if the user or agenda category is not found.
- * @throws {UnauthorizedError} Throws an error if the user does not have the required permissions.
- * @throws {InternalServerError} Throws an error for other potential issues during agenda category deletion.
+ * @param _parent - The parent object, not used in this resolver.
+ * @param args - The input arguments for the mutation.
+ * @returns A promise that resolves to the ID of the deleted agenda category.
+ * @throws `NotFoundError` If the user or agenda category is not found.
+ * @throws `UnauthorizedError` If the user does not have the required permissions.
+ * @throws `InternalServerError` For other potential issues during agenda category deletion.
  */
-/* eslint-enable */
+
 export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
   async (_parent, args, context) => {
     const categoryId = args.id;
@@ -37,14 +35,14 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
       throw new errors.NotFoundError(
         USER_NOT_FOUND_ERROR.MESSAGE,
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
     if (!agendaCategory) {
       throw new errors.NotFoundError(
         AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
         AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -53,12 +51,10 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
       .select("organization")
       .lean();
 
-    const orgId = currentOrg?._id;
-
     const currentUserIsOrgAdmin = currentUser.adminFor.some(
       (organizationId) =>
         organizationId === currentOrg?._id ||
-        Types.ObjectId(organizationId).equals(organizationId)
+        Types.ObjectId(organizationId).equals(organizationId),
     );
     // If the user is a normal user, throw an error
     if (
@@ -68,7 +64,7 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
       throw new errors.UnauthorizedError(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 

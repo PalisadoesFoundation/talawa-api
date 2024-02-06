@@ -3,26 +3,16 @@ import { organization as organizationResolver } from "../../../src/resolvers/Age
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { AgendaCategoryModel, Organization } from "../../../src/models";
-import type {
-  TestUserType,
-  createTestUser,
-  TestOrganizationType,
-  createTestUserAndOrganization,
-} from "../../helpers/userAndOrg";
+import { Organization } from "../../../src/models";
+import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
-import { createTestAgendaCategory } from "../../helpers/agendaCategory";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUser: TestUserType;
-let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testAgendaCategory: TestAgendaCategoryType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [testUser, testAdminUser, testOrganization, testAgendaCategory] =
-    await createTestAgendaCategory();
 });
 
 afterAll(async () => {

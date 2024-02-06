@@ -1,35 +1,25 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import {
-  AgendaCategoryModel,
-  InterfaceAgendaCategory,
-  Organization,
-  User,
-} from "../../models";
+import { AgendaCategoryModel, Organization, User } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
-import { adminCheck, superAdminCheck } from "../../utilities";
+import { adminCheck } from "../../utilities";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-/* eslint-disable */
 /**
- * Resolver function for the GraphQL mutation 'createAgendaCategory'.
+ * This is a resolver function for the GraphQL mutation 'createAgendaCategory'.
  *
  * This resolver creates a new agenda category, associates it with an organization,
  * and updates the organization with the new agenda category.
  *
- *
- *
- *
- * @returns {Promise<InterfaceAgendaCategory>} A promise that resolves to the created agenda category.
- * @throws {NotFoundError} Throws an error if the user or organization is not found.
- * @throws {UnauthorizedError} Throws an error if the user does not have the required permissions.
- * @throws {InternalServerError} Throws an error for other potential issues during agenda category creation.
+ * @returns A promise that resolves to the created agenda category.
+ * @throws `NotFoundError` If the user or organization is not found.
+ * @throws `UnauthorizedError` If the user does not have the required permissions.
+ * @throws `InternalServerError` For other potential issues during agenda category creation.
  */
-/* eslint-enable */
+
 export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
   async (_parent, args, context) => {
     // Find the current user based on the provided createdBy ID or use the context userId
@@ -42,7 +32,7 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -65,7 +55,7 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -85,7 +75,7 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
           agendaCategories: createdAgendaCategory,
         },
       },
-      { new: true }
+      { new: true },
     );
     return createdAgendaCategory.toObject();
   };
