@@ -120,7 +120,7 @@ email === args.data.email`, async () => {
     try {
       const args: MutationLoginArgs = {
         data: {
-          email: testUser?.email,
+          email: `email${nanoid().toLowerCase()}@gmail.com`,
           password: "incorrectPassword",
         },
       };
@@ -132,7 +132,7 @@ email === args.data.email`, async () => {
       await loginResolver?.({}, args, {});
     } catch (error: unknown) {
       if (error instanceof Error) {
-        expect(spy).toHaveBeenLastCalledWith(INVALID_CREDENTIALS_ERROR.MESSAGE);
+        expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       }
     }
   });
