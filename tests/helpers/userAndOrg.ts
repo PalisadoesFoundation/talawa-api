@@ -2,6 +2,7 @@ import type { InterfaceOrganization, InterfaceUser } from "../../src/models";
 import { Organization, User } from "../../src/models";
 import { nanoid } from "nanoid";
 import type { Document } from "mongoose";
+import { encryptEmail } from "../../src/utilities/encryptionModule";
 
 export type TestOrganizationType =
   | (InterfaceOrganization & Document<any, any, InterfaceOrganization>)
@@ -12,8 +13,11 @@ export type TestUserType =
   | null;
 
 export const createTestUser = async (): Promise<TestUserType> => {
+  const encryptedEmail = encryptEmail(
+    `email${nanoid().toLowerCase()}@gmail.com`
+  );
   const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptedEmail,
     password: `pass${nanoid().toLowerCase()}`,
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
