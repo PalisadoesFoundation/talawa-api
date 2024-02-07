@@ -4,8 +4,22 @@ import type { InterfaceEvent } from "../../../models";
 import { Event } from "../../../models";
 import type { EventInput } from "../../../types/generatedGraphQLTypes";
 
+/**
+ * This function generates the recurring event instances.
+ * @param data - the EventInput data provided in the args.
+ * @param baseRecurringEventId - _id of the baseRecurringEvent.
+ * @param recurrenceRuleId - _id of the recurrenceRule document containing the recurrence rule that the instances follow.
+ * @param recurringInstanceDates - the dates of the recurring instances.
+ * @param currentUserId - _id of the current user.
+ * @param organizationId - _id of the current organization.
+ * @remarks The following steps are followed:
+ * 1. Generate the instances for each provided date.
+ * 2. Insert the documents in the database.
+ * @returns The recurring instances generated during this operation.
+ */
+
 interface InterfaceGenerateRecurringInstances {
-  eventData: EventInput;
+  data: EventInput;
   baseRecurringEventId: string;
   recurrenceRuleId: string;
   recurringInstanceDates: Date[];
@@ -24,7 +38,7 @@ interface InterfaceRecurringEvent extends EventInput {
 }
 
 export const generateRecurringEventInstances = async ({
-  eventData,
+  data,
   baseRecurringEventId,
   recurrenceRuleId,
   recurringInstanceDates,
@@ -37,7 +51,7 @@ export const generateRecurringEventInstances = async ({
     const formattedInstanceDate = format(date, "yyyy-MM-dd");
 
     const createdEventInstance = {
-      ...eventData,
+      ...data,
       startDate: formattedInstanceDate,
       endDate: formattedInstanceDate,
       recurring: true,

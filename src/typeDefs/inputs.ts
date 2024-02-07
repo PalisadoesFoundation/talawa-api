@@ -70,7 +70,6 @@ export const inputs = gql`
     startDate: Date!
     endDate: Date
     startTime: Time
-    recurrenceRuleString: String
     endTime: Time
     allDay: Boolean!
     recurring: Boolean!

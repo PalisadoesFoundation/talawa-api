@@ -1,37 +1,59 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
 import { Event } from "../../../models";
-import type { EventInput } from "../../../types/generatedGraphQLTypes";
+import type { MutationCreateEventArgs } from "../../../types/generatedGraphQLTypes";
 import {
   createRecurrenceRule,
   generateRecurringEventInstances,
   getRecurringInstanceDates,
 } from "../recurringEventHelpers";
-import { errors, requestContext } from "../../../libraries";
-import { FIELD_NON_EMPTY_ERROR } from "../../../constants";
+import { generateRecurrenceRuleString } from "../recurringEventHelpers/generateRecurrenceRuleString";
+import { associateEventWithUser } from "./associateEventWithUser";
+import { cacheEvents } from "../../../services/EventCache/cacheEvents";
+
+/**
+ * This function create the instances of a recurring event upto a certain date.
+ * @param args - payload of the createEvent mutation
+ * @param currentUserId - _id of the current user
+ * @param organizationId - _id of the organization the events belongs to
+ * @remarks The following steps are followed:
+ * 1. Creating a default recurrenceRuleData.
+ * 2. Generating a recurrence rule string based on the recurrenceRuleData.
+ * 3. Creating a baseRecurringEvent on which recurring instances would be based.
+ * 4. Getting the dates for recurring instances.
+ * 5. Creating a recurrenceRule document.
+ * 6. Generating recurring instances according to the recurrence rule.
+ * 7. Associating the instances with the user and caching them.
+ * @returns Created recurring event instances
+ */
 
 export const createRecurringEvents = async (
-  data: EventInput,
+  args: MutationCreateEventArgs,
   currentUserId: string,
   organizationId: string,
   session: mongoose.ClientSession
 ): Promise<InterfaceEvent[]> => {
-  if (!data.recurrenceRuleString) {
-    throw new errors.InputValidationError(
-      requestContext.translate(FIELD_NON_EMPTY_ERROR.MESSAGE),
-      FIELD_NON_EMPTY_ERROR.CODE,
-      FIELD_NON_EMPTY_ERROR.PARAM
-    );
+  const { data } = args;
+  let { recurrenceRuleData } = args;
+
+  if (!recurrenceRuleData) {
+    recurrenceRuleData = {
+      frequency: "WEEKLY",
+    };
   }
 
-  const { recurrenceRuleString, ...eventData } = data;
+  const recurrenceRuleString = generateRecurrenceRuleString(
+    recurrenceRuleData,
+    data?.startDate,
+    data?.endDate
+  );
 
   // create a base recurring event first, based on which all the
-  // recurring instances would be generated
+  // recurring instances would be dynamically generated
   const baseRecurringEvent = await Event.create(
     [
       {
-        ...eventData,
+        ...data,
         recurring: true,
         isBaseRecurringEvent: true,
         creatorId: currentUserId,
@@ -64,7 +86,7 @@ export const createRecurringEvents = async (
 
   // generate the recurring instances
   const recurringEventInstances = await generateRecurringEventInstances({
-    eventData,
+    data,
     baseRecurringEventId: baseRecurringEvent[0]?._id.toString(),
     recurrenceRuleId: recurrenceRule?._id.toString(),
     recurringInstanceDates,
@@ -72,6 +94,16 @@ export const createRecurringEvents = async (
     organizationId: organizationId.toString(),
     session,
   });
+
+  // associate the instances with the user and cache them
+  for (const recurringEventInstance of recurringEventInstances) {
+    await associateEventWithUser(
+      currentUserId,
+      recurringEventInstance?._id.toString(),
+      session
+    );
+    await cacheEvents([recurringEventInstance]);
+  }
 
   return recurringEventInstances;
 };

@@ -347,7 +347,6 @@ export type EventInput = {
   longitude?: InputMaybe<Scalars['Longitude']['input']>;
   organizationId: Scalars['ID']['input'];
   recurrance?: InputMaybe<Recurrance>;
-  recurrenceRuleString?: InputMaybe<Scalars['String']['input']>;
   recurring: Scalars['Boolean']['input'];
   startDate: Scalars['Date']['input'];
   startTime?: InputMaybe<Scalars['Time']['input']>;
@@ -821,7 +820,7 @@ export type MutationCreateDonationArgs = {
 
 export type MutationCreateEventArgs = {
   data: EventInput;
-  recurrenceRule?: InputMaybe<RecurrenceRuleInput>;
+  recurrenceRuleData?: InputMaybe<RecurrenceRuleInput>;
 };
 
 

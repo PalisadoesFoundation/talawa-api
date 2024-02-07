@@ -1,22 +1,25 @@
 import type mongoose from "mongoose";
-import type {
-  InterfaceEvent,
-  InterfaceUser} from "../../../models";
-import {
-  EventAttendee,
-  User,
-} from "../../../models";
+import { EventAttendee, User } from "../../../models";
+
+/**
+ * This function associates an event with the user.
+ * @param currentUserId - _id of the current user.
+ * @param createdEventId - _id of the event.
+ * @remarks The following steps are followed:
+ * 1. Create an EventAttendee (adding the user as an attendee).
+ * 2. Update the event related user fields.
+ */
 
 export const associateEventWithUser = async (
-  currentUser: InterfaceUser,
-  createdEvent: InterfaceEvent,
+  currentUserId: string,
+  createdEventId: string,
   session: mongoose.ClientSession
 ): Promise<void> => {
   await EventAttendee.create(
     [
       {
-        userId: currentUser._id.toString(),
-        eventId: createdEvent._id,
+        userId: currentUserId,
+        eventId: createdEventId,
       },
     ],
     { session }
@@ -24,13 +27,13 @@ export const associateEventWithUser = async (
 
   await User.updateOne(
     {
-      _id: currentUser._id,
+      _id: currentUserId,
     },
     {
       $push: {
-        eventAdmin: createdEvent._id,
-        createdEvents: createdEvent._id,
-        registeredEvents: createdEvent._id,
+        eventAdmin: createdEventId,
+        createdEvents: createdEventId,
+        registeredEvents: createdEventId,
       },
     },
     { session }

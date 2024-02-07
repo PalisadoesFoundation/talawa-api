@@ -10,12 +10,10 @@ import {
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
-import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { session } from "../../db";
 import {
   createSingleEvent,
   createRecurringEvents,
-  associateEventWithUser,
 } from "../../helpers/event/createEventHelpers";
 
 /**
@@ -135,29 +133,14 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   try {
     let createdEvent: InterfaceEvent;
 
-    const { data } = args;
-
     if (args.data.recurring) {
-      // generate recurring events upto a date limit,
-      // leave the rest for the query
-
       // create recurring event instances
       const recurringEventInstances = await createRecurringEvents(
-        data,
+        args,
         currentUser?._id.toString(),
         organization?._id.toString(),
         session
       );
-
-      // associate recurring event instances with the current user and cache them
-      for (const recurringEventInstance of recurringEventInstances) {
-        await associateEventWithUser(
-          currentUser,
-          recurringEventInstance,
-          session
-        );
-        await cacheEvents([recurringEventInstance]);
-      }
 
       createdEvent = recurringEventInstances[0];
     } else {
@@ -168,10 +151,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
         organization?._id.toString(),
         session
       );
-
-      // associate event with the current user and cache it
-      await associateEventWithUser(currentUser, createdEvent, session);
-      await cacheEvents([createdEvent]);
     }
 
     if (session) {

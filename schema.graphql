@@ -288,7 +288,6 @@ input EventInput {
   longitude: Longitude
   organizationId: ID!
   recurrance: Recurrance
-  recurrenceRuleString: String
   recurring: Boolean!
   startDate: Date!
   startTime: Time
@@ -543,7 +542,7 @@ type Mutation {
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
-  createEvent(data: EventInput!, recurrenceRule: RecurrenceRuleInput): Event!
+  createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
