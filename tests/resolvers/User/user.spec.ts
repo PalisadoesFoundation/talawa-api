@@ -63,7 +63,7 @@ describe("User Identifier Tests", () => {
 
       await user2.save();
       expect(typeof user2.identifier === "number").toBe(true);
-      expect(user1.identifier).toBeGreaterThan(user2.identifier);
+      expect(user2.identifier).toBeGreaterThan(user1.identifier);
     }
   });
 });

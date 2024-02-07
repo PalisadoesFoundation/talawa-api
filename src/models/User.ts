@@ -6,7 +6,6 @@ import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
 import { identifier_count } from "./identifier_count";
-// import AutoIncrementFactory from "mongoose-sequence";
 
 /**
  * This is an interface that represents a database(MongoDB) document for User.
@@ -294,7 +293,7 @@ const userSchema = new Schema({
 
 userSchema.plugin(mongoosePaginate);
 
-userSchema.pre<InterfaceUser>("save", async function (next) {
+userSchema.pre<InterfaceUser>("validate", async function (next) {
 
   console.log("running")
   try {
