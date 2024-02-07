@@ -32,6 +32,11 @@ jobs:
       - name: Generate schema.graphql
         run: npm run gen:schema
 
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch  
+
       - uses: kamilkisiela/graphql-inspector@master
         with:
-          schema: develop:schema.graphql
+          schema: ${{ steps.extract_branch.outputs.branch }}:schema.graphql
