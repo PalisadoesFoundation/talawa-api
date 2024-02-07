@@ -53,7 +53,7 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
     oldHashedPassword
   );
 
-  if (isSameAsOldPassword == false) {
+  if (isSameAsOldPassword == true) {
     throw new Error("New password cannot be same as old password");
   }
 
