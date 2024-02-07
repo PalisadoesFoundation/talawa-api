@@ -10,6 +10,7 @@ import {
 import { generateRecurrenceRuleString } from "../recurringEventHelpers/generateRecurrenceRuleString";
 import { associateEventWithUser } from "./associateEventWithUser";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
+import { format } from "date-fns";
 
 /**
  * This function create the instances of a recurring event upto a certain date.
@@ -37,6 +38,7 @@ export const createRecurringEvents = async (
   let { recurrenceRuleData } = args;
 
   if (!recurrenceRuleData) {
+    // create a default weekly recurrence rule
     recurrenceRuleData = {
       frequency: "WEEKLY",
     };
@@ -48,12 +50,20 @@ export const createRecurringEvents = async (
     data?.endDate
   );
 
+  const formattedStartDate = format(data.startDate, "yyyy-MM-dd");
+  let formattedEndDate = undefined;
+  if (data.endDate) {
+    formattedEndDate = format(data.endDate, "yyyy-MM-dd");
+  }
+
   // create a base recurring event first, based on which all the
   // recurring instances would be dynamically generated
   const baseRecurringEvent = await Event.create(
     [
       {
         ...data,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
         recurring: true,
         isBaseRecurringEvent: true,
         creatorId: currentUserId,

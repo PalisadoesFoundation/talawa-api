@@ -57,7 +57,7 @@ export const generateRecurrenceRuleString = (
     recurrenceRuleString += `${recurrenceRuleData.count}`;
   }
 
-  if (recurrenceRuleData.weekdays?.length) {
+  if (recurrenceRuleData.weekdays && recurrenceRuleData.weekdays?.length) {
     recurrenceRuleString += ";BYDAY=";
 
     // add the days of the week the event would recur

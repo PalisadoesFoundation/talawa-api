@@ -67,13 +67,9 @@ export const generateRecurringEventInstances = async ({
   });
 
   //Bulk insertion in database
-  let recurringEventInstances = await Event.insertMany(recurringInstances, {
+  const recurringEventInstances = await Event.insertMany(recurringInstances, {
     session,
   });
-
-  recurringEventInstances = Array.isArray(recurringEventInstances)
-    ? recurringEventInstances
-    : [recurringEventInstances];
 
   return recurringEventInstances;
 };

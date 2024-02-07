@@ -6,6 +6,23 @@ import type { InterfaceEvent } from "./Event";
  * This is an interface representing a document for a recurrence rule in the database(MongoDB).
  */
 
+export enum Frequency {
+  YEARLY = "YEARLY",
+  MONTHLY = "MONTHLY",
+  WEEKLY = "WEEKLY",
+  DAILY = "DAILY",
+}
+
+export enum WeekDays {
+  SUNDAY = "SUNDAY",
+  MONDAY = "MONDAY",
+  TUESDAY = "TUESDAY",
+  WEDNESDAY = "WEDNESDAY",
+  THURSDAY = "THURSDAY",
+  FRIDAY = "FRIDAY",
+  SATURDAY = "SATURDAY",
+}
+
 export interface InterfaceRecurrenceRule {
   _id: Types.ObjectId;
   organizationId: Types.ObjectId;
@@ -13,9 +30,9 @@ export interface InterfaceRecurrenceRule {
   recurrenceRuleString: string;
   startDate: Date;
   endDate: Date;
-  frequency: "YEARLY" | "MONTHLY" | "WEEKLY" | "DAILY";
+  frequency: Frequency;
   count: number;
-  weekDays: string[];
+  weekDays: WeekDays[];
   latestInstanceDate: Date;
 }
 
@@ -54,22 +71,21 @@ const recurrenceRuleSchema = new Schema(
     },
     endDate: {
       type: Date,
+      required: false,
     },
     frequency: {
       type: String,
       required: true,
-      enum: ["YEARLY", "MONTHLY", "WEEKLY", "DAILY"],
+      enum: Object.values(Frequency),
     },
     count: {
       type: Number,
+      required: false,
     },
-    weekDays: [
-      {
-        type: String,
-      },
-    ],
+    weekDays: { type: [String], required: true, enum: Object.values(WeekDays) },
     latestInstanceDate: {
       type: Date,
+      required: true,
     },
   },
   {
