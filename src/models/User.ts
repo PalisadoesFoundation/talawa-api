@@ -289,7 +289,8 @@ const userSchema = new Schema({
     required: true,
     enum: ["USER", "ADMIN", "SUPERADMIN"],
     default: "USER",
-  },
+  }
+},
   {
     timestamps: true,
   }
@@ -298,9 +299,6 @@ const userSchema = new Schema({
 userSchema.plugin(mongoosePaginate);
 
 userSchema.pre<InterfaceUser>("validate", async function (next) {
-
-  console.log("running")
-  try {
     if (!this.identifier) {
       const counter = await identifier_count.findOneAndUpdate(
         { _id: "userCounter" },
@@ -311,12 +309,8 @@ userSchema.pre<InterfaceUser>("validate", async function (next) {
       this.identifier = counter.sequence_value;
     }
     return next();
-  } catch (error) {
-    console.log(error)
-    this.identifier = 9999;
   }
-
-});
+);
 
 const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
