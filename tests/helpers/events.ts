@@ -6,8 +6,8 @@ import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestEventType =
-  | (InterfaceEvent & Document<any, any, InterfaceEvent>)
-  | null;
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  (InterfaceEvent & Document<any, any, InterfaceEvent>) | null;
 
 export const createTestEvent = async (): Promise<
   [TestUserType, TestOrganizationType, TestEventType]
@@ -37,11 +37,11 @@ export const createTestEvent = async (): Promise<
       },
       {
         $push: {
-          eventAdmin: testEvent._id,
-          createdEvents: testEvent._id,
-          registeredEvents: testEvent._id,
+          eventAdmin: testEvent?._id,
+          createdEvents: testEvent?._id,
+          registeredEvents: testEvent?._id,
         },
-      }
+      },
     );
 
     return [testUser, testOrganization, testEvent];
@@ -54,7 +54,7 @@ export const createEventWithRegistrant = async (
   userId: string,
   organizationId: string,
   allDay: boolean,
-  recurrance: string
+  recurrance: string,
 ): Promise<TestEventType> => {
   const testEvent = await Event.create({
     creatorId: userId,
@@ -75,7 +75,7 @@ export const createEventWithRegistrant = async (
 
   await EventAttendee.create({
     userId,
-    eventId: testEvent!._id,
+    eventId: testEvent?._id,
   });
 
   await User.updateOne(
@@ -84,11 +84,11 @@ export const createEventWithRegistrant = async (
     },
     {
       $push: {
-        eventAdmin: testEvent._id,
-        createdEvents: testEvent._id,
-        registeredEvents: testEvent._id,
+        eventAdmin: testEvent?._id,
+        createdEvents: testEvent?._id,
+        registeredEvents: testEvent?._id,
       },
-    }
+    },
   );
   return testEvent;
 };

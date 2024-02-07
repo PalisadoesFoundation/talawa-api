@@ -76,7 +76,7 @@ const eventSchema = new Schema(
       type: [String],
       required: false,
       validate: {
-        validator: function (images: string[]) {
+        validator: function (images: string[]): boolean {
           return images.length <= 5;
         },
         message: "Up to 5 images are allowed.",
@@ -109,28 +109,28 @@ const eventSchema = new Schema(
     endDate: {
       type: Date,
       required: function (): boolean {
-        // @ts-ignore
+        // @ts-expect-error : This is a required field if allDay is false
         return !this.allDay;
       },
     },
     startTime: {
       type: Date,
       required: function (): boolean {
-        // @ts-ignore
+        // @ts-expect-error : This is a required field if allDay is false
         return !this.allDay;
       },
     },
     endTime: {
       type: Date,
       required: function (): boolean {
-        // @ts-ignore
+        // @ts-expect-error : This is a required field if allDay is false
         return !this.allDay;
       },
     },
     recurrance: {
       type: String,
       required: function (): boolean {
-        // @ts-ignore
+        // @ts-expect-error : This is a required field if recurring is true
         return this.recurring;
       },
       enum: ["ONCE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
@@ -170,7 +170,7 @@ const eventSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const eventModel = (): Model<InterfaceEvent> =>
