@@ -17,55 +17,36 @@ export const generateRecurrenceRuleString = (
   recurrenceStartDate: Date,
   recurrenceEndDate?: Date,
 ): string => {
-  // Initiate an empty recurrenceRule string
-  let recurrenceRuleString = "";
+  // destructure the rules
+  const { frequency, count, weekdays } = recurrenceRuleData;
 
+  // recurrence start date
+  // (not necessarily the start date of the first recurring instance)
   const formattedRecurrenceStartDate = format(
     recurrenceStartDate,
     "yyyyMMdd'T'HHmmss'Z'",
   );
 
-  recurrenceRuleString += "DTSTART:";
-  // recurrence start date
-  // (not necessarily the start date of the first recurring instance)
-  recurrenceRuleString += `${formattedRecurrenceStartDate}\n`;
+  // date upto which instances would be generated
+  const formattedRecurrenceEndDate = recurrenceEndDate
+    ? format(recurrenceEndDate, "yyyyMMdd'T'HHmmss'Z'")
+    : "";
 
-  // add recurrence rules one by one
-  recurrenceRuleString += "RRULE:";
+  // string representing the days of the week the event would recur
+  const weekdaysString = weekdays?.length ? weekdays.join(",") : "";
 
-  // frequency of recurrence
-  // (defaulting to "WEEKLY" if recurrenceRule is not provided)
-  recurrenceRuleString += "FREQ=";
-  recurrenceRuleString += `${recurrenceRuleData.frequency}`;
+  // initiate recurrence rule string
+  let recurrenceRuleString = `DTSTART:${formattedRecurrenceStartDate}\nRRULE:FREQ=${frequency}`;
 
-  if (recurrenceEndDate) {
-    const formattedRecurrenceEndDate = format(
-      recurrenceEndDate,
-      "yyyyMMdd'T'HHmmss'Z'",
-    );
-
-    recurrenceRuleString += ";UNTIL=";
-
-    // date upto which instances would be generated
-    recurrenceRuleString += `${formattedRecurrenceEndDate}`;
+  if (formattedRecurrenceEndDate) {
+    recurrenceRuleString += `;UNTIL=${formattedRecurrenceEndDate}`;
   }
-
-  if (recurrenceRuleData.count) {
-    recurrenceRuleString += ";COUNT=";
-
+  if (count) {
     // maximum number of instances to create
-    recurrenceRuleString += `${recurrenceRuleData.count}`;
+    recurrenceRuleString += `;COUNT=${count}`;
   }
-
-  if (recurrenceRuleData.weekdays && recurrenceRuleData.weekdays?.length) {
-    recurrenceRuleString += ";BYDAY=";
-
-    // add the days of the week the event would recur
-    for (const weekDay of recurrenceRuleData.weekdays) {
-      recurrenceRuleString += `${weekDay},`;
-    }
-
-    recurrenceRuleString = recurrenceRuleString.slice(0, -1);
+  if (weekdaysString) {
+    recurrenceRuleString += `;BYDAY=${weekdaysString}`;
   }
 
   return recurrenceRuleString;
