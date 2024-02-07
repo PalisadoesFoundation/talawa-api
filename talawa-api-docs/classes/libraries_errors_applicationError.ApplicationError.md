@@ -12,6 +12,8 @@ This class is responsible for finding the application errors. It adds those erro
 
   ↳ **`ApplicationError`**
 
+  ↳↳ [`ImageSizeLimitExceeded`](libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md)
+
   ↳↳ [`ConflictError`](libraries_errors_conflictError.ConflictError.md)
 
   ↳↳ [`InputValidationError`](libraries_errors_inputValidationError.InputValidationError.md)
@@ -72,7 +74,7 @@ Error.constructor
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/libraries/errors/applicationError.ts#L14)
+[src/libraries/errors/applicationError.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/errors/applicationError.ts#L14)
 
 ## Properties
 
@@ -82,7 +84,7 @@ Error.constructor
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/libraries/errors/applicationError.ts#L11)
+[src/libraries/errors/applicationError.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/errors/applicationError.ts#L11)
 
 ___
 
@@ -92,7 +94,7 @@ ___
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/libraries/errors/applicationError.ts#L12)
+[src/libraries/errors/applicationError.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/errors/applicationError.ts#L12)
 
 ___
 
@@ -140,7 +142,7 @@ ___
 
 ### prepareStackTrace
 
-▪ `Static` `Optional` **prepareStackTrace**: (`err`: `Error`, `stackTraces`: `CallSite`[]) => `any`
+▪ `Static` `Optional` **prepareStackTrace**: (`err`: `Error`, `stackTraces`: `CallSite`[]) =\> `any`
 
 Optional override for formatting stack traces
 
@@ -175,7 +177,7 @@ Error.prepareStackTrace
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:27
+node_modules/@types/node/globals.d.ts:28
 
 ___
 
@@ -189,7 +191,7 @@ Error.stackTraceLimit
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:29
+node_modules/@types/node/globals.d.ts:30
 
 ## Methods
 
@@ -216,4 +218,4 @@ Error.captureStackTrace
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:20
+node_modules/@types/node/globals.d.ts:21
