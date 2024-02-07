@@ -974,7 +974,7 @@ input UpdateUserTagInput {
   name: String!
 }
 
-input UpdaasatikimaakichuteUserTypeInput {
+input UpdateUserTypeInput {
   id: ID
   userType: String
 }   
