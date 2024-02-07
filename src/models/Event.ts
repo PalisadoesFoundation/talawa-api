@@ -23,10 +23,12 @@ export interface InterfaceEvent {
   recurrance: string;
   isPublic: boolean;
   isRegisterable: boolean;
-  creator: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   admins: PopulatedDoc<InterfaceUser & Document>[];
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -46,111 +48,118 @@ export interface InterfaceEvent {
  * @param recurrance - Periodicity of recurrance of the event
  * @param isPublic - Is the event public
  * @param isRegisterable - Is the event Registrable
- * @param creator - Creator of the event
+ * @param creatorId - Creator of the event
  * @param admins - Admins
  * @param organization - Organization
  * @param status - whether the event is active, blocked, or deleted.
+ * @param createdAt - Timestamp of event creation
+ * @param updatedAt - Timestamp of event updation
  */
 
-const eventSchema = new Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  attendees: {
-    type: String,
-    required: false,
-  },
-  location: {
-    type: String,
-  },
-  latitude: {
-    type: Number,
-    required: false,
-  },
-  longitude: {
-    type: Number,
-    required: false,
-  },
-  recurring: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-  allDay: {
-    type: Boolean,
-    required: true,
-  },
-  startDate: {
-    type: Date,
-    required: true,
-  },
-  endDate: {
-    type: Date,
-    required: function (): () => boolean {
-      // @ts-ignore
-      return !this.allDay;
+const eventSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: true,
     },
-  },
-  startTime: {
-    type: Date,
-    required: function (): () => boolean {
-      // @ts-ignore
-      return !this.allDay;
+    description: {
+      type: String,
+      required: true,
     },
-  },
-  endTime: {
-    type: Date,
-    required: function (): () => boolean {
-      // @ts-ignore
-      return !this.allDay;
+    attendees: {
+      type: String,
+      required: false,
     },
-  },
-  recurrance: {
-    type: String,
-    required: function (): () => boolean {
-      // @ts-ignore
-      return this.recurring;
+    location: {
+      type: String,
     },
-    enum: ["ONCE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
-    default: "ONCE",
-  },
-  isPublic: {
-    type: Boolean,
-    required: true,
-  },
-  isRegisterable: {
-    type: Boolean,
-    required: true,
-  },
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  admins: [
-    {
+    latitude: {
+      type: Number,
+      required: false,
+    },
+    longitude: {
+      type: Number,
+      required: false,
+    },
+    recurring: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    allDay: {
+      type: Boolean,
+      required: true,
+    },
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      required: function (): () => boolean {
+        // @ts-ignore
+        return !this.allDay;
+      },
+    },
+    startTime: {
+      type: Date,
+      required: function (): () => boolean {
+        // @ts-ignore
+        return !this.allDay;
+      },
+    },
+    endTime: {
+      type: Date,
+      required: function (): () => boolean {
+        // @ts-ignore
+        return !this.allDay;
+      },
+    },
+    recurrance: {
+      type: String,
+      required: function (): () => boolean {
+        // @ts-ignore
+        return this.recurring;
+      },
+      enum: ["ONCE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
+      default: "ONCE",
+    },
+    isPublic: {
+      type: Boolean,
+      required: true,
+    },
+    isRegisterable: {
+      type: Boolean,
+      required: true,
+    },
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-  ],
-  organization: {
-    type: Schema.Types.ObjectId,
-    ref: "Organization",
-    required: true,
+    admins: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
   },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const eventModel = (): Model<InterfaceEvent> =>
   model<InterfaceEvent>("Event", eventSchema);

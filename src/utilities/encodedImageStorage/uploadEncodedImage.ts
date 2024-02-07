@@ -3,16 +3,45 @@ import * as fs from "fs";
 import { writeFile } from "fs/promises";
 import { encodedImageExtentionCheck } from "./encodedImageExtensionCheck";
 import { errors, requestContext } from "../../libraries";
-import { INVALID_FILE_TYPE } from "../../constants";
+import { IMAGE_SIZE_LIMIT_KB, INVALID_FILE_TYPE } from "../../constants";
 import { EncodedImage } from "../../models/EncodedImage";
 import path from "path";
 import { deletePreviousImage } from "./deletePreviousImage";
+
+const checkImageSizeLimit = (size: number): boolean => {
+  return size > 0 && size <= 20000;
+};
+
+const base64SizeInKb = (base64String: string): number => {
+  // Count the number of Base64 characters
+  var numBase64Chars = base64String.length;
+  // Calculate the size in bytes
+  var sizeInBytes = (numBase64Chars * 3) / 4;
+  // Convert to kilobytes
+  var sizeInKB = sizeInBytes / 1024;
+
+  return sizeInKB;
+};
 
 export const uploadEncodedImage = async (
   encodedImageURL: string,
   previousImagePath?: string | null
 ): Promise<string> => {
   const isURLValidImage = encodedImageExtentionCheck(encodedImageURL);
+
+  const data = encodedImageURL.replace(/^data:image\/\w+;base64,/, "");
+  const sizeInKb = base64SizeInKb(data);
+  const limit = checkImageSizeLimit(Number(process.env.IMAGE_SIZE_LIMIT_KB))
+    ? Number(process.env.IMAGE_SIZE_LIMIT_KB)
+    : 3000;
+
+  if (sizeInKb > limit) {
+    throw new errors.ImageSizeLimitExceeded(
+      IMAGE_SIZE_LIMIT_KB.MESSAGE,
+      IMAGE_SIZE_LIMIT_KB.CODE,
+      IMAGE_SIZE_LIMIT_KB.PARAM
+    );
+  }
 
   if (!isURLValidImage) {
     throw new errors.InvalidFileTypeError(
@@ -61,8 +90,6 @@ export const uploadEncodedImage = async (
     fileName: id,
     content: encodedImageURL,
   });
-
-  const data = encodedImageURL.replace(/^data:image\/\w+;base64,/, "");
 
   const buf = Buffer.from(data, "base64");
 

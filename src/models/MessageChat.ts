@@ -11,6 +11,7 @@ export interface InterfaceMessageChat {
   sender: PopulatedDoc<InterfaceUser & Document>;
   receiver: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
+  updatedAt: Date;
 }
 /**
  * This the structure of a chat
@@ -19,33 +20,34 @@ export interface InterfaceMessageChat {
  * @param sender - Sender
  * @param receiver - Receiver
  * @param createdAt - Date when the chat was created
+ * @param updatedAt - Date when the chat was updated
  */
-const messageChatSchema = new Schema({
-  message: {
-    type: String,
-    required: true,
+const messageChatSchema = new Schema(
+  {
+    message: {
+      type: String,
+      required: true,
+    },
+    languageBarrier: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    sender: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    receiver: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
-  languageBarrier: {
-    type: Boolean,
-    required: false,
-    default: false,
-  },
-  sender: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  receiver: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    required: true,
-    default: Date.now,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const messageChatModel = (): Model<InterfaceMessageChat> =>
   model<InterfaceMessageChat>("MessageChat", messageChatSchema);

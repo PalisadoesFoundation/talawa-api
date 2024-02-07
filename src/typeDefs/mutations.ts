@@ -56,6 +56,16 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
+    createActionItem(
+      data: CreateActionItemInput!
+      actionItemCategoryId: ID!
+    ): ActionItem! @auth
+
+    createActionItemCategory(
+      name: String!
+      organizationId: ID!
+    ): ActionItemCategory! @auth
+
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
     createDirectChat(data: createChatInput!): DirectChat! @auth
@@ -70,8 +80,6 @@ export const mutations = gql`
     ): Donation!
 
     createEvent(data: EventInput): Event! @auth
-
-    createEventProject(data: EventProjectInput!): EventProject! @auth
 
     createGroupChat(data: createGroupChatInput!): GroupChat! @auth
 
@@ -102,8 +110,6 @@ export const mutations = gql`
     createUserTag(input: CreateUserTagInput!): UserTag @auth
 
     createSampleOrganization: Boolean! @auth
-
-    createTask(data: TaskInput!, eventProjectId: ID!): Task! @auth
 
     deleteAdvertisementById(id: ID!): DeletePayload!
 
@@ -139,6 +145,8 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
+    removeActionItem(id: ID!): ActionItem! @auth
+
     removeOrganizationCustomField(
       organizationId: ID!
       customFieldId: ID!
@@ -151,8 +159,6 @@ export const mutations = gql`
     removeEvent(id: ID!): Event! @auth
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
-
-    removeEventProject(id: ID!): EventProject! @auth
 
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
@@ -171,8 +177,6 @@ export const mutations = gql`
     removeUserTag(id: ID!): UserTag @auth
 
     removeSampleOrganization: Boolean! @auth
-
-    removeTask(id: ID!): Task @auth
 
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
 
@@ -194,11 +198,9 @@ export const mutations = gql`
       messageContent: String!
     ): GroupChatMessage! @auth
 
-    setTaskVolunteers(id: ID!, volunteers: [ID]!): Task @auth
-
     signUp(data: UserInput!, file: String): AuthData!
 
-    togglePostPin(id: ID!): Post! @auth
+    togglePostPin(id: ID!, title: String): Post! @auth
 
     unassignUserTag(input: ToggleUserTagAssignInput!): User @auth
 
@@ -210,10 +212,18 @@ export const mutations = gql`
 
     unregisterForEventByUser(id: ID!): Event! @auth
 
-    updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
+    updateActionItem(id: ID!, data: UpdateActionItemInput!): ActionItem @auth
 
-    updateEventProject(id: ID!, data: UpdateEventProjectInput!): EventProject!
-      @auth
+    updateActionItemCategory(
+      id: ID!
+      data: UpdateActionItemCategoryInput!
+    ): ActionItemCategory @auth
+
+    updateAdvertisement(
+      input: UpdateAdvertisementInput!
+    ): UpdateAdvertisementPayload @auth
+
+    updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
 
     updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 
@@ -228,8 +238,6 @@ export const mutations = gql`
     updatePluginStatus(id: ID!, orgId: ID!): Plugin!
 
     updateUserTag(input: UpdateUserTagInput!): UserTag @auth
-
-    updateTask(id: ID!, data: UpdateTaskInput!): Task @auth
 
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 

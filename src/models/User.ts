@@ -5,6 +5,9 @@ import validator from "validator";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
+import { LOG } from "../constants";
+
 /**
  * This is an interface that represents a database(MongoDB) document for User.
  */
@@ -39,9 +42,6 @@ export interface InterfaceUser {
   maritalStatus: string;
   membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
   organizationsBlockedBy: PopulatedDoc<InterfaceOrganization & Document>[];
-  organizationUserBelongsTo:
-    | PopulatedDoc<InterfaceOrganization & Document>
-    | undefined;
   password: string;
   phone: {
     home: string;
@@ -53,6 +53,7 @@ export interface InterfaceUser {
   status: string;
   token: string | undefined;
   tokenVersion: number;
+  updatedAt: Date;
   userType: string;
 }
 /**
@@ -77,7 +78,6 @@ export interface InterfaceUser {
  * @param maritalStatus - User marital status
  * @param membershipRequests - Collections of the membership request, each object refer to `MembershipRequest` model.
  * @param organizationsBlockedBy - Collections of organizations where user is blocked, each object refer to `Organization` model.
- * @param organizationUserBelongsTo - Organization where user belongs to currently.
  * @param password - User hashed password.
  * @param phone - User contact numbers, for mobile, home and work
  * @param pluginCreationAllowed - Wheather user is allowed to create plugins.
@@ -85,207 +85,208 @@ export interface InterfaceUser {
  * @param status - Status
  * @param token - Access token.
  * @param tokenVersion - Token version.
+ * @param updatedAt - Timestamp of data updation
  * @param userType - User type.
  */
-const userSchema = new Schema({
-  address: {
-    city: {
-      type: String,
+const userSchema = new Schema(
+  {
+    address: {
+      city: {
+        type: String,
+      },
+      countryCode: {
+        type: String,
+      },
+      dependentLocality: {
+        type: String,
+      },
+      line1: {
+        type: String,
+      },
+      line2: {
+        type: String,
+      },
+      postalCode: {
+        type: String,
+      },
+      sortingCode: {
+        type: String,
+      },
+      state: {
+        type: String,
+      },
     },
-    countryCode: {
-      type: String,
+    adminApproved: {
+      type: Boolean,
+      default: false,
     },
-    dependentLocality: {
-      type: String,
-    },
-    line1: {
-      type: String,
-    },
-    line2: {
-      type: String,
-    },
-    postalCode: {
-      type: String,
-    },
-    sortingCode: {
-      type: String,
-    },
-    state: {
-      type: String,
-    },
-  },
-  adminApproved: {
-    type: Boolean,
-    default: false,
-  },
-  adminFor: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Organization",
-    },
-  ],
-  appLanguageCode: {
-    type: String,
-    required: true,
-    default: "en",
-  },
-  birthDate: {
-    type: Date,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  createdOrganizations: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Organization",
-    },
-  ],
-  createdEvents: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Event",
-    },
-  ],
-  educationGrade: {
-    type: String,
-    enum: [
-      "NO_GRADE",
-      "PRE_KG",
-      "KG",
-      "GRADE_1",
-      "GRADE_2",
-      "GRADE_3",
-      "GRADE_4",
-      "GRADE_5",
-      "GRADE_6",
-      "GRADE_7",
-      "GRADE_8",
-      "GRADE_9",
-      "GRADE_10",
-      "GRADE_11",
-      "GRADE_12",
-      "GRADUATE",
-      null,
+    adminFor: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Organization",
+      },
     ],
-  },
-  email: {
-    type: String,
-    required: true,
-    validate: [validator.isEmail, "invalid email"],
-  },
-  employmentStatus: {
-    type: String,
-    enum: ["FULL_TIME", "PART_TIME", "UNEMPLOYED", null],
-  },
-  eventAdmin: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Event",
+    appLanguageCode: {
+      type: String,
+      required: true,
+      default: "en",
     },
-  ],
-  firstName: {
-    type: String,
-    required: true,
-  },
-  gender: {
-    type: String,
-    enum: ["MALE", "FEMALE", "OTHER", null],
-  },
-  image: {
-    type: String,
-  },
-  joinedOrganizations: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Organization",
+    birthDate: {
+      type: Date,
     },
-  ],
-  lastName: {
-    type: String,
-    required: true,
-  },
-  maritalStatus: {
-    type: String,
-    enum: [
-      "SINGLE",
-      "ENGAGED",
-      "MARRIED",
-      "DIVORCED",
-      "WIDOWED",
-      "SEPERATED",
-      null,
+    createdOrganizations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Organization",
+      },
     ],
-  },
-  membershipRequests: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "MembershipRequest",
+    createdEvents: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Event",
+      },
+    ],
+    educationGrade: {
+      type: String,
+      enum: [
+        "NO_GRADE",
+        "PRE_KG",
+        "KG",
+        "GRADE_1",
+        "GRADE_2",
+        "GRADE_3",
+        "GRADE_4",
+        "GRADE_5",
+        "GRADE_6",
+        "GRADE_7",
+        "GRADE_8",
+        "GRADE_9",
+        "GRADE_10",
+        "GRADE_11",
+        "GRADE_12",
+        "GRADUATE",
+        null,
+      ],
     },
-  ],
-  organizationsBlockedBy: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Organization",
+    email: {
+      type: String,
+      required: true,
+      validate: [validator.isEmail, "invalid email"],
     },
-  ],
-  organizationUserBelongsTo: {
-    type: Schema.Types.ObjectId,
-    ref: "Organization",
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  phone: {
-    home: {
+    employmentStatus: {
+      type: String,
+      enum: ["FULL_TIME", "PART_TIME", "UNEMPLOYED", null],
+    },
+    eventAdmin: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Event",
+      },
+    ],
+    firstName: {
+      type: String,
+      required: true,
+    },
+    gender: {
+      type: String,
+      enum: ["MALE", "FEMALE", "OTHER", null],
+    },
+    image: {
       type: String,
     },
-    mobile: {
+    joinedOrganizations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Organization",
+      },
+    ],
+    lastName: {
       type: String,
+      required: true,
     },
-    work: {
+    maritalStatus: {
       type: String,
+      enum: [
+        "SINGLE",
+        "ENGAGED",
+        "MARRIED",
+        "DIVORCED",
+        "WIDOWED",
+        "SEPERATED",
+        null,
+      ],
+    },
+    membershipRequests: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "MembershipRequest",
+      },
+    ],
+    organizationsBlockedBy: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Organization",
+      },
+    ],
+    password: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      home: {
+        type: String,
+      },
+      mobile: {
+        type: String,
+      },
+      work: {
+        type: String,
+      },
+    },
+    pluginCreationAllowed: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    registeredEvents: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Event",
+      },
+    ],
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
+    token: {
+      type: String,
+      required: false,
+    },
+    tokenVersion: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    userType: {
+      type: String,
+      required: true,
+      enum: ["USER", "ADMIN", "SUPERADMIN", "NON_USER"],
+      default: "USER",
     },
   },
-  pluginCreationAllowed: {
-    type: Boolean,
-    required: true,
-    default: true,
-  },
-  registeredEvents: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Event",
-    },
-  ],
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-  token: {
-    type: String,
-    required: false,
-  },
-  tokenVersion: {
-    type: Number,
-    default: 0,
-  },
-  userType: {
-    type: String,
-    required: true,
-    enum: ["USER", "ADMIN", "SUPERADMIN"],
-    default: "USER",
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 userSchema.plugin(mongoosePaginate);
 
 const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
+
+createLoggingMiddleware(userSchema, "User");
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const User = (models.User || userModel()) as ReturnType<

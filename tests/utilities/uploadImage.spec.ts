@@ -60,7 +60,10 @@ try {
           createReadStream: () => {
             return fs
               .createReadStream(
-                path.join(__dirname, "../../image/talawa-logo-lite-200x200.png")
+                path.join(
+                  __dirname,
+                  "../../public/markdown/images/talawa-logo-lite-200x200.png"
+                )
               )
               .on("error", (error) => {
                 console.log(error);
@@ -118,7 +121,10 @@ try {
           createReadStream: () => {
             return fs
               .createReadStream(
-                path.join(__dirname, "../../image/talawa-logo-lite-200x200.png")
+                path.join(
+                  __dirname,
+                  "../../public/markdown/images/talawa-logo-lite-200x200.png"
+                )
               )
               .on("error", (err) => {
                 console.log(err);
