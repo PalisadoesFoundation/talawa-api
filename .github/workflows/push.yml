@@ -93,6 +93,29 @@ jobs:
           fail_ci_if_error: false
           name: '${{env.CODECOV_UNIQUE_NAME}}'  
 
+  Check-Schema: 
+    name: Check Schema
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Restore node_modules from cache
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.cache-name }}-
+            ${{ runner.os }}-node-
+            ${{ runner.os }}-
+            
   Generate-Documentation:
     name: Generate Documentation
     runs-on: ubuntu-latest
