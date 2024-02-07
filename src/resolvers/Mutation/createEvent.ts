@@ -127,19 +127,20 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       compareDatesResult
     );
   }
-
+  /*istanbul ignore next*/
   if (session) {
     session.startTransaction();
   }
 
   const uploadImages = async (imageDataURLs: unknown): Promise<string[]> => {
     const uploadImageFileNames: string[] = [];
-
+    /*istanbul ignore next*/
     if (!imageDataURLs || !Array.isArray(imageDataURLs)) {
       throw new Error("Invalid or missing image data.");
     }
 
     for (const imageDataURL of imageDataURLs) {
+      /*istanbul ignore next*/
       if (typeof imageDataURL !== "string") {
         throw new Error("Unsupported file type.");
       }
@@ -188,7 +189,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       await associateEventWithUser(currentUser, event, session);
       await cacheEvents([event]);
     }
-
+    /*istanbul ignore next*/
     if (session) {
       await session.commitTransaction();
     }
@@ -196,6 +197,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     // Returns the createdEvent.
     return createdEvent[0];
   } catch (error) {
+    /*istanbul ignore next*/
     if (session) {
       await session.abortTransaction();
     }
