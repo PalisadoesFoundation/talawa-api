@@ -2,6 +2,7 @@ import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
+import type { InterfaceRecurrenceRule } from "./RecurrenceRule";
 
 /**
  * This is an interface representing a document for an event in the database(MongoDB).
@@ -15,6 +16,10 @@ export interface InterfaceEvent {
   latitude: number | undefined;
   longitude: number;
   recurring: boolean;
+  isRecurringEventException: boolean;
+  isBaseRecurringEvent: boolean;
+  recurrenceRuleId: PopulatedDoc<InterfaceRecurrenceRule & Document>;
+  baseRecurringEventId: PopulatedDoc<InterfaceEvent & Document>;
   allDay: boolean;
   startDate: string;
   endDate: string | undefined;
@@ -40,6 +45,10 @@ export interface InterfaceEvent {
  * @param latitude - Latitude
  * @param longitude - Longitude
  * @param recurring - Is the event recurring
+ * @param isRecurringEventException - Is the event an exception to the recurring pattern it was following
+ * @param isBaseRecurringEvent - Is the event a true recurring event that is used for generating new instances
+ * @param recurrenceRuleId - Id of the recurrence rule document containing the recurrence pattern for the event
+ * @param baseRecurringEventId - Id of the true recurring event used for generating this instance
  * @param allDay - Is the event occuring all day
  * @param startDate - Start Date
  * @param endDate - End date
@@ -86,6 +95,32 @@ const eventSchema = new Schema(
       required: true,
       default: false,
     },
+    isRecurringEventException: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    isBaseRecurringEvent: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    recurrenceRuleId: {
+      type: Schema.Types.ObjectId,
+      ref: "RecurrenceRule",
+      required: function (): () => boolean {
+        // @ts-expect-error Suppressing typescript error for conditional required field
+        return this.recurring && !this.isBaseRecurringEvent;
+      },
+    },
+    baseRecurringEventId: {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
+      required: function (): () => boolean {
+        // @ts-expect-error Suppressing typescript error for conditional required field
+        return this.recurring && !this.isBaseRecurringEvent;
+      },
+    },
     allDay: {
       type: Boolean,
       required: true,
@@ -97,28 +132,28 @@ const eventSchema = new Schema(
     endDate: {
       type: Date,
       required: function (): () => boolean {
-        // @ts-ignore
+        // @ts-expect-error Suppressing typescript error for conditional required field
         return !this.allDay;
       },
     },
     startTime: {
       type: Date,
       required: function (): () => boolean {
-        // @ts-ignore
+        // @ts-expect-error Suppressing typescript error for conditional required field
         return !this.allDay;
       },
     },
     endTime: {
       type: Date,
       required: function (): () => boolean {
-        // @ts-ignore
+        // @ts-expect-error Suppressing typescript error for conditional required field
         return !this.allDay;
       },
     },
     recurrance: {
       type: String,
       required: function (): () => boolean {
-        // @ts-ignore
+        // @ts-expect-error Suppressing typescript error for conditional required field
         return this.recurring;
       },
       enum: ["ONCE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"],

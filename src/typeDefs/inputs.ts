@@ -70,6 +70,7 @@ export const inputs = gql`
     startDate: Date!
     endDate: Date
     startTime: Time
+    recurrenceRuleString: String
     endTime: Time
     allDay: Boolean!
     recurring: Boolean!
@@ -237,6 +238,12 @@ export const inputs = gql`
 
   input RecaptchaVerification {
     recaptchaToken: String!
+  }
+
+  input RecurrenceRuleInput {
+    frequency: Frequency
+    weekdays: [WeekDays]
+    count: Int
   }
 
   input ToggleUserTagAssignInput {

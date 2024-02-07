@@ -64,7 +64,25 @@ afterAll(async () => {
 describe("resolvers -> Mutation -> createEvent", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
-      const args: MutationCreateEventArgs = {};
+      const args: MutationCreateEventArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          allDay: false,
+          description: "",
+          endDate: "",
+          endTime: "",
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "",
+          recurring: false,
+          startDate: "",
+          startTime: "",
+          title: "",
+          recurrance: "ONCE",
+        },
+      };
 
       const context = {
         userId: Types.ObjectId().toString(),
