@@ -13,7 +13,7 @@ import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 import { format } from "date-fns";
 
 /**
- * This function create the instances of a recurring event upto a certain date.
+ * This function creates the instances of a recurring event upto a certain date.
  * @param args - payload of the createEvent mutation
  * @param currentUserId - _id of the current user
  * @param organizationId - _id of the organization the events belongs to
@@ -32,7 +32,7 @@ export const createRecurringEvents = async (
   args: MutationCreateEventArgs,
   currentUserId: string,
   organizationId: string,
-  session: mongoose.ClientSession
+  session: mongoose.ClientSession,
 ): Promise<InterfaceEvent[]> => {
   const { data } = args;
   let { recurrenceRuleData } = args;
@@ -47,7 +47,7 @@ export const createRecurringEvents = async (
   const recurrenceRuleString = generateRecurrenceRuleString(
     recurrenceRuleData,
     data?.startDate,
-    data?.endDate
+    data?.endDate,
   );
 
   const formattedStartDate = format(data.startDate, "yyyy-MM-dd");
@@ -71,7 +71,7 @@ export const createRecurringEvents = async (
         organization: organizationId,
       },
     ],
-    { session }
+    { session },
   );
 
   // get the dates for the recurringInstances, and the date of the last instance
@@ -80,7 +80,7 @@ export const createRecurringEvents = async (
     getRecurringInstanceDates(
       recurrenceRuleString,
       data.startDate,
-      data.endDate
+      data.endDate,
     );
 
   // create a recurrenceRule document that would contain the recurrence pattern
@@ -91,7 +91,7 @@ export const createRecurringEvents = async (
     organizationId.toString(),
     baseRecurringEvent[0]?._id.toString(),
     latestInstanceDate,
-    session
+    session,
   );
 
   // generate the recurring instances
@@ -110,7 +110,7 @@ export const createRecurringEvents = async (
     await associateEventWithUser(
       currentUserId,
       recurringEventInstance?._id.toString(),
-      session
+      session,
     );
     await cacheEvents([recurringEventInstance]);
   }

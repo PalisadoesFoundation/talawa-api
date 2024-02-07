@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import type { RecurrenceRuleInput } from "../../../types/generatedGraphQLTypes";
 
 /**
- * This function generates the recurring event instances.
+ * This function generates the recurrence rule (rrule) string.
  * @param recurrenceRuleData - the recurrenceRuleInput provided in the args.
  * @param recurrenceStartDate - start date of recurrence.
  * @param recurrenceEndDate - end date of recurrence.
@@ -15,14 +15,14 @@ import type { RecurrenceRuleInput } from "../../../types/generatedGraphQLTypes";
 export const generateRecurrenceRuleString = (
   recurrenceRuleData: RecurrenceRuleInput,
   recurrenceStartDate: Date,
-  recurrenceEndDate?: Date
+  recurrenceEndDate?: Date,
 ): string => {
   // Initiate an empty recurrenceRule string
   let recurrenceRuleString = "";
 
   const formattedRecurrenceStartDate = format(
     recurrenceStartDate,
-    "yyyyMMdd'T'HHmmss'Z'"
+    "yyyyMMdd'T'HHmmss'Z'",
   );
 
   recurrenceRuleString += "DTSTART:";
@@ -41,7 +41,7 @@ export const generateRecurrenceRuleString = (
   if (recurrenceEndDate) {
     const formattedRecurrenceEndDate = format(
       recurrenceEndDate,
-      "yyyyMMdd'T'HHmmss'Z'"
+      "yyyyMMdd'T'HHmmss'Z'",
     );
 
     recurrenceRuleString += ";UNTIL=";

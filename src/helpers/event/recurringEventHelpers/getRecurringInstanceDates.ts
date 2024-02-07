@@ -3,7 +3,7 @@ import { rrulestr } from "rrule";
 import { RECURRING_EVENT_INSTANCES_MONTH_LIMIT } from "../../../constants";
 
 /**
- * This function returns the dates for the recurring event instances.
+ * This function generates the dates of recurrence for the recurring event.
  * @param recurrenceRuleString - the rrule string for the recurrenceRule.
  * @param recurrenceStartDate - the starting date from which we want to generate instances.
  * @param eventEndDate - the end date of the event
@@ -19,11 +19,11 @@ export function getRecurringInstanceDates(
   recurrenceRuleString: string,
   recurrenceStartDate: Date,
   eventEndDate: Date | null,
-  calendarDate: Date = recurrenceStartDate
+  calendarDate: Date = recurrenceStartDate,
 ): [Date[], Date] {
   const limitEndDate = addMonths(
     calendarDate,
-    RECURRING_EVENT_INSTANCES_MONTH_LIMIT
+    RECURRING_EVENT_INSTANCES_MONTH_LIMIT,
     // generate instances upto this many months ahead
     // leave the rest for dynamic generation during queries
   );
@@ -31,7 +31,7 @@ export function getRecurringInstanceDates(
   eventEndDate = eventEndDate || limitEndDate;
 
   const generateUptoDate = new Date(
-    Math.min(eventEndDate.getTime(), limitEndDate.getTime())
+    Math.min(eventEndDate.getTime(), limitEndDate.getTime()),
   );
 
   const recurrenceRuleObject = rrulestr(recurrenceRuleString);
@@ -39,7 +39,7 @@ export function getRecurringInstanceDates(
   const recurringInstanceDates = recurrenceRuleObject.between(
     recurrenceStartDate,
     generateUptoDate,
-    true
+    true,
   );
 
   const latestInstanceDate =

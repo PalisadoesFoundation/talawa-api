@@ -9,7 +9,7 @@ import {
 import { format } from "date-fns";
 
 /**
- * This function generates the recurring event instances.
+ * This function generates the recurrenceRule document.
  * @param recurrenceRuleString - the rrule string containing the rules that the instances would follow.
  * @param recurrenceStartDate - start date of recurrence.
  * @param recurrenceEndDate - end date of recurrence.
@@ -30,7 +30,7 @@ export const createRecurrenceRule = async (
   organizationId: string,
   baseRecurringEventId: string,
   latestInstanceDate: Date,
-  session: mongoose.ClientSession
+  session: mongoose.ClientSession,
 ): Promise<InterfaceRecurrenceRule> => {
   const recurrenceRuleObject = rrulestr(recurrenceRuleString as string);
 
@@ -56,7 +56,7 @@ export const createRecurrenceRule = async (
         latestInstanceDate: formattedLatestInstanceDate,
       },
     ],
-    { session }
+    { session },
   );
 
   return recurrenceRule[0].toObject();
