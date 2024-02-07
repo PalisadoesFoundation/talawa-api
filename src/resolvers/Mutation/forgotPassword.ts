@@ -25,6 +25,8 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
   // To verify token's authenticity
   jwt.verify(otpToken, ACCESS_TOKEN_SECRET as string);
 
+  // Extracts email and otp out of otpToken.
+
   const { email, otp } = jwtDecode<{
     email: string;
     otp: string;
