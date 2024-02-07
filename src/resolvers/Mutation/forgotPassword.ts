@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 import { jwtDecode } from "jwt-decode";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
 import { INVALID_OTP } from "../../constants";
+import { User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables a user to restore password.
  * @param _parent - parent of current request

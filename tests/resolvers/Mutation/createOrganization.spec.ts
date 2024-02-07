@@ -1,27 +1,27 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { User } from "../../../src/models";
+import { ActionItemCategory, User } from "../../../src/models";
 import type { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   LENGTH_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
 } from "../../../src/constants";
+import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import * as uploadImage from "../../../src/utilities/uploadImage";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -54,11 +54,20 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       const args: MutationCreateOrganizationArgs = {
         data: {
           description: "description",
-          isPublic: true,
           name: "name",
+          userRegistrationRequired: true,
           visibleInSearch: true,
           apiUrl: "apiUrl",
-          location: "location",
+          address: {
+            city: "CityName",
+            countryCode: "US",
+            dependentLocality: "Dependent Locality",
+            line1: "123 Main Street",
+            line2: "Apartment 456",
+            postalCode: "12345",
+            sortingCode: "ABC-123",
+            state: "State/Province",
+          },
         },
       };
 
@@ -105,11 +114,20 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     const args: MutationCreateOrganizationArgs = {
       data: {
         description: "description",
-        isPublic: true,
         name: "name",
-        visibleInSearch: true,
         apiUrl: "apiUrl",
-        location: "location",
+        address: {
+          city: "CityName",
+          countryCode: "US",
+          dependentLocality: "Dependent Locality",
+          line1: "123 Main Street",
+          line2: "Apartment 456",
+          postalCode: "12345",
+          sortingCode: "ABC-123",
+          state: "State/Province",
+        },
+        userRegistrationRequired: true,
+        visibleInSearch: true,
       },
       file: "imagePath",
     };
@@ -125,12 +143,21 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     expect(createOrganizationPayload).toEqual(
       expect.objectContaining({
         description: "description",
-        isPublic: true,
         name: "name",
-        visibleInSearch: true,
         apiUrl: "apiUrl",
-        location: "location",
-        creator: testUser?._id,
+        address: {
+          city: "CityName",
+          countryCode: "US",
+          dependentLocality: "Dependent Locality",
+          line1: "123 Main Street",
+          line2: "Apartment 456",
+          postalCode: "12345",
+          sortingCode: "ABC-123",
+          state: "State/Province",
+        },
+        userRegistrationRequired: true,
+        visibleInSearch: true,
+        creatorId: testUser?._id,
         admins: [testUser?._id],
         members: [testUser?._id],
         image: "imagePath",
@@ -151,6 +178,18 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         adminFor: [createOrganizationPayload?._id],
       })
     );
+
+    const defaultCategory = await ActionItemCategory.findOne({
+      organizationId: createOrganizationPayload?._id,
+    }).lean();
+
+    expect(defaultCategory).toEqual(
+      expect.objectContaining({
+        organizationId: createOrganizationPayload?._id,
+        name: "Default",
+        isDisabled: false,
+      })
+    );
   });
   it(`creates the organization without image and returns it`, async () => {
     vi.spyOn(uploadImage, "uploadImage").mockImplementation(
@@ -162,11 +201,20 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     const args: MutationCreateOrganizationArgs = {
       data: {
         description: "description",
-        isPublic: true,
         name: "name",
+        userRegistrationRequired: true,
         visibleInSearch: true,
         apiUrl: "apiUrl",
-        location: "location",
+        address: {
+          city: "CityName",
+          countryCode: "US",
+          dependentLocality: "Dependent Locality",
+          line1: "123 Main Street",
+          line2: "Apartment 456",
+          postalCode: "12345",
+          sortingCode: "ABC-123",
+          state: "State/Province",
+        },
       },
       file: null,
     };
@@ -182,12 +230,21 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     expect(createOrganizationPayload).toEqual(
       expect.objectContaining({
         description: "description",
-        isPublic: true,
         name: "name",
+        userRegistrationRequired: true,
         visibleInSearch: true,
         apiUrl: "apiUrl",
-        location: "location",
-        creator: testUser?._id,
+        address: {
+          city: "CityName",
+          countryCode: "US",
+          dependentLocality: "Dependent Locality",
+          line1: "123 Main Street",
+          line2: "Apartment 456",
+          postalCode: "12345",
+          sortingCode: "ABC-123",
+          state: "State/Province",
+        },
+        creatorId: testUser?._id,
         admins: [testUser?._id],
         members: [testUser?._id],
       })
@@ -204,11 +261,20 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       const args: MutationCreateOrganizationArgs = {
         data: {
           description: "description",
-          isPublic: true,
-          name: "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
+          userRegistrationRequired: true,
           visibleInSearch: true,
+          name: "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
           apiUrl: "apiUrl",
-          location: "location",
+          address: {
+            city: "CityName",
+            countryCode: "US",
+            dependentLocality: "Dependent Locality",
+            line1: "123 Main Street",
+            line2: "Apartment 456",
+            postalCode: "12345",
+            sortingCode: "ABC-123",
+            state: "State/Province",
+          },
         },
         file: null,
       };
@@ -233,11 +299,20 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         data: {
           description:
             "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
-          isPublic: true,
           name: "random",
+          userRegistrationRequired: true,
           visibleInSearch: true,
           apiUrl: "apiUrl",
-          location: "location",
+          address: {
+            city: "CityName",
+            countryCode: "US",
+            dependentLocality: "Dependent Locality",
+            line1: "123 Main Street",
+            line2: "Apartment 456",
+            postalCode: "12345",
+            sortingCode: "ABC-123",
+            state: "State/Province",
+          },
         },
         file: null,
       };
@@ -252,32 +327,116 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       );
     }
   });
-  it(`throws String Length Validation error if location is greater than 50 characters`, async () => {
+  it("throws Address Validation Error for an invalid address", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
       (message) => message
     );
-    try {
-      const args: MutationCreateOrganizationArgs = {
-        data: {
-          description: "description",
-          isPublic: true,
-          name: "random",
-          visibleInSearch: true,
-          apiUrl: "apiUrl",
-          location:
-            "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
-        },
-        file: null,
-      };
-      const context = {
-        userId: testUser?._id,
-      };
 
-      await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+    const invalidAddress = {
+      // Constructing an invalid address.
+      city: "", // An empty city field
+      countryCode: "USA", // Invalid country code format
+      dependentLocality: "Manhattan",
+      line1: "123 Main Street",
+      line2: "Apt 2B",
+      postalCode: "InvalidPostalCode", // Invalid postal code format
+      sortingCode: "ABC123",
+      state: "New York",
+    };
+
+    const validAddress = {
+      city: "New York",
+      countryCode: "US",
+      dependentLocality: "Manhattan",
+      line1: "123 Main Street",
+      line2: "Apt 2B",
+      postalCode: "10001",
+      sortingCode: "ABC123",
+      state: "NY",
+    };
+
+    const invalidArgs: MutationCreateOrganizationArgs = {
+      data: {
+        description: "Some description",
+        name: "Test Organization",
+        visibleInSearch: true,
+        apiUrl: "https://example.com/api",
+        address: invalidAddress,
+      },
+      file: null,
+    };
+
+    const validArgs: MutationCreateOrganizationArgs = {
+      data: {
+        description: "Some description",
+        name: "Test Organization",
+        visibleInSearch: true,
+        apiUrl: "https://example.com/api",
+        address: validAddress,
+      },
+      file: null,
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    if (createOrganizationResolver) {
+      // Testing for Invalid address
+      try {
+        await createOrganizationResolver({}, invalidArgs, context);
+      } catch (error: any) {
+        // Validate that the error message matches the expected Address Validation Error message
+        expect(error.message).toEqual("Not a Valid Address");
+      }
+
+      //Testing for Valid address
+      try {
+        await createOrganizationResolver({}, validArgs, context);
+      } catch (error: any) {
+        // Validate that the error message matches the expected Address Validation Error message
+        expect(error.message).toEqual("Something went wrong.");
+      }
+    } else {
+      console.error(
+        "Error: createOrganizationResolver is undefined in the test suite"
+      );
+    }
+  });
+  it("throws Address Validation Error for missing address", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+
+    const missingAddress = {}; // No address field in the data
+
+    const validArgs: MutationCreateOrganizationArgs = {
+      data: {
+        description: "Some description",
+        name: "Test Organization",
+        visibleInSearch: true,
+        apiUrl: "https://example.com/api",
+        address: missingAddress,
+      },
+      file: null,
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    if (createOrganizationResolver) {
+      try {
+        await createOrganizationResolver({}, validArgs, context);
+      } catch (error: any) {
+        // Validate that the error message matches the expected Address Validation Error message
+        expect(error.message).toEqual("Not a Valid Address");
+      }
+    } else {
+      console.error(
+        "Error: createOrganizationResolver is undefined in the test suite"
       );
     }
   });

@@ -6,6 +6,8 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   POST_NOT_FOUND_ERROR,
   LENGTH_VALIDATION_ERROR,
+  POST_NEEDS_TO_BE_PINNED,
+  PLEASE_PROVIDE_TITLE,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
@@ -42,7 +44,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
-  const currentUserIsPostCreator = post.creator.equals(context.userId);
+  const currentUserIsPostCreator = post.creatorId.equals(context.userId);
 
   // checks if current user is an creator of the post with _id === args.id
   if (currentUserIsPostCreator === false) {
@@ -64,6 +66,19 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     args.data.videoUrl = await uploadEncodedVideo(
       args.data.videoUrl,
       post.videoUrl
+    );
+  }
+
+  // Check title and pinpost
+  if (args.data?.title && !post.pinned) {
+    throw new errors.InputValidationError(
+      requestContext.translate(POST_NEEDS_TO_BE_PINNED.MESSAGE),
+      POST_NEEDS_TO_BE_PINNED.CODE
+    );
+  } else if (!args.data?.title && post.pinned) {
+    throw new errors.InputValidationError(
+      requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
+      PLEASE_PROVIDE_TITLE.CODE
     );
   }
 

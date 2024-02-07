@@ -5,6 +5,9 @@ import validator from "validator";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
+import { LOG } from "../constants";
+
 import { identifier_count } from "./identifier_count";
 
 /**
@@ -42,9 +45,6 @@ export interface InterfaceUser {
   maritalStatus: string;
   membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
   organizationsBlockedBy: PopulatedDoc<InterfaceOrganization & Document>[];
-  organizationUserBelongsTo:
-    | PopulatedDoc<InterfaceOrganization & Document>
-    | undefined;
   password: string;
   phone: {
     home: string;
@@ -56,6 +56,7 @@ export interface InterfaceUser {
   status: string;
   token: string | undefined;
   tokenVersion: number;
+  updatedAt: Date;
   userType: string;
 }
 /**
@@ -80,7 +81,6 @@ export interface InterfaceUser {
  * @param maritalStatus - User marital status
  * @param membershipRequests - Collections of the membership request, each object refer to `MembershipRequest` model.
  * @param organizationsBlockedBy - Collections of organizations where user is blocked, each object refer to `Organization` model.
- * @param organizationUserBelongsTo - Organization where user belongs to currently.
  * @param password - User hashed password.
  * @param phone - User contact numbers, for mobile, home and work
  * @param pluginCreationAllowed - Wheather user is allowed to create plugins.
@@ -88,6 +88,7 @@ export interface InterfaceUser {
  * @param status - Status
  * @param token - Access token.
  * @param tokenVersion - Token version.
+ * @param updatedAt - Timestamp of data updation
  * @param userType - User type.
  */
 const userSchema = new Schema({
@@ -289,7 +290,10 @@ const userSchema = new Schema({
     enum: ["USER", "ADMIN", "SUPERADMIN"],
     default: "USER",
   },
-});
+  {
+    timestamps: true,
+  }
+);
 
 userSchema.plugin(mongoosePaginate);
 
@@ -316,6 +320,8 @@ userSchema.pre<InterfaceUser>("validate", async function (next) {
 
 const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
+
+createLoggingMiddleware(userSchema, "User");
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const User = (models.User || userModel()) as ReturnType<

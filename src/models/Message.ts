@@ -11,7 +11,8 @@ export interface InterfaceMessage {
   imageUrl: string | undefined;
   videoUrl: string | undefined;
   createdAt: Date;
-  creator: PopulatedDoc<InterfaceUser & Document>;
+  updatedAt: Date;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   group: PopulatedDoc<InterfaceGroup & Document>;
   status: string;
 }
@@ -20,45 +21,47 @@ export interface InterfaceMessage {
  * @param text - Message content.
  * @param imageUrl - Image URL attached in the message.
  * @param videoUrl - Video URL attached in the message.
- * @param createdAt - Time stamp of data creation.
- * @param creator - Message Sender(User), referring to `User` model.
+ * @param createdAt - Timestamp of data creation.
+ * @param creatorId - Message Sender(User), referring to `User` model.
+ * @param updatedAt - Timestamp of data updation
  * @param group - group data, referring to `Group` model.
  * @param status - Status.
  */
-const messageSchema = new Schema({
-  text: {
-    type: String,
-    required: true,
+const messageSchema = new Schema(
+  {
+    text: {
+      type: String,
+      required: true,
+    },
+    imageUrl: {
+      type: String,
+      required: false,
+    },
+    videoUrl: {
+      type: String,
+      required: false,
+    },
+    creatorId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    group: {
+      type: Schema.Types.ObjectId,
+      ref: "Group",
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
   },
-  imageUrl: {
-    type: String,
-    required: false,
-  },
-  videoUrl: {
-    type: String,
-    required: false,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  group: {
-    type: Schema.Types.ObjectId,
-    ref: "Group",
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const messageModel = (): Model<InterfaceMessage> =>
   model<InterfaceMessage>("Message", messageSchema);

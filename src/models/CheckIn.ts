@@ -16,33 +16,40 @@ export interface InterfaceCheckIn {
   allotedRoom: string;
   allotedSeat: string;
   feedbackSubmitted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const checkInSchema = new Schema({
-  eventAttendeeId: {
-    type: Schema.Types.ObjectId,
-    ref: "EventAttendee",
-    required: true,
+const checkInSchema = new Schema(
+  {
+    eventAttendeeId: {
+      type: Schema.Types.ObjectId,
+      ref: "EventAttendee",
+      required: true,
+    },
+    time: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
+    allotedRoom: {
+      type: String,
+      required: false,
+    },
+    allotedSeat: {
+      type: String,
+      required: false,
+    },
+    feedbackSubmitted: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
   },
-  time: {
-    type: Date,
-    required: true,
-    default: Date.now,
-  },
-  allotedRoom: {
-    type: String,
-    required: false,
-  },
-  allotedSeat: {
-    type: String,
-    required: false,
-  },
-  feedbackSubmitted: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 // We will also create an index here for faster database querying
 checkInSchema.index({

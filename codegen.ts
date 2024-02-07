@@ -25,6 +25,11 @@ const config: CodegenConfig = {
         // functionality is useful because what we retrieve from the database and what we choose to return from a graphql server
         // could be completely different fields. Address to models here is relative to the location of generated types.
         mappers: {
+          ActionItem: "../models/ActionItem#InterfaceActionItem",
+
+          ActionItemCategory:
+            "../models/ActionItemCategory#InterfaceActionItemCategory",
+
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
           MessageChat: "../models/MessageChat#InterfaceMessageChat",
@@ -41,8 +46,6 @@ const config: CodegenConfig = {
           Event: "../models/Event#InterfaceEvent",
 
           EventAttendee: "../models/EventAttendee#InterfaceEventAttendee",
-
-          EventProject: "../models/EventProject#InterfaceEventProject",
 
           Feedback: "../models/Feedback#InterfaceFeedback",
 
@@ -71,8 +74,6 @@ const config: CodegenConfig = {
           PluginField: "../models/PluginField#InterfacePluginField",
 
           Post: "../models/Post#InterfacePost",
-
-          Task: "../models/Task#InterfaceTask",
 
           UserTag: "../models/OrganizationTagUser#InterfaceOrganizationTagUser",
 

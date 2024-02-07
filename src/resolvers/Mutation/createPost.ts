@@ -6,6 +6,8 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
+  POST_NEEDS_TO_BE_PINNED,
+  PLEASE_PROVIDE_TITLE,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
@@ -81,6 +83,19 @@ export const createPost: MutationResolvers["createPost"] = async (
     }
   }
 
+  // Check title and pinpost
+  if (args.data?.title && !args.data.pinned) {
+    throw new errors.InputValidationError(
+      requestContext.translate(POST_NEEDS_TO_BE_PINNED.MESSAGE),
+      POST_NEEDS_TO_BE_PINNED.CODE
+    );
+  } else if (!args.data?.title && args.data.pinned) {
+    throw new errors.InputValidationError(
+      requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
+      PLEASE_PROVIDE_TITLE.CODE
+    );
+  }
+
   // Checks if the recieved arguments are valid according to standard input norms
   if (args.data?.title && args.data?.text) {
     const validationResultTitle = isValidString(args.data?.title, 256);
@@ -126,7 +141,7 @@ export const createPost: MutationResolvers["createPost"] = async (
   const createdPost = await Post.create({
     ...args.data,
     pinned: args.data.pinned ? true : false,
-    creator: context.userId,
+    creatorId: context.userId,
     organization: args.data.organizationId,
     imageUrl: uploadImageFileName,
     videoUrl: uploadVideoFileName,
