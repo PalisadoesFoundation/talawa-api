@@ -4,6 +4,7 @@ import { Organization, User, Event, Post, Plugin } from "../models";
 import { faker } from "@faker-js/faker";
 import type mongoose from "mongoose";
 import { SampleData } from "../models/SampleData";
+import { encryptEmail } from "./encryptionModule";
 
 /* eslint-disable */
 
@@ -25,12 +26,17 @@ export const generateUserData = async (
     adminFor.push(organizationId);
   }
 
+  const encryptedEmail = encryptEmail(
+    `${fname.toLowerCase()}${lname.toLowerCase()}@${faker.helpers.arrayElement([
+      "xyz",
+      "abc",
+      "lmnop",
+    ])}.com`
+  );
   const user = new User({
     firstName: fname,
     lastName: lname,
-    email: `${fname.toLowerCase()}${lname.toLowerCase()}@${faker.helpers.arrayElement(
-      ["xyz", "abc", "lmnop"]
-    )}.com`,
+    email: encryptedEmail,
     password: "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
     joinedOrganizations: [organizationId],
     userType,

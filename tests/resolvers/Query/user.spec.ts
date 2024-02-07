@@ -10,6 +10,7 @@ import type { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { decryptEmail } from "../../../src/utilities/encryptionModule";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -53,8 +54,12 @@ describe("resolvers -> Query -> user", () => {
       .populate("adminFor")
       .lean();
 
+    if (!user) {
+      throw new Error("User not found.");
+    }
     expect(userPayload).toEqual({
       ...user,
+      email: decryptEmail(user.email).decrypted,
       organizationsBlockedBy: [],
       image: null,
     });
@@ -88,8 +93,12 @@ describe("resolvers -> Query -> user", () => {
       .populate("adminFor")
       .lean();
 
+    if (!user) {
+      throw new Error("User not found.");
+    }
     expect(userPayload).toEqual({
       ...user,
+      email: decryptEmail(user.email).decrypted,
       organizationsBlockedBy: [],
       image: user?.image ? `${BASE_URL}${user.image}` : null,
     });

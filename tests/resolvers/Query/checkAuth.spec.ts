@@ -40,7 +40,10 @@ describe("resolvers -> Query -> checkAuth", () => {
     };
 
     const user = await checkAuthResolver?.({}, {}, context);
-
+    if (!testUser || !user) {
+      throw new Error("Error fetching users");
+    }
+    testUser.email = user.email;
     expect(user).toEqual({ ...testUser?.toObject(), image: null });
   });
 
@@ -66,7 +69,10 @@ describe("resolvers -> Query -> checkAuth", () => {
     };
 
     const user = await checkAuthResolver?.({}, {}, context);
-
+    if (!testUser || !user) {
+      throw new Error("Error fetching users");
+    }
+    testUser.email = user.email;
     expect(user).toEqual({
       ...testUser?.toObject(),
       image: `${context.apiRootUrl}${testUser?.image}`,

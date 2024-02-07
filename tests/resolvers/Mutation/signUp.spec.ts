@@ -25,6 +25,7 @@ import type {
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
+import { decryptEmail } from "../../../src/utilities/encryptionModule";
 
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -79,12 +80,11 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     const signUpPayload = await signUpResolver?.({}, args, {});
 
-    const createdUser = await User.findOne({
-      email,
-    })
-      .select("-password")
-      .lean();
-
+    const users = await User.find().select("-password").lean();
+    const createdUser = users.find((user) => {
+      const { decrypted } = decryptEmail(user.email);
+      return decrypted === email;
+    });
     expect({
       user: signUpPayload?.user,
     }).toEqual({
@@ -118,12 +118,11 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     const signUpPayload = await signUpResolver?.({}, args, {});
 
-    const createdUser = await User.findOne({
-      email,
-    })
-      .select("-password")
-      .lean();
-
+    const users = await User.find().select("-password").lean();
+    const createdUser = users.find((user) => {
+      const { decrypted } = decryptEmail(user.email);
+      return decrypted === email;
+    });
     expect({
       user: signUpPayload?.user,
     }).toEqual({
@@ -183,8 +182,10 @@ describe("resolvers -> Mutation -> signUp", () => {
       "../../../src/resolvers/Mutation/signUp"
     );
     await signUpResolver?.({}, args, {});
-    const createdUser = await User.findOne({
-      email,
+    const users = await User.find().select("-password").lean();
+    const createdUser = users.find((user) => {
+      const { decrypted } = decryptEmail(user.email);
+      return decrypted === email;
     });
     expect(createdUser?.userType).toEqual("SUPERADMIN");
     expect(createdUser?.adminApproved).toBeTruthy();
