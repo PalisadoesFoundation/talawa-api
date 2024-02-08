@@ -58,7 +58,8 @@ jobs:
           files: |
             **.ts
           files_ignore: |
-            src/models/User.ts 
+            src/models/**.ts 
+            src/types/**.ts
 
       - name: Run ESLint to check for linting errors in modified files
         env:
