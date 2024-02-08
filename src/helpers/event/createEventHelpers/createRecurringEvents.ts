@@ -3,11 +3,11 @@ import type { InterfaceEvent } from "../../../models";
 import { Event, EventAttendee, User } from "../../../models";
 import type { MutationCreateEventArgs } from "../../../types/generatedGraphQLTypes";
 import {
+  generateRecurrenceRuleString,
+  getRecurringInstanceDates,
   createRecurrenceRule,
   generateRecurringEventInstances,
-  getRecurringInstanceDates,
 } from "../recurringEventHelpers";
-import { generateRecurrenceRuleString } from "../recurringEventHelpers/generateRecurrenceRuleString";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 import { format } from "date-fns";
 
@@ -17,13 +17,13 @@ import { format } from "date-fns";
  * @param currentUserId - _id of the current user
  * @param organizationId - _id of the organization the events belongs to
  * @remarks The following steps are followed:
- * 1. Creating a default recurrenceRuleData.
- * 2. Generating a recurrence rule string based on the recurrenceRuleData.
- * 3. Creating a baseRecurringEvent on which recurring instances would be based.
- * 4. Getting the dates for recurring instances.
- * 5. Creating a recurrenceRule document.
- * 6. Generating recurring instances according to the recurrence rule.
- * 7. Associating the instances with the user
+ * 1. Create a default recurrenceRuleData.
+ * 2. Generate a recurrence rule string based on the recurrenceRuleData.
+ * 3. Create a baseRecurringEvent on which recurring instances would be based.
+ * 4. Get the dates for recurring instances.
+ * 5. Create a recurrenceRule document.
+ * 6. Generate recurring instances according to the recurrence rule.
+ * 7. Associate the instances with the user
  * 8. Cache the instances.
  * @returns Created recurring event instances
  */

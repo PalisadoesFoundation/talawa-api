@@ -1,9 +1,11 @@
+import { generateRecurrenceRuleString } from "./generateRecurrenceRuleString";
+import { getRecurringInstanceDates } from "./getRecurringInstanceDates";
 import { createRecurrenceRule } from "./createRecurrenceRule";
 import { generateRecurringEventInstances } from "./generateRecurringEventInstances";
-import { getRecurringInstanceDates } from "./getRecurringInstanceDates";
 
 export {
+  generateRecurrenceRuleString,
+  getRecurringInstanceDates,
   createRecurrenceRule,
   generateRecurringEventInstances,
-  getRecurringInstanceDates,
 };
