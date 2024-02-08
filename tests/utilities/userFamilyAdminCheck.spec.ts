@@ -57,7 +57,9 @@ describe("utilities -> userFamilyAdminCheck", () => {
         testUserFamily ?? ({} as InterfaceUserFamily)
       );
     } catch (error) {
-      expect((error as Error).message).toEqual(`Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+      );
     }
     expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
   });
