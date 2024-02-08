@@ -12,7 +12,7 @@ import { ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR } from "../../constants";
  */
 export const actionItemCategory: QueryResolvers["actionItemCategory"] = async (
   _parent,
-  args,
+  args
 ) => {
   const actionItemCategory = await ActionItemCategory.findOne({
     _id: args.id,
@@ -22,7 +22,7 @@ export const actionItemCategory: QueryResolvers["actionItemCategory"] = async (
     throw new errors.NotFoundError(
       ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.DESC,
       ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.CODE,
-      ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.PARAM,
+      ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.PARAM
     );
   }
 

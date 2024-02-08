@@ -34,7 +34,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
-        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM,
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -43,7 +43,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -52,7 +52,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -76,7 +76,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
       },
       {
         new: true,
-      },
+      }
     );
 
     if (updatedOrganization !== null) {
@@ -92,7 +92,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
         $pull: {
           membershipRequests: membershipRequest._id,
         },
-      },
+      }
     );
 
     // Returns deleted membershipRequest.

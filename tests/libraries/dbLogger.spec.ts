@@ -83,14 +83,14 @@ describe("Database transaction logging", () => {
     const spyInfoLog = vi.spyOn(dbLogger as winston.Logger, "info");
 
     const savePreMiddleware = mockPreFunction.mock.calls.find(
-      (call) => call[0] === "save",
+      (call) => call[0] === "save"
     )?.[1];
     savePreMiddleware.call(mockDocument, () => {
       return;
     });
     expect(mockDocument.logInfo).toBeDefined();
     const savePostMiddleware = mockPostFunction.mock.calls.find(
-      (call) => call[0] === "save",
+      (call) => call[0] === "save"
     )?.[1];
     savePostMiddleware.call(mockDocument);
     expect(spyInfoLog).toHaveBeenCalledWith("success", mockDocument.logInfo);
@@ -104,14 +104,14 @@ describe("Database transaction logging", () => {
     ];
     operations.forEach((operation) => {
       const preMiddleware = mockPreFunction.mock.calls.find(
-        (call) => call[0] === operation,
+        (call) => call[0] === operation
       )?.[1];
       preMiddleware.call(mockQuery, () => {
         return;
       });
       expect(mockQuery.logInfo).toBeDefined();
       const postMiddleware = mockPostFunction.mock.calls.find(
-        (call) => call[0] === operation,
+        (call) => call[0] === operation
       )?.[1];
       postMiddleware.call(mockQuery);
       expect(spyInfoLog).toHaveBeenCalledWith("success", mockQuery.logInfo);

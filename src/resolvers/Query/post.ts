@@ -18,7 +18,7 @@ export const post: QueryResolvers["post"] = async (_parent, args) => {
     throw new errors.NotFoundError(
       POST_NOT_FOUND_ERROR.DESC,
       POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM,
+      POST_NOT_FOUND_ERROR.PARAM
     );
   }
 

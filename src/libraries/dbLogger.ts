@@ -39,7 +39,7 @@ export interface InterfaceLoggableQuery<T> extends Query<unknown, T> {
 
 export function createLoggingMiddleware<T extends Document>(
   schema: Schema<T>,
-  modelName: string,
+  modelName: string
 ): void {
   if (!dbLogger) {
     return;
@@ -47,7 +47,7 @@ export function createLoggingMiddleware<T extends Document>(
 
   const logAction = (
     type: TransactionLogTypes,
-    thisContext?: InterfaceLoggableQuery<T>,
+    thisContext?: InterfaceLoggableQuery<T>
   ): TransactionLogInfo => {
     return {
       timestamp: new Date().toISOString(),

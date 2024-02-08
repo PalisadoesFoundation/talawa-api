@@ -29,7 +29,7 @@ beforeAll(async () => {
       $inc: {
         commentCount: 1,
       },
-    },
+    }
   );
 });
 
@@ -44,7 +44,7 @@ describe("resolvers -> Post -> comments", () => {
     const commentsPayload = await commentsResolver?.(
       parent!.toObject(),
       {},
-      {},
+      {}
     );
 
     const comments = await Comment.find({
@@ -59,7 +59,7 @@ describe("resolvers -> Post -> comments", () => {
     const commentsPayload = await commentsResolver?.(
       parent!.toObject(),
       {},
-      {},
+      {}
     );
 
     const comments = await Comment.find({

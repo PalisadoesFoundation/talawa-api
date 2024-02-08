@@ -61,7 +61,7 @@ describe("resolvers -> Mutation -> addLanguageTranslation", () => {
   for language with en === args.data.en_value`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => `Translated ${message}`,
+      (message) => `Translated ${message}`
     );
     try {
       const args: MutationAddLanguageTranslationArgs = testArgs[1];
@@ -93,7 +93,7 @@ describe("resolvers -> Mutation -> addLanguageTranslation", () => {
             value: testArgs[2].data.translation_value,
           }),
         ]),
-      }),
+      })
     );
   });
 });

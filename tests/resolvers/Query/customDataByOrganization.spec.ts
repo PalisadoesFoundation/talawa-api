@@ -33,7 +33,7 @@ describe("resolvers => Query => customDataByOrganization", () => {
         dataName: "testDataName",
         dataValue: "testDataValue",
       },
-      { userId: testUser?._id },
+      { userId: testUser?._id }
     );
 
     const args = {

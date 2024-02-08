@@ -12,7 +12,7 @@ import { ACTION_ITEM_NOT_FOUND_ERROR } from "../../constants";
  */
 export const actionItem: QueryResolvers["actionItem"] = async (
   _parent,
-  args,
+  args
 ) => {
   const actionItem = await ActionItem.findOne({
     _id: args.id,
@@ -22,7 +22,7 @@ export const actionItem: QueryResolvers["actionItem"] = async (
     throw new errors.NotFoundError(
       ACTION_ITEM_NOT_FOUND_ERROR.DESC,
       ACTION_ITEM_NOT_FOUND_ERROR.CODE,
-      ACTION_ITEM_NOT_FOUND_ERROR.PARAM,
+      ACTION_ITEM_NOT_FOUND_ERROR.PARAM
     );
   }
 

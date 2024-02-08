@@ -24,7 +24,7 @@ import { Types } from "mongoose";
 export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   _parent,
   args,
-  context,
+  context
 ) => {
   let organization;
 
@@ -47,7 +47,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -60,12 +60,12 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
   const currentUserIsOrganizationMember = organization.members.some((member) =>
-    Types.ObjectId(member).equals(currentUser?._id),
+    Types.ObjectId(member).equals(currentUser?._id)
   );
 
   // Checks whether currentUser is not a member of organzation.
@@ -73,7 +73,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     throw new errors.ConflictError(
       requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
       MEMBER_NOT_FOUND_ERROR.CODE,
-      MEMBER_NOT_FOUND_ERROR.PARAM,
+      MEMBER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -90,7 +90,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     },
     {
       new: true,
-    },
+    }
   );
 
   if (updatedOrganization !== null) {
@@ -112,7 +112,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     },
     {
       new: true,
-    },
+    }
   )
     .select(["-password"])
     .lean();

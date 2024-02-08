@@ -6,7 +6,7 @@ import i18n from "i18n";
 import type { NextFunction, Request, Response } from "express";
 
 export const requestContextNamespace = cls.createNamespace(
-  "talawa-request-context",
+  "talawa-request-context"
 );
 
 clsBluebird(requestContextNamespace);

@@ -28,7 +28,7 @@ export const createAccessToken = (user: InterfaceUser): string => {
     ACCESS_TOKEN_SECRET as string,
     {
       expiresIn: "40m",
-    },
+    }
   );
 };
 
@@ -44,7 +44,7 @@ export const createRefreshToken = (user: InterfaceUser): string => {
     REFRESH_TOKEN_SECRET as string,
     {
       expiresIn: "30d",
-    },
+    }
   );
 };
 

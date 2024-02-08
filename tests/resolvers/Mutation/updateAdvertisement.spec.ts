@@ -62,7 +62,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       await updateAdvertisementResolverNotFoundError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -91,7 +91,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       await updateAdvertisementResolverNotFoundError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
@@ -122,10 +122,10 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       await updateAdvertisementResolverNotFoundError?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(
-        ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE,
+        ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE
       );
       expect(error.message).toEqual(
-        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -156,7 +156,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     const updateAdvertisementPayload = await updateAdvertisementResolver?.(
       {},
       args,
-      context,
+      context
     );
     const { advertisement } = updateAdvertisementPayload || {};
 
@@ -214,7 +214,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(END_DATE_VALIDATION_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${END_DATE_VALIDATION_ERROR.MESSAGE}`,
+        `Translated ${END_DATE_VALIDATION_ERROR.MESSAGE}`
       );
     }
   });
@@ -242,7 +242,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(START_DATE_VALIDATION_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${START_DATE_VALIDATION_ERROR.MESSAGE}`,
+        `Translated ${START_DATE_VALIDATION_ERROR.MESSAGE}`
       );
     }
   });
@@ -270,7 +270,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(INPUT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${INPUT_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${INPUT_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -298,7 +298,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(FIELD_NON_EMPTY_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${FIELD_NON_EMPTY_ERROR.MESSAGE}`,
+        `Translated ${FIELD_NON_EMPTY_ERROR.MESSAGE}`
       );
     }
   });

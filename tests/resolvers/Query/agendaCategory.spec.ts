@@ -72,7 +72,7 @@ describe("resolvers -> Query -> agendaCategory", () => {
       throw new Error("Test failed. Expected NotFoundError but got no error.");
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE
       );
     }
   });

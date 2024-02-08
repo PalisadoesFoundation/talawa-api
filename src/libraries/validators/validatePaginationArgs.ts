@@ -5,7 +5,7 @@ import type {
 } from "../../types/generatedGraphQLTypes";
 
 export const validatePaginationArgs = (
-  args: CursorPaginationInput,
+  args: CursorPaginationInput
 ): ConnectionError[] => {
   const connectionErrors: ConnectionError[] = [];
 

@@ -11,7 +11,7 @@ import { deletePreviousVideo } from "./deletePreviousVideo";
 export const uploadEncodedVideo = async (
   encodedVideoURL: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  previousVideoPath?: string | null,
+  previousVideoPath?: string | null
 ): Promise<string> => {
   const isURLValidVideo = encodedVideoExtentionCheck(encodedVideoURL);
 
@@ -19,7 +19,7 @@ export const uploadEncodedVideo = async (
     throw new errors.InvalidFileTypeError(
       requestContext.translate(INVALID_FILE_TYPE.MESSAGE),
       INVALID_FILE_TYPE.CODE,
-      INVALID_FILE_TYPE.PARAM,
+      INVALID_FILE_TYPE.PARAM
     );
   }
 
@@ -40,7 +40,7 @@ export const uploadEncodedVideo = async (
         $inc: {
           numberOfUses: 1,
         },
-      },
+      }
     );
 
     if (previousVideoPath) {

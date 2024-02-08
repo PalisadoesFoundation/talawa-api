@@ -22,13 +22,13 @@ beforeAll(async () => {
     testUser?._id,
     testOrganization?._id,
     true,
-    "ONCE",
+    "ONCE"
   );
   const testEvent2 = await createEventWithRegistrant(
     testUser?._id,
     testOrganization?._id,
     true,
-    "ONCE",
+    "ONCE"
   );
 });
 
@@ -53,7 +53,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     const eventsByOrganizationPayload = await eventsByOrganization?.(
       {},
       args,
-      {},
+      {}
     );
 
     const eventsByOrganizationInfo = await Event.find({

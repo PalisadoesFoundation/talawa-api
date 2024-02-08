@@ -45,7 +45,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -54,7 +54,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
     const currentUserExists = await User.exists({
@@ -65,12 +65,12 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
     const currentUserIsOrganizationMember = organization.members.some(
-      (member) => Types.ObjectId(member).equals(context.userId),
+      (member) => Types.ObjectId(member).equals(context.userId)
     );
 
     // Checks whether currentUser with _id === context.userId is already a member of organzation.
@@ -78,7 +78,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       throw new errors.ConflictError(
         requestContext.translate(USER_ALREADY_MEMBER_ERROR.MESSAGE),
         USER_ALREADY_MEMBER_ERROR.CODE,
-        USER_ALREADY_MEMBER_ERROR.PARAM,
+        USER_ALREADY_MEMBER_ERROR.PARAM
       );
     }
 
@@ -94,7 +94,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       },
       {
         new: true,
-      },
+      }
     );
 
     if (updatedOrganization !== null) {
@@ -116,7 +116,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       },
       {
         new: true,
-      },
+      }
     )
       .select(["-password"])
       .populate("joinedOrganizations")

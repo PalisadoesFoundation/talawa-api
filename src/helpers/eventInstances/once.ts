@@ -11,7 +11,7 @@ export async function generateEvent(
   args: Partial<MutationCreateEventArgs>,
   currentUser: InterfaceUser,
   organization: InterfaceOrganization,
-  session: mongoose.ClientSession,
+  session: mongoose.ClientSession
 ): Promise<Promise<InterfaceEvent[]>> {
   const createdEvent = await Event.create(
     [
@@ -22,7 +22,7 @@ export async function generateEvent(
         organization: organization._id,
       },
     ],
-    { session },
+    { session }
   );
 
   return createdEvent;

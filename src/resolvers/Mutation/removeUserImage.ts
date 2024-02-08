@@ -19,7 +19,7 @@ import { deleteImage } from "../../utilities";
 export const removeUserImage: MutationResolvers["removeUserImage"] = async (
   _parent,
   _args,
-  context,
+  context
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -30,7 +30,7 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -39,7 +39,7 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE),
       USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE,
-      USER_PROFILE_IMAGE_NOT_FOUND_ERROR.PARAM,
+      USER_PROFILE_IMAGE_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -57,6 +57,6 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
     },
     {
       new: true,
-    },
+    }
   ).lean();
 };

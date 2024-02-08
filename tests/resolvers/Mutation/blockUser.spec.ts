@@ -61,11 +61,11 @@ beforeAll(async () => {
         createdOrganizations: [testOrganization._id],
         joinedOrganizations: [testOrganization._id],
       },
-    },
+    }
   );
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message,
+    (message) => message
   );
 });
 
@@ -115,7 +115,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
   it(`throws member not found error if user with args.userId is not a member of the organization`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message,
+      (message) => message
     );
 
     try {
@@ -140,7 +140,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
   it(`throws cannot block self error if  context.userId === args.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message,
+      (message) => message
     );
 
     try {
@@ -176,7 +176,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
         },
         {
           new: true,
-        },
+        }
       );
 
       if (updatedOrganization !== null) {
@@ -213,7 +213,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
         },
         {
           new: true,
-        },
+        }
       );
 
       if (updatedOrganization !== null) {
@@ -228,7 +228,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
           $push: {
             adminFor: testOrganization?._id,
           },
-        },
+        }
       );
 
       const args: MutationBlockUserArgs = {
@@ -259,7 +259,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
       },
       {
         new: true,
-      },
+      }
     );
 
     if (updatedOrganization !== null) {

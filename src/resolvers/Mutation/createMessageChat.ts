@@ -15,7 +15,7 @@ import { USER_NOT_FOUND_ERROR } from "../../constants";
 export const createMessageChat: MutationResolvers["createMessageChat"] = async (
   _parent,
   args,
-  context,
+  context
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -30,7 +30,7 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

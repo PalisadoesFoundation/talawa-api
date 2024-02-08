@@ -18,7 +18,7 @@ import { cachePosts } from "../../services/PostCache/cachePosts";
 export const likePost: MutationResolvers["likePost"] = async (
   _parent,
   args,
-  context,
+  context
 ) => {
   let post;
 
@@ -41,12 +41,12 @@ export const likePost: MutationResolvers["likePost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
       POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM,
+      POST_NOT_FOUND_ERROR.PARAM
     );
   }
 
   const currentUserHasLikedPost = post.likedBy.some((likedByUser) =>
-    likedByUser.equals(context.userId),
+    likedByUser.equals(context.userId)
   );
 
   // Checks whether currentUser with _id === context.userId has not already liked the post.
@@ -69,7 +69,7 @@ export const likePost: MutationResolvers["likePost"] = async (
       },
       {
         new: true,
-      },
+      }
     ).lean();
 
     if (updatedPost !== null) {

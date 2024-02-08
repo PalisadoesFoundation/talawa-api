@@ -45,7 +45,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -82,7 +82,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -118,7 +118,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -154,7 +154,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -190,7 +190,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
     const postsByOrganization = await Post.find({
       organization: testOrganization?._id,
@@ -226,7 +226,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
     const postsByOrganization = await Post.find({
       organization: testOrganization?._id,
@@ -261,7 +261,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -297,7 +297,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -333,7 +333,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -369,7 +369,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -406,7 +406,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -442,7 +442,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -479,7 +479,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -515,7 +515,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -551,7 +551,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -587,7 +587,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
     const postsByOrganization = await Post.find({
       organization: testOrganization?._id,
@@ -622,7 +622,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -650,7 +650,7 @@ describe("resolvers -> Query -> posts", () => {
         $set: {
           imageUrl: undefined,
         },
-      },
+      }
     );
 
     const sort = {
@@ -669,7 +669,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const postsByOrganization = await Post.find({

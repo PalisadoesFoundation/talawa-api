@@ -2,7 +2,7 @@ import type { ActionItemCategoryResolvers } from "../../types/generatedGraphQLTy
 import { Organization } from "../../models";
 
 export const organization: ActionItemCategoryResolvers["organization"] = async (
-  parent,
+  parent
 ) => {
   return Organization.findOne({
     _id: parent.organizationId,

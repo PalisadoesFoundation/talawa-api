@@ -68,7 +68,7 @@ beforeAll(async () => {
         adminFor: [testOrganization._id],
         joinedOrganizations: [testOrganization._id],
       },
-    },
+    }
   );
 });
 
@@ -106,10 +106,10 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       await removeOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
       );
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -137,7 +137,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
       );
     }
   });
@@ -164,10 +164,10 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       await removeOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(
-        ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE,
+        ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE
       );
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -198,7 +198,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       },
       {
         new: true,
-      },
+      }
     ).lean();
 
     if (updatedOrganization !== null) {

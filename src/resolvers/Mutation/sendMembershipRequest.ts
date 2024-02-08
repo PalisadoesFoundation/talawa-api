@@ -42,7 +42,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -55,7 +55,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       throw new errors.ConflictError(
         requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
-        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM,
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -76,7 +76,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       },
       {
         new: true,
-      },
+      }
     ).lean();
 
     if (updatedOrganization !== null) {
@@ -92,7 +92,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
         $push: {
           membershipRequests: createdMembershipRequest._id,
         },
-      },
+      }
     );
 
     return createdMembershipRequest.toObject();

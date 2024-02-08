@@ -49,18 +49,18 @@ const actionItemCategorySchema = new Schema(
       required: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 actionItemCategorySchema.index(
   { organizationId: 1, name: 1 },
-  { unique: true },
+  { unique: true }
 );
 
 const actionItemCategoryModel = (): Model<InterfaceActionItemCategory> =>
   model<InterfaceActionItemCategory>(
     "ActionItemCategory",
-    actionItemCategorySchema,
+    actionItemCategorySchema
   );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

@@ -91,7 +91,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
           $set: {
             organization: Types.ObjectId().toString(),
           },
-        },
+        }
       );
 
       const args: MutationRejectMembershipRequestArgs = {
@@ -127,7 +127,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        },
+        }
       );
 
       await MembershipRequest.updateOne(
@@ -138,7 +138,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
           $set: {
             user: Types.ObjectId().toString(),
           },
-        },
+        }
       );
 
       const args: MutationRejectMembershipRequestArgs = {
@@ -176,7 +176,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
           $set: {
             user: testUser?._id,
           },
-        },
+        }
       );
 
       await Organization.findByIdAndUpdate(
@@ -187,7 +187,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
           $set: {
             admins: [],
           },
-        },
+        }
       );
 
       await User.findByIdAndUpdate(
@@ -198,7 +198,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
           $set: {
             userType: "USER",
           },
-        },
+        }
       );
 
       const args: MutationRejectMembershipRequestArgs = {
@@ -219,7 +219,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
       );
     }
   });
@@ -233,7 +233,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         $push: {
           admins: testUser?._id,
         },
-      },
+      }
     );
 
     const args: MutationRejectMembershipRequestArgs = {
@@ -248,7 +248,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
       await rejectMembershipRequestResolver?.({}, args, context);
 
     expect(rejectMembershipRequestPayload?._id).toEqual(
-      testMembershipRequest?._id,
+      testMembershipRequest?._id
     );
 
     const testUpdatedUser = await User.findOne({

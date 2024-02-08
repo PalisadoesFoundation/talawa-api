@@ -6,7 +6,7 @@ import { Organization } from "../../models";
  * @returns An object that contains the Organization data.
  */
 export const organization: MembershipRequestResolvers["organization"] = async (
-  parent,
+  parent
 ) => {
   return Organization.findOne({
     _id: parent.organization,

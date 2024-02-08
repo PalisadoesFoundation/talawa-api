@@ -27,7 +27,7 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
     throw new errors.NotFoundError(
       USER_NOT_FOUND_ERROR.DESC,
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

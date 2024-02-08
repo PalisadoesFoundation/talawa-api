@@ -31,7 +31,7 @@ const feedbackSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 // We will also create an index here for faster database querying

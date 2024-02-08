@@ -92,7 +92,7 @@ const postSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 postSchema.plugin(mongoosePaginate);

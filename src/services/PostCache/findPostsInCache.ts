@@ -4,7 +4,7 @@ import { Types } from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findPostsInCache(
-  ids: string[],
+  ids: string[]
 ): Promise<(InterfacePost | null)[]> {
   if (ids.length === 0) {
     return [null];

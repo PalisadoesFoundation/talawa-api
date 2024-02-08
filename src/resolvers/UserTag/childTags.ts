@@ -11,7 +11,7 @@ import { validatePaginationArgs } from "../../libraries/validators/validatePagin
 
 export const childTags: UserTagResolvers["childTags"] = async (
   parent,
-  args,
+  args
 ) => {
   const errors = validatePaginationArgs(args.input);
 
@@ -49,7 +49,7 @@ export const childTags: UserTagResolvers["childTags"] = async (
         // The default sorting logic of ascending order by MongoID should always be provided
         _id: 1,
         name: 1,
-      }),
+      })
     )
     .limit(getLimit(args.input.limit))
     .lean();

@@ -81,7 +81,7 @@ describe("resolvers -> Query -> getLanguage", () => {
           translation: "value2",
           verified: false,
         }),
-      ]),
+      ])
     );
   });
 });

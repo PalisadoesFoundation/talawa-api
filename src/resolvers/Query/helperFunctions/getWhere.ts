@@ -32,7 +32,7 @@ export const getWhere = <T = unknown>(
             DonationWhereInput
         >
       >
-    | undefined,
+    | undefined
 ): FilterQuery<T> => {
   let wherePayload: FilterQuery<T> = {};
 

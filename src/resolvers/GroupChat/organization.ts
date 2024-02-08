@@ -8,7 +8,7 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
  * @returns An `object` that contains the organization data.
  */
 export const organization: GroupChatResolvers["organization"] = async (
-  parent,
+  parent
 ) => {
   const organizationFoundInCache = await findOrganizationsInCache([
     parent.organization,

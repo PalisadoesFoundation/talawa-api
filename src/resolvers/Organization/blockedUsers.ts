@@ -6,7 +6,7 @@ import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
  * @returns An object that contains the list of blocked users for the organization.
  */
 export const blockedUsers: OrganizationResolvers["blockedUsers"] = async (
-  parent,
+  parent
 ) => {
   return await User.find({
     _id: {

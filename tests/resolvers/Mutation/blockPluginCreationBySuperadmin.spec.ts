@@ -30,7 +30,7 @@ beforeAll(async () => {
   testUser = await createTestUser();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message,
+    (message) => message
   );
 });
 
@@ -88,7 +88,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
     }
   });
@@ -101,7 +101,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
       },
       {
         userType: "SUPERADMIN",
-      },
+      }
     );
 
     const args: MutationBlockPluginCreationBySuperadminArgs = {

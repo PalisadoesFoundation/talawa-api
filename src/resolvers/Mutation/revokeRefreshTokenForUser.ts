@@ -14,7 +14,7 @@ export const revokeRefreshTokenForUser: MutationResolvers["revokeRefreshTokenFor
       },
       {
         $unset: { token: 1 },
-      },
+      }
     );
 
     return true;

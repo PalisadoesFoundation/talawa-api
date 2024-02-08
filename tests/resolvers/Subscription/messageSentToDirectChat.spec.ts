@@ -50,7 +50,7 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
     const x = messageSentToDirectChatPayload?.subscribe(
       _parent,
       _args,
-      context,
+      context
     );
     expect(x).not.toBe(null);
     expect(await filterFunction(payload, context)).toBe(true);
@@ -89,7 +89,7 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
     const x = messageSentToDirectChatPayload?.subscribe(
       _parent,
       _args,
-      context,
+      context
     );
     expect(x).not.toBe(null);
     expect(await filterFunction(payload, context)).toBe(false);

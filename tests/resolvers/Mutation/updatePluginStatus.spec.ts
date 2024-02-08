@@ -92,7 +92,7 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
     const updatePluginStatusPayload = await updatePluginStatus?.(
       {},
       args,
-      context,
+      context
     );
 
     const testUpdatePluginStatusPayload = await Plugin.findOne({
@@ -121,7 +121,7 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
     const updatePluginStatusPayload = await updatePluginStatus?.(
       {},
       args,
-      context,
+      context
     );
 
     const testUpdatePluginStatusPayload = await Plugin.findOne({

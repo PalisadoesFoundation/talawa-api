@@ -25,7 +25,7 @@ describe("resolvers -> Mutation -> createPlugin", () => {
     expect(createPluginPayload).toEqual(
       expect.objectContaining({
         ...data,
-      }),
+      })
     );
   });
 });

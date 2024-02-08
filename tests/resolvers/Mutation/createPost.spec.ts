@@ -87,7 +87,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -120,7 +120,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     } catch (error: any) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -154,7 +154,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`,
+        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`
       );
     }
   });
@@ -162,7 +162,7 @@ describe("resolvers -> Mutation -> createPost", () => {
   it(`pinned post should be successfully added to the organization`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`,
+      (message) => `Translated ${message}`
     );
 
     const args: MutationCreatePostArgs = {
@@ -189,7 +189,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         text: "New Post Text",
         videoUrl: null, // Update the expected value to match the received value
         title: "New Post Title",
-      }),
+      })
     );
 
     const updatedTestOrg = await Organization.findOne({
@@ -199,7 +199,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     expect(
       updatedTestOrg?.pinnedPosts
         .map((id) => id.toString())
-        .includes(createdPost?._id.toString()),
+        .includes(createdPost?._id.toString())
     ).toBeTruthy();
   });
 
@@ -231,7 +231,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         creatorId: testUser?._id,
         organization: testOrganization?._id,
         imageUrl: null,
-      }),
+      })
     );
   });
 
@@ -255,19 +255,19 @@ describe("resolvers -> Mutation -> createPost", () => {
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
       () => {
         throw new Error("Unsupported file type.");
-      },
+      }
     );
 
     // Ensure that an error is thrown when createPostResolverImage is called
     await expect(
-      createPostResolverImage?.({}, args, context),
+      createPostResolverImage?.({}, args, context)
     ).rejects.toThrowError("Unsupported file type.");
   });
 
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+      (message) => message
     );
     try {
       const args: MutationCreatePostArgs = {
@@ -293,14 +293,14 @@ describe("resolvers -> Mutation -> createPost", () => {
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       );
     }
   });
   it(`throws String Length Validation error if text is greater than 500 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+      (message) => message
     );
     try {
       const args: MutationCreatePostArgs = {
@@ -325,7 +325,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
       );
     }
   });
@@ -333,7 +333,7 @@ describe("resolvers -> Mutation -> createPost", () => {
   it("throws error if title is provided and post is not pinned", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+      (message) => message
     );
     try {
       const args: MutationCreatePostArgs = {
@@ -355,7 +355,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Post needs to be pinned inorder to add a title`,
+        `Post needs to be pinned inorder to add a title`
       );
     }
   });
@@ -363,7 +363,7 @@ describe("resolvers -> Mutation -> createPost", () => {
   it("throws error if title is not provided and post is pinned", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+      (message) => message
     );
     try {
       const args: MutationCreatePostArgs = {

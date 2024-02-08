@@ -34,7 +34,7 @@ describe("resolvers -> Query -> actionItemCategoriesByOrganization", () => {
     }).lean();
 
     expect(categoriesByOrganizationPayload).toEqual(
-      categoriesByOrganizationInfo,
+      categoriesByOrganizationInfo
     );
   });
 });

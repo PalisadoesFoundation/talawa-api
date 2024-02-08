@@ -14,7 +14,7 @@ export const averageFeedbackScore: EventResolvers["averageFeedbackScore"] =
     // Return the average feedback score
     const sum = feedbacks.reduce(
       (accumulator, feedback) => accumulator + feedback.rating,
-      0,
+      0
     );
     return sum / feedbacks.length;
   };

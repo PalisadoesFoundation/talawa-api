@@ -96,7 +96,7 @@ const advertisementSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 const advertisementModel = (): Model<InterfaceAdvertisement> =>

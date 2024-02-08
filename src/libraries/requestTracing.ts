@@ -49,7 +49,7 @@ export const middleware = () => {
 
 export const trace = async <T>(
   tracingId: string,
-  method: () => T,
+  method: () => T
 ): Promise<void> => {
   await requestTracingNamespace.runAndReturn<T>(() => {
     setTracingId(tracingId || nanoid());

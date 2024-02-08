@@ -2,7 +2,7 @@ import type { ActionItemCategoryResolvers } from "../../types/generatedGraphQLTy
 import { User } from "../../models";
 
 export const creator: ActionItemCategoryResolvers["creator"] = async (
-  parent,
+  parent
 ) => {
   return User.findOne({
     _id: parent.creatorId,

@@ -27,7 +27,7 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
       throw new errors.NotFoundError(
         requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
         CHAT_NOT_FOUND_ERROR.CODE,
-        CHAT_NOT_FOUND_ERROR.PARAM,
+        CHAT_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -39,12 +39,12 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
     const currentUserIsAMemberOfGroupChat = groupChat.users.some((user) =>
-      user.equals(context.userId),
+      user.equals(context.userId)
     );
 
     /* 
@@ -55,7 +55,7 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 
@@ -75,7 +75,7 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
         $push: {
           messages: createdGroupChatMessage._id,
         },
-      },
+      }
     );
 
     // calls subscription

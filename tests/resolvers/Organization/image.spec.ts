@@ -50,7 +50,7 @@ describe("resolvers -> Organization -> image", () => {
       },
       {
         new: true,
-      },
+      }
     );
 
     const parent = testOrganization?.toObject();
@@ -82,7 +82,7 @@ describe("resolvers -> Organization -> image", () => {
       },
       {
         new: true,
-      },
+      }
     );
 
     const parent = testOrganization?.toObject();

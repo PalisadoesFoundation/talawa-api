@@ -44,7 +44,7 @@ describe("utilities -> mailer", () => {
       .mockImplementationOnce(() => {
         const mockSendMail = (
           _mailOptions: Mail.Options,
-          callBackFn: (_err: Error | null, _info: object) => void,
+          callBackFn: (_err: Error | null, _info: object) => void
         ): any => {
           return callBackFn(null, mockInfo);
         };
@@ -64,7 +64,7 @@ describe("utilities -> mailer", () => {
       .mockImplementationOnce(() => {
         const mockSendMail = (
           _mailOptions: Mail.Options,
-          callBackFn: (_err: Error | null, _info: object | null) => void,
+          callBackFn: (_err: Error | null, _info: object | null) => void
         ): any => {
           return callBackFn(new Error("rejects Promise"), null);
         };

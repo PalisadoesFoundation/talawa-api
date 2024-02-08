@@ -35,7 +35,7 @@ beforeAll(async () => {
   testGroupChat = resultsArray[2];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message,
+    (message) => message
   );
 });
 
@@ -71,7 +71,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
           $set: {
             organization: Types.ObjectId().toString(),
           },
-        },
+        }
       );
 
       const args: MutationAdminRemoveGroupArgs = {
@@ -98,7 +98,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        },
+        }
       );
 
       const args: MutationAdminRemoveGroupArgs = {
@@ -126,7 +126,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        },
+        }
       );
 
       const updatedOrganization = await Organization.findOneAndUpdate(
@@ -140,7 +140,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         },
         {
           new: true,
-        },
+        }
       );
 
       cacheOrganizations([updatedOrganization!]);
@@ -171,7 +171,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       },
       {
         new: true,
-      },
+      }
     );
 
     cacheOrganizations([updatedOrganization!]);
@@ -187,7 +187,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
     const adminRemoveGroupPayload = await adminRemoveGroupResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(adminRemoveGroupPayload).toEqual({

@@ -34,7 +34,7 @@ export const updateActionItemCategory: MutationResolvers["updateActionItemCatego
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -49,7 +49,7 @@ export const updateActionItemCategory: MutationResolvers["updateActionItemCatego
       throw new errors.NotFoundError(
         requestContext.translate(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
         ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.CODE,
-        ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.PARAM,
+        ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -64,7 +64,7 @@ export const updateActionItemCategory: MutationResolvers["updateActionItemCatego
       },
       {
         new: true,
-      },
+      }
     ).lean();
 
     return updatedCategory;

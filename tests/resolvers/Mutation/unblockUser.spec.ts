@@ -129,7 +129,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
           $push: {
             admins: testUser?._id,
           },
-        },
+        }
       );
 
       await User.updateOne(
@@ -140,7 +140,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
           $push: {
             adminFor: testOrganization?._id,
           },
-        },
+        }
       );
 
       const args: MutationUnblockUserArgs = {
@@ -176,7 +176,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       },
       {
         new: true,
-      },
+      }
     ).lean();
 
     if (updatedOrganization !== null) {
@@ -191,7 +191,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         $push: {
           organizationsBlockedBy: testOrganization?._id,
         },
-      },
+      }
     );
 
     const args: MutationUnblockUserArgs = {

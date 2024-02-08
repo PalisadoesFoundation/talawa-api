@@ -30,7 +30,7 @@ describe("resolvers -> Mutation -> getDonationByOrgId", () => {
     const getDonationByOrgIdPayload = await getDonationByOrgIdResolver?.(
       {},
       args,
-      {},
+      {}
     );
 
     const donationsByOrganization = await Donation.find({

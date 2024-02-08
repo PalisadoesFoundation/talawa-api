@@ -28,7 +28,7 @@ describe("resolvers -> GroupChat -> creator", () => {
     const creatorPayload = await creatorResolver?.(
       parent ?? ({} as InterfaceGroupChat),
       {},
-      {},
+      {}
     );
 
     const creator = await User.findOne({

@@ -53,7 +53,7 @@ const donationSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 const donationModel = (): Model<InterfaceDonation> =>
