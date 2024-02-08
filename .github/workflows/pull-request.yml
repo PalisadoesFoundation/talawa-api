@@ -60,7 +60,7 @@ jobs:
           files: |
             typescript:
               - **.ts
-              - '!src/types/**ts'
+              - !src/types/**ts
 
       - name: Run ESLint to check for linting errors in modified files
         if: steps.changed_files.outputs.outputs.typescript_any_changed == 'true'
