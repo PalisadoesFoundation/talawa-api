@@ -54,7 +54,7 @@ jobs:
       # Lint changed *ts files 
       # Except the *ts files in .eslintignore which could cause failure
       - name: Get changed files
-        id: changed_files
+        id: changed-files
         uses: tj-actions/changed-files@v42
         with:
           files: |
@@ -63,9 +63,9 @@ jobs:
               - '!src/types/**ts'
 
       - name: Run ESLint to check for linting errors in modified files
-        #if: steps.changed_files.outputs.typescript_any_changed == 'true'
+        #if: steps.changed-files.outputs.typescript_any_changed == 'true'
         env:
-          CHANGED_FILES: ${{ steps.changed_files.outputs.typescript_all_changed_files }}
+          CHANGED_FILES: ${{ steps.changed-files.outputs.typescript_all_changed_files }}
         run: |
           echo "$CHANGED_FILES"
           echo "${CHANGED_FILES}"
