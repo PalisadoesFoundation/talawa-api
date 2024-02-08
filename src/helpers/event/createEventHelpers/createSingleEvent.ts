@@ -1,8 +1,7 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
-import { Event } from "../../../models";
+import { Event, EventAttendee, User } from "../../../models";
 import type { MutationCreateEventArgs } from "../../../types/generatedGraphQLTypes";
-import { associateEventWithUser } from "./associateEventWithUser";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 import { format } from "date-fns";
 
@@ -13,7 +12,8 @@ import { format } from "date-fns";
  * @param organizationId - _id of the current organization.
  * @remarks The following steps are followed:
  * 1. Create an event document.
- * 2. Associate the event with the user and cache it.
+ * 2. Associate the event with the user
+ * 3. Cache the event.
  * @returns The event generated.
  */
 
@@ -41,12 +41,31 @@ export const createSingleEvent = async (
     { session }
   );
 
-  // associate the event with the user
-  await associateEventWithUser(
-    currentUserId,
-    createdEvent[0]?._id.toString(),
-    session
+  // associate event with the user
+  await EventAttendee.create(
+    [
+      {
+        userId: currentUserId,
+        eventId: createdEvent[0]?._id,
+      },
+    ],
+    { session }
   );
+  await User.updateOne(
+    {
+      _id: currentUserId,
+    },
+    {
+      $push: {
+        eventAdmin: createdEvent[0]?._id,
+        createdEvents: createdEvent[0]?._id,
+        registeredEvents: createdEvent[0]?._id,
+      },
+    },
+    { session }
+  );
+
+  // cache the event
   await cacheEvents([createdEvent[0]]);
 
   return createdEvent[0];
