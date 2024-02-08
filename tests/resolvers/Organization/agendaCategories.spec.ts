@@ -4,9 +4,11 @@ import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { AgendaCategoryModel, Organization } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type { TestUserType, TestOrganizationType } from "../../helpers/userAndOrg";
-import { createTestUser  } from "../../helpers/userAndOrg";
-
+import type {
+  TestUserType,
+  TestOrganizationType,
+} from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;

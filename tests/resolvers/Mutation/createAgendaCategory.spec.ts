@@ -13,7 +13,6 @@ import type {
 import { Organization, User } from "../../../src/models";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
- 
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
@@ -44,12 +43,12 @@ beforeAll(async () => {
       $push: {
         adminFor: testOrganization?._id,
       },
-    }
+    },
   );
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -78,7 +77,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       const createdAgendaCategory = await createAgendaCategoryResolver?.(
         {},
         args,
-        context
+        context,
       );
 
       expect(createdAgendaCategory).toBeDefined();
@@ -89,7 +88,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       // Verify that the properties of the returned agenda category match the expected values
       expect(createdAgendaCategory?.name).toEqual(args.input.name);
       expect(createdAgendaCategory?.description).toEqual(
-        args.input.description
+        args.input.description,
       );
       expect(createdAgendaCategory?._id).toBeUndefined();
     } catch (error) {
@@ -117,7 +116,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       const createdAgendaCategory = await createAgendaCategoryResolver?.(
         {},
         args,
-        context
+        context,
       );
 
       expect(createdAgendaCategory).toBeUndefined(); // The resolver should not return anything
@@ -148,14 +147,14 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       const createdAgendaCategory = await createAgendaCategoryResolver?.(
         {},
         args,
-        context
+        context,
       );
 
       expect(createdAgendaCategory).toBeUndefined(); // The resolver should not return anything
     } catch (error: unknown) {
       // The resolver should throw a NotFoundError with the appropriate message, code, and parameter
       expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -180,13 +179,13 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       const createdAgendaCategory = await createAgendaCategoryResolver?.(
         {},
         args,
-        context
+        context,
       );
 
       expect(createdAgendaCategory).toBeUndefined(); // The resolver should not return anything
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        "Error: Current user must be an ADMIN or a SUPERADMIN"
+        "Error: Current user must be an ADMIN or a SUPERADMIN",
       ); // The resolver should throw an UnauthorizedError with the appropriate message, code, and parameter
     }
   });

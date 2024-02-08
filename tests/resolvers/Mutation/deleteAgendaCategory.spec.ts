@@ -14,7 +14,7 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
- import type { MutationDeleteAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationDeleteAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
 import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -47,7 +47,7 @@ beforeAll(async () => {
         createdOrganizations: [testOrganization._id],
         adminFor: [testOrganization._id],
       },
-    }
+    },
   );
   sampleAgendaCategory = await AgendaCategoryModel.create({
     name: "Sample Agenda Category",
@@ -87,7 +87,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
       await deleteAgendaCategory?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -103,7 +103,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
       await deleteAgendaCategory?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -117,7 +117,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
       },
       {
         new: true,
-      }
+      },
     );
     const newTestAgendaCategory = await AgendaCategoryModel.create({
       name: "Sample Agenda Category",
@@ -136,7 +136,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
     const removedAgendaCategoryPayload = await deleteAgendaCategory?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removedAgendaCategoryPayload).toEqual(args.id);
@@ -152,7 +152,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
     const removedAgendaCategoryPayload = await deleteAgendaCategory?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removedAgendaCategoryPayload).toEqual(args.id);

@@ -1,10 +1,7 @@
 import type { InterfaceAgendaCategory } from "../../src/models";
 import { AgendaCategoryModel, Organization } from "../../src/models";
 import type { Document } from "mongoose";
-import {
-  type TestOrganizationType,
-  type TestUserType,
-} from "./userAndOrg";
+import { type TestOrganizationType, type TestUserType } from "./userAndOrg";
 import { createTestUser } from "./user";
 
 export type TestAgendaCategoryType = InterfaceAgendaCategory & Document;

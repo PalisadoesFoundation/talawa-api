@@ -6,7 +6,7 @@ import { User } from "../../models";
  * @returns An `object` that contains User's data.
  */
 export const receiver: DirectChatMessageResolvers["receiver"] = async (
-  parent
+  parent,
 ) => {
   return await User.findOne({
     _id: parent.receiver,

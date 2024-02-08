@@ -55,7 +55,7 @@ const fileSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const fileModel = (): Model<InterfaceFile> =>

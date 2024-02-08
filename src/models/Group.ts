@@ -54,7 +54,7 @@ const groupSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const groupModel = (): Model<InterfaceGroup> =>

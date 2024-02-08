@@ -67,7 +67,7 @@ beforeAll(async () => {
         adminFor: testOrganization._id,
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -79,7 +79,7 @@ beforeAll(async () => {
         adminFor: testOrganization._id,
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -90,7 +90,7 @@ beforeAll(async () => {
       $push: {
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -104,7 +104,7 @@ beforeAll(async () => {
           joinedOrganizations: testOrganization._id,
         },
       },
-    }
+    },
   );
 });
 
@@ -172,7 +172,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
     }
   });
@@ -202,7 +202,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -231,7 +231,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(MEMBER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${MEMBER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${MEMBER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -287,7 +287,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_ADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ADMIN_REMOVING_ADMIN.MESSAGE}`
+        `Translated ${ADMIN_REMOVING_ADMIN.MESSAGE}`,
       );
     }
   });
@@ -316,7 +316,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`
+        `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`,
       );
     }
   });
@@ -340,7 +340,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
     const updatedOrganization = await removeMemberResolverRemoveAdminError?.(
       {},
       args,
-      context
+      context,
     );
 
     const removedUser = await User.findOne({
@@ -349,7 +349,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
     expect(updatedOrganization?.members).not.toContain(testUsers[2]?._id);
     expect(removedUser?.joinedOrganizations).not.toContain(
-      testOrganization?._id
+      testOrganization?._id,
     );
   });
 });

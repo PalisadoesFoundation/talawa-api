@@ -8,7 +8,7 @@ import type { DirectChatResolvers } from "../../types/generatedGraphQLTypes";
  * @returns An `object` that contains Organization data.
  */
 export const organization: DirectChatResolvers["organization"] = async (
-  parent
+  parent,
 ) => {
   const organizationFoundInCache = await findOrganizationsInCache([
     parent.organization,

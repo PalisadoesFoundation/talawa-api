@@ -29,7 +29,7 @@ describe("resolvers -> Mutation -> getDonationById", () => {
     const getDonationByIdPayload = await getDonationByIdResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     expect(getDonationByIdPayload).toEqual(testDonation?.toObject());
@@ -42,7 +42,7 @@ describe("resolvers -> Mutation -> getDonationById", () => {
     const getDonationByIdPayload = await getDonationByIdResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     expect(getDonationByIdPayload).toEqual({});

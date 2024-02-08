@@ -11,7 +11,7 @@ export type TestFeedbackType =
 
 export const createFeedbackWithIDs = async (
   eventId: string,
-  eventAttendeeId: string
+  eventAttendeeId: string,
 ): Promise<TestFeedbackType> => {
   const feedback = await Feedback.create({
     eventId,
@@ -32,7 +32,7 @@ export const createFeedback = async (): Promise<
     TestOrganizationType,
     TestEventType,
     TestCheckInType,
-    TestFeedbackType
+    TestFeedbackType,
   ]
 > => {
   const result = await createEventWithCheckedInUser();

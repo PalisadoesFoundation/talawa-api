@@ -60,7 +60,7 @@ const messageSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const messageModel = (): Model<InterfaceMessage> =>
