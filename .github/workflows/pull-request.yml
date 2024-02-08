@@ -66,7 +66,10 @@ jobs:
         #if: steps.changed_files.outputs.typescript_any_changed == 'true'
         env:
           CHANGED_FILES: ${{ steps.changed_files.outputs.typescript_all_changed_files }}
-        run: npx eslint ${CHANGED_FILES} 
+        run: |
+          echo $CHANGED_FILES
+          echo ${CHANGED_FILES}
+          npx eslint ${CHANGED_FILES} 
 
       - name: Check for formatting errors
         run: npm run format:check
