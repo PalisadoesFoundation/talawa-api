@@ -58,8 +58,8 @@ jobs:
         uses: tj-actions/changed-files@v42
         with:
           files: |
-             - **.ts
-             - '!src/types/**ts'
+            **.ts
+            '!src/types/**ts'
 
       - name: Run ESLint to check for linting errors in modified files
         if: steps.changed_files.outputs.any_changed == 'true'
