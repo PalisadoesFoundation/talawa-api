@@ -9,7 +9,6 @@ import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 /**
  * This is an interface that represents a database(MongoDB) document for User.
- *
  */
 export interface InterfaceUser {
   _id: Types.ObjectId;
