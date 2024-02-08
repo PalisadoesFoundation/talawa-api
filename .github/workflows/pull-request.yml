@@ -58,9 +58,9 @@ jobs:
         uses: tj-actions/changed-files@v42
         with:
           files: |
-            typescript:
-              - **.ts
-              - '!src/types/**ts'
+            **.ts
+          files_ignore: |
+            src/types/**ts
 
       - name: Run ESLint to check for linting errors in modified files
         #if: steps.changed-files.outputs.typescript_any_changed == 'true'
