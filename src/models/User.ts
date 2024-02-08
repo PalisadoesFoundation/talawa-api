@@ -6,11 +6,10 @@ import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
-import { LOG } from "../constants";
+// import { LOG } from "../constants";
 
 /**
  * This is an interface that represents a database(MongoDB) document for User.
- *
  */
 export interface InterfaceUser {
   _id: Types.ObjectId;
