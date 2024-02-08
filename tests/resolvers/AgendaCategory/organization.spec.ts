@@ -29,7 +29,7 @@ beforeAll(async () => {
   testAgendaCategory = await AgendaCategoryModel.create({
     name: "Test Categ",
     description: "Test Desc",
-    organization: testOrganization?._id,
+    organizationId: testOrganization?._id,
     createdBy: testAdminUser?._id,
     updatedBy: testAdminUser?._id,
     createdAt: Date.now(),
