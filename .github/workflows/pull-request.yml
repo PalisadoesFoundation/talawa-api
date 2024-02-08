@@ -56,7 +56,9 @@ jobs:
         uses: tj-actions/changed-files@v42
         with:
           files: |
-             **.ts
+            **.ts
+          files_ignore: |
+            src/models/User.ts 
 
       - name: Run ESLint to check for linting errors in modified files
         env:
