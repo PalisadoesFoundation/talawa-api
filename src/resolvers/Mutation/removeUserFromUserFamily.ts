@@ -41,7 +41,7 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -58,7 +58,7 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       throw new errors.NotFoundError(
         requestContext.translate(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE),
         USER_FAMILY_NOT_FOUND_ERROR.CODE,
-        USER_FAMILY_NOT_FOUND_ERROR.PARAM,
+        USER_FAMILY_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -70,7 +70,7 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -79,7 +79,7 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       throw new errors.ConflictError(
         requestContext.translate(USER_REMOVING_SELF.MESSAGE),
         USER_REMOVING_SELF.CODE,
-        USER_REMOVING_SELF.PARAM,
+        USER_REMOVING_SELF.PARAM
       );
     }
 
@@ -91,7 +91,7 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       throw new errors.ConflictError(
         requestContext.translate(ADMIN_REMOVING_ADMIN.MESSAGE),
         ADMIN_REMOVING_ADMIN.CODE,
-        ADMIN_REMOVING_ADMIN.PARAM,
+        ADMIN_REMOVING_ADMIN.PARAM
       );
     }
 
@@ -106,7 +106,7 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       throw new errors.UnauthorizedError(
         requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
         ADMIN_REMOVING_CREATOR.CODE,
-        ADMIN_REMOVING_CREATOR.PARAM,
+        ADMIN_REMOVING_CREATOR.PARAM
       );
     }
 
@@ -118,12 +118,12 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       {
         $set: {
           users: userFamily.users.filter(
-            (user) => user.toString() !== args.userId.toString(),
+            (user) => user.toString() !== args.userId.toString()
           ),
         },
       },
       {
         new: true,
-      },
+      }
     ).lean();
   };

@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -104,7 +104,7 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -132,7 +132,7 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`,
+        `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
