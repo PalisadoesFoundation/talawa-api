@@ -1,29 +1,29 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event } from "../../../src/models";
+import { AppUserProfile, Event, User } from "../../../src/models";
 import type { MutationUpdateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
   LENGTH_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
+import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
+import type { TestEventType } from "../../helpers/events";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import type { TestEventType } from "../../helpers/events";
-import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -89,9 +89,9 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       );
 
       await updateEventResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
@@ -117,9 +117,9 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       );
 
       await updateEventResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
@@ -134,7 +134,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent?._id,
+        id: testEvent?._id.toString() ?? "",
       };
 
       const context = {
@@ -146,9 +146,9 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       );
 
       await updateEventResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
     }
@@ -173,7 +173,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       await cacheEvents([updatedEvent]);
     }
 
-    await User.updateOne(
+    await AppUserProfile.updateOne(
       {
         _id: testUser?._id,
       },
@@ -185,7 +185,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     );
 
     const args: MutationUpdateEventArgs = {
-      id: testEvent?._id,
+      id: testEvent?._id.toString() ?? "",
       data: {
         allDay: false,
         description: "newDescription",
@@ -230,7 +230,7 @@ describe("Check for validation conditions", () => {
     );
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent?._id,
+        id: testEvent?._id.toString() ?? "",
         data: {
           allDay: false,
           description: "Random",
@@ -259,8 +259,8 @@ describe("Check for validation conditions", () => {
       );
 
       await updateEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       );
     }
@@ -272,7 +272,7 @@ describe("Check for validation conditions", () => {
     );
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent?._id,
+        id: testEvent?._id.toString() ?? "",
         data: {
           allDay: false,
           description:
@@ -301,8 +301,8 @@ describe("Check for validation conditions", () => {
       );
 
       await updateEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       );
     }
@@ -314,7 +314,7 @@ describe("Check for validation conditions", () => {
     );
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent?._id,
+        id: testEvent?._id.toString() ?? "",
         data: {
           allDay: false,
           description: "Random",
@@ -342,8 +342,8 @@ describe("Check for validation conditions", () => {
       );
 
       await updateEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
       );
     }
@@ -355,7 +355,7 @@ describe("Check for validation conditions", () => {
     );
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent?._id,
+        id: testEvent?._id.toString() ?? "",
         data: {
           allDay: false,
           description: "Random",
@@ -383,8 +383,10 @@ describe("Check for validation conditions", () => {
       );
 
       await updateEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(`start date must be earlier than end date`);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `start date must be earlier than end date`
+      );
     }
   });
 });

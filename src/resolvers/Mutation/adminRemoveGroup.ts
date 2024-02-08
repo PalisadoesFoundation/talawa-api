@@ -1,11 +1,12 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
-import { User, Organization, GroupChat } from "../../models";
+import { User, Organization, GroupChat, AppUserProfile } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   CHAT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
@@ -52,8 +53,9 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
     organization = await Organization.findOne({
       _id: groupChat.organization,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) {
+      await cacheOrganizations([organization]);
+    }
   }
 
   // Checks whether organization exists.
@@ -75,6 +77,16 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM
+    );
+  }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: context.userId,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 

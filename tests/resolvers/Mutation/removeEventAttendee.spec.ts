@@ -1,18 +1,18 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { EventAttendee, User } from "../../../src/models";
-import type { MutationRemoveEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_REGISTERED_FOR_EVENT,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
+import { EventAttendee, User } from "../../../src/models";
+import type { MutationRemoveEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
+import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -52,8 +52,8 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
       );
 
       await removeEventAttendeeResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -75,15 +75,15 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
         },
       };
 
-      const context = { userId: randomTestUser!._id };
+      const context = { userId: randomTestUser?._id };
 
       const { removeEventAttendee: removeEventAttendeeResolver } = await import(
         "../../../src/resolvers/Mutation/removeEventAttendee"
       );
 
       await removeEventAttendeeResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
       );
       expect(spy).toHaveBeenLastCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
@@ -101,19 +101,19 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
       const args: MutationRemoveEventAttendeeArgs = {
         data: {
           userId: Types.ObjectId().toString(),
-          eventId: testEvent!._id,
+          eventId: testEvent?._id.toString() ?? "",
         },
       };
 
-      const context = { userId: randomTestUser!._id };
+      const context = { userId: randomTestUser?._id };
 
       const { removeEventAttendee: removeEventAttendeeResolver } = await import(
         "../../../src/resolvers/Mutation/removeEventAttendee"
       );
 
       await removeEventAttendeeResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
@@ -131,19 +131,19 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
       const args: MutationRemoveEventAttendeeArgs = {
         data: {
           userId: Types.ObjectId().toString(),
-          eventId: testEvent!._id,
+          eventId: testEvent?._id.toString() ?? "",
         },
       };
 
-      const context = { userId: testUser!._id };
+      const context = { userId: testUser?._id };
 
       const { removeEventAttendee: removeEventAttendeeResolver } = await import(
         "../../../src/resolvers/Mutation/removeEventAttendee"
       );
 
       await removeEventAttendeeResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -160,20 +160,20 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
     try {
       const args: MutationRemoveEventAttendeeArgs = {
         data: {
-          userId: testUser!._id,
-          eventId: testEvent!._id,
+          userId: testUser?._id,
+          eventId: testEvent?._id.toString() ?? "",
         },
       };
 
-      const context = { userId: testUser!._id };
+      const context = { userId: testUser?._id };
 
       const { removeEventAttendee: removeEventAttendeeResolver } = await import(
         "../../../src/resolvers/Mutation/removeEventAttendee"
       );
 
       await removeEventAttendeeResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_REGISTERED_FOR_EVENT.MESSAGE}`
       );
       expect(spy).toHaveBeenLastCalledWith(
@@ -185,12 +185,12 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
   it(`unregisters the request user for the event successfully and returns the request user`, async () => {
     const args: MutationRemoveEventAttendeeArgs = {
       data: {
-        userId: testUser!._id,
-        eventId: testEvent!._id,
+        userId: testUser?._id,
+        eventId: testEvent?._id.toString() ?? "",
       },
     };
 
-    const context = { userId: testUser!._id };
+    const context = { userId: testUser?._id };
 
     await EventAttendee.create({ ...args.data });
 
@@ -201,7 +201,7 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
     const payload = await removeEventAttendeeResolver?.({}, args, context);
 
     const requestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     }).lean();
 
     const isUserRegistered = await EventAttendee.exists({

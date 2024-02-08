@@ -395,15 +395,6 @@ export const inputs = gql`
     email_contains: EmailAddress
     email_starts_with: EmailAddress
 
-    appLanguageCode: String
-    appLanguageCode_not: String
-    appLanguageCode_in: [String!]
-    appLanguageCode_not_in: [String!]
-    appLanguageCode_contains: String
-    appLanguageCode_starts_with: String
-
-    admin_for: ID
-
     event_title_contains: String
   }
   input PostUpdateInput {

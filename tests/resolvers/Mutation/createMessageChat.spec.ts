@@ -1,25 +1,26 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceUser, InterfaceMessageChat } from "../../../src/models";
-import { User } from "../../../src/models";
+import type { InterfaceMessageChat } from "../../../src/models";
+import { AppUserProfile, User } from "../../../src/models";
 import type { MutationCreateMessageChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
-  vi,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
 } from "vitest";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
-let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
+let testUsers: TestUserType[];
+// let testAppUserProfile: TestAppUserProfileType[];
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
@@ -31,16 +32,18 @@ beforeAll(async () => {
       password: "password",
       firstName: "firstName",
       lastName: "lastName",
-      appLanguageCode: "en",
     },
     {
       email: `email${nanoid().toLowerCase()}@gmail.com`,
       password: "password",
       firstName: "firstName",
       lastName: "lastName",
-      appLanguageCode: "en",
     },
   ]);
+  const appUserProfiles = testUsers.map((user) => ({
+    userId: user?._id,
+  }));
+  await AppUserProfile.insertMany(appUserProfiles);
 });
 
 afterAll(async () => {
@@ -68,16 +71,16 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       };
 
       const context = {
-        userId: testUsers[0].id,
+        userId: testUsers[0]?.id,
       };
 
       const { createMessageChat: createMessageChatResolver } = await import(
         "../../../src/resolvers/Mutation/createMessageChat"
       );
       await createMessageChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
@@ -87,7 +90,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
     const args: MutationCreateMessageChatArgs = {
       data: {
         message: "message",
-        receiver: testUsers[1].id,
+        receiver: testUsers[1]?.id,
       },
     };
 
@@ -106,7 +109,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
     };
 
     const context = {
-      userId: testUsers[0].id,
+      userId: testUsers[0]?.id,
       pubsub,
     };
 
@@ -121,8 +124,8 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
 
     expect(createMessageChatPayload).toEqual(
       expect.objectContaining({
-        sender: testUsers[0]._id,
-        receiver: testUsers[1]._id,
+        sender: testUsers[0]?._id,
+        receiver: testUsers[1]?._id,
         message: "message",
         languageBarrier: false,
       })

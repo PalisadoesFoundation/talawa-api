@@ -15,7 +15,7 @@ export const getSort = (
         | UserOrderByInput
       >
     | undefined
-): any => {
+): unknown => {
   let sortPayload = {};
 
   switch (orderBy) {
@@ -199,17 +199,17 @@ export const getSort = (
       };
       break;
 
-    case "appLanguageCode_ASC":
-      sortPayload = {
-        appLanguageCode: 1,
-      };
-      break;
+    // case "appLanguageCode_ASC":
+    //   sortPayload = {
+    //     appLanguageCode: 1,
+    //   };
+    //   break;
 
-    case "appLanguageCode_DESC":
-      sortPayload = {
-        appLanguageCode: -1,
-      };
-      break;
+    // case "appLanguageCode_DESC":
+    //   sortPayload = {
+    //     appLanguageCode: -1,
+    //   };
+    //   break;
 
     case "email_ASC":
       sortPayload = {

@@ -1,4 +1,7 @@
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type {
+  QueryResolvers,
+  UserConnection,
+} from "../../types/generatedGraphQLTypes";
 import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
@@ -15,7 +18,6 @@ import { getWhere } from "./helperFunctions/getWhere";
  * @remarks Connection in graphQL means pagination,
  * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
  */
-// @ts-ignore
 export const organizationsMemberConnection: QueryResolvers["organizationsMemberConnection"] =
   async (_parent, args, context) => {
     const where = getWhere<InterfaceUser>(args.where);
@@ -54,10 +56,11 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         ...paginateOptions,
         populate: ["registeredEvents"],
         select: ["-password"],
+        sort: {}, // Add an empty object as the value for the sort property
       }
     );
 
-    let users = {};
+    let users: InterfaceUser[] = []; // Change the type of users
 
     if (paginateOptions.pagination) {
       if (args.skip === undefined) {

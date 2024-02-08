@@ -1,18 +1,18 @@
 import bcrypt from "bcryptjs";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import type { InterfaceUser } from "../../models";
-import { User } from "../../models";
-import {
-  createAccessToken,
-  createRefreshToken,
-  copyToClipboard,
-} from "../../utilities";
-import { errors, requestContext } from "../../libraries";
 import {
   INVALID_CREDENTIALS_ERROR,
-  USER_NOT_FOUND_ERROR,
   LAST_RESORT_SUPERADMIN_EMAIL,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceUser } from "../../models";
+import { AppUserProfile, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import {
+  copyToClipboard,
+  createAccessToken,
+  createRefreshToken,
+} from "../../utilities";
 /**
  * This function enables login.
  * @param _parent - parent of current request
@@ -37,7 +37,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   }
   const isPasswordValid = await bcrypt.compare(
     args.data.password,
-    user.password
+    user.password as string
   );
   // Checks whether password is invalid.
   if (isPasswordValid === false) {
@@ -52,8 +52,28 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
       requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE)
     );
   }
-  const accessToken = await createAccessToken(user);
-  const refreshToken = await createRefreshToken(user);
+  let appUserProfile = await AppUserProfile.findOne({
+    userId: user._id.toString(),
+  }).lean();
+  if (!appUserProfile) {
+    appUserProfile = await AppUserProfile.create({
+      userId: user._id.toString(),
+      appLanguageCode: "en",
+      tokenVersion: 0,
+      isSuperAdmin: false,
+    });
+    await User.updateOne(
+      {
+        _id: user._id.toString(),
+      },
+      {
+        appUserProfileId: appUserProfile._id.toString(),
+      }
+    );
+  }
+
+  const accessToken = createAccessToken(user, appUserProfile);
+  const refreshToken = createRefreshToken(user, appUserProfile);
   copyToClipboard(`{
     "Authorization": "Bearer ${accessToken}"
   }`);
@@ -61,40 +81,59 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   // Updates the user to SUPERADMIN if the email of the user matches the LAST_RESORT_SUPERADMIN_EMAIL
   if (
     user?.email.toLowerCase() === LAST_RESORT_SUPERADMIN_EMAIL?.toLowerCase() &&
-    user?.userType !== "SUPERADMIN"
+    !appUserProfile.isSuperAdmin
   ) {
-    await User.updateOne(
+    // await User.updateOne(
+    //   {
+    //     _id: user?._id,
+    //   },
+    //   {
+    //     userType: "SUPERADMIN",
+    //   }
+    // );
+    await AppUserProfile.findOneAndUpdate(
       {
-        _id: user?._id,
+        user: user._id,
       },
       {
-        userType: "SUPERADMIN",
+        isSuperAdmin: true,
       }
     );
   }
 
-  await User.findOneAndUpdate(
-    { _id: user._id },
-    { token: refreshToken, $inc: { tokenVersion: 1 } }
+  // await User.findOneAndUpdate(
+  //   { _id: user._id },
+  //   { token: refreshToken, $inc: { tokenVersion: 1 } }
+  // );
+  await AppUserProfile.findOneAndUpdate(
+    {
+      user: user._id,
+    },
+    {
+      token: refreshToken,
+      $inc: {
+        tokenVersion: 1,
+      },
+    }
   );
-
   // Assigns new value with populated fields to user object.
   user = await User.findOne({
-    _id: user._id,
+    _id: user._id.toString(),
   })
     .select(["-password"])
     .populate("joinedOrganizations")
-    .populate("createdOrganizations")
-    .populate("createdEvents")
+    // .populate("createdOrganizations")
+    // .populate("createdEvents")
     .populate("registeredEvents")
-    .populate("eventAdmin")
-    .populate("adminFor")
+    // .populate("eventAdmin")
+    // .populate("adminFor")
     .populate("membershipRequests")
     .populate("organizationsBlockedBy")
     .lean();
 
   return {
-    user: user ?? ({} as InterfaceUser),
+    user: user as InterfaceUser,
+
     accessToken,
     refreshToken,
   };

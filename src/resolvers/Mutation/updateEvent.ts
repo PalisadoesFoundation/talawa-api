@@ -1,7 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event } from "../../models";
+import { User, Event, AppUserProfile } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -40,6 +40,16 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
+    );
+  }
 
   let event: InterfaceEvent | null;
 
@@ -74,7 +84,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   // checks if current user is an admin of the event with _id === args.id
   if (
     currentUserIsEventAdmin === false &&
-    currentUser.userType !== "SUPERADMIN"
+    currentUserAppProfile.isSuperAdmin === false
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -120,6 +130,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       _id: args.id,
     },
     {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ...(args.data as any),
     },
     {
@@ -131,5 +142,5 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     await cacheEvents([updatedEvent]);
   }
 
-  return updatedEvent!;
+  return updatedEvent as InterfaceEvent;
 };

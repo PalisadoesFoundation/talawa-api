@@ -1,26 +1,27 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { AppUserProfile, Organization, User } from "../../../src/models";
 import type { MutationRemoveAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { removeAdmin as removeAdminResolver } from "../../../src/resolvers/Mutation/removeAdmin";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
   USER_NOT_ORGANIZATION_ADMIN,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  afterEach,
-  vi,
-} from "vitest";
+import { removeAdmin as removeAdminResolver } from "../../../src/resolvers/Mutation/removeAdmin";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import type {
   TestOrganizationType,
   TestUserType,
@@ -29,7 +30,6 @@ import {
   createTestUser,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUserRemoved: TestUserType;
@@ -76,9 +76,11 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       );
 
       await removeAdminResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+      );
     }
   });
 
@@ -104,9 +106,9 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       );
 
       await removeAdminResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -152,9 +154,9 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       );
 
       await removeAdminAdminError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_ORGANIZATION_ADMIN.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_ORGANIZATION_ADMIN.MESSAGE}`
       );
     }
@@ -204,11 +206,11 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       );
 
       await removeAdminAdminError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
         USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
       );
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
     }
@@ -234,7 +236,16 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       {
         $set: {
           adminApproved: true,
-          userType: "SUPERADMIN",
+        },
+      }
+    );
+    await AppUserProfile.updateOne(
+      {
+        userId: testUserRemover?.id,
+      },
+      {
+        $set: {
+          isSuperAdmin: true,
         },
       }
     );
@@ -252,11 +263,10 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
     const removeAdminPayload = await removeAdminResolver?.({}, args, context);
 
-    const updatedTestUser = await User.findOne({
-      _id: testUserRemoved?._id,
+    const updatedTestUser = await AppUserProfile.findOne({
+      userId: testUserRemoved?._id,
     })
-      .select(["-password"])
-      .lean();
+    .lean();
 
     expect(removeAdminPayload).toEqual(updatedTestUser);
   });

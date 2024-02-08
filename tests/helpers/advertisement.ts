@@ -1,8 +1,8 @@
-import { Advertisement, User } from "../../src/models";
 import type { InterfaceUser } from "../../src/models";
+import { Advertisement, AppUserProfile, User } from "../../src/models";
 
-import { nanoid } from "nanoid";
 import type { Document } from "mongoose";
+import { nanoid } from "nanoid";
 
 export type TestAdvertisementType = {
   _id: string;
@@ -37,7 +37,7 @@ export const createTestAdvertisement =
   };
 
 export type TestSuperAdminType =
-  | (InterfaceUser & Document<any, any, InterfaceUser>)
+  | (InterfaceUser & Document<unknown, unknown, InterfaceUser>)
   | null;
 
 export const createTestSuperAdmin = async (): Promise<TestSuperAdminType> => {
@@ -47,9 +47,22 @@ export const createTestSuperAdmin = async (): Promise<TestSuperAdminType> => {
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
     image: null,
-    appLanguageCode: "en",
-    userType: "SUPERADMIN", // Set userType to "SUPERADMIN"
   });
+  const testSuperAdminAppProfile = await AppUserProfile.create({
+    userId: testSuperAdmin._id,
+    appLanguageCode: "en",
+    isSuperAdmin: true,
+  });
+  await User.updateOne(
+    {
+      _id: testSuperAdmin._id,
+    },
+    {
+      $set: {
+        appUserProfileId: testSuperAdminAppProfile._id,
+      },
+    }
+  );
 
   return testSuperAdmin;
 };

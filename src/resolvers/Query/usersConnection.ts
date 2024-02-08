@@ -24,12 +24,8 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
     .limit(args.first ?? 0)
     .skip(args.skip ?? 0)
     .select(["-password"])
-    .populate("createdOrganizations")
-    .populate("createdEvents")
     .populate("joinedOrganizations")
     .populate("registeredEvents")
-    .populate("eventAdmin")
-    .populate("adminFor")
     .lean();
 
   return users;

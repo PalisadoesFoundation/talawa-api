@@ -36,8 +36,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
     organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) await cacheOrganizations([organization]);
   }
 
   // Checks whether organization exists.

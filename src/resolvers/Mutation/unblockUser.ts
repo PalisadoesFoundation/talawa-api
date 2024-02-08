@@ -37,8 +37,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) await cacheOrganizations([organization]);
   } else {
     organization = organizationFoundInCache[0];
   }

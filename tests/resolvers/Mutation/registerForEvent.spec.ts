@@ -1,27 +1,27 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event, EventAttendee } from "../../../src/models";
+import { Event, EventAttendee, User } from "../../../src/models";
 import type { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { registerForEvent as registerForEventResolver } from "../../../src/resolvers/Mutation/registerForEvent";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  afterEach,
-  vi,
-} from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
+import { registerForEvent as registerForEventResolver } from "../../../src/resolvers/Mutation/registerForEvent";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -62,9 +62,9 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       );
 
       await registerForEventResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -76,11 +76,11 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
 
     try {
       const args: MutationRegisterForEventArgs = {
-        id: testEvent!._id,
+        id: testEvent?._id.toString() ?? "",
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { registerForEvent: registerForEventResolver } = await import(
@@ -88,16 +88,18 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       );
 
       await registerForEventResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
-      expect(error.message).toEqual(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE
+      );
     }
   });
 
   it(`registers user with _id === context.userId as a registrant for event with _id === args.id`, async () => {
     await EventAttendee.deleteOne({
-      userId: testUser!._id,
-      eventId: testEvent!._id,
+      userId: testUser?._id,
+      eventId: testEvent?._id,
     });
 
     await User.updateOne(
@@ -112,11 +114,11 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     );
 
     const args: MutationRegisterForEventArgs = {
-      id: testEvent!._id,
+      id: testEvent?._id.toString() ?? "",
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const registerForEventPayload = await registerForEventResolver?.(

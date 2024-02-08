@@ -1,11 +1,20 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { AppUserProfile, Organization, User } from "../../../src/models";
 import type { MutationBlockUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/blockUser";
+import { nanoid } from "nanoid";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -14,22 +23,13 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
+import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/blockUser";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import type {
-  TestUserType,
   TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testUser2: TestUserType;
@@ -58,8 +58,17 @@ beforeAll(async () => {
     },
     {
       $set: {
-        createdOrganizations: [testOrganization._id],
         joinedOrganizations: [testOrganization._id],
+      },
+    }
+  );
+  await AppUserProfile.updateOne(
+    {
+      userId: testUser?._id,
+    },
+    {
+      $set: {
+        createdOrganizations: [testOrganization._id],
       },
     }
   );
@@ -90,8 +99,10 @@ describe("resolvers -> Mutation -> blockUser", () => {
       };
 
       await blockUserResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+      );
     }
   });
 
@@ -107,8 +118,8 @@ describe("resolvers -> Mutation -> blockUser", () => {
       };
 
       await blockUserResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -132,8 +143,8 @@ describe("resolvers -> Mutation -> blockUser", () => {
       );
 
       await blockUserResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -157,8 +168,8 @@ describe("resolvers -> Mutation -> blockUser", () => {
       );
 
       await blockUserResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_BLOCKING_SELF.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_BLOCKING_SELF.MESSAGE);
     }
   });
 
@@ -193,8 +204,10 @@ describe("resolvers -> Mutation -> blockUser", () => {
       };
 
       await blockUserResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ADMIN.MESSAGE
+      );
     }
   });
 
@@ -220,9 +233,9 @@ describe("resolvers -> Mutation -> blockUser", () => {
         await cacheOrganizations([updatedOrganization]);
       }
 
-      await User.updateOne(
+      await AppUserProfile.updateOne(
         {
-          _id: testUser?.id,
+          userId: testUser?.id,
         },
         {
           $push: {
@@ -241,8 +254,10 @@ describe("resolvers -> Mutation -> blockUser", () => {
       };
 
       await blockUserResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
     }
   });
 

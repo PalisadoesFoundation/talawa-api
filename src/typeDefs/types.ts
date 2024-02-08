@@ -394,30 +394,26 @@ export const types = gql`
 
   type User {
     _id: ID!
+    appUserProfile: AppUserProfile
     address: Address
     adminApproved: Boolean
-    adminFor: [Organization]
     appLanguageCode: String!
     birthDate: Date
     createdAt: DateTime!
-    createdEvents: [Event]
-    createdOrganizations: [Organization]
     educationGrade: EducationGrade
     email: EmailAddress!
     employmentStatus: EmploymentStatus
-    post: [Post]
-    eventAdmin: [Event]
     firstName: String!
     gender: Gender
     image: String
     joinedOrganizations: [Organization]
     lastName: String!
     maritalStatus: MaritalStatus
-    membershipRequests: [MembershipRequest]
     organizationsBlockedBy: [Organization]
     phone: UserPhone
-    pluginCreationAllowed: Boolean!
+    membershipRequests: [MembershipRequest]
     registeredEvents: [Event]
+    pluginCreationAllowed: Boolean!
     tagsAssignedWith(
       after: String
       before: String
@@ -425,18 +421,27 @@ export const types = gql`
       last: PositiveInt
       organizationId: ID
     ): UserTagsConnection
-    tokenVersion: Int!
     updatedAt: DateTime!
-    userType: UserType!
   }
-
+  type AppUserProfile {
+    _id: ID!
+    user: User!
+    adminFor: [Organization]
+    createdEvents: [Event]
+    createdOrganizations: [Organization]
+    eventAdmin: [Event]
+    pluginCreationAllowed: Boolean!
+  }
   type UserCustomData {
     _id: ID!
     organizationId: ID!
     userId: ID!
     values: JSON!
   }
-
+  type UserData {
+    user: User!
+    appUserProfile: AppUserProfile!
+  }
   type UserConnection {
     pageInfo: PageInfo!
     edges: [User]!

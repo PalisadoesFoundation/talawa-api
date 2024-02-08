@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User } from "../../../src/models";
+import { AppUserProfile, User } from "../../../src/models";
 import type { MutationRejectAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -56,17 +56,10 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       const context = {
         userId: testUser1?.id,
       };
-      await User.findByIdAndUpdate(
-        {
-          _id: testUser1?._id,
-        },
-        {
-          userType: "USER",
-        }
-      );
+
       await rejectAdminResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
 
@@ -93,9 +86,9 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       );
 
       await rejectAdminResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -105,13 +98,13 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      await User.updateOne(
+      await AppUserProfile.updateOne(
         {
-          _id: testUser1?._id,
+          userId: testUser1?._id,
         },
         {
           $set: {
-            userType: "SUPERADMIN",
+            isSuperAdmin: true,
           },
         }
       );
@@ -128,9 +121,9 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
         "../../../src/resolvers/Mutation/rejectAdmin"
       );
       await rejectAdminResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

@@ -1,17 +1,17 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
+import { Types } from "mongoose";
 import {
-  USER_NOT_AUTHORIZED_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_BLOCKING_SELF,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
 import { Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { Types } from "mongoose";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
 /**
  * This function enables blocking a user.
  * @param _parent - parent of current request
@@ -41,8 +41,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) {
+      await cacheOrganizations([organization]);
+    }
   }
 
   // Checks whether organization exists.

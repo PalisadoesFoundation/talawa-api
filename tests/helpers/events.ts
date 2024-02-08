@@ -1,12 +1,12 @@
-import type { TestOrganizationType, TestUserType } from "./userAndOrg";
-import { createTestUserAndOrganization } from "./userAndOrg";
-import type { InterfaceEvent } from "../../src/models";
-import { Event, EventAttendee, User } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
+import type { InterfaceEvent, InterfaceUser } from "../../src/models";
+import { AppUserProfile, Event, EventAttendee, User } from "../../src/models";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
 
 export type TestEventType =
-  | (InterfaceEvent & Document<any, any, InterfaceEvent>)
+  | (InterfaceEvent & Document<unknown, unknown, InterfaceEvent>)
   | null;
 
 export const createTestEvent = async (): Promise<
@@ -36,9 +36,18 @@ export const createTestEvent = async (): Promise<
       },
       {
         $push: {
+          registeredEvents: testEvent._id,
+        },
+      }
+    );
+    await AppUserProfile.updateOne(
+      {
+        userId: testUser._id,
+      },
+      {
+        $push: {
           eventAdmin: testEvent._id,
           createdEvents: testEvent._id,
-          registeredEvents: testEvent._id,
         },
       }
     );
@@ -74,7 +83,7 @@ export const createEventWithRegistrant = async (
 
   await EventAttendee.create({
     userId,
-    eventId: testEvent!._id,
+    eventId: testEvent._id,
   });
 
   await User.updateOne(
@@ -83,9 +92,18 @@ export const createEventWithRegistrant = async (
     },
     {
       $push: {
+        registeredEvents: testEvent._id,
+      },
+    }
+  );
+  await AppUserProfile.updateOne(
+    {
+      userId,
+    },
+    {
+      $push: {
         eventAdmin: testEvent._id,
         createdEvents: testEvent._id,
-        registeredEvents: testEvent._id,
       },
     }
   );

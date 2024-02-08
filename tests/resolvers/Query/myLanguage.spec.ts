@@ -1,13 +1,13 @@
 import "dotenv/config";
-import { myLanguage as myLanguageResolver } from "../../../src/resolvers/Query/myLanguage";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
-import { User } from "../../../src/models";
 import { nanoid } from "nanoid";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import { AppUserProfile, User } from "../../../src/models";
+import { myLanguage as myLanguageResolver } from "../../../src/resolvers/Query/myLanguage";
+import { connect, disconnect } from "../../helpers/db";
 
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -27,8 +27,8 @@ describe("resolvers -> Query -> myLanguage", () => {
       };
 
       await myLanguageResolver?.({}, {}, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -38,8 +38,19 @@ describe("resolvers -> Query -> myLanguage", () => {
       password: "password",
       firstName: "firstName",
       lastName: "lastName",
+    });
+    const testAppUserProfile = await AppUserProfile.create({
+      userId: testUser._id,
       appLanguageCode: "en",
     });
+    await User.updateOne(
+      {
+        _id: testUser._id,
+      },
+      {
+        appUserProfileId: testAppUserProfile._id,
+      }
+    );
 
     const context = {
       userId: testUser?._id,
@@ -47,6 +58,6 @@ describe("resolvers -> Query -> myLanguage", () => {
 
     const appLanguageCodePayload = await myLanguageResolver?.({}, {}, context);
 
-    expect(appLanguageCodePayload).toEqual(testUser?.appLanguageCode);
+    expect(appLanguageCodePayload).toEqual(testAppUserProfile?.appLanguageCode);
   });
 });

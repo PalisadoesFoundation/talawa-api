@@ -8,16 +8,22 @@ import {
   it,
   vi,
 } from "vitest";
-import { connect, disconnect } from "../../src/db";
 import { USER_NOT_AUTHORIZED_SUPERADMIN } from "../../src/constants";
-import type { TestUserType } from "../helpers/userAndOrg";
+import { connect, disconnect } from "../../src/db";
+import { AppUserProfile } from "../../src/models";
 import { createTestUserFunc } from "../helpers/user";
+import type {
+  TestAppUserProfileType,
+  TestUserType,
+} from "../helpers/userAndOrg";
 
 let testUser: TestUserType;
+let testAppUserProfile: TestAppUserProfileType;
 
 beforeAll(async () => {
   connect();
   testUser = await createTestUserFunc();
+  testAppUserProfile = await AppUserProfile.findOne({ userId: testUser?._id });
 });
 
 afterAll(async () => {
@@ -39,8 +45,8 @@ describe("utilities -> superAdminCheck", () => {
 
     try {
       const { superAdminCheck } = await import("../../src/utilities");
-      if (testUser) {
-        superAdminCheck(testUser);
+      if (testAppUserProfile) {
+        superAdminCheck(testAppUserProfile);
       }
     } catch (error: unknown) {
       if (!(error instanceof Error)) return;

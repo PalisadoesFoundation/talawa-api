@@ -18,7 +18,7 @@ import type {
 import { updateActionItemCategory as updateActionItemCategoryResolver } from "../../../src/resolvers/Mutation/updateActionItemCategory";
 import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { createTestCategory } from "../../helpers/actionItemCategory";
-import { User } from "../../../src/models";
+import { AppUserProfile, User } from "../../../src/models";
 
 let randomUser: TestUserType;
 let testUser: TestUserType;
@@ -58,8 +58,8 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
       };
 
       await updateActionItemCategoryResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -78,8 +78,8 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
       };
 
       await updateActionItemCategoryResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE
       );
     }
@@ -100,8 +100,10 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
       };
 
       await updateActionItemCategoryResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ADMIN.MESSAGE
+      );
     }
   });
 
@@ -134,12 +136,12 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
   });
 
   it(`updates the actionItemCategory and returns it as superadmin`, async () => {
-    const superAdminTestUser = await User.findOneAndUpdate(
+    const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
       {
-        _id: randomUser?._id,
+        userId: randomUser?._id,
       },
       {
-        userType: "SUPERADMIN",
+        isSuperAdmin: true,
       },
       {
         new: true,
@@ -155,7 +157,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
     };
 
     const context = {
-      userId: superAdminTestUser?._id,
+      userId: superAdminTestUser?.userId,
     };
 
     const updatedCategory = await updateActionItemCategoryResolver?.(
