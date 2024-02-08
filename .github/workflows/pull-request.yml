@@ -51,18 +51,14 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # Lint changed *ts files 
-      # Except the *ts files in .eslintignore which could cause failure
       - name: Get changed files
         id: changed_files
         uses: tj-actions/changed-files@v42
         with:
           files: |
-             - **.ts
-             - '!src/types/**ts'
+             **.ts
 
       - name: Run ESLint to check for linting errors in modified files
-        if: steps.changed_files.outputs.any_changed == 'true'
         env:
           CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
         run: npx eslint ${CHANGED_FILES} 
@@ -195,6 +191,3 @@ jobs:
         run: |
           echo "PR is not against develop branch. Please refer PR_GUIDELINES.md"
           exit 1
-
-      
-          
