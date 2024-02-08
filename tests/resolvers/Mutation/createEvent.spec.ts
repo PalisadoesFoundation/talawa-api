@@ -3,7 +3,11 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { User, Organization, EventAttendee, Event } from "../../../src/models";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 
 import {
   LENGTH_VALIDATION_ERROR,
@@ -31,6 +35,7 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
 
   testUser = await createTestUser();
   testOrganization = await Organization.create({
@@ -60,6 +65,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
   await disconnect(MONGOOSE_INSTANCE);
 });
 
