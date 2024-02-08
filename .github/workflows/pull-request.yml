@@ -26,7 +26,7 @@ jobs:
       - name: Checkout repository content
         uses: actions/checkout@v3
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Count number of lines
         run: |
