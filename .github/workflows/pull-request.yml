@@ -57,7 +57,6 @@ jobs:
         with:
           files: |
             - **.ts
-            - '!src/models/**.ts'
             - '!src/types/**.ts'
 
       - name: Run ESLint to check for linting errors in modified files
