@@ -61,6 +61,7 @@ export interface InterfaceUser {
 }
 /**
  * This describes the schema for a `User` that corresponds to `InterfaceUser` document.
+ * @param identifier - unique numeric identifier for each User
  * @param address - User address
  * @param adminApproved - Wheather user is admin approved.
  * @param adminFor - Collection of organization where user is admin, each object refer to `Organization` model.
