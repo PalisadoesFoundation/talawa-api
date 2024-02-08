@@ -16,8 +16,8 @@
 
 ### File
 
-• `Const` **File**: `Model`\<[`InterfaceFile`](../interfaces/models_File.InterfaceFile.md), {}, {}\>
+• `Const` **File**: `Model`\<[`InterfaceFile`](../interfaces/models_File.InterfaceFile.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/File.ts:65](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/File.ts#L65)
+[src/models/File.ts:65](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/File.ts#L65)

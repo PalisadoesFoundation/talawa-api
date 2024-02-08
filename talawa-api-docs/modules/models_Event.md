@@ -16,8 +16,8 @@
 
 ### Event
 
-• `Const` **Event**: `Model`\<[`InterfaceEvent`](../interfaces/models_Event.InterfaceEvent.md), {}, {}\>
+• `Const` **Event**: `Model`\<[`InterfaceEvent`](../interfaces/models_Event.InterfaceEvent.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/Event.ts:168](https://github.com/PalisadoesFoundation/talawa-api/blob/6295a23/src/models/Event.ts#L168)
+[src/models/Event.ts:168](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L168)

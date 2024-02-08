@@ -19,11 +19,11 @@ import type {
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import {
   createTestSuperAdmin,
-  createTestAdvertisement
+  createTestAdvertisement,
 } from "../../helpers/advertisement";
 import type {
   TestAdvertisementType,
-  type TestSuperAdminType
+  TestSuperAdminType,
 } from "../../helpers/advertisement";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,

@@ -9,9 +9,7 @@ import requestLogger from "morgan";
 import path from "path";
 import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
-//@ts-ignore
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
-
 const app = express();
 
 app.use(requestTracing.middleware());
