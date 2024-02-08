@@ -4,10 +4,7 @@ import type { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
-import {
-  INVALID_CREDENTIALS_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import {

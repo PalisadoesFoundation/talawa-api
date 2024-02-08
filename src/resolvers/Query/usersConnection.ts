@@ -3,7 +3,6 @@ import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
-import { user } from "./user";
 import { decryptEmail } from "../../utilities/encryptionModule";
 
 /**

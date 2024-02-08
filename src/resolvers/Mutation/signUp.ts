@@ -17,8 +17,6 @@ import {
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import type { Document } from "mongoose";
-import { omit } from "lodash";
 import { encryptEmail, decryptEmail } from "../../utilities/encryptionModule";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";

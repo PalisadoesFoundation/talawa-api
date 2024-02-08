@@ -4,8 +4,7 @@ import fs from "fs/promises";
 import path from "path";
 import { connect } from "../db";
 import { User, Organization, Event, Post } from "../models";
-import { decrypt } from "dotenv";
-import { decryptEmail, encryptEmail } from "./encryptionModule";
+import { encryptEmail } from "./encryptionModule";
 
 interface InterfaceArgs {
   items?: string;
