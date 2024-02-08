@@ -15,7 +15,7 @@
     "lint:check": "eslint . --max-warnings=1500",
     "lint:fix": "eslint . --fix",
     "lint-staged": "lint-staged",
-    "format:fix": "prettier --write",
+    "format:fix": "prettier --write \"**/*.{ts,tsx,json,scss,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,scss,css}\"",
     "prepare": "husky install",
     "generate:graphql-markdown": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md",
