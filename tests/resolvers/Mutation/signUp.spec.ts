@@ -21,7 +21,6 @@ import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLType
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { connect, disconnect } from "../../helpers/db";
 import type {
-  TestAppUserProfileType,
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
@@ -30,7 +29,7 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-let testAppUserProfile: TestAppUserProfileType;
+
 let testOrganization: TestOrganizationType;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
@@ -49,7 +48,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
-  testAppUserProfile = await AppUserProfile.findOne({ userId: testUser?._id });
+
   testOrganization = temp[1];
 });
 

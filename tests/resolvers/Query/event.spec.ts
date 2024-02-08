@@ -10,16 +10,15 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { QueryEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
-import type { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
-let testUser: TestUserType;
+// let testUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const resultArray = await createTestEvent();
-  testUser = resultArray[0];
+  // testUser = resultArray[0];
   testEvent = resultArray[2];
 });
 

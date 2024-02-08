@@ -1,5 +1,5 @@
+import { AppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { AppUserProfile, User } from "../../models";
 
 /**
  * This function enables logout.

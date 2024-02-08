@@ -1,5 +1,3 @@
-
-import { User } from "../../models";
 import {
   LENGTH_VALIDATION_ERROR,
   USER_FAMILY_MIN_MEMBERS_ERROR_CODE,
@@ -54,9 +52,6 @@ export const createUserFamily: MutationResolvers["createUserFamily"] = async (
   }
   // Check whether the user is super admin.
   superAdminCheck(currentUserAppProfile);
-
-
-
 
   let validationResultName = {
     isLessThanMaxLength: false,

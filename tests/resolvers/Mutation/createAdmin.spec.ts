@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { AppUserProfile, Organization, User } from "../../../src/models";
+import { AppUserProfile, Organization } from "../../../src/models";
 import type { MutationCreateAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 

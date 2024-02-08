@@ -22,7 +22,6 @@ import {
 } from "../../../src/constants";
 import { updateUserPassword as updateUserPasswordResolver } from "../../../src/resolvers/Mutation/updateUserPassword";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import test from "node:test";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

@@ -1,24 +1,24 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import type { MutationUpdateActionItemCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ADMIN,
-  ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
-} from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTestUser } from "../../helpers/userAndOrg";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
+import { AppUserProfile } from "../../../src/models";
 import { updateActionItemCategory as updateActionItemCategoryResolver } from "../../../src/resolvers/Mutation/updateActionItemCategory";
 import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { createTestCategory } from "../../helpers/actionItemCategory";
-import { AppUserProfile, User } from "../../../src/models";
 
 let randomUser: TestUserType;
 let testUser: TestUserType;

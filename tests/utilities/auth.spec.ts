@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { InterfaceAppUserProfile, InterfaceUser } from "../../src/models";
-import { AppUserProfile, User } from "../../src/models";
+import { AppUserProfile } from "../../src/models";
 import {
   createAccessToken,
   createRefreshToken,
@@ -99,7 +99,7 @@ describe("revokeRefreshToken", () => {
   it("should unset the token field in the user document", async () => {
     await revokeRefreshToken(user?._id.toString() ?? "");
 
-    const updatedUser = await User.findOne({ _id: user?._id });
+    // const updatedUser = await User.findOne({ _id: user?._id });
     const updateAppUserProfile = await AppUserProfile.findOne({
       userId: user?._id,
     });

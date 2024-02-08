@@ -13,7 +13,6 @@ import { createActionItem as createActionItemResolver } from "../../../src/resol
 import type { MutationCreateActionItemArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import type {
-  TestAppUserProfileType,
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";

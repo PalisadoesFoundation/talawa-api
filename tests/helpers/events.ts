@@ -1,6 +1,6 @@
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
-import type { InterfaceEvent, InterfaceUser } from "../../src/models";
+import type { InterfaceEvent } from "../../src/models";
 import { AppUserProfile, Event, EventAttendee, User } from "../../src/models";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUserAndOrganization } from "./userAndOrg";

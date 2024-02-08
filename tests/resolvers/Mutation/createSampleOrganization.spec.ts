@@ -15,7 +15,6 @@ import { generateUserData } from "../../../src/utilities/createSampleOrganizatio
 
 import { Types } from "mongoose";
 import {
-  SAMPLE_ORGANIZATION_ALREADY_EXISTS,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";

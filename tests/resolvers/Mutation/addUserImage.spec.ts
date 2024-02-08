@@ -18,7 +18,6 @@ import type { MutationAddUserImageArgs } from "../../../src/types/generatedGraph
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { AppUserProfile } from "../../../src/models";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -87,7 +86,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       args,
       context
     );
-    const testApp = await AppUserProfile.findOne({ userId: testUser?._id });
+    // const testApp = await AppUserProfile.findOne({ userId: testUser?._id });
     // console.log(testApp);
     // console.log(addUserImagePayload, testUser?.appUserProfileId);
     expect(addUserImagePayload).toEqual({
