@@ -1,9 +1,6 @@
-import type {
-  QueryResolvers,
-  UserConnection,
-} from "../../types/generatedGraphQLTypes";
 import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -24,25 +21,32 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
     const sort = getSort(args.orderBy);
 
     // Pagination based Options
-    let paginateOptions;
+    interface InterfacePaginateOptions {
+      lean?: boolean | undefined;
+      sort?: object | string | undefined;
+      pagination?: boolean | undefined;
+      page?: number | undefined;
+      limit?: number | undefined;
+    }
+    let paginateOptions: InterfacePaginateOptions =
+      {} as InterfacePaginateOptions;
 
     if (args.first) {
       if (args.skip === null) {
         throw "Missing Skip parameter. Set it to either 0 or some other value";
       }
-
       paginateOptions = {
         lean: true,
         sort: sort,
         pagination: true,
         page: args.skip,
         limit: args.first,
-      };
+      } as InterfacePaginateOptions;
     } else {
       paginateOptions = {
         sort: sort,
         pagination: false,
-      };
+      } as InterfacePaginateOptions;
     }
 
     const usersModel = await User.paginate(
@@ -56,7 +60,6 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         ...paginateOptions,
         populate: ["registeredEvents"],
         select: ["-password"],
-        sort: {}, // Add an empty object as the value for the sort property
       }
     );
 

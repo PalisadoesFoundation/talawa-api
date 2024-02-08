@@ -92,6 +92,7 @@ type AppUserProfile {
 
 type AuthData {
   accessToken: String!
+  appUserProfile: AppUserProfile!
   refreshToken: String!
   user: User!
 }

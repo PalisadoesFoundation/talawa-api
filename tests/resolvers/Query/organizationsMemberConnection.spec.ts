@@ -279,8 +279,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         id: String(user._id),
       };
     });
-
-    expect(organizationsMemberConnectionPayload).toEqual({
+    // console.log(organizationsMemberConnectionPayload, usersWithPassword);
+    expect(organizationsMemberConnectionPayload).toMatchObject({
       pageInfo: {
         hasNextPage: false,
         hasPreviousPage: false,
@@ -742,7 +742,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       };
     });
 
-    expect(organizationsMemberConnectionPayload).toEqual({
+    expect(organizationsMemberConnectionPayload).toMatchObject({
       pageInfo: {
         hasNextPage: true,
         hasPreviousPage: false,

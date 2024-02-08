@@ -45,6 +45,7 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
       organizationsBlockedBy: [],
     },
     appUserProfile: {
+      // ...userAppProfile,
       _id: userAppProfile._id.toString(),
       user: userAppProfile.userId as InterfaceUser,
       adminFor: userAppProfile.adminFor as InterfaceOrganization[],

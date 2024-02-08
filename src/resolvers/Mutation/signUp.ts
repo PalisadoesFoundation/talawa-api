@@ -6,7 +6,11 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceOrganization, InterfaceUser } from "../../models";
+import type {
+  InterfaceEvent,
+  InterfaceOrganization,
+  InterfaceUser,
+} from "../../models";
 import { AppUserProfile, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
@@ -165,7 +169,19 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 
   return {
     user: filteredCreatedUser,
-
+    appUserProfile: {
+      _id: appUserProfile._id.toString(),
+      user: appUserProfile.userId as InterfaceUser,
+      adminFor: appUserProfile.adminFor as InterfaceOrganization[],
+      appLanguageCode: appUserProfile.appLanguageCode,
+      isSuperAdmin: appUserProfile.isSuperAdmin,
+      pluginCreationAllowed: appUserProfile.pluginCreationAllowed,
+      tokenVersion: appUserProfile.tokenVersion,
+      eventAdmin: appUserProfile.eventAdmin as InterfaceEvent[],
+      createdEvents: appUserProfile.createdEvents as InterfaceEvent[],
+      createdOrganizations:
+        appUserProfile.createdOrganizations as InterfaceOrganization[],
+    },
     accessToken,
     refreshToken,
   };

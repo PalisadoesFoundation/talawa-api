@@ -12,6 +12,7 @@ export const types = gql`
 
   type AuthData {
     user: User!
+    appUserProfile: AppUserProfile!
     accessToken: String!
     refreshToken: String!
   }
