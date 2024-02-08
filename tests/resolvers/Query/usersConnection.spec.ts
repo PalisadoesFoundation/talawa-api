@@ -11,6 +11,7 @@ import {
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
+import { decryptEmail } from "../../../src/utilities/encryptionModule";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -54,8 +55,13 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("eventAdmin")
       .populate("adminFor")
       .lean();
-
-    expect(usersConnectionPayload).toEqual(users);
+    const decryptedUsers = users.map((user) => {
+      return {
+        ...user,
+        email: decryptEmail(user.email).decrypted,
+      };
+    });
+    expect(usersConnectionPayload).toEqual(decryptedUsers);
   });
 
   it(`returns paginated list of users filtered by
@@ -107,7 +113,13 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    const decryptedUsers = users.map((user) => {
+      return {
+        ...user,
+        email: decryptEmail(user.email).decrypted,
+      };
+    });
+    expect(usersConnectionPayload).toEqual(decryptedUsers);
   });
 
   it(`returns paginated list of users filtered by
@@ -169,7 +181,13 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    const decryptedUsers = users.map((user) => {
+      return {
+        ...user,
+        email: decryptEmail(user.email).decrypted,
+      };
+    });
+    expect(usersConnectionPayload).toEqual(decryptedUsers);
   });
 
   it(`returns paginated list of users filtered by
@@ -442,7 +460,13 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    const decryptedUsers = users.map((user) => {
+      return {
+        ...user,
+        email: decryptEmail(user.email).decrypted,
+      };
+    });
+    expect(usersConnectionPayload).toEqual(decryptedUsers);
   });
 
   it(`returns paginated list of users sorted by
@@ -479,7 +503,13 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    const decryptedUsers = users.map((user) => {
+      return {
+        ...user,
+        email: decryptEmail(user.email).decrypted,
+      };
+    });
+    expect(usersConnectionPayload).toEqual(decryptedUsers);
   });
 
   it(`returns paginated list of users
@@ -516,7 +546,13 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    const decryptedUsers = users.map((user) => {
+      return {
+        ...user,
+        email: decryptEmail(user.email).decrypted,
+      };
+    });
+    expect(usersConnectionPayload).toEqual(decryptedUsers);
   });
 
   it(`returns paginated list of users
@@ -553,7 +589,13 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    const decryptedUsers = users.map((user) => {
+      return {
+        ...user,
+        email: decryptEmail(user.email).decrypted,
+      };
+    });
+    expect(usersConnectionPayload).toEqual(decryptedUsers);
   });
 
   it(`returns paginated list of users without sorting if orderBy === null`, async () => {
@@ -587,6 +629,12 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    const decryptedUsers = users.map((user) => {
+      return {
+        ...user,
+        email: decryptEmail(user.email).decrypted,
+      };
+    });
+    expect(usersConnectionPayload).toEqual(decryptedUsers);
   });
 });
