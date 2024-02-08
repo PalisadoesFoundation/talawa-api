@@ -44,6 +44,8 @@ export const createRecurringEvents = async (
     };
   }
 
+  // generate a recurrence rule string which would be used to generate rrule object
+  // and get recurrence dates
   const recurrenceRuleString = generateRecurrenceRuleString(
     recurrenceRuleData,
     data?.startDate,
@@ -105,7 +107,7 @@ export const createRecurringEvents = async (
     session,
   });
 
-  // associate the instances with the user and cache them
+  // associate the instances with the user
   const eventAttendees = recurringEventInstances.map(
     (recurringEventInstance) => ({
       userId: currentUserId,
@@ -115,15 +117,17 @@ export const createRecurringEvents = async (
 
   await EventAttendee.insertMany(eventAttendees, { session });
 
-  const eventIds = eventAttendees.map((eventAttendee) => eventAttendee.eventId);
+  const eventInstanceIds = recurringEventInstances.map((instance) =>
+    instance._id.toString()
+  );
 
   await User.updateOne(
     { _id: currentUserId },
     {
       $push: {
-        eventAdmin: { $each: eventIds },
-        createdEvents: { $each: eventIds },
-        registeredEvents: { $each: eventIds },
+        eventAdmin: { $each: eventInstanceIds },
+        createdEvents: { $each: eventInstanceIds },
+        registeredEvents: { $each: eventInstanceIds },
       },
     },
     { session }
