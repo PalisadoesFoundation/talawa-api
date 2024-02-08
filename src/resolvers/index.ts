@@ -11,6 +11,7 @@ import { GroupChat } from "./GroupChat";
 import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
 import { Mutation } from "./Mutation";
+import { UserFamily } from "./UserFamily";
 import { Organization } from "./Organization";
 import { Post } from "./Post";
 import { Query } from "./Query";
@@ -42,6 +43,7 @@ const resolvers: Resolvers = {
   Event,
   Feedback,
   GroupChat,
+  UserFamily,
   GroupChatMessage,
   MembershipRequest,
   Mutation,

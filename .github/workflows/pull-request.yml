@@ -4,7 +4,7 @@
 # NOTE!
 #
 # Please read the README.md file in this directory that defines what should
-# be placed in this file
+# be placed in this file.
 #
 ##############################################################################
 ##############################################################################
@@ -51,14 +51,18 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      # Lint, but exclude typescript files in the .eslintignore file
+      # or else we'll get failures
       - name: Get changed files
         id: changed_files
         uses: tj-actions/changed-files@v42
         with:
           files: |
-             **.ts
+            **.ts
+            '!src/types/**.ts'
 
       - name: Run ESLint to check for linting errors in modified files
+        if: steps.changed_files.outputs.any_changed == 'true'
         env:
           CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
         run: npx eslint ${CHANGED_FILES} 
@@ -191,6 +195,3 @@ jobs:
         run: |
           echo "PR is not against develop branch. Please refer PR_GUIDELINES.md"
           exit 1
-
-      
-          
