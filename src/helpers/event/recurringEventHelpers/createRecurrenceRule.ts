@@ -32,15 +32,19 @@ export const createRecurrenceRule = async (
   latestInstanceDate: Date,
   session: mongoose.ClientSession,
 ): Promise<InterfaceRecurrenceRule> => {
-  const recurrenceRuleObject = rrulestr(recurrenceRuleString as string);
+  const recurrenceRuleObject = rrulestr(recurrenceRuleString);
+
+  const { freq, byweekday } = recurrenceRuleObject.options;
 
   const weekDays: string[] = [];
-  for (const weekday of recurrenceRuleObject.options.byweekday) {
-    weekDays.push(RECURRENCE_WEEKDAYS[weekday]);
+  if (byweekday) {
+    for (const weekday of byweekday) {
+      weekDays.push(RECURRENCE_WEEKDAYS[weekday]);
+    }
   }
 
   const formattedLatestInstanceDate = format(latestInstanceDate, "yyyy-MM-dd");
-  const frequency = RECURRENCE_FREQUENCIES[recurrenceRuleObject.options.freq];
+  const frequency = RECURRENCE_FREQUENCIES[freq];
 
   const recurrenceRule = await RecurrenceRule.create(
     [

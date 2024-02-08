@@ -106,14 +106,20 @@ export const createRecurringEvents = async (
   });
 
   // associate the instances with the user and cache them
-  for (const recurringEventInstance of recurringEventInstances) {
-    await associateEventWithUser(
-      currentUserId,
-      recurringEventInstance?._id.toString(),
-      session,
-    );
-    await cacheEvents([recurringEventInstance]);
-  }
+  const associateAndCacheInstances = recurringEventInstances.map(
+    async (recurringEventInstance) => {
+      await Promise.all([
+        associateEventWithUser(
+          currentUserId,
+          recurringEventInstance?._id.toString(),
+          session,
+        ),
+        cacheEvents([recurringEventInstance]),
+      ]);
+    },
+  );
+
+  await Promise.all(associateAndCacheInstances);
 
   return recurringEventInstances;
 };

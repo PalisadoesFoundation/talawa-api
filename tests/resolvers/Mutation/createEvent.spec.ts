@@ -51,11 +51,11 @@ beforeAll(async () => {
       $push: {
         adminFor: testOrganization?._id,
       },
-    }
+    },
   );
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -179,7 +179,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     } catch (error: unknown) {
       if (error instanceof UnauthorizedError) {
         expect(error.message).toEqual(
-          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE
+          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE,
         );
       } else {
         fail(`Expected UnauthorizedError, but got ${error}`);
@@ -197,7 +197,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
           createdOrganizations: testOrganization?._id,
           joinedOrganizations: testOrganization?._id,
         },
-      }
+      },
     );
 
     const args: MutationCreateEventArgs = {
@@ -215,7 +215,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         recurring: false,
         startDate: new Date("2023-01-01T00:00:00Z"),
         startTime: new Date().toUTCString(),
-        title: "newTitle",
+        title: "singleEventTitle",
         recurrance: "ONCE",
       },
     };
@@ -239,14 +239,15 @@ describe("resolvers -> Mutation -> createEvent", () => {
         longitude: 1,
         location: "newLocation",
         recurring: false,
-        title: "newTitle",
+        title: "singleEventTitle",
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
-      })
+      }),
     );
 
     const recurringEvents = await Event.find({
+      title: "singleEventTitle",
       recurring: false,
       recurrance: "ONCE",
     }).lean();
@@ -272,7 +273,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         eventAdmin: expect.arrayContaining([createEventPayload?._id]),
         createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
-      })
+      }),
     );
   });
 
@@ -286,7 +287,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
           createdOrganizations: testOrganization?._id,
           joinedOrganizations: testOrganization?._id,
         },
-      }
+      },
     );
 
     const startDate = new Date();
@@ -335,7 +336,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
-      })
+      }),
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
@@ -377,7 +378,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         eventAdmin: expect.arrayContaining([createEventPayload?._id]),
         createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
-      })
+      }),
     );
   });
 
@@ -391,7 +392,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
           createdOrganizations: testOrganization?._id,
           joinedOrganizations: testOrganization?._id,
         },
-      }
+      },
     );
 
     let startDate = new Date();
@@ -443,7 +444,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
-      })
+      }),
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
@@ -484,7 +485,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         eventAdmin: expect.arrayContaining([createEventPayload?._id]),
         createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
-      })
+      }),
     );
   });
 
@@ -549,7 +550,7 @@ describe("Check for validation conditions", () => {
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationCreateEventArgs = {
@@ -585,7 +586,7 @@ describe("Check for validation conditions", () => {
     } catch (error: unknown) {
       if (error instanceof InputValidationError) {
         expect(error.message).toEqual(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
         );
       } else {
         fail(`Expected LengthValidationError, but got ${error}`);
@@ -595,7 +596,7 @@ describe("Check for validation conditions", () => {
   it(`throws String Length Validation error if description is greater than 500 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationCreateEventArgs = {
@@ -631,7 +632,7 @@ describe("Check for validation conditions", () => {
     } catch (error: unknown) {
       if (error instanceof InputValidationError) {
         expect(error.message).toEqual(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
         );
       } else {
         fail(`Expected LengthValidationError, but got ${error}`);
@@ -641,7 +642,7 @@ describe("Check for validation conditions", () => {
   it(`throws String Length Validation error if location is greater than 50 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationCreateEventArgs = {
@@ -676,7 +677,7 @@ describe("Check for validation conditions", () => {
     } catch (error: unknown) {
       if (error instanceof InputValidationError) {
         expect(error.message).toEqual(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`,
         );
       } else {
         fail(`Expected LengthValidationError, but got ${error}`);
@@ -686,7 +687,7 @@ describe("Check for validation conditions", () => {
   it(`throws Date Validation error if start date is greater than end date`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationCreateEventArgs = {
@@ -721,7 +722,7 @@ describe("Check for validation conditions", () => {
     } catch (error: unknown) {
       if (error instanceof InputValidationError) {
         expect(error.message).toEqual(
-          `start date must be earlier than end date`
+          `start date must be earlier than end date`,
         );
       } else {
         fail(`Expected DateValidationError, but got ${error}`);

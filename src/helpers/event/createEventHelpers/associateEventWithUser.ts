@@ -13,29 +13,30 @@ import { EventAttendee, User } from "../../../models";
 export const associateEventWithUser = async (
   currentUserId: string,
   createdEventId: string,
-  session: mongoose.ClientSession
+  session: mongoose.ClientSession,
 ): Promise<void> => {
-  await EventAttendee.create(
-    [
+  await Promise.all([
+    EventAttendee.create(
+      [
+        {
+          userId: currentUserId,
+          eventId: createdEventId,
+        },
+      ],
+      { session },
+    ),
+    User.updateOne(
       {
-        userId: currentUserId,
-        eventId: createdEventId,
+        _id: currentUserId,
       },
-    ],
-    { session }
-  );
-
-  await User.updateOne(
-    {
-      _id: currentUserId,
-    },
-    {
-      $push: {
-        eventAdmin: createdEventId,
-        createdEvents: createdEventId,
-        registeredEvents: createdEventId,
+      {
+        $push: {
+          eventAdmin: createdEventId,
+          createdEvents: createdEventId,
+          registeredEvents: createdEventId,
+        },
       },
-    },
-    { session }
-  );
+      { session },
+    ),
+  ]);
 };

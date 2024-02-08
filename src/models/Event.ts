@@ -108,18 +108,12 @@ const eventSchema = new Schema(
     recurrenceRuleId: {
       type: Schema.Types.ObjectId,
       ref: "RecurrenceRule",
-      required: function (): () => boolean {
-        // @ts-expect-error Suppressing typescript error for conditional required field
-        return this.recurring && !this.isBaseRecurringEvent;
-      },
+      required: false,
     },
     baseRecurringEventId: {
       type: Schema.Types.ObjectId,
       ref: "Event",
-      required: function (): () => boolean {
-        // @ts-expect-error Suppressing typescript error for conditional required field
-        return this.recurring && !this.isBaseRecurringEvent;
-      },
+      required: false,
     },
     allDay: {
       type: Boolean,
@@ -193,7 +187,7 @@ const eventSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const eventModel = (): Model<InterfaceEvent> =>
