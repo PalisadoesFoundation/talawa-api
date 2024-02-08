@@ -8,6 +8,7 @@ import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
 
+
 /**
  * This is an interface that represents a database(MongoDB) document for User.
  */

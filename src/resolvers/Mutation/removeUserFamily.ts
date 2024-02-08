@@ -5,7 +5,10 @@ import {
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { UserFamily } from "../../models/userFamily";
+
 import { AppUserProfile, User } from "../../models";
+
+
 import { superAdminCheck } from "../../utilities";
 /**
  * This function enables to remove a user family.
@@ -38,6 +41,7 @@ export const removeUserFamily: MutationResolvers["removeUserFamily"] = async (
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
+
   const currentUserAppProfile = await AppUserProfile.findOne({
     user: currentUser._id,
   }).lean();
@@ -50,6 +54,7 @@ export const removeUserFamily: MutationResolvers["removeUserFamily"] = async (
   }
   // Check whether the user is super admin.
   superAdminCheck(currentUserAppProfile);
+
 
   // Checks if a family with _id === args.familyId exists
   if (!userFamily) {

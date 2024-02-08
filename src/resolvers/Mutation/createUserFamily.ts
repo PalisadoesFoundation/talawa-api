@@ -1,13 +1,17 @@
+
+import { User } from "../../models";
 import {
   LENGTH_VALIDATION_ERROR,
   USER_FAMILY_MIN_MEMBERS_ERROR_CODE,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+
 import { errors, requestContext } from "../../libraries";
 import { isValidString } from "../../libraries/validators/validateString";
 import { AppUserProfile, User } from "../../models";
 import { UserFamily } from "../../models/userFamily";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+
 import { superAdminCheck } from "../../utilities";
 /**
  * This Function enables to create a user Family
@@ -37,6 +41,7 @@ export const createUserFamily: MutationResolvers["createUserFamily"] = async (
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
+
   const currentUserAppProfile = await AppUserProfile.findOne({
     user: currentUser._id,
   }).lean();
@@ -49,6 +54,9 @@ export const createUserFamily: MutationResolvers["createUserFamily"] = async (
   }
   // Check whether the user is super admin.
   superAdminCheck(currentUserAppProfile);
+
+
+
 
   let validationResultName = {
     isLessThanMaxLength: false,
