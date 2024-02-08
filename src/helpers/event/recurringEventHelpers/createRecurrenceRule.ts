@@ -30,7 +30,7 @@ export const createRecurrenceRule = async (
   organizationId: string,
   baseRecurringEventId: string,
   latestInstanceDate: Date,
-  session: mongoose.ClientSession,
+  session: mongoose.ClientSession
 ): Promise<InterfaceRecurrenceRule> => {
   const recurrenceRuleObject = rrulestr(recurrenceRuleString);
 
@@ -60,7 +60,7 @@ export const createRecurrenceRule = async (
         latestInstanceDate: formattedLatestInstanceDate,
       },
     ],
-    { session },
+    { session }
   );
 
   return recurrenceRule[0].toObject();

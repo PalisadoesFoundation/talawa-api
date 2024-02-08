@@ -19,11 +19,11 @@ export function getRecurringInstanceDates(
   recurrenceRuleString: string,
   recurrenceStartDate: Date,
   eventEndDate: Date | null,
-  calendarDate: Date = recurrenceStartDate,
+  calendarDate: Date = recurrenceStartDate
 ): [Date[], Date] {
   const limitEndDate = addMonths(
     calendarDate,
-    RECURRING_EVENT_INSTANCES_MONTH_LIMIT,
+    RECURRING_EVENT_INSTANCES_MONTH_LIMIT
     // generate instances upto this many months ahead
     // leave the rest for dynamic generation during queries
   );
@@ -31,7 +31,7 @@ export function getRecurringInstanceDates(
   eventEndDate = eventEndDate || limitEndDate;
 
   const generateUptoDate = new Date(
-    Math.min(eventEndDate.getTime(), limitEndDate.getTime()),
+    Math.min(eventEndDate.getTime(), limitEndDate.getTime())
   );
 
   const recurrenceRuleObject = rrulestr(recurrenceRuleString);
@@ -39,7 +39,7 @@ export function getRecurringInstanceDates(
   const recurringInstanceDates = recurrenceRuleObject.between(
     recurrenceStartDate,
     generateUptoDate,
-    true,
+    true
   );
 
   const latestInstanceDate =

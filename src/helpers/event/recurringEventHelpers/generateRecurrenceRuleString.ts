@@ -15,7 +15,7 @@ import type { RecurrenceRuleInput } from "../../../types/generatedGraphQLTypes";
 export const generateRecurrenceRuleString = (
   recurrenceRuleData: RecurrenceRuleInput,
   recurrenceStartDate: Date,
-  recurrenceEndDate?: Date,
+  recurrenceEndDate?: Date
 ): string => {
   // destructure the rules
   const { frequency, count, weekdays } = recurrenceRuleData;
@@ -24,7 +24,7 @@ export const generateRecurrenceRuleString = (
   // (not necessarily the start date of the first recurring instance)
   const formattedRecurrenceStartDate = format(
     recurrenceStartDate,
-    "yyyyMMdd'T'HHmmss'Z'",
+    "yyyyMMdd'T'HHmmss'Z'"
   );
 
   // date upto which instances would be generated
