@@ -51,7 +51,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # Lint changed *ts files except the *ts files in .eslintignore
+      # Lint changed *ts files 
+      # Except the *ts files in .eslintignore which could cause failure
       - name: Get changed files
         id: changed_files
         uses: tj-actions/changed-files@v42
