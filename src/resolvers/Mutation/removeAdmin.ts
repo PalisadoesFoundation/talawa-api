@@ -154,6 +154,5 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     {
       new: true,
     }
-  )
-  .lean();
+  ).lean();
 };

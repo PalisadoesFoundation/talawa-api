@@ -2,12 +2,11 @@ import {
   USER_FAMILY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { UserFamily } from "../../models/userFamily";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 import { AppUserProfile, User } from "../../models";
-
 
 import { superAdminCheck } from "../../utilities";
 /**
@@ -54,7 +53,6 @@ export const removeUserFamily: MutationResolvers["removeUserFamily"] = async (
   }
   // Check whether the user is super admin.
   superAdminCheck(currentUserAppProfile);
-
 
   // Checks if a family with _id === args.familyId exists
   if (!userFamily) {

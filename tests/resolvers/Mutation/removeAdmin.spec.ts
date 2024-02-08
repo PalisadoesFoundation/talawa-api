@@ -265,8 +265,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
     const updatedTestUser = await AppUserProfile.findOne({
       userId: testUserRemoved?._id,
-    })
-    .lean();
+    }).lean();
 
     expect(removeAdminPayload).toEqual(updatedTestUser);
   });
