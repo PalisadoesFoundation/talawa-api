@@ -1,4 +1,2 @@
-import { createSingleEvent } from "./createSingleEvent";
-import { createRecurringEvents } from "./createRecurringEvents";
-
-export { createSingleEvent, createRecurringEvents };
+export { createSingleEvent } from "./createSingleEvent";
+export { createRecurringEvents } from "./createRecurringEvents";

@@ -154,7 +154,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     }
 
     if (session) {
-      // commit transaction if everything's successful
       await session.commitTransaction();
     }
 
@@ -162,7 +161,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     return createdEvent;
   } catch (error) {
     if (session) {
-      // abort transaction if something fails
       await session.abortTransaction();
     }
     throw error;
