@@ -402,7 +402,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     let startDate = new Date();
-    startDate = addMonths(startDate, 1);
+    startDate = addMonths(startDate, 3);
 
     const args: MutationCreateEventArgs = {
       data: {
