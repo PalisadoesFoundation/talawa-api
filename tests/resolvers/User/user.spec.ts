@@ -43,13 +43,13 @@ describe("User Identifier Tests", () => {
     const user1: TestUserType = await createTestUserFunc();
     if (user1) {
       try {
-      await User.findOneAndUpdate(
+        await User.findOneAndUpdate(
           { _id: user1._id },
           { $set: { identifier: 1 } },
-          { new: true }
+          { new: true },
         );
-      } catch (error:any) {
-        expect(error.name).to.equal('ValidationError');
+      } catch (error: any) {
+        expect(error.name).to.equal("ValidationError");
       }
     }
   });
