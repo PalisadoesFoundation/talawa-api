@@ -1,2 +1,2 @@
 export { createSingleEvent } from "./createSingleEvent";
-export { createRecurringEvents } from "./createRecurringEvents";
+export { createRecurringEvent } from "./createRecurringEvent";

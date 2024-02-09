@@ -1,8 +1,9 @@
 import type mongoose from "mongoose";
 import { format } from "date-fns";
 import type { InterfaceEvent } from "../../../models";
-import { Event } from "../../../models";
+import { Event, EventAttendee, User } from "../../../models";
 import type { EventInput } from "../../../types/generatedGraphQLTypes";
+import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 
 /**
  * This function generates the recurring event instances.
@@ -15,7 +16,9 @@ import type { EventInput } from "../../../types/generatedGraphQLTypes";
  * @remarks The following steps are followed:
  * 1. Generate the instances for each provided date.
  * 2. Insert the documents in the database.
- * @returns The recurring instances generated during this operation.
+ * 3. Associate the instances with the user.
+ * 4. Cache the instances.
+ * @returns A recurring instance generated during this operation.
  */
 
 interface InterfaceGenerateRecurringInstances {
@@ -45,7 +48,7 @@ export const generateRecurringEventInstances = async ({
   currentUserId,
   organizationId,
   session,
-}: InterfaceGenerateRecurringInstances): Promise<InterfaceEvent[]> => {
+}: InterfaceGenerateRecurringInstances): Promise<InterfaceEvent> => {
   const recurringInstances: InterfaceRecurringEvent[] = [];
   recurringInstanceDates.map((date) => {
     const formattedInstanceDate = format(date, "yyyy-MM-dd");
@@ -71,5 +74,39 @@ export const generateRecurringEventInstances = async ({
     session,
   });
 
-  return recurringEventInstances;
+  // add eventattendee for each instance
+  const eventAttendees = recurringEventInstances.map(
+    (recurringEventInstance) => ({
+      userId: currentUserId,
+      eventId: recurringEventInstance?._id.toString(),
+    })
+  );
+
+  await EventAttendee.insertMany(eventAttendees, { session });
+
+  const eventInstanceIds = recurringEventInstances.map((instance) =>
+    instance._id.toString()
+  );
+
+  // update user event fields to include generated instances
+  await User.updateOne(
+    { _id: currentUserId },
+    {
+      $push: {
+        eventAdmin: { $each: eventInstanceIds },
+        createdEvents: { $each: eventInstanceIds },
+        registeredEvents: { $each: eventInstanceIds },
+      },
+    },
+    { session }
+  );
+
+  // cache the instances
+  await Promise.all(
+    recurringEventInstances.map((recurringEventInstance) =>
+      cacheEvents([recurringEventInstance])
+    )
+  );
+
+  return recurringEventInstances[0];
 };
