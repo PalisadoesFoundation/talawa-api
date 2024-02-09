@@ -908,7 +908,7 @@ enum Recurrance {
 input RecurrenceRuleInput {
   count: Int
   frequency: Frequency
-  weekdays: [WeekDays]
+  weekDays: [WeekDays]
 }
 
 enum Status {

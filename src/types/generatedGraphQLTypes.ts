@@ -1677,7 +1677,7 @@ export type Recurrance =
 export type RecurrenceRuleInput = {
   count?: InputMaybe<Scalars['Int']['input']>;
   frequency?: InputMaybe<Frequency>;
-  weekdays?: InputMaybe<Array<InputMaybe<WeekDays>>>;
+  weekDays?: InputMaybe<Array<InputMaybe<WeekDays>>>;
 };
 
 export type Status =

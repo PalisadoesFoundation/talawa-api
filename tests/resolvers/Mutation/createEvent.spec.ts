@@ -11,6 +11,7 @@ import {
 
 import {
   LENGTH_VALIDATION_ERROR,
+  NORMAL_WEEKDAYS,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -403,6 +404,10 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
     let startDate = new Date();
     startDate = addMonths(startDate, 1);
+    const today = startDate.getDay();
+    const nextDay = (today + 1) % 7;
+
+    const weekDays = [NORMAL_WEEKDAYS[today], NORMAL_WEEKDAYS[nextDay]];
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -422,8 +427,8 @@ describe("resolvers -> Mutation -> createEvent", () => {
       },
       recurrenceRuleData: {
         frequency: "WEEKLY",
-        weekdays: ["TH", "SA"],
-        count: 5,
+        weekDays,
+        count: 10,
       },
     };
 
@@ -471,7 +476,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     }).lean();
 
     expect(recurringEvents).toBeDefined();
-    expect(recurringEvents).toHaveLength(5);
+    expect(recurringEvents).toHaveLength(10);
 
     const attendeeExists = await EventAttendee.exists({
       userId: testUser?._id,

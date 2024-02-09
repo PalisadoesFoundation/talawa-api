@@ -246,7 +246,7 @@ export const inputs = gql`
 
   input RecurrenceRuleInput {
     frequency: Frequency
-    weekdays: [WeekDays]
+    weekDays: [WeekDays]
     count: Int
   }
 

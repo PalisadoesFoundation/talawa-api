@@ -18,7 +18,7 @@ export const generateRecurrenceRuleString = (
   recurrenceEndDate?: Date
 ): string => {
   // destructure the rules
-  const { frequency, count, weekdays } = recurrenceRuleData;
+  const { frequency, count, weekDays } = recurrenceRuleData;
 
   // recurrence start date
   // (not necessarily the start date of the first recurring instance)
@@ -33,7 +33,7 @@ export const generateRecurrenceRuleString = (
     : "";
 
   // string representing the days of the week the event would recur
-  const weekdaysString = weekdays?.length ? weekdays.join(",") : "";
+  const weekdaysString = weekDays?.length ? weekDays.join(",") : "";
 
   // initiate recurrence rule string
   let recurrenceRuleString = `DTSTART:${formattedRecurrenceStartDate}\nRRULE:FREQ=${frequency}`;
