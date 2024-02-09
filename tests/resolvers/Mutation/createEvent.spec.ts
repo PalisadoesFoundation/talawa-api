@@ -402,7 +402,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     let startDate = new Date();
-    startDate = addMonths(startDate, 3);
+    startDate = addMonths(startDate, 1);
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -423,7 +423,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
       recurrenceRuleData: {
         frequency: "WEEKLY",
         weekdays: ["TH", "SA"],
-        count: 10,
+        count: 5,
       },
     };
 
@@ -471,7 +471,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     }).lean();
 
     expect(recurringEvents).toBeDefined();
-    expect(recurringEvents).toHaveLength(10);
+    expect(recurringEvents).toHaveLength(5);
 
     const attendeeExists = await EventAttendee.exists({
       userId: testUser?._id,
