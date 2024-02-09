@@ -18,13 +18,13 @@ import { format } from "date-fns";
  */
 
 export const createSingleEvent = async (
-  args: MutationCreateEventArgs,
+  args: Partial<MutationCreateEventArgs>,
   currentUserId: string,
   organizationId: string,
   session: mongoose.ClientSession
-): Promise<InterfaceEvent> => {
-  const formattedStartDate = format(args.data.startDate, "yyyy-MM-dd");
-  const formattedEndDate = format(args.data.endDate, "yyyy-MM-dd");
+): Promise<Promise<InterfaceEvent>> => {
+  const formattedStartDate = format(args.data?.startDate, "yyyy-MM-dd");
+  const formattedEndDate = format(args.data?.endDate, "yyyy-MM-dd");
 
   // create the single event
   const createdEvent = await Event.create(

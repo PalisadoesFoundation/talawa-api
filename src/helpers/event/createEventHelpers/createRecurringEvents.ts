@@ -1,6 +1,6 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
-import { Event } from "../../../models";
+import { Event, EventAttendee, User } from "../../../models";
 import type { MutationCreateEventArgs } from "../../../types/generatedGraphQLTypes";
 import {
   generateRecurrenceRuleString,
@@ -8,6 +8,7 @@ import {
   createRecurrenceRule,
   generateRecurringEventInstances,
 } from "../recurringEventHelpers";
+import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 import { format } from "date-fns";
 
 /**
@@ -22,15 +23,17 @@ import { format } from "date-fns";
  * 4. Get the dates for recurring instances.
  * 5. Create a recurrenceRule document.
  * 6. Generate recurring instances according to the recurrence rule.
- * @returns Created recurring event instance
+ * 7. Associate the instances with the user
+ * 8. Cache the instances.
+ * @returns Created recurring event instances
  */
 
-export const createRecurringEvent = async (
+export const createRecurringEvents = async (
   args: MutationCreateEventArgs,
   currentUserId: string,
   organizationId: string,
   session: mongoose.ClientSession
-): Promise<InterfaceEvent> => {
+): Promise<InterfaceEvent[]> => {
   const { data } = args;
   let { recurrenceRuleData } = args;
 
@@ -93,8 +96,8 @@ export const createRecurringEvent = async (
     session
   );
 
-  // generate the recurring instances and get an instance back
-  const recurringEventInstance = await generateRecurringEventInstances({
+  // generate the recurring instances
+  const recurringEventInstances = await generateRecurringEventInstances({
     data,
     baseRecurringEventId: baseRecurringEvent[0]?._id.toString(),
     recurrenceRuleId: recurrenceRule?._id.toString(),
@@ -104,5 +107,38 @@ export const createRecurringEvent = async (
     session,
   });
 
-  return recurringEventInstance;
+  // associate the instances with the user
+  const eventAttendees = recurringEventInstances.map(
+    (recurringEventInstance) => ({
+      userId: currentUserId,
+      eventId: recurringEventInstance?._id.toString(),
+    })
+  );
+
+  await EventAttendee.insertMany(eventAttendees, { session });
+
+  const eventInstanceIds = recurringEventInstances.map((instance) =>
+    instance._id.toString()
+  );
+
+  await User.updateOne(
+    { _id: currentUserId },
+    {
+      $push: {
+        eventAdmin: { $each: eventInstanceIds },
+        createdEvents: { $each: eventInstanceIds },
+        registeredEvents: { $each: eventInstanceIds },
+      },
+    },
+    { session }
+  );
+
+  // cache the instances
+  await Promise.all(
+    recurringEventInstances.map((recurringEventInstance) =>
+      cacheEvents([recurringEventInstance])
+    )
+  );
+
+  return recurringEventInstances;
 };

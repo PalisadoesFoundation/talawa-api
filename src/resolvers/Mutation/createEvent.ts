@@ -13,7 +13,7 @@ import { compareDates } from "../../libraries/validators/compareDates";
 import { session } from "../../db";
 import {
   createSingleEvent,
-  createRecurringEvent,
+  createRecurringEvents,
 } from "../../helpers/event/createEventHelpers";
 
 /**
@@ -135,12 +135,14 @@ export const createEvent: MutationResolvers["createEvent"] = async (
 
     if (args.data.recurring) {
       // create recurring event instances
-      createdEvent = await createRecurringEvent(
+      const recurringEventInstances = await createRecurringEvents(
         args,
         currentUser?._id.toString(),
         organization?._id.toString(),
         session
       );
+
+      createdEvent = recurringEventInstances[0];
     } else {
       // create a single non-recurring event
       createdEvent = await createSingleEvent(
