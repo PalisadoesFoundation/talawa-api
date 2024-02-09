@@ -1,6 +1,5 @@
 import { getEnvIssues, envSchema } from "./env";
 import crypto from "crypto";
-import type { WeekDays } from "./types/generatedGraphQLTypes";
 
 const issues = getEnvIssues();
 let ENV = process.env;
@@ -530,15 +529,6 @@ export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
 export const MILLISECONDS_IN_A_WEEK = 7 * 24 * 60 * 60 * 1000;
 
-export const NORMAL_WEEKDAYS: WeekDays[] = [
-  "SU",
-  "MO",
-  "TU",
-  "WE",
-  "TH",
-  "FR",
-  "SA",
-];
 export const RECURRING_EVENT_INSTANCES_MONTH_LIMIT = 6;
 export const RECURRENCE_FREQUENCIES = ["YEARLY", "MONTHLY", "WEEKLY", "DAILY"];
 export const RECURRENCE_WEEKDAYS = [

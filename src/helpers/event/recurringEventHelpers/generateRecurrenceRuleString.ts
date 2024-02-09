@@ -33,7 +33,7 @@ export const generateRecurrenceRuleString = (
     : "";
 
   // string representing the days of the week the event would recur
-  const weekdaysString = weekDays?.length ? weekDays.join(",") : "";
+  const weekDaysString = weekDays?.length ? weekDays.join(",") : "";
 
   // initiate recurrence rule string
   let recurrenceRuleString = `DTSTART:${formattedRecurrenceStartDate}\nRRULE:FREQ=${frequency}`;
@@ -45,8 +45,8 @@ export const generateRecurrenceRuleString = (
     // maximum number of instances to create
     recurrenceRuleString += `;COUNT=${count}`;
   }
-  if (weekdaysString) {
-    recurrenceRuleString += `;BYDAY=${weekdaysString}`;
+  if (weekDaysString) {
+    recurrenceRuleString += `;BYDAY=${weekDaysString}`;
   }
 
   return recurrenceRuleString;
