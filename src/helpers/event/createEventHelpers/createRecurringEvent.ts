@@ -8,7 +8,7 @@ import {
   createRecurrenceRule,
   generateRecurringEventInstances,
 } from "../recurringEventHelpers";
-import { format } from "date-fns";
+import { convertToUTCDate } from "../../../utilities/convertToUTCDate";
 
 /**
  * This function creates the instances of a recurring event upto a certain date.
@@ -49,10 +49,10 @@ export const createRecurringEvent = async (
     data?.endDate
   );
 
-  const formattedStartDate = format(data.startDate, "yyyy-MM-dd");
-  let formattedEndDate = undefined;
+  const convertedStartDate = convertToUTCDate(data.startDate);
+  let convertedEndDate = null;
   if (data.endDate) {
-    formattedEndDate = format(data.endDate, "yyyy-MM-dd");
+    convertedEndDate = convertToUTCDate(data.endDate);
   }
 
   // create a base recurring event first, based on which all the
@@ -61,8 +61,8 @@ export const createRecurringEvent = async (
     [
       {
         ...data,
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
+        startDate: convertedStartDate,
+        endDate: convertedEndDate,
         recurring: true,
         isBaseRecurringEvent: true,
         creatorId: currentUserId,
@@ -78,15 +78,15 @@ export const createRecurringEvent = async (
   const [recurringInstanceDates, latestInstanceDate] =
     getRecurringInstanceDates(
       recurrenceRuleString,
-      data.startDate,
-      data.endDate
+      convertedStartDate,
+      convertedEndDate
     );
 
   // create a recurrenceRule document that would contain the recurrence pattern
   const recurrenceRule = await createRecurrenceRule(
     recurrenceRuleString,
-    data.startDate,
-    data.endDate,
+    convertedStartDate,
+    convertedEndDate,
     organizationId.toString(),
     baseRecurringEvent[0]?._id.toString(),
     latestInstanceDate,

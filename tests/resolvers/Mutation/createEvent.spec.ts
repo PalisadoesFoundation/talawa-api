@@ -29,6 +29,7 @@ import {
 import { fail } from "assert";
 import { addMonths, format } from "date-fns";
 import { Frequency, RecurrenceRule } from "../../../src/models/RecurrenceRule";
+import { convertToUTCDate } from "../../../src/utilities/convertToUTCDate";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -296,8 +297,10 @@ describe("resolvers -> Mutation -> createEvent", () => {
       }
     );
 
-    const startDate = new Date();
-    const endDate = addMonths(startDate, 1);
+    let startDate = new Date();
+    startDate = convertToUTCDate(startDate);
+    let endDate = addMonths(startDate, 1);
+    endDate = convertToUTCDate(endDate);
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -404,6 +407,8 @@ describe("resolvers -> Mutation -> createEvent", () => {
     let startDate = new Date();
     startDate = addMonths(startDate, 1);
 
+    startDate = convertToUTCDate(startDate);
+
     const args: MutationCreateEventArgs = {
       data: {
         organizationId: testOrganization?.id,
@@ -471,7 +476,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     }).lean();
 
     expect(recurringEvents).toBeDefined();
-    expect(recurringEvents.length).toBeGreaterThan(1);
+    expect(recurringEvents).toHaveLength(10);
 
     const attendeeExists = await EventAttendee.exists({
       userId: testUser?._id,
