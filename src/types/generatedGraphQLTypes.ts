@@ -144,7 +144,7 @@ export type AppUserProfile = {
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
   isSuperAdmin: Scalars['Boolean']['output'];
   pluginCreationAllowed: Scalars['Boolean']['output'];
-  user: User;
+  userId: User;
 };
 
 export type AuthData = {
@@ -1807,7 +1807,7 @@ export type User = {
   address?: Maybe<Address>;
   adminApproved?: Maybe<Scalars['Boolean']['output']>;
   appLanguageCode: Scalars['String']['output'];
-  appUserProfile?: Maybe<AppUserProfile>;
+  appUserProfileId?: Maybe<AppUserProfile>;
   birthDate?: Maybe<Scalars['Date']['output']>;
   createdAt: Scalars['DateTime']['output'];
   educationGrade?: Maybe<EducationGrade>;
@@ -2107,7 +2107,7 @@ export type ResolversTypes = {
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   Any: ResolverTypeWrapper<Scalars['Any']['output']>;
-  AppUserProfile: ResolverTypeWrapper<Omit<AppUserProfile, 'adminFor' | 'createdEvents' | 'createdOrganizations' | 'eventAdmin' | 'user'> & { adminFor?: Maybe<Array<Maybe<ResolversTypes['Organization']>>>, createdEvents?: Maybe<Array<Maybe<ResolversTypes['Event']>>>, createdOrganizations?: Maybe<Array<Maybe<ResolversTypes['Organization']>>>, eventAdmin?: Maybe<Array<Maybe<ResolversTypes['Event']>>>, user: ResolversTypes['User'] }>;
+  AppUserProfile: ResolverTypeWrapper<Omit<AppUserProfile, 'adminFor' | 'createdEvents' | 'createdOrganizations' | 'eventAdmin' | 'userId'> & { adminFor?: Maybe<Array<Maybe<ResolversTypes['Organization']>>>, createdEvents?: Maybe<Array<Maybe<ResolversTypes['Event']>>>, createdOrganizations?: Maybe<Array<Maybe<ResolversTypes['Organization']>>>, eventAdmin?: Maybe<Array<Maybe<ResolversTypes['Event']>>>, userId: ResolversTypes['User'] }>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'appUserProfile' | 'user'> & { appUserProfile: ResolversTypes['AppUserProfile'], user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
@@ -2249,7 +2249,7 @@ export type ResolversParentTypes = {
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any']['output'];
-  AppUserProfile: Omit<AppUserProfile, 'adminFor' | 'createdEvents' | 'createdOrganizations' | 'eventAdmin' | 'user'> & { adminFor?: Maybe<Array<Maybe<ResolversParentTypes['Organization']>>>, createdEvents?: Maybe<Array<Maybe<ResolversParentTypes['Event']>>>, createdOrganizations?: Maybe<Array<Maybe<ResolversParentTypes['Organization']>>>, eventAdmin?: Maybe<Array<Maybe<ResolversParentTypes['Event']>>>, user: ResolversParentTypes['User'] };
+  AppUserProfile: Omit<AppUserProfile, 'adminFor' | 'createdEvents' | 'createdOrganizations' | 'eventAdmin' | 'userId'> & { adminFor?: Maybe<Array<Maybe<ResolversParentTypes['Organization']>>>, createdEvents?: Maybe<Array<Maybe<ResolversParentTypes['Event']>>>, createdOrganizations?: Maybe<Array<Maybe<ResolversParentTypes['Organization']>>>, eventAdmin?: Maybe<Array<Maybe<ResolversParentTypes['Event']>>>, userId: ResolversParentTypes['User'] };
   AuthData: Omit<AuthData, 'appUserProfile' | 'user'> & { appUserProfile: ResolversParentTypes['AppUserProfile'], user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean']['output'];
   CheckIn: InterfaceCheckInModel;
@@ -2455,7 +2455,7 @@ export type AppUserProfileResolvers<ContextType = any, ParentType extends Resolv
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   isSuperAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3040,7 +3040,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
   adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  appUserProfile?: Resolver<Maybe<ResolversTypes['AppUserProfile']>, ParentType, ContextType>;
+  appUserProfileId?: Resolver<Maybe<ResolversTypes['AppUserProfile']>, ParentType, ContextType>;
   birthDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   educationGrade?: Resolver<Maybe<ResolversTypes['EducationGrade']>, ParentType, ContextType>;

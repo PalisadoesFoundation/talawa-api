@@ -139,7 +139,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     user: user as InterfaceUser,
     appUserProfile: {
       _id: appUserProfile._id.toString(),
-      user: appUserProfile.userId as InterfaceUser,
+      userId: appUserProfile.userId as InterfaceUser,
       adminFor: appUserProfile.adminFor as InterfaceOrganization[],
       appLanguageCode: appUserProfile.appLanguageCode,
       isSuperAdmin: appUserProfile.isSuperAdmin,

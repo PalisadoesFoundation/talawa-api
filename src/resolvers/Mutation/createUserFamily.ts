@@ -41,7 +41,7 @@ export const createUserFamily: MutationResolvers["createUserFamily"] = async (
   }
 
   const currentUserAppProfile = await AppUserProfile.findOne({
-    user: currentUser._id,
+    userId: currentUser._id,
   }).lean();
   if (!currentUserAppProfile) {
     throw new errors.NotFoundError(

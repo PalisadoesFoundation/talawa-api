@@ -192,7 +192,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       user: updatedUser,
       appUserProfile: {
         _id: updatedAppUserProfile._id.toString(),
-        user: updatedAppUserProfile.userId as InterfaceUser,
+        userId: updatedAppUserProfile.userId as InterfaceUser,
         adminFor: updatedAppUserProfile.adminFor as InterfaceOrganization[],
         appLanguageCode: updatedAppUserProfile.appLanguageCode,
         isSuperAdmin: updatedAppUserProfile.isSuperAdmin,

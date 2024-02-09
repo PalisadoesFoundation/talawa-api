@@ -83,7 +83,7 @@ export interface InterfaceUser {
  *
 
  * @param updatedAt - Timestamp of data updation
- * @param userType - User type.
+
  */
 const userSchema = new Schema(
   {

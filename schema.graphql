@@ -88,7 +88,7 @@ type AppUserProfile {
   eventAdmin: [Event]
   isSuperAdmin: Boolean!
   pluginCreationAllowed: Boolean!
-  user: User!
+  userId: User!
 }
 
 type AuthData {
@@ -1040,7 +1040,7 @@ type User {
   address: Address
   adminApproved: Boolean
   appLanguageCode: String!
-  appUserProfile: AppUserProfile
+  appUserProfileId: AppUserProfile
   birthDate: Date
   createdAt: DateTime!
   educationGrade: EducationGrade

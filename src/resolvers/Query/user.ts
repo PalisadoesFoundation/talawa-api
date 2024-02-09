@@ -47,7 +47,7 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     appUserProfile: {
       // ...userAppProfile,
       _id: userAppProfile._id.toString(),
-      user: userAppProfile.userId as InterfaceUser,
+      userId: userAppProfile.userId as InterfaceUser,
       adminFor: userAppProfile.adminFor as InterfaceOrganization[],
       appLanguageCode: userAppProfile.appLanguageCode,
       isSuperAdmin: userAppProfile.isSuperAdmin,

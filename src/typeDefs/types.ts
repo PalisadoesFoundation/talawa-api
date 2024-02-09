@@ -403,7 +403,7 @@ export const types = gql`
 
   type User {
     _id: ID!
-    appUserProfile: AppUserProfile
+    appUserProfileId: AppUserProfile
     address: Address
     adminApproved: Boolean
     appLanguageCode: String!
@@ -434,7 +434,7 @@ export const types = gql`
   }
   type AppUserProfile {
     _id: ID!
-    user: User!
+    userId: User!
     adminFor: [Organization]
     createdEvents: [Event]
     createdOrganizations: [Organization]

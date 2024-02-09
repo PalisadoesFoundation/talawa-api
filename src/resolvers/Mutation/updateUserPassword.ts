@@ -113,7 +113,7 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
       user: updatedUser as InterfaceUser,
       appUserProfile: {
         _id: updatedAppUserProfile._id.toString(),
-        user: updatedAppUserProfile.userId as InterfaceUser,
+        userId: updatedAppUserProfile.userId as InterfaceUser,
         adminFor: updatedAppUserProfile.adminFor as InterfaceOrganization[],
         appLanguageCode: updatedAppUserProfile.appLanguageCode,
         isSuperAdmin: updatedAppUserProfile.isSuperAdmin,

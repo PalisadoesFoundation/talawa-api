@@ -171,7 +171,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     user: filteredCreatedUser,
     appUserProfile: {
       _id: appUserProfile._id.toString(),
-      user: appUserProfile.userId as InterfaceUser,
+      userId: appUserProfile.userId as InterfaceUser,
       adminFor: appUserProfile.adminFor as InterfaceOrganization[],
       appLanguageCode: appUserProfile.appLanguageCode,
       isSuperAdmin: appUserProfile.isSuperAdmin,
