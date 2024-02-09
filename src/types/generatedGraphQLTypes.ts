@@ -142,6 +142,7 @@ export type AppUserProfile = {
   createdEvents?: Maybe<Array<Maybe<Event>>>;
   createdOrganizations?: Maybe<Array<Maybe<Organization>>>;
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
+  isSuperAdmin: Scalars['Boolean']['output'];
   pluginCreationAllowed: Scalars['Boolean']['output'];
   user: User;
 };
@@ -2452,6 +2453,7 @@ export type AppUserProfileResolvers<ContextType = any, ParentType extends Resolv
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   createdOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  isSuperAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

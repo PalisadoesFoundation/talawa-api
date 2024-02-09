@@ -440,6 +440,7 @@ export const types = gql`
     createdOrganizations: [Organization]
     eventAdmin: [Event]
     pluginCreationAllowed: Boolean!
+    isSuperAdmin: Boolean!
   }
   type UserCustomData {
     _id: ID!

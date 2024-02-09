@@ -86,6 +86,7 @@ type AppUserProfile {
   createdEvents: [Event]
   createdOrganizations: [Organization]
   eventAdmin: [Event]
+  isSuperAdmin: Boolean!
   pluginCreationAllowed: Boolean!
   user: User!
 }
