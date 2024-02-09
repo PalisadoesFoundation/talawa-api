@@ -16,7 +16,7 @@ import { cachePosts } from "../../services/PostCache/cachePosts";
 export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Get the current user
   const currentUser = await User.findOne({
@@ -28,7 +28,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -52,13 +52,13 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
       POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM
+      POST_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   // Check if the current user is authorized to perform the operation
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organizationId) => organizationId.equals(post?.organization)
+    (organizationId) => organizationId.equals(post?.organization),
   );
 
   if (
@@ -68,7 +68,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
       USER_NOT_AUTHORIZED_TO_PIN.CODE,
-      USER_NOT_AUTHORIZED_TO_PIN.PARAM
+      USER_NOT_AUTHORIZED_TO_PIN.PARAM,
     );
   }
 
@@ -89,7 +89,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     await cacheOrganizations([organization!]);
   }
   const currentPostIsPinned = organization?.pinnedPosts.some((postID) =>
-    Types.ObjectId(postID).equals(args.id)
+    Types.ObjectId(postID).equals(args.id),
   );
 
   if (currentPostIsPinned) {
@@ -104,7 +104,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -119,7 +119,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         $set: {
           pinned: false,
         },
-      }
+      },
     ).lean();
 
     if (updatedPost !== null) {
@@ -139,7 +139,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -153,7 +153,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         $set: {
           pinned: true,
         },
-      }
+      },
     ).lean();
 
     if (updatedPost !== null) {

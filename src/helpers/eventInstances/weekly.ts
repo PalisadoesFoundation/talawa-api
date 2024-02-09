@@ -19,7 +19,7 @@ export async function generateEvents(
   args: Partial<MutationCreateEventArgs>,
   currentUser: InterfaceUser,
   organization: InterfaceOrganization,
-  session: mongoose.ClientSession
+  session: mongoose.ClientSession,
 ): Promise<InterfaceEvent[]> {
   const recurringEvents: InterfaceRecurringEvent[] = [];
   const { data } = args;
@@ -29,7 +29,7 @@ export async function generateEvents(
 
   const allDays = eachDayOfInterval({ start: startDate, end: endDate });
   const occurrences = allDays.filter(
-    (date) => date.getDay() === startDate.getDay()
+    (date) => date.getDay() === startDate.getDay(),
   );
 
   occurrences.map((date) => {

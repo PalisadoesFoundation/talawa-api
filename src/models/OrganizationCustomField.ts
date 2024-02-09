@@ -30,7 +30,7 @@ const OrganizationCustomField: Model<InterfaceOrganizationCustomField> =
   mongoose.models.CustomField ||
   mongoose.model<InterfaceOrganizationCustomField>(
     "CustomField",
-    organizationCustomFieldSchema
+    organizationCustomFieldSchema,
   );
 
 export { OrganizationCustomField };

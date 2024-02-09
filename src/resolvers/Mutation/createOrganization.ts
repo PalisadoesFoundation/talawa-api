@@ -52,25 +52,25 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     if (!validationResultName.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
     if (!validationResultDescription.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
     if (!validationResultLocation.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
 
@@ -99,7 +99,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
           createdOrganizations: createdOrganization._id,
           adminFor: createdOrganization._id,
         },
-      }
+      },
     );
 
     // Returns createdOrganization.

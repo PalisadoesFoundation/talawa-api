@@ -17,10 +17,10 @@ const formats = {
           getTracingId() || "-"
         } ${info.message} ${
           JSON.stringify(
-            _.omit(info, ["level", "message", "stack", "timestamp"])
+            _.omit(info, ["level", "message", "stack", "timestamp"]),
           ) || "-"
-        } ${info.stack || ""}`
-    )
+        } ${info.stack || ""}`,
+    ),
   ),
   non_colorized: combine(
     splat(),
@@ -32,10 +32,10 @@ const formats = {
           getTracingId() || "-"
         } ${info.message} ${
           JSON.stringify(
-            _.omit(info, ["level", "message", "stack", "timestamp"])
+            _.omit(info, ["level", "message", "stack", "timestamp"]),
           ) || "-"
-        } ${info.stack || ""}`
-    )
+        } ${info.stack || ""}`,
+    ),
   ),
 };
 

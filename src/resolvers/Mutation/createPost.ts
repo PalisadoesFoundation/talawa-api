@@ -26,7 +26,7 @@ import { cachePosts } from "../../services/PostCache/cachePosts";
 export const createPost: MutationResolvers["createPost"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Get the current user
   const currentUser = await User.findOne({
@@ -38,7 +38,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -63,7 +63,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -88,17 +88,17 @@ export const createPost: MutationResolvers["createPost"] = async (
     if (!validationResultTitle.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
     if (!validationResultText.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
   }
@@ -106,7 +106,7 @@ export const createPost: MutationResolvers["createPost"] = async (
   if (args.data.pinned) {
     // Check if the user has privileges to pin the post
     const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-      (organizationId) => organizationId.equals(args.data.organizationId)
+      (organizationId) => organizationId.equals(args.data.organizationId),
     );
     if (currentUser?.userType) {
       if (
@@ -116,7 +116,7 @@ export const createPost: MutationResolvers["createPost"] = async (
         throw new errors.UnauthorizedError(
           requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
           USER_NOT_AUTHORIZED_TO_PIN.CODE,
-          USER_NOT_AUTHORIZED_TO_PIN.PARAM
+          USER_NOT_AUTHORIZED_TO_PIN.PARAM,
         );
       }
     }
@@ -147,7 +147,7 @@ export const createPost: MutationResolvers["createPost"] = async (
       },
       {
         new: true,
-      }
+      },
     );
 
     await cacheOrganizations([updatedOrganizaiton!]);

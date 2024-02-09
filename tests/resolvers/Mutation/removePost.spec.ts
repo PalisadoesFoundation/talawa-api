@@ -49,7 +49,7 @@ describe("resolvers -> Mutation -> removePost", () => {
   it(`throws NotFoundError if current user with _id === context.userId does not exist`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
 
     try {
@@ -68,7 +68,7 @@ describe("resolvers -> Mutation -> removePost", () => {
       await removePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> removePost", () => {
   it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
 
     try {
@@ -95,7 +95,7 @@ describe("resolvers -> Mutation -> removePost", () => {
       await removePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${POST_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${POST_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -103,7 +103,7 @@ describe("resolvers -> Mutation -> removePost", () => {
   it(`throws UnauthorizedError if a non-creator / non-superadmin / non-admin of the org tries to delete the post`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
 
     try {
@@ -122,7 +122,7 @@ describe("resolvers -> Mutation -> removePost", () => {
       await removePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -130,7 +130,7 @@ describe("resolvers -> Mutation -> removePost", () => {
   it(`deletes the post with no image and video with _id === args.id and returns it`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
 
     const args: MutationRemovePostArgs = {
@@ -152,7 +152,7 @@ describe("resolvers -> Mutation -> removePost", () => {
   it(`deletes the post with image with _id === args.id and returns it`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
     const deletePreviousImage = await import(
       "../../../src/utilities/encodedImageStorage/deletePreviousImage"
@@ -172,7 +172,7 @@ describe("resolvers -> Mutation -> removePost", () => {
           imageUrl: "images/fakeImagePathimage.png",
         },
       },
-      { new: true }
+      { new: true },
     ).lean();
 
     const args: MutationRemovePostArgs = {
@@ -195,7 +195,7 @@ describe("resolvers -> Mutation -> removePost", () => {
   it(`deletes the post with video with _id === args.id and returns it`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
     const deletePreviousVideo = await import(
       "../../../src/utilities/encodedVideoStorage/deletePreviousVideo"
@@ -215,7 +215,7 @@ describe("resolvers -> Mutation -> removePost", () => {
           videoUrl: "videos/fakeVideoPathvideo.png",
         },
       },
-      { new: true }
+      { new: true },
     ).lean();
 
     const args: MutationRemovePostArgs = {

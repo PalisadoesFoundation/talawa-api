@@ -30,7 +30,7 @@ import { Weekly, Once } from "../../helpers/eventInstances";
 export const createEvent: MutationResolvers["createEvent"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -41,7 +41,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -54,16 +54,16 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const userCreatedOrganization = currentUser.createdOrganizations.some(
-    (createdOrganization) => createdOrganization.equals(organization._id)
+    (createdOrganization) => createdOrganization.equals(organization._id),
   );
 
   const userJoinedOrganization = currentUser.joinedOrganizations.some(
-    (joinedOrganization) => joinedOrganization.equals(organization._id)
+    (joinedOrganization) => joinedOrganization.equals(organization._id),
   );
 
   // Checks whether currentUser neither created nor joined the organization.
@@ -77,7 +77,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
       ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM
+      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -85,41 +85,41 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   const validationResultTitle = isValidString(args.data?.title ?? "", 256);
   const validationResultDescription = isValidString(
     args.data?.description ?? "",
-    500
+    500,
   );
   const validationResultLocation = isValidString(args.data?.location ?? "", 50);
   if (!validationResultTitle.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   if (!validationResultDescription.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   if (!validationResultLocation.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   const compareDatesResult = compareDates(
     args.data?.startDate,
-    args.data?.endDate
+    args.data?.endDate,
   );
   if (compareDatesResult !== "") {
     throw new errors.InputValidationError(
       requestContext.translate(compareDatesResult),
-      compareDatesResult
+      compareDatesResult,
     );
   }
 
@@ -137,7 +137,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
             args,
             currentUser,
             organization,
-            session
+            session,
           );
 
           for (const event of createdEvent) {
@@ -152,7 +152,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
             args,
             currentUser,
             organization,
-            session
+            session,
           );
 
           for (const event of createdEvent) {
@@ -167,7 +167,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
         args,
         currentUser,
         organization,
-        session
+        session,
       );
 
       for (const event of createdEvent) {
@@ -193,7 +193,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
 async function associateEventWithUser(
   currentUser: InterfaceUser,
   createdEvent: InterfaceEvent,
-  session: mongoose.ClientSession
+  session: mongoose.ClientSession,
 ): Promise<void> {
   await EventAttendee.create(
     [
@@ -202,7 +202,7 @@ async function associateEventWithUser(
         eventId: createdEvent._id,
       },
     ],
-    { session }
+    { session },
   );
 
   await User.updateOne(
@@ -216,6 +216,6 @@ async function associateEventWithUser(
         registeredEvents: createdEvent._id,
       },
     },
-    { session }
+    { session },
   );
 }

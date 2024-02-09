@@ -60,7 +60,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
   it("should NOT throw error when user is ADMIN", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const admin = generateUserData(ORGANIZATION_ID.toString(), "ADMIN");
@@ -73,7 +73,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
     const adminResult = await removeSampleOrganization!(
       parent,
       args,
-      adminContext
+      adminContext,
     );
     expect(adminResult).toBe(true);
   });
@@ -81,7 +81,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
   it("should not throw error when user is a SUPERADMIN", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const _id = faker.database.mongodbObjectId();
@@ -115,7 +115,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
     sampleDocument.save();
     const superadmin = generateUserData(
       organization._id.toString(),
-      "SUPERADMIN"
+      "SUPERADMIN",
     );
 
     (await superadmin).save();
@@ -127,7 +127,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
     const superAdminResult = await removeSampleOrganization!(
       parent,
       args,
-      superAdminContext
+      superAdminContext,
     );
 
     expect(superAdminResult).toBe(true);
@@ -136,7 +136,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
   it("should throw unauthorized error for non-admins", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const _id = faker.database.mongodbObjectId();
@@ -184,7 +184,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
   it("should throw user not found error when user is non-existent", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const randomUserId = faker.database.mongodbObjectId();
@@ -203,7 +203,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
   it("should NOT throw error when user is ADMIN", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const randomOrganizationId = faker.database.mongodbObjectId();
@@ -225,7 +225,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
   it("should NOT throw error when organization doesn't exist", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const admin = generateUserData(ORGANIZATION_ID.toString(), "ADMIN");
@@ -247,7 +247,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
   it("should throw error when the collection name is not a valid one", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const admin = generateUserData(ORGANIZATION_ID.toString(), "ADMIN");

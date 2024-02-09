@@ -66,7 +66,7 @@ const groupChatSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const groupChatModel = (): Model<InterfaceGroupChat> =>

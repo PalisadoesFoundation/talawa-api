@@ -48,7 +48,7 @@ const groupChatMessageSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const groupChatMessageModel = (): Model<InterfaceGroupChatMessage> =>

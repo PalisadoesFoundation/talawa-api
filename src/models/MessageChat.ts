@@ -46,7 +46,7 @@ const messageChatSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const messageChatModel = (): Model<InterfaceMessageChat> =>

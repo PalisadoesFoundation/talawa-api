@@ -143,7 +143,7 @@ const organizationSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const organizationModel = (): Model<InterfaceOrganization> =>

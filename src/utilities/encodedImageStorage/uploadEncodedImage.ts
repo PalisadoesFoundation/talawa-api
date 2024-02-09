@@ -10,7 +10,7 @@ import { deletePreviousImage } from "./deletePreviousImage";
 
 export const uploadEncodedImage = async (
   encodedImageURL: string,
-  previousImagePath?: string | null
+  previousImagePath?: string | null,
 ): Promise<string> => {
   const isURLValidImage = encodedImageExtentionCheck(encodedImageURL);
 
@@ -18,7 +18,7 @@ export const uploadEncodedImage = async (
     throw new errors.InvalidFileTypeError(
       requestContext.translate(INVALID_FILE_TYPE.MESSAGE),
       INVALID_FILE_TYPE.CODE,
-      INVALID_FILE_TYPE.PARAM
+      INVALID_FILE_TYPE.PARAM,
     );
   }
 
@@ -39,7 +39,7 @@ export const uploadEncodedImage = async (
         $inc: {
           numberOfUses: 1,
         },
-      }
+      },
     );
 
     if (previousImagePath) {
