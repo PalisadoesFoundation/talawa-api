@@ -25,7 +25,7 @@ import { Venue } from "../../models/Venue";
 export const deleteVenue: MutationResolvers["deleteVenue"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -36,7 +36,7 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -49,7 +49,7 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -63,7 +63,7 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
       ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM
+      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -75,7 +75,7 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
       VENUE_NOT_FOUND_ERROR.CODE,
-      VENUE_NOT_FOUND_ERROR.PARAM
+      VENUE_NOT_FOUND_ERROR.PARAM,
     );
   }
 

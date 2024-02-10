@@ -262,7 +262,7 @@ describe("resolvers -> Mutation -> createVenue", () => {
     const expectedVenue = await Venue.findById(venue?._id);
     expect(venue).toEqual(
       expect.objectContaining({
-        _id: expectedVenue?._id
+        _id: expectedVenue?._id,
       }),
     );
   });
