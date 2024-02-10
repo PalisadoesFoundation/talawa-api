@@ -1,5 +1,3 @@
-import { InvalidFileTypeError } from "./../../../src/libraries/errors/invalidFileTypeError";
-import { ConflictError } from "./../../../src/libraries/errors/conflictError";
 import { TestVenueType } from "./../../helpers/venue";
 import "dotenv/config";
 import type mongoose from "mongoose";
@@ -21,7 +19,6 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import {
-  InputValidationError,
   NotFoundError,
   UnauthorizedError,
 } from "../../../src/libraries/errors";

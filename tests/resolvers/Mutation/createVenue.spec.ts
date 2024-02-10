@@ -1,6 +1,5 @@
 import { InvalidFileTypeError } from "./../../../src/libraries/errors/invalidFileTypeError";
 import { ConflictError } from "./../../../src/libraries/errors/conflictError";
-import { TestVenueType } from "./../../helpers/venue";
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
@@ -31,7 +30,6 @@ import { fail } from "assert";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testVenue: TestVenueType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -47,7 +45,7 @@ beforeAll(async () => {
     visibleInSearch: true,
   });
 
-  testVenue = await Venue.create({
+  await Venue.create({
     name: "testVenue",
     description: "description",
     capacity: Math.floor(Math.random() * 100),

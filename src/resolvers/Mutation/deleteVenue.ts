@@ -1,4 +1,3 @@
-import { NotFoundError } from "./../../libraries/errors/notFoundError";
 import { Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import {

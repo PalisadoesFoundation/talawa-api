@@ -15,7 +15,6 @@ import {
   USER_NOT_FOUND_ERROR,
   VENUE_ALREADY_EXISTS_ERROR,
   VENUE_NAME_MISSING_ERROR,
-  VENUE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type {
@@ -33,7 +32,6 @@ let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testVenue: TestVenueType;
-let dummyVenue: TestVenueType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -48,7 +46,7 @@ beforeAll(async () => {
     visibleInSearch: true,
   });
 
-  dummyVenue = await Venue.create({
+  await Venue.create({
     name: "testVenue",
     description: "description",
     capacity: Math.floor(Math.random() * 100),
