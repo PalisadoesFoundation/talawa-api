@@ -13,10 +13,7 @@ import {
   INVALID_TIMEOUT_RANGE,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import type {
-  RequireFields,
-  MutationUpdateSessionTimeoutArgs,
-} from "../../../src/types/generatedGraphQLTypes";
+
 import {
   createTestCommunityFunc,
   type TestCommunityType,
@@ -24,8 +21,11 @@ import {
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let testOrganization: TestOrganizationType;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let testOrganization2: TestOrganizationType;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let testCommunity: TestCommunityType;
 
 let testUser1: TestUserType;
@@ -39,7 +39,7 @@ beforeAll(async () => {
   testCommunity = await createTestCommunityFunc();
   if (testUser1)
     testOrganization = await createTestOrganizationWithAdmin(
-      testUser1._id,
+      testUser1._id.toString(),
       true,
       true,
       true
@@ -47,7 +47,7 @@ beforeAll(async () => {
 
   if (testUser2)
     testOrganization2 = await createTestOrganizationWithAdmin(
-      testUser2._id,
+      testUser2._id.toString(),
       true,
       false,
       true

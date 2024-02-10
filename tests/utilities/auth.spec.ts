@@ -99,7 +99,7 @@ describe("createRefreshToken", () => {
 
 describe("revokeRefreshToken", () => {
   it("should unset the token field in the user document", async () => {
-    await revokeRefreshToken(user?._id);
+    await revokeRefreshToken(user?._id.toString() as string);
 
     const updatedUser = await User.findOne({ _id: user?._id });
 

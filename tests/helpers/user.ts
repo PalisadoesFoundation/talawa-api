@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import type { Document } from "mongoose";
 
 export type TestUserType =
-  | (InterfaceUser & Document<any, any, InterfaceUser>)
+  | (InterfaceUser & Document<unknown, unknown, InterfaceUser>)
   | null;
 
 export const createTestUser = async (): Promise<TestUserType> => {
