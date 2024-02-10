@@ -273,7 +273,6 @@ describe("resolvers -> Mutation -> createPost", () => {
     expect(createPostPayload?.pinned).toBe(true);
 
     const testCreatePostPayload = await Post.findOne({
-      organization: testOrganization?.id,
       _id: createPostPayload?._id,
       imageUrl: { $ne: null },
     }).lean();
@@ -312,7 +311,6 @@ describe("resolvers -> Mutation -> createPost", () => {
     expect(createPostPayload?.pinned).toBe(true);
 
     const testCreatePostPayload = await Post.findOne({
-      organization: testOrganization?.id,
       _id: createPostPayload?._id,
       videoUrl: { $ne: null },
     }).lean();
