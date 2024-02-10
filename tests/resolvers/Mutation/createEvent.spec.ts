@@ -367,7 +367,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     }).lean();
 
     expect(recurringEvents).toBeDefined();
-    expect(recurringEvents.length).toBeGreaterThan(1);
+    expect(recurringEvents.length).toEqual(5);
 
     const attendeeExists = await EventAttendee.exists({
       userId: testUser?._id,

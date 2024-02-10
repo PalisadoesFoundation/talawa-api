@@ -10,9 +10,8 @@ import { RECURRING_EVENT_INSTANCES_MONTH_LIMIT } from "../../../constants";
  * @param calendarDate - the last date of the current calendar month (To be used during query).
  * @remarks The following steps are followed:
  * 1. Limit the end date for instance creation.
- * 2. Getting the date upto which we would generate instances during this operation (leaving the rest for dynamic generation).
- * 3. Getting the dates for recurring instances.
- * @returns The recurring instance dates and the date of last instance generated during this operation.
+ * 3. Get the dates for recurring instances.
+ * @returns Dates for recurring instances to be generated during this operation.
  */
 
 export function getRecurringInstanceDates(
@@ -20,7 +19,7 @@ export function getRecurringInstanceDates(
   recurrenceStartDate: Date,
   eventEndDate: Date | null,
   calendarDate: Date = recurrenceStartDate
-): [Date[], Date] {
+): Date[] {
   const limitEndDate = addMonths(
     calendarDate,
     RECURRING_EVENT_INSTANCES_MONTH_LIMIT
@@ -42,8 +41,5 @@ export function getRecurringInstanceDates(
     true
   );
 
-  const latestInstanceDate =
-    recurringInstanceDates[recurringInstanceDates.length - 1];
-
-  return [recurringInstanceDates, latestInstanceDate];
+  return recurringInstanceDates;
 }

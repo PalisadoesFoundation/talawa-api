@@ -75,13 +75,15 @@ export const createRecurringEvent = async (
 
   // get the dates for the recurringInstances, and the date of the last instance
   // to be generated in this operation (rest would be generated dynamically during query)
-  const [recurringInstanceDates, latestInstanceDate] =
-    getRecurringInstanceDates(
-      recurrenceRuleString,
-      convertedStartDate,
-      convertedEndDate
-    );
+  const recurringInstanceDates = getRecurringInstanceDates(
+    recurrenceRuleString,
+    convertedStartDate,
+    convertedEndDate
+  );
 
+  // get the date for the latest created instance
+  const latestInstanceDate =
+    recurringInstanceDates[recurringInstanceDates.length - 1];
   // create a recurrenceRule document that would contain the recurrence pattern
   const recurrenceRule = await createRecurrenceRule(
     recurrenceRuleString,
