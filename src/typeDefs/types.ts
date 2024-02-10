@@ -85,7 +85,7 @@ export const types = gql`
     createdAt: DateTime!
     updatedAt: DateTime!
   }
-  
+
   type UserFamily {
     _id: ID!
     title: String
