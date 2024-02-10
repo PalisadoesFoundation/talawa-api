@@ -34,11 +34,7 @@ let testVenue: TestVenueType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
-  testVenue = await Venue.create({
-    name: "testVenue",
-    description: "description",
-    capacity: Math.floor(Math.random() * 100),
-  });
+
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
@@ -46,13 +42,19 @@ beforeAll(async () => {
     creatorId: Types.ObjectId().toString(),
     admins: [Types.ObjectId().toString()],
     members: [Types.ObjectId().toString()],
-    venues: [testVenue?.id],
     visibleInSearch: true,
+  });
+
+  testVenue = await Venue.create({
+    name: "testVenue",
+    description: "description",
+    capacity: Math.floor(Math.random() * 100),
+    organizationId: testOrganization?.id,
   });
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 }, 10000);
 
@@ -130,7 +132,7 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
     } catch (error: unknown) {
       if (error instanceof UnauthorizedError) {
         expect(error.message).toEqual(
-          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE
+          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE,
         );
       } else {
         fail(`Expected UnauthorizedError, but got ${error}`);
@@ -138,7 +140,7 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
     }
   });
 
-  it(`throws NotFoundError if the provided venue doesn't exist in the organization`, async () => {
+  it(`throws NotFoundError if the provided venue doesn't exist`, async () => {
     try {
       testOrganization = await Organization.findByIdAndUpdate(
         {
@@ -149,10 +151,10 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
             admins: [testUser?.id],
           },
         },
-        { new: true }
+        { new: true },
       );
       const args: MutationDeleteVenueArgs = {
-        venueId: Types.ObjectId.toString(),
+        venueId: Types.ObjectId().toString(),
         organizationId: testOrganization?.id,
       };
 
@@ -186,19 +188,8 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
     const { deleteVenue } = await import(
       "../../../src/resolvers/Mutation/deleteVenue"
     );
-    const venue = await deleteVenue?.({}, args, context);
-    const organization = await Organization.findById({
-      _id: testOrganization?.id,
-    })
-      .populate("venues")
-      .lean();
-    expect(organization?.venues).not.toContainEqual(
-      expect.objectContaining({
-        _id: venue?._id,
-        name: venue?.name,
-        description: venue?.description,
-        capacity: venue?.capacity,
-      })
-    );
+    await deleteVenue?.({}, args, context);
+    const expectedVenue = await Venue.findById(testVenue?._id);
+    expect(expectedVenue).toEqual(null);
   });
 });

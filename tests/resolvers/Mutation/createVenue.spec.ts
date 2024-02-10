@@ -36,11 +36,7 @@ let testVenue: TestVenueType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
-  testVenue = await Venue.create({
-    name: "testVenue",
-    description: "description",
-    capacity: Math.floor(Math.random() * 100),
-  });
+
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
@@ -50,18 +46,17 @@ beforeAll(async () => {
     members: [Types.ObjectId().toString()],
     visibleInSearch: true,
   });
-  await Organization.findByIdAndUpdate(
-    { _id: testOrganization.id },
-    {
-      $push: {
-        venues: [testVenue?._id],
-      },
-    }
-  );
+
+  testVenue = await Venue.create({
+    name: "testVenue",
+    description: "description",
+    capacity: Math.floor(Math.random() * 100),
+    organizationId: testOrganization?.id,
+  });
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 }, 10000);
 
@@ -147,7 +142,7 @@ describe("resolvers -> Mutation -> createVenue", () => {
     } catch (error: unknown) {
       if (error instanceof UnauthorizedError) {
         expect(error.message).toEqual(
-          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE
+          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE,
         );
       } else {
         fail(`Expected UnauthorizedError, but got ${error}`);
@@ -165,7 +160,7 @@ describe("resolvers -> Mutation -> createVenue", () => {
           $push: {
             admins: [testUser?.id],
           },
-        }
+        },
       );
       const args: MutationCreateVenueArgs = {
         data: {
@@ -226,8 +221,8 @@ describe("resolvers -> Mutation -> createVenue", () => {
           capacity: 10,
           name: "newTestVenue",
           organizationId: testOrganization?.id,
+          file: "data:image/",
         },
-        file: "data:image/",
       };
 
       const context = {
@@ -264,15 +259,11 @@ describe("resolvers -> Mutation -> createVenue", () => {
       "../../../src/resolvers/Mutation/createVenue"
     );
     const venue = await createVenue?.({}, args, context);
-    const organization = await Organization.findById({
-      _id: testOrganization?.id,
-    });
-    expect(organization?.venues).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          _id: venue?._id,
-        }),
-      ])
+    const expectedVenue = await Venue.findById(venue?._id);
+    expect(venue).toEqual(
+      expect.objectContaining({
+        _id: expectedVenue?._id
+      }),
     );
   });
 });

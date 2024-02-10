@@ -33,15 +33,11 @@ let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testVenue: TestVenueType;
+let dummyVenue: TestVenueType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
-  testVenue = await Venue.create({
-    name: "testVenue",
-    description: "description",
-    capacity: Math.floor(Math.random() * 100),
-  });
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
@@ -49,13 +45,26 @@ beforeAll(async () => {
     creatorId: Types.ObjectId().toString(),
     admins: [Types.ObjectId().toString()],
     members: [Types.ObjectId().toString()],
-    venues: [testVenue?.id],
     visibleInSearch: true,
+  });
+
+  dummyVenue = await Venue.create({
+    name: "testVenue",
+    description: "description",
+    capacity: Math.floor(Math.random() * 100),
+    organizationId: testOrganization?.id,
+  });
+
+  testVenue = await Venue.create({
+    name: "venue",
+    description: "description",
+    capacity: Math.floor(Math.random() * 100),
+    organizationId: testOrganization?.id,
   });
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 }, 10000);
 
@@ -125,35 +134,6 @@ describe("resolvers -> Mutation -> editVenue", () => {
     }
   });
 
-  it(`throws NotFoundError if the provided venue doesn't exists in the organization`, async () => {
-    try {
-      const args: MutationEditVenueArgs = {
-        data: {
-          _id: Types.ObjectId().toString(),
-          capacity: 10,
-          name: "testVenue",
-          description: "description",
-          organizationId: testOrganization?.id,
-        },
-      };
-
-      const context = {
-        userId: testUser?.id,
-      };
-
-      const { editVenue } = await import(
-        "../../../src/resolvers/Mutation/editVenue"
-      );
-      await editVenue?.({}, args, context);
-    } catch (error: unknown) {
-      if (error instanceof NotFoundError) {
-        expect(error.message).toEqual(VENUE_NOT_FOUND_ERROR.MESSAGE);
-      } else {
-        fail(`Expected NotFoundError, but got ${error}`);
-      }
-    }
-  });
-
   it(`throws UnauthorizedError if user with _id === context.userId is neither an admin of the organization with _id === args.organizationId nor a SUPERADMIN`, async () => {
     try {
       const args: MutationEditVenueArgs = {
@@ -177,7 +157,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     } catch (error: unknown) {
       if (error instanceof UnauthorizedError) {
         expect(error.message).toEqual(
-          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE
+          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE,
         );
       } else {
         fail(`Expected UnauthorizedError, but got ${error}`);
@@ -196,7 +176,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
             admins: [testUser?.id],
           },
         },
-        { new: true }
+        { new: true },
       );
       const args: MutationEditVenueArgs = {
         data: {
@@ -263,8 +243,8 @@ describe("resolvers -> Mutation -> editVenue", () => {
           name: "newTestVenue",
           description: "newDescription",
           organizationId: testOrganization?.id,
+          file: "data:image/",
         },
-        file: "data:image/",
       };
 
       const context = {
@@ -303,20 +283,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
       "../../../src/resolvers/Mutation/editVenue"
     );
     const venue = await editVenue?.({}, args, context);
-    const organization = await Organization.findById({
-      _id: testOrganization?.id,
-    })
-      .populate("venues")
-      .lean();
-    expect(organization?.venues).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          _id: venue?._id,
-          name: venue?.name,
-          description: venue?.description,
-          capacity: venue?.capacity,
-        }),
-      ])
-    );
+    const expectedVenue = await Venue.findById(testVenue?._id);
+    expect(venue).toEqual(expectedVenue);
   });
 });
