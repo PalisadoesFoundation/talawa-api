@@ -311,7 +311,13 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    const decryptedUsers = users.map((user) => {
+      return {
+        ...user,
+        email: decryptEmail(user.email).decrypted,
+      };
+    });
+    expect(usersConnectionPayload).toEqual(decryptedUsers);
   });
 
   it(`returns paginated list of users filtered by
