@@ -16,8 +16,8 @@
 
 ### Post
 
-• `Const` **Post**: `PaginateModel`\<[`InterfacePost`](../interfaces/models_Post.InterfacePost.md), {}, {}\>
+• `Const` **Post**: `PaginateModel`\<[`InterfacePost`](../interfaces/models_Post.InterfacePost.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/Post.ts:106](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/models/Post.ts#L106)
+[src/models/Post.ts:106](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L106)

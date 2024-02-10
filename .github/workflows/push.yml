@@ -96,7 +96,7 @@ jobs:
   Generate-Documentation:
     name: Generate Documentation
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
+    # if: github.ref == 'refs/heads/automated-docs'
     needs: Push-Workflow
     steps:
       - name: Checkout repository
@@ -108,6 +108,9 @@ jobs:
           npm install typedoc-plugin-markdown
           npm i --save-dev @types/node
           npx typedoc --entryPoints src --out talawa-api-docs --plugin typedoc-plugin-markdown --theme markdown --entryPointStrategy expand
+      
+      - name: Make Markdown Files MDX Compatible
+        run: python3 .github/workflows/md_mdx_format_adjuster.py --directory talawa-api-docs 
         
       - name: Checking doc updated
         id: DocUpdated
@@ -136,7 +139,7 @@ jobs:
           git config --global user.email "${{env.email}}"
           git add .
           git commit -m "Update documentation"
-          git push -f https://$GH_TOKEN@github.com/PalisadoesFoundation/talawa-api.git HEAD:develop
+          git push -f https://$GH_TOKEN@github.com/PalisadoesFoundation/talawa-api.git HEAD:automated-docs
           echo -e "🚀${Green} Hurrah! doc updated${NoColor}"
         env:
           ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -149,7 +152,6 @@ jobs:
   
   Copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
     needs: Generate-Documentation
     steps:
     - uses: actions/checkout@v3
@@ -164,4 +166,39 @@ jobs:
         user_email: '${{env.email}}'
         user_name: '${{github.actor}}'
         commit_message: 'Talawa API docs updated'
-      
+        
+# You can find the deployment instructions in the scripts/cloud-api-demo/README.md file
+  Deploy-Workflow:
+    name: Deploying Application to Cloud VPS
+    needs: Push-Workflow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Access Token Secret
+        run: |
+          secret=$(openssl rand -hex 32)
+          echo "INPUT_ACCESS_TOKEN_SECRET=$secret" >> $GITHUB_ENV
+          echo "::add-mask::$secret"
+        
+      - name: Generate Refresh Token Secret
+        run: |
+          secret=$(openssl rand -hex 32)
+          echo "INPUT_REFRESH_TOKEN_SECRET=$secret" >> $GITHUB_ENV
+          echo "::add-mask::$secret"
+
+      - name: Execute remote ssh commands 
+        uses: appleboy/ssh-action@v1.0.3 
+        env:
+          INPUT_RECAPTCHA_SECRET_KEY: ${{ secrets.API_DEMO_RECAPTCHA_SECRET_KEY }}
+          INPUT_MAIL_USERNAME: ${{ secrets.API_DEMO_MAIL_USERNAME }}
+          INPUT_MAIL_PASSWORD: ${{ secrets.API_DEMO_MAIL_PASSWORD }}
+          INPUT_LAST_RESORT_SUPERADMIN_EMAIL: ${{ secrets.API_DEMO_LAST_RESORT_SUPERADMIN_EMAIL }}
+        with:
+          host: ${{secrets.API_DEMO_HOST}}
+          username: ${{ secrets.API_DEMO_USERNAME }}
+          key: ${{ secrets.API_DEMO_SSH_KEY }}
+          port: ${{ secrets.API_DEMO_SSH_PORT}}
+          allenvs: true
+          command_timeout: 30m
+          script: |
+            python3 /usr/local/bin/scripts/create_env.py --access_token_secret $INPUT_ACCESS_TOKEN_SECRET --refresh_token_secret $INPUT_REFRESH_TOKEN_SECRET --recaptcha_secret_key $INPUT_RECAPTCHA_SECRET_KEY --mail_username $INPUT_MAIL_USERNAME --mail_password $INPUT_MAIL_PASSWORD --last_resort_superadmin_email $INPUT_LAST_RESORT_SUPERADMIN_EMAIL
+            python3 /usr/local/bin/scripts/deploy.py --path ~/develop --branch develop

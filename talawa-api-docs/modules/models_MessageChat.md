@@ -16,8 +16,8 @@
 
 ### MessageChat
 
-• `Const` **MessageChat**: `Model`\<[`InterfaceMessageChat`](../interfaces/models_MessageChat.InterfaceMessageChat.md), {}, {}\>
+• `Const` **MessageChat**: `Model`\<[`InterfaceMessageChat`](../interfaces/models_MessageChat.InterfaceMessageChat.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/MessageChat.ts:56](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/models/MessageChat.ts#L56)
+[src/models/MessageChat.ts:56](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/MessageChat.ts#L56)

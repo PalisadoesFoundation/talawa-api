@@ -16,8 +16,8 @@
 
 ### DirectChat
 
-• `Const` **DirectChat**: `Model`\<[`InterfaceDirectChat`](../interfaces/models_DirectChat.InterfaceDirectChat.md), {}, {}\>
+• `Const` **DirectChat**: `Model`\<[`InterfaceDirectChat`](../interfaces/models_DirectChat.InterfaceDirectChat.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/DirectChat.ts:70](https://github.com/PalisadoesFoundation/talawa-api/blob/3677888/src/models/DirectChat.ts#L70)
+[src/models/DirectChat.ts:70](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/DirectChat.ts#L70)
