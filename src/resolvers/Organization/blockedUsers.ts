@@ -17,6 +17,7 @@ export const blockedUsers: OrganizationResolvers["blockedUsers"] = async (
     }).lean();
 
     // Decrypting email parameter for each blocked user object
+    // eslint-disable-next-line
     const decryptedBlockedUsers = blockedUsers.map((blockedUser: any) => {
       const { decrypted } = decryptEmail(blockedUser.email);
       return { ...blockedUser, email: decrypted }; // Returning blocked user object with decrypted email

@@ -39,6 +39,7 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
   const { decrypted } = decryptEmail(user.email);
   // This Query field doesn't allow client to see organizations they are blocked by
   return {
+    // eslint-disable-next-line
     ...user!,
     email: decrypted,
     image: user?.image ? `${context.apiRootUrl}${user.image}` : null,

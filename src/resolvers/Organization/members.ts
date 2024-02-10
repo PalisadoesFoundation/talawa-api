@@ -16,6 +16,7 @@ export const members: OrganizationResolvers["members"] = async (parent) => {
     }).lean();
 
     // Decrypting email parameter for each user object
+    // eslint-disable-next-line
     const decryptedUsers = users.map((user: any) => {
       const { decrypted } = decryptEmail(user.email);
       return { ...user, email: decrypted }; // Returning user object with decrypted email

@@ -16,6 +16,7 @@ import { decryptEmail } from "../../utilities/encryptionModule";
  * @remarks Connection in graphQL means pagination,
  * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
  */
+// eslint-disable-next-line
 // @ts-ignore
 export const organizationsMemberConnection: QueryResolvers["organizationsMemberConnection"] =
   async (_parent, args, context) => {

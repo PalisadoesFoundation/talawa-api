@@ -5,8 +5,8 @@ import type { Document } from "mongoose";
 import { encryptEmail } from "../../src/utilities/encryptionModule";
 
 export type TestUserType =
-  | (InterfaceUser & Document<any, any, InterfaceUser>)
-  | null;
+  // eslint-disable-next-line
+  (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
 export const createTestUser = async (): Promise<TestUserType> => {
   const testUser = await User.create({
