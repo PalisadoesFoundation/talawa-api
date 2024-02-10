@@ -1,7 +1,8 @@
 talawa-api / [Exports](modules.md)
 
 # Talawa API
-💬 Join the community on Slack. The link can be found in the `Talawa` [README.md](https://github.com/PalisadoesFoundation/talawa) file.
+
+💬 Join our community on Slack. The link can be found in the `Talawa` [README.md](https://github.com/PalisadoesFoundation/talawa) file.
 
 [![N|Solid](public/markdown/images/talawa-logo-lite-200x200.png)](https://github.com/PalisadoesFoundation/talawa-api)
 
@@ -24,15 +25,14 @@ Core features include:
 
 ## Table of Contents
 
-<!-- toc -->
+\<!-- toc --\>
 
-- [Talawa API](#talawa-api)
-  - [Talawa Components](#talawa-components)
-  - [Documentation](#documentation)
-  - [Installation](#installation)
-  - [Image Upload](#image-upload)
+- [Talawa Components](#talawa-components)
+- [Documentation](#documentation)
+- [Installation](#installation)
+- [Image Upload](#image-upload)
 
-<!-- tocstop -->
+\<!-- tocstop --\>
 
 ## Talawa Components
 
