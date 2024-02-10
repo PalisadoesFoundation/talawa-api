@@ -355,11 +355,11 @@ async function redisConfiguration(): Promise<void> {
  * and sets a new key if one doesn't exist. The 'ENCRYPTION_KEY' is intended to be used
  * for secure operations such as email encryption and decryption.
  */
-async function setEncryptionKey(): Promise<void> {
+export async function setEncryptionKey(): Promise<void> {
   try {
     // Checking if encryption key is already in environment variables
     if (process.env.ENCRYPTION_KEY) {
-      console.log("Encryption Key already present.");
+      console.log("\n Encryption Key already present.");
     } else {
       // Generating random key
       const encryptionKey = await crypto.randomBytes(32).toString("hex");
@@ -370,7 +370,7 @@ async function setEncryptionKey(): Promise<void> {
       // Writing the key to the .env file
       updateEnvVariable({ ENCRYPTION_KEY: encryptionKey });
 
-      console.log("Encryption key set successfully.");
+      console.log("\n  Encryption key set successfully.");
     }
   } catch (err) {
     console.error("An error occurred:");

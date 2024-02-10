@@ -1,7 +1,14 @@
 import crypto from "crypto";
+import { setEncryptionKey } from "../../setup";
 
 const algorithm = "aes-256-ctr";
 const saltLength = 16;
+
+/** 
+ * This function will only be evoked when running the test-suite
+   to set-up the encryption key.
+*/
+setEncryptionKey();
 
 /**
  * Generates a random salt of the specified length.
