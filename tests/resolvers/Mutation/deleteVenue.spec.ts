@@ -1,4 +1,4 @@
-import { TestVenueType } from "./../../helpers/venue";
+import type { TestVenueType } from "./../../helpers/venue";
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";

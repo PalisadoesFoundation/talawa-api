@@ -134,5 +134,5 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     { new: true },
   );
 
-  return updatedVenue!;
+  return updatedVenue;
 };

@@ -1,11 +1,9 @@
 import { nanoid } from "nanoid";
 import { Venue, type InterfaceVenue } from "../../src/models";
-import type { Document } from "mongoose";
-import { Types } from "mongoose";
+import type { Document, Types } from "mongoose";
 
-export type TestVenueType =
-  | (InterfaceVenue & Document<any, any, InterfaceVenue>)
-  | null;
+export type TestVenueType = InterfaceVenue &
+  Document<string, {}, InterfaceVenue>;
 
 export const createTestVenue = async (
   organizationId: Types.ObjectId,

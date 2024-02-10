@@ -1,4 +1,4 @@
-import { OrganizationResolvers } from "./../../types/generatedGraphQLTypes";
+import type { OrganizationResolvers } from "./../../types/generatedGraphQLTypes";
 import { Venue } from "../../models";
 /**
  * This resolver will fetch the list of all venues within an Organization from database.
