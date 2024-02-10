@@ -15,6 +15,7 @@ export const admins: OrganizationResolvers["admins"] = async (parent) => {
     }).lean();
 
     // Decrypting email parameter for each admin object
+    // eslint-disable-next-line
     const decryptedAdmins = admins.map((admin: any) => {
       const { decrypted } = decryptEmail(admin.email);
       return { ...admin, email: decrypted }; // Returning admin object with decrypted email

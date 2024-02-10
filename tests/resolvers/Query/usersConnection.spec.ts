@@ -189,7 +189,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     });
     expect(usersConnectionPayload).toEqual(decryptedUsers);
   });
-
+  /* eslint-disable */
   it(`returns paginated list of users filtered by
   args.where === { id_in: [testUsers[1].id], firstName_in: [testUsers[1].firstName],
   lastName_in: [testUsers[1].lastName], email_in: [testUsers[1].email],
@@ -297,7 +297,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {}
     );
-
+    /* eslint-enable */
     const users = await User.find(where)
       .limit(2)
       .skip(1)

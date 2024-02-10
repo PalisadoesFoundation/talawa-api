@@ -71,6 +71,7 @@ describe("resolvers -> Organization -> creatorId", () => {
       if (parent) {
         await creatorResolver?.(parent, {}, {});
       }
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(

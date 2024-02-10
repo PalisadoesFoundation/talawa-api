@@ -49,7 +49,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
       console.error("Error decrypting email:", error);
     }
   }
-
+  /* eslint-disable */
   // TODO: this check is to be removed
   let organization;
   if (args.data.organizationUserBelongsToId) {

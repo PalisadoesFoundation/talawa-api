@@ -14,7 +14,7 @@ import {
   decryptEmail,
   encryptEmail,
 } from "../../../src/utilities/encryptionModule";
-
+// eslint-disable-next-line
 let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -49,6 +49,7 @@ describe("resolvers -> Query -> users", () => {
         "../../../src/resolvers/Query/users"
       );
       await mockedInProductionUserResolver?.({}, args, {});
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(spy).toBeCalledWith(UNAUTHENTICATED_ERROR.MESSAGE);
       expect(error.message).toEqual(

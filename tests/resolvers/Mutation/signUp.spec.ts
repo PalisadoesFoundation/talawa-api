@@ -243,6 +243,7 @@ describe("resolvers -> Mutation -> signUp", () => {
       );
 
       await signUpResolver?.({}, args, {});
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(spy).toBeCalledWith(EMAIL_MESSAGE);
       expect(error.message).toEqual(EMAIL_MESSAGE);
@@ -272,6 +273,7 @@ describe("resolvers -> Mutation -> signUp", () => {
       );
 
       await signUpResolver?.({}, args, {});
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);

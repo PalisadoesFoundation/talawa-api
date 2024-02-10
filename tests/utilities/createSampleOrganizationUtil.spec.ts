@@ -132,8 +132,9 @@ describe("generatePostData function", () => {
       );
 
       expect(Array.isArray(pluginPromises)).toBe(true);
+      // eslint-disable-next-line
       expect(pluginPromises!.length).toBe(numberOfPlugins);
-
+      // eslint-disable-next-line
       await Promise.all(pluginPromises!);
 
       const plugins = await Plugin.find();

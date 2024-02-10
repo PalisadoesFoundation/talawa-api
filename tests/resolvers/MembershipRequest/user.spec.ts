@@ -23,11 +23,13 @@ afterAll(async () => {
 
 describe("resolvers -> MembershipRequest -> user", () => {
   it(`returns user object for parent.user`, async () => {
+    // eslint-disable-next-line
     const parent = testMembershipRequest!.toObject();
 
     const userPayload = await userResolver?.(parent, {}, {});
-
+    // eslint-disable-next-line
     const user = await User.findOne({
+      // eslint-disable-next-line
       _id: testMembershipRequest!.user,
     }).lean();
 

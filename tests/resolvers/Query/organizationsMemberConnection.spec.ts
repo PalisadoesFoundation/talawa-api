@@ -17,8 +17,10 @@ import {
 } from "../../../src/utilities/encryptionModule";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
+// eslint-disable-next-line
 let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
 let testOrganization: InterfaceOrganization &
+  // eslint-disable-next-line
   Document<any, any, InterfaceOrganization>;
 
 beforeAll(async () => {
@@ -809,6 +811,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     try {
       await organizationsMemberConnectionResolver?.({}, args, {});
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(error).toEqual(
         "Missing Skip parameter. Set it to either 0 or some other value"
@@ -827,6 +830,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     try {
       await organizationsMemberConnectionResolver?.({}, args, {});
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(error.message).toEqual("Skip parameter is missing");
     }

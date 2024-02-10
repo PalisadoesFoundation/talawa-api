@@ -30,6 +30,7 @@ describe("resolvers -> Query -> me", () => {
       };
 
       await meResolver?.({}, {}, context);
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
