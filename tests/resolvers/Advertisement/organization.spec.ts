@@ -4,7 +4,7 @@ import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  TestAdvertisementType,
+  type TestAdvertisementType,
   createTestAdvertisement,
 } from "../../helpers/advertisement";
 import { Organization } from "../../../src/models";

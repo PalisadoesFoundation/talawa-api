@@ -58,7 +58,6 @@ import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
 import { removeUserFamily } from "./removeUserFamily";
 import { createUserFamily } from "./createUserFamily";
 import { removeGroupChat } from "./removeGroupChat";
-import { removeAdvertisement } from "./removeAdvertisement";
 import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
 import { removeOrganizationCustomField } from "./removeOrganizationCustomField";
@@ -155,7 +154,6 @@ export const Mutation: MutationResolvers = {
   removeDirectChat,
   removeEvent,
   removeEventAttendee,
-  removeAdvertisement,
   removeGroupChat,
   removeMember,
   removeOrganization,

@@ -175,8 +175,6 @@ export const mutations = gql`
 
     removeUserCustomData(organizationId: ID!): UserCustomData! @auth
 
-    removeAdvertisement(id: ID!): Advertisement
-
     removeUserTag(id: ID!): UserTag @auth
 
     removeSampleOrganization: Boolean! @auth

@@ -16,10 +16,7 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import {
-  createTestUserAndOrganization,
-  createTestUser,
-} from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { requestContext } from "../../../src/libraries";
 import { Types } from "mongoose";
 import {

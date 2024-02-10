@@ -27,8 +27,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
     }
 
     // Check for unintended null values in permitted fields, if all fields are permitted
-    for (const field of Object.keys(args.input)) {
-      const fieldValue = (args.input as Record<string, any>)[field];
+    for (const fieldValue of Object.values(args.input)) {
       if (
         fieldValue === null ||
         (typeof fieldValue === "string" && fieldValue.trim() === "")
@@ -99,7 +98,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
 
     const updatedAdvertisement = await Advertisement.findOneAndUpdate(
       {
-        _id: args.input._id,
+        _id: _id,
       },
       {
         $set: {

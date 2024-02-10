@@ -24,9 +24,7 @@ export const createAdvertisement: MutationResolvers["createAdvertisement"] =
       );
     }
 
-    let organization;
-
-    organization = await Organization.findOne({
+    const organization = await Organization.findOne({
       _id: args.input.organizationId,
     }).lean();
 
