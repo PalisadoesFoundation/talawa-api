@@ -85,6 +85,14 @@ export const types = gql`
     createdAt: DateTime!
     updatedAt: DateTime!
   }
+  
+  type UserFamily {
+    _id: ID!
+    title: String
+    users: [User!]!
+    admins: [User!]!
+    creator: User!
+  }
 
   # A page info type adhering to Relay Specification for both cursor based pagination
   type ConnectionPageInfo {

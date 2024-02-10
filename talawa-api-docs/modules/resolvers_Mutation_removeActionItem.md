@@ -37,4 +37,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/removeActionItem.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/2c2e70a/src/resolvers/Mutation/removeActionItem.ts#L26)
+[src/resolvers/Mutation/removeActionItem.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/resolvers/Mutation/removeActionItem.ts#L26)

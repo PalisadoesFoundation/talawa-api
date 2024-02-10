@@ -9,6 +9,7 @@ import type { InterfaceDirectChatMessage as InterfaceDirectChatMessageModel } fr
 import type { InterfaceDonation as InterfaceDonationModel } from '../models/Donation';
 import type { InterfaceEvent as InterfaceEventModel } from '../models/Event';
 import type { InterfaceEventAttendee as InterfaceEventAttendeeModel } from '../models/EventAttendee';
+import type { InterfaceUserFamily as InterfaceUserFamilyModel } from '../models/userFamily';
 import type { InterfaceFeedback as InterfaceFeedbackModel } from '../models/Feedback';
 import type { InterfaceGroup as InterfaceGroupModel } from '../models/Group';
 import type { InterfaceGroupChat as InterfaceGroupChatModel } from '../models/GroupChat';
@@ -599,6 +600,7 @@ export type Mutation = {
   addUserCustomData: UserCustomData;
   addUserImage: User;
   addUserToGroupChat: GroupChat;
+  addUserToUserFamily: UserFamily;
   adminRemoveEvent: Event;
   adminRemoveGroup: GroupChat;
   assignUserTag?: Maybe<User>;
@@ -621,6 +623,7 @@ export type Mutation = {
   createPlugin: Plugin;
   createPost?: Maybe<Post>;
   createSampleOrganization: Scalars['Boolean']['output'];
+  createUserFamily: UserFamily;
   createUserTag?: Maybe<UserTag>;
   deleteAdvertisementById: DeletePayload;
   deleteDonationById: DeletePayload;
@@ -652,7 +655,9 @@ export type Mutation = {
   removePost?: Maybe<Post>;
   removeSampleOrganization: Scalars['Boolean']['output'];
   removeUserCustomData: UserCustomData;
+  removeUserFamily: UserFamily;
   removeUserFromGroupChat: GroupChat;
+  removeUserFromUserFamily: UserFamily;
   removeUserImage: User;
   removeUserTag?: Maybe<UserTag>;
   revokeRefreshTokenForUser: Scalars['Boolean']['output'];
@@ -736,6 +741,12 @@ export type MutationAddUserImageArgs = {
 
 export type MutationAddUserToGroupChatArgs = {
   chatId: Scalars['ID']['input'];
+  userId: Scalars['ID']['input'];
+};
+
+
+export type MutationAddUserToUserFamilyArgs = {
+  familyId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
 };
 
@@ -862,6 +873,11 @@ export type MutationCreatePluginArgs = {
 export type MutationCreatePostArgs = {
   data: PostInput;
   file?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationCreateUserFamilyArgs = {
+  data: CreateUserFamilyInput;
 };
 
 
@@ -1012,8 +1028,19 @@ export type MutationRemoveUserCustomDataArgs = {
 };
 
 
+export type MutationRemoveUserFamilyArgs = {
+  familyId: Scalars['ID']['input'];
+};
+
+
 export type MutationRemoveUserFromGroupChatArgs = {
   chatId: Scalars['ID']['input'];
+  userId: Scalars['ID']['input'];
+};
+
+
+export type MutationRemoveUserFromUserFamilyArgs = {
+  familyId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
 };
 
@@ -1848,6 +1875,15 @@ export type UserEdge = {
   node: User;
 };
 
+export type UserFamily = {
+  __typename?: 'UserFamily';
+  _id: Scalars['ID']['output'];
+  admins: Array<User>;
+  creator: User;
+  title?: Maybe<Scalars['String']['output']>;
+  users: Array<User>;
+};
+
 export type UserInput = {
   appLanguageCode?: InputMaybe<Scalars['String']['input']>;
   email: Scalars['EmailAddress']['input'];
@@ -1992,6 +2028,11 @@ export type CreateChatInput = {
 
 export type CreateGroupChatInput = {
   organizationId: Scalars['ID']['input'];
+  title: Scalars['String']['input'];
+  userIds: Array<Scalars['ID']['input']>;
+};
+
+export type CreateUserFamilyInput = {
   title: Scalars['String']['input'];
   userIds: Array<Scalars['ID']['input']>;
 };
@@ -2192,6 +2233,7 @@ export type ResolversTypes = {
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['User']>> }>;
   UserCustomData: ResolverTypeWrapper<UserCustomData>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
+  UserFamily: ResolverTypeWrapper<InterfaceUserFamilyModel>;
   UserInput: UserInput;
   UserOrderByInput: UserOrderByInput;
   UserPhone: ResolverTypeWrapper<UserPhone>;
@@ -2208,6 +2250,7 @@ export type ResolversTypes = {
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
+  createUserFamilyInput: CreateUserFamilyInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -2320,6 +2363,7 @@ export type ResolversParentTypes = {
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['User']>> };
   UserCustomData: UserCustomData;
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
+  UserFamily: InterfaceUserFamilyModel;
   UserInput: UserInput;
   UserPhone: UserPhone;
   UserPhoneInput: UserPhoneInput;
@@ -2334,6 +2378,7 @@ export type ResolversParentTypes = {
   UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
+  createUserFamilyInput: CreateUserFamilyInput;
 };
 
 export type AuthDirectiveArgs = { };
@@ -2724,6 +2769,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addUserCustomData?: Resolver<ResolversTypes['UserCustomData'], ParentType, ContextType, RequireFields<MutationAddUserCustomDataArgs, 'dataName' | 'dataValue' | 'organizationId'>>;
   addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
   addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;
+  addUserToUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationAddUserToUserFamilyArgs, 'familyId' | 'userId'>>;
   adminRemoveEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationAdminRemoveEventArgs, 'eventId'>>;
   adminRemoveGroup?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAdminRemoveGroupArgs, 'groupId'>>;
   assignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAssignUserTagArgs, 'input'>>;
@@ -2746,6 +2792,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
   createSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  createUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationCreateUserFamilyArgs, 'data'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
   deleteAdvertisementById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteAdvertisementByIdArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
@@ -2777,7 +2824,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationRemovePostArgs, 'id'>>;
   removeSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   removeUserCustomData?: Resolver<ResolversTypes['UserCustomData'], ParentType, ContextType, RequireFields<MutationRemoveUserCustomDataArgs, 'organizationId'>>;
+  removeUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationRemoveUserFamilyArgs, 'familyId'>>;
   removeUserFromGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveUserFromGroupChatArgs, 'chatId' | 'userId'>>;
+  removeUserFromUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationRemoveUserFromUserFamilyArgs, 'familyId' | 'userId'>>;
   removeUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   removeUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationRemoveUserTagArgs, 'id'>>;
   revokeRefreshTokenForUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -3053,6 +3102,15 @@ export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserFamilyResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserFamily'] = ResolversParentTypes['UserFamily']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  admins?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UserPhoneResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserPhone'] = ResolversParentTypes['UserPhone']> = {
   home?: Resolver<Maybe<ResolversTypes['PhoneNumber']>, ParentType, ContextType>;
   mobile?: Resolver<Maybe<ResolversTypes['PhoneNumber']>, ParentType, ContextType>;
@@ -3169,6 +3227,7 @@ export type Resolvers<ContextType = any> = {
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserCustomData?: UserCustomDataResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;
+  UserFamily?: UserFamilyResolvers<ContextType>;
   UserPhone?: UserPhoneResolvers<ContextType>;
   UserTag?: UserTagResolvers<ContextType>;
   UserTagEdge?: UserTagEdgeResolvers<ContextType>;
