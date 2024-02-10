@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import "dotenv/config";
 import type { MutationForgotPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -51,6 +53,66 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
     }
   });
 
+  it(`throws Error if user is not found`, async () => {
+    try {
+      const otpToken = jwt.sign(
+        {
+          email: "nonexistentuser@example.com", // Use a non-existent user email
+          otp: "correctOtp",
+        },
+        process.env.NODE_ENV!,
+        {
+          expiresIn: 99999999,
+        }
+      );
+
+      const args: MutationForgotPasswordArgs = {
+        data: {
+          newPassword: "newPassword",
+          otpToken,
+          userOtp: "correctOtp",
+        },
+      };
+
+      await forgotPasswordResolver?.({}, args, {});
+    } catch (error: any) {
+      expect(error.message).toEqual("User not found");
+    }
+  });
+
+  it(`throws Error if newPassword is the same as the old password`, async () => {
+    const otp = "correctOtp";
+
+    const hashedOtp = await bcrypt.hash(otp, 1);
+
+    const otpToken = jwt.sign(
+      {
+        email: testUser?.email ?? "",
+        otp: hashedOtp,
+      },
+      process.env.NODE_ENV ?? "",
+      {
+        expiresIn: 99999999,
+      }
+    );
+
+    const args: MutationForgotPasswordArgs = {
+      data: {
+        newPassword: testUser?.password ?? "", // Using optional chaining and nullish coalescing
+        otpToken,
+        userOtp: otp,
+      },
+    };
+
+    try {
+      await forgotPasswordResolver?.({}, args, {});
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        "New password cannot be same as old password"
+      );
+    }
+  });
+
   it(`changes the password if args.otp is correct`, async () => {
     const otp = "otp";
 
@@ -79,6 +141,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     expect(forgotPasswordPayload).toEqual(true);
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const updatedTestUser = await User!
       .findOne({
         _id: testUser?._id ?? "",
@@ -86,6 +149,6 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       .select(["password"])
       .lean();
 
-    expect(updatedTestUser?.password).not.toEqual(testUser!.password);
+    expect(updatedTestUser?.password).not.toEqual(testUser?.password);
   });
 });
