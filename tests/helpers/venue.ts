@@ -3,7 +3,7 @@ import { Venue, type InterfaceVenue } from "../../src/models";
 import type { Document, Types } from "mongoose";
 
 export type TestVenueType = InterfaceVenue &
-  Document<string, {}, InterfaceVenue>;
+  Document<string, Record<string, unknown>, InterfaceVenue>;
 
 export const createTestVenue = async (
   organizationId: Types.ObjectId,
