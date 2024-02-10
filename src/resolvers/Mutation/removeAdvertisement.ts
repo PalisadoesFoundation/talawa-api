@@ -7,10 +7,10 @@ import { ADVERTISEMENT_NOT_FOUND_ERROR } from "../../constants";
 export const removeAdvertisement: MutationResolvers["removeAdvertisement"] =
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (_parent, args, _context) => {
+    const myId = args.id ? args.id : "";
     const currentAd = await Advertisement.findOne({
-      _id: args.id ? args.id : "",
+      _id: myId,
     }).lean();
-
     if (!currentAd) {
       throw new errors.NotFoundError(
         requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
@@ -21,7 +21,7 @@ export const removeAdvertisement: MutationResolvers["removeAdvertisement"] =
 
     // Deletes the ad.
     await Advertisement.deleteOne({
-      _id: args.id ? args.id : "",
+      _id: myId,
     });
     // Returns deleted ad.
     return currentAd;

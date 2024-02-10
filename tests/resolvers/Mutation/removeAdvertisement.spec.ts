@@ -84,17 +84,21 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
 
     const removeAdvertisementPayload = await removeAdvertisement?.(
       {},
-      { id: createdAdvertisementId },
+     {id: createdAdvertisementId},
       context
     );
 
+    const removeAdvertisementPayloadFalsyId = await removeAdvertisement?.(
+      {},
+      {id:""},
+      context
+    );
     expect(removeAdvertisementPayload).toHaveProperty(
       "_id",
       createdAdvertisementId
     );
-
     expect(removeAdvertisementPayload).toHaveProperty("name", "myad");
-
+   expect(removeAdvertisementPayloadFalsyId).toHaveProperty("_id","");
     expect(removeAdvertisementPayload).toHaveProperty(
       "link",
       "https://www.example.com"
