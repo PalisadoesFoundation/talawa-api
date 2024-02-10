@@ -2,6 +2,7 @@ import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 /**
  * This is an interface representing a document for an event in the database(MongoDB).
@@ -96,29 +97,25 @@ const eventSchema = new Schema(
     },
     endDate: {
       type: Date,
-      required: function (): () => boolean {
-        // @ts-ignore
-        return !this.allDay;
+      required: function (this: InterfaceEvent): boolean {
+        return this.allDay;
       },
     },
     startTime: {
       type: Date,
-      required: function (): () => boolean {
-        // @ts-ignore
+      required: function (this: InterfaceEvent): boolean {
         return !this.allDay;
       },
     },
     endTime: {
       type: Date,
-      required: function (): () => boolean {
-        // @ts-ignore
+      required: function (this: InterfaceEvent): boolean {
         return !this.allDay;
       },
     },
     recurrance: {
       type: String,
-      required: function (): () => boolean {
-        // @ts-ignore
+      required: function (this: InterfaceEvent): boolean {
         return this.recurring;
       },
       enum: ["ONCE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
@@ -160,6 +157,8 @@ const eventSchema = new Schema(
     timestamps: true,
   }
 );
+
+createLoggingMiddleware(eventSchema, "Event");
 
 const eventModel = (): Model<InterfaceEvent> =>
   model<InterfaceEvent>("Event", eventSchema);

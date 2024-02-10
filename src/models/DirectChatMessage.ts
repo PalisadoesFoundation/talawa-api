@@ -2,6 +2,7 @@ import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceDirectChat } from "./DirectChat";
 import type { InterfaceUser } from "./User";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface representing a document for a direct chat message in the database(MongoDB).
  */
@@ -57,6 +58,8 @@ const directChatMessageSchema = new Schema(
     timestamps: true,
   }
 );
+
+createLoggingMiddleware(directChatMessageSchema, "DirectChatMessage");
 
 const directChatMessageModel = (): Model<InterfaceDirectChatMessage> =>
   model<InterfaceDirectChatMessage>(

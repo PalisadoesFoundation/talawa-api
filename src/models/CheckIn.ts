@@ -8,6 +8,7 @@ import {
   type Model,
 } from "mongoose";
 import { type InterfaceEventAttendee } from "./EventAttendee";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 export interface InterfaceCheckIn {
   _id: Types.ObjectId;
@@ -55,6 +56,8 @@ const checkInSchema = new Schema(
 checkInSchema.index({
   eventAttendeeId: 1,
 });
+
+createLoggingMiddleware(checkInSchema, "CheckIn");
 
 const checkInModel = (): Model<InterfaceCheckIn> =>
   model<InterfaceCheckIn>("CheckIn", checkInSchema);
