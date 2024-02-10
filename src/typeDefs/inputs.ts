@@ -47,6 +47,13 @@ export const inputs = gql`
     eventId: ID
   }
 
+  input ActionItemWhereInput {
+    actionItemCategory_id: ID
+    event_id: ID
+    is_active: Boolean
+    is_completed: Boolean
+  }
+
   input CursorPaginationInput {
     cursor: String
     direction: PaginationDirection!

@@ -29,6 +29,18 @@ type ActionItemCategory {
   updatedAt: Date!
 }
 
+input ActionItemWhereInput {
+  actionItemCategory_id: ID
+  event_id: ID
+  is_active: Boolean
+  is_completed: Boolean
+}
+
+enum ActionItemsOrderByInput {
+  createdAt_ASC
+  createdAt_DESC
+}
+
 type Address {
   city: String
   countryCode: String
@@ -850,7 +862,7 @@ type Query {
   actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
   actionItemCategory(id: ID!): ActionItemCategory
   actionItemsByEvent(eventId: ID!): [ActionItem]
-  actionItemsByOrganization(organizationId: ID!): [ActionItem]
+  actionItemsByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!

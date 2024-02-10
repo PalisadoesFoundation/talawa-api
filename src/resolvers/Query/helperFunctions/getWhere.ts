@@ -1,5 +1,6 @@
 import type { FilterQuery } from "mongoose";
 import type {
+  ActionItemWhereInput,
   DonationWhereInput,
   EventWhereInput,
   InputMaybe,
@@ -29,7 +30,8 @@ export const getWhere = <T = unknown>(
             OrganizationWhereInput &
             PostWhereInput &
             UserWhereInput &
-            DonationWhereInput
+            DonationWhereInput &
+            ActionItemWhereInput
         >
       >
     | undefined
@@ -177,6 +179,38 @@ export const getWhere = <T = unknown>(
     wherePayload = {
       ...wherePayload,
       organization: where.organization_id,
+    };
+  }
+
+  // Returns action items belonging to a specific category
+  if (where.actionItemCategory_id) {
+    wherePayload = {
+      ...wherePayload,
+      actionItemCategoryId: where.actionItemCategory_id,
+    };
+  }
+
+  // Return action items that are active
+  if (where.is_active) {
+    wherePayload = {
+      ...wherePayload,
+      isCompleted: !where.is_active,
+    };
+  }
+
+  // Return action items that are completed
+  if (where.is_completed) {
+    wherePayload = {
+      ...wherePayload,
+      isCompleted: where.is_completed,
+    };
+  }
+
+  // Return action items belonging to a specific event
+  if (where.event_id) {
+    wherePayload = {
+      ...wherePayload,
+      eventId: where.event_id,
     };
   }
 

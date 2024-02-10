@@ -11,7 +11,11 @@ export const queries = gql`
 
     actionItemsByEvent(eventId: ID!): [ActionItem]
 
-    actionItemsByOrganization(organizationId: ID!): [ActionItem]
+    actionItemsByOrganization(
+      organizationId: ID!
+      where: ActionItemWhereInput
+      orderBy: ActionItemsOrderByInput
+    ): [ActionItem]
 
     actionItemCategory(id: ID!): ActionItemCategory
 
