@@ -25,11 +25,10 @@ Core features include:
 
 <!-- toc -->
 
-- [Talawa API](#talawa-api)
-  - [Talawa Components](#talawa-components)
-  - [Documentation](#documentation)
-  - [Installation](#installation)
-  - [Image Upload](#image-upload)
+- [Talawa Components](#talawa-components)
+- [Documentation](#documentation)
+- [Installation](#installation)
+- [Image Upload](#image-upload)
 
 <!-- tocstop -->
 
