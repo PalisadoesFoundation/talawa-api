@@ -2,7 +2,7 @@ import type { Types, Model, PopulatedDoc } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 /**
- * This is an interface and it represents a database(MongoDB) document for Advertisement.
+ * This is an interface that represent a database(MongoDB) document for Advertisement.
  */
 export interface InterfaceAdvertisement {
   _id: Types.ObjectId;
