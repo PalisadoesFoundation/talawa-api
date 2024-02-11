@@ -84,21 +84,25 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
 
     const removeAdvertisementPayload = await removeAdvertisement?.(
       {},
-     {id: createdAdvertisementId},
+      { id: createdAdvertisementId },
       context
     );
 
     const removeAdvertisementPayloadFalsyId = await removeAdvertisement?.(
       {},
-      {id:""},
+      { id: "" },
       context
     );
     expect(removeAdvertisementPayload).toHaveProperty(
       "_id",
       createdAdvertisementId
     );
+    if (removeAdvertisementPayloadFalsyId) {
+      expect(removeAdvertisementPayloadFalsyId).toHaveProperty("_id", "");
+    } else {
+      console.error("removeAdvertisementPayloadFalsyId is undefined or null");
+    }
     expect(removeAdvertisementPayload).toHaveProperty("name", "myad");
-   expect(removeAdvertisementPayloadFalsyId).toHaveProperty("_id","");
     expect(removeAdvertisementPayload).toHaveProperty(
       "link",
       "https://www.example.com"
@@ -126,11 +130,13 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
         { id: "64d1f8cb77a4b51004f824b8" },
         context
       );
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`
-      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`
+        );
+      }
     }
   });
 });
