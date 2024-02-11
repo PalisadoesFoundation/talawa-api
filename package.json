@@ -18,7 +18,7 @@
     "format:fix": "prettier --write \"**/*.{ts,tsx,json,scss,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,scss,css}\"",
     "prepare": "husky install",
-     "generate:graphql-markdown": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md",
+    "generate:graphql-markdown": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md",
     "generate:graphql-schema": "get-graphql-schema http://localhost:4000/graphql --json > docs/schema.json",
     "generate:ssl-private-key": "openssl genrsa -out ./key.pem",
     "import:sample-data": "ts-node ./src/utilities/loadSampleData.ts",
@@ -28,7 +28,18 @@
   },
   "repository": {
     "type": "git",
-	@@ -43,26 +41,26 @@
+    "url": "https://github.com/PalisadoesFoundation/talawa-api"	
+  },	
+  "keywords": [	
+    "chats",	
+    "events",	
+    "organization",	
+    "community"	
+  ],	
+  "author": "Palisadoes Foundation",	
+  "license": "GNU General Public License v3.0",	
+  "bugs": {	
+    "url": "https://github.com/PalisadoesFoundation/talawa-api/issues"
   },
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
