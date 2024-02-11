@@ -85,11 +85,13 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
 
       await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        );
+      }
     }
   });
 
@@ -118,11 +120,13 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
 
       await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+        );
+      }
     }
   });
 
@@ -154,11 +158,13 @@ describe("resolvers -> Mutation -> createPost", () => {
 
       const createPost = await createPostResolver?.({}, args, context);
       expect(createPost?.pinned).toBe(true);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`
+        );
+      }
     }
   });
 
@@ -379,10 +385,12 @@ describe("resolvers -> Mutation -> createPost", () => {
 
       const createdPost = await createPostResolver?.({}, args, context);
       expect(createdPost?.pinned).toBe(true);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+        );
+      }
     }
   });
   it(`throws String Length Validation error if text is greater than 500 characters`, async () => {
@@ -414,10 +422,12 @@ describe("resolvers -> Mutation -> createPost", () => {
 
       const createdPost = await createPostResolver?.({}, args, context);
       expect(createdPost?.pinned).toBe(true);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
+        );
+      }
     }
   });
 
@@ -446,10 +456,12 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
       const createdPost = await createPostResolver?.({}, args, context);
       expect(createdPost?.pinned).toBe(false);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `Post needs to be pinned inorder to add a title`
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `Post needs to be pinned inorder to add a title`
+        );
+      }
     }
   });
 
@@ -478,8 +490,10 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
       const createPost = await createPostResolver?.({}, args, context);
       expect(createPost?.pinned).toBe(true);
-    } catch (error: any) {
-      expect(error.message).toEqual(`Please provide a title to pin post`);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(`Please provide a title to pin post`);
+      }
     }
   });
 });
