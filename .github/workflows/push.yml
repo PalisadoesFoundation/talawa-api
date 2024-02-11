@@ -139,7 +139,7 @@ jobs:
           git config --global user.email "${{env.email}}"
           git add .
           git commit -m "Update documentation"
-          git push -f https://$GH_TOKEN@github.com/PalisadoesFoundation/talawa-api.git HEAD:automated-docs
+          git push -f https://$GH_TOKEN@github.com/PalisadoesFoundation/talawa-api.git HEAD:develop
           echo -e "🚀${Green} Hurrah! doc updated${NoColor}"
         env:
           ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
