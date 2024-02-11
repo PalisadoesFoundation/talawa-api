@@ -28,17 +28,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/PalisadoesFoundation/talawa-api"	
-  },	
-  "keywords": [	
-    "chats",	
-    "events",	
-    "organization",	
-    "community"	
-  ],	
-  "author": "Palisadoes Foundation",	
-  "license": "GNU General Public License v3.0",	
-  "bugs": {	
+    "url": "https://github.com/PalisadoesFoundation/talawa-api"
+  },
+  "keywords": [
+    "chats",
+    "events",
+    "organization",
+    "community"
+  ],
+  "author": "Palisadoes Foundation",
+  "license": "GNU General Public License v3.0",
+  "bugs": {
     "url": "https://github.com/PalisadoesFoundation/talawa-api/issues"
   },
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
