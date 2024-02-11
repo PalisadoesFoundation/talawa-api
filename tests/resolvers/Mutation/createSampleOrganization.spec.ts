@@ -9,11 +9,12 @@ import {
   it,
   vi,
 } from "vitest";
-import { SampleData } from "../../../src/models";
+import { SampleData, User } from "../../../src/models";
 import { createSampleOrganization } from "../../../src/resolvers/Mutation/createSampleOrganization";
 import { generateUserData } from "../../../src/utilities/createSampleOrganizationUtil";
 
 import { Types } from "mongoose";
+import { nanoid } from "nanoid";
 import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -125,5 +126,32 @@ describe("createSampleOrganization resolver", async () => {
     }
 
     await SampleData.deleteMany({});
+  });
+  it("throws error if user does not have AppUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    const newUser = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: `pass${nanoid().toLowerCase()}`,
+      firstName: `firstName${nanoid().toLowerCase()}`,
+      lastName: `lastName${nanoid().toLowerCase()}`,
+      image: null,
+    });
+    const args = {};
+    const context = {
+      userId: newUser.id,
+    };
+
+    try {
+      if (createSampleOrganization)
+        await createSampleOrganization({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
   });
 });

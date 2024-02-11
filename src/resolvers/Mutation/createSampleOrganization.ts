@@ -1,10 +1,9 @@
 import {
-  SAMPLE_ORGANIZATION_ALREADY_EXISTS,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { AppUserProfile, SampleData, User } from "../../models";
+import { AppUserProfile, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { createSampleOrganization as createSampleOrgUtil } from "../../utilities/createSampleOrganizationUtil";
 
@@ -25,17 +24,7 @@ export const createSampleOrganization: MutationResolvers["createSampleOrganizati
         USER_NOT_FOUND_ERROR.PARAM
       );
     }
-    const existingOrganization = await SampleData.findOne({
-      collectionName: "Organization",
-    });
 
-    if (existingOrganization) {
-      throw new errors.UnauthorizedError(
-        requestContext.translate(SAMPLE_ORGANIZATION_ALREADY_EXISTS.MESSAGE),
-        SAMPLE_ORGANIZATION_ALREADY_EXISTS.CODE,
-        SAMPLE_ORGANIZATION_ALREADY_EXISTS.PARAM
-      );
-    }
     const currentUserAppProfile = await AppUserProfile.findOne({
       userId: currentUser._id,
     }).lean();

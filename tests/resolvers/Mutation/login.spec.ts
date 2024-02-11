@@ -1,31 +1,31 @@
+import bcrypt from "bcryptjs";
 import "dotenv/config";
-import {
-  User,
-  Organization,
-  MembershipRequest,
-  AppUserProfile,
-} from "../../../src/models";
-import type { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
+import { nanoid } from "nanoid";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   INVALID_CREDENTIALS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import bcrypt from "bcryptjs";
-import { nanoid } from "nanoid";
 import {
-  beforeAll,
-  afterAll,
-  afterEach,
-  describe,
-  it,
-  expect,
-  vi,
-} from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
+  AppUserProfile,
+  MembershipRequest,
+  Organization,
+  User,
+} from "../../../src/models";
+import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
+import type { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -112,6 +112,47 @@ describe("resolvers -> Mutation -> login", () => {
         );
       }
     }
+  });
+  it("creates a appUserProfile of the user if does not exist", async () => {
+    const newUser = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: "password",
+      firstName: "firstName",
+      lastName: "lastName",
+    });
+    // console.log(newUser);
+    const hashedTestPassword = await bcrypt.hash("password", 12);
+    await User.updateOne(
+      {
+        _id: newUser?._id,
+      },
+      {
+        $set: {
+          password: hashedTestPassword,
+        },
+      }
+    );
+    const args: MutationLoginArgs = {
+      data: {
+        email: newUser?.email,
+        password: "password",
+      },
+    };
+
+    const loginPayload = await loginResolver?.({}, args, {});
+
+    const userAppProfile = await AppUserProfile.findOne({
+      userId: newUser?._id,
+    });
+
+    expect(userAppProfile).toBeDefined();
+    expect(loginPayload).toEqual(
+      expect.objectContaining({
+        user: expect.objectContaining({
+          appUserProfileId: userAppProfile?._id,
+        }),
+      })
+    );
   });
 
   it(`throws ValidationError if args.data.password !== password for user with

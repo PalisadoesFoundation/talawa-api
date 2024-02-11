@@ -1,5 +1,5 @@
 import {
-  USER_NOT_AUTHORIZED_SUPERADMIN,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
@@ -37,9 +37,9 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
 
     if (!currentUserAppProfile) {
       throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE),
-        USER_NOT_AUTHORIZED_SUPERADMIN.CODE,
-        USER_NOT_AUTHORIZED_SUPERADMIN.PARAM
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 

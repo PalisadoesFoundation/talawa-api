@@ -1,10 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { AppUserProfile } from "../../../src/models";
+import { AppUserProfile, User } from "../../../src/models";
 import type { MutationBlockPluginCreationBySuperadminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import { nanoid } from "nanoid";
 import {
   afterAll,
   afterEach,
@@ -15,6 +16,7 @@ import {
   vi,
 } from "vitest";
 import {
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -60,6 +62,68 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
+  it("throws error if user  does not have AppUserProfile", async () => {
+    try {
+      const newUser = await User.create({
+        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        password: `pass${nanoid().toLowerCase()}`,
+        firstName: `firstName${nanoid().toLowerCase()}`,
+        lastName: `lastName${nanoid().toLowerCase()}`,
+        image: null,
+      });
+      const args: MutationBlockPluginCreationBySuperadminArgs = {
+        blockUser: false,
+        userId: newUser?.id,
+      };
+      await AppUserProfile.updateOne(
+        {
+          userId: testUser?._id,
+        },
+        {
+          isSuperAdmin: true,
+        }
+      );
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      await blockPluginCreationBySuperadminResolver?.({}, args, context);
+    } catch (error: unknown) {
+      // console.log((error as Error).message);
+
+      expect((error as Error).message).toEqual(
+        `${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
+    }
+  });
+  it("throws error if current appUser does not have AppUserProfile", async () => {
+    try {
+      const newUser = await User.create({
+        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        password: `pass${nanoid().toLowerCase()}`,
+        firstName: `firstName${nanoid().toLowerCase()}`,
+        lastName: `lastName${nanoid().toLowerCase()}`,
+        image: null,
+      });
+      const args: MutationBlockPluginCreationBySuperadminArgs = {
+        blockUser: false,
+        userId: testUser?.id,
+      };
+
+      const context = {
+        userId: newUser?.id,
+      };
+
+      await blockPluginCreationBySuperadminResolver?.({}, args, context);
+    } catch (error: unknown) {
+      // console.log((error as Error).message);
+
+      expect((error as Error).message).toEqual(
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
+  });
 
   it(`throws UnauthorizedError if current user with _id === context.userId is not
   a SUPERADMIN`, async () => {
@@ -77,6 +141,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
       const context = {
         userId: testUser?.id,
       };
+      // console.log(testUser)
 
       const {
         blockPluginCreationBySuperadmin: blockPluginCreationBySuperadminError,
@@ -86,6 +151,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
 
       await blockPluginCreationBySuperadminError?.({}, args, context);
     } catch (error: unknown) {
+      // console.log(`-----------------${(error as Error).message}`);
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`

@@ -1,10 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { AppUserProfile, Organization } from "../../../src/models";
+import { AppUserProfile, Organization, User } from "../../../src/models";
 import type { MutationCreateAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import { nanoid } from "nanoid";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ORGANIZATION_MEMBER_NOT_FOUND_ERROR,
@@ -130,6 +131,57 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       await createAdminResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+  it("throws error if user does not have AppUserProfile", async () => {
+    try {
+      const args: MutationCreateAdminArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          userId: Types.ObjectId().toString(),
+        },
+      };
+      const newUser = await User.create({
+        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        password: `pass${nanoid().toLowerCase()}`,
+        firstName: `firstName${nanoid().toLowerCase()}`,
+        lastName: `lastName${nanoid().toLowerCase()}`,
+        image: null,
+      });
+      const context = {
+        userId: newUser?.id,
+      };
+      await createAdminResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
+  });
+  it("throws error if user does not exists", async () => {
+    try {
+      const newUser = await User.create({
+        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        password: `pass${nanoid().toLowerCase()}`,
+        firstName: `firstName${nanoid().toLowerCase()}`,
+        lastName: `lastName${nanoid().toLowerCase()}`,
+        image: null,
+      });
+      const args: MutationCreateAdminArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          userId: newUser.id,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+      await createAdminResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
