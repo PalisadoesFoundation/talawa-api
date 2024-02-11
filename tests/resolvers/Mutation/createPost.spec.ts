@@ -431,6 +431,39 @@ describe("resolvers -> Mutation -> createPost", () => {
     }
   });
 
+  it('throws an error if the user tries to create a post but post is not pinned', async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => message
+    );
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: testOrganization?._id,
+          text: "text",
+          pinned: false,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      expect(args.data.pinned).toBe(false);
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
+      );
+      const createdPost = await createPostResolver?.({}, args, context);
+      expect(createdPost?.pinned).toBe(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `Cannot create post when pinned is false`
+        );
+      }
+    }
+  });
+
   it("throws error if title is provided and post is not pinned", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
