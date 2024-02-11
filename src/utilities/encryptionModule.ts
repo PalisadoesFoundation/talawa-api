@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { setEncryptionKey } from "../../setup";
+// import { setEncryptionKey } from "../../setup";
 
 const algorithm = "aes-256-ctr";
 const saltLength = 16;
@@ -9,7 +9,7 @@ const saltLength = 16;
  * using the test-suite in github actions.
  */
 
-setEncryptionKey();
+// setEncryptionKey();
 
 /**
  * Generates a random salt of the specified length.

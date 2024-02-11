@@ -151,16 +151,10 @@ jobs:
         with:
           time: 10s
 
-      - name: Setup the encryption key.
-        run: npm run setup:encryption-key & echo $! > setup_pid.txt
-
-      - name: Terminate setup process
-        run: |
-          setup_pid=$(cat setup_pid.txt)
-          kill $setup_pid || true
-      
       - name: Run the tests
-        run: npm run test
+        run: |
+          npm run setup
+          npm run test
 
       - name: Import Sample Data
         run: npm run import:sample-data  
