@@ -152,7 +152,7 @@ jobs:
   
   Copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/automated-docs'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/automated-docs'
     # needs: Generate-Documentation
     steps:
     - uses: actions/checkout@v3
