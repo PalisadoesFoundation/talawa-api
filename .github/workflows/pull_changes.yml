@@ -1,13 +1,24 @@
-name: Test
+name: Copy Docs to Talawa Docs
 
 on:
-  push:
-    branches:
-      - develop  
+  schedule:
+    - cron: '*/5 * * * *' # Runs every 5 minutes
 
 jobs:
-  test:
+  copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/automated-docs'
+    # needs: Generate-Documentation
     steps:
-      - name: Test
-        run: echo "Test"
+    - uses: actions/checkout@v3
+    - uses: dmnemec/copy_file_to_another_repo_action@v1.1.1
+      env:
+        API_TOKEN_GITHUB: ${{secrets.TALAWA_DOCS_SYNC}}    
+      with:
+        source_file: 'talawa-api-docs/'
+        destination_repo: 'PalisadoesFoundation/talawa-docs'
+        destination_branch: 'develop'
+        destination_folder: 'docs/'
+        user_email: '${{env.email}}'
+        user_name: '${{github.actor}}'
+        commit_message: 'Talawa API docs updated'
