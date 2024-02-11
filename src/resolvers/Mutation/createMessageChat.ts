@@ -24,9 +24,16 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
   const currentUser = await User.findOne({
     _id: context.userId,
   }).lean();
+  if (!currentUser) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
+    );
+  }
 
   const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: context._id,
+    userId: currentUser._id,
   }).lean();
 
   const receiverUser = await User.findOne({
