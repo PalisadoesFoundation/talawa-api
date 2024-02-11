@@ -48,8 +48,8 @@ describe("User Identifier Tests", () => {
           { $set: { identifier: 1 } },
           { new: true },
         );
-      } catch (error: any) {
-        expect(error.name).to.equal("ValidationError");
+      } catch (error) {
+        expect((error as Error).name).to.equal("ValidationError");
       }
     }
   });
