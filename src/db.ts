@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { MONGO_DB_URL } from "./constants";
 import { logger } from "./libraries";
+import { isAtlasUrl, isReplicaSetConnection } from "./utilities/checkDbUrl";
 
 let session!: mongoose.ClientSession;
 
@@ -12,7 +13,12 @@ export const connect = async (): Promise<void> => {
       useFindAndModify: false,
       useNewUrlParser: true,
     });
-    session = await mongoose.startSession();
+    if (
+      isAtlasUrl(MONGO_DB_URL as string) ||
+      isReplicaSetConnection(MONGO_DB_URL as string)
+    ) {
+      session = await mongoose.startSession();
+    }
   } catch (error: unknown) {
     if (error instanceof Error) {
       const errorMessage = error.toString();
