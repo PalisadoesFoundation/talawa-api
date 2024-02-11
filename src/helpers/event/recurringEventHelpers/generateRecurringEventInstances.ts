@@ -1,5 +1,4 @@
 import type mongoose from "mongoose";
-import { format } from "date-fns";
 import type { InterfaceEvent } from "../../../models";
 import { Event, EventAttendee, User } from "../../../models";
 import type { EventInput } from "../../../types/generatedGraphQLTypes";
@@ -51,12 +50,10 @@ export const generateRecurringEventInstances = async ({
 }: InterfaceGenerateRecurringInstances): Promise<InterfaceEvent> => {
   const recurringInstances: InterfaceRecurringEvent[] = [];
   recurringInstanceDates.map((date) => {
-    const formattedInstanceDate = format(date, "yyyy-MM-dd");
-
     const createdEventInstance = {
       ...data,
-      startDate: formattedInstanceDate,
-      endDate: formattedInstanceDate,
+      startDate: date,
+      endDate: date,
       recurring: true,
       isBaseRecurringEvent: false,
       recurrenceRuleId,

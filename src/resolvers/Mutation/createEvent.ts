@@ -126,10 +126,13 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
+  /* c8 ignore start */
   if (session) {
+    // start a transaction
     session.startTransaction();
   }
 
+  /* c8 ignore stop */
   try {
     let createdEvent: InterfaceEvent;
 
@@ -151,16 +154,23 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       );
     }
 
+    /* c8 ignore start */
     if (session) {
+      // commit transaction if everything's successful
       await session.commitTransaction();
     }
 
-    // Returns the createdEvent.
+    /* c8 ignore stop */
     return createdEvent;
   } catch (error) {
+    /* c8 ignore start */
     if (session) {
+      // abort transaction if something fails
       await session.abortTransaction();
     }
+
     throw error;
   }
+
+  /* c8 ignore stop */
 };

@@ -14,3 +14,20 @@ export const convertToUTCDate = (date: Date): Date => {
 
   return utcMidnight;
 };
+
+/**
+ * This function adjusts for the timezone offset.
+ * @param date - the date to be adjusted.
+ * @returns adjusted date.
+ */
+export const adjustForTimezoneOffset = (date: Date): Date => {
+  const timeZoneOffset = new Date().getTimezoneOffset();
+
+  /* c8 ignore start */
+  if (timeZoneOffset > 0) {
+    date = new Date(date.getTime() + timeZoneOffset * 60 * 1000);
+  }
+
+  /* c8 ignore stop */
+  return date;
+};

@@ -16,7 +16,7 @@ import {
  * @param calendarDate - the calendar date (To be used for dynamic instance generation during queries).
  * @remarks The following steps are followed:
  * 1. Get the date limit for instance generation based on its recurrence frequency.
- * 3. Get the dates for recurring instances.
+ * 2. Get the dates for recurring event instances.
  * @returns Dates for recurring instances to be generated during this operation.
  */
 
