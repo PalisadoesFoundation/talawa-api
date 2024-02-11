@@ -167,6 +167,27 @@ jobs:
         user_email: '${{env.email}}'
         user_name: '${{github.actor}}'
         commit_message: 'Talawa API docs updated'
+
+    name: Pull Changes on Push to Develop Branch
+
+  pull_changes:
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: Generate-Documentation
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: develop
+      
+      - name: Pull changes from develop branch
+        run: git pull origin develop
+      
+      - name: Push changes to automated-docs branch
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git push origin HEAD:automated-docs
         
 # You can find the deployment instructions in the scripts/cloud-api-demo/README.md file
   Deploy-Workflow:
