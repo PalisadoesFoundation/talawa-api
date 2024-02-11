@@ -2,8 +2,7 @@ name: Copy Docs to Talawa Docs
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # Runs every 5 minutes
-
+    - cron: '*/5 * * * *'
 jobs:
   copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
