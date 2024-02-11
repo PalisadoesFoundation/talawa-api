@@ -108,7 +108,10 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     .populate("membershipRequests")
     .populate("organizationsBlockedBy")
     .lean();
-
+  if (!foundUser) {
+    throw new Error("User not found");
+  }
+  foundUser.email = decryptEmail(foundUser?.email).decrypted;
   return {
     user: foundUser ?? ({} as InterfaceUser),
     accessToken,
