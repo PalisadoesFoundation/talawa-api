@@ -16,18 +16,17 @@ export const convertToUTCDate = (date: Date): Date => {
 };
 
 /**
- * This function adjusts for the timezone offset.
- * @param date - the date to be adjusted.
- * @returns adjusted date.
+ * This function converts the date to a valid rrule string argument.
+ * @param date - the date string to be converted.
+ * @returns converted date string.
  */
-export const adjustForTimezoneOffset = (date: Date): Date => {
-  const timeZoneOffset = new Date().getTimezoneOffset();
 
-  /* c8 ignore start */
-  if (timeZoneOffset > 0) {
-    date = new Date(date.getTime() + timeZoneOffset * 60 * 1000);
-  }
+export const convertToRRuleDateString = (date: Date): string => {
+  let dateString = date.toISOString();
 
-  /* c8 ignore stop */
-  return date;
+  dateString = dateString.replace(/[-:]/g, "");
+
+  dateString = dateString.replace(/\.\d{3}/, "");
+
+  return dateString;
 };

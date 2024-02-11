@@ -1,6 +1,5 @@
-import { format } from "date-fns";
 import type { RecurrenceRuleInput } from "../../../types/generatedGraphQLTypes";
-import { adjustForTimezoneOffset } from "../../../utilities/recurrenceDatesUtil";
+import { convertToRRuleDateString } from "../../../utilities/recurrenceDatesUtil";
 
 /**
  * This function generates the recurrence rule (rrule) string.
@@ -8,7 +7,7 @@ import { adjustForTimezoneOffset } from "../../../utilities/recurrenceDatesUtil"
  * @param recurrenceStartDate - start date of recurrence.
  * @param recurrenceEndDate - end date of recurrence.
  * @remarks The following steps are followed:
- * 1. Adjust the start and end dates of recurrence for timezone offsets.
+ * 1. Get the date strings for start and end of recurrence.
  * 2. Get the recurrence rules and make a recurrenceRuleString.
  * @returns The recurrence rule string that would be used to create a valid rrule object.
  */
@@ -18,35 +17,15 @@ export const generateRecurrenceRuleString = (
   recurrenceStartDate: Date,
   recurrenceEndDate?: Date
 ): string => {
-  // adjust the dates according to the timezone offset
-  recurrenceStartDate = adjustForTimezoneOffset(recurrenceStartDate);
+  // get the start date string for rrule's "DTSTART" property
+  const recurrenceStartDateString =
+    convertToRRuleDateString(recurrenceStartDate);
+
+  // get the end date string for rrule's "UNTIL" property
+  let recurrenceEndDateString = "";
   if (recurrenceEndDate) {
-    recurrenceEndDate = adjustForTimezoneOffset(recurrenceEndDate);
+    recurrenceEndDateString = convertToRRuleDateString(recurrenceEndDate);
   }
-
-  // recurrence start date
-  // (not necessarily the start date of the first recurring instance)
-  let formattedRecurrenceStartDate = format(
-    recurrenceStartDate,
-    "yyyyMMdd'T'HHmmss'Z'"
-  );
-
-  // format it to be UTC midnight
-  formattedRecurrenceStartDate = formattedRecurrenceStartDate.replace(
-    /T\d{6}Z/,
-    "T000000Z"
-  );
-
-  // date upto which instances would be generated
-  let formattedRecurrenceEndDate = recurrenceEndDate
-    ? format(recurrenceEndDate, "yyyyMMdd'T'HHmmss'Z'")
-    : "";
-
-  // format it to be UTC midnight
-  formattedRecurrenceEndDate = formattedRecurrenceEndDate.replace(
-    /T\d{6}Z/,
-    "T000000Z"
-  );
 
   // destructure the recurrence rules
   const { frequency, count, weekDays } = recurrenceRuleData;
@@ -55,15 +34,17 @@ export const generateRecurrenceRuleString = (
   const weekDaysString = weekDays?.length ? weekDays.join(",") : "";
 
   // initiate recurrence rule string
-  let recurrenceRuleString = `DTSTART:${formattedRecurrenceStartDate}\nRRULE:FREQ=${frequency}`;
+  let recurrenceRuleString = `DTSTART:${recurrenceStartDateString}\nRRULE:FREQ=${frequency}`;
 
-  if (formattedRecurrenceEndDate) {
-    recurrenceRuleString += `;UNTIL=${formattedRecurrenceEndDate}`;
+  if (recurrenceEndDateString) {
+    recurrenceRuleString += `;UNTIL=${recurrenceEndDateString}`;
   }
+
   if (count) {
     // maximum number of instances to create
     recurrenceRuleString += `;COUNT=${count}`;
   }
+
   if (weekDaysString) {
     recurrenceRuleString += `;BYDAY=${weekDaysString}`;
   }
