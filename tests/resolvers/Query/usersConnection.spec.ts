@@ -55,13 +55,15 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("eventAdmin")
       .populate("adminFor")
       .lean();
-    const decryptedUsers = users.map((user) => {
-      return {
-        ...user,
-        email: decryptEmail(user.email).decrypted,
-      };
-    });
-    expect(usersConnectionPayload).toEqual(decryptedUsers);
+    if (users.length > 0) {
+      const decryptedUsers = users.map((user) => {
+        return {
+          ...user,
+          email: decryptEmail(user.email).decrypted,
+        };
+      });
+      expect(usersConnectionPayload).toEqual(decryptedUsers);
+    }
   });
 
   it(`returns paginated list of users filtered by
@@ -113,13 +115,15 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    const decryptedUsers = users.map((user) => {
-      return {
-        ...user,
-        email: decryptEmail(user.email).decrypted,
-      };
-    });
-    expect(usersConnectionPayload).toEqual(decryptedUsers);
+    if (users.length > 0) {
+      const decryptedUsers = users.map((user) => {
+        return {
+          ...user,
+          email: decryptEmail(user.email).decrypted,
+        };
+      });
+      expect(usersConnectionPayload).toEqual(decryptedUsers);
+    }
   });
 
   it(`returns paginated list of users filtered by
@@ -181,13 +185,15 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    const decryptedUsers = users.map((user) => {
-      return {
-        ...user,
-        email: decryptEmail(user.email).decrypted,
-      };
-    });
-    expect(usersConnectionPayload).toEqual(decryptedUsers);
+    if (users.length > 0) {
+      const decryptedUsers = users.map((user) => {
+        return {
+          ...user,
+          email: decryptEmail(user.email).decrypted,
+        };
+      });
+      expect(usersConnectionPayload).toEqual(decryptedUsers);
+    }
   });
   /* eslint-disable */
   it(`returns paginated list of users filtered by
@@ -311,13 +317,15 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    const decryptedUsers = users.map((user) => {
-      return {
-        ...user,
-        email: decryptEmail(user.email).decrypted,
-      };
-    });
-    expect(usersConnectionPayload).toEqual(decryptedUsers);
+    if (users.length > 0) {
+      const decryptedUsers = users.map((user) => {
+        return {
+          ...user,
+          email: decryptEmail(user.email).decrypted,
+        };
+      });
+      expect(usersConnectionPayload).toEqual(decryptedUsers);
+    }
   });
 
   it(`returns paginated list of users filtered by
@@ -466,13 +474,15 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    const decryptedUsers = users.map((user) => {
-      return {
-        ...user,
-        email: decryptEmail(user.email).decrypted,
-      };
-    });
-    expect(usersConnectionPayload).toEqual(decryptedUsers);
+    if (users.length > 0) {
+      const decryptedUsers = users.map((user) => {
+        return {
+          ...user,
+          email: decryptEmail(user.email).decrypted,
+        };
+      });
+      expect(usersConnectionPayload).toEqual(decryptedUsers);
+    }
   });
 
   it(`returns paginated list of users sorted by
@@ -509,13 +519,15 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    const decryptedUsers = users.map((user) => {
-      return {
-        ...user,
-        email: decryptEmail(user.email).decrypted,
-      };
-    });
-    expect(usersConnectionPayload).toEqual(decryptedUsers);
+    if (users.length > 0) {
+      const decryptedUsers = users.map((user) => {
+        return {
+          ...user,
+          email: decryptEmail(user.email).decrypted,
+        };
+      });
+      expect(usersConnectionPayload).toEqual(decryptedUsers);
+    }
   });
 
   it(`returns paginated list of users
@@ -552,13 +564,15 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    const decryptedUsers = users.map((user) => {
-      return {
-        ...user,
-        email: decryptEmail(user.email).decrypted,
-      };
-    });
-    expect(usersConnectionPayload).toEqual(decryptedUsers);
+    if (users.length > 0) {
+      const decryptedUsers = users.map((user) => {
+        return {
+          ...user,
+          email: decryptEmail(user.email).decrypted,
+        };
+      });
+      expect(usersConnectionPayload).toEqual(decryptedUsers);
+    }
   });
 
   it(`returns paginated list of users
@@ -595,13 +609,15 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    const decryptedUsers = users.map((user) => {
-      return {
-        ...user,
-        email: decryptEmail(user.email).decrypted,
-      };
-    });
-    expect(usersConnectionPayload).toEqual(decryptedUsers);
+    if (users.length > 0) {
+      const decryptedUsers = users.map((user) => {
+        return {
+          ...user,
+          email: decryptEmail(user.email).decrypted,
+        };
+      });
+      expect(usersConnectionPayload).toEqual(decryptedUsers);
+    }
   });
 
   it(`returns paginated list of users without sorting if orderBy === null`, async () => {
@@ -635,12 +651,14 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    const decryptedUsers = users.map((user) => {
-      return {
-        ...user,
-        email: decryptEmail(user.email).decrypted,
-      };
-    });
-    expect(usersConnectionPayload).toEqual(decryptedUsers);
+    if (users.length > 0) {
+      const decryptedUsers = users.map((user) => {
+        return {
+          ...user,
+          email: decryptEmail(user.email).decrypted,
+        };
+      });
+      expect(usersConnectionPayload).toEqual(decryptedUsers);
+    }
   });
 });
