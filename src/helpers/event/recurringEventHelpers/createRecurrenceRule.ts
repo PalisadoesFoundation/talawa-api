@@ -6,7 +6,6 @@ import {
   RECURRENCE_FREQUENCIES,
   RECURRENCE_WEEKDAYS,
 } from "../../../constants";
-import { format } from "date-fns";
 
 /**
  * This function generates the recurrenceRule document.
@@ -43,7 +42,6 @@ export const createRecurrenceRule = async (
     }
   }
 
-  const formattedLatestInstanceDate = format(latestInstanceDate, "yyyy-MM-dd");
   const frequency = RECURRENCE_FREQUENCIES[freq];
 
   const recurrenceRule = await RecurrenceRule.create(
@@ -57,7 +55,7 @@ export const createRecurrenceRule = async (
         frequency,
         count: recurrenceRuleObject.options.count,
         weekDays,
-        latestInstanceDate: formattedLatestInstanceDate,
+        latestInstanceDate,
       },
     ],
     { session }

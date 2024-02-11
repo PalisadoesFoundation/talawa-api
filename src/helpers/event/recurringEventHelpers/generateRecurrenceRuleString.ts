@@ -41,7 +41,7 @@ export const generateRecurrenceRuleString = (
   }
 
   if (count) {
-    // maximum number of instances to create
+    // maximum number of instances to generate
     recurrenceRuleString += `;COUNT=${count}`;
   }
 

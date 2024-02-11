@@ -3,7 +3,6 @@ import type { InterfaceEvent } from "../../../models";
 import { Event, EventAttendee, User } from "../../../models";
 import type { MutationCreateEventArgs } from "../../../types/generatedGraphQLTypes";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
-import { format } from "date-fns";
 
 /**
  * This function generates a single non-recurring event.
@@ -14,7 +13,7 @@ import { format } from "date-fns";
  * 1. Create an event document.
  * 2. Associate the event with the user
  * 3. Cache the event.
- * @returns The event generated.
+ * @returns The created event.
  */
 
 export const createSingleEvent = async (
@@ -23,16 +22,11 @@ export const createSingleEvent = async (
   organizationId: string,
   session: mongoose.ClientSession
 ): Promise<InterfaceEvent> => {
-  const formattedStartDate = format(args.data.startDate, "yyyy-MM-dd");
-  const formattedEndDate = format(args.data.endDate, "yyyy-MM-dd");
-
   // create the single event
   const createdEvent = await Event.create(
     [
       {
         ...args.data,
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
         creatorId: currentUserId,
         admins: [currentUserId],
         organization: organizationId,
