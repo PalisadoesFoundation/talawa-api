@@ -431,7 +431,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     }
   });
 
-  it('throws an error if the user tries to create a post but post is not pinned', async () => {
+  it("throws an error if the user tries to create a post but post is not pinned", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => message
