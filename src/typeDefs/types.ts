@@ -178,6 +178,19 @@ export const types = gql`
     averageFeedbackScore: Float
   }
 
+  type EventAttendee {
+    _id: ID!
+    userId: ID!
+    eventId: ID!
+    checkInId: ID
+    isInvited: Boolean!
+    isRegistered: Boolean!
+    isCheckedIn: Boolean!
+    isCheckedOut: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
   type Feedback {
     _id: ID!
     event: Event!

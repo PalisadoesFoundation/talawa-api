@@ -42,6 +42,10 @@ export const mutations = gql`
 
     createUserFamily(data: createUserFamilyInput!): UserFamily! @auth
 
+    checkInEventAttendee(data: EventAttendeeInput!): EventAttendee!
+
+    checkOutEventAttendee(data: EventAttendeeInput!): EventAttendee!
+
     adminRemoveEvent(eventId: ID!): Event! @auth
 
     adminRemoveGroup(groupId: ID!): GroupChat! @auth
@@ -125,6 +129,8 @@ export const mutations = gql`
 
     forgotPassword(data: ForgotPasswordData!): Boolean!
 
+    inviteEventAttendee(data: EventAttendeeInput!): EventAttendee!
+
     joinPublicOrganization(organizationId: ID!): User! @auth
 
     leaveOrganization(organizationId: ID!): User! @auth
@@ -146,6 +152,8 @@ export const mutations = gql`
     registerForEvent(id: ID!): Event! @auth
 
     rejectAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
+
+    registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
 
     rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 

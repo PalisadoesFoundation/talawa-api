@@ -271,6 +271,19 @@ type Event {
   updatedAt: DateTime!
 }
 
+type EventAttendee {
+  _id: ID!
+  checkInId: ID
+  createdAt: DateTime!
+  eventId: ID!
+  isCheckedIn: Boolean!
+  isCheckedOut: Boolean!
+  isInvited: Boolean!
+  isRegistered: Boolean!
+  updatedAt: DateTime!
+  userId: ID!
+}
+
 input EventAttendeeInput {
   eventId: ID!
   userId: ID!
@@ -529,6 +542,8 @@ type Mutation {
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
+  checkInEventAttendee(data: EventAttendeeInput!): EventAttendee!
+  checkOutEventAttendee(data: EventAttendeeInput!): EventAttendee!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): User!
@@ -549,6 +564,7 @@ type Mutation {
   deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
+  inviteEventAttendee(data: EventAttendeeInput!): EventAttendee!
   joinPublicOrganization(organizationId: ID!): User!
   leaveOrganization(organizationId: ID!): User!
   likeComment(id: ID!): Comment
@@ -558,6 +574,7 @@ type Mutation {
   otp(data: OTPInput!): OtpData!
   recaptcha(data: RecaptchaVerification!): Boolean!
   refreshToken(refreshToken: String!): ExtendSession!
+  registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
   registerForEvent(id: ID!): Event!
   rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!

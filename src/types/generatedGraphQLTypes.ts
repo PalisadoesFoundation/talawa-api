@@ -331,6 +331,20 @@ export type EventAdminsArgs = {
   adminId?: InputMaybe<Scalars['ID']['input']>;
 };
 
+export type EventAttendee = {
+  __typename?: 'EventAttendee';
+  _id: Scalars['ID']['output'];
+  checkInId?: Maybe<Scalars['ID']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  eventId: Scalars['ID']['output'];
+  isCheckedIn: Scalars['Boolean']['output'];
+  isCheckedOut: Scalars['Boolean']['output'];
+  isInvited: Scalars['Boolean']['output'];
+  isRegistered: Scalars['Boolean']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  userId: Scalars['ID']['output'];
+};
+
 export type EventAttendeeInput = {
   eventId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
@@ -596,6 +610,8 @@ export type Mutation = {
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
   checkIn: CheckIn;
+  checkInEventAttendee: EventAttendee;
+  checkOutEventAttendee: EventAttendee;
   createActionItem: ActionItem;
   createActionItemCategory: ActionItemCategory;
   createAdmin: User;
@@ -616,6 +632,7 @@ export type Mutation = {
   deleteAdvertisementById: DeletePayload;
   deleteDonationById: DeletePayload;
   forgotPassword: Scalars['Boolean']['output'];
+  inviteEventAttendee: EventAttendee;
   joinPublicOrganization: User;
   leaveOrganization: User;
   likeComment?: Maybe<Comment>;
@@ -625,6 +642,7 @@ export type Mutation = {
   otp: OtpData;
   recaptcha: Scalars['Boolean']['output'];
   refreshToken: ExtendSession;
+  registerEventAttendee: EventAttendee;
   registerForEvent: Event;
   rejectAdmin: Scalars['Boolean']['output'];
   rejectMembershipRequest: MembershipRequest;
@@ -775,6 +793,16 @@ export type MutationCheckInArgs = {
 };
 
 
+export type MutationCheckInEventAttendeeArgs = {
+  data: EventAttendeeInput;
+};
+
+
+export type MutationCheckOutEventAttendeeArgs = {
+  data: EventAttendeeInput;
+};
+
+
 export type MutationCreateActionItemArgs = {
   actionItemCategoryId: Scalars['ID']['input'];
   data: CreateActionItemInput;
@@ -888,6 +916,11 @@ export type MutationForgotPasswordArgs = {
 };
 
 
+export type MutationInviteEventAttendeeArgs = {
+  data: EventAttendeeInput;
+};
+
+
 export type MutationJoinPublicOrganizationArgs = {
   organizationId: Scalars['ID']['input'];
 };
@@ -925,6 +958,11 @@ export type MutationRecaptchaArgs = {
 
 export type MutationRefreshTokenArgs = {
   refreshToken: Scalars['String']['input'];
+};
+
+
+export type MutationRegisterEventAttendeeArgs = {
+  data: EventAttendeeInput;
 };
 
 
@@ -2128,6 +2166,7 @@ export type ResolversTypes = {
   EmploymentStatus: EmploymentStatus;
   Error: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Error']>;
   Event: ResolverTypeWrapper<InterfaceEventModel>;
+  EventAttendee: ResolverTypeWrapper<InterfaceEventAttendeeModel>;
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
@@ -2266,6 +2305,7 @@ export type ResolversParentTypes = {
   EmailAddress: Scalars['EmailAddress']['output'];
   Error: ResolversInterfaceTypes<ResolversParentTypes>['Error'];
   Event: InterfaceEventModel;
+  EventAttendee: InterfaceEventAttendeeModel;
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
   EventWhereInput: EventWhereInput;
@@ -2581,6 +2621,20 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type EventAttendeeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventAttendee'] = ResolversParentTypes['EventAttendee']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  checkInId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  eventId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isCheckedIn?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isCheckedOut?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isInvited?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isRegistered?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ExtendSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtendSession'] = ResolversParentTypes['ExtendSession']> = {
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -2744,6 +2798,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
+  checkInEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationCheckInEventAttendeeArgs, 'data'>>;
+  checkOutEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationCheckOutEventAttendeeArgs, 'data'>>;
   createActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationCreateActionItemArgs, 'actionItemCategoryId' | 'data'>>;
   createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'name' | 'organizationId'>>;
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
@@ -2764,6 +2820,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteAdvertisementById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteAdvertisementByIdArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
+  inviteEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationInviteEventAttendeeArgs, 'data'>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;
   leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'organizationId'>>;
   likeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationLikeCommentArgs, 'id'>>;
@@ -2773,6 +2830,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otp?: Resolver<ResolversTypes['OtpData'], ParentType, ContextType, RequireFields<MutationOtpArgs, 'data'>>;
   recaptcha?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRecaptchaArgs, 'data'>>;
   refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
+  registerEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationRegisterEventAttendeeArgs, 'data'>>;
   registerForEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
   rejectAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectAdminArgs, 'id'>>;
   rejectMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationRejectMembershipRequestArgs, 'membershipRequestId'>>;
@@ -3147,6 +3205,7 @@ export type Resolvers<ContextType = any> = {
   EmailAddress?: GraphQLScalarType;
   Error?: ErrorResolvers<ContextType>;
   Event?: EventResolvers<ContextType>;
+  EventAttendee?: EventAttendeeResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Feedback?: FeedbackResolvers<ContextType>;
   FieldError?: FieldErrorResolvers<ContextType>;
