@@ -11,7 +11,16 @@
     "blockedUsers": [],
     "name": "Hope Foundation",
     "description": "A place where money and power doesn't matter. Free legal aid to everyone.",
-    "location": "Mountain View, CA",
+    "address": {
+      "city": "Kolkata",
+      "countryCode": "IN",
+      "dependentLocality": "Some Dependent Locality",
+      "line1": "line3",
+      "line2": "line4",
+      "postalCode": "711205",
+      "sortingCode": "ABC-124",
+      "state": "West Bengal"
+    },
     "userRegistrationRequired": false,
     "visibleInSearch": true,
     "image": null,
