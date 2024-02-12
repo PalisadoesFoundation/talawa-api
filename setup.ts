@@ -754,44 +754,36 @@ async function importData(): Promise<void> {
  */
 
 async function importDefaultOrganization(): Promise<void> {
-  return new Promise<void>(async (resolve, reject) => {
-    if (!process.env.MONGO_DB_URL) {
-      console.log("Couldn't find mongodb url");
-      return;
-    }
-    const client = new mongodb.MongoClient(process.env.MONGO_DB_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    try {
-      await client.connect();
-      const db = client.db();
-      const collections = await db.listCollections().toArray();
-      if (collections.length > 0) {
-        resolve;
-      } else {
-        await exec(
-          "npm run import:sample-data-defaultOrg",
-          (error: ExecException | null, stdout: string, stderr: string) => {
-            if (error) {
-              console.error(`Error: ${error.message}`);
-              abort();
-            }
-            if (stderr) {
-              console.error(`Error: ${stderr}`);
-              abort();
-            }
-            console.log(`Output: ${stdout}`);
-            resolve;
-          }
-        );
-      }
-      client.close();
-    } catch (e: any) {
-      console.log(`Couldn't import the default Organization`);
-      reject;
-    }
+  if (!process.env.MONGO_DB_URL) {
+    console.log("Couldn't find mongodb url");
+    return;
+  }
+  
+  const client = new mongodb.MongoClient(process.env.MONGO_DB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
   });
+
+  try {
+    await client.connect();
+    const db = client.db();
+
+    const collections = await db.listCollections().toArray();
+    if (collections.length > 0) {
+      console.log("Collections exist, skipping import.");
+    } else {
+      const { stdout, stderr } = await exec("npm run import:sample-data-defaultOrg");
+      if (stderr) {
+        console.error(`Error: ${stderr}`);
+        abort();
+      }
+      console.log(`Output: ${stdout}`);
+    }
+  } catch (error) {
+    console.error("Error importing default Organization:", error);
+  } finally {
+    await client.close();
+  }
 }
 
 type VerifySmtpConnectionReturnType = {
