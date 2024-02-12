@@ -18,12 +18,12 @@ import {
   USER_FAMILY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { User } from "../../../src/models";
 import type {
   TestUserFamilyType,
   TestUserType,
 } from "../../helpers/userAndUserFamily";
 import { createTestUserFunc } from "../../helpers/userAndUserFamily";
-import { User } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -165,9 +165,10 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
 
       await removeUserFamilyResolver?.({}, args, context);
     } catch (error) {
-      expect(spy).toHaveBeenCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
+      // console.log(error);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`
+        `${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });

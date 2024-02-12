@@ -208,6 +208,10 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     }
   });
   it("throws error if no user found", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveAdminArgs = {
         data: {
@@ -224,7 +228,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       await removeAdminResolver?.({}, args, context);
     } catch (error: unknown) {
       console.log(error);
-      // expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
