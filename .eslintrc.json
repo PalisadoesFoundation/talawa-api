@@ -34,8 +34,8 @@
       // which has convulated return types
       "files": ["./src/index.ts", "./src/utilities/copyToClipboard.ts"],
       "rules": {
-        "@typescript-eslint/explicit-function-return-type": "error",
-        "@typescript-eslint/no-empty-function": "error"
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-empty-function": "off"
       }
     }
   ],

@@ -25,7 +25,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> user", () => {
-  it("throws NotFoundError if no user exists with _id === args.id", async () => {
+  it("throws NotFoundError if no user exists with _id === context.id", async () => {
     try {
       const args: QueryUserArgs = {
         id: Types.ObjectId().toString(),
@@ -58,6 +58,7 @@ describe("resolvers -> Query -> user", () => {
     if (!user) {
       throw new Error("User not found.");
     }
+
     expect(userPayload).toEqual({
       ...user,
       email: decryptEmail(user.email).decrypted,
@@ -103,5 +104,20 @@ describe("resolvers -> Query -> user", () => {
       organizationsBlockedBy: [],
       image: user?.image ? `${BASE_URL}${user.image}` : null,
     });
+  });
+  it("throws NotFoundError if no user exists with _id === args.id", async () => {
+    try {
+      const args: QueryUserArgs = {
+        id: Types.ObjectId().toString(),
+      };
+      const context = {
+        userId: testUser?.id,
+        apiRootUrl: BASE_URL,
+      };
+      await userResolver?.({}, args, context);
+      // eslint-disable-next-line
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+    }
   });
 });

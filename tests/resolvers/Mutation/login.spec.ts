@@ -4,7 +4,10 @@ import type { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  INVALID_CREDENTIALS_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import {
@@ -116,9 +119,12 @@ email === args.data.email`, async () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
+      if (!testUser) {
+        throw new Error("Error creating Test User.");
+      }
       const args: MutationLoginArgs = {
         data: {
-          email: `email${nanoid().toLowerCase()}@gmail.com`,
+          email: decryptEmail(testUser.email).decrypted,
           password: "incorrectPassword",
         },
       };
@@ -130,7 +136,7 @@ email === args.data.email`, async () => {
       await loginResolver?.({}, args, {});
     } catch (error: unknown) {
       if (error instanceof Error) {
-        expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+        expect(spy).toHaveBeenLastCalledWith(INVALID_CREDENTIALS_ERROR.MESSAGE);
       }
     }
   });
