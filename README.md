@@ -36,7 +36,7 @@ Core features include:
 
 ## Installation
 
-[Follow this guide](./INSTALLATION.md)
+[Follow this guide](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/INSTALLATION.md)
 
 ## Image Upload
 
