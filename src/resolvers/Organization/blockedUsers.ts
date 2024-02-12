@@ -9,23 +9,18 @@ import { decryptEmail } from "../../utilities/encryptionModule";
 export const blockedUsers: OrganizationResolvers["blockedUsers"] = async (
   parent
 ) => {
-  try {
-    const blockedUsers = await User.find({
-      _id: {
-        $in: parent.blockedUsers,
-      },
-    }).lean();
+  const blockedUsers = await User.find({
+    _id: {
+      $in: parent.blockedUsers,
+    },
+  }).lean();
 
-    // Decrypting email parameter for each blocked user object
-    // eslint-disable-next-line
-    const decryptedBlockedUsers = blockedUsers.map((blockedUser: any) => {
-      const { decrypted } = decryptEmail(blockedUser.email);
-      return { ...blockedUser, email: decrypted }; // Returning blocked user object with decrypted email
-    });
-
-    return decryptedBlockedUsers;
-  } catch (error) {
-    console.error("Error fetching blocked users:", error);
-    throw error;
-  }
+  // Decrypting email parameter for each blocked user object
+  // eslint-disable-next-line
+  const decryptedBlockedUsers = blockedUsers.map((blockedUser: any) => {
+    const { decrypted } = decryptEmail(blockedUser.email);
+    return { ...blockedUser, email: decrypted }; // Returning blocked user object with decrypted email
+  });
+  console.log(decryptedBlockedUsers);
+  return decryptedBlockedUsers;
 };
