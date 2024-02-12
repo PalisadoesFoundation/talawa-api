@@ -8,23 +8,18 @@ import { decryptEmail } from "../../utilities/encryptionModule";
  * @returns An object that contains the list of all members of the organization.
  */
 export const members: OrganizationResolvers["members"] = async (parent) => {
-  try {
-    const users = await User.find({
-      _id: {
-        $in: parent.members,
-      },
-    }).lean();
+  const users = await User.find({
+    _id: {
+      $in: parent.members,
+    },
+  }).lean();
 
-    // Decrypting email parameter for each user object
-    // eslint-disable-next-line
-    const decryptedUsers = users.map((user: any) => {
-      const { decrypted } = decryptEmail(user.email);
-      return { ...user, email: decrypted }; // Returning user object with decrypted email
-    });
+  // Decrypting email parameter for each user object
+  // eslint-disable-next-line
+  const decryptedUsers = users.map((user: any) => {
+    const { decrypted } = decryptEmail(user.email);
+    return { ...user, email: decrypted }; // Returning user object with decrypted email
+  });
 
-    return decryptedUsers;
-  } catch (error) {
-    console.error("Error fetching members:", error);
-    throw error;
-  }
+  return decryptedUsers;
 };
