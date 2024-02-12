@@ -114,8 +114,6 @@ export const checkIn: MutationResolvers["checkIn"] = async (
 
     const checkIn = await CheckIn.create({
       eventAttendeeId: checkInAttendee._id,
-      allotedSeat: args.data.allotedSeat,
-      allotedRoom: args.data.allotedRoom,
     });
 
     checkInAttendee.checkInId = checkIn._id;
@@ -133,8 +131,6 @@ export const checkIn: MutationResolvers["checkIn"] = async (
   }
   const checkIn = await CheckIn.create({
     eventAttendeeId: attendeeData._id,
-    allotedSeat: args.data.allotedSeat,
-    allotedRoom: args.data.allotedRoom,
   });
 
   attendeeData.isCheckedIn = true;

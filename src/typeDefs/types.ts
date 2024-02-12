@@ -48,8 +48,6 @@ export const types = gql`
   type CheckIn {
     _id: ID!
     time: DateTime!
-    allotedRoom: String
-    allotedSeat: String
     user: User!
     event: Event!
     feedbackSubmitted: Boolean!

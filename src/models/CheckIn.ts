@@ -13,8 +13,6 @@ export interface InterfaceCheckIn {
   _id: Types.ObjectId;
   eventAttendeeId: PopulatedDoc<InterfaceEventAttendee & Document>;
   time: Date;
-  allotedRoom: string;
-  allotedSeat: string;
   feedbackSubmitted: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -31,14 +29,6 @@ const checkInSchema = new Schema(
       type: Date,
       required: true,
       default: Date.now,
-    },
-    allotedRoom: {
-      type: String,
-      required: false,
-    },
-    allotedSeat: {
-      type: String,
-      required: false,
     },
     feedbackSubmitted: {
       type: Boolean,

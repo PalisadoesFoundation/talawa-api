@@ -145,8 +145,6 @@ export type AuthData = {
 export type CheckIn = {
   __typename?: 'CheckIn';
   _id: Scalars['ID']['output'];
-  allotedRoom?: Maybe<Scalars['String']['output']>;
-  allotedSeat?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['DateTime']['output'];
   event: Event;
   feedbackSubmitted: Scalars['Boolean']['output'];
@@ -156,8 +154,6 @@ export type CheckIn = {
 };
 
 export type CheckInInput = {
-  allotedRoom?: InputMaybe<Scalars['String']['input']>;
-  allotedSeat?: InputMaybe<Scalars['String']['input']>;
   eventId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
 };
@@ -2488,8 +2484,6 @@ export type AuthDataResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type CheckInResolvers<ContextType = any, ParentType extends ResolversParentTypes['CheckIn'] = ResolversParentTypes['CheckIn']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  allotedRoom?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  allotedSeat?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
   feedbackSubmitted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
