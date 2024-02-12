@@ -79,6 +79,10 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         adminApproved: true,
         joinedOrganizations: [args.data.selectedOrgainzation],
       });
+      let updatedUser: InterfaceUser = {
+        ...createdUser.toObject(),
+        password: "",
+      };
       // Update the organization
       await Organization.findOneAndUpdate(
         {
@@ -93,6 +97,18 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
           new: true,
         }
       );
+      const accessToken = await createAccessToken(createdUser!);
+      const refreshToken = await createRefreshToken(createdUser!);
+
+      copyToClipboard(`{
+  "Authorization": "Bearer ${accessToken}"
+  }`);
+      return {
+        user: updatedUser,
+        selectedOrganization: args.data.selectedOrgainzation,
+        accessToken,
+        refreshToken,
+      };
     } else {
       createdUser = await User.create({
         ...args.data,
@@ -120,6 +136,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         },
         {
           new: true,
+          projection: { password: 0 },
         }
       ).lean();
 
@@ -138,6 +155,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         },
         {
           new: true,
+          projection: { password: 0 },
         }
       );
     }
@@ -158,10 +176,8 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 
   const filteredCreatedUser = createdUser!.toObject();
 
-  const userToBeReturned = omit(filteredCreatedUser, "password");
-
   return {
-    user: userToBeReturned,
+    user: filteredCreatedUser,
     selectedOrganization: args.data.selectedOrgainzation,
     accessToken,
     refreshToken,

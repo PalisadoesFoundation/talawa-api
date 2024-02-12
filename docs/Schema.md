@@ -58,7 +58,6 @@
     * [UserTagEdge](#usertagedge)
     * [UserTagsConnection](#usertagsconnection)
     * [UserTagsConnectionResult](#usertagsconnectionresult)
-    * [UserToReturn](#usertoreturn)
     * [UsersConnection](#usersconnection)
     * [UsersConnectionResult](#usersconnectionresult)
   * [Inputs](#inputs)
@@ -1449,6 +1448,11 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" align="right" valign="top">title</td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>unassignUserTag</strong></td>
 <td valign="top"><a href="#user">User</a></td>
 <td></td>
@@ -1677,7 +1681,7 @@
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>countryCode</strong></td>
-<td valign="top"><a href="#countrycode">CountryCode</a></td>
+<td valign="top"><a href="#string">String</a></td>
 <td></td>
 </tr>
 <tr>
@@ -1832,7 +1836,7 @@
 <tbody>
 <tr>
 <td colspan="2" valign="top"><strong>user</strong></td>
-<td valign="top"><a href="#usertoreturn">UserToReturn</a>!</td>
+<td valign="top"><a href="#user">User</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -2941,8 +2945,8 @@
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>location</strong></td>
-<td valign="top"><a href="#string">String</a></td>
+<td colspan="2" valign="top"><strong>address</strong></td>
+<td valign="top"><a href="#address">Address</a></td>
 <td></td>
 </tr>
 <tr>
@@ -3963,186 +3967,6 @@ A list of edges.
 </tbody>
 </table>
 
-### UserToReturn
-
-<table>
-<thead>
-<tr>
-<th align="left">Field</th>
-<th align="right">Argument</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td colspan="2" valign="top"><strong>_id</strong></td>
-<td valign="top"><a href="#id">ID</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>address</strong></td>
-<td valign="top"><a href="#address">Address</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>adminApproved</strong></td>
-<td valign="top"><a href="#boolean">Boolean</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>adminFor</strong></td>
-<td valign="top">[<a href="#organization">Organization</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>appLanguageCode</strong></td>
-<td valign="top"><a href="#string">String</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>birthDate</strong></td>
-<td valign="top"><a href="#date">Date</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>createdAt</strong></td>
-<td valign="top"><a href="#datetime">DateTime</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>createdEvents</strong></td>
-<td valign="top">[<a href="#event">Event</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>createdOrganizations</strong></td>
-<td valign="top">[<a href="#organization">Organization</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>educationGrade</strong></td>
-<td valign="top"><a href="#educationgrade">EducationGrade</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>email</strong></td>
-<td valign="top"><a href="#emailaddress">EmailAddress</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>employmentStatus</strong></td>
-<td valign="top"><a href="#employmentstatus">EmploymentStatus</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>eventAdmin</strong></td>
-<td valign="top">[<a href="#event">Event</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>firstName</strong></td>
-<td valign="top"><a href="#string">String</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>gender</strong></td>
-<td valign="top"><a href="#gender">Gender</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>image</strong></td>
-<td valign="top"><a href="#string">String</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>joinedOrganizations</strong></td>
-<td valign="top">[<a href="#organization">Organization</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>lastName</strong></td>
-<td valign="top"><a href="#string">String</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>maritalStatus</strong></td>
-<td valign="top"><a href="#maritalstatus">MaritalStatus</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>membershipRequests</strong></td>
-<td valign="top">[<a href="#membershiprequest">MembershipRequest</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>organizationsBlockedBy</strong></td>
-<td valign="top">[<a href="#organization">Organization</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>phone</strong></td>
-<td valign="top"><a href="#userphone">UserPhone</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>pluginCreationAllowed</strong></td>
-<td valign="top"><a href="#boolean">Boolean</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>registeredEvents</strong></td>
-<td valign="top">[<a href="#event">Event</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>tagsAssignedWith</strong></td>
-<td valign="top"><a href="#usertagsconnection">UserTagsConnection</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">after</td>
-<td valign="top"><a href="#string">String</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">before</td>
-<td valign="top"><a href="#string">String</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">first</td>
-<td valign="top"><a href="#positiveint">PositiveInt</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">last</td>
-<td valign="top"><a href="#positiveint">PositiveInt</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">organizationId</td>
-<td valign="top"><a href="#id">ID</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>tokenVersion</strong></td>
-<td valign="top"><a href="#int">Int</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>updatedAt</strong></td>
-<td valign="top"><a href="#datetime">DateTime</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>userType</strong></td>
-<td valign="top"><a href="#usertype">UserType</a>!</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-
 ### UsersConnection
 
 <table>
@@ -4213,7 +4037,7 @@ A list of edges.
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>countryCode</strong></td>
-<td valign="top"><a href="#countrycode">CountryCode</a></td>
+<td valign="top"><a href="#string">String</a></td>
 <td></td>
 </tr>
 <tr>
@@ -4862,8 +4686,8 @@ A list of edges.
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>location</strong></td>
-<td valign="top"><a href="#string">String</a></td>
+<td colspan="2" valign="top"><strong>address</strong></td>
+<td valign="top"><a href="#addressinput">AddressInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -5481,8 +5305,8 @@ A list of edges.
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>location</strong></td>
-<td valign="top"><a href="#string">String</a></td>
+<td colspan="2" valign="top"><strong>address</strong></td>
+<td valign="top"><a href="#addressinput">AddressInput</a></td>
 <td></td>
 </tr>
 <tr>
