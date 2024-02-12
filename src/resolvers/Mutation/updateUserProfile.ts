@@ -110,6 +110,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         maritalStatus: args.data?.maritalStatus
           ? args.data.maritalStatus
           : currentUser?.maritalStatus,
+        appLanguageCode: args.data?.applangcode
+          ? args.data.applangcode
+          : currentUser?.appLanguageCode,
         phone: {
           home: args.data?.phone?.home
             ? args.data?.phone?.home
@@ -128,9 +131,12 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       runValidators: true,
     }
   ).lean();
-  updatedUser!.image = updatedUser?.image
-    ? `${context.apiRootUrl}${updatedUser?.image}`
-    : null;
+
+  if (updatedUser != null) {
+    updatedUser.image = updatedUser?.image
+      ? `${context.apiRootUrl}${updatedUser?.image}`
+      : null;
+  }
 
   return updatedUser ?? ({} as InterfaceUser);
 };

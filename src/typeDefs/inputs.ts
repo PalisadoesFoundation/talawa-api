@@ -334,6 +334,8 @@ export const inputs = gql`
   }
 
   input UpdateUserInput {
+    id: ID
+    applangcode: String
     address: AddressInput
     birthDate: Date
     educationGrade: EducationGrade
