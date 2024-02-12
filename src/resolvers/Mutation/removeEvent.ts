@@ -1,7 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event } from "../../models";
+import { User, Event, ActionItem } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -126,6 +126,8 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   if (updatedEvent !== null) {
     await cacheEvents([updatedEvent]);
   }
+
+  await ActionItem.deleteMany({ eventId: event?._id });
 
   return event;
 };

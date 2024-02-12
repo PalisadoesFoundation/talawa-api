@@ -30,7 +30,7 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
-
+/* eslint-disable */
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
@@ -41,6 +41,15 @@ beforeAll(async () => {
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
+    address: {
+      countryCode: `US`,
+      city: `SAMPLE`,
+      dependentLocality: "TEST",
+      line1: "TES",
+      postalCode: "110001",
+      sortingCode: "ABC-123",
+      state: "Delhi",
+    },
     isPublic: true,
     admins: [testAdminUser?._id],
     creatorId: testAdminUser?._id,

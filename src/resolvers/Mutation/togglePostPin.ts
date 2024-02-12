@@ -2,6 +2,8 @@ import {
   POST_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
+  PLEASE_PROVIDE_TITLE,
+  LENGTH_VALIDATION_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -12,6 +14,7 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
 import { Types } from "mongoose";
 import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
+import { isValidString } from "../../libraries/validators/validateString";
 
 export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   _parent,
@@ -118,6 +121,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       {
         $set: {
           pinned: false,
+          title: "",
         },
       },
     ).lean();
@@ -128,6 +132,25 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
 
     return updatedPost!;
   } else {
+    if (!args.title) {
+      throw new errors.InputValidationError(
+        requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
+        PLEASE_PROVIDE_TITLE.CODE,
+      );
+    }
+
+    if (args?.title) {
+      const validationResultTitle = isValidString(args?.title, 256);
+      if (!validationResultTitle.isLessThanMaxLength) {
+        throw new errors.InputValidationError(
+          requestContext.translate(
+            `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
+          ),
+          LENGTH_VALIDATION_ERROR.CODE,
+        );
+      }
+    }
+
     const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: post.organization,
@@ -152,6 +175,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       {
         $set: {
           pinned: true,
+          title: args?.title,
         },
       },
     ).lean();

@@ -1,4 +1,6 @@
 import type { Resolvers } from "../types/generatedGraphQLTypes";
+import { ActionItem } from "./ActionItem";
+import { ActionItemCategory } from "./ActionItemCategory";
 import { CheckIn } from "./CheckIn";
 import { Comment } from "./Comment";
 import { DirectChat } from "./DirectChat";
@@ -9,6 +11,7 @@ import { GroupChat } from "./GroupChat";
 import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
 import { Mutation } from "./Mutation";
+import { UserFamily } from "./UserFamily";
 import { Organization } from "./Organization";
 import { Post } from "./Post";
 import { Query } from "./Query";
@@ -31,6 +34,8 @@ import {
 } from "graphql-scalars";
 
 const resolvers: Resolvers = {
+  ActionItem,
+  ActionItemCategory,
   CheckIn,
   Comment,
   DirectChat,
@@ -38,6 +43,7 @@ const resolvers: Resolvers = {
   Event,
   Feedback,
   GroupChat,
+  UserFamily,
   GroupChatMessage,
   MembershipRequest,
   Mutation,

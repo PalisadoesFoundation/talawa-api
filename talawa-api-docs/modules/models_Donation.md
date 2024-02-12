@@ -16,8 +16,8 @@
 
 ### Donation
 
-• `Const` **Donation**: `Model`\<[`InterfaceDonation`](../interfaces/models_Donation.InterfaceDonation.md), {}, {}\>
+• `Const` **Donation**: `Model`\<[`InterfaceDonation`](../interfaces/models_Donation.InterfaceDonation.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/Donation.ts:63](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/models/Donation.ts#L63)
+[src/models/Donation.ts:63](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Donation.ts#L63)

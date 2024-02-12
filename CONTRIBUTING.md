@@ -94,11 +94,11 @@ Make sure you have read the [Documentation for Setting up the Project](INSTALLAT
 The process of proposing a change to Talawa API can be summarized as:
 
 1. Fork the Talawa API repository and branch off `develop`.
-2. The repository can be cloned locally using `git clone <forked repo url>`.
-3. Make sure your code is up-to-date with the main source main. A detailed guide on the same can be found in the [Upgrading Code Section](#upgrading-code).
-4. Make the desired changes to the Talawa API source.
-5. Run the app and test your changes.
-6. If you've added code, then test suites must be added.
+1. Your newly forked repository can be cloned locally using `git clone <YOUR FORKED REPO URL>`.
+1. Make the Palisadoes Foundation's repo your `git upstream` for your local repo.
+1. Make the desired changes to the Talawa API source.
+1. Run the app and test your changes.
+1. If you've added code, then test suites must be added.
    1. **_General_:**
       1. We need to get to 100% test coverage for the app. We periodically increase the desired test coverage for our pull requests to meet this goal.
       2. Pull requests that don't meet the minimum test coverage levels will not be accepted. This may mean that you will have to create tests for code you did not write. You can decide which part of the code base needs additional tests if this happens to you.

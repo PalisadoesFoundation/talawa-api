@@ -3,7 +3,6 @@ import { User } from "./models";
 import { generateErrorMessage } from "zod-error";
 import { getEnvIssues } from "./env";
 import { logger } from "./libraries";
-
 const logWarningForSuperAdminEnvVariable = async (): Promise<void> => {
   const superAdminExist = await User.exists({ userType: "SUPERADMIN" });
   const isVariablePresentInEnvFile = !!LAST_RESORT_SUPERADMIN_EMAIL;
