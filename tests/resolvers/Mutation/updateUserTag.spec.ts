@@ -5,26 +5,26 @@ import type { MutationUpdateUserTagArgs } from "../../../src/types/generatedGrap
 import { connect, disconnect } from "../../helpers/db";
 
 import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-  TAG_NOT_FOUND,
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import {
   NO_CHANGE_IN_TAG_NAME,
   TAG_ALREADY_EXISTS,
+  TAG_NOT_FOUND,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
-import { createTestUser } from "../../helpers/userAndOrg";
+import { OrganizationTagUser, User } from "../../../src/models";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createRootTagsWithOrg } from "../../helpers/tags";
-import { OrganizationTagUser } from "../../../src/models";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -59,7 +59,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag!._id.toString(),
+          _id: testTag?._id.toString() ?? "",
           name: "NewName",
         },
       };
@@ -71,8 +71,8 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -95,7 +95,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateUserTag: updateUserTagResolver } = await import(
@@ -103,9 +103,11 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(TAG_NOT_FOUND.MESSAGE);
-      expect(error.message).toEqual(`Translated ${TAG_NOT_FOUND.MESSAGE}`);
+      expect((error as Error).message).toEqual(
+        `Translated ${TAG_NOT_FOUND.MESSAGE}`
+      );
     }
   });
 
@@ -119,13 +121,13 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag!._id.toString(),
+          _id: testTag?._id.toString() ?? "",
           name: "NewName",
         },
       };
 
       const context = {
-        userId: randomUser!._id,
+        userId: randomUser?._id,
       };
 
       const { updateUserTag: updateUserTagResolver } = await import(
@@ -133,8 +135,8 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
       expect(spy).toHaveBeenLastCalledWith(
@@ -153,13 +155,13 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag!._id.toString(),
-          name: testTag!.name,
+          _id: testTag?._id.toString() ?? "",
+          name: testTag?.name ?? "",
         },
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateUserTag: updateUserTagResolver } = await import(
@@ -167,8 +169,8 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${NO_CHANGE_IN_TAG_NAME.MESSAGE}`
       );
       expect(spy).toHaveBeenLastCalledWith(`${NO_CHANGE_IN_TAG_NAME.MESSAGE}`);
@@ -185,13 +187,13 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag!._id.toString(),
-          name: testTag2!.name,
+          _id: testTag?._id.toString() ?? "",
+          name: testTag2?.name ?? "",
         },
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateUserTag: updateUserTagResolver } = await import(
@@ -199,8 +201,10 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(`Translated ${TAG_ALREADY_EXISTS.MESSAGE}`);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${TAG_ALREADY_EXISTS.MESSAGE}`
+      );
       expect(spy).toHaveBeenLastCalledWith(`${TAG_ALREADY_EXISTS.MESSAGE}`);
     }
   });
@@ -208,12 +212,12 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
   it(`updates the task with _id === args.id and returns it`, async () => {
     const args: MutationUpdateUserTagArgs = {
       input: {
-        _id: testTag!._id.toString(),
+        _id: testTag?._id.toString() ?? "",
         name: "NewName",
       },
     };
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { updateUserTag: updateUserTagResolver } = await import(
@@ -223,9 +227,57 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     await updateUserTagResolver?.({}, args, context);
 
     const updatedTag = await OrganizationTagUser.findOne({
-      _id: testTag!._id,
+      _id: testTag?._id,
     }).lean();
 
-    expect(updatedTag!.name).toEqual("NewName");
+    expect(updatedTag?.name).toEqual("NewName");
+  });
+  it("throws error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const args: MutationUpdateUserTagArgs = {
+      input: {
+        _id: testTag?._id.toString() ?? "",
+        name: "NewName",
+      },
+    };
+    const newUser = await User.create({
+      email: `email${Math.random()}@gmail.com`,
+      password: `pass${Math.random()}`,
+      firstName: `firstName${Math.random()}`,
+      lastName: `lastName${Math.random()}`,
+      image: null,
+    });
+    const context = {
+      userId: newUser?._id,
+    };
+
+    const { updateUserTag: updateUserTagResolver } = await import(
+      "../../../src/resolvers/Mutation/updateUserTag"
+    );
+
+    await OrganizationTagUser.updateOne(
+      {
+        _id: testTag?._id,
+      },
+      {
+        $set: {
+          appUserProfileId: null,
+        },
+      }
+    );
+
+    try {
+      await updateUserTagResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
   });
 });

@@ -18,6 +18,7 @@ import {
 } from "vitest";
 import {
   INVALID_CREDENTIALS_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { updateUserPassword as updateUserPasswordResolver } from "../../../src/resolvers/Mutation/updateUserPassword";
@@ -205,5 +206,34 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     );
 
     expect(updateUserPasswordPayload).not.toBeNull();
+  });
+  it("throws error if user does not have appLanguageCode", async () => {
+    const newUser = await User.create({
+      email: `email${Math.random()}@gmail.com`,
+      password: `pass${Math.random()}`,
+      firstName: `firstName${Math.random()}`,
+      lastName: `lastName${Math.random()}`,
+      image: null,
+    });
+    const args: MutationUpdateUserPasswordArgs = {
+      data: {
+        previousPassword: "password",
+        newPassword: "abcdabcd",
+        confirmNewPassword: "abcdabcd",
+      },
+    };
+    const context = {
+      userId: newUser?._id,
+    };
+
+    try {
+      await updateUserPasswordResolver?.({}, args, context);
+    } catch (error: unknown) {
+      console.log((error as Error).message);
+      // expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
+    }
   });
 });

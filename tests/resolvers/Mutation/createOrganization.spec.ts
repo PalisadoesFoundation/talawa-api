@@ -15,7 +15,9 @@ import {
 } from "vitest";
 import {
   LENGTH_VALIDATION_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
@@ -455,6 +457,82 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     } else {
       console.error(
         "Error: createOrganizationResolver is undefined in the test suite"
+      );
+    }
+  });
+  it("throws error if no user is found", async () => {
+    try {
+      const args: MutationCreateOrganizationArgs = {
+        data: {
+          description: "description",
+          name: "name",
+          userRegistrationRequired: true,
+          visibleInSearch: true,
+          apiUrl: "apiUrl",
+          address: {
+            city: "CityName",
+            countryCode: "US",
+            dependentLocality: "Dependent Locality",
+            line1: "123 Main Street",
+            line2: "Apartment 456",
+            postalCode: "12345",
+            sortingCode: "ABC-123",
+            state: "State/Province",
+          },
+        },
+        file: null,
+      };
+
+      const context = {
+        userId: "randomUserId",
+      };
+
+      await createOrganizationResolver?.({}, args, context);
+    } catch (error: unknown) {
+      console.log(error);
+      // expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+  it("throws error if user does not have appProfile", async () => {
+    try {
+      const newUser = await User.create({
+        email: `email${Math.random()}@gmail.com`,
+        password: `pass${Math.random()}`,
+        firstName: `firstName${Math.random()}`,
+        lastName: `lastName${Math.random()}`,
+        image: null,
+      });
+      const args: MutationCreateOrganizationArgs = {
+        data: {
+          description: "description",
+          name: "name",
+          userRegistrationRequired: true,
+          visibleInSearch: true,
+          apiUrl: "apiUrl",
+          address: {
+            city: "CityName",
+            countryCode: "US",
+            dependentLocality: "Dependent Locality",
+            line1: "123 Main Street",
+            line2: "Apartment 456",
+            postalCode: "12345",
+            sortingCode: "ABC-123",
+            state: "State/Province",
+          },
+        },
+        file: null,
+      };
+      const context = {
+        userId: newUser?._id,
+      };
+
+      await createOrganizationResolver?.({}, args, context);
+    } catch (error: unknown) {
+      // console.log((error as Error).message);
+
+      expect((error as Error).message).toEqual(
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
     }
   });

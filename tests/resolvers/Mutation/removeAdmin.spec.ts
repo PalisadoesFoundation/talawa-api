@@ -207,6 +207,27 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       );
     }
   });
+  it("throws error if no user found", async () => {
+    try {
+      const args: MutationRemoveAdminArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          userId: Types.ObjectId().toString(),
+        },
+      };
+      const context = {
+        userId: testUserRemover?.id,
+      };
+      const { removeAdmin: removeAdminResolver } = await import(
+        "../../../src/resolvers/Mutation/removeAdmin"
+      );
+      await removeAdminResolver?.({}, args, context);
+    } catch (error: unknown) {
+      console.log(error);
+      // expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
 
   it(`throws UnauthorizedError if user with _id === args.data.userId is not an admin
   of organzation with _id === args.data.organizationId`, async () => {

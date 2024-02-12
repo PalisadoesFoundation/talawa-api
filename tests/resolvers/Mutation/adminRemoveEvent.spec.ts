@@ -5,11 +5,13 @@ import { AppUserProfile, Event, Organization, User } from "../../../src/models";
 import type { MutationAdminRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import { nanoid } from "nanoid";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { adminRemoveEvent as adminRemoveEventResolver } from "../../../src/resolvers/Mutation/adminRemoveEvent";
@@ -167,7 +169,31 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       );
     }
   });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    try {
+      const args: MutationAdminRemoveEventArgs = {
+        eventId: testEvent?.id,
+      };
 
+      const newUser = await User.create({
+        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        password: `pass${nanoid().toLowerCase()}`,
+        firstName: `firstName${nanoid().toLowerCase()}`,
+        lastName: `lastName${nanoid().toLowerCase()}`,
+        image: null,
+      });
+
+      const context = {
+        userId: newUser.id,
+      };
+
+      await adminRemoveEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
+    }
+  });
   it(`removes event with _id === args.eventId and returns it`, async () => {
     const updatedOrganization = await Organization.findOneAndUpdate(
       {

@@ -1,18 +1,18 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
-import { User, Organization, Event, AppUserProfile } from "../../models";
 import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
-import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { errors, requestContext } from "../../libraries";
+import { AppUserProfile, Event, Organization, User } from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { deleteEventFromCache } from "../../services/EventCache/deleteEventFromCache";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
 /**
  * This function enables an admin to remove a event
  * @param _parent - parent of current request

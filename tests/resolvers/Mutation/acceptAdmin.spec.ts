@@ -166,4 +166,36 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
       );
     }
   });
+  it("throws an error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationAcceptAdminArgs = {
+        id: Types.ObjectId().toString(),
+      };
+      const newUser = await User.create({
+        email: `email${Math.random()}@gmail.com`,
+        password: `pass${Math.random()}`,
+        firstName: `firstName${Math.random()}`,
+        lastName: `lastName${Math.random()}`,
+        image: null,
+      });
+      const context = {
+        userId: newUser?.id,
+      };
+
+      const { acceptAdmin } = await import(
+        "../../../src/resolvers/Mutation/acceptAdmin"
+      );
+      await acceptAdmin?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+      );
+    }
+  });
 });

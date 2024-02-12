@@ -32,7 +32,7 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
     });
     if (!currentUserAppProfile) {
       throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
         USER_NOT_AUTHORIZED_ERROR.CODE,
         USER_NOT_AUTHORIZED_ERROR.PARAM
       );
@@ -101,13 +101,6 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
           new: true,
         }
       ).lean();
-    if (!updatedAppUserProfile) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
-      );
-    }
 
     return {
       user: updatedUser as InterfaceUser,

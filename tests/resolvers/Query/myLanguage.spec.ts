@@ -60,4 +60,22 @@ describe("resolvers -> Query -> myLanguage", () => {
 
     expect(appLanguageCodePayload).toEqual(testAppUserProfile?.appLanguageCode);
   });
+  it("throws error if user does not have appLanguageCode", async () => {
+    const newUser = await User.create({
+      email: `email${Math.random()}@gmail.com`,
+      password: `pass${Math.random()}`,
+      firstName: `firstName${Math.random()}`,
+      lastName: `lastName${Math.random()}`,
+      image: null,
+    });
+    const context = {
+      userId: newUser?._id,
+    };
+
+    try {
+      await myLanguageResolver?.({}, {}, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
 });

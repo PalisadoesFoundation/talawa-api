@@ -6,23 +6,24 @@ import type { MutationRemoveUserFamilyArgs } from "../../../src/types/generatedG
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import {
   USER_FAMILY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  afterEach,
-  vi,
-} from "vitest";
-import { createTestUserFunc } from "../../helpers/userAndUserFamily";
 import type {
   TestUserFamilyType,
   TestUserType,
 } from "../../helpers/userAndUserFamily";
+import { createTestUserFunc } from "../../helpers/userAndUserFamily";
+import { User } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -122,6 +123,40 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
 
       const context = {
         userId: testUsers[0]?.id,
+      };
+
+      const { removeUserFamily: removeUserFamilyResolver } = await import(
+        "../../../src/resolvers/Mutation/removeUserFamily"
+      );
+
+      await removeUserFamilyResolver?.({}, args, context);
+    } catch (error) {
+      expect(spy).toHaveBeenCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`
+      );
+    }
+  });
+  it("throws error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => message);
+
+    try {
+      const args: MutationRemoveUserFamilyArgs = {
+        familyId: testUserFamily?.id,
+      };
+      const newUser = await User.create({
+        email: `email${Math.random()}@gmail.com`,
+        password: `pass${Math.random()}`,
+        firstName: `firstName${Math.random()}`,
+        lastName: `lastName${Math.random()}`,
+        image: null,
+      });
+
+      const context = {
+        userId: newUser?.id,
       };
 
       const { removeUserFamily: removeUserFamilyResolver } = await import(
