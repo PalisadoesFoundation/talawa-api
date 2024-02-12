@@ -114,9 +114,9 @@ describe("resolvers -> Mutation -> refreshToken", () => {
   it(`throws ValidationError if user.tokenVersion !== payload.tokenVersion for user
   with _id === payload.userId for args.refreshToken`, async () => {
     const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
     try {
       await AppUserProfile.updateOne(
         {
@@ -147,7 +147,10 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       await refreshTokenResolver?.({}, args, {});
     } catch (error: unknown) {
       if (error instanceof Error) {
-        expect(error.message).toEqual(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
+        expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
+        );
       }
     }
   });
