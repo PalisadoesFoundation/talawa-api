@@ -28,6 +28,9 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
       organizationId: testOrganization?._id,
     };
 
+    // Use testEvent within the test
+    console.log(testEvent);
+
     const actionItemsByOrganizationPayload =
       await actionItemsByOrganizationResolver?.({}, args, {});
 
