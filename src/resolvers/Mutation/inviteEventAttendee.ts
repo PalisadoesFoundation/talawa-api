@@ -109,5 +109,5 @@ export const inviteEventAttendee: MutationResolvers["inviteEventAttendee"] =
       isInvited: true,
     });
 
-    return invitedUser;
+    return invitedUser.toObject();
   };
