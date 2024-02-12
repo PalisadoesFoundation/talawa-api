@@ -28,7 +28,6 @@ dotenv.config();
  */
 
 export async function loadDefaultOrganization(): Promise<void> {
-  let session!: mongoose.ClientSession;
   const url = process.env.MONGO_DB_URL;
   if (url == null) {
     console.log("Couldn't find mongodb url");
@@ -61,7 +60,7 @@ export async function loadDefaultOrganization(): Promise<void> {
   if (format) {
     await formatDatabase();
   }
-  session = await mongoose.startSession();
+  const session = await mongoose.startSession();
   const userData = await fs.readFileSync(
     path.join(__dirname, `../../sample_data/defaultOrganizationAdmin.json`),
     "utf8"

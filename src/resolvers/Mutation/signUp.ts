@@ -19,7 +19,6 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { Document } from "mongoose";
-import { omit } from "lodash";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -79,7 +78,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         adminApproved: true,
         joinedOrganizations: [args.data.selectedOrgainzation],
       });
-      let updatedUser: InterfaceUser = {
+      const updatedUser: InterfaceUser = {
         ...createdUser.toObject(),
         password: "",
       };

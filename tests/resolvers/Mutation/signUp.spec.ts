@@ -2,7 +2,8 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { InterfaceUser, Organization, User } from "../../../src/models";
+import type { InterfaceUser } from "../../../src/models";
+import { Organization, User } from "../../../src/models";
 import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import {
@@ -86,7 +87,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     })
       .select("-password")
       .lean();
-    let updatedUser = {
+    const updatedUser = {
       ...createdUser,
       password: "",
     };
@@ -132,7 +133,7 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     const signUpPayload = await signUpResolver?.({}, args, {});
 
-    let createdUser:
+    const createdUser:
       | (InterfaceUser & Document<any, any, InterfaceUser>)
       | null = await User.findOne({
       email,
