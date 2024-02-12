@@ -14,11 +14,11 @@ const checkImageSizeLimit = (size: number): boolean => {
 
 const base64SizeInKb = (base64String: string): number => {
   // Count the number of Base64 characters
-  var numBase64Chars = base64String.length;
+  const numBase64Chars = base64String.length;
   // Calculate the size in bytes
-  var sizeInBytes = (numBase64Chars * 3) / 4;
+  const sizeInBytes = (numBase64Chars * 3) / 4;
   // Convert to kilobytes
-  var sizeInKB = sizeInBytes / 1024;
+  const sizeInKB = sizeInBytes / 1024;
 
   return sizeInKB;
 };
