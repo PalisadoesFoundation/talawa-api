@@ -28,6 +28,7 @@ import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/s
 
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
+// eslint-disable-next-line
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 
@@ -203,7 +204,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     try {
       const args: MutationSignUpArgs = {
         data: {
-          email: testUser?.email,
+          email: `admin@email.com`,
           firstName: "firstName",
           lastName: "lastName",
           password: "password",

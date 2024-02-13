@@ -35,7 +35,6 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     try {
       // Decrypting the email for each user
       const { decrypted } = decryptEmail(user.email);
-
       if (decrypted === args.data.email) {
         // The decrypted email matches the user-provided email
         throw new errors.ConflictError(

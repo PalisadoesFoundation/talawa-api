@@ -7,6 +7,7 @@ import type { TestMembershipRequestType } from "../../helpers/membershipRequests
 import { createTestMembershipRequest } from "../../helpers/membershipRequests";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { decryptEmail } from "../../../src/utilities/encryptionModule";
+import { NotFoundError } from "../../../src/libraries/errors";
 
 let testMembershipRequest: TestMembershipRequestType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -40,5 +41,13 @@ describe("resolvers -> MembershipRequest -> user", () => {
     user.email = decrypted;
 
     expect(userPayload).toEqual(user);
+  });
+  it(`throws error when user not found.`, async () => {
+    // eslint-disable-next-line
+    const parent = testMembershipRequest!.toObject()._id;
+    // eslint-disable-next-line
+    await expect(userResolver?.(parent, {}, {})).rejects.toThrowError(
+      NotFoundError
+    );
   });
 });
