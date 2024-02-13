@@ -110,8 +110,8 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         maritalStatus: args.data?.maritalStatus
           ? args.data.maritalStatus
           : currentUser?.maritalStatus,
-        appLanguageCode: args.data?.applangcode
-          ? args.data.applangcode
+        appLanguageCode: args.data?.appLanguageCode
+          ? args.data.appLanguageCode
           : currentUser?.appLanguageCode,
         phone: {
           home: args.data?.phone?.home
