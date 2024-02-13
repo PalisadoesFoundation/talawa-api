@@ -19,7 +19,7 @@ import {
 
 import { createTestUser } from "../../helpers/userAndOrg";
 
-import { OrganizationCustomField, User } from "../../../src/models";
+import { AppUserProfile, OrganizationCustomField } from "../../../src/models";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -224,12 +224,9 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
-    const newUser = await User.create({
-      email: `email${Math.random()}@gmail.com`,
-      password: `pass${Math.random()}`,
-      firstName: `firstName${Math.random()}`,
-      lastName: `lastName${Math.random()}`,
-      image: null,
+    const newUser = await createTestUser();
+    await AppUserProfile.deleteOne({
+      userId: newUser?._id,
     });
     const context = { userId: newUser?._id };
     const args = {

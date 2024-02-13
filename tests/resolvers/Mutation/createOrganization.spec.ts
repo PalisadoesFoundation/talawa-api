@@ -496,12 +496,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
   });
   it("throws error if user does not have appProfile", async () => {
     try {
-      const newUser = await User.create({
-        email: `email${Math.random()}@gmail.com`,
-        password: `pass${Math.random()}`,
-        firstName: `firstName${Math.random()}`,
-        lastName: `lastName${Math.random()}`,
-        image: null,
+      const temp = await createTestUserFunc();
+      await AppUserProfile.deleteOne({
+        userId: temp?._id,
       });
       const args: MutationCreateOrganizationArgs = {
         data: {
@@ -524,7 +521,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         file: null,
       };
       const context = {
-        userId: newUser?._id,
+        userId: temp?._id,
       };
 
       await createOrganizationResolver?.({}, args, context);

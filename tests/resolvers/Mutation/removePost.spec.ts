@@ -18,7 +18,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { Post, User } from "../../../src/models";
+import { AppUserProfile, Post } from "../../../src/models";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
@@ -245,12 +245,9 @@ describe("resolvers -> Mutation -> removePost", () => {
         id: testPost?.id,
       };
 
-      const newUser = await User.create({
-        email: `email${Math.random()}@gmail.com`,
-        password: `pass${Math.random()}`,
-        firstName: `firstName${Math.random()}`,
-        lastName: `lastName${Math.random()}`,
-        image: null,
+      const newUser = await createTestUser();
+      await AppUserProfile.deleteOne({
+        userId: newUser?.id,
       });
       const context = {
         userId: newUser?.id,

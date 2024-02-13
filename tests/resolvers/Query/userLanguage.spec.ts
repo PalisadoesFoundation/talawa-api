@@ -8,7 +8,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, User } from "../../../src/models";
+import { AppUserProfile } from "../../../src/models";
 import { userLanguage as userLanguageResolver } from "../../../src/resolvers/Query/userLanguage";
 import type { QueryUserLanguageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { createTestUser } from "../../helpers/userAndOrg";
@@ -55,12 +55,9 @@ describe("resolvers -> Query -> userLanguage", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
-    const newUser = await User.create({
-      email: `email${Math.random()}@gmail.com`,
-      password: `pass${Math.random()}`,
-      firstName: `firstName${Math.random()}`,
-      lastName: `lastName${Math.random()}`,
-      image: null,
+    const newUser = await createTestUser();
+    await AppUserProfile.deleteOne({
+      userId: newUser?.id,
     });
     const args: QueryUserLanguageArgs = {
       userId: newUser?._id,

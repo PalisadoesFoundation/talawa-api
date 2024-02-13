@@ -19,7 +19,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { TagUser, User } from "../../../src/models";
+import { AppUserProfile, TagUser } from "../../../src/models";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createRootTagWithOrg } from "../../helpers/tags";
 import type { TestUserType } from "../../helpers/userAndOrg";
@@ -250,12 +250,9 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      const newUser = await User.create({
-        email: `email${Math.random()}@gmail.com`,
-        password: `pass${Math.random()}`,
-        firstName: `firstName${Math.random()}`,
-        lastName: `lastName${Math.random()}`,
-        image: null,
+      const newUser = await createTestUser();
+      await AppUserProfile.deleteOne({
+        userId: newUser?.id,
       });
       const args: MutationUnassignUserTagArgs = {
         input: {

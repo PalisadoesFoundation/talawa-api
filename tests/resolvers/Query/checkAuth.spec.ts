@@ -9,7 +9,7 @@ import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
-import { User } from "../../../src/models";
+import { AppUserProfile, User } from "../../../src/models";
 import { createTestUser } from "../../helpers/userAndOrg";
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -74,15 +74,13 @@ describe("resolvers -> Query -> checkAuth", () => {
   });
   it("throws error if user does not have appUserProfile", async () => {
     try {
-      const newUser = await User.create({
-        email: `email${Math.random()}@gmail.com`,
-        password: `pass${Math.random()}`,
-        firstName: `firstName${Math.random()}`,
-        lastName: `lastName${Math.random()}`,
-        image: null,
+      const testUser = await createTestUser();
+      await AppUserProfile.deleteOne({
+        userId: testUser?._id,
       });
+
       const context = {
-        userId: newUser.id,
+        userId: testUser?._id,
       };
       await checkAuthResolver?.({}, {}, context);
     } catch (error: unknown) {

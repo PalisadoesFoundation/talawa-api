@@ -22,7 +22,7 @@ import {
   USER_NOT_AUTHORIZED_TO_CREATE_TAG,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { OrganizationTagUser, User } from "../../../src/models";
+import { AppUserProfile, OrganizationTagUser } from "../../../src/models";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createRootTagWithOrg } from "../../helpers/tags";
 import type {
@@ -297,12 +297,9 @@ describe("resolvers -> Mutation -> createUserTag", () => {
           name: "TestUserTag",
         },
       };
-      const newUser = await User.create({
-        email: `email${Math.random()}@gmail.com`,
-        password: `pass${Math.random()}`,
-        firstName: `firstName${Math.random()}`,
-        lastName: `lastName${Math.random()}`,
-        image: null,
+      const newUser = await createTestUser();
+      await AppUserProfile.deleteOne({
+        userId: newUser?.id,
       });
       const context = {
         userId: newUser?.id,

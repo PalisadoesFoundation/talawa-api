@@ -18,7 +18,11 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { OrganizationTagUser, TagUser, User } from "../../../src/models";
+import {
+  AppUserProfile,
+  OrganizationTagUser,
+  TagUser,
+} from "../../../src/models";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
 import type { TestUserType } from "../../helpers/userAndOrg";
@@ -203,12 +207,9 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
       const args: MutationRemoveUserTagArgs = {
         id: rootTag ? rootTag._id.toString() : "",
       };
-      const newUser = await User.create({
-        email: `email${Math.random()}@gmail.com`,
-        password: `pass${Math.random()}`,
-        firstName: `firstName${Math.random()}`,
-        lastName: `lastName${Math.random()}`,
-        image: null,
+      const newUser = await createTestUser();
+      await AppUserProfile.deleteOne({
+        userId: newUser?.id,
       });
       const context = {
         userId: newUser?.id,

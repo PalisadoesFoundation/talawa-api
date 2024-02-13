@@ -18,7 +18,8 @@ import {
   USER_FAMILY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { User } from "../../../src/models";
+import { AppUserProfile } from "../../../src/models";
+import { createTestUser } from "../../helpers/userAndOrg";
 import type {
   TestUserFamilyType,
   TestUserType,
@@ -147,12 +148,9 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
       const args: MutationRemoveUserFamilyArgs = {
         familyId: testUserFamily?.id,
       };
-      const newUser = await User.create({
-        email: `email${Math.random()}@gmail.com`,
-        password: `pass${Math.random()}`,
-        firstName: `firstName${Math.random()}`,
-        lastName: `lastName${Math.random()}`,
-        image: null,
+      const newUser = await createTestUser();
+      await AppUserProfile.deleteOne({
+        userId: newUser?.id,
       });
 
       const context = {

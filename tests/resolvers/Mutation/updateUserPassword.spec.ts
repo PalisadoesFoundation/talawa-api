@@ -22,7 +22,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { updateUserPassword as updateUserPasswordResolver } from "../../../src/resolvers/Mutation/updateUserPassword";
-import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -208,12 +208,9 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     expect(updateUserPasswordPayload).not.toBeNull();
   });
   it("throws error if user does not have appLanguageCode", async () => {
-    const newUser = await User.create({
-      email: `email${Math.random()}@gmail.com`,
-      password: `pass${Math.random()}`,
-      firstName: `firstName${Math.random()}`,
-      lastName: `lastName${Math.random()}`,
-      image: null,
+    const newUser = await createTestUser();
+    await AppUserProfile.deleteOne({
+      userId: newUser?.id,
     });
     const args: MutationUpdateUserPasswordArgs = {
       data: {

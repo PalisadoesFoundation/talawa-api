@@ -17,7 +17,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { User } from "../../../src/models";
+import { AppUserProfile } from "../../../src/models";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -195,14 +195,11 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
       name: "testName",
       type: "testType",
     };
-    const newUser = await User.create({
-      email: `email${Math.random()}@gmail.com`,
-      password: `pass${Math.random()}`,
-      firstName: `firstName${Math.random()}`,
-      lastName: `lastName${Math.random()}`,
-      image: null,
+    const testUser = await createTestUser();
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
     });
-    const context = { userId: newUser?._id };
+    const context = { userId: testUser?._id };
 
     try {
       await addOrganizationCustomField?.({}, args, context);

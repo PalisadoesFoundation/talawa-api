@@ -8,6 +8,7 @@ import { myLanguage as myLanguageResolver } from "../../../src/resolvers/Query/m
 import { connect, disconnect } from "../../helpers/db";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -61,12 +62,9 @@ describe("resolvers -> Query -> myLanguage", () => {
     expect(appLanguageCodePayload).toEqual(testAppUserProfile?.appLanguageCode);
   });
   it("throws error if user does not have appLanguageCode", async () => {
-    const newUser = await User.create({
-      email: `email${Math.random()}@gmail.com`,
-      password: `pass${Math.random()}`,
-      firstName: `firstName${Math.random()}`,
-      lastName: `lastName${Math.random()}`,
-      image: null,
+    const newUser = await createTestUser();
+    await AppUserProfile.deleteOne({
+      userId: newUser?.id,
     });
     const context = {
       userId: newUser?._id,

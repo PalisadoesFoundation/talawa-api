@@ -173,18 +173,15 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
       .mockImplementation((message) => `Translated ${message}`);
 
     try {
+      const testUser = await createTestUser();
       const args: MutationAcceptAdminArgs = {
         id: Types.ObjectId().toString(),
       };
-      const newUser = await User.create({
-        email: `email${Math.random()}@gmail.com`,
-        password: `pass${Math.random()}`,
-        firstName: `firstName${Math.random()}`,
-        lastName: `lastName${Math.random()}`,
-        image: null,
+      await AppUserProfile.deleteOne({
+        userId: testUser?.id,
       });
       const context = {
-        userId: newUser?.id,
+        userId: testUser?.id,
       };
 
       const { acceptAdmin } = await import(
