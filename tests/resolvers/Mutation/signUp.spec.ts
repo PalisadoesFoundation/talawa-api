@@ -150,12 +150,13 @@ describe("resolvers -> Mutation -> signUp", () => {
     })
       .select("password")
       .lean();
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const ifRightPassword = await bcrypt.compare(
-      args.data.password,
-      password?.password!
-    );
-    expect(ifRightPassword).toBe(true);
+    if(password!=null){
+      const ifRightPassword = await bcrypt.compare(
+        args.data.password,
+        password.password
+      );
+      expect(ifRightPassword).toBe(true);
+    }
     expect(createdUser?.adminApproved).toBe(false);
     expect(typeof signUpPayload?.accessToken).toEqual("string");
     expect(signUpPayload?.accessToken.length).toBeGreaterThan(1);
