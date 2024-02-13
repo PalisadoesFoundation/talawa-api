@@ -132,7 +132,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     );
 
     const signUpPayload = await signUpResolver?.({}, args, {});
-
+       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const createdUser:
       | (InterfaceUser & Document<any, any, InterfaceUser>)
       | null = await User.findOne({
@@ -150,6 +150,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     })
       .select("password")
       .lean();
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const ifRightPassword = await bcrypt.compare(
       args.data.password,
       password?.password!
@@ -273,7 +274,9 @@ describe("resolvers -> Mutation -> signUp", () => {
       );
 
       await signUpResolver?.({}, args, {});
-    } catch (error: any) {
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any 
+    catch (error: any) {
       expect(spy).toBeCalledWith(EMAIL_MESSAGE);
       expect(error.message).toEqual(EMAIL_MESSAGE);
     }
@@ -302,7 +305,9 @@ describe("resolvers -> Mutation -> signUp", () => {
       );
 
       await signUpResolver?.({}, args, {});
-    } catch (error: any) {
+    } 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }

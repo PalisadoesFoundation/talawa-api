@@ -4,7 +4,7 @@ import type { InterfaceMembershipRequest } from "../../src/models";
 import { MembershipRequest, Organization, User } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
-
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TestMembershipRequestType =
   | (InterfaceMembershipRequest &
       Document<any, any, InterfaceMembershipRequest>)
