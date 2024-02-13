@@ -312,4 +312,25 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       })
     );
   });
+  it("throws error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser2?._id,
+    });
+    const args: MutationUpdateActionItemArgs = {
+      id: testActionItem?._id,
+      data: {
+        assigneeId: testUser?._id,
+      },
+    };
+    const context = {
+      userId: testUser2?._id,
+    };
+    try {
+      await updateActionItemResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
+    }
+  });
 });

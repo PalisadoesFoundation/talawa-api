@@ -17,6 +17,7 @@ import {
   LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
@@ -702,6 +703,53 @@ describe("Check for validation conditions", () => {
         );
       } else {
         fail(`Expected DateValidationError, but got ${error}`);
+      }
+    }
+  });
+  it("throws error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+
+    const args: MutationCreateEventArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        allDay: false,
+        description: "Random",
+        endDate: "Tue Feb 15 2023",
+        endTime: "",
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "Random",
+        recurring: false,
+        startDate: "Tue Feb 14 2023",
+        startTime: "",
+        title: "Random",
+        recurrance: "DAILY",
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const { createEvent: createEventResolverError } = await import(
+      "../../../src/resolvers/Mutation/createEvent"
+    );
+
+    try {
+      await createEventResolverError?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof UnauthorizedError) {
+        expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      } else {
+        fail(`Expected UnauthorizedError, but got ${error}`);
       }
     }
   });

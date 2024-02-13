@@ -8,7 +8,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { EventAttendee, User } from "../../../src/models";
+import { AppUserProfile, EventAttendee, User } from "../../../src/models";
 import type { MutationAddEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
@@ -206,6 +206,34 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
       );
       expect(spy).toHaveBeenLastCalledWith(
         USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE
+      );
+    }
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationAddEventAttendeeArgs = {
+      data: {
+        userId: testUser?._id,
+        eventId: testEvent?._id.toString() ?? "",
+      },
+    };
+    const context = { userId: testUser?._id };
+    try {
+      const { addEventAttendee: addEventAttendeeResolver } = await import(
+        "../../../src/resolvers/Mutation/addEventAttendee"
+      );
+      await addEventAttendeeResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
     }
   });

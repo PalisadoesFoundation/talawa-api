@@ -4,7 +4,7 @@ import type {
   InterfaceAppUserProfile,
   InterfaceUser,
 } from "../../../src/models";
-import { AppUserProfile } from "../../../src/models";
+import { AppUserProfile, User } from "../../../src/models";
 import type { MutationRefreshTokenArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -19,6 +19,7 @@ import {
 } from "vitest";
 import {
   INVALID_REFRESH_TOKEN_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { createRefreshToken } from "../../../src/utilities";
@@ -265,5 +266,77 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
     expect(typeof refreshTokenPayload?.refreshToken).toEqual("string");
     expect(refreshTokenPayload?.refreshToken.length).toBeGreaterThan(1);
+  });
+  it("throws error if user does not exists", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+    const newUser = await createTestUserFunc();
+    const newUserAppProfile = await AppUserProfile.findOne({
+      userId: newUser?._id,
+    }).lean();
+    const newRefreshToken = await createRefreshToken(
+      newUser ? newUser.toObject() : ({} as InterfaceUser),
+      newUserAppProfile ? newUserAppProfile : ({} as InterfaceAppUserProfile)
+    );
+    await User.deleteOne({
+      _id: newUser?._id,
+    });
+    await AppUserProfile.deleteOne({
+      userId: newUser?._id,
+    });
+    const args: MutationRefreshTokenArgs = {
+      refreshToken: newRefreshToken,
+    };
+    const { refreshToken: refreshTokenResolver } = await import(
+      "../../../src/resolvers/Mutation/refreshToken"
+    );
+    try {
+      await refreshTokenResolver?.({}, args, {});
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        );
+      }
+    }
+  });
+  it("throws error if user does not have appUserProfile ", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+    const newUser = await createTestUserFunc();
+    const newUserAppProfile = await AppUserProfile.findOne({
+      userId: newUser?._id,
+    }).lean();
+    const newRefreshToken = await createRefreshToken(
+      newUser ? newUser.toObject() : ({} as InterfaceUser),
+      newUserAppProfile ? newUserAppProfile : ({} as InterfaceAppUserProfile)
+    );
+    // await User.deleteOne({
+    //   _id: newUser?._id,
+    // });
+    await AppUserProfile.deleteOne({
+      userId: newUser?._id,
+    });
+    const args: MutationRefreshTokenArgs = {
+      refreshToken: newRefreshToken,
+    };
+    const { refreshToken: refreshTokenResolver } = await import(
+      "../../../src/resolvers/Mutation/refreshToken"
+    );
+    try {
+      await refreshTokenResolver?.({}, args, {});
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        );
+      }
+    }
   });
 });

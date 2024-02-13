@@ -8,7 +8,7 @@ import {
   USER_NOT_AUTHORIZED_TO_PIN,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { errors, requestContext } from "../../libraries";
+import { errors, logger, requestContext } from "../../libraries";
 import { isValidString } from "../../libraries/validators/validateString";
 import type { InterfaceOrganization } from "../../models";
 import { AppUserProfile, Organization, Post, User } from "../../models";
@@ -41,6 +41,7 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   // Checks whether currentUser exists.
   if (!currentUser) {
+    logger.info("here");
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,

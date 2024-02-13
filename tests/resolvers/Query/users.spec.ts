@@ -848,4 +848,34 @@ describe("resolvers -> Query -> users", () => {
 
     expect(usersPayload).toEqual(users);
   });
+  it("throws error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    await AppUserProfile.deleteOne({
+      userId: testUsers[0]._id,
+    });
+    const args: QueryUsersArgs = {
+      orderBy: null,
+      where: {
+        id: testUsers[0].id,
+      },
+    };
+    const context = {
+      userId: testUsers[0]._id,
+    };
+    try {
+      const { users: mockedInProductionUserResolver } = await import(
+        "../../../src/resolvers/Query/users"
+      );
+      await mockedInProductionUserResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(UNAUTHENTICATED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${UNAUTHENTICATED_ERROR.MESSAGE}`
+      );
+    }
+  });
 });

@@ -390,4 +390,21 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
     expect(removeAdminPayload).toEqual(updatedTestUser);
   });
+  it("throws error if user does not exists", async () => {
+    const context = {
+      userId: Types.ObjectId().toString(),
+    };
+
+    const args: MutationRemoveAdminArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        userId: testUserRemover?.id,
+      },
+    };
+    try {
+      await removeAdminResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
 });

@@ -21,6 +21,7 @@ import {
   ADMIN_CHANGING_ROLE_OF_CREATOR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
@@ -530,5 +531,35 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
 
     expect(updatedOrgCheck).toBe(false);
     expect(updatedUserCheck).toBe(false);
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testMemberUser?._id,
+    });
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+    try {
+      const args: MutationUpdateUserRoleInOrganizationArgs = {
+        organizationId: testOrganization?._id,
+        userId: testMemberUser?._id.toString() ?? "",
+        role: "ADMIN",
+      };
+      const context = {
+        userId: testMemberUser?._id,
+      };
+
+      const {
+        updateUserRoleInOrganization: updateUserRoleInOrganizationResolver,
+      } = await import(
+        "../../../src/resolvers/Mutation/updateUserRoleInOrganization"
+      );
+      await updateUserRoleInOrganizationResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
+    }
   });
 });
