@@ -1,4 +1,4 @@
-import type { Model , Document } from "mongoose";
+import type { Model, Document } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
