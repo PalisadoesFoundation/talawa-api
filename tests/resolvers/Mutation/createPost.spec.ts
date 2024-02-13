@@ -21,9 +21,10 @@ import {
   USER_NOT_AUTHORIZED_TO_PIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, Organization } from "../../../src/models";
+import { AppUserProfile, Organization, Post } from "../../../src/models";
 import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import * as uploadEncodedVideo from "../../../src/utilities/encodedVideoStorage/uploadEncodedVideo";
 import type {
   TestOrganizationType,
   TestUserType,
@@ -147,6 +148,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         userId: randomUser?.id,
       };
 
+      expect(args.data.pinned).toBe(true);
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
@@ -180,16 +182,18 @@ describe("resolvers -> Mutation -> createPost", () => {
       userId: testUser?.id,
     };
 
+    expect(args.data.pinned).toBe(true);
+
     const { createPost: createPostResolver } = await import(
       "../../../src/resolvers/Mutation/createPost"
     );
     const createdPost = await createPostResolver?.({}, args, context);
-
     expect(createdPost).toEqual(
       expect.objectContaining({
         text: "New Post Text",
         videoUrl: null, // Update the expected value to match the received value
         title: "New Post Title",
+        pinned: true,
       })
     );
 
@@ -204,7 +208,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     ).toBeTruthy();
   });
 
-  it(`creates the post and returns it when image is not provided`, async () => {
+  it(`creates the post and returns it when image or video is not provided`, async () => {
     const args: MutationCreatePostArgs = {
       data: {
         organizationId: testOrganization?.id,
@@ -219,11 +223,14 @@ describe("resolvers -> Mutation -> createPost", () => {
       userId: testUser?.id,
     };
 
+    expect(args.data.pinned).toBe(true);
+
     const { createPost: createPostResolver } = await import(
       "../../../src/resolvers/Mutation/createPost"
     );
 
     const createPostPayload = await createPostResolver?.({}, args, context);
+    expect(createPostPayload?.pinned).toBe(true);
 
     expect(createPostPayload).toEqual(
       expect.objectContaining({
@@ -236,6 +243,82 @@ describe("resolvers -> Mutation -> createPost", () => {
     );
   });
 
+  it(`creates the post and and returns it when an image is provided`, async () => {
+    const args: MutationCreatePostArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        text: "text",
+        title: "title",
+        pinned: true,
+      },
+      file: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZSURBVBhXYzxz5sx/BiBgefLkCQMbGxsDAEdkBicg9wbaAAAAAElFTkSuQmCC", // Provide a supported file type
+    };
+
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL
+    );
+
+    const context = {
+      userId: testUser?.id,
+      apiRootUrl: BASE_URL,
+    };
+
+    expect(args.data.pinned).toBe(true);
+
+    const createPostPayload = await createPostResolverImage?.(
+      {},
+      args,
+      context
+    );
+    expect(createPostPayload?.pinned).toBe(true);
+
+    const testCreatePostPayload = await Post.findOne({
+      _id: createPostPayload?._id,
+      imageUrl: { $ne: null },
+    }).lean();
+
+    //Ensures that the post is created and imageUrl is not null
+    expect(testCreatePostPayload).not.toBeNull();
+  });
+
+  it(`creates the post and and returns it when a video is provided`, async () => {
+    const args: MutationCreatePostArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        text: "text",
+        title: "title",
+        pinned: true,
+      },
+      file: "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE", // Provide a supported file type
+    };
+
+    vi.spyOn(uploadEncodedVideo, "uploadEncodedVideo").mockImplementation(
+      async (uploadEncodedVideo: string) => uploadEncodedVideo
+    );
+
+    const context = {
+      userId: testUser?.id,
+      apiRootUrl: BASE_URL,
+    };
+
+    expect(args.data.pinned).toBe(true);
+
+    const createPostPayload = await createPostResolverImage?.(
+      {},
+      args,
+      context
+    );
+    expect(createPostPayload?.pinned).toBe(true);
+
+    const testCreatePostPayload = await Post.findOne({
+      _id: createPostPayload?._id,
+      videoUrl: { $ne: null },
+    }).lean();
+
+    //Ensures that the post is created and videoUrl is not null
+    expect(testCreatePostPayload).not.toBeNull();
+  });
+
   it(`creates the post and throws an error for unsupported file type`, async () => {
     const args: MutationCreatePostArgs = {
       data: {
@@ -243,6 +326,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         text: "text",
         videoUrl: "videoUrl",
         title: "title",
+        pinned: true,
       },
       file: "unsupportedFile.txt", // Provide an unsupported file type
     };
@@ -251,6 +335,8 @@ describe("resolvers -> Mutation -> createPost", () => {
       userId: testUser?.id,
       apiRootUrl: BASE_URL,
     };
+
+    expect(args.data.pinned).toBe(true);
 
     // Mock the uploadEncodedImage function to throw an error for unsupported file types
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
@@ -286,7 +372,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       const context = {
         userId: testUser?.id,
       };
-
+      expect(args.data.pinned).toBe(true);
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
@@ -319,6 +405,8 @@ describe("resolvers -> Mutation -> createPost", () => {
         userId: testUser?.id,
       };
 
+      expect(args.data.pinned).toBe(true);
+
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
@@ -350,6 +438,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         userId: testUser?.id,
       };
 
+      expect(args.data.pinned).toBe(false);
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
@@ -379,6 +468,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       const context = {
         userId: testUser?.id,
       };
+      expect(args.data.pinned).toBe(true);
 
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
