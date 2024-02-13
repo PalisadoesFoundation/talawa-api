@@ -17,7 +17,6 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
 import type {
   TestEventType,
   TestEventVolunteerType,
