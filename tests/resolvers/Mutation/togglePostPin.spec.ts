@@ -285,4 +285,30 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       );
     }
   });
+  it("throws an error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      user: testUser?._id,
+    });
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => message
+    );
+    const args: MutationTogglePostPinArgs = {
+      id: testPost?._id,
+      title: "Test title",
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+    try {
+      const { togglePostPin: togglePostPinResolver } = await import(
+        "../../../src/resolvers/Mutation/togglePostPin"
+      );
+      await togglePostPinResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`
+      );
+    }
+  });
 });

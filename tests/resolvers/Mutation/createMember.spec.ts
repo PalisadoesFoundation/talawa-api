@@ -9,6 +9,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { createMember as createMemberResolver } from "../../../src/resolvers/Mutation/createMember";
@@ -174,5 +175,32 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     );
 
     expect(updatedOrganizationCheck).toBe(true);
+  });
+  it("throws error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    try {
+      await AppUserProfile.deleteOne({
+        userId: testUser?._id,
+      });
+
+      const args: MutationCreateMemberArgs = {
+        input: {
+          organizationId: testOrganization?.id,
+          userId: testUser?.id,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      await createMemberResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
+    }
   });
 });

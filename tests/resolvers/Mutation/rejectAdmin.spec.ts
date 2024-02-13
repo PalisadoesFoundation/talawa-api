@@ -144,4 +144,30 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
 
     expect(flag).toBe(true);
   });
+  it("throws an errorr if the user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    await AppUserProfile.deleteOne({
+      userId: testUser1?._id,
+    });
+    const args: MutationRejectAdminArgs = {
+      id: testUser2?.id,
+    };
+    const context = {
+      userId: testUser1?.id,
+    };
+    const { rejectAdmin: rejectAdminResolver } = await import(
+      "../../../src/resolvers/Mutation/rejectAdmin"
+    );
+    try {
+      await rejectAdminResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
+      );
+    }
+  });
 });
