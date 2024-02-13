@@ -12,6 +12,7 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
     where = {
       ...where,
       status: "ACTIVE",
+      isBaseRecurringEvent: false,
     };
 
     const events = await Event.find(where)
