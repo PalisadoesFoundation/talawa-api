@@ -420,7 +420,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
     }
   });
