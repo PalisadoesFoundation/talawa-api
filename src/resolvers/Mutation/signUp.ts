@@ -62,6 +62,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   if (args.file) {
     uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let createdUser: (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
   if (organization !== null) {
@@ -96,8 +97,8 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
           new: true,
         }
       );
-      const accessToken = await createAccessToken(createdUser!);
-      const refreshToken = await createRefreshToken(createdUser!);
+      const accessToken = await createAccessToken(createdUser);
+      const refreshToken = await createRefreshToken(createdUser);
 
       copyToClipboard(`{
   "Authorization": "Bearer ${accessToken}"
@@ -165,14 +166,15 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
       ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const accessToken = await createAccessToken(createdUser!);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const refreshToken = await createRefreshToken(createdUser!);
 
   copyToClipboard(`{
   "Authorization": "Bearer ${accessToken}"
 }`);
-
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const filteredCreatedUser = createdUser!.toObject();
 
   return {
