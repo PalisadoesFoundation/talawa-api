@@ -62,7 +62,7 @@ beforeAll(async () => {
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message,
+    (message) => message
   );
 }, 10000);
 
@@ -155,7 +155,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     } catch (error: unknown) {
       if (error instanceof UnauthorizedError) {
         expect(error.message).toEqual(
-          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE,
+          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE
         );
       } else {
         fail(`Expected UnauthorizedError, but got ${error}`);
@@ -174,7 +174,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
             admins: [testUser?.id],
           },
         },
-        { new: true },
+        { new: true }
       );
       const args: MutationEditVenueArgs = {
         data: {
