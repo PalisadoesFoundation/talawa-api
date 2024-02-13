@@ -97,11 +97,10 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     organizationId: args.data?.organizationId,
   });
 
-  const existingVenue = args.data?.name
-    ? venuesWithOrganization.filter((venue) => venue.name === args.data.name)
-    : [];
-
-  if (existingVenue.length > 0) {
+  if (
+    args.data?.name &&
+    venuesWithOrganization.some((venue) => venue.name === args.data.name)
+  ) {
     throw new errors.ConflictError(
       requestContext.translate(VENUE_ALREADY_EXISTS_ERROR.MESSAGE),
       VENUE_ALREADY_EXISTS_ERROR.CODE,
