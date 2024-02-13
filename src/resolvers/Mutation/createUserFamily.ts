@@ -1,6 +1,7 @@
 import {
   LENGTH_VALIDATION_ERROR,
   USER_FAMILY_MIN_MEMBERS_ERROR_CODE,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
@@ -44,10 +45,10 @@ export const createUserFamily: MutationResolvers["createUserFamily"] = async (
     userId: currentUser._id,
   }).lean();
   if (!currentUserAppProfile) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+    throw new errors.UnauthenticatedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
   // Check whether the user is super admin.

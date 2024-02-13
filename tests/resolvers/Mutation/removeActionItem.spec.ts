@@ -260,4 +260,22 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       })
     );
   });
+  it("throws an error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationRemoveActionItemArgs = {
+      id: testActionItem?._id,
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+    try {
+      await removeActionItemResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
+    }
+  });
 });

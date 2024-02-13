@@ -9,7 +9,7 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_REGISTERED_FOR_EVENT,
 } from "../../../src/constants";
-import { EventAttendee } from "../../../src/models";
+import { AppUserProfile, EventAttendee } from "../../../src/models";
 import type { MutationCheckInArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { type TestEventType } from "../../helpers/events";
@@ -242,6 +242,33 @@ describe("resolvers -> Mutation -> checkIn", () => {
         `Translated ${USER_ALREADY_CHECKED_IN.MESSAGE}`
       );
       expect(spy).toHaveBeenLastCalledWith(USER_ALREADY_CHECKED_IN.MESSAGE);
+    }
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    const args: MutationCheckInArgs = {
+      data: {
+        userId: testUser?._id,
+        eventId: testEvent?._id.toString() ?? "",
+      },
+    };
+    const context = { userId: testUser?._id };
+    const { checkIn: checkInResolver } = await import(
+      "../../../src/resolvers/Mutation/checkIn"
+    );
+    try {
+      await checkInResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
     }
   });
 });

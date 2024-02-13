@@ -295,4 +295,24 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
     expect(updatedTestOrganization?.admins).toEqual([testUser?._id]);
   });
+  it("throws error if user does not exists", async () => {
+    try {
+      const args: MutationCreateAdminArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          userId: Types.ObjectId().toString(),
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+      await createAdminResolver?.({}, args, context);
+    } catch (error: unknown) {
+      // console.log(error)
+      expect((error as Error).message).toEqual(
+        `${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
+    }
+  });
 });

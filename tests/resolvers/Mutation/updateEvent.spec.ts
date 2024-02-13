@@ -389,4 +389,48 @@ describe("Check for validation conditions", () => {
       );
     }
   });
+  it("throws as error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+    try {
+      const args: MutationUpdateEventArgs = {
+        id: testEvent?._id.toString() ?? "",
+        data: {
+          allDay: false,
+          description: "Random",
+          endDate: "Tue Feb 15 2023",
+          endTime: "",
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "Random",
+          recurring: false,
+          startDate: "Tue Feb 14 2023",
+          startTime: "",
+          title: "Random",
+          recurrance: "DAILY",
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { updateEvent: updateEventResolverError } = await import(
+        "../../../src/resolvers/Mutation/updateEvent"
+      );
+
+      await updateEventResolverError?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
+    }
+  });
 });

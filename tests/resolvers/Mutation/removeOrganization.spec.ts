@@ -33,6 +33,7 @@ import {
 } from "vitest";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -446,5 +447,34 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       updatedAt: expect.anything(),
     });
     expect(deleteImageSpy).toBeCalledWith("images/fake-image-path.png");
+  });
+  it(`throws error if  user does not have appUserProfile`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+    await AppUserProfile.deleteOne({
+      userId: testUsers[0]?._id,
+    });
+    try {
+      const args: MutationRemoveOrganizationArgs = {
+        id: "",
+      };
+
+      const context = {
+        userId: testUsers[0]?._id,
+      };
+
+      const { removeOrganization: removeOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/removeOrganization"
+      );
+
+      await removeOrganizationResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
   });
 });

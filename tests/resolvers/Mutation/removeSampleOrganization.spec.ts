@@ -7,10 +7,11 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import type { InterfaceOrganization } from "../../../src/models";
-import { Organization, SampleData } from "../../../src/models";
+import { AppUserProfile, Organization, SampleData } from "../../../src/models";
 import { removeSampleOrganization } from "../../../src/resolvers/Mutation/removeSampleOrganization";
 import { generateUserData } from "../../../src/utilities/createSampleOrganizationUtil";
 import { connect, disconnect } from "../../helpers/db";
+import { createTestUser } from "../../helpers/userAndOrg";
 /* eslint-disable */
 const ORGANIZATION_ID = ((): InterfaceOrganization &
   mongoose.Document<any, any, InterfaceOrganization> => {
@@ -248,6 +249,28 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
       await removeSampleOrganization!(parent, args, adminContext);
     } catch (error: any) {
       expect(error.message).toBe(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
+  it("should throw user not found error when user is non-existent", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+
+    const testUser = await createTestUser();
+    await AppUserProfile.deleteOne({
+      userId: testUser?.id,
+    });
+
+    const args = {};
+    const adminContext = { userId: testUser?._id };
+    const parent = {};
+
+    try {
+      await removeSampleOrganization!(parent, args, adminContext);
+    } catch (error: any) {
+      expect(error.message).toBe(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 });

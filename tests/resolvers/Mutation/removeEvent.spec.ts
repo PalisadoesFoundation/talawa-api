@@ -230,4 +230,30 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
     expect(deletedActionItems).toEqual([]);
   });
+  it("throws an error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationRemoveEventArgs = {
+      id: testEvent?.id,
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+    try {
+      const { removeEvent: removeEventResolver } = await import(
+        "../../../src/resolvers/Mutation/removeEvent"
+      );
+      await removeEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
+    }
+  });
 });
