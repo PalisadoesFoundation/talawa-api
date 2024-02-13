@@ -2,14 +2,13 @@ import type { InterfaceOrganization, InterfaceUser } from "../../src/models";
 import { Organization, User } from "../../src/models";
 import { nanoid } from "nanoid";
 import type { Document } from "mongoose";
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export type TestOrganizationType =
-  | (InterfaceOrganization & Document<any, any, InterfaceOrganization>)
-  | null;
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (InterfaceOrganization & Document<any, any, InterfaceOrganization>) | null;
 export type TestUserType =
-  | (InterfaceUser & Document<any, any, InterfaceUser>)
-  | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
 export const createTestUser = async (): Promise<TestUserType> => {
   const testUser = await User.create({

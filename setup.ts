@@ -758,7 +758,7 @@ async function importDefaultOrganization(): Promise<void> {
     console.log("Couldn't find mongodb url");
     return;
   }
-  
+
   const client = new mongodb.MongoClient(process.env.MONGO_DB_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -772,7 +772,9 @@ async function importDefaultOrganization(): Promise<void> {
     if (collections.length > 0) {
       console.log("Collections exist, skipping import.");
     } else {
-      const { stdout, stderr } = await exec("npm run import:sample-data-defaultOrg");
+      const { stdout, stderr } = await exec(
+        "npm run import:sample-data-defaultOrg"
+      );
       if (stderr) {
         console.error(`Error: ${stderr}`);
         abort();

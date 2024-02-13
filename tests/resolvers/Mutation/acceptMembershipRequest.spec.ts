@@ -70,9 +70,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
 
       await acceptMembershipRequestResolver?.({}, args, context);
-    } 
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    catch (error: any) {
+    } catch (
+       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any) {
       expect(spy).toHaveBeenCalledWith(
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE
       );
@@ -112,9 +112,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
 
       await acceptMembershipRequestResolver?.({}, args, context);
-    } 
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    catch (error: any) {
+    } catch (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
@@ -153,9 +153,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
 
       await acceptMembershipRequestResolver?.({}, args, context);
-    } 
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    catch (error: any) {
+    } catch (
+       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
@@ -207,9 +207,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
 
       await acceptMembershipRequestResolver?.({}, args, context);
-    } 
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    catch (error: any) {
+    } catch (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
@@ -249,9 +249,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
 
       await acceptMembershipRequestResolver?.({}, args, context);
-    } 
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    catch (error: any) {
+    } catch (
+       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any) {
       expect(spy).toHaveBeenCalledWith(USER_ALREADY_MEMBER_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${USER_ALREADY_MEMBER_ERROR.MESSAGE}`
