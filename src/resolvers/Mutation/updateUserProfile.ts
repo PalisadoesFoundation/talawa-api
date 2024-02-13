@@ -57,7 +57,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   }
 
   // Update User
-  const updatedUser = await User.findOneAndUpdate(
+  let updatedUser = await User.findOneAndUpdate(
     {
       _id: context.userId,
     },
@@ -131,6 +131,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   updatedUser!.image = updatedUser?.image
     ? `${context.apiRootUrl}${updatedUser?.image}`
     : null;
+  if (args.data == undefined) updatedUser = null;
 
   return updatedUser ?? ({} as InterfaceUser);
 };
