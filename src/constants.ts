@@ -558,6 +558,26 @@ export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
 export const MILLISECONDS_IN_A_WEEK = 7 * 24 * 60 * 60 * 1000;
 
+// recurring event frequencies
+export const RECURRENCE_FREQUENCIES = ["YEARLY", "MONTHLY", "WEEKLY", "DAILY"];
+
+// recurring instance generation date limit in years based on it's frequency
+export const RECURRING_EVENT_INSTANCES_DAILY_LIMIT = 1;
+export const RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT = 2;
+export const RECURRING_EVENT_INSTANCES_MONTHLY_LIMIT = 5;
+export const RECURRING_EVENT_INSTANCES_YEARLY_LIMIT = 10;
+
+// recurring event days
+export const RECURRENCE_WEEKDAYS = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+];
+
 export const key = ENV.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");
 
