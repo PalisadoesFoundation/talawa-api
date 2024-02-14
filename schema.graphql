@@ -70,6 +70,17 @@ enum AdvertisementType {
   POPUP
 }
 
+type AgendaCategory {
+  _id: ID!
+  createdAt: Date!
+  createdBy: User!
+  description: String
+  name: String!
+  organization: Organization!
+  updatedAt: Date
+  updatedBy: User
+}
+
 type AggregatePost {
   count: Int!
 }
@@ -142,6 +153,12 @@ input CreateActionItemInput {
   dueDate: Date
   eventId: ID
   preCompletionNotes: String
+}
+
+input CreateAgendaCategoryInput {
+  description: String
+  name: String!
+  organizationId: ID!
 }
 
 input CreateUserTagInput {
@@ -540,6 +557,7 @@ type Mutation {
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): User!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
+  createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
@@ -554,6 +572,7 @@ type Mutation {
   createUserFamily(data: createUserFamilyInput!): UserFamily!
   createUserTag(input: CreateUserTagInput!): UserTag
   deleteAdvertisementById(id: ID!): DeletePayload!
+  deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
   joinPublicOrganization(organizationId: ID!): User!
@@ -603,6 +622,7 @@ type Mutation {
   updateActionItem(data: UpdateActionItemInput!, id: ID!): ActionItem
   updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
+  updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
@@ -624,6 +644,7 @@ type Organization {
   actionItemCategories: [ActionItemCategory]
   address: Address
   admins(adminId: ID): [User!]
+  agendaCategories: [AgendaCategory]
   apiUrl: URL!
   blockedUsers: [User]
   createdAt: DateTime!
@@ -859,6 +880,7 @@ type Query {
   actionItemsByEvent(eventId: ID!): [ActionItem]
   actionItemsByOrganization(organizationId: ID!): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
+  agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
@@ -978,6 +1000,11 @@ input UpdateAdvertisementInput {
 
 type UpdateAdvertisementPayload {
   advertisement: Advertisement
+}
+
+input UpdateAgendaCategoryInput {
+  description: String
+  name: String
 }
 
 input UpdateEventInput {
