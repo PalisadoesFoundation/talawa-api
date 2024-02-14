@@ -276,7 +276,7 @@ type Event {
   createdAt: DateTime!
   creator: User
   description: String!
-  endDate: Date!
+  endDate: Date
   endTime: Time
   feedback: [Feedback!]!
   isPublic: Boolean!
@@ -397,6 +397,13 @@ input ForgotPasswordData {
   newPassword: String!
   otpToken: String!
   userOtp: String!
+}
+
+enum Frequency {
+  DAILY
+  MONTHLY
+  WEEKLY
+  YEARLY
 }
 
 enum Gender {
@@ -548,6 +555,7 @@ type Mutation {
   addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
   addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
+  addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
   adminRemoveEvent(eventId: ID!): Event!
   adminRemoveGroup(groupId: ID!): GroupChat!
   assignUserTag(input: ToggleUserTagAssignInput!): User
@@ -562,7 +570,7 @@ type Mutation {
   createComment(data: CommentInput!, postId: ID!): CreateCommentPayload!
   createDirectChat(data: createChatInput!): createDirectChatPayload!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
-  createEvent(data: EventInput): Event!
+  createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): CreateMemberPayload!
   createMessageChat(data: MessageChatInput!): MessageChat!
@@ -570,6 +578,7 @@ type Mutation {
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
   createPost(data: PostInput!, file: String): Post
   createSampleOrganization: Boolean!
+  createUserFamily(data: createUserFamilyInput!): UserFamily!
   createUserTag(input: CreateUserTagInput!): UserTag
   deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
@@ -601,7 +610,9 @@ type Mutation {
   removePost(id: ID!): Post
   removeSampleOrganization: Boolean!
   removeUserCustomData(organizationId: ID!): UserCustomData!
+  removeUserFamily(familyId: ID!): UserFamily!
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
+  removeUserFromUserFamily(familyId: ID!, userId: ID!): UserFamily!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
   revokeRefreshTokenForUser: Boolean!
@@ -933,6 +944,12 @@ enum Recurrance {
   YEARLY
 }
 
+input RecurrenceRuleInput {
+  count: Int
+  frequency: Frequency
+  weekDays: [WeekDays]
+}
+
 enum Status {
   ACTIVE
   BLOCKED
@@ -1112,6 +1129,14 @@ type UserEdge {
   node: User!
 }
 
+type UserFamily {
+  _id: ID!
+  admins: [User!]!
+  creator: User!
+  title: String
+  users: [User!]!
+}
+
 input UserInput {
   appLanguageCode: String
   email: EmailAddress!
@@ -1242,6 +1267,16 @@ type UsersConnectionResult {
   errors: [ConnectionError!]!
 }
 
+enum WeekDays {
+  FR
+  MO
+  SA
+  SU
+  TH
+  TU
+  WE
+}
+
 input createChatInput {
   organizationId: ID!
   userIds: [ID!]!
@@ -1254,6 +1289,11 @@ type createDirectChatPayload {
 
 input createGroupChatInput {
   organizationId: ID!
+  title: String!
+  userIds: [ID!]!
+}
+
+input createUserFamilyInput {
   title: String!
   userIds: [ID!]!
 }

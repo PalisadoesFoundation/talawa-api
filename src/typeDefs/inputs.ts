@@ -29,6 +29,11 @@ export const inputs = gql`
     title: String!
   }
 
+  input createUserFamilyInput {
+    title: String!
+    userIds: [ID!]!
+  }
+
   input CreateUserTagInput {
     name: String!
     parentTagId: ID
@@ -237,6 +242,12 @@ export const inputs = gql`
 
   input RecaptchaVerification {
     recaptchaToken: String!
+  }
+
+  input RecurrenceRuleInput {
+    frequency: Frequency
+    weekDays: [WeekDays]
+    count: Int
   }
 
   input ToggleUserTagAssignInput {

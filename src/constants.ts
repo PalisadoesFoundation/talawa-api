@@ -177,10 +177,22 @@ export const LENGTH_VALIDATION_ERROR = {
   PARAM: "stringValidation",
 };
 
+export const USER_FAMILY_MIN_MEMBERS_ERROR_CODE = {
+  MESSAGE: "InputValidationError",
+  CODE: "membersInUserFamilyLessThanOne",
+  PARAM: "membersInUserFamilyLessThanOne",
+};
+
 export const REGEX_VALIDATION_ERROR = {
   MESSAGE: "Error: Entered value must be a valid string",
   CODE: "string.notValid",
   PARAM: "stringValidation",
+};
+
+export const USER_FAMILY_NOT_FOUND_ERROR = {
+  MESSAGE: "Error: User Family Not Found",
+  CODE: "userfamilyNotFound",
+  PARAM: "userfamilyNotFound",
 };
 
 export const USER_NOT_AUTHORIZED_SUPERADMIN = {
@@ -516,6 +528,26 @@ export const REDIS_PORT = Number(process.env.REDIS_PORT);
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
 export const MILLISECONDS_IN_A_WEEK = 7 * 24 * 60 * 60 * 1000;
+
+// recurring event frequencies
+export const RECURRENCE_FREQUENCIES = ["YEARLY", "MONTHLY", "WEEKLY", "DAILY"];
+
+// recurring instance generation date limit in years based on it's frequency
+export const RECURRING_EVENT_INSTANCES_DAILY_LIMIT = 1;
+export const RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT = 2;
+export const RECURRING_EVENT_INSTANCES_MONTHLY_LIMIT = 5;
+export const RECURRING_EVENT_INSTANCES_YEARLY_LIMIT = 10;
+
+// recurring event days
+export const RECURRENCE_WEEKDAYS = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+];
 
 export const key = ENV.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");

@@ -34,6 +34,14 @@ export const mutations = gql`
 
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
 
+    addUserToUserFamily(userId: ID!, familyId: ID!): UserFamily! @auth
+
+    removeUserFromUserFamily(userId: ID!, familyId: ID!): UserFamily! @auth
+
+    removeUserFamily(familyId: ID!): UserFamily! @auth
+
+    createUserFamily(data: createUserFamilyInput!): UserFamily! @auth
+
     adminRemoveEvent(eventId: ID!): Event! @auth
 
     adminRemoveGroup(groupId: ID!): GroupChat! @auth
@@ -78,7 +86,10 @@ export const mutations = gql`
       nameOfOrg: String!
     ): Donation!
 
-    createEvent(data: EventInput): Event! @auth
+    createEvent(
+      data: EventInput!
+      recurrenceRuleData: RecurrenceRuleInput
+    ): Event! @auth
 
     createGroupChat(data: createGroupChatInput!): GroupChat! @auth
 
