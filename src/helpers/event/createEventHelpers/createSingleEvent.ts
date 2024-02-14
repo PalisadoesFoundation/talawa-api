@@ -7,7 +7,7 @@ import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 /**
  * This function generates a single non-recurring event.
  * @param args - the arguments provided for the createEvent mutation.
- * @param currentUserId - _id of the current user.
+ * @param creatorId - _id of the current user.
  * @param organizationId - _id of the current organization.
  * @remarks The following steps are followed:
  * 1. Create an event document.
@@ -18,7 +18,7 @@ import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 
 export const createSingleEvent = async (
   args: MutationCreateEventArgs,
-  currentUserId: string,
+  creatorId: string,
   organizationId: string,
   session: mongoose.ClientSession
 ): Promise<InterfaceEvent> => {
@@ -27,8 +27,8 @@ export const createSingleEvent = async (
     [
       {
         ...args.data,
-        creatorId: currentUserId,
-        admins: [currentUserId],
+        creatorId,
+        admins: [creatorId],
         organization: organizationId,
       },
     ],
@@ -39,7 +39,7 @@ export const createSingleEvent = async (
   await EventAttendee.create(
     [
       {
-        userId: currentUserId,
+        userId: creatorId,
         eventId: createdEvent[0]?._id,
       },
     ],
@@ -47,7 +47,7 @@ export const createSingleEvent = async (
   );
   await User.updateOne(
     {
-      _id: currentUserId,
+      _id: creatorId,
     },
     {
       $push: {
