@@ -89,7 +89,10 @@ export const mutations = gql`
       nameOfOrg: String!
     ): Donation!
 
-    createEvent(data: EventInput): Event! @auth
+    createEvent(
+      data: EventInput!
+      recurrenceRuleData: RecurrenceRuleInput
+    ): Event! @auth
 
     createGroupChat(data: createGroupChatInput!): GroupChat! @auth
 

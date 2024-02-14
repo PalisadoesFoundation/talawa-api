@@ -270,7 +270,7 @@ type Event {
   createdAt: DateTime!
   creator: User
   description: String!
-  endDate: Date!
+  endDate: Date
   endTime: Time
   feedback: [Feedback!]!
   isPublic: Boolean!
@@ -391,6 +391,13 @@ input ForgotPasswordData {
   newPassword: String!
   otpToken: String!
   userOtp: String!
+}
+
+enum Frequency {
+  DAILY
+  MONTHLY
+  WEEKLY
+  YEARLY
 }
 
 enum Gender {
@@ -554,7 +561,7 @@ type Mutation {
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
-  createEvent(data: EventInput): Event!
+  createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
@@ -920,6 +927,12 @@ enum Recurrance {
   YEARLY
 }
 
+input RecurrenceRuleInput {
+  count: Int
+  frequency: Frequency
+  weekDays: [WeekDays]
+}
+
 enum Status {
   ACTIVE
   BLOCKED
@@ -1232,6 +1245,16 @@ input UsersConnectionInput {
 type UsersConnectionResult {
   data: UsersConnection
   errors: [ConnectionError!]!
+}
+
+enum WeekDays {
+  FR
+  MO
+  SA
+  SU
+  TH
+  TU
+  WE
 }
 
 input createChatInput {
