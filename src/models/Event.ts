@@ -4,65 +4,59 @@ import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
 import type { InterfaceRecurrenceRule } from "./RecurrenceRule";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
 
 /**
  * This is an interface representing a document for an event in the database(MongoDB).
  */
 export interface InterfaceEvent {
   _id: Types.ObjectId;
-  title: string;
-  description: string;
-  attendees: string | undefined;
-  location: string | undefined;
-  latitude: number | undefined;
-  longitude: number;
-  recurring: boolean;
-  isRecurringEventException: boolean;
-  isBaseRecurringEvent: boolean;
-  recurrenceRuleId: PopulatedDoc<InterfaceRecurrenceRule & Document>;
-  baseRecurringEventId: PopulatedDoc<InterfaceEvent & Document>;
+  admins: PopulatedDoc<InterfaceUser & Document>[];
   allDay: boolean;
-  startDate: string;
+  attendees: string | undefined;
+  createdAt: Date;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
+  description: string;
   endDate: string | undefined;
-  startTime: string | undefined;
   endTime: string | undefined;
-  recurrance: string;
   isPublic: boolean;
   isRegisterable: boolean;
-  creatorId: PopulatedDoc<InterfaceUser & Document>;
-  admins: PopulatedDoc<InterfaceUser & Document>[];
+  latitude: number | undefined;
+  location: string | undefined;
+  longitude: number;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
+  recurrance: string;
+  recurring: boolean;
+  startDate: string;
+  startTime: string | undefined;
   status: string;
-  createdAt: Date;
+  title: string;
   updatedAt: Date;
+  volunteerGroups: PopulatedDoc<InterfaceEventVolunteerGroup & Document>;
 }
 
 /**
  * This is the Structure of the Event
- * @param title - Title of the event
- * @param description - Description of the event
- * @param attendees - Attendees
- * @param location - Location of the event
- * @param latitude - Latitude
- * @param longitude - Longitude
- * @param recurring - Is the event recurring
- * @param isRecurringEventException - Is the event an exception to the recurring pattern it was following
- * @param isBaseRecurringEvent - Is the event a true recurring event that is used for generating new instances
- * @param recurrenceRuleId - Id of the recurrence rule document containing the recurrence pattern for the event
- * @param baseRecurringEventId - Id of the true recurring event used for generating this instance
+ * @param admins - Admins
  * @param allDay - Is the event occuring all day
- * @param startDate - Start Date
+ * @param attendees - Attendees
+ * @param createdAt - Timestamp of event creation
+ * @param creatorId - Creator of the event
+ * @param description - Description of the event
  * @param endDate - End date
- * @param startTime - Start Time
  * @param endTime - End Time
- * @param recurrance - Periodicity of recurrance of the event
  * @param isPublic - Is the event public
  * @param isRegisterable - Is the event Registrable
- * @param creatorId - Creator of the event
- * @param admins - Admins
+ * @param latitude - Latitude
+ * @param location - Location of the event
+ * @param longitude - Longitude
  * @param organization - Organization
+ * @param recurrance - Periodicity of recurrance of the event
+ * @param recurring - Is the event recurring
+ * @param startDate - Start Date
+ * @param startTime - Start Time
  * @param status - whether the event is active, blocked, or deleted.
- * @param createdAt - Timestamp of event creation
+ * @param title - Title of the event
  * @param updatedAt - Timestamp of event updation
  */
 
@@ -181,10 +175,18 @@ const eventSchema = new Schema(
       enum: ["ACTIVE", "BLOCKED", "DELETED"],
       default: "ACTIVE",
     },
+    volunteerGroups: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "EventVolunteerGroup",
+        required: true,
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 createLoggingMiddleware(eventSchema, "Event");
