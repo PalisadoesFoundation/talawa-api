@@ -85,7 +85,7 @@
     "nanoid": "^5.0.5",
     "nodemailer": "^6.9.8",
     "pm2": "^5.2.0",
-    "redis": "^4.6.12",
+    "redis": "^4.6.13",
     "shortid": "^2.2.16",
     "typedoc-plugin-markdown": "^3.17.1",
     "uuid": "^9.0.0",

@@ -5,7 +5,11 @@ import type { MutationForgotPasswordArgs } from "../../../src/types/generatedGra
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { forgotPassword as forgotPasswordResolver } from "../../../src/resolvers/Mutation/forgotPassword";
-import { INVALID_OTP } from "../../../src/constants";
+import {
+  INVALID_OTP,
+  ACCESS_TOKEN_SECRET,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -33,7 +37,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
           email: testUser?.email ?? "",
           otp: "otp",
         },
-        process.env.NODE_ENV!,
+        ACCESS_TOKEN_SECRET as string,
         {
           expiresIn: 99999999,
         }
@@ -53,38 +57,44 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
     }
   });
 
-  it(`throws Error if user is not found`, async () => {
-    try {
-      const otpToken = jwt.sign(
-        {
-          email: "nonexistentuser@example.com", // Use a non-existent user email
-          otp: "correctOtp",
-        },
-        process.env.NODE_ENV!,
-        {
-          expiresIn: 99999999,
-        }
-      );
-
-      const args: MutationForgotPasswordArgs = {
-        data: {
-          newPassword: "newPassword",
-          otpToken,
-          userOtp: "correctOtp",
-        },
-      };
-
-      await forgotPasswordResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual("User not found");
-    }
-  });
-
   it(`throws Error if newPassword is the same as the old password`, async () => {
     const otp = "correctOtp";
 
     const hashedOtp = await bcrypt.hash(otp, 1);
 
+    const otpToken = jwt.sign(
+      {
+        email: testUser?.email ?? "",
+        otp: hashedOtp,
+      },
+      ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: 99999999,
+      }
+    );
+
+    const args: MutationForgotPasswordArgs = {
+      data: {
+        newPassword: testUser?.password ?? "", // Using optional chaining and nullish coalescing
+        otpToken,
+        userOtp: otp,
+      },
+    };
+
+    try {
+      await forgotPasswordResolver?.({}, args, {});
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        "New password cannot be same as old password"
+      );
+    }
+  });
+  it("throws an error when the email is changed in the token", async () => {
+    const otp = "correctOtp";
+
+    const hashedOtp = await bcrypt.hash(otp, 1);
+
+    // Sign the token
     const otpToken = jwt.sign(
       {
         email: testUser?.email ?? "",
@@ -107,12 +117,40 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
     try {
       await forgotPasswordResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(
-        "New password cannot be same as old password"
-      );
+      expect(error.message).toEqual(INVALID_OTP);
     }
   });
+  it(`throws an error when the user is not found`, async () => {
+    const otp = "correctOtp";
 
+    const hashedOtp = await bcrypt.hash(otp, 1);
+
+    // Sign the token with an email that doesn't exist
+    const otpToken = jwt.sign(
+      {
+        email: "nonexistent@example.com", // An email that doesn't exist
+        otp: hashedOtp,
+      },
+      ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: 99999999,
+      }
+    );
+
+    const args: MutationForgotPasswordArgs = {
+      data: {
+        newPassword: "newPassword",
+        otpToken,
+        userOtp: otp,
+      },
+    };
+
+    try {
+      await forgotPasswordResolver?.({}, args, {});
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
   it(`changes the password if args.otp is correct`, async () => {
     const otp = "otp";
 
@@ -123,7 +161,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
         email: testUser?.email ?? "",
         otp: hashedOtp,
       },
-      process.env.NODE_ENV ?? "",
+      ACCESS_TOKEN_SECRET as string,
       {
         expiresIn: 99999999,
       }

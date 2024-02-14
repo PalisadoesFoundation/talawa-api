@@ -2,7 +2,11 @@ import bcrypt from "bcryptjs";
 import { jwtDecode } from "jwt-decode";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
-import { ACCESS_TOKEN_SECRET, INVALID_OTP } from "../../constants";
+import {
+  ACCESS_TOKEN_SECRET,
+  INVALID_OTP,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
 import jwt from "jsonwebtoken";
 
 /**
@@ -22,8 +26,11 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
 ) => {
   const { userOtp, newPassword, otpToken } = args.data;
 
-  // To verify token's authenticity
-  jwt.verify(otpToken, ACCESS_TOKEN_SECRET as string);
+  try {
+    await jwt.verify(otpToken, ACCESS_TOKEN_SECRET as string);
+  } catch (error) {
+    throw new Error(INVALID_OTP);
+  }
 
   // Extracts email and otp out of otpToken.
 
@@ -43,7 +50,7 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
   const user = await User.findOne({ email }).lean();
 
   if (!user) {
-    throw new Error("User not found");
+    throw new Error(USER_NOT_FOUND_ERROR.MESSAGE);
   }
   const oldHashedPassword: string = user.password;
 
