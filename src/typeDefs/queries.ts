@@ -34,7 +34,7 @@ export const queries = gql`
     eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
 
     eventsByOrganizationConnection(
-      where: EventWhereInput!
+      where: EventWhereInput
       first: Int
       skip: Int
       orderBy: EventOrderByInput

@@ -8,7 +8,7 @@ import { createRecurringEventInstancesDuringQuery } from "../../helpers/event/cr
 export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizationConnection"] =
   async (_parent, args) => {
     // dynamically generate recurring event instances upto a certain date during this query
-    await createRecurringEventInstancesDuringQuery(args.where.organization_id);
+    await createRecurringEventInstancesDuringQuery(args.where?.organization_id);
 
     // get the where and sort
     let where = getWhere<InterfaceEvent>(args.where);

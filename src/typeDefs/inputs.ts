@@ -116,7 +116,7 @@ export const inputs = gql`
     location_contains: String
     location_starts_with: String
 
-    organization_id: ID!
+    organization_id: ID
   }
 
   input FeedbackInput {

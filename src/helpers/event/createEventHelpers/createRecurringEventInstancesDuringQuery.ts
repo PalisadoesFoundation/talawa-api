@@ -13,18 +13,23 @@ import { RECURRING_EVENT_INSTANCES_QUERY_LIMIT } from "../../../constants";
 
 /**
  * This function creates the instances of a recurring event upto a certain date during queries.
- * @param organizationId - _id of the organization the events belongs to
+ * @param organizationId - _id of the organization the events belong to
  * @remarks The following steps are followed:
- * 1. Get the limit date upto which we would want to update the recurrenceRules by generating new instances.
- * 2. Get a recurrence rules to be used for instance generation during this query.
- * 3. For every recurrence rule found, get the number of existing instances and how many more to generate.
- * 4. For every reurrence rule found, generate new instances after their latestInstanceDates.
- * 5. Update the latestInstanceDate for the recurrence rules.
+ * 1. Get the limit date upto which we would want to query the recurrenceRules and generate new instances.
+ * 2. Get the recurrence rules to be used for instance generation during this query.
+ * 3. For every recurrence rule found:
+ *   - get the number of existing instances and how many more to generate based on the recurrenceRule's count (if specified).
+ *   - generate new instances after their latestInstanceDates.
+ *   - update the latestInstanceDate.
  */
 
 export const createRecurringEventInstancesDuringQuery = async (
-  organizationId: string
+  organizationId: string | undefined | null
 ): Promise<void> => {
+  if (!organizationId) {
+    return;
+  }
+
   // get the current calendar date in UTC midnight
   const calendarDate = convertToUTCDate(new Date());
   const queryUptoDate = addYears(
