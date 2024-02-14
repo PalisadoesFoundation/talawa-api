@@ -244,6 +244,12 @@ export const inputs = gql`
     recaptchaToken: String!
   }
 
+  input RecurrenceRuleInput {
+    frequency: Frequency
+    weekDays: [WeekDays]
+    count: Int
+  }
+
   input ToggleUserTagAssignInput {
     userId: ID!
     tagId: ID!

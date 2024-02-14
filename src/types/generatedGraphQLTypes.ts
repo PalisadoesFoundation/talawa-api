@@ -308,7 +308,7 @@ export type Event = {
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   description: Scalars['String']['output'];
-  endDate: Scalars['Date']['output'];
+  endDate?: Maybe<Scalars['Date']['output']>;
   endTime?: Maybe<Scalars['Time']['output']>;
   feedback: Array<Feedback>;
   isPublic: Scalars['Boolean']['output'];
@@ -436,6 +436,12 @@ export type ForgotPasswordData = {
   otpToken: Scalars['String']['input'];
   userOtp: Scalars['String']['input'];
 };
+
+export type Frequency =
+  | 'DAILY'
+  | 'MONTHLY'
+  | 'WEEKLY'
+  | 'YEARLY';
 
 export type Gender =
   | 'FEMALE'
@@ -824,7 +830,8 @@ export type MutationCreateDonationArgs = {
 
 
 export type MutationCreateEventArgs = {
-  data?: InputMaybe<EventInput>;
+  data: EventInput;
+  recurrenceRuleData?: InputMaybe<RecurrenceRuleInput>;
 };
 
 
@@ -1667,6 +1674,12 @@ export type Recurrance =
   | 'WEEKLY'
   | 'YEARLY';
 
+export type RecurrenceRuleInput = {
+  count?: InputMaybe<Scalars['Int']['input']>;
+  frequency?: InputMaybe<Frequency>;
+  weekDays?: InputMaybe<Array<InputMaybe<WeekDays>>>;
+};
+
 export type Status =
   | 'ACTIVE'
   | 'BLOCKED'
@@ -2002,6 +2015,15 @@ export type UsersConnectionResult = {
   errors: Array<ConnectionError>;
 };
 
+export type WeekDays =
+  | 'FR'
+  | 'MO'
+  | 'SA'
+  | 'SU'
+  | 'TH'
+  | 'TU'
+  | 'WE';
+
 export type CreateChatInput = {
   organizationId: Scalars['ID']['input'];
   userIds: Array<Scalars['ID']['input']>;
@@ -2138,6 +2160,7 @@ export type ResolversTypes = {
   FieldError: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['FieldError']>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ForgotPasswordData: ForgotPasswordData;
+  Frequency: Frequency;
   Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
   GroupChat: ResolverTypeWrapper<InterfaceGroupChatModel>;
@@ -2187,6 +2210,7 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
+  RecurrenceRuleInput: RecurrenceRuleInput;
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Subscription: ResolverTypeWrapper<{}>;
@@ -2228,6 +2252,7 @@ export type ResolversTypes = {
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
+  WeekDays: WeekDays;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
@@ -2318,6 +2343,7 @@ export type ResolversParentTypes = {
   PostWhereInput: PostWhereInput;
   Query: {};
   RecaptchaVerification: RecaptchaVerification;
+  RecurrenceRuleInput: RecurrenceRuleInput;
   String: Scalars['String']['output'];
   Subscription: {};
   Time: Scalars['Time']['output'];
@@ -2562,7 +2588,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  endDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   endTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   feedback?: Resolver<Array<ResolversTypes['Feedback']>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -2751,7 +2777,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
-  createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, Partial<MutationCreateEventArgs>>;
+  createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationCreateEventArgs, 'data'>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
   createMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
