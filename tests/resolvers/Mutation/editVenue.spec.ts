@@ -53,12 +53,12 @@ beforeAll(async () => {
     capacity: Math.floor(Math.random() * 100),
     organizationId: testOrganization?.id,
   });
-
+  
   testVenue = await Venue.create({
     name: "venue",
     description: "description",
     capacity: Math.floor(Math.random() * 100),
-    organizationId: testOrganization?.id,
+    organizationId: Types.ObjectId().toString(),
   });
 
   const { requestContext } = await import("../../../src/libraries");
@@ -80,7 +80,6 @@ describe("resolvers -> Mutation -> editVenue", () => {
           capacity: 10,
           name: "testVenue",
           description: "description",
-          organizationId: testOrganization?.id,
         },
       };
 
@@ -102,7 +101,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     }
   });
 
-  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
+  it(`throws NotFoundError if no venue exists with _id === args.data._id`, async () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
@@ -110,7 +109,34 @@ describe("resolvers -> Mutation -> editVenue", () => {
           capacity: 10,
           name: "testVenue",
           description: "description",
-          organizationId: Types.ObjectId().toString(),
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { editVenue } = await import(
+        "../../../src/resolvers/Mutation/editVenue"
+      );
+      await editVenue?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(VENUE_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
+  });
+
+  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
+    try {
+      const args: MutationEditVenueArgs = {
+        data: {
+          id: testVenue?.id,
+          capacity: 10,
+          name: "testVenue",
+          description: "description",
         },
       };
 
@@ -132,44 +158,24 @@ describe("resolvers -> Mutation -> editVenue", () => {
     }
   });
 
-  it(`throws NotFoundError if no venue exists with _id === args.data._id`, async () => {
-    try {
-      const args: MutationEditVenueArgs = {
-        data: {
-          id: Types.ObjectId().toString(),
-          capacity: 10,
-          name: "testVenue",
-          description: "description",
-          organizationId: testOrganization?.id,
-        },
-      };
-
-      const context = {
-        userId: testUser?.id,
-      };
-
-      const { editVenue } = await import(
-        "../../../src/resolvers/Mutation/editVenue"
-      );
-      await editVenue?.({}, args, context);
-    } catch (error: unknown) {
-      if (error instanceof NotFoundError) {
-        expect(error.message).toEqual(VENUE_NOT_FOUND_ERROR.MESSAGE);
-      } else {
-        fail(`Expected NotFoundError, but got ${error}`);
-      }
-    }
-  });
-
   it(`throws UnauthorizedError if user with _id === context.userId is neither an admin of the organization with _id === args.organizationId nor a SUPERADMIN`, async () => {
     try {
+      await Venue.findOneAndUpdate(
+        {
+          _id: testVenue?._id,
+        },
+        {
+          $set: { organizationId: testOrganization?._id },
+        },
+        { new: true }
+      );
+
       const args: MutationEditVenueArgs = {
         data: {
           id: testVenue?.id,
           capacity: 10,
           name: "testVenue",
           description: "description",
-          organizationId: testOrganization?.id,
         },
       };
 
@@ -211,7 +217,6 @@ describe("resolvers -> Mutation -> editVenue", () => {
           capacity: 10,
           name: "",
           description: "description",
-          organizationId: testOrganization?.id,
         },
       };
 
@@ -240,7 +245,6 @@ describe("resolvers -> Mutation -> editVenue", () => {
           capacity: 10,
           name: "testVenue",
           description: "description",
-          organizationId: testOrganization?.id,
         },
       };
 
@@ -269,7 +273,6 @@ describe("resolvers -> Mutation -> editVenue", () => {
           capacity: 90,
           name: "newTestVenue",
           description: "newDescription",
-          organizationId: testOrganization?.id,
           file: "data:image/",
         },
       };
@@ -298,7 +301,6 @@ describe("resolvers -> Mutation -> editVenue", () => {
         capacity: 90,
         name: "newTestVenue",
         description: "newDescription",
-        organizationId: testOrganization?.id,
       },
     };
 

@@ -74,7 +74,6 @@ export const inputs = gql`
     capacity: Int
     name: String
     description: String
-    organizationId: ID!
     file: String
   }
 

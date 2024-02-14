@@ -48,8 +48,16 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     _id: args.data.id,
   }).lean();
 
+  if (!venue) {
+    throw new errors.NotFoundError(
+      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
+      VENUE_NOT_FOUND_ERROR.CODE,
+      VENUE_NOT_FOUND_ERROR.PARAM
+    );
+  }
+
   const organization = await Organization.findOne({
-    _id: args.data.organizationId,
+    _id: venue?.organizationId,
   });
 
   // Checks whether organization exists.
@@ -58,14 +66,6 @@ export const editVenue: MutationResolvers["editVenue"] = async (
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
       ORGANIZATION_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
-  if (!venue) {
-    throw new errors.NotFoundError(
-      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
-      VENUE_NOT_FOUND_ERROR.CODE,
-      VENUE_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -94,7 +94,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
 
   // Check if a venue with the same organizationId and name exists
   const venuesWithOrganization = await Venue.find({
-    organizationId: args.data?.organizationId,
+    organizationId: organization._id,
   });
 
   if (

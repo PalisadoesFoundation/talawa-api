@@ -217,7 +217,6 @@ input EditVenueInput {
   description: String
   file: String
   name: String
-  organizationId: ID!
 }
 
 enum EducationGrade {

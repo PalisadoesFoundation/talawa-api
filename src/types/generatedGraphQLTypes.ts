@@ -275,7 +275,6 @@ export type EditVenueInput = {
   file?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
-  organizationId: Scalars['ID']['input'];
 };
 
 export type EducationGrade =
