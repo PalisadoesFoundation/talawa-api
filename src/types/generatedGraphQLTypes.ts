@@ -1780,7 +1780,7 @@ export type User = {
   firstName: Scalars['String']['output'];
   gender?: Maybe<Gender>;
   identifier: Scalars['Int'];
-  image?: Maybe<Scalars['String']>;
+  image?: Maybe<Scalars['String']['output']>;
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   lastName: Scalars['String']['output'];
   maritalStatus?: Maybe<MaritalStatus>;
