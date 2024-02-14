@@ -12,6 +12,7 @@ import type { InterfaceEvent as InterfaceEventModel } from '../models/Event';
 import type { InterfaceEventAttendee as InterfaceEventAttendeeModel } from '../models/EventAttendee';
 import type { InterfaceUserFamily as InterfaceUserFamilyModel } from '../models/userFamily';
 import type { InterfaceEventVolunteer as InterfaceEventVolunteerModel } from '../models/EventVolunteer';
+import type { InterfaceEventVolunteerGroup as InterfaceEventVolunteerGroupModel } from '../models/EventVolunteerGroup';
 import type { InterfaceFeedback as InterfaceFeedbackModel } from '../models/Feedback';
 import type { InterfaceFund as InterfaceFundModel } from '../models/Fund';
 import type { InterfaceFundraisingCampaign as InterfaceFundraisingCampaignModel } from '../models/FundraisingCampaign';
@@ -629,6 +630,24 @@ export type EventVolunteer = {
   user: User;
 };
 
+export type EventVolunteerGroup = {
+  __typename?: 'EventVolunteerGroup';
+  _id: Scalars['ID']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  creator?: Maybe<User>;
+  event?: Maybe<Event>;
+  leader: User;
+  name?: Maybe<Scalars['String']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
+  volunteers?: Maybe<Array<Maybe<EventVolunteer>>>;
+  volunteersRequired?: Maybe<Scalars['Int']['output']>;
+};
+
+export type EventVolunteerGroupInput = {
+  eventId: Scalars['ID']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type EventVolunteerInput = {
   eventId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
@@ -923,6 +942,7 @@ export type Mutation = {
   createEventVolunteer: EventVolunteer;
   createFund: Fund;
   createFundraisingCampaign: FundraisingCampaign;
+  createEventVolunteerGroup: EventVolunteerGroup;
   createGroupChat: GroupChat;
   createMember: Organization;
   createMessageChat: MessageChat;
@@ -1183,6 +1203,10 @@ export type MutationCreateFundArgs = {
 
 export type MutationCreateFundraisingCampaignArgs = {
   data: FundCampaignInput;
+}
+
+export type MutationCreateEventVolunteerGroupArgs = {
+  data: EventVolunteerGroupInput;
 };
 
 
@@ -2623,6 +2647,8 @@ export type ResolversTypes = {
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
   EventVolunteer: ResolverTypeWrapper<InterfaceEventVolunteerModel>;
+  EventVolunteerGroup: ResolverTypeWrapper<InterfaceEventVolunteerGroupModel>;
+  EventVolunteerGroupInput: EventVolunteerGroupInput;
   EventVolunteerInput: EventVolunteerInput;
   EventVolunteerResponse: EventVolunteerResponse;
   EventWhereInput: EventWhereInput;
@@ -2775,6 +2801,8 @@ export type ResolversParentTypes = {
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
   EventVolunteer: InterfaceEventVolunteerModel;
+  EventVolunteerGroup: InterfaceEventVolunteerGroupModel;
+  EventVolunteerGroupInput: EventVolunteerGroupInput;
   EventVolunteerInput: EventVolunteerInput;
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
@@ -3138,6 +3166,19 @@ export type EventVolunteerResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type EventVolunteerGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventVolunteerGroup'] = ResolversParentTypes['EventVolunteerGroup']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
+  leader?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  volunteers?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventVolunteer']>>>, ParentType, ContextType>;
+  volunteersRequired?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ExtendSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtendSession'] = ResolversParentTypes['ExtendSession']> = {
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -3342,6 +3383,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationCreateEventVolunteerArgs, 'data'>>;
   createFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationCreateFundArgs, 'data'>>;
   createFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignArgs, 'data'>>;
+  createEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationCreateEventVolunteerGroupArgs, 'data'>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
   createMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
@@ -3742,6 +3784,7 @@ export type Resolvers<ContextType = any> = {
   Event?: EventResolvers<ContextType>;
   EventAttendee?: EventAttendeeResolvers<ContextType>;
   EventVolunteer?: EventVolunteerResolvers<ContextType>;
+  EventVolunteerGroup?: EventVolunteerGroupResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Feedback?: FeedbackResolvers<ContextType>;
   FieldError?: FieldErrorResolvers<ContextType>;

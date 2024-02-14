@@ -568,6 +568,23 @@ type EventVolunteer {
   user: User!
 }
 
+type EventVolunteerGroup {
+  _id: ID!
+  createdAt: DateTime!
+  creator: User
+  event: Event
+  leader: User!
+  name: String
+  updatedAt: DateTime!
+  volunteers: [EventVolunteer]
+  volunteersRequired: Int
+}
+
+input EventVolunteerGroupInput {
+  eventId: ID!
+  name: String
+}
+
 input EventVolunteerInput {
   eventId: ID!
   userId: ID!
@@ -893,6 +910,9 @@ type Mutation {
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
   createFund(data: FundInput!): Fund!
   createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
+  createEventVolunteerGroup(
+    data: EventVolunteerGroupInput!
+  ): EventVolunteerGroup!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!

@@ -13,8 +13,8 @@ export interface InterfaceEventVolunteerGroup {
   leaderId: PopulatedDoc<InterfaceUser & Document>;
   name: string;
   updatedAt: Date;
-  volunteers: PopulatedDoc<InterfaceEventVolunteer & Document>[];
-  volunteersRequired: number;
+  volunteers?: PopulatedDoc<InterfaceEventVolunteer & Document>[];
+  volunteersRequired?: number;
 }
 
 const eventVolunteerGroupSchema = new Schema(
@@ -27,6 +27,7 @@ const eventVolunteerGroupSchema = new Schema(
     eventId: {
       type: Schema.Types.ObjectId,
       ref: "Event",
+      required: true,
     },
     leaderId: {
       type: Schema.Types.ObjectId,
@@ -56,12 +57,12 @@ const eventVolunteerGroupSchema = new Schema(
 // Enable logging on changes in EventVolunteer collection
 createLoggingMiddleware(eventVolunteerGroupSchema, "EventVolunteerGroup");
 
-const eventVolunteerGroupModel = (): Model<InterfaceEventVolunteer> =>
-  model<InterfaceEventVolunteer>(
+const eventVolunteerGroupModel = (): Model<InterfaceEventVolunteerGroup> =>
+  model<InterfaceEventVolunteerGroup>(
     "EventVolunteerGroup",
     eventVolunteerGroupSchema
   );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const EventVolunteer = (models.EventVolunteerGroup ||
+export const EventVolunteerGroup = (models.EventVolunteerGroup ||
   eventVolunteerGroupModel()) as ReturnType<typeof eventVolunteerGroupModel>;

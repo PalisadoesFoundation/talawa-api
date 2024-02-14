@@ -145,6 +145,10 @@ export const mutations = gql`
 
     createEventVolunteer(data: EventVolunteerInput!): EventVolunteer! @auth
 
+    createEventVolunteerGroup(
+      data: EventVolunteerGroupInput!
+    ): EventVolunteerGroup! @auth
+
     leaveOrganization(organizationId: ID!): User! @auth
 
     likeComment(id: ID!): Comment @auth
