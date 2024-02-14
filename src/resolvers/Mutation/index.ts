@@ -19,6 +19,7 @@ import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { checkIn } from "./checkIn";
 import { createMember } from "./createMember";
 import { createActionItem } from "./createActionItem";
+import { createAgendaCategory } from "./createAgendaCategory";
 import { createAdmin } from "./createAdmin";
 import { createComment } from "./createComment";
 import { createDirectChat } from "./createDirectChat";
@@ -34,6 +35,7 @@ import { createSampleOrganization } from "./createSampleOrganization";
 import { createActionItemCategory } from "./createActionItemCategory";
 import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
+import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { forgotPassword } from "./forgotPassword";
 import { joinPublicOrganization } from "./joinPublicOrganization";
 import { leaveOrganization } from "./leaveOrganization";
@@ -94,6 +96,7 @@ import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
 import { deleteAdvertisementById } from "./deleteAdvertisementById";
 import { updateAdvertisement } from "./updateAdvertisement";
+import { updateAgendaCategory } from "./updateAgendaCategory";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -123,6 +126,7 @@ export const Mutation: MutationResolvers = {
   createActionItem,
   createComment,
   createAdvertisement,
+  createAgendaCategory,
   createDirectChat,
   createDonation,
   createEvent,
@@ -136,6 +140,7 @@ export const Mutation: MutationResolvers = {
   createUserTag,
   deleteDonationById,
   deleteAdvertisementById,
+  deleteAgendaCategory,
   forgotPassword,
   joinPublicOrganization,
   leaveOrganization,
@@ -181,6 +186,7 @@ export const Mutation: MutationResolvers = {
   unregisterForEventByUser,
   updateActionItem,
   updateActionItemCategory,
+  updateAgendaCategory,
   updateEvent,
   updateLanguage,
   updateOrganization,

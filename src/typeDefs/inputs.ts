@@ -47,6 +47,12 @@ export const inputs = gql`
     eventId: ID
   }
 
+  input CreateAgendaCategoryInput {
+    name: String!
+    description: String
+    organizationId: ID!
+  }
+
   input CursorPaginationInput {
     cursor: String
     direction: PaginationDirection!
@@ -320,6 +326,11 @@ export const inputs = gql`
   input UpdateActionItemCategoryInput {
     name: String
     isDisabled: Boolean
+  }
+
+  input UpdateAgendaCategoryInput {
+    name: String
+    description: String
   }
 
   input AddressInput {

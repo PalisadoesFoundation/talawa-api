@@ -30,6 +30,8 @@ const config: CodegenConfig = {
           ActionItemCategory:
             "../models/ActionItemCategory#InterfaceActionItemCategory",
 
+          AgendaCategory: "../models/AgendaCategory#InterfaceAgendaCategory",
+
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
           MessageChat: "../models/MessageChat#InterfaceMessageChat",
