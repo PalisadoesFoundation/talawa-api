@@ -449,18 +449,18 @@ export const EMAIL_ALREADY_EXISTS_ERROR = {
   PARAM: "email",
 };
 
-export const VOLUNTEER_NOT_FOUND_ERROR = {
+export const EVENT_VOLUNTEER_NOT_FOUND_ERROR = {
   DESC: "Volunteer not found",
-  CODE: "volunteer.notFound",
-  MESSAGE: "volunteer.notFound",
-  PARAM: "volunteers",
+  CODE: "eventVolunteer.notFound",
+  MESSAGE: "eventVolunteer.notFound",
+  PARAM: "eventVolunteers",
 };
 
-export const VOLUNTEER_NOT_MEMBER_ERROR = {
-  DESC: "Volunteer is not member of the organization.",
-  CODE: "volunteer.notMember",
-  MESSAGE: "volunteer.notMember",
-  PARAM: "volunteers",
+export const EVENT_VOLUNTEER_INVITE_USER_MISTMATCH = {
+  DESC: "Current User is not the user of Event Volunteer",
+  CODE: "eventVolunteer.userMismatch",
+  MESSAGE: "eventVolunteer.userMismatch",
+  PARAM: "eventVolunteers",
 };
 
 export const USER_ALREADY_CHECKED_IN = {
@@ -567,4 +567,9 @@ export enum TransactionLogTypes {
   CREATE = "CREATE",
   UPDATE = "UPDATE",
   DELETE = "DELETE",
+}
+
+export enum EventVolunteerResponse {
+  YES = "YES",
+  NO = "NO",
 }

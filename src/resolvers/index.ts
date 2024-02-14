@@ -6,6 +6,7 @@ import { Comment } from "./Comment";
 import { DirectChat } from "./DirectChat";
 import { DirectChatMessage } from "./DirectChatMessage";
 import { Event } from "./Event";
+import { EventVolunteer } from "./EventVolunteer";
 import { Feedback } from "./Feedback";
 import { GroupChat } from "./GroupChat";
 import { GroupChatMessage } from "./GroupChatMessage";
@@ -41,6 +42,7 @@ const resolvers: Resolvers = {
   DirectChat,
   DirectChatMessage,
   Event,
+  EventVolunteer,
   Feedback,
   GroupChat,
   UserFamily,

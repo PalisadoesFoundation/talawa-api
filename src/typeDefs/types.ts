@@ -189,6 +189,18 @@ export const types = gql`
     averageFeedbackScore: Float
   }
 
+  type EventVolunteer {
+    _id: ID!
+    createdAt: DateTime!
+    creator: User
+    event: Event
+    isAssigned: Boolean
+    isInvited: Boolean
+    response: String
+    user: User!
+    updatedAt: DateTime!
+  }
+
   type Feedback {
     _id: ID!
     event: Event!
