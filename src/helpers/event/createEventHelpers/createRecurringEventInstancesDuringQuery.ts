@@ -9,6 +9,7 @@ import {
 import { session } from "../../../db";
 import type { Recurrance } from "../../../types/generatedGraphQLTypes";
 import type { InterfaceGenerateRecurringInstancesData } from "../recurringEventHelpers/generateRecurringEventInstances";
+import { RECURRING_EVENT_INSTANCES_QUERY_LIMIT } from "../../../constants";
 
 /**
  * This function creates the instances of a recurring event upto a certain date during queries.
@@ -26,12 +27,15 @@ export const createRecurringEventInstancesDuringQuery = async (
 ): Promise<void> => {
   // get the current calendar date in UTC midnight
   const calendarDate = convertToUTCDate(new Date());
-  const queryLimitDate = addYears(calendarDate, 2);
+  const queryUptoDate = addYears(
+    calendarDate,
+    RECURRING_EVENT_INSTANCES_QUERY_LIMIT
+  );
 
   // get the recurrenceRules
   const recurrenceRules = await RecurrenceRule.find({
     organizationId,
-    latestInstanceDate: { $lt: queryLimitDate },
+    latestInstanceDate: { $lt: queryUptoDate },
   }).lean();
 
   await Promise.all(
@@ -66,7 +70,7 @@ export const createRecurringEventInstancesDuringQuery = async (
         recurrenceRule.recurrenceRuleString,
         recurrenceStartDate,
         recurrenceRule.endDate,
-        calendarDate
+        queryUptoDate
       );
 
       // find out how many instances following the recurrence rule already exist and how many more to generate

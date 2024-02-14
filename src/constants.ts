@@ -538,6 +538,11 @@ export const RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT = 2;
 export const RECURRING_EVENT_INSTANCES_MONTHLY_LIMIT = 5;
 export const RECURRING_EVENT_INSTANCES_YEARLY_LIMIT = 10;
 
+// recurrence rules query date limit in years
+// i.e. query limit date to find the pending recurrence patterns
+// and then generate new instances ahead of this date
+export const RECURRING_EVENT_INSTANCES_QUERY_LIMIT = 1;
+
 // recurring event days
 export const RECURRENCE_WEEKDAYS = [
   "MONDAY",
