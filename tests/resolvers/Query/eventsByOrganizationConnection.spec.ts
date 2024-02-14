@@ -12,25 +12,19 @@ import type {
 } from "../../../src/types/generatedGraphQLTypes";
 import type { InterfaceEvent } from "../../../src/models";
 import { Event } from "../../../src/models";
-import type {
-  TestOrganizationType} from "../../helpers/userAndOrg";
-import {
-  createTestUserAndOrganization,
-} from "../../helpers/userAndOrg";
+import type { TestOrganizationType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createEventWithRegistrant } from "../../helpers/events";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { addDays, addYears } from "date-fns";
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import type { TestUserType } from "../../helpers/user";
-import type {
-  InterfaceRecurrenceRule} from "../../../src/models/RecurrenceRule";
-import {
-  Frequency,
-  RecurrenceRule,
-} from "../../../src/models/RecurrenceRule";
+import type { InterfaceRecurrenceRule } from "../../../src/models/RecurrenceRule";
+import { Frequency, RecurrenceRule } from "../../../src/models/RecurrenceRule";
 import {
   RECURRING_EVENT_INSTANCES_DAILY_LIMIT,
+  RECURRING_EVENT_INSTANCES_QUERY_LIMIT,
   RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT,
 } from "../../../src/constants";
 import { rrulestr } from "rrule";
@@ -411,7 +405,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
   });
 
-  it("dynamic recurring event instances generation during query for events with no end dates", async () => {
+  it("dynamically generates recurring event instances during query for events with no end dates", async () => {
     vi.useFakeTimers();
 
     const startDate = convertToUTCDate(new Date());
@@ -472,15 +466,24 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       startDate,
     });
 
-    const currentlatestInstanceDate = addYears(
+    const { recurrenceRuleString } = recurrenceRule as InterfaceRecurrenceRule;
+    const recurrenceRuleObject: RRule = rrulestr(recurrenceRuleString);
+
+    const generateUptoDate = addYears(
       startDate,
       RECURRING_EVENT_INSTANCES_DAILY_LIMIT
     );
-    expect(recurrenceRule?.latestInstanceDate).toEqual(
-      currentlatestInstanceDate
+
+    const currentLatestInstanceDate = recurrenceRuleObject.before(
+      generateUptoDate,
+      true
     );
 
-    const newMockDate = addDays(startDate, 1);
+    expect(recurrenceRule?.latestInstanceDate).toEqual(
+      currentLatestInstanceDate
+    );
+
+    const newMockDate = addDays(currentLatestInstanceDate as Date, 1);
     vi.setSystemTime(newMockDate);
 
     const args: QueryEventsByOrganizationConnectionArgs = {
@@ -496,9 +499,18 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       startDate,
     });
 
-    const newLatestInstanceDate = addYears(
-      addYears(newMockDate, 1),
+    const newRecurrenceStartDate = addYears(
+      convertToUTCDate(newMockDate),
+      RECURRING_EVENT_INSTANCES_QUERY_LIMIT
+    );
+    const newGenerateUptoDate = addYears(
+      newRecurrenceStartDate,
       RECURRING_EVENT_INSTANCES_DAILY_LIMIT
+    );
+
+    const newLatestInstanceDate = recurrenceRuleObject.before(
+      newGenerateUptoDate,
+      true
     );
 
     expect(recurrenceRule?.latestInstanceDate).toEqual(newLatestInstanceDate);
@@ -506,7 +518,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     vi.useRealTimers();
   });
 
-  it("dynamic recurring event instances generation during query for specified number of instances", async () => {
+  it("dynamically generates recurring event instances during query for a specified number of instances", async () => {
     vi.useFakeTimers();
 
     const startDate = convertToUTCDate(new Date());
@@ -571,8 +583,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const { recurrenceRuleString } = recurrenceRule as InterfaceRecurrenceRule;
     const recurrenceRuleObject: RRule = rrulestr(recurrenceRuleString);
 
+    const recurrenceStartDate = startDate;
     const generateUptoDate = addYears(
-      startDate,
+      recurrenceStartDate,
       RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT
     );
     const currentLatestInstanceDate = recurrenceRuleObject.before(
@@ -606,8 +619,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       startDate,
     });
 
+    const newRecurrenceStartDate = addYears(
+      convertToUTCDate(newMockDate),
+      RECURRING_EVENT_INSTANCES_QUERY_LIMIT
+    );
     const newGenerateUptoDate = addYears(
-      newMockDate,
+      newRecurrenceStartDate,
       RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT
     );
 
