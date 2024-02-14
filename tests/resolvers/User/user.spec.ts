@@ -15,19 +15,6 @@ afterAll(async () => {
 });
 
 describe("User Identifier Tests", () => {
-  // before(async () => {
-  //   // Connect to MongoDB before running the tests
-  //   await mongoose.connect("mongodb://localhost:27017/talawa-test-db", {
-  //     useNewUrlParser: true,
-  //     useUnifiedTopology: true,
-  //   });
-  // });
-
-  // after(async () => {
-  //   // Disconnect from MongoDB after running the tests
-  //   await mongoose.connection.close();
-  // });
-
   beforeEach(async () => {
     // Clear the User collection bef ore each test
     await User.deleteMany({});

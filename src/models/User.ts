@@ -284,6 +284,7 @@ const userSchema = new Schema(
     },
     tokenVersion: {
       type: Number,
+      required:true,
       default: 0,
     },
     userType: {
