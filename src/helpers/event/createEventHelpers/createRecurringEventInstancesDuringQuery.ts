@@ -123,7 +123,7 @@ export const createRecurringEventInstancesDuringQuery = async (
             baseRecurringEventId: baseRecurringEvent._id.toString(),
             recurrenceRuleId: recurrenceRule._id.toString(),
             recurringInstanceDates,
-            currentUserId: baseRecurringEvent.creatorId,
+            creatorId: baseRecurringEvent.creatorId,
             organizationId,
             session,
           });

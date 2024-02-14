@@ -12,7 +12,7 @@ import {
 /**
  * This function creates the instances of a recurring event upto a certain date.
  * @param args - payload of the createEvent mutation
- * @param currentUserId - _id of the current user
+ * @param creatorId - _id of the creator
  * @param organizationId - _id of the organization the events belongs to
  * @remarks The following steps are followed:
  * 1. Create a default recurrenceRuleData.
@@ -26,7 +26,7 @@ import {
 
 export const createRecurringEvent = async (
   args: MutationCreateEventArgs,
-  currentUserId: string,
+  creatorId: string,
   organizationId: string,
   session: mongoose.ClientSession
 ): Promise<InterfaceEvent> => {
@@ -54,12 +54,10 @@ export const createRecurringEvent = async (
     [
       {
         ...data,
-        startDate: data.startDate,
-        endDate: data.endDate,
         recurring: true,
         isBaseRecurringEvent: true,
-        creatorId: currentUserId,
-        admins: [currentUserId],
+        creatorId,
+        admins: [creatorId],
         organization: organizationId,
       },
     ],
@@ -82,7 +80,7 @@ export const createRecurringEvent = async (
     recurrenceRuleString,
     data.startDate,
     data.endDate,
-    organizationId.toString(),
+    organizationId,
     baseRecurringEvent[0]?._id.toString(),
     latestInstanceDate,
     session
@@ -94,8 +92,8 @@ export const createRecurringEvent = async (
     baseRecurringEventId: baseRecurringEvent[0]?._id.toString(),
     recurrenceRuleId: recurrenceRule?._id.toString(),
     recurringInstanceDates,
-    currentUserId: currentUserId.toString(),
-    organizationId: organizationId.toString(),
+    creatorId,
+    organizationId,
     session,
   });
 
