@@ -1,12 +1,13 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { Organization } from "../../models";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceOrganization } from "../../models";
+import { Organization } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { adminCheck } from "../../utilities";
 
-import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to update an organization.
  * @param _parent - parent of current request
@@ -30,8 +31,7 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
       organization = await Organization.findOne({
         _id: args.id,
       }).lean();
-
-      await cacheOrganizations([organization!]);
+      if (organization) await cacheOrganizations([organization]);
     }
 
     // Checks if organization with _id === args.id exists.
@@ -73,5 +73,5 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
       await cacheOrganizations([updatedOrganization]);
     }
 
-    return updatedOrganization!;
+    return updatedOrganization as InterfaceOrganization;
   };

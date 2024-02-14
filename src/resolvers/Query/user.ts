@@ -1,7 +1,13 @@
 import { USER_NOT_FOUND_ERROR } from "../../constants";
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { errors } from "../../libraries";
-import { User } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceEvent,
+  InterfaceOrganization,
+  InterfaceUser,
+} from "../../models";
+import { AppUserProfile, User } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This query fetch the user from the database.
  * @param _parent-
@@ -22,16 +28,35 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     );
   }
 
-  const user = await User.findOne({
+  const user: InterfaceUser = await User.findOne({
     _id: args.id,
+  }).lean();
+  const userAppProfile: InterfaceAppUserProfile = await AppUserProfile.findOne({
+    userId: user._id,
   })
     .populate("adminFor")
     .lean();
 
   // This Query field doesn't allow client to see organizations they are blocked by
   return {
-    ...user!,
-    image: user?.image ? `${context.apiRootUrl}${user.image}` : null,
-    organizationsBlockedBy: [],
+    user: {
+      ...user,
+      image: user?.image ? `${context.apiRootUrl}${user.image}` : null,
+      organizationsBlockedBy: [],
+    },
+    appUserProfile: {
+      // ...userAppProfile,
+      _id: userAppProfile._id.toString(),
+      userId: userAppProfile.userId as InterfaceUser,
+      adminFor: userAppProfile.adminFor as InterfaceOrganization[],
+      appLanguageCode: userAppProfile.appLanguageCode,
+      isSuperAdmin: userAppProfile.isSuperAdmin,
+      pluginCreationAllowed: userAppProfile.pluginCreationAllowed,
+      tokenVersion: userAppProfile.tokenVersion,
+      eventAdmin: userAppProfile.eventAdmin as InterfaceEvent[],
+      createdEvents: userAppProfile.createdEvents as InterfaceEvent[],
+      createdOrganizations:
+        userAppProfile.createdOrganizations as InterfaceOrganization[],
+    },
   };
 };

@@ -90,8 +90,6 @@ export const enums = gql`
     lastName_DESC
     email_ASC
     email_DESC
-    appLanguageCode_ASC
-    appLanguageCode_DESC
   }
 
   enum UserType {

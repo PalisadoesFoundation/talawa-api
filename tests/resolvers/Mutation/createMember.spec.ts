@@ -1,17 +1,18 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { AppUserProfile, Organization } from "../../../src/models";
 import type { MutationCreateMemberArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { createMember as createMemberResolver } from "../../../src/resolvers/Mutation/createMember";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { createMember as createMemberResolver } from "../../../src/resolvers/Mutation/createMember";
 import type {
   TestOrganizationType,
   TestUserType,
@@ -64,8 +65,8 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       };
 
       await createMemberResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -82,13 +83,13 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         }
       );
 
-      await User.updateOne(
+      await AppUserProfile.updateOne(
         {
-          _id: testUser?._id,
+          userId: testUser?._id,
         },
         {
           $set: {
-            userType: "SUPERADMIN",
+            isSuperAdmin: true,
           },
         }
       );
@@ -105,8 +106,8 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       };
 
       await createMemberResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -124,8 +125,10 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       };
 
       await createMemberResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+      );
     }
   });
 
@@ -155,8 +158,8 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       };
 
       await createMemberResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -172,5 +175,32 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     );
 
     expect(updatedOrganizationCheck).toBe(true);
+  });
+  it("throws error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    try {
+      await AppUserProfile.deleteOne({
+        userId: testUser?._id,
+      });
+
+      const args: MutationCreateMemberArgs = {
+        input: {
+          organizationId: testOrganization?.id,
+          userId: testUser?.id,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      await createMemberResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
+    }
   });
 });

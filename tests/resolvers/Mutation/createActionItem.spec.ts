@@ -1,32 +1,32 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { MutationCreateActionItemArgs } from "../../../src/types/generatedGraphQLTypes";
-import { createActionItem as createActionItemResolver } from "../../../src/resolvers/Mutation/createActionItem";
-import { connect, disconnect } from "../../helpers/db";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
-  USER_NOT_FOUND_ERROR,
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTestUser } from "../../helpers/userAndOrg";
+import { createActionItem as createActionItemResolver } from "../../../src/resolvers/Mutation/createActionItem";
+import type { MutationCreateActionItemArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
+import { nanoid } from "nanoid";
+import { AppUserProfile, Event, User } from "../../../src/models";
 import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { createTestCategory } from "../../helpers/actionItemCategory";
 import type { TestEventType } from "../../helpers/events";
-import { Event, User } from "../../../src/models";
-import { nanoid } from "nanoid";
 
 let randomUser: TestUserType;
 let randomUser2: TestUserType;
-let superAdminTestUser: TestUserType;
+// let superAdminTestUserAppProfile: TestAppUserProfileType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testCategory: TestActionItemCategoryType;
@@ -43,15 +43,12 @@ beforeAll(async () => {
   randomUser = await createTestUser();
   randomUser2 = await createTestUser();
 
-  superAdminTestUser = await User.findOneAndUpdate(
+  await AppUserProfile.updateOne(
     {
-      _id: randomUser2?._id,
+      userId: randomUser2?._id,
     },
     {
-      userType: "SUPERADMIN",
-    },
-    {
-      new: true,
+      isSuperAdmin: true,
     }
   );
 
@@ -90,8 +87,8 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       };
 
       await createActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -109,8 +106,8 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       };
 
       await createActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE
       );
     }
@@ -130,8 +127,8 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       };
 
       await createActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -149,8 +146,10 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       };
 
       await createActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE
+      );
     }
   });
 
@@ -178,8 +177,8 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       };
 
       await createActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -197,8 +196,10 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       };
 
       await createActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
     }
   });
 
@@ -206,7 +207,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     const args: MutationCreateActionItemArgs = {
       data: {
         assigneeId: randomUser?._id,
-        eventId: testEvent?._id,
+        eventId: testEvent?._id.toString() ?? "",
       },
       actionItemCategoryId: testCategory?._id,
     };
@@ -262,8 +263,12 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     };
 
     const context = {
-      userId: superAdminTestUser?._id,
+      userId: randomUser2?._id,
     };
+    // const superAdmin = await AppUserProfile.findOne({
+    //   userId: randomUser2?._id,
+    // });
+    // console.log(superAdmin)
 
     const createActionItemPayload = await createActionItemResolver?.(
       {},
@@ -276,5 +281,26 @@ describe("resolvers -> Mutation -> createActionItem", () => {
         actionItemCategoryId: testCategory?._id,
       })
     );
+  });
+  it("throws error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: randomUser?._id,
+    });
+    const args: MutationCreateActionItemArgs = {
+      data: {
+        assigneeId: randomUser?._id,
+      },
+      actionItemCategoryId: testCategory?._id,
+    };
+    const context = {
+      userId: randomUser?._id,
+    };
+    try {
+      await createActionItemResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
+    }
   });
 });

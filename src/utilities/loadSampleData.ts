@@ -1,9 +1,9 @@
 import "dotenv/config";
-import yargs from "yargs";
 import fs from "fs/promises";
 import path from "path";
+import yargs from "yargs";
 import { connect } from "../db";
-import { User, Organization, Event, Post } from "../models";
+import { AppUserProfile, Event, Organization, Post, User } from "../models";
 
 interface InterfaceArgs {
   items?: string;
@@ -17,6 +17,7 @@ async function formatDatabase(): Promise<void> {
     Organization.deleteMany({}),
     Event.deleteMany({}),
     Post.deleteMany({}),
+    AppUserProfile.deleteMany({}),
   ]);
   console.log("Cleared all collections\n");
 }
@@ -68,6 +69,9 @@ async function insertCollections(collections: string[]): Promise<void> {
         case "posts":
           await Post.insertMany(docs);
           break;
+        case "appUserProfiles":
+          await AppUserProfile.insertMany(docs);
+          break;
         default:
           console.log("\x1b[31m", `Invalid collection name: ${collection}`);
           break;
@@ -85,7 +89,13 @@ async function insertCollections(collections: string[]): Promise<void> {
 }
 
 // Default collections available to insert
-const collections = ["users", "organizations", "posts", "events"];
+const collections = [
+  "users",
+  "organizations",
+  "posts",
+  "events",
+  "appUserProfiles",
+];
 
 // Check if specific collections need to be inserted
 const { items: argvItems } = yargs

@@ -48,8 +48,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
       organization = await Organization.findOne({
         _id: groupChat.organization,
       }).lean();
-
-      await cacheOrganizations([organization!]);
+      if (organization) await cacheOrganizations([organization]);
     }
 
     // Checks whether organization exists.

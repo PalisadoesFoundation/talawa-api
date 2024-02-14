@@ -3,7 +3,13 @@ import { Schema, model, models } from "mongoose";
 
 export interface InterfaceSampleData {
   documentId: string;
-  collectionName: "Organization" | "Post" | "Event" | "User" | "Plugin";
+  collectionName:
+    | "Organization"
+    | "Post"
+    | "Event"
+    | "User"
+    | "Plugin"
+    | "AppUserProfile";
 }
 
 const sampleDataSchema = new Schema<InterfaceSampleData>({
@@ -14,7 +20,7 @@ const sampleDataSchema = new Schema<InterfaceSampleData>({
   collectionName: {
     type: String,
     required: true,
-    enum: ["Organization", "Post", "Event", "User", "Plugin"],
+    enum: ["Organization", "Post", "Event", "User", "AppUserProfile", "Plugin"],
   },
 });
 

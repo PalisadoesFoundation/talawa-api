@@ -80,8 +80,20 @@ type AggregateUser {
 
 scalar Any
 
+type AppUserProfile {
+  _id: ID!
+  adminFor: [Organization]
+  createdEvents: [Event]
+  createdOrganizations: [Organization]
+  eventAdmin: [Event]
+  isSuperAdmin: Boolean!
+  pluginCreationAllowed: Boolean!
+  userId: User!
+}
+
 type AuthData {
   accessToken: String!
+  appUserProfile: AppUserProfile!
   refreshToken: String!
   user: User!
 }
@@ -525,13 +537,13 @@ type Mutation {
   adminRemoveEvent(eventId: ID!): Event!
   adminRemoveGroup(groupId: ID!): GroupChat!
   assignUserTag(input: ToggleUserTagAssignInput!): User
-  blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): User!
+  blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): AppUserProfile!
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
-  createAdmin(data: UserAndOrganizationInput!): User!
+  createAdmin(data: UserAndOrganizationInput!): AppUserProfile!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
@@ -562,7 +574,7 @@ type Mutation {
   rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeActionItem(id: ID!): ActionItem!
-  removeAdmin(data: UserAndOrganizationInput!): User!
+  removeAdmin(data: UserAndOrganizationInput!): AppUserProfile!
   removeAdvertisement(id: ID!): Advertisement
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
@@ -570,7 +582,7 @@ type Mutation {
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
-  removeOrganization(id: ID!): User!
+  removeOrganization(id: ID!): UserData!
   removeOrganizationCustomField(customFieldId: ID!, organizationId: ID!): OrganizationCustomField!
   removeOrganizationImage(organizationId: String!): Organization!
   removePost(id: ID!): Post
@@ -601,7 +613,7 @@ type Mutation {
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
-  updateUserPassword(data: UpdateUserPasswordInput!): User!
+  updateUserPassword(data: UpdateUserPasswordInput!): UserData!
   updateUserProfile(data: UpdateUserInput, file: String): User!
   updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
   updateUserTag(input: UpdateUserTagInput!): UserTag
@@ -880,9 +892,9 @@ type Query {
   postsByOrganizationConnection(first: Int, id: ID!, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): PostConnection
   registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
   registrantsByEvent(id: ID!): [User]
-  user(id: ID!): User!
+  user(id: ID!): UserData!
   userLanguage(userId: ID!): String
-  users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, userType: String, where: UserWhereInput): [User]
+  users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]!
 }
 
@@ -1027,16 +1039,13 @@ type User {
   _id: ID!
   address: Address
   adminApproved: Boolean
-  adminFor: [Organization]
   appLanguageCode: String!
+  appUserProfileId: AppUserProfile
   birthDate: Date
   createdAt: DateTime!
-  createdEvents: [Event]
-  createdOrganizations: [Organization]
   educationGrade: EducationGrade
   email: EmailAddress!
   employmentStatus: EmploymentStatus
-  eventAdmin: [Event]
   firstName: String!
   gender: Gender
   image: String
@@ -1049,9 +1058,7 @@ type User {
   pluginCreationAllowed: Boolean!
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
-  tokenVersion: Int!
   updatedAt: DateTime!
-  userType: UserType!
 }
 
 input UserAndOrganizationInput {
@@ -1070,6 +1077,11 @@ type UserCustomData {
   organizationId: ID!
   userId: ID!
   values: JSON!
+}
+
+type UserData {
+  appUserProfile: AppUserProfile!
+  user: User!
 }
 
 type UserEdge {
@@ -1095,8 +1107,6 @@ input UserInput {
 }
 
 enum UserOrderByInput {
-  appLanguageCode_ASC
-  appLanguageCode_DESC
   email_ASC
   email_DESC
   firstName_ASC
@@ -1157,13 +1167,6 @@ enum UserType {
 }
 
 input UserWhereInput {
-  admin_for: ID
-  appLanguageCode: String
-  appLanguageCode_contains: String
-  appLanguageCode_in: [String!]
-  appLanguageCode_not: String
-  appLanguageCode_not_in: [String!]
-  appLanguageCode_starts_with: String
   email: EmailAddress
   email_contains: EmailAddress
   email_in: [EmailAddress!]

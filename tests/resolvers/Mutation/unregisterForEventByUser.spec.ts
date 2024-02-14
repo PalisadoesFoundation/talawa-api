@@ -62,9 +62,9 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
         );
 
       await unregisterForEventByUserResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
@@ -78,7 +78,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
 
     try {
       const args: MutationUnregisterForEventByUserArgs = {
-        id: testEvent?._id,
+        id: testEvent?._id.toString() ?? "",
       };
 
       const context = {
@@ -91,9 +91,9 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
         );
 
       await unregisterForEventByUserResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_ALREADY_UNREGISTERED_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_ALREADY_UNREGISTERED_ERROR.MESSAGE}`
       );
     }
@@ -102,8 +102,8 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
   it(`unregisters current user with _id === context.userId from event with
   _id === args.id`, async () => {
     await EventAttendee.create({
-      userId: testUser!._id,
-      eventId: testEvent!._id,
+      userId: testUser?._id,
+      eventId: testEvent?._id,
     });
 
     await User.updateOne(
@@ -118,7 +118,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
     );
 
     const args: MutationUnregisterForEventByUserArgs = {
-      id: testEvent?._id,
+      id: testEvent?._id.toString() ?? "",
     };
 
     const context = {
@@ -131,8 +131,8 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
     await unregisterForEventByUserResolver?.({}, args, context);
 
     const isUserRegistered = await EventAttendee.exists({
-      userId: testUser!._id,
-      eventId: testEvent!._id,
+      userId: testUser?._id,
+      eventId: testEvent?._id,
     });
 
     expect(isUserRegistered).toBeFalsy();

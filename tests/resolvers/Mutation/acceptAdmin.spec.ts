@@ -4,11 +4,6 @@ import { Types } from "mongoose";
 import type { MutationAcceptAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
-import {
-  USER_NOT_AUTHORIZED_SUPERADMIN,
-  USER_NOT_FOUND_ERROR,
-} from "../../../src/constants";
 import {
   afterAll,
   afterEach,
@@ -18,9 +13,14 @@ import {
   it,
   vi,
 } from "vitest";
+import {
+  USER_NOT_AUTHORIZED_SUPERADMIN,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
+import { AppUserProfile, User } from "../../../src/models";
+import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { User } from "../../../src/models";
 
 let testUserSuperAdmin: TestUserType;
 let testUserAdmin: TestUserType;
@@ -62,9 +62,9 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
         "../../../src/resolvers/Mutation/acceptAdmin"
       );
       await acceptAdmin?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
@@ -89,23 +89,32 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
         "../../../src/resolvers/Mutation/acceptAdmin"
       );
       await acceptAdmin?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
     }
   });
 
   it(`makes user with _id === args.id adminApproved and returns true`, async () => {
-    await User.updateOne(
+    await AppUserProfile.updateOne(
       {
-        _id: testUserSuperAdmin?._id,
+        userId: testUserSuperAdmin?._id,
       },
       {
         $set: {
-          userType: "SUPERADMIN",
-          adminApproved: true,
+          isSuperAdmin: true,
+        },
+      }
+    );
+    await User.updateOne(
+      {
+        _id: testUserAdmin?._id,
+      },
+      {
+        $set: {
+          adminApproved: false,
         },
       }
     );
@@ -150,10 +159,39 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
         "../../../src/resolvers/Mutation/acceptAdmin"
       );
       await acceptAdmin?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
+    }
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      const testUser = await createTestUser();
+      const args: MutationAcceptAdminArgs = {
+        id: Types.ObjectId().toString(),
+      };
+      await AppUserProfile.deleteOne({
+        userId: testUser?.id,
+      });
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { acceptAdmin } = await import(
+        "../../../src/resolvers/Mutation/acceptAdmin"
+      );
+      await acceptAdmin?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
     }
   });

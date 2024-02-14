@@ -1,8 +1,8 @@
 import { nanoid } from "nanoid";
-import type { InterfaceUserFamily } from "../../src/models/userFamily";
-import { User } from "../../src/models";
-import { UserFamily } from "../../src/models/userFamily";
 import type { InterfaceUser } from "../../src/models";
+import { AppUserProfile, User } from "../../src/models";
+import type { InterfaceUserFamily } from "../../src/models/userFamily";
+import { UserFamily } from "../../src/models/userFamily";
 
 import type { Document } from "mongoose";
 /* eslint-disable */
@@ -21,7 +21,10 @@ export const createTestUserFunc = async (): Promise<TestUserType> => {
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
     appLanguageCode: "en",
-    userType: "SUPERADMIN",
+  });
+  await AppUserProfile.create({
+    userId: testUser._id,
+    isSuperAdmin: true,
   });
 
   return testUser;

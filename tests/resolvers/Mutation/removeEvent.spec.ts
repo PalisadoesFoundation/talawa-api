@@ -1,29 +1,32 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event, ActionItem } from "../../../src/models";
+import { ActionItem, AppUserProfile, Event } from "../../../src/models";
 import type { MutationRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { removeEvent as removeEventResolver } from "../../../src/resolvers/Mutation/removeEvent";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { removeEvent as removeEventResolver } from "../../../src/resolvers/Mutation/removeEvent";
+import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
+import { createTestActionItems } from "../../helpers/actionItem";
+import type { TestEventType } from "../../helpers/events";
+import { createTestEvent } from "../../helpers/events";
 import type {
+  // TestAppUserProfileType,
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import type { TestEventType } from "../../helpers/events";
-import { createTestEvent } from "../../helpers/events";
-import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
-import { createTestActionItems } from "../../helpers/actionItem";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
+// let testUserAppProfile: TestAppUserProfileType;
 let newTestUser: TestUserType;
+// let newTestUserAppProfile: TestAppUserProfileType;
 let testOrganization: TestOrganizationType;
 let testEvent: TestEventType;
 let newTestEvent: TestEventType;
@@ -60,9 +63,9 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       );
 
       await removeEventResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -85,9 +88,9 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       );
 
       await removeEventResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -99,9 +102,9 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      await User.updateOne(
+      await AppUserProfile.updateOne(
         {
-          _id: testUser?._id,
+          userId: testUser?._id,
         },
         {
           $set: {
@@ -134,16 +137,18 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       );
 
       await removeEventResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
     }
   });
 
   it(`removes event with _id === args.id and returns it`, async () => {
-    await User.updateOne(
+    await AppUserProfile.updateOne(
       {
-        _id: testUser?._id,
+        userId: testUser?._id,
       },
       {
         $push: {
@@ -185,14 +190,15 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       updatedAt: expect.anything(),
     });
 
-    const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
     })
+
       .select(["createdEvents", "eventAdmin"])
       .lean();
 
-    expect(updatedTestUser?.createdEvents).toEqual([]);
-    expect(updatedTestUser?.eventAdmin).toEqual([]);
+    expect(updatedTestUserAppProfile?.createdEvents).toEqual([]);
+    expect(updatedTestUserAppProfile?.eventAdmin).toEqual([]);
 
     const updatedTestEvent = await Event.findOne({
       _id: testEvent?._id,
@@ -223,5 +229,31 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     });
 
     expect(deletedActionItems).toEqual([]);
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationRemoveEventArgs = {
+      id: testEvent?.id,
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+    try {
+      const { removeEvent: removeEventResolver } = await import(
+        "../../../src/resolvers/Mutation/removeEvent"
+      );
+      await removeEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+      );
+    }
   });
 });

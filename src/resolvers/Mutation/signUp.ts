@@ -1,22 +1,26 @@
 import bcrypt from "bcryptjs";
 import {
+  EMAIL_ALREADY_EXISTS_ERROR,
   LAST_RESORT_SUPERADMIN_EMAIL,
   //LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  EMAIL_ALREADY_EXISTS_ERROR,
-  //REGEX_VALIDATION_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Organization } from "../../models";
-import {
-  createAccessToken,
-  createRefreshToken,
-  copyToClipboard,
-} from "../../utilities";
-import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import type {
+  InterfaceEvent,
+  InterfaceOrganization,
+  InterfaceUser,
+} from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import {
+  copyToClipboard,
+  createAccessToken,
+  createRefreshToken,
+} from "../../utilities";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -52,7 +56,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         _id: args.data.organizationUserBelongsToId,
       }).lean();
 
-      await cacheOrganizations([organization!]);
+      await cacheOrganizations([organization as InterfaceOrganization]);
     }
 
     if (!organization) {
@@ -120,29 +124,64 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const isLastResortSuperAdmin =
     args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
 
-  const createdUser = await User.create({
+  let createdUser = await User.create({
     ...args.data,
     email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
     image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,
-    userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
+    // userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
     adminApproved: isLastResortSuperAdmin,
   });
+  const appUserProfile = await AppUserProfile.create({
+    userId: createdUser._id,
+    appLanguageCode: args.data.appLanguageCode || "en",
+    isSuperAdmin: isLastResortSuperAdmin,
+  });
 
-  const accessToken = await createAccessToken(createdUser);
-  const refreshToken = await createRefreshToken(createdUser);
+  const updatedUser = await User.findOneAndUpdate(
+    {
+      _id: createdUser._id,
+    },
+    {
+      appUserProfileId: appUserProfile._id,
+    },
+    {
+      new: true,
+    }
+  );
+
+  if (updatedUser) {
+    createdUser = updatedUser;
+  } else {
+    throw new Error("Failed to update user.");
+  }
+
+  const accessToken = await createAccessToken(createdUser, appUserProfile);
+  const refreshToken = await createRefreshToken(createdUser, appUserProfile);
 
   copyToClipboard(`{
     "Authorization": "Bearer ${accessToken}"
   }`);
 
-  const filteredCreatedUser = createdUser.toObject();
+  const filteredCreatedUser = updatedUser.toObject();
 
-  // @ts-ignore
   delete filteredCreatedUser.password;
 
   return {
     user: filteredCreatedUser,
+    appUserProfile: {
+      _id: appUserProfile._id.toString(),
+      userId: appUserProfile.userId as InterfaceUser,
+      adminFor: appUserProfile.adminFor as InterfaceOrganization[],
+      appLanguageCode: appUserProfile.appLanguageCode,
+      isSuperAdmin: appUserProfile.isSuperAdmin,
+      pluginCreationAllowed: appUserProfile.pluginCreationAllowed,
+      tokenVersion: appUserProfile.tokenVersion,
+      eventAdmin: appUserProfile.eventAdmin as InterfaceEvent[],
+      createdEvents: appUserProfile.createdEvents as InterfaceEvent[],
+      createdOrganizations:
+        appUserProfile.createdOrganizations as InterfaceOrganization[],
+    },
     accessToken,
     refreshToken,
   };

@@ -1,11 +1,18 @@
+import bcrypt from "bcryptjs";
 import {
   INVALID_CREDENTIALS_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User } from "../../models";
-import bcrypt from "bcryptjs";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceEvent,
+  InterfaceOrganization,
+  InterfaceUser,
+} from "../../models";
+import { AppUserProfile, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const updateUserPassword: MutationResolvers["updateUserPassword"] =
   async (_parent, args, context) => {
@@ -20,10 +27,19 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
         USER_NOT_FOUND_ERROR.PARAM
       );
     }
-
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    });
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
+      );
+    }
     const isPasswordValid = await bcrypt.compare(
       args.data.previousPassword,
-      currentUser.password
+      currentUser?.password || ""
     );
 
     // Checks whether password is invalid.
@@ -58,19 +74,48 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
     }
 
     const hashedPassword = await bcrypt.hash(args.data.newPassword, 12);
-
-    return await User.findOneAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       {
         _id: context.userId,
       },
       {
         $set: {
           password: hashedPassword,
-          token: null,
         },
       },
       {
         new: true,
       }
-    ).lean();
+    );
+    const updatedAppUserProfile: InterfaceAppUserProfile =
+      await AppUserProfile.findOneAndUpdate(
+        {
+          userId: context.userId,
+        },
+        {
+          $set: {
+            token: null,
+          },
+        },
+        {
+          new: true,
+        }
+      ).lean();
+
+    return {
+      user: updatedUser as InterfaceUser,
+      appUserProfile: {
+        _id: updatedAppUserProfile._id.toString(),
+        userId: updatedAppUserProfile.userId as InterfaceUser,
+        adminFor: updatedAppUserProfile.adminFor as InterfaceOrganization[],
+        appLanguageCode: updatedAppUserProfile.appLanguageCode,
+        isSuperAdmin: updatedAppUserProfile.isSuperAdmin,
+        pluginCreationAllowed: updatedAppUserProfile.pluginCreationAllowed,
+        tokenVersion: updatedAppUserProfile.tokenVersion,
+        eventAdmin: updatedAppUserProfile.eventAdmin as InterfaceEvent[],
+        createdEvents: updatedAppUserProfile.createdEvents as InterfaceEvent[],
+        createdOrganizations:
+          updatedAppUserProfile.createdOrganizations as InterfaceOrganization[],
+      },
+    };
   };

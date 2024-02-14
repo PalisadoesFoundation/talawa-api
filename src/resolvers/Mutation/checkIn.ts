@@ -1,17 +1,23 @@
+import { Types } from "mongoose";
 import {
   EVENT_NOT_FOUND_ERROR,
+  USER_ALREADY_CHECKED_IN,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_REGISTERED_FOR_EVENT,
-  USER_ALREADY_CHECKED_IN,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event, EventAttendee, CheckIn } from "../../models";
-import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import {
+  AppUserProfile,
+  CheckIn,
+  Event,
+  EventAttendee,
+  User,
+} from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import { Types } from "mongoose";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const checkIn: MutationResolvers["checkIn"] = async (
   _parent,
@@ -29,7 +35,16 @@ export const checkIn: MutationResolvers["checkIn"] = async (
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
-
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
+    );
+  }
   let currentEvent: InterfaceEvent | null;
 
   const eventFoundInCache = await findEventsInCache([args.data.eventId]);
@@ -59,7 +74,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
       admin === context.userID || Types.ObjectId(admin).equals(context.userId)
   );
 
-  if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {
+  if (!isUserEventAdmin && currentUserAppProfile.isSuperAdmin === false) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -101,7 +116,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
   }
 
   const checkIn = await CheckIn.create({
-    eventAttendeeId: attendeeData!._id,
+    eventAttendeeId: attendeeData._id,
     allotedSeat: args.data.allotedSeat,
     allotedRoom: args.data.allotedRoom,
   });

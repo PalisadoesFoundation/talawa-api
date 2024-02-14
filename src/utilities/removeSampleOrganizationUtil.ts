@@ -1,4 +1,12 @@
-import { User, Organization, Post, Event, Plugin, SampleData } from "../models";
+import {
+  AppUserProfile,
+  Event,
+  Organization,
+  Plugin,
+  Post,
+  SampleData,
+  User,
+} from "../models";
 
 export async function removeSampleOrganization(): Promise<void> {
   const sampleDataDocuments = await SampleData.find({});
@@ -11,6 +19,7 @@ export async function removeSampleOrganization(): Promise<void> {
       Event,
       User,
       Plugin,
+      AppUserProfile,
     };
 
     const collectionModel = collectionModels[collectionName];

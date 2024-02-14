@@ -1,14 +1,14 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Organization, MembershipRequest } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import {
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { errors, requestContext } from "../../libraries";
+import { MembershipRequest, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to cancel membership request.
  * @param _parent - parent of current request
@@ -48,8 +48,9 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       organization = await Organization.findOne({
         _id: membershipRequest.organization,
       }).lean();
-
-      await cacheOrganizations([organization!]);
+      if (organization) {
+        await cacheOrganizations([organization]);
+      }
     }
 
     // Checks whether organization exists.

@@ -1,20 +1,22 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent, InterfaceUser } from "../../models";
-import { User, Organization } from "../../models";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
+  ORGANIZATION_NOT_AUTHORIZED_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { isValidString } from "../../libraries/validators/validateString";
+import { session } from "../../db";
+import { Once, Weekly } from "../../helpers/eventInstances";
+import { errors, requestContext } from "../../libraries";
 import { compareDates } from "../../libraries/validators/compareDates";
+import { isValidString } from "../../libraries/validators/validateString";
+import type { InterfaceEvent, InterfaceUser } from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
 import { EventAttendee } from "../../models/EventAttendee";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import type mongoose from "mongoose";
-import { session } from "../../db";
-import { Weekly, Once } from "../../helpers/eventInstances";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables to create an event.
@@ -23,8 +25,9 @@ import { Weekly, Once } from "../../helpers/eventInstances";
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
- * 2. If the organization exists
- * 3. If the user is a part of the organization.
+ * 2.If the user has appUserProfile
+ * 3. If the organization exists
+ * 4. If the user is a part of the organization.
  * @returns Created event
  */
 export const createEvent: MutationResolvers["createEvent"] = async (
@@ -44,6 +47,17 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
+    );
+  }
 
   const organization = await Organization.findOne({
     _id: args.data?.organizationId,
@@ -58,9 +72,10 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
-  const userCreatedOrganization = currentUser.createdOrganizations.some(
-    (createdOrganization) => createdOrganization.equals(organization._id)
-  );
+  const userCreatedOrganization =
+    currentUserAppProfile.createdOrganizations.some((createdOrganization) =>
+      Types.ObjectId(createdOrganization?.toString()).equals(organization._id)
+    );
 
   const userJoinedOrganization = currentUser.joinedOrganizations.some(
     (joinedOrganization) => joinedOrganization.equals(organization._id)
@@ -71,7 +86,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     !(
       userCreatedOrganization ||
       userJoinedOrganization ||
-      currentUser.userType == "SUPERADMIN"
+      currentUserAppProfile.isSuperAdmin
     )
   ) {
     throw new errors.UnauthorizedError(
@@ -204,16 +219,26 @@ async function associateEventWithUser(
     ],
     { session }
   );
-
   await User.updateOne(
     {
       _id: currentUser._id,
     },
     {
       $push: {
+        registeredEvents: createdEvent._id,
+      },
+    },
+    { session }
+  );
+
+  await AppUserProfile.updateOne(
+    {
+      user: currentUser._id,
+    },
+    {
+      $push: {
         eventAdmin: createdEvent._id,
         createdEvents: createdEvent._id,
-        registeredEvents: createdEvent._id,
       },
     },
     { session }

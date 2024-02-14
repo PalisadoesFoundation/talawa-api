@@ -1,12 +1,14 @@
 import "dotenv/config";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
-import { Organization } from "../../models";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
-import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceOrganization } from "../../models";
+import { Organization } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+
 /**
  * This function adds Organization Image.
  * @param _parent - parent of current request
@@ -70,5 +72,5 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       await cacheOrganizations([updatedOrganization]);
     }
 
-    return updatedOrganization!;
+    return updatedOrganization as InterfaceOrganization;
   };

@@ -1,8 +1,8 @@
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import type { InterfaceUser } from "../../models";
-import { User } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import { UNAUTHENTICATED_ERROR } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceUser } from "../../models";
+import { AppUserProfile, User } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -33,9 +33,19 @@ export const users: QueryResolvers["users"] = async (
       UNAUTHENTICATED_ERROR.PARAM
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthenticatedError(
+      requestContext.translate(UNAUTHENTICATED_ERROR.MESSAGE),
+      UNAUTHENTICATED_ERROR.CODE,
+      UNAUTHENTICATED_ERROR.PARAM
+    );
+  }
+
   const filterCriteria = {
     ...where,
-    ...(args.userType ? { userType: args.userType } : {}),
   };
 
   if (args.adminApproved === true) {
@@ -49,24 +59,20 @@ export const users: QueryResolvers["users"] = async (
     .limit(args.first ?? 0)
     .skip(args.skip ?? 0)
     .select(["-password"])
-    .populate("createdOrganizations")
-    .populate("createdEvents")
+
     .populate("joinedOrganizations")
     .populate("registeredEvents")
-    .populate("eventAdmin")
-    .populate("adminFor")
     .populate("organizationsBlockedBy")
     .lean();
 
   return users.map((user) => {
-    const { userType } = currentUser;
+    const isSuperAdmin = currentUserAppProfile.isSuperAdmin;
 
     return {
       ...user,
       image: user.image ? `${context.apiRootUrl}${user.image}` : null,
       organizationsBlockedBy:
-        (userType === "ADMIN" || userType === "SUPERADMIN") &&
-        currentUser._id !== user._id
+        isSuperAdmin && currentUser._id !== user._id
           ? user.organizationsBlockedBy
           : [],
     };

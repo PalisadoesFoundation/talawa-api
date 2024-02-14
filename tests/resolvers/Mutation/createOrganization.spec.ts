@@ -1,6 +1,6 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { ActionItemCategory, User } from "../../../src/models";
+import { ActionItemCategory, AppUserProfile, User } from "../../../src/models";
 import type { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -15,7 +15,9 @@ import {
 } from "vitest";
 import {
   LENGTH_VALIDATION_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
@@ -79,11 +81,13 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         "../../../src/resolvers/Mutation/createOrganization"
       );
       await createOrganization?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
         USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
       );
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
+      );
     }
   });
 
@@ -106,7 +110,16 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       {
         $set: {
           adminApproved: true,
-          userType: "SUPERADMIN",
+        },
+      }
+    );
+    await AppUserProfile.updateOne(
+      {
+        userId: testUser?._id,
+      },
+      {
+        $set: {
+          isSuperAdmin: true,
         },
       }
     );
@@ -168,15 +181,22 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["joinedOrganizations", "createdOrganizations", "adminFor"])
+      .select(["joinedOrganizations"])
+      .lean();
+    const updatedTestAppUser = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdOrganizations", "adminFor"])
       .lean();
 
-    expect(updatedTestUser).toEqual(
+    expect(updatedTestAppUser).toEqual(
       expect.objectContaining({
-        joinedOrganizations: [createOrganizationPayload?._id],
         createdOrganizations: [createOrganizationPayload?._id],
         adminFor: [createOrganizationPayload?._id],
       })
+    );
+    expect(updatedTestUser?.joinedOrganizations).toContainEqual(
+      createOrganizationPayload?._id
     );
 
     const defaultCategory = await ActionItemCategory.findOne({
@@ -193,9 +213,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
   });
   it(`creates the organization without image and returns it`, async () => {
     vi.spyOn(uploadImage, "uploadImage").mockImplementation(
-      async (newImagePath: any, imageAlreadyInDbPath: any) => ({
+      async (newImagePath, imageAlreadyInDbPath) => ({
         newImagePath,
-        imageAlreadyInDbPath,
+        imageAlreadyInDbPath: imageAlreadyInDbPath || "",
       })
     );
     const args: MutationCreateOrganizationArgs = {
@@ -283,8 +303,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       };
 
       await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
       );
     }
@@ -321,8 +341,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       };
 
       await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       );
     }
@@ -386,17 +406,17 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       // Testing for Invalid address
       try {
         await createOrganizationResolver({}, invalidArgs, context);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Not a Valid Address");
+        expect((error as Error).message).toEqual("Not a Valid Address");
       }
 
       //Testing for Valid address
       try {
         await createOrganizationResolver({}, validArgs, context);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Something went wrong.");
+        expect((error as Error).message).toEqual("Something went wrong.");
       }
     } else {
       console.error(
@@ -430,13 +450,86 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     if (createOrganizationResolver) {
       try {
         await createOrganizationResolver({}, validArgs, context);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Not a Valid Address");
+        expect((error as Error).message).toEqual("Not a Valid Address");
       }
     } else {
       console.error(
         "Error: createOrganizationResolver is undefined in the test suite"
+      );
+    }
+  });
+  it("throws error if no user is found", async () => {
+    try {
+      const args: MutationCreateOrganizationArgs = {
+        data: {
+          description: "description",
+          name: "name",
+          userRegistrationRequired: true,
+          visibleInSearch: true,
+          apiUrl: "apiUrl",
+          address: {
+            city: "CityName",
+            countryCode: "US",
+            dependentLocality: "Dependent Locality",
+            line1: "123 Main Street",
+            line2: "Apartment 456",
+            postalCode: "12345",
+            sortingCode: "ABC-123",
+            state: "State/Province",
+          },
+        },
+        file: null,
+      };
+
+      const context = {
+        userId: "randomUserId",
+      };
+
+      await createOrganizationResolver?.({}, args, context);
+    } catch (error: unknown) {
+      console.log(error);
+      // expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+  it("throws error if user does not have appProfile", async () => {
+    try {
+      const temp = await createTestUserFunc();
+      await AppUserProfile.deleteOne({
+        userId: temp?._id,
+      });
+      const args: MutationCreateOrganizationArgs = {
+        data: {
+          description: "description",
+          name: "name",
+          userRegistrationRequired: true,
+          visibleInSearch: true,
+          apiUrl: "apiUrl",
+          address: {
+            city: "CityName",
+            countryCode: "US",
+            dependentLocality: "Dependent Locality",
+            line1: "123 Main Street",
+            line2: "Apartment 456",
+            postalCode: "12345",
+            sortingCode: "ABC-123",
+            state: "State/Province",
+          },
+        },
+        file: null,
+      };
+      const context = {
+        userId: temp?._id,
+      };
+
+      await createOrganizationResolver?.({}, args, context);
+    } catch (error: unknown) {
+      // console.log((error as Error).message);
+
+      expect((error as Error).message).toEqual(
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
     }
   });

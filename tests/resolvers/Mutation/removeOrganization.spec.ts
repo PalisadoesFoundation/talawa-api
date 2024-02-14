@@ -1,44 +1,46 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
+import type { Document } from "mongoose";
 import { Types } from "mongoose";
 import type {
-  InterfaceOrganization,
-  InterfaceComment,
-  InterfacePost,
-  InterfaceActionItemCategory,
   InterfaceActionItem,
+  InterfaceActionItemCategory,
+  InterfaceComment,
+  InterfaceOrganization,
+  InterfacePost,
 } from "../../../src/models";
 import {
-  User,
-  Organization,
-  Post,
+  ActionItem,
+  ActionItemCategory,
+  AppUserProfile,
   Comment,
   MembershipRequest,
-  ActionItemCategory,
-  ActionItem,
+  Organization,
+  Post,
+  User,
 } from "../../../src/models";
 import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
+import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import { createTestUserFunc } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 /* eslint-disable */
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -67,7 +69,7 @@ beforeAll(async () => {
       sortingCode: "ABC-123",
       state: "Delhi",
     },
-    isPublic: true,
+    userRegistrationRequired: true,
     creatorId: testUsers[0]?._id,
     admins: [testUsers[0]?._id],
     members: [testUsers[1]?._id],
@@ -81,10 +83,19 @@ beforeAll(async () => {
     },
     {
       $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
         joinedOrganizations: [testOrganization._id],
         organizationsBlockedBy: [testOrganization._id],
+      },
+    }
+  );
+  await AppUserProfile.updateOne(
+    {
+      user: testUsers[0]?._id,
+    },
+    {
+      $set: {
+        createdOrganizations: [testOrganization._id],
+        adminFor: [testOrganization._id],
       },
     }
   );
@@ -303,8 +314,15 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       {
         $set: {
           adminApproved: true,
-          userType: "SUPERADMIN",
         },
+      }
+    );
+    await AppUserProfile.updateOne(
+      {
+        userId: testUsers[0]?._id,
+      },
+      {
+        isSuperAdmin: true,
       }
     );
 
@@ -328,7 +346,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       .select(["-password"])
       .lean();
 
-    expect(removeOrganizationPayload).toEqual(updatedTestUser);
+    expect(removeOrganizationPayload?.user).toEqual(updatedTestUser);
 
     const updatedTestUser1 = await User.findOne({
       _id: testUsers[1]?._id,
@@ -382,7 +400,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         sortingCode: "ABC-123",
         state: "Delhi",
       },
-      isPublic: true,
+      userRegistrationRequired: true,
       creatorId: testUsers[0]?._id,
       admins: [testUsers[0]?._id],
       members: [testUsers[1]?._id],
@@ -424,10 +442,39 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       context
     );
 
-    expect(removeOrganizationPayload).toEqual({
+    expect(removeOrganizationPayload?.user).toEqual({
       ...updatedTestUser,
       updatedAt: expect.anything(),
     });
     expect(deleteImageSpy).toBeCalledWith("images/fake-image-path.png");
+  });
+  it(`throws error if  user does not have appUserProfile`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+    await AppUserProfile.deleteOne({
+      userId: testUsers[0]?._id,
+    });
+    try {
+      const args: MutationRemoveOrganizationArgs = {
+        id: "",
+      };
+
+      const context = {
+        userId: testUsers[0]?._id,
+      };
+
+      const { removeOrganization: removeOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/removeOrganization"
+      );
+
+      await removeOrganizationResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
   });
 });
