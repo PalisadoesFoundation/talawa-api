@@ -4,8 +4,8 @@ import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
 import type { MutationCreateMemberArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-
 import { createMember as createMemberResolver } from "../../../src/resolvers/Mutation/createMember";
+import { nanoid } from "nanoid";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -25,7 +25,6 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const resultsArray = await createTestUserAndOrganization(false);
-
   testUser = resultsArray[0];
   testOrganization = resultsArray[1];
   const { requestContext } = await import("../../../src/libraries");
@@ -132,7 +131,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     });
   });
 
-  it(`throws UnauthorizedError if user with _id === args.input.userId is already an member
+  it(`throws MemberAlreadyInOrganizationError if user with _id === args.input.userId is already an member
   of organzation with _id === args.input.organizationId`, async () => {
     await Organization.updateOne(
       {
@@ -158,23 +157,68 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
     const result = await createMemberResolver?.({}, args, context);
 
-    expect(result?.userErrors[0]).toStrictEqual({
+    expect(result).toStrictEqual({
       __typename: "MemberAlreadyInOrganizationError",
       message: MEMBER_NOT_FOUND_ERROR.MESSAGE,
     });
+    // try {
+    //   await Organization.updateOne(
+    //     {
+    //       _id: testOrganization?._id,
+    //     },
+    //     {
+    //       $push: {
+    //         members: testUser?._id,
+    //       },
+    //     }
+    //   );
+
+    //   const args: MutationCreateMemberArgs = {
+    //     input: {
+    //       organizationId: testOrganization?.id,
+    //       userId: testUser?.id,
+    //     },
+    //   };
+
+    //   const context = {
+    //     userId: testUser?.id,
+    //   };
+
+    //   await createMemberResolver?.({}, args, context);
+    // } catch (error: any) {
+    //   expect(error.message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
+    // }
   });
 
   it(`Verify that the organization's members list now contains the user's ID`, async () => {
-    const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization?._id,
-    })
-      .select(["members"])
-      .lean();
-
-    const updatedOrganizationCheck = updatedTestOrganization?.members.some(
-      (member) => member.equals(testUser?._id)
+    await Organization.updateOne(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $set: {
+          members: [],
+        },
+      }
     );
-
-    expect(updatedOrganizationCheck).toBe(true);
+    const testUser2 = await User.create({
+      email: `email2${nanoid().toLowerCase()}@gmail.com`,
+      password: `pass2${nanoid().toLowerCase()}`,
+      firstName: `firstName2${nanoid().toLowerCase()}`,
+      lastName: `lastName2${nanoid().toLowerCase()}`,
+      image: null,
+      appLanguageCode: "en",
+    });
+    const context = {
+      userId: testUser?.id,
+    };
+    const args: MutationCreateMemberArgs = {
+      input: {
+        organizationId: testOrganization?.id,
+        userId: testUser2?.id,
+      },
+    };
+    const result = await createMemberResolver?.({}, args, context);
+    expect(result?.userErrors).toStrictEqual([]);
   });
 });

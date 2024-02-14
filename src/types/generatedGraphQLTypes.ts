@@ -3241,6 +3241,14 @@ export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserFamilyResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserFamily'] = ResolversParentTypes['UserFamily']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  admins?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export type UserNotAuthorizedErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotAuthorizedError'] = ResolversParentTypes['UserNotAuthorizedError']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -3249,14 +3257,6 @@ export type UserNotAuthorizedErrorResolvers<ContextType = any, ParentType extend
 
 export type UserNotFoundErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotFoundError'] = ResolversParentTypes['UserNotFoundError']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-
-export type UserFamilyResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserFamily'] = ResolversParentTypes['UserFamily']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  admins?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
-  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
-
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3392,12 +3392,9 @@ export type Resolvers<ContextType = any> = {
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserCustomData?: UserCustomDataResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;
-
+  UserFamily?: UserFamilyResolvers<ContextType>;
   UserNotAuthorizedError?: UserNotAuthorizedErrorResolvers<ContextType>;
   UserNotFoundError?: UserNotFoundErrorResolvers<ContextType>;
-
-  UserFamily?: UserFamilyResolvers<ContextType>;
-
   UserPhone?: UserPhoneResolvers<ContextType>;
   UserTag?: UserTagResolvers<ContextType>;
   UserTagEdge?: UserTagEdgeResolvers<ContextType>;

@@ -33,13 +33,8 @@ export const createMember: MutationResolvers["createMember"] = async (
   });
 
   if (!currentUser) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-    //   USER_NOT_FOUND_ERROR.CODE,
-    //   USER_NOT_FOUND_ERROR.PARAM
-    // );
     return {
-      organization: new Organization(),
+      // organization: new Organization(),
       userErrors: [
         {
           __typename: "UserNotFoundError",
@@ -68,13 +63,8 @@ export const createMember: MutationResolvers["createMember"] = async (
   }
 
   if (!organization) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-    //   ORGANIZATION_NOT_FOUND_ERROR.CODE,
-    //   ORGANIZATION_NOT_FOUND_ERROR.PARAM
-    // );
     return {
-      organization: new Organization(),
+      // organization: new Organization(),
       userErrors: [
         {
           __typename: "OrganizationNotFoundError",
@@ -92,13 +82,8 @@ export const createMember: MutationResolvers["createMember"] = async (
 
   // Checks whether curent user exists
   if (!user) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-    //   USER_NOT_FOUND_ERROR.CODE,
-    //   USER_NOT_FOUND_ERROR.PARAM
-    // );
     return {
-      organization: new Organization(),
+      // organization: new Organization(),
       userErrors: [
         {
           __typename: "UserNotFoundError",
@@ -111,16 +96,14 @@ export const createMember: MutationResolvers["createMember"] = async (
   const userIsOrganizationMember = organization?.members.some((member) =>
     member.equals(user._id)
   );
+  console.log(userIsOrganizationMember);
+  console.log(organization?.members);
+  console.log(user._id);
 
   // Checks whether user with _id === args.input.userId is already an member of organization.
-  if (!userIsOrganizationMember) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
-    //   MEMBER_NOT_FOUND_ERROR.CODE,
-    //   MEMBER_NOT_FOUND_ERROR.PARAM
-    // );
+  if (userIsOrganizationMember) {
     return {
-      organization: new Organization(),
+      // organization: new Organization(),
       userErrors: [
         {
           __typename: "MemberAlreadyInOrganizationError",
@@ -128,6 +111,11 @@ export const createMember: MutationResolvers["createMember"] = async (
         },
       ],
     };
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+    //   MEMBER_NOT_FOUND_ERROR.CODE,
+    //   MEMBER_NOT_FOUND_ERROR.PARAM
+    // );
   }
 
   // add organization's id from joinedOrganizations list on user.
@@ -164,10 +152,8 @@ export const createMember: MutationResolvers["createMember"] = async (
     await cacheOrganizations([updatedOrganization]);
   }
 
-  {
-    return {
-      organization: updatedOrganization,
-      userErrors: [],
-    };
-  }
+  return {
+    organization: updatedOrganization,
+    userErrors: [],
+  };
 };
