@@ -212,7 +212,7 @@ input DonationWhereInput {
 }
 
 input EditVenueInput {
-  _id: ID!
+  id: ID!
   capacity: Int
   description: String
   file: String
@@ -1222,7 +1222,7 @@ type UsersConnectionResult {
 }
 
 type Venue {
-  _id: ID!
+  id: ID!
   capacity: Int!
   description: String
   imageUrl: URL

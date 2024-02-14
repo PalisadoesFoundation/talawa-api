@@ -70,7 +70,7 @@ export const inputs = gql`
   }
 
   input EditVenueInput {
-    _id: ID!
+    id: ID!
     capacity: Int
     name: String
     description: String

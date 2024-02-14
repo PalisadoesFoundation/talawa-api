@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          _id: Types.ObjectId().toString(),
+          id: Types.ObjectId().toString(),
           capacity: 10,
           name: "testVenue",
           description: "description",
@@ -106,7 +106,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          _id: Types.ObjectId().toString(),
+          id: Types.ObjectId().toString(),
           capacity: 10,
           name: "testVenue",
           description: "description",
@@ -136,7 +136,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          _id: Types.ObjectId().toString(),
+          id: Types.ObjectId().toString(),
           capacity: 10,
           name: "testVenue",
           description: "description",
@@ -165,7 +165,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          _id: testVenue?.id,
+          id: testVenue?.id,
           capacity: 10,
           name: "testVenue",
           description: "description",
@@ -207,7 +207,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
       );
       const args: MutationEditVenueArgs = {
         data: {
-          _id: testVenue?.id,
+          id: testVenue?.id,
           capacity: 10,
           name: "",
           description: "description",
@@ -236,7 +236,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          _id: testVenue?.id,
+          id: testVenue?.id,
           capacity: 10,
           name: "testVenue",
           description: "description",
@@ -265,7 +265,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          _id: testVenue?.id,
+          id: testVenue?.id,
           capacity: 90,
           name: "newTestVenue",
           description: "newDescription",
@@ -294,7 +294,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
   it(`Edits the provided venue inside the provided organization`, async () => {
     const args: MutationEditVenueArgs = {
       data: {
-        _id: testVenue?.id,
+        id: testVenue?.id,
         capacity: 90,
         name: "newTestVenue",
         description: "newDescription",

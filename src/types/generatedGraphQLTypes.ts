@@ -270,10 +270,10 @@ export type DonationWhereInput = {
 };
 
 export type EditVenueInput = {
-  _id: Scalars['ID']['input'];
   capacity?: InputMaybe<Scalars['Int']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
   organizationId: Scalars['ID']['input'];
 };

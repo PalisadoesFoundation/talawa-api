@@ -45,7 +45,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
   }
 
   const venue = await Venue.findOne({
-    _id: args.data._id,
+    _id: args.data.id,
   }).lean();
 
   const organization = await Organization.findOne({
