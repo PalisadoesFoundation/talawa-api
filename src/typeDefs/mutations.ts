@@ -74,6 +74,8 @@ export const mutations = gql`
       organizationId: ID!
     ): ActionItemCategory! @auth
 
+    createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
+
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
     createDirectChat(data: createChatInput!): DirectChat! @auth
@@ -126,6 +128,8 @@ export const mutations = gql`
 
     deleteAdvertisementById(id: ID!): DeletePayload!
 
+    deleteAgendaCategory(id: ID!): ID!
+
     deleteDonationById(id: ID!): DeletePayload!
 
     deleteVenue(venueId: ID!, organizationId: ID!): Venue @auth
@@ -135,6 +139,8 @@ export const mutations = gql`
     forgotPassword(data: ForgotPasswordData!): Boolean!
 
     joinPublicOrganization(organizationId: ID!): User! @auth
+
+    createEventVolunteer(data: EventVolunteerInput!): EventVolunteer! @auth
 
     leaveOrganization(organizationId: ID!): User! @auth
 
@@ -176,6 +182,8 @@ export const mutations = gql`
     removeEvent(id: ID!): Event! @auth
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
+
+    removeEventVolunteer(id: ID!): EventVolunteer! @auth
 
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
@@ -236,11 +244,21 @@ export const mutations = gql`
       data: UpdateActionItemCategoryInput!
     ): ActionItemCategory @auth
 
+    updateAgendaCategory(
+      id: ID!
+      input: UpdateAgendaCategoryInput!
+    ): AgendaCategory
+
     updateAdvertisement(
       input: UpdateAdvertisementInput!
     ): UpdateAdvertisementPayload @auth
 
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
+
+    updateEventVolunteer(
+      id: ID!
+      data: UpdateEventVolunteerInput
+    ): EventVolunteer! @auth
 
     updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 
