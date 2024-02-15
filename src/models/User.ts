@@ -146,6 +146,7 @@ const userSchema = new Schema(
     },
     createdAt: {
       type: Date,
+      required:true,
       default: Date.now,
     },
     createdOrganizations: [
@@ -242,10 +243,6 @@ const userSchema = new Schema(
         ref: "Organization",
       },
     ],
-    organizationUserBelongsTo: {
-      type: Schema.Types.ObjectId,
-      ref: "Organization",
-    },
     password: {
       type: String,
       required: true,
@@ -284,7 +281,7 @@ const userSchema = new Schema(
     },
     tokenVersion: {
       type: Number,
-      required:true,
+      required: true,
       default: 0,
     },
     userType: {
@@ -296,7 +293,7 @@ const userSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 userSchema.plugin(mongoosePaginate);
