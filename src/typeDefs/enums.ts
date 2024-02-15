@@ -149,6 +149,11 @@ export const enums = gql`
     OTHER
   }
 
+  enum EventVolunteerResponse {
+    YES
+    NO
+  }
+
   enum MaritalStatus {
     SINGLE
     ENGAGED

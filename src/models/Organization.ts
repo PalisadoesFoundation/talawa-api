@@ -5,6 +5,7 @@ import type { InterfaceMessage } from "./Message";
 import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
+
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
