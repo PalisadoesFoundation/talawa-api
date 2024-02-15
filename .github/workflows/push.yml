@@ -231,10 +231,21 @@ jobs:
         
       - name: Generate schema.graphql
         run: npm run gen:schema
-
+        
+    # A separate step for extracting branch name from $GITHUB_HEAD_REF/$GITHUB_REF
+    # $GITHUB_HEAD_REF on pull_request and $GITHUB_REF on push
+    # If GITHUB_HEAD_REF is not set, extract the branch name from GITHUB_REF using parameter expansion to remove "refs/heads/" prefix
+    # If GITHUB_HEAD_REF is set, directly assign its value to the branch variable
+    
       - name: Extract branch name
         shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        run: | 
+          if [ -z "$GITHUB_HEAD_REF" ]; then
+            branch=${GITHUB_REF#refs/heads/}
+          else
+            branch=$GITHUB_HEAD_REF
+          fi
+          echo "branch=$branch" >> $GITHUB_OUTPUT
         id: extract_branch  
 
       - uses: kamilkisiela/graphql-inspector@master
