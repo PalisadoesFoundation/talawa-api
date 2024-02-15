@@ -93,6 +93,18 @@ export const inputs = gql`
     organizationId: ID!
   }
 
+  input EventVolunteerInput {
+    userId: ID!
+    eventId: ID!
+  }
+
+  input UpdateEventVolunteerInput {
+    eventId: ID
+    isAssigned: Boolean
+    isInvited: Boolean
+    response: EventVolunteerResponse
+  }
+
   input EventWhereInput {
     id: ID
     id_not: ID
