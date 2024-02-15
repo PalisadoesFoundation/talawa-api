@@ -26,8 +26,8 @@ import {
 } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
-let testUser2: InterfaceUser & Document<any, any, InterfaceUser>;
+let testUser: InterfaceUser & Document<any, any, InterfaceUser>; // eslint-disable-line @typescript-eslint/no-explicit-any
+let testUser2: InterfaceUser & Document<any, any, InterfaceUser>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
@@ -110,11 +110,13 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       );
 
       await updateUserProfileResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        );
+      }
     }
   });
 
@@ -138,11 +140,13 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         await import("../../../src/resolvers/Mutation/updateUserProfile");
 
       await updateUserProfileResolverUserError?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        );
+      }
     }
   });
 
@@ -169,11 +173,15 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       );
 
       await updateUserProfileResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toHaveBeenLastCalledWith(
+          EMAIL_ALREADY_EXISTS_ERROR.MESSAGE
+        );
+        expect(error.message).toEqual(
+          `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
+        );
+      }
     }
   });
 
