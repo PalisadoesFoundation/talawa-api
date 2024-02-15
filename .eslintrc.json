@@ -75,7 +75,7 @@
 
     // Typescript rule to enforce PascalCase naming convention for types and interfaces
     "@typescript-eslint/naming-convention": [
-      "off",
+      "error",
       // Interfaces must begin with Interface or TestInterface followed by a PascalCase name
       {
         "selector": "interface",
