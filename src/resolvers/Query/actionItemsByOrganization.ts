@@ -1,10 +1,6 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import type {
-  InterfaceActionItem} from "../../models";
-import {
-  ActionItem,
-  ActionItemCategory
-} from "../../models";
+import type { InterfaceActionItem } from "../../models";
+import { ActionItem, ActionItemCategory } from "../../models";
 import { getWhere } from "./helperFunctions/getWhere";
 import { getSort } from "./helperFunctions/getSort";
 /**
