@@ -57,6 +57,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
     }
   });
 
+  //added ths test
   it(`throws Error if newPassword is the same as the old password`, async () => {
     const otp = "correctOtp";
 
