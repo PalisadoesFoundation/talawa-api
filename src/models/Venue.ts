@@ -1,6 +1,6 @@
-import { Schema, model, models, PopulatedDoc } from "mongoose";
-import type { Model, Types } from "mongoose";
-import { InterfaceOrganization } from "./Organization";
+import { Schema, model, models } from "mongoose";
+import type { Model, Types, PopulatedDoc } from "mongoose";
+import type { InterfaceOrganization } from "./Organization";
 
 export interface InterfaceVenue {
   _id: Types.ObjectId;

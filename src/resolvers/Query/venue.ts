@@ -2,9 +2,9 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   VENUE_NOT_FOUND_ERROR,
 } from "../../constants";
-import { errors, requestContext } from "../../libraries";
+import { errors } from "../../libraries";
 import { Organization, Venue } from "../../models";
-import { QueryResolvers } from "./../../types/generatedGraphQLTypes";
+import type { QueryResolvers } from "./../../types/generatedGraphQLTypes";
 /**
  * This query fetch the venue from the database.
  * @param _parent-

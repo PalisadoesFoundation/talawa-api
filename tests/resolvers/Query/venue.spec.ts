@@ -1,8 +1,10 @@
-import { QueryVenueArgs } from "./../../../src/types/generatedGraphQLTypes";
-import { TestOrganizationType } from "./../../helpers/userAndOrg";
+import { NotFoundError } from "./../../../src/libraries/errors/notFoundError";
+import type { QueryVenueArgs } from "./../../../src/types/generatedGraphQLTypes";
+import type { TestOrganizationType } from "./../../helpers/userAndOrg";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { TestVenueType, createTestVenue } from "./../../helpers/venue";
+import { createTestVenue } from "./../../helpers/venue";
+import type { TestVenueType } from "./../../helpers/venue";
 import { connect, disconnect } from "../../helpers/db";
 import { Organization, Venue } from "../../../src/models";
 import { venue as venueResolver } from "../../../src/resolvers/Query/venue";
@@ -42,8 +44,12 @@ describe("resolvers -> Query -> venue", () => {
       };
 
       await venueResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(VENUE_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(VENUE_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
     }
   });
 
@@ -54,8 +60,12 @@ describe("resolvers -> Query -> venue", () => {
       };
 
       await venueResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
     }
   });
 

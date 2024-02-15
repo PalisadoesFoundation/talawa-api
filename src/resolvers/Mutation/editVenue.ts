@@ -44,9 +44,9 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     );
   }
 
-  const venue = await Venue.findOne({
+  const venue = await Venue.findById({
     _id: args.data.id,
-  }).lean();
+  });
 
   if (!venue) {
     throw new errors.NotFoundError(
@@ -117,7 +117,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     }
   }
 
-  // Find the venue by its _id and update its place and capacity
+  // Find the venue by its _id and update its values
   const updatedVenue = await Venue.findOneAndUpdate(
     { _id: venue._id },
     {
@@ -133,8 +133,16 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     { new: true }
   );
 
+  if (!updatedVenue) {
+    throw new errors.NotFoundError(
+      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
+      VENUE_NOT_FOUND_ERROR.CODE,
+      VENUE_NOT_FOUND_ERROR.PARAM
+    );
+  }
+
   return {
-    ...updatedVenue!.toObject(),
+    ...updatedVenue.toObject(),
     organizationId: organization.toObject(),
   };
 };
