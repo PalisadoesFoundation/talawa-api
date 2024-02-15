@@ -128,7 +128,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       runValidators: true,
     }
   ).lean();
-  updatedUser!.image = updatedUser?.image
+  updatedUser!.image = updatedUser?.image // eslint-disable-line @typescript-eslint/no-non-null-assertion
     ? `${context.apiRootUrl}${updatedUser?.image}`
     : null;
   if (args.data == undefined) updatedUser = null;
