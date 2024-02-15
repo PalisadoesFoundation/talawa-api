@@ -1,6 +1,7 @@
 import type { Types, Model, PopulatedDoc } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface, that represents database - (MongoDB) document for Advertisement.
  */
@@ -98,6 +99,8 @@ const advertisementSchema = new Schema(
     timestamps: true,
   }
 );
+
+createLoggingMiddleware(advertisementSchema, "Advertisement");
 
 const advertisementModel = (): Model<InterfaceAdvertisement> =>
   model<InterfaceAdvertisement>("Advertisement", advertisementSchema);
