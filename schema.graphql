@@ -70,6 +70,17 @@ enum AdvertisementType {
   POPUP
 }
 
+type AgendaCategory {
+  _id: ID!
+  createdAt: Date!
+  createdBy: User!
+  description: String
+  name: String!
+  organization: Organization!
+  updatedAt: Date
+  updatedBy: User
+}
+
 type AggregatePost {
   count: Int!
 }
@@ -154,6 +165,12 @@ input CreateActionItemInput {
   dueDate: Date
   eventId: ID
   preCompletionNotes: String
+}
+
+input CreateAgendaCategoryInput {
+  description: String
+  name: String!
+  organizationId: ID!
 }
 
 input CreateUserTagInput {
@@ -265,7 +282,7 @@ type Event {
   createdAt: DateTime!
   creator: User
   description: String!
-  endDate: Date!
+  endDate: Date
   endTime: Time
   feedback: [Feedback!]!
   isPublic: Boolean!
@@ -329,6 +346,28 @@ enum EventOrderByInput {
   title_DESC
 }
 
+type EventVolunteer {
+  _id: ID!
+  createdAt: DateTime!
+  creator: User
+  event: Event
+  isAssigned: Boolean
+  isInvited: Boolean
+  response: String
+  updatedAt: DateTime!
+  user: User!
+}
+
+input EventVolunteerInput {
+  eventId: ID!
+  userId: ID!
+}
+
+enum EventVolunteerResponse {
+  NO
+  YES
+}
+
 input EventWhereInput {
   description: String
   description_contains: String
@@ -386,6 +425,13 @@ input ForgotPasswordData {
   newPassword: String!
   otpToken: String!
   userOtp: String!
+}
+
+enum Frequency {
+  DAILY
+  MONTHLY
+  WEEKLY
+  YEARLY
 }
 
 enum Gender {
@@ -545,10 +591,12 @@ type Mutation {
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): AppUserProfile!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
+  createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
-  createEvent(data: EventInput): Event!
+  createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
+  createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
@@ -559,6 +607,7 @@ type Mutation {
   createUserFamily(data: createUserFamilyInput!): UserFamily!
   createUserTag(input: CreateUserTagInput!): UserTag
   deleteAdvertisementById(id: ID!): DeletePayload!
+  deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
   joinPublicOrganization(organizationId: ID!): User!
@@ -580,6 +629,7 @@ type Mutation {
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
+  removeEventVolunteer(id: ID!): EventVolunteer!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): UserData!
@@ -608,7 +658,9 @@ type Mutation {
   updateActionItem(data: UpdateActionItemInput!, id: ID!): ActionItem
   updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
+  updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
   updateEvent(data: UpdateEventInput, id: ID!): Event!
+  updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
@@ -629,6 +681,7 @@ type Organization {
   actionItemCategories: [ActionItemCategory]
   address: Address
   admins(adminId: ID): [User!]
+  agendaCategories: [AgendaCategory]
   apiUrl: URL!
   blockedUsers: [User]
   createdAt: DateTime!
@@ -864,12 +917,14 @@ type Query {
   actionItemsByEvent(eventId: ID!): [ActionItem]
   actionItemsByOrganization(organizationId: ID!): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
+  agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
+  eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
   getAdvertisements: [Advertisement]
@@ -908,6 +963,12 @@ enum Recurrance {
   ONCE
   WEEKLY
   YEARLY
+}
+
+input RecurrenceRuleInput {
+  count: Int
+  frequency: Frequency
+  weekDays: [WeekDays]
 }
 
 enum Status {
@@ -979,6 +1040,11 @@ type UpdateAdvertisementPayload {
   advertisement: Advertisement
 }
 
+input UpdateAgendaCategoryInput {
+  description: String
+  name: String
+}
+
 input UpdateEventInput {
   allDay: Boolean
   description: String
@@ -994,6 +1060,13 @@ input UpdateEventInput {
   startDate: Date
   startTime: Time
   title: String
+}
+
+input UpdateEventVolunteerInput {
+  eventId: ID
+  isAssigned: Boolean
+  isInvited: Boolean
+  response: EventVolunteerResponse
 }
 
 input UpdateOrganizationInput {
@@ -1208,6 +1281,16 @@ input UsersConnectionInput {
 type UsersConnectionResult {
   data: UsersConnection
   errors: [ConnectionError!]!
+}
+
+enum WeekDays {
+  FR
+  MO
+  SA
+  SU
+  TH
+  TU
+  WE
 }
 
 input createChatInput {

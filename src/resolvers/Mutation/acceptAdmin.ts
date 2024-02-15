@@ -11,7 +11,7 @@ import { superAdminCheck } from "../../utilities/superAdminCheck";
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
- * @remarks THe following checks are done:
+ * @remarks The following checks are done:
  * 1. Whether the user exists
  * 2. Whether the user has appProfile or not (if not, then the user is not a superadmin).
  * 3. Whether the user accepting the admin request is a superadmin or not.
