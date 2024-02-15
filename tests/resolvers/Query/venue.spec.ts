@@ -13,6 +13,7 @@ import {
   VENUE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { fail } from "assert";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
