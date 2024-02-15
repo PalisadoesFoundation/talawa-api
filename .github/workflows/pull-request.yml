@@ -152,8 +152,7 @@ jobs:
           time: 10s
 
       - name: Run the tests
-        run: |
-          npm run test
+        run: npm run test
 
       - name: Import Sample Data
         run: npm run import:sample-data  
