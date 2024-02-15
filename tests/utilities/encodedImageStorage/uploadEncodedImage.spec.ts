@@ -46,20 +46,22 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
         "3gAAAABJRU5ErkJggg==";
       await uploadEncodedImage(img, null);
-    } catch (error: any) {
-      expect(error.message).toEqual(`Translated ${INVALID_FILE_TYPE.MESSAGE}`);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${INVALID_FILE_TYPE.MESSAGE}`
+      );
 
       expect(spy).toBeCalledWith(INVALID_FILE_TYPE.MESSAGE);
     }
   });
 
   it("should not create new image if it is bigger than the limit", async () => {
-    const size = Number(process.env.IMAGE_SIZE_LIMIT_KB);
+    const size = Number(process.env.IMAGE_SIZE_LIMIT_KB) || 3000;
     try {
       const img = "data:image/jpg;base64," + generateRandomString(size + 1000);
       await uploadEncodedImage(img, null);
-    } catch (error: any) {
-      expect(error.message).toEqual(IMAGE_SIZE_LIMIT_KB.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(IMAGE_SIZE_LIMIT_KB.MESSAGE);
     }
   });
 
@@ -71,7 +73,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "3gAAAABJRU5ErkJggg==";
       const fileName = await uploadEncodedImage(img, null);
       expect(fileName).not.toBe(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
     }
   });
@@ -85,7 +87,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
       const fileName = await uploadEncodedImage(img, null);
       expect(fileName).not.toBe(null);
       testPreviousImagePath = fileName;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
     }
   });
@@ -180,7 +182,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
       fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
         if (err) throw err;
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
     }
   });

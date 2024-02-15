@@ -23,6 +23,8 @@ export const queries = gql`
       organizationId: ID!
     ): [ActionItemCategory]
 
+    agendaCategory(id: ID!): AgendaCategory!
+
     checkAuth: User! @auth
 
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]
@@ -43,6 +45,8 @@ export const queries = gql`
       skip: Int
       orderBy: EventOrderByInput
     ): [Event!]!
+
+    eventVolunteersByEvent(id: ID!): [EventVolunteer]
 
     getDonationById(id: ID!): Donation!
 
