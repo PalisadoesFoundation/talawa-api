@@ -57,7 +57,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
   }
 
   const organization = await Organization.findOne({
-    _id: venue?.organizationId,
+    _id: venue?.organizationId?.toString(),
   });
 
   // Checks whether organization exists.
@@ -133,5 +133,8 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     { new: true }
   );
 
-  return updatedVenue;
+  return {
+    ...updatedVenue!.toObject(),
+    organizationId: organization.toObject(),
+  };
 };

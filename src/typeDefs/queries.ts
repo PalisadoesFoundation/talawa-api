@@ -123,5 +123,7 @@ export const queries = gql`
       skip: Int
       orderBy: UserOrderByInput
     ): [User]! @auth
+
+    venue(id: ID!): Venue
   }
 `;

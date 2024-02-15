@@ -33,6 +33,7 @@ import { users } from "./users";
 import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
 import { agendaCategory } from "./agendaCategory";
+import { venue } from "./venue";
 
 export const Query: QueryResolvers = {
   actionItem,
@@ -69,4 +70,5 @@ export const Query: QueryResolvers = {
   userLanguage,
   users,
   usersConnection,
+  venue,
 };

@@ -1459,7 +1459,7 @@ type Venue {
   description: String
   imageUrl: URL
   name: String!
-  organizationId: ID!
+  organizationId: Organization!
 }
 
 input VenueInput {

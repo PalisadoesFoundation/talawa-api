@@ -108,5 +108,8 @@ export const createVenue: MutationResolvers["createVenue"] = async (
       : null,
   });
 
-  return newVenue;
+  return {
+    ...newVenue.toObject(),
+    organizationId: organization.toObject(),
+  };
 };

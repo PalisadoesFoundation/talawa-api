@@ -1,5 +1,6 @@
-import { Schema, model, models } from "mongoose";
+import { Schema, model, models, PopulatedDoc } from "mongoose";
 import type { Model, Types } from "mongoose";
+import { InterfaceOrganization } from "./Organization";
 
 export interface InterfaceVenue {
   _id: Types.ObjectId;
@@ -7,7 +8,7 @@ export interface InterfaceVenue {
   description: string | undefined | null;
   capacity: number;
   imageUrl: string | undefined | null;
-  organizationId: string;
+  organizationId: PopulatedDoc<InterfaceOrganization & Document>;
 }
 
 /**

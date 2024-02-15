@@ -53,7 +53,7 @@ beforeAll(async () => {
     capacity: Math.floor(Math.random() * 100),
     organizationId: testOrganization?.id,
   });
-  
+
   testVenue = await Venue.create({
     name: "venue",
     description: "description",
@@ -312,7 +312,9 @@ describe("resolvers -> Mutation -> editVenue", () => {
       "../../../src/resolvers/Mutation/editVenue"
     );
     const venue = await editVenue?.({}, args, context);
-    const expectedVenue = await Venue.findById(testVenue?._id);
+    const expectedVenue = await Venue.findById(testVenue?._id)
+      .populate("organizationId")
+      .lean();
     expect(venue).toEqual(expectedVenue);
   });
 });
