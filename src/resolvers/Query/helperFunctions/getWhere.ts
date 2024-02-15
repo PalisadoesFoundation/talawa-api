@@ -194,7 +194,7 @@ export const getWhere = <T = unknown>(
   if (where.is_active) {
     wherePayload = {
       ...wherePayload,
-      isCompleted: !where.is_active,
+      isCompleted: false,
     };
   }
 
@@ -202,7 +202,7 @@ export const getWhere = <T = unknown>(
   if (where.is_completed) {
     wherePayload = {
       ...wherePayload,
-      isCompleted: where.is_completed,
+      isCompleted: true,
     };
   }
 
