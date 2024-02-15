@@ -26,8 +26,11 @@ import {
 } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUser: InterfaceUser & Document<any, any, InterfaceUser>; // eslint-disable-line @typescript-eslint/no-explicit-any
-let testUser2: InterfaceUser & Document<any, any, InterfaceUser>; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+type UserDocument = InterfaceUser &
+  Document<InterfaceUser, NonNullable<unknown>, InterfaceUser>;
+let testUser: UserDocument;
+let testUser2: UserDocument;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),

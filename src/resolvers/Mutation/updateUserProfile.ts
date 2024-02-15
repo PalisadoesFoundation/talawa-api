@@ -128,9 +128,12 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       runValidators: true,
     }
   ).lean();
-  updatedUser!.image = updatedUser?.image
-    ? `${context.apiRootUrl}${updatedUser?.image}`
-    : null;
+
+  if (updatedUser != null) {
+    updatedUser.image = updatedUser?.image
+      ? `${context.apiRootUrl}${updatedUser?.image}`
+      : null;
+  }
   if (args.data == undefined) updatedUser = null;
 
   return updatedUser ?? ({} as InterfaceUser);
