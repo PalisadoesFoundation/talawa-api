@@ -2162,7 +2162,7 @@ export type Venue = {
   description?: Maybe<Scalars['String']['output']>;
   imageUrl?: Maybe<Scalars['URL']['output']>;
   name: Scalars['String']['output'];
-  organizationId: Organization;
+  organization: Organization;
 };
 
 export type VenueInput = {
@@ -2418,7 +2418,7 @@ export type ResolversTypes = {
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
-  Venue: ResolverTypeWrapper<Omit<Venue, 'organizationId'> & { organizationId: ResolversTypes['Organization'] }>;
+  Venue: ResolverTypeWrapper<Omit<Venue, 'organization'> & { organization: ResolversTypes['Organization'] }>;
   VenueInput: VenueInput;
   WeekDays: WeekDays;
   createChatInput: CreateChatInput;
@@ -2556,7 +2556,7 @@ export type ResolversParentTypes = {
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
-  Venue: Omit<Venue, 'organizationId'> & { organizationId: ResolversParentTypes['Organization'] };
+  Venue: Omit<Venue, 'organization'> & { organization: ResolversParentTypes['Organization'] };
   VenueInput: VenueInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
@@ -3372,7 +3372,7 @@ export type VenueResolvers<ContextType = any, ParentType extends ResolversParent
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  organizationId?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

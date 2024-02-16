@@ -6,5 +6,5 @@ import { Venue } from "../../models";
  * @returns An array that contains the venues.
  */
 export const venues: OrganizationResolvers["venues"] = async (parent) => {
-  return await Venue.find({ organizationId: parent._id.toString() }).lean();
+  return await Venue.find({ organization: parent._id.toString() }).lean();
 };

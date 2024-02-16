@@ -81,7 +81,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
   // Check if a venue with the same organizationId and name exists
   const existingVenue = await Venue.findOne({
     name: args.data.name,
-    organizationId: args.data.organizationId,
+    organization: args.data.organizationId,
   });
 
   if (existingVenue) {
@@ -103,6 +103,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
 
   const newVenue = await Venue.create({
     ...args.data,
+    organization: organization._id,
     imageUrl: uploadImageFileName
       ? `${context.apiRootUrl}${uploadImageFileName}`
       : null,
@@ -110,6 +111,6 @@ export const createVenue: MutationResolvers["createVenue"] = async (
 
   return {
     ...newVenue.toObject(),
-    organizationId: organization.toObject(),
+    organization: organization.toObject(),
   };
 };

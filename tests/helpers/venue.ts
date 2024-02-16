@@ -12,7 +12,7 @@ export const createTestVenue = async (
     name: nanoid().toLowerCase(),
     description: nanoid().toLowerCase(),
     capacity: 5 + Math.floor(Math.random() * 100),
-    organizationId,
+    organization: organizationId,
     imageUrl: null,
   });
   return testVenue;

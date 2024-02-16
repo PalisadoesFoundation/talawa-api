@@ -338,7 +338,7 @@ export const types = gql`
     description: String
     imageUrl: URL
     name: String!
-    organizationId: Organization!
+    organization: Organization!
   }
 
   """

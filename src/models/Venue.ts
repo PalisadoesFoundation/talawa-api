@@ -8,7 +8,7 @@ export interface InterfaceVenue {
   description: string | undefined | null;
   capacity: number;
   imageUrl: string | undefined | null;
-  organizationId: PopulatedDoc<InterfaceOrganization & Document>;
+  organization: PopulatedDoc<InterfaceOrganization & Document>;
 }
 
 /**
@@ -17,7 +17,7 @@ export interface InterfaceVenue {
  * @param description - Description of the venue.
  * @param capacity - Maximum capacity of the venue.
  * @param imageUrl - Image URL(if attached) of the venue.
- * @param organizationId - Organization in which the venue belongs.
+ * @param organization - Organization in which the venue belongs.
  */
 
 const venueSchema = new Schema({
@@ -36,7 +36,7 @@ const venueSchema = new Schema({
     type: String,
     required: false,
   },
-  organizationId: {
+  organization: {
     type: Schema.Types.ObjectId,
     ref: "Organization",
     required: true,

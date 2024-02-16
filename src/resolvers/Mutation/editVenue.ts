@@ -56,8 +56,8 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     );
   }
 
-  const organization = await Organization.findOne({
-    _id: venue?.organizationId?.toString(),
+  const organization = await Organization.findById({
+    _id: venue.organization,
   });
 
   // Checks whether organization exists.
@@ -94,7 +94,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
 
   // Check if a venue with the same organizationId and name exists
   const venuesWithOrganization = await Venue.find({
-    organizationId: organization._id,
+    organization: organization._id,
   });
 
   if (
@@ -119,7 +119,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
 
   // Find the venue by its _id and update its values
   const updatedVenue = await Venue.findOneAndUpdate(
-    { _id: venue._id },
+    { _id: args.data.id },
     {
       $set: {
         name: args.data?.name,
@@ -131,7 +131,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
       },
     },
     { new: true }
-  );
+  ).populate("organization");
 
   if (!updatedVenue) {
     throw new errors.NotFoundError(
@@ -143,6 +143,6 @@ export const editVenue: MutationResolvers["editVenue"] = async (
 
   return {
     ...updatedVenue.toObject(),
-    organizationId: organization.toObject(),
+    organization: organization.toObject(),
   };
 };

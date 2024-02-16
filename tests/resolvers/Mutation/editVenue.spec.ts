@@ -51,14 +51,14 @@ beforeAll(async () => {
     name: "testVenue",
     description: "description",
     capacity: Math.floor(Math.random() * 100),
-    organizationId: testOrganization?.id,
+    organization: testOrganization?.id,
   });
 
   testVenue = await Venue.create({
     name: "venue",
     description: "description",
     capacity: Math.floor(Math.random() * 100),
-    organizationId: Types.ObjectId().toString(),
+    organization: Types.ObjectId().toString(),
   });
 
   const { requestContext } = await import("../../../src/libraries");
@@ -129,7 +129,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     }
   });
 
-  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
+  it(`throws NotFoundError if no organization exists with _id === args.data.organization`, async () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
@@ -158,14 +158,14 @@ describe("resolvers -> Mutation -> editVenue", () => {
     }
   });
 
-  it(`throws UnauthorizedError if user with _id === context.userId is neither an admin of the organization with _id === args.organizationId nor a SUPERADMIN`, async () => {
+  it(`throws UnauthorizedError if user with _id === context.userId is neither an admin of the organization with _id === args.organization nor a SUPERADMIN`, async () => {
     try {
       await Venue.findOneAndUpdate(
         {
           _id: testVenue?._id,
         },
         {
-          $set: { organizationId: testOrganization?._id },
+          $set: { organization: testOrganization?._id },
         },
         { new: true }
       );
@@ -313,7 +313,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     );
     const venue = await editVenue?.({}, args, context);
     const expectedVenue = await Venue.findById(testVenue?._id)
-      .populate("organizationId")
+      .populate("organization")
       .lean();
     expect(venue).toEqual(expectedVenue);
   });

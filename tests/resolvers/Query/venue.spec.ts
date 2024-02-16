@@ -70,13 +70,13 @@ describe("resolvers -> Query -> venue", () => {
     }
   });
 
-  it(`returns venue object with organizationId populated`, async () => {
+  it(`returns venue object with organization populated`, async () => {
     await Venue.findOneAndUpdate(
       {
         _id: testVenue?._id,
       },
       {
-        $set: { organizationId: testOrganization?._id },
+        $set: { organization: testOrganization?._id },
       },
       { new: true }
     );
@@ -87,7 +87,7 @@ describe("resolvers -> Query -> venue", () => {
 
     const venue = await venueResolver?.({}, args, {});
     const expectedVenue = await Venue.findById(testVenue?._id)
-      .populate("organizationId")
+      .populate("organization")
       .lean();
     expect(venue).toEqual(expectedVenue);
   });

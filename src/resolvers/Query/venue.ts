@@ -27,7 +27,7 @@ export const venue: QueryResolvers["venue"] = async (_parent, args) => {
   }
 
   const organization = await Organization.findById({
-    _id: venue.organizationId,
+    _id: venue.organization,
   });
 
   if (!organization) {
@@ -40,6 +40,6 @@ export const venue: QueryResolvers["venue"] = async (_parent, args) => {
 
   return {
     ...venue.toObject(),
-    organizationId: organization.toObject(),
+    organization: organization.toObject(),
   };
 };

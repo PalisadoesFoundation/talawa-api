@@ -46,7 +46,7 @@ beforeAll(async () => {
     name: "testVenue",
     description: "description",
     capacity: Math.floor(Math.random() * 100),
-    organizationId: testOrganization?.id,
+    organization: testOrganization?.id,
   });
 
   const { requestContext } = await import("../../../src/libraries");

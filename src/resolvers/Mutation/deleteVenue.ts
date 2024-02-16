@@ -82,6 +82,6 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
 
   return {
     ...venue.toObject(),
-    organizationId: organization.toObject(),
+    organization: organization.toObject(),
   };
 };

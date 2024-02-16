@@ -37,7 +37,7 @@ describe("resolvers -> Organization -> venues", () => {
     if (parent) {
       const venuesPayload = await venuesResolver?.(parent, {}, {});
       const venues = await Venue.find({
-        organizationId: parent._id.toString(),
+        organization: parent._id,
       }).lean();
 
       expect(venuesPayload).toEqual(venues);
