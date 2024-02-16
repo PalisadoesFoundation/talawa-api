@@ -2,6 +2,7 @@ import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Membership Request.
  */
@@ -35,6 +36,8 @@ const membershipRequestSchema = new Schema({
     enum: ["ACTIVE", "BLOCKED", "DELETED"],
   },
 });
+
+createLoggingMiddleware(membershipRequestSchema, "MembershipRequest");
 
 const membershipRequestModel = (): Model<InterfaceMembershipRequest> =>
   model<InterfaceMembershipRequest>(
