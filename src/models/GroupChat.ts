@@ -67,7 +67,7 @@ const groupChatSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(groupChatSchema, "GroupChat");

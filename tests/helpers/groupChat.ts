@@ -39,7 +39,7 @@ export const createTestGroupChatMessage = async (): Promise<
     TestUserType,
     TestOrganizationType,
     TestGroupChatType,
-    TestGroupChatMessageType
+    TestGroupChatMessageType,
   ]
 > => {
   const [testUser, testOrganization, testGroupChat] =

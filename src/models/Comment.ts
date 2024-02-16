@@ -63,7 +63,7 @@ const commentSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(commentSchema, "Comment");

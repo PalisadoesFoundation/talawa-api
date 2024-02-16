@@ -2,7 +2,7 @@ import type { AgendaCategoryResolvers } from "../../types/generatedGraphQLTypes"
 import { User } from "../../models";
 
 export const updatedBy: AgendaCategoryResolvers["updatedBy"] = async (
-  parent
+  parent,
 ) => {
   return User.findOne(parent.updatedBy).lean();
 };

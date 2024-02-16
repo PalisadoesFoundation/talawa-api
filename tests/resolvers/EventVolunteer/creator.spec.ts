@@ -38,7 +38,7 @@ describe("resolvers -> EventVolunteer -> user", () => {
     const creatorPayload = await creatorResolver?.(
       parent as InterfaceEventVolunteer,
       {},
-      {}
+      {},
     );
 
     expect(creatorPayload?._id).toEqual(creatorUser?._id);

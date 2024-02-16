@@ -79,7 +79,7 @@ describe("resolvers -> Tag -> usersAssignedTo", () => {
     const payload = (await usersAssignedToResolver?.(
       parent,
       args,
-      {}
+      {},
     )) as UsersConnectionResult;
 
     expect(payload.errors.length).toEqual(0);
@@ -90,10 +90,10 @@ describe("resolvers -> Tag -> usersAssignedTo", () => {
     });
 
     expect(payload.data!.pageInfo.startCursor).toEqual(
-      userTagObject!._id.toString()
+      userTagObject!._id.toString(),
     );
     expect(payload.data!.pageInfo.endCursor).toEqual(
-      userTagObject!._id.toString()
+      userTagObject!._id.toString(),
     );
     expect(payload.data!.edges[0].node._id).toEqual(testUser && testUser._id);
   });

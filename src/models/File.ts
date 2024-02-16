@@ -56,7 +56,7 @@ const fileSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(fileSchema, "File");

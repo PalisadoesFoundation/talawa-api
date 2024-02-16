@@ -56,7 +56,7 @@ export const isAuth = (request: Request): InterfaceAuthData => {
           return err;
         }
         return decoded;
-      }
+      },
     ); // If there is an error decoded token would contain it
 
     if (decodedToken.name === "TokenExpiredError") {

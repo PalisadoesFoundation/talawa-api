@@ -49,7 +49,7 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
         organization: args.id,
         ...where,
       },
-      options
+      options,
     );
 
     const posts = postsmodel.docs.map((post) => {
