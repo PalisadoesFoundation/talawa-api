@@ -1,5 +1,6 @@
 import type { Model } from "mongoose";
 import mongoose, { model, models } from "mongoose";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 /**
  * This is an interface representing a document for custom field in the database(MongoDB).
@@ -7,6 +8,7 @@ import mongoose, { model, models } from "mongoose";
 export interface InterfaceUserCustomData {
   _id: string;
   organizationId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   values: any;
   userId: string;
 }
@@ -35,6 +37,8 @@ const userCustomDataSchema = new mongoose.Schema({
     default: {},
   },
 });
+
+createLoggingMiddleware(userCustomDataSchema, "UserCustomData");
 
 const userCustomData = (): Model<InterfaceUserCustomData> =>
   model<InterfaceUserCustomData>("UserCustomData", userCustomDataSchema);
