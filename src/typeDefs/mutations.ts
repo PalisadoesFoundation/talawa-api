@@ -149,7 +149,7 @@ export const mutations = gql`
 
     refreshToken(refreshToken: String!): ExtendSession!
 
-    registerForEvent(id: ID!): Event! @auth
+    registerForEvent(id: ID!): EventAttendee! @auth
 
     rejectAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
 

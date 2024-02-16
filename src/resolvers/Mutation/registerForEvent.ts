@@ -60,7 +60,7 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
   }
 
   const currentUserIsEventRegistrant = await EventAttendee.findOne({
-    userId: context.userID,
+    userId: context.userId,
     eventId: args.id,
   });
 
@@ -88,8 +88,15 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
         },
       }
     );
+
+    return currentUserIsEventRegistrant;
   } else {
     // Adds event._id to registeredEvents list of currentUser with _id === context.userId.
+    const registeredAttendee = await EventAttendee.create({
+      userId: context.userId,
+      eventId: args.id,
+      isRegistered: true,
+    });
     await User.updateOne(
       {
         _id: context.userId,
@@ -101,12 +108,6 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
       }
     );
 
-    await EventAttendee.create({
-      userId: context.userId,
-      eventId: args.id,
-      isRegistered: true,
-    });
+    return registeredAttendee.toObject();
   }
-
-  return event;
 };

@@ -571,7 +571,7 @@ type Mutation {
   recaptcha(data: RecaptchaVerification!): Boolean!
   refreshToken(refreshToken: String!): ExtendSession!
   registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
-  registerForEvent(id: ID!): Event!
+  registerForEvent(id: ID!): EventAttendee!
   rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeActionItem(id: ID!): ActionItem!

@@ -1,5 +1,6 @@
 import {
   EVENT_NOT_FOUND_ERROR,
+  USER_ALREADY_REGISTERED_FOR_EVENT,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
@@ -93,10 +94,32 @@ export const registerEventAttendee: MutationResolvers["registerEventAttendee"] =
       ...args.data,
     });
 
+    // If user is already registered for the event
+
+    if (eventAttendee?.isRegistered) {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE),
+        USER_ALREADY_REGISTERED_FOR_EVENT.CODE,
+        USER_ALREADY_REGISTERED_FOR_EVENT.PARAM
+      );
+    }
+
     // If user is already invitedForEvent
     if (eventAttendee?.isInvited) {
       eventAttendee.isRegistered = true;
       await eventAttendee.save();
+
+      await User.updateOne(
+        {
+          _id: context.userId,
+        },
+        {
+          $push: {
+            registeredEvents: event._id,
+          },
+        }
+      );
+
       return eventAttendee;
     }
 
@@ -106,5 +129,16 @@ export const registerEventAttendee: MutationResolvers["registerEventAttendee"] =
       isRegistered: true,
     });
 
-    return registerAttendee;
+    await User.updateOne(
+      {
+        _id: context.userId,
+      },
+      {
+        $push: {
+          registeredEvents: event._id,
+        },
+      }
+    );
+
+    return registerAttendee.toObject();
   };

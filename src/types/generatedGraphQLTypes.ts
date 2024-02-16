@@ -639,7 +639,7 @@ export type Mutation = {
   recaptcha: Scalars['Boolean']['output'];
   refreshToken: ExtendSession;
   registerEventAttendee: EventAttendee;
-  registerForEvent: Event;
+  registerForEvent: EventAttendee;
   rejectAdmin: Scalars['Boolean']['output'];
   rejectMembershipRequest: MembershipRequest;
   removeActionItem: ActionItem;
@@ -2825,7 +2825,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   recaptcha?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRecaptchaArgs, 'data'>>;
   refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
   registerEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationRegisterEventAttendeeArgs, 'data'>>;
-  registerForEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
+  registerForEvent?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
   rejectAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectAdminArgs, 'id'>>;
   rejectMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationRejectMembershipRequestArgs, 'membershipRequestId'>>;
   removeActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationRemoveActionItemArgs, 'id'>>;
