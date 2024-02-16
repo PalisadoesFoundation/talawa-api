@@ -22,7 +22,7 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
 export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const groupChat = await GroupChat.findOne({
     _id: args.chatId,
@@ -33,7 +33,7 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
       CHAT_NOT_FOUND_ERROR.CODE,
-      CHAT_NOT_FOUND_ERROR.PARAM
+      CHAT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -58,7 +58,7 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 

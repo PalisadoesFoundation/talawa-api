@@ -39,7 +39,7 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -50,7 +50,7 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
     if (args.file) {
       uploadImageFileName = await uploadEncodedImage(
         args.file,
-        organization?.image
+        organization?.image,
       );
     }
 
@@ -66,7 +66,7 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     if (updatedOrganization !== null) {

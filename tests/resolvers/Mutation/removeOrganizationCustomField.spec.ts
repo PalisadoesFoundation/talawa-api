@@ -52,7 +52,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const initialCustomFields = await OrganizationCustomField.find({
@@ -61,7 +61,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
 
     expect(customField).toBeDefined();
     expect(customField?.organizationId.toString()).toBe(
-      testOrganization?._id.toString()
+      testOrganization?._id.toString(),
     );
 
     const context = { userId: testUser?._id };
@@ -77,7 +77,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
 
     expect(updatedCustomFields).toHaveLength(initialCustomFields.length - 1);
     const removedCustomField = updatedCustomFields.find(
-      (field) => field._id.toString() === customField?._id.toString()
+      (field) => field._id.toString() === customField?._id.toString(),
     );
     expect(removedCustomField).toBeUndefined();
   });
@@ -99,7 +99,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const initialCustomFields = await OrganizationCustomField.find({
@@ -108,7 +108,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
 
     expect(customField).toBeDefined();
     expect(customField?.organizationId.toString()).toBe(
-      testOrganization?._id.toString()
+      testOrganization?._id.toString(),
     );
 
     const context = { userId: nonAdmin?._id };
@@ -121,7 +121,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -145,7 +145,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(CUSTOM_FIELD_NOT_FOUND.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${CUSTOM_FIELD_NOT_FOUND.MESSAGE}`
+        `Translated ${CUSTOM_FIELD_NOT_FOUND.MESSAGE}`,
       );
     }
   });
@@ -165,12 +165,12 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     expect(customField).toBeDefined();
     expect(customField?.organizationId.toString()).toBe(
-      testOrganization?._id.toString()
+      testOrganization?._id.toString(),
     );
 
     const context = { userId: Types.ObjectId().toString() };
@@ -184,7 +184,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -199,12 +199,12 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     expect(customField).toBeDefined();
     expect(customField?.organizationId.toString()).toBe(
-      testOrganization?._id.toString()
+      testOrganization?._id.toString(),
     );
 
     const context = { userId: testUser?._id };
@@ -217,7 +217,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       await removeOrganizationCustomField?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
