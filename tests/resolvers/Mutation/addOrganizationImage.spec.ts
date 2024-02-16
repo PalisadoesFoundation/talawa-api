@@ -82,10 +82,10 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
         $set: {
           image: testImagePath,
         },
-      }
+      },
     );
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL
+      async (encodedImageURL: string) => encodedImageURL,
     );
     const args: MutationAddOrganizationImageArgs = {
       organizationId: testOrganization?.id,
@@ -97,7 +97,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
     const addOrganizationImagePayload = await addOrganizationImageResolver?.(
       {},
       args,
-      context
+      context,
     );
     const updatedTestOrganization = await Organization.findOne({
       _id: testOrganization?._id,

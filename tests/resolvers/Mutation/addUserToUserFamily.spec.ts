@@ -61,7 +61,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
     } catch (error) {
       expect(spy).toBeCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`
+        `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -114,7 +114,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
     } catch (error) {
       expect(spy).toBeCalledWith(USER_ALREADY_MEMBER_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_ALREADY_MEMBER_ERROR.MESSAGE
+        USER_ALREADY_MEMBER_ERROR.MESSAGE,
       );
     }
   });
@@ -128,7 +128,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
         $set: {
           users: [],
         },
-      }
+      },
     );
 
     const args: MutationAddUserToUserFamilyArgs = {
@@ -146,7 +146,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
     const addUserToUserFamilyPayload = await addUserToUserFamily?.(
       {},
       args,
-      context
+      context,
     );
     expect(addUserToUserFamilyPayload?._id).toEqual(testUserFamily?._id);
     expect(addUserToUserFamilyPayload?.users).toEqual([testUser?._id]);

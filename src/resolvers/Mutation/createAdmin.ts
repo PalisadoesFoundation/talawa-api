@@ -27,7 +27,7 @@ import { Types } from "mongoose";
 export const createAdmin: MutationResolvers["createAdmin"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization;
 
@@ -50,7 +50,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
   // Checks whether the current user is a superAdmin
@@ -61,7 +61,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   superAdminCheck(currentUser);
@@ -75,12 +75,12 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const userIsOrganizationMember = organization.members.some((member) =>
-    Types.ObjectId(member).equals(args.data.userId)
+    Types.ObjectId(member).equals(args.data.userId),
   );
 
   // Checks whether user with _id === args.data.userId is not a member of organization.
@@ -88,12 +88,12 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_MEMBER_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_MEMBER_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_MEMBER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
-    Types.ObjectId(admin).equals(args.data.userId)
+    Types.ObjectId(admin).equals(args.data.userId),
   );
 
   // Checks whether user with _id === args.data.userId is already an admin of organization.
@@ -101,7 +101,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -117,7 +117,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     },
     {
       new: true,
-    }
+    },
   );
 
   if (updatedOrganization !== null) {
@@ -139,7 +139,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     },
     {
       new: true,
-    }
+    },
   )
     .select(["-password"])
     .lean();
