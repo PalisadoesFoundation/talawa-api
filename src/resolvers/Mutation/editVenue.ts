@@ -117,32 +117,18 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     }
   }
 
-  // Find the venue by its _id and update its values
-  const updatedVenue = await Venue.findOneAndUpdate(
-    { _id: args.data.id },
-    {
-      $set: {
-        name: args.data?.name,
-        capacity: args.data?.capacity,
-        description: args.data?.description,
-        imageUrl: uploadImageFileName
-          ? `${context.apiRootUrl}${uploadImageFileName}`
-          : null,
-      },
-    },
-    { new: true }
-  ).populate("organization");
+  // update venue
+  venue.name = args.data?.name || venue.name;
+  venue.capacity = args.data?.capacity || venue.capacity;
+  venue.description = args.data?.description || venue.description;
+  venue.imageUrl = uploadImageFileName
+    ? `${context.apiRootUrl}${uploadImageFileName}`
+    : venue.imageUrl;
 
-  if (!updatedVenue) {
-    throw new errors.NotFoundError(
-      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
-      VENUE_NOT_FOUND_ERROR.CODE,
-      VENUE_NOT_FOUND_ERROR.PARAM
-    );
-  }
+  await venue.save();
 
   return {
-    ...updatedVenue.toObject(),
+    ...venue.toObject(),
     organization: organization.toObject(),
   };
 };
