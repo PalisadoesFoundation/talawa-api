@@ -27,7 +27,7 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
 export const createVenue: MutationResolvers["createVenue"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -38,7 +38,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -51,7 +51,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -65,7 +65,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
       ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM
+      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -74,7 +74,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     throw new errors.InputValidationError(
       requestContext.translate(VENUE_NAME_MISSING_ERROR.MESSAGE),
       VENUE_NAME_MISSING_ERROR.CODE,
-      VENUE_NAME_MISSING_ERROR.PARAM
+      VENUE_NAME_MISSING_ERROR.PARAM,
     );
   }
 
@@ -88,7 +88,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     throw new errors.ConflictError(
       requestContext.translate(VENUE_ALREADY_EXISTS_ERROR.MESSAGE),
       VENUE_ALREADY_EXISTS_ERROR.CODE,
-      VENUE_ALREADY_EXISTS_ERROR.PARAM
+      VENUE_ALREADY_EXISTS_ERROR.PARAM,
     );
   }
 

@@ -6,7 +6,7 @@ export type TestVenueType = InterfaceVenue &
   Document<string, Record<string, unknown>, InterfaceVenue>;
 
 export const createTestVenue = async (
-  organizationId: Types.ObjectId
+  organizationId: Types.ObjectId,
 ): Promise<TestVenueType> => {
   const testVenue = await Venue.create({
     name: nanoid().toLowerCase(),

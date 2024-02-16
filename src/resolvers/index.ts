@@ -98,5 +98,5 @@ const resolversComposition = {
 
 export const composedResolvers: Resolvers = composeResolvers(
   resolvers,
-  resolversComposition
+  resolversComposition,
 );

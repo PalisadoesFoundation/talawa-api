@@ -44,7 +44,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 
   randomUser = await createTestUser();
@@ -132,14 +132,14 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     const removedActionItemPayload = await removeActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     // console.log(removedActionItemPayload);
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
         assigneeId: assignedTestUser?._id,
-      })
+      }),
     );
   });
 
@@ -159,7 +159,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     const args: MutationRemoveActionItemArgs = {
@@ -173,13 +173,13 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     const removedActionItemPayload = await removeActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
         assigneeId: randomUser?._id,
-      })
+      }),
     );
   });
 
@@ -199,7 +199,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     try {
@@ -233,7 +233,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     const args: MutationRemoveActionItemArgs = {
@@ -247,13 +247,13 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     const removedActionItemPayload = await removeActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
         assigneeId: randomUser?._id,
-      })
+      }),
     );
   });
 });

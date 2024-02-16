@@ -27,7 +27,7 @@ beforeAll(async () => {
       $push: {
         pinnedPosts: testPost?.id,
       },
-    }
+    },
   );
 });
 

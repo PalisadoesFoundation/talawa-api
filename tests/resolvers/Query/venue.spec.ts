@@ -78,7 +78,7 @@ describe("resolvers -> Query -> venue", () => {
       {
         $set: { organization: testOrganization?._id },
       },
-      { new: true }
+      { new: true },
     );
 
     const args: QueryVenueArgs = {

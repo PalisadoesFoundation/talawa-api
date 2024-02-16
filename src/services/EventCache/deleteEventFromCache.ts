@@ -2,7 +2,7 @@ import EventCache from "../redisCache";
 import type { Types } from "mongoose";
 
 export async function deleteEventFromCache(
-  eventId: Types.ObjectId
+  eventId: Types.ObjectId,
 ): Promise<void> {
   const key = `event:${eventId}`;
 

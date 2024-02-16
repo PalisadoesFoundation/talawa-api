@@ -61,7 +61,7 @@ describe("resolvers -> Organization -> agendaCategories", () => {
       const agendaCategoriesPayload = await agendaCategoriesResolver?.(
         parent,
         {},
-        {}
+        {},
       );
 
       const categories = await AgendaCategoryModel.find({

@@ -22,7 +22,7 @@ export const venue: QueryResolvers["venue"] = async (_parent, args) => {
     throw new errors.NotFoundError(
       VENUE_NOT_FOUND_ERROR.MESSAGE,
       VENUE_NOT_FOUND_ERROR.CODE,
-      VENUE_NOT_FOUND_ERROR.PARAM
+      VENUE_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -34,7 +34,7 @@ export const venue: QueryResolvers["venue"] = async (_parent, args) => {
     throw new errors.NotFoundError(
       ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
