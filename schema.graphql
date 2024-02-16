@@ -157,6 +157,21 @@ type CreateAdvertisementPayload {
   advertisement: Advertisement
 }
 
+type AdvertisementEdge {
+  cursor: String
+  node: Advertisement
+}
+
+type AdvertisementsConnection {
+  edges: [AdvertisementEdge]
+  pageInfo: ConnectionPageInfo
+  totalCount: Int
+}
+
+extend type Organization {
+  advertisements(after: String, before: String, first: Int, last: Int): AdvertisementsConnection
+}
+
 input CreateUserTagInput {
   name: String!
   organizationId: ID!

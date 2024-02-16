@@ -121,10 +121,23 @@ export type Advertisement = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type AdvertisementEdge = {
+  __typename?: 'AdvertisementEdge';
+  cursor?: Maybe<Scalars['String']['output']>;
+  node?: Maybe<Advertisement>;
+};
+
 export type AdvertisementType =
   | 'BANNER'
   | 'MENU'
   | 'POPUP';
+
+export type AdvertisementsConnection = {
+  __typename?: 'AdvertisementsConnection';
+  edges?: Maybe<Array<Maybe<AdvertisementEdge>>>;
+  pageInfo?: Maybe<ConnectionPageInfo>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
 
 export type AggregatePost = {
   __typename?: 'AggregatePost';
@@ -1185,6 +1198,7 @@ export type Organization = {
   actionItemCategories?: Maybe<Array<Maybe<ActionItemCategory>>>;
   address?: Maybe<Address>;
   admins?: Maybe<Array<User>>;
+  advertisements?: Maybe<AdvertisementsConnection>;
   apiUrl: Scalars['URL']['output'];
   blockedUsers?: Maybe<Array<Maybe<User>>>;
   createdAt: Scalars['DateTime']['output'];
@@ -1205,6 +1219,14 @@ export type Organization = {
 
 export type OrganizationAdminsArgs = {
   adminId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type OrganizationAdvertisementsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -2103,7 +2125,9 @@ export type ResolversTypes = {
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
   Advertisement: ResolverTypeWrapper<InterfaceAdvertisementModel>;
+  AdvertisementEdge: ResolverTypeWrapper<Omit<AdvertisementEdge, 'node'> & { node?: Maybe<ResolversTypes['Advertisement']> }>;
   AdvertisementType: AdvertisementType;
+  AdvertisementsConnection: ResolverTypeWrapper<Omit<AdvertisementsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['AdvertisementEdge']>>> }>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   Any: ResolverTypeWrapper<Scalars['Any']['output']>;
@@ -2246,6 +2270,8 @@ export type ResolversParentTypes = {
   Address: Address;
   AddressInput: AddressInput;
   Advertisement: InterfaceAdvertisementModel;
+  AdvertisementEdge: Omit<AdvertisementEdge, 'node'> & { node?: Maybe<ResolversParentTypes['Advertisement']> };
+  AdvertisementsConnection: Omit<AdvertisementsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['AdvertisementEdge']>>> };
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any']['output'];
@@ -2430,6 +2456,19 @@ export type AdvertisementResolvers<ContextType = any, ParentType extends Resolve
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['AdvertisementType'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type AdvertisementEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdvertisementEdge'] = ResolversParentTypes['AdvertisementEdge']> = {
+  cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  node?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type AdvertisementsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdvertisementsConnection'] = ResolversParentTypes['AdvertisementsConnection']> = {
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['AdvertisementEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<Maybe<ResolversTypes['ConnectionPageInfo']>, ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2840,6 +2879,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   actionItemCategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItemCategory']>>>, ParentType, ContextType>;
   address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
+  advertisements?: Resolver<Maybe<ResolversTypes['AdvertisementsConnection']>, ParentType, ContextType, Partial<OrganizationAdvertisementsArgs>>;
   apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -3140,6 +3180,8 @@ export type Resolvers<ContextType = any> = {
   ActionItemCategory?: ActionItemCategoryResolvers<ContextType>;
   Address?: AddressResolvers<ContextType>;
   Advertisement?: AdvertisementResolvers<ContextType>;
+  AdvertisementEdge?: AdvertisementEdgeResolvers<ContextType>;
+  AdvertisementsConnection?: AdvertisementsConnectionResolvers<ContextType>;
   AggregatePost?: AggregatePostResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
   Any?: GraphQLScalarType;

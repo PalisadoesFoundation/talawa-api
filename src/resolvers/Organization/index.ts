@@ -7,10 +7,12 @@ import { members } from "./members";
 import { pinnedPosts } from "./pinnedPosts";
 import { membershipRequests } from "./membershipRequests";
 import { actionItemCategories } from "./actionItemCategories";
+import { advertisements } from "./advertisements";
 // import { userTags } from "./userTags";
 
 export const Organization: OrganizationResolvers = {
   admins,
+  advertisements,
   actionItemCategories,
   blockedUsers,
   creator,

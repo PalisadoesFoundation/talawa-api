@@ -139,6 +139,26 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
+  type AdvertisementEdge {
+    cursor: String
+    node: Advertisement
+  }
+
+  type AdvertisementsConnection {
+    edges: [AdvertisementEdge]
+    pageInfo: ConnectionPageInfo
+    totalCount: Int
+  }
+
+  extend type Organization {
+    advertisements(
+      after: String
+      before: String
+      first: Int
+      last: Int
+    ): AdvertisementsConnection
+  }
+
   type UpdateAdvertisementPayload {
     advertisement: Advertisement
   }
@@ -267,6 +287,12 @@ export const types = gql`
     name: String!
     description: String!
     address: Address
+    advertisements(
+      after: String
+      before: String
+      first: Int
+      last: Int
+    ): AdvertisementsConnection
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!

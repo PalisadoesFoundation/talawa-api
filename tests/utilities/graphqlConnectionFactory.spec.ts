@@ -24,6 +24,7 @@ represents a connection that has no data at all and cannot be paginated.`, () =>
         hasNextPage: false,
         hasPreviousPage: false,
       },
+      totalCount: 0,
     });
   });
 });

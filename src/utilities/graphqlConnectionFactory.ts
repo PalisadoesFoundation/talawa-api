@@ -13,6 +13,7 @@ interface InterfaceConnectionEdge<T> {
 interface InterfaceConnection<T> {
   edges: InterfaceConnectionEdge<T>[];
   pageInfo: ConnectionPageInfo;
+  totalCount: number;
 }
 
 interface InterfaceConnectionResult<T> {
@@ -40,6 +41,7 @@ export function graphqlConnectionFactory<T>(): InterfaceConnection<T> {
       hasNextPage: false,
       hasPreviousPage: false,
     },
+    totalCount: 0,
   };
 }
 // Generates the limit that can should be passed in the .limit() method

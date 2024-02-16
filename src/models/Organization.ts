@@ -5,6 +5,7 @@ import type { InterfaceMessage } from "./Message";
 import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
+import type { InterfaceAdvertisement } from "./Advertisement";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
@@ -24,6 +25,7 @@ export interface InterfaceOrganization {
     sortingCode: string;
     state: string;
   };
+  advertisements: PopulatedDoc<InterfaceAdvertisement & Document>;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
   status: string;
   members: PopulatedDoc<InterfaceUser & Document>[];
@@ -131,6 +133,13 @@ const organizationSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "User",
+        required: true,
+      },
+    ],
+    adverisements: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Advertisement",
         required: true,
       },
     ],
