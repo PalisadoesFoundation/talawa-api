@@ -26,6 +26,17 @@ export const types = gql`
     updatedAt: Date!
   }
 
+  type AgendaCategory {
+    _id: ID!
+    name: String!
+    description: String
+    organization: Organization!
+    createdBy: User!
+    updatedBy: User
+    createdAt: Date!
+    updatedAt: Date
+  }
+
   # Action Item for a ActionItemCategory
   type ActionItem {
     _id: ID!
@@ -177,7 +188,7 @@ export const types = gql`
     title: String!
     description: String!
     startDate: Date!
-    endDate: Date!
+    endDate: Date
     startTime: Time
     endTime: Time
     allDay: Boolean!
@@ -200,6 +211,18 @@ export const types = gql`
     status: Status!
     feedback: [Feedback!]!
     averageFeedbackScore: Float
+  }
+
+  type EventVolunteer {
+    _id: ID!
+    createdAt: DateTime!
+    creator: User
+    event: Event
+    isAssigned: Boolean
+    isInvited: Boolean
+    response: String
+    user: User!
+    updatedAt: DateTime!
   }
 
   type Feedback {
@@ -298,6 +321,7 @@ export const types = gql`
     updatedAt: DateTime!
     members: [User]
     actionItemCategories: [ActionItemCategory]
+    agendaCategories: [AgendaCategory]
     admins(adminId: ID): [User!]
     membershipRequests: [MembershipRequest]
     userRegistrationRequired: Boolean!

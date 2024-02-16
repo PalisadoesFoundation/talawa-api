@@ -2,6 +2,7 @@ import type { PopulatedDoc, PaginateModel } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 import type { InterfaceUser } from "./User";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface, that represents database - (MongoDB) document for Advertisement.
  */
@@ -103,6 +104,8 @@ const advertisementSchema = new Schema(
 advertisementSchema.plugin(mongoosePaginate);
 
 advertisementSchema.index({ organization: 1 }, { unique: false });
+
+createLoggingMiddleware(advertisementSchema, "Advertisement");
 
 const advertisementModel = (): PaginateModel<InterfaceAdvertisement> =>
   model<InterfaceAdvertisement, PaginateModel<InterfaceAdvertisement>>(

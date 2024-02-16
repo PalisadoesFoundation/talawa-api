@@ -38,6 +38,8 @@ const config: CodegenConfig = {
           UpdateAdvertisementPayload:
             "../models/Advertisement#InterfaceAdvertisement",
 
+          AgendaCategory: "../models/AgendaCategory#InterfaceAgendaCategory",
+
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
           MessageChat: "../models/MessageChat#InterfaceMessageChat",
@@ -56,6 +58,7 @@ const config: CodegenConfig = {
           EventAttendee: "../models/EventAttendee#InterfaceEventAttendee",
 
           UserFamily: "../models/userFamily#InterfaceUserFamily",
+          EventVolunteer: "../models/EventVolunteer#InterfaceEventVolunteer",
 
           Feedback: "../models/Feedback#InterfaceFeedback",
 

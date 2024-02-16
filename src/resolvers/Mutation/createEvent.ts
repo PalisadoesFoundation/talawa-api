@@ -1,6 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent, InterfaceUser } from "../../models";
+import type { InterfaceEvent } from "../../models";
 import { User, Organization } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
@@ -10,23 +10,26 @@ import {
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
-import { EventAttendee } from "../../models/EventAttendee";
-import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import type mongoose from "mongoose";
 import { session } from "../../db";
-import { Weekly, Once } from "../../helpers/eventInstances";
+import {
+  createSingleEvent,
+  createRecurringEvent,
+} from "../../helpers/event/createEventHelpers";
 
 /**
  * This function enables to create an event.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * 2. If the organization exists
- * 3. If the user is a part of the organization.
+ * @remarks The following steps are followed:
+ * 1. Check if the user exists
+ * 2. Check if the organization exists
+ * 3. Check if the user is a part of the organization.
+ * 4. If the event is recurring, create the recurring event instances.
+ * 5. If the event is non-recurring, create a single event.
  * @returns Created event
  */
+
 export const createEvent: MutationResolvers["createEvent"] = async (
   _parent,
   args,
@@ -123,99 +126,51 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
+  /* c8 ignore start */
   if (session) {
+    // start a transaction
     session.startTransaction();
   }
 
+  /* c8 ignore stop */
   try {
-    let createdEvent!: InterfaceEvent[];
+    let createdEvent: InterfaceEvent;
 
-    if (args.data?.recurring) {
-      switch (args.data?.recurrance) {
-        case "ONCE":
-          createdEvent = await Once.generateEvent(
-            args,
-            currentUser,
-            organization,
-            session
-          );
-
-          for (const event of createdEvent) {
-            await associateEventWithUser(currentUser, event, session);
-            await cacheEvents([event]);
-          }
-
-          break;
-
-        case "WEEKLY":
-          createdEvent = await Weekly.generateEvents(
-            args,
-            currentUser,
-            organization,
-            session
-          );
-
-          for (const event of createdEvent) {
-            await associateEventWithUser(currentUser, event, session);
-            await cacheEvents([event]);
-          }
-
-          break;
-      }
-    } else {
-      createdEvent = await Once.generateEvent(
+    if (args.data.recurring) {
+      // create recurring event instances
+      createdEvent = await createRecurringEvent(
         args,
-        currentUser,
-        organization,
+        currentUser?._id.toString(),
+        organization?._id.toString(),
         session
       );
-
-      for (const event of createdEvent) {
-        await associateEventWithUser(currentUser, event, session);
-        await cacheEvents([event]);
-      }
+    } else {
+      // create a single non-recurring event
+      createdEvent = await createSingleEvent(
+        args,
+        currentUser?._id.toString(),
+        organization?._id.toString(),
+        session
+      );
     }
 
+    /* c8 ignore start */
     if (session) {
+      // commit transaction if everything's successful
       await session.commitTransaction();
     }
 
-    // Returns the createdEvent.
-    return createdEvent[0];
+    /* c8 ignore stop */
+    return createdEvent;
   } catch (error) {
+    /* c8 ignore start */
     if (session) {
+      // abort transaction if something fails
       await session.abortTransaction();
     }
+
     throw error;
   }
+
+  /* c8 ignore stop */
 };
-
-async function associateEventWithUser(
-  currentUser: InterfaceUser,
-  createdEvent: InterfaceEvent,
-  session: mongoose.ClientSession
-): Promise<void> {
-  await EventAttendee.create(
-    [
-      {
-        userId: currentUser._id.toString(),
-        eventId: createdEvent._id,
-      },
-    ],
-    { session }
-  );
-
-  await User.updateOne(
-    {
-      _id: currentUser._id,
-    },
-    {
-      $push: {
-        eventAdmin: createdEvent._id,
-        createdEvents: createdEvent._id,
-        registeredEvents: createdEvent._id,
-      },
-    },
-    { session }
-  );
-}
