@@ -1,5 +1,6 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface representing a document for a donation in the database(MongoDB).
  */
@@ -55,6 +56,8 @@ const donationSchema = new Schema(
     timestamps: true,
   },
 );
+
+createLoggingMiddleware(donationSchema, "Donation");
 
 const donationModel = (): Model<InterfaceDonation> =>
   model<InterfaceDonation>("Donation", donationSchema);

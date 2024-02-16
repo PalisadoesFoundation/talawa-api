@@ -1,5 +1,6 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Encoded Image.
  */
@@ -30,6 +31,8 @@ const encodedImageSchema = new Schema({
     default: 1,
   },
 });
+
+createLoggingMiddleware(encodedImageSchema, "EncodedImage");
 
 const encodedImageModel = (): Model<InterfaceEncodedImage> =>
   model<InterfaceEncodedImage>("EncodedImage", encodedImageSchema);
