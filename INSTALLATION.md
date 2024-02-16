@@ -203,6 +203,10 @@ Talawa-api makes use of `Redis` for caching frequently accessed data items in th
      ```bash
      redis-cli
      ```
+   - **Step 6**: 
+     - Use these parameters when running the setup script if you have configured the server on your local machine:
+        - Redis Host: `localhost`
+        - Redis Port: `6379` (default Redis port)
 
 2. `For Windows Users using WSL`:
 
@@ -234,6 +238,11 @@ If you'd rather not deal with the hassle of setting up WSL on your computer, the
   ```bash
   redis-cli
   ```
+
+- **Step 7**: 
+  - Use these parameters when running the setup script if you have configured the server on your local machine:
+    - Redis Host: `localhost`
+    - Redis Port: `6379` (default Redis port)
 
 3. **Connecting to Redis Cloud**:
 
