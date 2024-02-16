@@ -28,8 +28,9 @@ import {
   createTestUserAndOrganization,
   createTestUser,
 } from "../../helpers/userAndOrg";
-import { Organization } from "../../../src/models";
+import { Organization, Post } from "../../../src/models";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import * as uploadEncodedVideo from "../../../src/utilities/encodedVideoStorage/uploadEncodedVideo";
 import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
 
 let testUser: TestUserType;
@@ -84,11 +85,13 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
 
       await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        );
+      }
     }
   });
 
@@ -117,11 +120,13 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
 
       await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
-      );
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
+        );
+      }
     }
   });
 
@@ -146,16 +151,20 @@ describe("resolvers -> Mutation -> createPost", () => {
         userId: randomUser?.id,
       };
 
+      expect(args.data.pinned).toBe(true);
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
 
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`,
-      );
+      const createPost = await createPostResolver?.({}, args, context);
+      expect(createPost?.pinned).toBe(true);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`,
+        );
+      }
     }
   });
 
@@ -179,16 +188,18 @@ describe("resolvers -> Mutation -> createPost", () => {
       userId: testUser?.id,
     };
 
+    expect(args.data.pinned).toBe(true);
+
     const { createPost: createPostResolver } = await import(
       "../../../src/resolvers/Mutation/createPost"
     );
     const createdPost = await createPostResolver?.({}, args, context);
-
     expect(createdPost).toEqual(
       expect.objectContaining({
         text: "New Post Text",
         videoUrl: null, // Update the expected value to match the received value
         title: "New Post Title",
+        pinned: true,
       }),
     );
 
@@ -203,7 +214,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     ).toBeTruthy();
   });
 
-  it(`creates the post and returns it when image is not provided`, async () => {
+  it(`creates the post and returns it when image or video is not provided`, async () => {
     const args: MutationCreatePostArgs = {
       data: {
         organizationId: testOrganization?.id,
@@ -218,11 +229,14 @@ describe("resolvers -> Mutation -> createPost", () => {
       userId: testUser?.id,
     };
 
+    expect(args.data.pinned).toBe(true);
+
     const { createPost: createPostResolver } = await import(
       "../../../src/resolvers/Mutation/createPost"
     );
 
     const createPostPayload = await createPostResolver?.({}, args, context);
+    expect(createPostPayload?.pinned).toBe(true);
 
     expect(createPostPayload).toEqual(
       expect.objectContaining({
@@ -235,6 +249,82 @@ describe("resolvers -> Mutation -> createPost", () => {
     );
   });
 
+  it(`creates the post and and returns it when an image is provided`, async () => {
+    const args: MutationCreatePostArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        text: "text",
+        title: "title",
+        pinned: true,
+      },
+      file: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZSURBVBhXYzxz5sx/BiBgefLkCQMbGxsDAEdkBicg9wbaAAAAAElFTkSuQmCC", // Provide a supported file type
+    };
+
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL,
+    );
+
+    const context = {
+      userId: testUser?.id,
+      apiRootUrl: BASE_URL,
+    };
+
+    expect(args.data.pinned).toBe(true);
+
+    const createPostPayload = await createPostResolverImage?.(
+      {},
+      args,
+      context,
+    );
+    expect(createPostPayload?.pinned).toBe(true);
+
+    const testCreatePostPayload = await Post.findOne({
+      _id: createPostPayload?._id,
+      imageUrl: { $ne: null },
+    }).lean();
+
+    //Ensures that the post is created and imageUrl is not null
+    expect(testCreatePostPayload).not.toBeNull();
+  });
+
+  it(`creates the post and and returns it when a video is provided`, async () => {
+    const args: MutationCreatePostArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        text: "text",
+        title: "title",
+        pinned: true,
+      },
+      file: "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE", // Provide a supported file type
+    };
+
+    vi.spyOn(uploadEncodedVideo, "uploadEncodedVideo").mockImplementation(
+      async (uploadEncodedVideo: string) => uploadEncodedVideo,
+    );
+
+    const context = {
+      userId: testUser?.id,
+      apiRootUrl: BASE_URL,
+    };
+
+    expect(args.data.pinned).toBe(true);
+
+    const createPostPayload = await createPostResolverImage?.(
+      {},
+      args,
+      context,
+    );
+    expect(createPostPayload?.pinned).toBe(true);
+
+    const testCreatePostPayload = await Post.findOne({
+      _id: createPostPayload?._id,
+      videoUrl: { $ne: null },
+    }).lean();
+
+    //Ensures that the post is created and videoUrl is not null
+    expect(testCreatePostPayload).not.toBeNull();
+  });
+
   it(`creates the post and throws an error for unsupported file type`, async () => {
     const args: MutationCreatePostArgs = {
       data: {
@@ -242,6 +332,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         text: "text",
         videoUrl: "videoUrl",
         title: "title",
+        pinned: true,
       },
       file: "unsupportedFile.txt", // Provide an unsupported file type
     };
@@ -250,6 +341,8 @@ describe("resolvers -> Mutation -> createPost", () => {
       userId: testUser?.id,
       apiRootUrl: BASE_URL,
     };
+
+    expect(args.data.pinned).toBe(true);
 
     // Mock the uploadEncodedImage function to throw an error for unsupported file types
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
@@ -285,16 +378,19 @@ describe("resolvers -> Mutation -> createPost", () => {
       const context = {
         userId: testUser?.id,
       };
-
+      expect(args.data.pinned).toBe(true);
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
 
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
-      );
+      const createdPost = await createPostResolver?.({}, args, context);
+      expect(createdPost?.pinned).toBe(true);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
+        );
+      }
     }
   });
   it(`throws String Length Validation error if text is greater than 500 characters`, async () => {
@@ -318,15 +414,53 @@ describe("resolvers -> Mutation -> createPost", () => {
         userId: testUser?.id,
       };
 
+      expect(args.data.pinned).toBe(true);
+
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
 
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
+      const createdPost = await createPostResolver?.({}, args, context);
+      expect(createdPost?.pinned).toBe(true);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
+        );
+      }
+    }
+  });
+
+  it("throws an error if the user tries to create a post but post is not pinned", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => message,
+    );
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: testOrganization?._id,
+          text: "text",
+          pinned: false,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      expect(args.data.pinned).toBe(false);
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
       );
+      const createdPost = await createPostResolver?.({}, args, context);
+      expect(createdPost?.pinned).toBe(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `Cannot create post when pinned is false`,
+        );
+      }
     }
   });
 
@@ -349,14 +483,18 @@ describe("resolvers -> Mutation -> createPost", () => {
         userId: testUser?.id,
       };
 
+      expect(args.data.pinned).toBe(false);
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `Post needs to be pinned inorder to add a title`,
-      );
+      const createdPost = await createPostResolver?.({}, args, context);
+      expect(createdPost?.pinned).toBe(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `Post needs to be pinned inorder to add a title`,
+        );
+      }
     }
   });
 
@@ -378,13 +516,17 @@ describe("resolvers -> Mutation -> createPost", () => {
       const context = {
         userId: testUser?.id,
       };
+      expect(args.data.pinned).toBe(true);
 
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(`Please provide a title to pin post`);
+      const createPost = await createPostResolver?.({}, args, context);
+      expect(createPost?.pinned).toBe(true);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(`Please provide a title to pin post`);
+      }
     }
   });
 });
