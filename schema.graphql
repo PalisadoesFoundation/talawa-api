@@ -561,6 +561,7 @@ type EventVolunteer {
   createdAt: DateTime!
   creator: User
   event: Event
+  group: EventVolunteerGroup
   isAssigned: Boolean
   isInvited: Boolean
   response: String
@@ -583,10 +584,12 @@ type EventVolunteerGroup {
 input EventVolunteerGroupInput {
   eventId: ID!
   name: String
+  volunteersRequired: Int
 }
 
 input EventVolunteerInput {
   eventId: ID!
+  groupId: ID!
   userId: ID!
 }
 
@@ -1493,6 +1496,12 @@ input UpdateEventInput {
   startDate: Date
   startTime: Time
   title: String
+}
+
+input UpdateEventVolunteerGroupInput {
+  eventId: ID
+  name: String
+  volunteersRequired: Int
 }
 
 input UpdateEventVolunteerInput {

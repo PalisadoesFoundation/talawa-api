@@ -97,6 +97,7 @@ import { updateAgendaCategory } from "./updateAgendaCategory";
 import { updateEvent } from "./updateEvent";
 import { updateEventVolunteer } from "./updateEventVolunteer";
 import { updateFund } from "./updateFund";
+import { updateEventVolunteerGroup } from "./updateEventVolunteerGroup";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
 import { updatePluginStatus } from "./updatePluginStatus";
@@ -153,7 +154,6 @@ export const Mutation: MutationResolvers = {
   deleteAdvertisementById,
   deleteAgendaCategory,
   forgotPassword,
-  inviteEventAttendee,
   joinPublicOrganization,
   createEventVolunteer,
   leaveOrganization,
@@ -206,6 +206,7 @@ export const Mutation: MutationResolvers = {
   updateEvent,
   updateEventVolunteer,
   updateFund,
+  updateEventVolunteerGroup,
   updateLanguage,
   updateOrganization,
   updatePluginStatus,

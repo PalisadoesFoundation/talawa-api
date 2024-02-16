@@ -13,7 +13,7 @@ export interface InterfaceEventVolunteerGroup {
   leaderId: PopulatedDoc<InterfaceUser & Document>;
   name: string;
   updatedAt: Date;
-  volunteers?: PopulatedDoc<InterfaceEventVolunteer & Document>[];
+  volunteers: PopulatedDoc<InterfaceEventVolunteer & Document>[];
   volunteersRequired?: number;
 }
 

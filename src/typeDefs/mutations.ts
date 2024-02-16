@@ -270,6 +270,12 @@ export const mutations = gql`
       data: UpdateEventVolunteerInput
     ): EventVolunteer! @auth
     updateFund(id: ID!, data: UpdateFundInput!): Fund! @auth
+
+    updateEventVolunteerGroup(
+      id: ID!
+      data: UpdateEventVolunteerGroupInput
+    ): EventVolunteerGroup! @auth
+
     updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 
     updateLanguage(languageCode: String!): User! @auth

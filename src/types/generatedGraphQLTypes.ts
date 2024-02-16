@@ -623,6 +623,7 @@ export type EventVolunteer = {
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   event?: Maybe<Event>;
+  group?: Maybe<EventVolunteerGroup>;
   isAssigned?: Maybe<Scalars['Boolean']['output']>;
   isInvited?: Maybe<Scalars['Boolean']['output']>;
   response?: Maybe<Scalars['String']['output']>;
@@ -646,10 +647,12 @@ export type EventVolunteerGroup = {
 export type EventVolunteerGroupInput = {
   eventId: Scalars['ID']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
+  volunteersRequired?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type EventVolunteerInput = {
   eventId: Scalars['ID']['input'];
+  groupId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
 };
 
@@ -1011,6 +1014,7 @@ export type Mutation = {
   updateEvent: Event;
   updateEventVolunteer: EventVolunteer;
   updateFund: Fund;
+  updateEventVolunteerGroup: EventVolunteerGroup;
   updateLanguage: User;
   updateOrganization: Organization;
   updatePluginStatus: Plugin;
@@ -2238,6 +2242,12 @@ export type UpdateEventInput = {
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type UpdateEventVolunteerGroupInput = {
+  eventId?: InputMaybe<Scalars['ID']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  volunteersRequired?: InputMaybe<Scalars['Int']['input']>;
+};
+
 export type UpdateEventVolunteerInput = {
   eventId?: InputMaybe<Scalars['ID']['input']>;
   isAssigned?: InputMaybe<Scalars['Boolean']['input']>;
@@ -2730,6 +2740,7 @@ export type ResolversTypes = {
   UpdateAdvertisementPayload: ResolverTypeWrapper<Omit<UpdateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   UpdateAgendaCategoryInput: UpdateAgendaCategoryInput;
   UpdateEventInput: UpdateEventInput;
+  UpdateEventVolunteerGroupInput: UpdateEventVolunteerGroupInput;
   UpdateEventVolunteerInput: UpdateEventVolunteerInput;
   UpdateFundInput: UpdateFundInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
@@ -2873,6 +2884,7 @@ export type ResolversParentTypes = {
   UpdateAdvertisementPayload: Omit<UpdateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   UpdateAgendaCategoryInput: UpdateAgendaCategoryInput;
   UpdateEventInput: UpdateEventInput;
+  UpdateEventVolunteerGroupInput: UpdateEventVolunteerGroupInput;
   UpdateEventVolunteerInput: UpdateEventVolunteerInput;
   UpdateFundInput: UpdateFundInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
@@ -3158,6 +3170,7 @@ export type EventVolunteerResolvers<ContextType = any, ParentType extends Resolv
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
+  group?: Resolver<Maybe<ResolversTypes['EventVolunteerGroup']>, ParentType, ContextType>;
   isAssigned?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   isInvited?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   response?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3451,6 +3464,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerArgs, 'id'>>;
   updateFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationUpdateFundArgs, 'data' | 'id'>>;
+  updateEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerGroupArgs, 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'orgId'>>;

@@ -32,7 +32,7 @@ export interface InterfaceEvent {
   status: string;
   title: string;
   updatedAt: Date;
-  volunteerGroups: PopulatedDoc<InterfaceEventVolunteerGroup & Document>;
+  volunteerGroups: PopulatedDoc<InterfaceEventVolunteerGroup & Document>[];
 }
 
 /**
@@ -58,6 +58,7 @@ export interface InterfaceEvent {
  * @param status - whether the event is active, blocked, or deleted.
  * @param title - Title of the event
  * @param updatedAt - Timestamp of event updation
+ * @param volunteerGroups - event volunteer groups for the event
  */
 
 const eventSchema = new Schema(

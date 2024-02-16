@@ -195,6 +195,7 @@ export const types = gql`
     createdAt: DateTime!
     creator: User
     event: Event
+    group: EventVolunteerGroup
     isAssigned: Boolean
     isInvited: Boolean
     response: String
