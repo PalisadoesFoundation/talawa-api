@@ -8,6 +8,7 @@ import { AGENDA_CATEGORY_NOT_FOUND_ERROR } from "../../constants";
  *
  * This resolver fetches an agenda category by its ID.
  *
+ *
  * @param _parent -  The parent object, not used in this resolver.
  * @param args -  The input arguments for the query.
  * @returns A promise that resolves to the fetched agenda category.
