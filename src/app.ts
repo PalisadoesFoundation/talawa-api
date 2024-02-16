@@ -21,23 +21,22 @@ const apiLimiter = rateLimit({
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const corsOptions: cors.CorsOptions = {
-  origin: (origin, next) => {
-    if (process.env.NODE_ENV === "development") {
-      next(null, true);
-      return;
-    } else if (process.env.NODE_ENV === "production") {
-      const talawaAdmin = process.env.TALAWA_ADMIN_URL;
-      if (origin === talawaAdmin) {
-        next(null, true);
-        return;
-      }
-    }
+// const corsOptions: cors.CorsOptions = {
+//   origin: (origin, next) => {
+//     if (process.env.NODE_ENV === "development") {
+//       next(null, true);
+//       return;
+//     } else if (process.env.NODE_ENV === "production") {
+//       const talawaAdmin = process.env.TALAWA_ADMIN_URL;
+//       if (origin === talawaAdmin) {
+//         next(null, true);
+//         return;
+//       }
+//     }
 
-    next(new Error("Unauthorized"));
-  },
-};
+//     next(new Error("Unauthorized"));
+//   },
+// };
 
 i18n.configure({
   directory: `${__dirname}/../locales`,
