@@ -6,11 +6,13 @@ import { Comment } from "./Comment";
 import { DirectChat } from "./DirectChat";
 import { DirectChatMessage } from "./DirectChatMessage";
 import { Event } from "./Event";
+import { EventVolunteer } from "./EventVolunteer";
 import { Feedback } from "./Feedback";
 import { GroupChat } from "./GroupChat";
 import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
 import { Mutation } from "./Mutation";
+import { UserFamily } from "./UserFamily";
 import { Organization } from "./Organization";
 import { Post } from "./Post";
 import { Query } from "./Query";
@@ -40,8 +42,10 @@ const resolvers: Resolvers = {
   DirectChat,
   DirectChatMessage,
   Event,
+  EventVolunteer,
   Feedback,
   GroupChat,
+  UserFamily,
   GroupChatMessage,
   MembershipRequest,
   Mutation,

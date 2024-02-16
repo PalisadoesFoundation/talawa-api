@@ -11,7 +11,6 @@ import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
 
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
-
 const app = express();
 
 app.use(requestTracing.middleware());

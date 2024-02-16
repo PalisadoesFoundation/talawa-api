@@ -1,5 +1,34 @@
 [
   {
+    "_id": "6437904485008f171cf29924",
+    "status": "ACTIVE",
+    "members": ["64378abd85008f171cf2990d"],
+    "admins": ["64378abd85008f171cf2990d"],
+    "groupChats": [],
+    "posts": [],
+    "pinnedPosts": [],
+    "membershipRequests": [],
+    "blockedUsers": [],
+    "name": "The Unity Foundation",
+    "description": "A foundation aimed at uniting the world and making it a better place for all.",
+    "address": {
+      "city": "Delhi",
+      "countryCode": "IN",
+      "dependentLocality": "Some Dependent Locality",
+      "line1": "123 Random Street",
+      "line2": "Apartment 456",
+      "postalCode": "110001",
+      "sortingCode": "ABC-123",
+      "state": "Delhi"
+    },
+    "userRegistrationRequired": false,
+    "visibleInSearch": true,
+    "image": null,
+    "creatorId": "64378abd85008f171cf2990d",
+    "createdAt": "2023-04-13T05:16:52.827Z",
+    "__v": 0
+  },
+  {
     "_id": "6537904485008f171cf29924",
     "status": "ACTIVE",
     "members": [

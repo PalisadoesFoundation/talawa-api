@@ -1,7 +1,8 @@
-import type { Model } from "mongoose";
+import type { Model, Document } from "mongoose";
 import { Schema, model, models } from "mongoose";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 
-export interface InterfaceSampleData {
+export interface InterfaceSampleData extends Document {
   documentId: string;
   collectionName: "Organization" | "Post" | "Event" | "User" | "Plugin";
 }
@@ -17,6 +18,8 @@ const sampleDataSchema = new Schema<InterfaceSampleData>({
     enum: ["Organization", "Post", "Event", "User", "Plugin"],
   },
 });
+
+createLoggingMiddleware<InterfaceSampleData>(sampleDataSchema, "SampleData");
 
 const sampleDataModel = (): Model<InterfaceSampleData> =>
   model<InterfaceSampleData>("SampleData", sampleDataSchema);

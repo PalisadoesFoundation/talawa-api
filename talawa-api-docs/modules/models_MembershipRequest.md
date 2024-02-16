@@ -16,8 +16,8 @@
 
 ### MembershipRequest
 
-• `Const` **MembershipRequest**: `Model`\<[`InterfaceMembershipRequest`](../interfaces/models_MembershipRequest.InterfaceMembershipRequest.md), {}, {}\>
+• `Const` **MembershipRequest**: `Model`\<[`InterfaceMembershipRequest`](../interfaces/models_MembershipRequest.InterfaceMembershipRequest.md), \{\}, \{\}\>
 
 #### Defined in
 
-[src/models/MembershipRequest.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/0763f35/src/models/MembershipRequest.ts#L46)
+[src/models/MembershipRequest.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/MembershipRequest.ts#L46)

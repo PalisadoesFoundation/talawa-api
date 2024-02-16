@@ -11,7 +11,7 @@ export const types = gql`
   }
 
   type AuthData {
-    user: UserToReturn!
+    user: User!
     accessToken: String!
     refreshToken: String!
   }
@@ -24,6 +24,17 @@ export const types = gql`
     creator: User
     createdAt: Date!
     updatedAt: Date!
+  }
+
+  type AgendaCategory {
+    _id: ID!
+    name: String!
+    description: String
+    organization: Organization!
+    createdBy: User!
+    updatedBy: User
+    createdAt: Date!
+    updatedAt: Date
   }
 
   # Action Item for a ActionItemCategory
@@ -73,6 +84,14 @@ export const types = gql`
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  type UserFamily {
+    _id: ID!
+    title: String
+    users: [User!]!
+    admins: [User!]!
+    creator: User!
   }
 
   # A page info type adhering to Relay Specification for both cursor based pagination
@@ -145,7 +164,7 @@ export const types = gql`
     title: String!
     description: String!
     startDate: Date!
-    endDate: Date!
+    endDate: Date
     startTime: Time
     endTime: Time
     allDay: Boolean!
@@ -168,6 +187,18 @@ export const types = gql`
     status: Status!
     feedback: [Feedback!]!
     averageFeedbackScore: Float
+  }
+
+  type EventVolunteer {
+    _id: ID!
+    createdAt: DateTime!
+    creator: User
+    event: Event
+    isAssigned: Boolean
+    isInvited: Boolean
+    response: String
+    user: User!
+    updatedAt: DateTime!
   }
 
   type Feedback {
@@ -260,6 +291,7 @@ export const types = gql`
     updatedAt: DateTime!
     members: [User]
     actionItemCategories: [ActionItemCategory]
+    agendaCategories: [AgendaCategory]
     admins(adminId: ID): [User!]
     membershipRequests: [MembershipRequest]
     userRegistrationRequired: Boolean!
@@ -452,43 +484,6 @@ export const types = gql`
     parentTag: UserTag
     childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
     usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!
-  }
-
-  type UserToReturn {
-    _id: ID!
-    address: Address
-    adminApproved: Boolean
-    adminFor: [Organization]
-    appLanguageCode: String!
-    birthDate: Date
-    createdAt: DateTime!
-    createdEvents: [Event]
-    createdOrganizations: [Organization]
-    educationGrade: EducationGrade
-    email: EmailAddress!
-    employmentStatus: EmploymentStatus
-    eventAdmin: [Event]
-    firstName: String!
-    gender: Gender
-    image: String
-    joinedOrganizations: [Organization]
-    lastName: String!
-    maritalStatus: MaritalStatus
-    membershipRequests: [MembershipRequest]
-    organizationsBlockedBy: [Organization]
-    phone: UserPhone
-    pluginCreationAllowed: Boolean!
-    registeredEvents: [Event]
-    tagsAssignedWith(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-      organizationId: ID
-    ): UserTagsConnection
-    tokenVersion: Int!
-    updatedAt: DateTime!
-    userType: UserType!
   }
 
   type UsersConnectionResult {

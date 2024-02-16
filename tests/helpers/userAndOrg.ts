@@ -24,19 +24,6 @@ export const createTestUser = async (): Promise<TestUserType> => {
   return testUser;
 };
 
-export const createAdminApprovedTestUser = async (): Promise<TestUserType> => {
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: `pass${nanoid().toLowerCase()}`,
-    firstName: `firstName${nanoid().toLowerCase()}`,
-    lastName: `lastName${nanoid().toLowerCase()}`,
-    image: null,
-    appLanguageCode: "en",
-    adminApproved: true,
-  });
-  return testUser;
-};
-
 export const createTestOrganizationWithAdmin = async (
   userID: string,
   isMember = true,
