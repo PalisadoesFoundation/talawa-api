@@ -130,7 +130,7 @@ describe("parseConnectionArguments", () => {
       last: 5,
     };
     expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError
+      GraphQLError,
     );
   });
 
@@ -140,7 +140,7 @@ describe("parseConnectionArguments", () => {
       before: "cursor",
     };
     expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError
+      GraphQLError,
     );
   });
 
@@ -150,14 +150,14 @@ describe("parseConnectionArguments", () => {
       after: "cursor",
     };
     expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError
+      GraphQLError,
     );
   });
 
   it("should throw an error when neither 'first' nor 'last' are provided", () => {
     const args: RelayConnectionArguments = {};
     expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError
+      GraphQLError,
     );
   });
 });
