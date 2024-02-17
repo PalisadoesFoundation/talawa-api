@@ -31,7 +31,7 @@ export const generateUserData = async (
       "xyz",
       "abc",
       "lmnop",
-    ])}.com`
+    ])}.com`,
   );
   const user = new User({
     firstName: fname,

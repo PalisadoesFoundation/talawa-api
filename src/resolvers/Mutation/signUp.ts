@@ -40,7 +40,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         throw new errors.ConflictError(
           requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
           EMAIL_ALREADY_EXISTS_ERROR.CODE,
-          EMAIL_ALREADY_EXISTS_ERROR.PARAM
+          EMAIL_ALREADY_EXISTS_ERROR.PARAM,
         );
       }
     } catch (error) {

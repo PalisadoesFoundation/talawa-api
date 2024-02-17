@@ -47,7 +47,7 @@ describe("resolvers -> MembershipRequest -> user", () => {
     const parent = testMembershipRequest!.toObject()._id;
     // eslint-disable-next-line
     await expect(userResolver?.(parent, {}, {})).rejects.toThrowError(
-      NotFoundError
+      NotFoundError,
     );
   });
 });

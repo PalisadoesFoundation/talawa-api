@@ -37,7 +37,7 @@ export function encryptEmail(email: string): string {
   const cipher = crypto.createCipheriv(
     algorithm,
     Buffer.from(encryptionKey, "hex"),
-    Buffer.from(salt, "hex")
+    Buffer.from(salt, "hex"),
   );
   let encrypted = cipher.update(email, "utf-8", "hex");
   encrypted += cipher.final("hex");
@@ -71,7 +71,7 @@ export function decryptEmail(encryptedWithEmailSalt: string): {
   const decipher = crypto.createDecipheriv(
     algorithm,
     Buffer.from(encryptionKey, "hex"),
-    Buffer.from(salt, "hex")
+    Buffer.from(salt, "hex"),
   );
 
   // Decrypting the email

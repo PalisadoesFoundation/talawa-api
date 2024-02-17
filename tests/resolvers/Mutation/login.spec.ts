@@ -231,7 +231,7 @@ email === args.data.email`, async () => {
           ...testUser,
           email: decryptEmail(testUser.email).decrypted,
         },
-      })
+      }),
     );
     expect(loginPayload?.user).toBeDefined();
     expect(typeof loginPayload?.accessToken).toBe("string");

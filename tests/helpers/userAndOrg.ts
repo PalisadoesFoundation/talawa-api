@@ -14,7 +14,7 @@ export type TestUserType =
 
 export const createTestUser = async (): Promise<TestUserType> => {
   const encryptedEmail = encryptEmail(
-    `email${nanoid().toLowerCase()}@gmail.com`
+    `email${nanoid().toLowerCase()}@gmail.com`,
   );
   const testUser = await User.create({
     email: encryptedEmail,

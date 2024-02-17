@@ -38,7 +38,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
         email = args.data.email;
         isPasswordValid = await bcrypt.compare(
           args.data.password,
-          user.password
+          user.password,
         );
       }
     } catch (error) {
@@ -54,9 +54,9 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     );
   }
 
-  const isPasswordValid = await bcrypt.compare(
+  isPasswordValid = await bcrypt.compare(
     args.data.password,
-    user.password,
+    foundUser.password,
   );
 
   // Checks whether password is invalid.
@@ -95,7 +95,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   }
 
   await User.findOneAndUpdate(
-    { _id: user._id },
+    { _id: foundUser._id },
     { token: refreshToken, $inc: { tokenVersion: 1 } },
   );
 
