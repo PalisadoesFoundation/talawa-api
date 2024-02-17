@@ -91,7 +91,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     500,
   );
   const validationResultLocation = isValidString(args.data?.location ?? "", 50);
-
   if (!validationResultTitle.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -100,7 +99,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       LENGTH_VALIDATION_ERROR.CODE,
     );
   }
-
   if (!validationResultDescription.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -109,7 +107,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       LENGTH_VALIDATION_ERROR.CODE,
     );
   }
-
   if (!validationResultLocation.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -118,12 +115,10 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       LENGTH_VALIDATION_ERROR.CODE,
     );
   }
-
   const compareDatesResult = compareDates(
     args.data?.startDate,
     args.data?.endDate,
   );
-
   if (compareDatesResult !== "") {
     throw new errors.InputValidationError(
       requestContext.translate(compareDatesResult),
@@ -158,29 +153,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   if (args.data?.images) {
     uploadImages(args.data?.images);
   }
-
-  try {
-    let createdEvent!: InterfaceEvent[];
-    if (args.data?.recurring) {
-      switch (args.data?.recurrance) {
-        case "ONCE":
-          createdEvent = await Once.generateEvent(
-            args,
-            currentUser,
-            organization,
-            session
-          );
-          break;
-
-        case "WEEKLY":
-          createdEvent = await Weekly.generateEvents(
-            args,
-            currentUser,
-            organization,
-            session
-          );
-          break;
-      }
   /* c8 ignore stop */
   try {
     let createdEvent: InterfaceEvent;
@@ -202,10 +174,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
         session,
       );
     }
-    for (const event of createdEvent) {
-      await associateEventWithUser(currentUser, event, session);
-      await cacheEvents([event]);
-    }
+
     /* c8 ignore start */
     if (session) {
       // commit transaction if everything's successful
