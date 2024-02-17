@@ -27,7 +27,7 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
     const volunteerUser = await User.findOne({ _id: args.data?.userId }).lean();
@@ -35,7 +35,7 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE),
         EVENT_VOLUNTEER_NOT_FOUND_ERROR.CODE,
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM
+        EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM,
       );
     }
     if (args.data?.eventId) {
@@ -44,7 +44,7 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
         throw new errors.NotFoundError(
           requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
           EVENT_NOT_FOUND_ERROR.CODE,
-          EVENT_NOT_FOUND_ERROR.PARAM
+          EVENT_NOT_FOUND_ERROR.PARAM,
         );
       }
     }

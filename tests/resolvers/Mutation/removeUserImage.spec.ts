@@ -58,7 +58,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -83,7 +83,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -106,7 +106,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
         $set: {
           image: testImage,
         },
-      }
+      },
     );
 
     const context = {
@@ -120,7 +120,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     const removeUserImagePayload = await removeUserImageResolver?.(
       {},
       {},
-      context
+      context,
     );
 
     const updatedTestUser = await User.findOne({

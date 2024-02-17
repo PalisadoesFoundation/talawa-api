@@ -73,7 +73,7 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
     const createdAdvertisementPayload = await createAdvertisementResolver?.(
       {},
       args,
-      context
+      context,
     );
     const createdAdvertisementId = createdAdvertisementPayload?._id || "";
 
@@ -85,17 +85,17 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
     const removeAdvertisementPayload = await removeAdvertisement?.(
       {},
       { id: createdAdvertisementId },
-      context
+      context,
     );
 
     const removeAdvertisementPayloadFalsyId = await removeAdvertisement?.(
       {},
       { id: "" },
-      context
+      context,
     );
     expect(removeAdvertisementPayload).toHaveProperty(
       "_id",
-      createdAdvertisementId
+      createdAdvertisementId,
     );
     if (removeAdvertisementPayloadFalsyId) {
       expect(removeAdvertisementPayloadFalsyId).toHaveProperty("_id", "");
@@ -105,7 +105,7 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
     expect(removeAdvertisementPayload).toHaveProperty("name", "myad");
     expect(removeAdvertisementPayload).toHaveProperty(
       "link",
-      "https://www.example.com"
+      "https://www.example.com",
     );
 
     expect(removeAdvertisementPayload).toHaveProperty("type", "POPUP");
@@ -128,13 +128,13 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
       const removeAdvertisementPayload = await removeAdvertisement?.(
         {},
         { id: "64d1f8cb77a4b51004f824b8" },
-        context
+        context,
       );
     } catch (error: unknown) {
       if (error instanceof Error) {
         expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
         expect(error.message).toEqual(
-          `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`
+          `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
         );
       }
     }
