@@ -166,6 +166,7 @@ jobs:
         run: |
           git config --global user.name "tasneemkoushar"
           git config --global user.email "imatasneemkoushar@gmail.com"
+          git config --global url.https://${{ secrets.TOKN_EMPTY_COMMIT }}@github.com/.insteadOf https://github.com/
           git commit --allow-empty -m "Empty commit"
           git push -f https://$TOKN_EMPTY_COMMIT@github.com/PalisadoesFoundation/talawa-api.git HEAD:automated-docs
   
