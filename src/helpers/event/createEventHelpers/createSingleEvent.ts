@@ -1,8 +1,8 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
-import { Event, EventAttendee, User } from "../../../models";
-import type { MutationCreateEventArgs } from "../../../types/generatedGraphQLTypes";
+import { AppUserProfile, Event, EventAttendee, User } from "../../../models";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
+import type { MutationCreateEventArgs } from "../../../types/generatedGraphQLTypes";
 
 /**
  * This function generates a single non-recurring event.
@@ -20,7 +20,7 @@ export const createSingleEvent = async (
   args: MutationCreateEventArgs,
   creatorId: string,
   organizationId: string,
-  session: mongoose.ClientSession
+  session: mongoose.ClientSession,
 ): Promise<InterfaceEvent> => {
   // create the single event
   const createdEvent = await Event.create(
@@ -32,7 +32,7 @@ export const createSingleEvent = async (
         organization: organizationId,
       },
     ],
-    { session }
+    { session },
   );
 
   // associate event with the user
@@ -43,7 +43,7 @@ export const createSingleEvent = async (
         eventId: createdEvent[0]?._id,
       },
     ],
-    { session }
+    { session },
   );
   await User.updateOne(
     {
@@ -51,12 +51,22 @@ export const createSingleEvent = async (
     },
     {
       $push: {
-        eventAdmin: createdEvent[0]?._id,
-        createdEvents: createdEvent[0]?._id,
         registeredEvents: createdEvent[0]?._id,
       },
     },
-    { session }
+    { session },
+  );
+  await AppUserProfile.updateOne(
+    {
+      userId: creatorId,
+    },
+    {
+      $push: {
+        eventAdmin: createdEvent[0]?._id,
+        createdEvents: createdEvent[0]?._id,
+      },
+    },
+    { session },
   );
 
   // cache the event

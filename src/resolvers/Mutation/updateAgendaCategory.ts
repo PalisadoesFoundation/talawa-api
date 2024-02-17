@@ -38,7 +38,7 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
     const currentUserAppProfile = await AppUserProfile.findOne({
@@ -48,11 +48,11 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
     const existingAgendaCategory = await AgendaCategoryModel.findById(
-      args.id
+      args.id,
     ).lean();
 
     // If the AgendaCategory is not found, throw a NotFoundError
@@ -60,31 +60,32 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
       throw new errors.NotFoundError(
         requestContext.translate(AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
         AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM,
       );
     }
     const currentOrg = await AgendaCategoryModel.findById(
-      existingAgendaCategory._id
+      existingAgendaCategory._id,
     )
-      .populate("organization")
-      .select("organization")
+      .select("organizationId")
       .lean();
+    // console.log(currentOrg);
 
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
         Types.ObjectId(organizationId?.toString()).equals(
-          currentOrg?._id.toString() || ""
-        )
+          currentOrg?.organizationId?.toString() || "",
+        ),
     );
+    // console.log(currentUserIsOrgAdmin, currentUserAppProfile.isSuperAdmin);
     // If the user is a normal user, throw an error
     if (
       currentUserIsOrgAdmin === false &&
       !currentUserAppProfile.isSuperAdmin
     ) {
       throw new errors.UnauthorizedError(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -100,7 +101,7 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     return updatedAgendaCategory;

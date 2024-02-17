@@ -1,18 +1,18 @@
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { expect, vi, beforeAll, afterAll, describe, it } from "vitest";
+import { AppUserProfile, Organization } from "../../../src/models";
 import type { MutationCreateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import { createTestUser } from "../../helpers/userAndOrg";
 import type {
-  TestUserType,
   TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
-import { Organization, User } from "../../../src/models";
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
@@ -35,20 +35,20 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-  await User.updateOne(
+  await AppUserProfile.updateOne(
     {
-      _id: testUser?._id,
+      userId: testUser?._id,
     },
     {
       $push: {
         adminFor: testOrganization?._id,
       },
-    }
+    },
   );
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -77,18 +77,18 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       const createdAgendaCategory = await createAgendaCategoryResolver?.(
         {},
         args,
-        context
+        context,
       );
 
       expect(createdAgendaCategory).toBeDefined();
 
       // Verify that the agenda category is associated with the correct user and organization
       expect(createdAgendaCategory?.createdBy).toBe(testAdminUser?._id);
-      expect(createdAgendaCategory?.organization).toBe(testOrganization?._id);
+      expect(createdAgendaCategory?.organizationId).toBe(testOrganization?._id);
       // Verify that the properties of the returned agenda category match the expected values
       expect(createdAgendaCategory?.name).toEqual(args.input.name);
       expect(createdAgendaCategory?.description).toEqual(
-        args.input.description
+        args.input.description,
       );
       expect(createdAgendaCategory?._id).toBeUndefined();
     } catch (error) {
@@ -116,7 +116,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       const createdAgendaCategory = await createAgendaCategoryResolver?.(
         {},
         args,
-        context
+        context,
       );
 
       expect(createdAgendaCategory).toBeUndefined(); // The resolver should not return anything
@@ -147,14 +147,14 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       const createdAgendaCategory = await createAgendaCategoryResolver?.(
         {},
         args,
-        context
+        context,
       );
 
       expect(createdAgendaCategory).toBeUndefined(); // The resolver should not return anything
     } catch (error: unknown) {
       // The resolver should throw a NotFoundError with the appropriate message, code, and parameter
       expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -179,13 +179,13 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       const createdAgendaCategory = await createAgendaCategoryResolver?.(
         {},
         args,
-        context
+        context,
       );
 
       expect(createdAgendaCategory).toBeUndefined(); // The resolver should not return anything
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        "Error: Current user must be an ADMIN or a SUPERADMIN"
+        "Error: Current user must be an ADMIN or a SUPERADMIN",
       ); // The resolver should throw an UnauthorizedError with the appropriate message, code, and parameter
     }
   });

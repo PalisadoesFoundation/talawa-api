@@ -35,7 +35,7 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
       throw new errors.NotFoundError(
         USER_NOT_FOUND_ERROR.MESSAGE,
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
     const currentUserAppProfile = await AppUserProfile.findOne({
@@ -46,26 +46,26 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
       throw new errors.UnauthorizedError(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
     if (!agendaCategory) {
       throw new errors.NotFoundError(
         AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
         AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     const currentOrg = await AgendaCategoryModel.findById(agendaCategory._id)
-      .populate("organization")
-      .select("organization")
+
+      .select("organizationId")
       .lean();
 
-    const currentOrgId = currentOrg?._id?.toString() || "";
+    const currentOrgId = currentOrg?.organizationId?.toString() || "";
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
-        Types.ObjectId(organizationId?.toString()).equals(currentOrgId)
+        Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
     );
     // If the user is a normal user, throw an error
     if (
@@ -75,7 +75,7 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
       throw new errors.UnauthorizedError(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 

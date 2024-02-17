@@ -1,21 +1,26 @@
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { connect, disconnect } from "../../helpers/db";
-import { deleteAgendaCategory } from "../../../src/resolvers/Mutation/deleteAgendaCategory";
-import { User, AgendaCategoryModel, Organization } from "../../../src/models";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUser } from "../../helpers/userAndOrg";
+import {
+  AgendaCategoryModel,
+  AppUserProfile,
+  Organization,
+  User,
+} from "../../../src/models";
+import { deleteAgendaCategory } from "../../../src/resolvers/Mutation/deleteAgendaCategory";
+import type { MutationDeleteAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
+import { connect, disconnect } from "../../helpers/db";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import type { MutationDeleteAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
-import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
+import { createTestUser } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testAdminUser: TestUserType;
@@ -38,20 +43,21 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-  await User.updateOne(
+  await AppUserProfile.updateOne(
     {
-      _id: testAdminUser?._id,
+      userId: testAdminUser?._id,
     },
     {
       $set: {
         createdOrganizations: [testOrganization._id],
         adminFor: [testOrganization._id],
       },
-    }
+    },
   );
+
   sampleAgendaCategory = await AgendaCategoryModel.create({
     name: "Sample Agenda Category",
-    organization: testOrganization?._id,
+    organizationId: testOrganization?._id,
     createdBy: testAdminUser?._id,
     createdAt: new Date(),
   });
@@ -87,7 +93,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
       await deleteAgendaCategory?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -103,21 +109,21 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
       await deleteAgendaCategory?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
   it(`removes the agenda category and returns it as superadmin`, async () => {
-    const superAdminTestUser = await User.findOneAndUpdate(
+    const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
       {
-        _id: randomUser?._id,
+        userId: randomUser?._id,
       },
       {
-        userType: "SUPERADMIN",
+        isSuperAdmin: true,
       },
       {
         new: true,
-      }
+      },
     );
     const newTestAgendaCategory = await AgendaCategoryModel.create({
       name: "Sample Agenda Category",
@@ -130,13 +136,13 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
     };
 
     const context = {
-      userId: superAdminTestUser?._id,
+      userId: superAdminTestUser?.userId,
     };
 
     const removedAgendaCategoryPayload = await deleteAgendaCategory?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removedAgendaCategoryPayload).toEqual(args.id);
@@ -152,7 +158,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
     const removedAgendaCategoryPayload = await deleteAgendaCategory?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removedAgendaCategoryPayload).toEqual(args.id);
@@ -171,4 +177,23 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
   //   // Verify that the agenda category is deleted from the database
 
   // });
+  it("throws error if the user does not have appUserProfile", async () => {
+    try {
+      const args = {
+        id: sampleAgendaCategory?._id,
+      };
+      await AppUserProfile.deleteOne({
+        userId: randomUser?._id,
+      });
+      const context = {
+        userId: randomUser?._id,
+      };
+
+      await deleteAgendaCategory?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
+  });
 });
