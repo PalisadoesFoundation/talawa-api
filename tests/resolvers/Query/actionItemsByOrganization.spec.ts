@@ -71,7 +71,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
       organizationId: args.organizationId,
     });
     const actionItemCategoriesIds = actionItemCategories.map(
-      (category) => category._id
+      (category) => category._id,
     );
 
     const actionItemsByOrganizationInfo = await ActionItem.find({
@@ -79,7 +79,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
     }).lean();
 
     expect(actionItemsByOrganizationPayload).toEqual(
-      actionItemsByOrganizationInfo
+      actionItemsByOrganizationInfo,
     );
   });
 
@@ -89,7 +89,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
     });
 
     const actionItemCategoriesIds = actionItemCategories.map(
-      (category) => category._id
+      (category) => category._id,
     );
 
     const actionItemCategoryId = actionItemCategoriesIds[0];
@@ -111,7 +111,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
     }).lean();
 
     expect(actionItemsByOrganizationPayload).toEqual(
-      actionItemsByOrganizationInfo
+      actionItemsByOrganizationInfo,
     );
   });
   it(`returns list of all action items associated with an organization that are active`, async () => {
@@ -131,7 +131,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
       organizationId: args.organizationId,
     });
     const actionItemCategoriesIds = actionItemCategories.map(
-      (category) => category._id
+      (category) => category._id,
     );
 
     const actionItemsByOrganizationInfo = await ActionItem.find({
@@ -140,7 +140,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
     }).lean();
 
     expect(actionItemsByOrganizationPayload).toEqual(
-      actionItemsByOrganizationInfo
+      actionItemsByOrganizationInfo,
     );
   });
 
@@ -161,7 +161,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
       organizationId: args.organizationId,
     });
     const actionItemCategoriesIds = actionItemCategories.map(
-      (category) => category._id
+      (category) => category._id,
     );
 
     const actionItemsByOrganizationInfo = await ActionItem.find({
@@ -170,7 +170,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
     }).lean();
 
     expect(actionItemsByOrganizationPayload).toEqual(
-      actionItemsByOrganizationInfo
+      actionItemsByOrganizationInfo,
     );
   });
 
@@ -191,7 +191,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
       organizationId: args.organizationId,
     });
     const actionItemCategoriesIds = actionItemCategories.map(
-      (category) => category._id
+      (category) => category._id,
     );
 
     const actionItemsByOrganizationInfo = await ActionItem.find({
@@ -200,7 +200,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
     }).lean();
 
     expect(actionItemsByOrganizationPayload).toEqual(
-      actionItemsByOrganizationInfo
+      actionItemsByOrganizationInfo,
     );
   });
 
@@ -209,7 +209,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
       organizationId: testOrganization?._id,
     });
     const actionItemCategoriesIds = actionItemCategories.map(
-      (category) => category._id
+      (category) => category._id,
     );
 
     const actionItemCategoryId = actionItemCategoriesIds[0];
@@ -235,7 +235,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
     }).lean();
 
     expect(actionItemsByOrganizationPayload).toEqual(
-      actionItemsByOrganizationInfo
+      actionItemsByOrganizationInfo,
     );
   });
 });
