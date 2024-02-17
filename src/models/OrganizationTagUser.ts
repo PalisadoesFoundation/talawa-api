@@ -1,6 +1,7 @@
 import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 export interface InterfaceOrganizationTagUser {
   _id: Types.ObjectId;
@@ -32,13 +33,15 @@ const organizationTagUserSchema = new Schema({
 
 organizationTagUserSchema.index(
   { organizationId: 1, parentOrganizationTagUserId: 1, name: 1 },
-  { unique: true }
+  { unique: true },
 );
+
+createLoggingMiddleware(organizationTagUserSchema, "OrganizationTagUser");
 
 const organizationTagUserModel = (): Model<InterfaceOrganizationTagUser> =>
   model<InterfaceOrganizationTagUser>(
     "OrganizationTagUser",
-    organizationTagUserSchema
+    organizationTagUserSchema,
   );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

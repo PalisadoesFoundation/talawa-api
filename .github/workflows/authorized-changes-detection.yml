@@ -17,6 +17,7 @@ on:
       - '.husky/**'
       - 'scripts/**'      
       - '.env.sample'
+      - '.node-version'
       - 'tsconfig.json'
       - '.gitignore'
       - '.eslintrc.json'

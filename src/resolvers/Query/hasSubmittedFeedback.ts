@@ -18,7 +18,7 @@ export const hasSubmittedFeedback: QueryResolvers["hasSubmittedFeedback"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -30,7 +30,7 @@ export const hasSubmittedFeedback: QueryResolvers["hasSubmittedFeedback"] =
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
         EVENT_NOT_FOUND_ERROR.CODE,
-        EVENT_NOT_FOUND_ERROR.PARAM
+        EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -44,7 +44,7 @@ export const hasSubmittedFeedback: QueryResolvers["hasSubmittedFeedback"] =
       throw new errors.ConflictError(
         requestContext.translate(USER_NOT_REGISTERED_FOR_EVENT.MESSAGE),
         USER_NOT_REGISTERED_FOR_EVENT.CODE,
-        USER_NOT_REGISTERED_FOR_EVENT.PARAM
+        USER_NOT_REGISTERED_FOR_EVENT.PARAM,
       );
     }
 
@@ -52,7 +52,7 @@ export const hasSubmittedFeedback: QueryResolvers["hasSubmittedFeedback"] =
       throw new errors.ConflictError(
         requestContext.translate(USER_NOT_CHECKED_IN.MESSAGE),
         USER_NOT_CHECKED_IN.CODE,
-        USER_NOT_CHECKED_IN.PARAM
+        USER_NOT_CHECKED_IN.PARAM,
       );
     }
 

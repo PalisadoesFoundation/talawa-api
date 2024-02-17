@@ -25,7 +25,7 @@ export const imageExtensionCheck = async (filename: string): Promise<void> => {
           param: INVALID_FILE_TYPE.PARAM,
         },
       ],
-      requestContext.translate(INVALID_FILE_TYPE.MESSAGE)
+      requestContext.translate(INVALID_FILE_TYPE.MESSAGE),
     );
   }
 };

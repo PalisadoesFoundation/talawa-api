@@ -14,18 +14,18 @@ const checkImageSizeLimit = (size: number): boolean => {
 
 const base64SizeInKb = (base64String: string): number => {
   // Count the number of Base64 characters
-  var numBase64Chars = base64String.length;
+  const numBase64Chars = base64String.length;
   // Calculate the size in bytes
-  var sizeInBytes = (numBase64Chars * 3) / 4;
+  const sizeInBytes = (numBase64Chars * 3) / 4;
   // Convert to kilobytes
-  var sizeInKB = sizeInBytes / 1024;
+  const sizeInKB = sizeInBytes / 1024;
 
   return sizeInKB;
 };
 
 export const uploadEncodedImage = async (
   encodedImageURL: string,
-  previousImagePath?: string | null
+  previousImagePath?: string | null,
 ): Promise<string> => {
   const isURLValidImage = encodedImageExtentionCheck(encodedImageURL);
 
@@ -39,7 +39,7 @@ export const uploadEncodedImage = async (
     throw new errors.ImageSizeLimitExceeded(
       IMAGE_SIZE_LIMIT_KB.MESSAGE,
       IMAGE_SIZE_LIMIT_KB.CODE,
-      IMAGE_SIZE_LIMIT_KB.PARAM
+      IMAGE_SIZE_LIMIT_KB.PARAM,
     );
   }
 
@@ -47,7 +47,7 @@ export const uploadEncodedImage = async (
     throw new errors.InvalidFileTypeError(
       requestContext.translate(INVALID_FILE_TYPE.MESSAGE),
       INVALID_FILE_TYPE.CODE,
-      INVALID_FILE_TYPE.PARAM
+      INVALID_FILE_TYPE.PARAM,
     );
   }
 
@@ -68,7 +68,7 @@ export const uploadEncodedImage = async (
         $inc: {
           numberOfUses: 1,
         },
-      }
+      },
     );
 
     if (previousImagePath) {
