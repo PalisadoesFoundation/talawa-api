@@ -187,44 +187,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
 
     throw error;
   }
+
+  /* c8 ignore stop */
 };
-
-// async function associateEventWithUser(
-//   currentUser: InterfaceUser,
-//   createdEvent: InterfaceEvent,
-//   session: mongoose.ClientSession
-// ): Promise<void> {
-//   await EventAttendee.create(
-//     [
-//       {
-//         userId: currentUser._id.toString(),
-//         eventId: createdEvent._id,
-//       },
-//     ],
-//     { session }
-//   );
-//   await User.updateOne(
-//     {
-//       _id: currentUser._id,
-//     },
-//     {
-//       $push: {
-//         registeredEvents: createdEvent._id,
-//       },
-//     },
-//     { session }
-//   );
-
-//   await AppUserProfile.updateOne(
-//     {
-//       user: currentUser._id,
-//     },
-//     {
-//       $push: {
-//         eventAdmin: createdEvent._id,
-//         createdEvents: createdEvent._id,
-//       },
-//     },
-//     { session }
-//   );
-// }

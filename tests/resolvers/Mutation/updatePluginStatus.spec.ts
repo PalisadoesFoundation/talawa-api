@@ -58,7 +58,7 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
         orgId: Types.ObjectId().toString(),
       };
 
-      const context = async () => {
+      const context = async (): Promise<void> => {
         pubsub;
       };
 

@@ -1,5 +1,5 @@
-import type { TestUserType, TestOrganizationType } from "./userAndOrg";
-import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
+import type { Document } from "mongoose";
+import { nanoid } from "nanoid";
 import type { InterfaceMembershipRequest } from "../../src/models";
 import {
   AppUserProfile,
@@ -7,8 +7,8 @@ import {
   Organization,
   User,
 } from "../../src/models";
-import type { Document } from "mongoose";
-import { nanoid } from "nanoid";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
 
 export type TestMembershipRequestType =
   | (InterfaceMembershipRequest &
