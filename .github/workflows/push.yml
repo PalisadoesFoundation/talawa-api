@@ -101,8 +101,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          persist-credentials: false
+        # with:
+        #   persist-credentials: false
       - name: Generate Documentation of HTML pages
         run: |
           npm install --global typedoc
@@ -151,22 +151,22 @@ jobs:
           name: documentation-api
           path: talawa-api-docs
 
-  # Empty-Commit:
-  #   name: Create Empty Commit
-  #   runs-on: ubuntu-latest
-  #   needs: Generate-Documentation
-  #   if: github.ref == 'refs/heads/develop'
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
-  #       with:
-  #         persist-credentials: false
-  #     - name: Empty Commit
-  #       run: |
-  #         git config --global user.name "${{ github.actor }}"
-  #         git config --global user.email "${{ github.actor }}"
-  #         git commit --allow-empty -m "Empty commit"
-  #         git push origin develop:automated-docs --force
+  Empty-Commit:
+    name: Create Empty Commit
+    runs-on: ubuntu-latest
+    needs: Generate-Documentation
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - name: Empty Commit
+        run: |
+          git config --global user.name "tasneemkoushar"
+          git config --global user.email "imatasneemkoushar@gmail.com"
+          git commit --allow-empty -m "Empty commit"
+          git push origin develop:automated-docs --force
   
   Copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
