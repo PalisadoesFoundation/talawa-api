@@ -163,7 +163,7 @@ jobs:
       - name: Empty Commit
         run: |
           git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.email "${{ github.actor }}"
           git commit --allow-empty -m "Empty commit"
           git push origin develop:automated-docs --force
   
