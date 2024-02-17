@@ -1,6 +1,6 @@
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfacePost } from "../../models";
 import { Post } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
