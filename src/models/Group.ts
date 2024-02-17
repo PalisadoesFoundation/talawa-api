@@ -55,7 +55,7 @@ const groupSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(groupSchema, "Group");

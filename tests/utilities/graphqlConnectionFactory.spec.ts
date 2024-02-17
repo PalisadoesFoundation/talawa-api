@@ -168,7 +168,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
       fetchedObjects.slice(0, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
-      })
+      }),
     );
 
     expect(payload).toMatchObject({
@@ -196,7 +196,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
       fetchedObjects.slice(0, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
-      })
+      }),
     );
 
     expect(payload).toMatchObject({
@@ -225,7 +225,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
       fetchedObjects.slice(1, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
-      })
+      }),
     );
 
     expect(payload).toMatchObject({
@@ -254,7 +254,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
       fetchedObjects.slice(1, 1 + getLimit(args.limit)),
       (x) => ({
         _id: x._id,
-      })
+      }),
     );
 
     expect(payload).toMatchObject({
@@ -309,7 +309,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
       reversedFetchedObjects.slice(0, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
-      })
+      }),
     );
 
     expect(payload).toMatchObject({
@@ -337,7 +337,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
       reversedFetchedObjects.slice(0, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
-      })
+      }),
     );
 
     expect(payload).toMatchObject({
@@ -366,7 +366,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
       reversedFetchedObjects.slice(1, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
-      })
+      }),
     );
 
     expect(payload).toMatchObject({
@@ -395,7 +395,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
       reversedFetchedObjects.slice(1, 1 + getLimit(args.limit)),
       (x) => ({
         _id: x._id,
-      })
+      }),
     );
 
     expect(payload).toMatchObject({

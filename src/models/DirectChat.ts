@@ -61,7 +61,7 @@ const directChatSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(directChatSchema, "DirectChat");

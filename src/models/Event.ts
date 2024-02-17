@@ -184,7 +184,7 @@ const eventSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(eventSchema, "Event");
