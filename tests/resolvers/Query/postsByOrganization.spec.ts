@@ -1,17 +1,17 @@
 import "dotenv/config";
-import { postsByOrganization as postsByOrganizationResolver } from "../../../src/resolvers/Query/postsByOrganization";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { BASE_URL } from "../../../src/constants";
 import { Post } from "../../../src/models";
+import { postsByOrganization as postsByOrganizationResolver } from "../../../src/resolvers/Query/postsByOrganization";
 import type { QueryPostsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { connect, disconnect } from "../../helpers/db";
+import { createSinglePostwithComment } from "../../helpers/posts";
 import type {
-  TestUserType,
   TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { createSinglePostwithComment } from "../../helpers/posts";
-import { BASE_URL } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
