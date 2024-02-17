@@ -25,7 +25,7 @@ import { RECURRING_EVENT_INSTANCES_QUERY_LIMIT } from "../../../constants";
  */
 
 export const createRecurringEventInstancesDuringQuery = async (
-  organizationId: string | undefined | null
+  organizationId: string | undefined | null,
 ): Promise<void> => {
   if (!organizationId) {
     return;
@@ -35,7 +35,7 @@ export const createRecurringEventInstancesDuringQuery = async (
   const calendarDate = convertToUTCDate(new Date());
   const queryUptoDate = addYears(
     calendarDate,
-    RECURRING_EVENT_INSTANCES_QUERY_LIMIT
+    RECURRING_EVENT_INSTANCES_QUERY_LIMIT,
   );
 
   // get the recurrenceRules
@@ -82,7 +82,7 @@ export const createRecurringEventInstancesDuringQuery = async (
         recurrenceRuleString,
         currentRecurrenceStartDate,
         recurrenceEndDate,
-        queryUptoDate
+        queryUptoDate,
       );
 
       // find out how many instances following the recurrence rule already exist and how many more to generate
@@ -95,7 +95,7 @@ export const createRecurringEventInstancesDuringQuery = async (
 
         recurringInstanceDates = recurringInstanceDates.slice(
           0,
-          Math.min(recurringInstanceDates.length, remainingInstances)
+          Math.min(recurringInstanceDates.length, remainingInstances),
         );
       }
 
@@ -119,7 +119,7 @@ export const createRecurringEventInstancesDuringQuery = async (
             {
               latestInstanceDate: updatedLatestRecurringInstanceDate,
             },
-            { session }
+            { session },
           );
 
           // generate recurring event instances
@@ -149,6 +149,6 @@ export const createRecurringEventInstancesDuringQuery = async (
       }
 
       /* c8 ignore stop */
-    })
+    }),
   );
 };

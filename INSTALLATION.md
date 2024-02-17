@@ -41,7 +41,7 @@ This document provides instructions on how to set up and start a running instanc
       - [Setting up the RECAPTCHA_SECRET_KEY](#setting-up-the-recaptcha_secret_key)
       - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
     - [Setting up SMTP Email Variables in the .env File](#setting-up-smtp-email-variables-in-the-env-file)
-    - [Setting up Logger configurations _(optional)_](#setting-up-logger-configurations-_optional_)
+    - [Setting up Logger configurations](#setting-up-logger-configurations)
       - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
       - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
 - [Importing Sample Database](#importing-sample-database)

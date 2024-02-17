@@ -119,7 +119,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       (await eventsByOrganizationConnectionResolver?.(
         {},
         args,
-        {}
+        {},
       )) as InterfaceEvent[];
 
     eventsByOrganizationConnectionPayload =
@@ -176,7 +176,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       (await eventsByOrganizationConnectionResolver?.(
         {},
         args,
-        {}
+        {},
       )) as InterfaceEvent[];
 
     eventsByOrganizationConnectionPayload =
@@ -230,7 +230,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       (await eventsByOrganizationConnectionResolver?.(
         {},
         args,
-        {}
+        {},
       )) as InterfaceEvent[];
 
     eventsByOrganizationConnectionPayload =
@@ -288,7 +288,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       (await eventsByOrganizationConnectionResolver?.(
         {},
         args,
-        {}
+        {},
       )) as InterfaceEvent[];
 
     eventsByOrganizationConnectionPayload =
@@ -343,7 +343,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       (await eventsByOrganizationConnectionResolver?.(
         {},
         args,
-        {}
+        {},
       )) as InterfaceEvent[];
 
     eventsByOrganizationConnectionPayload =
@@ -387,7 +387,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       (await eventsByOrganizationConnectionResolver?.(
         {},
         args,
-        {}
+        {},
       )) as InterfaceEvent[];
 
     eventsByOrganizationConnectionPayload =
@@ -441,7 +441,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const createEventPayload = await createEventResolver?.(
       {},
       eventArgs,
-      context
+      context,
     );
 
     expect(createEventPayload).toEqual(
@@ -458,7 +458,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
-      })
+      }),
     );
 
     let recurrenceRule = await RecurrenceRule.findOne({
@@ -471,16 +471,16 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const generateUptoDate = addYears(
       startDate,
-      RECURRING_EVENT_INSTANCES_DAILY_LIMIT
+      RECURRING_EVENT_INSTANCES_DAILY_LIMIT,
     );
 
     const currentLatestInstanceDate = recurrenceRuleObject.before(
       generateUptoDate,
-      true
+      true,
     );
 
     expect(recurrenceRule?.latestInstanceDate).toEqual(
-      currentLatestInstanceDate
+      currentLatestInstanceDate,
     );
 
     const newMockDate = addDays(currentLatestInstanceDate as Date, 1);
@@ -501,16 +501,16 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const newRecurrenceStartDate = addYears(
       convertToUTCDate(newMockDate),
-      RECURRING_EVENT_INSTANCES_QUERY_LIMIT
+      RECURRING_EVENT_INSTANCES_QUERY_LIMIT,
     );
     const newGenerateUptoDate = addYears(
       newRecurrenceStartDate,
-      RECURRING_EVENT_INSTANCES_DAILY_LIMIT
+      RECURRING_EVENT_INSTANCES_DAILY_LIMIT,
     );
 
     const newLatestInstanceDate = recurrenceRuleObject.before(
       newGenerateUptoDate,
-      true
+      true,
     );
 
     expect(recurrenceRule?.latestInstanceDate).toEqual(newLatestInstanceDate);
@@ -555,7 +555,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const createEventPayload = await createEventResolver?.(
       {},
       eventArgs,
-      context
+      context,
     );
 
     expect(createEventPayload).toEqual(
@@ -572,7 +572,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
-      })
+      }),
     );
 
     let recurrenceRule = await RecurrenceRule.findOne({
@@ -586,15 +586,15 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const recurrenceStartDate = startDate;
     const generateUptoDate = addYears(
       recurrenceStartDate,
-      RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT
+      RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT,
     );
     const currentLatestInstanceDate = recurrenceRuleObject.before(
       generateUptoDate,
-      true
+      true,
     );
 
     expect(recurrenceRule?.latestInstanceDate).toEqual(
-      currentLatestInstanceDate
+      currentLatestInstanceDate,
     );
 
     const generatedWeeklyRecurringInstances = await Event.find({
@@ -621,16 +621,16 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const newRecurrenceStartDate = addYears(
       convertToUTCDate(newMockDate),
-      RECURRING_EVENT_INSTANCES_QUERY_LIMIT
+      RECURRING_EVENT_INSTANCES_QUERY_LIMIT,
     );
     const newGenerateUptoDate = addYears(
       newRecurrenceStartDate,
-      RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT
+      RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT,
     );
 
     const newLatestInstanceDate = recurrenceRuleObject.before(
       newGenerateUptoDate,
-      true
+      true,
     );
 
     expect(recurrenceRule?.latestInstanceDate).toEqual(newLatestInstanceDate);
