@@ -59,9 +59,9 @@ describe("resolvers -> Mutation -> likePost", () => {
       );
 
       await likePostResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(POST_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

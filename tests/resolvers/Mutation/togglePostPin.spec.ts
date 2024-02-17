@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
 
     try {
       const args: MutationTogglePostPinArgs = {
-        id: testPost?._id,
+        id: testPost?._id.toString() || "",
       };
 
       const context = {
@@ -139,7 +139,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       (message) => `Translated ${message}`,
     );
     const args: MutationTogglePostPinArgs = {
-      id: testPost?._id,
+      id: testPost?._id.toString() || "",
       title: "Test title",
     };
 
@@ -174,7 +174,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
     );
 
     const args: MutationTogglePostPinArgs = {
-      id: testPost?._id,
+      id: testPost?._id.toString() || "",
     };
 
     const context = {
@@ -209,7 +209,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
     );
     try {
       const args: MutationTogglePostPinArgs = {
-        id: testPost?._id,
+        id: testPost?._id.toString() || "",
       };
 
       const context = {
@@ -235,7 +235,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
     );
     try {
       const args: MutationTogglePostPinArgs = {
-        id: testPost?._id,
+        id: testPost?._id.toString() || "",
         title:
           "AfGtN9o7IJXH9Xr5P4CcKTWMVWKOOHTldleLrWfZcThgoX5scPE5o0jARvtVA8VhneyxXquyhWb5nluW2jtP0Ry1zIOUFYfJ6BUXvpo4vCw4GVleGBnoKwkFLp5oW9L8OsEIrjVtYBwaOtXZrkTEBySZ1prr0vFcmrSoCqrCTaChNOxL3tDoHK6h44ChFvgmoVYMSq3IzJohKtbBn68D9NfEVMEtoimkGarUnVBAOsGkKv0mIBJaCl2pnR8Xwq1cG1",
       };
@@ -266,7 +266,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
     );
     try {
       const args: MutationTogglePostPinArgs = {
-        id: testPost?._id,
+        id: testPost?._id.toString() || "",
         title: "Test title",
       };
 
@@ -294,7 +294,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       (message) => message,
     );
     const args: MutationTogglePostPinArgs = {
-      id: testPost?._id,
+      id: testPost?._id.toString() || "",
       title: "Test title",
     };
     const context = {

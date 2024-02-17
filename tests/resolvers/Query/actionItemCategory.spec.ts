@@ -30,8 +30,8 @@ describe("resolvers -> Query -> actionItemCategory", () => {
       };
 
       await actionItemCategoryResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.DESC);
     }
   });
 

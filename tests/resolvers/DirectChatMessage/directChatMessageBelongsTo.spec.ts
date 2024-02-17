@@ -22,10 +22,18 @@ afterAll(async () => {
 
 describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
   it(`returns directChat object for parent.directChatMessageBelongsTo`, async () => {
-    const parent = testDirectChatMessage!.toObject();
+    const parent = testDirectChatMessage?.toObject();
+
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
+
+    if (typeof directChatMessageBelongsToResolver !== 'function') {
+      throw new Error("directChatMessageBelongsToResolver is not a function.");
+    }
 
     const directChatMessageBelongsToPayload =
-      await directChatMessageBelongsToResolver?.(parent, {}, {});
+      await directChatMessageBelongsToResolver(parent, {}, {});
 
     const directChatMessageBelongsTo = await DirectChat.findOne({
       _id: testDirectChatMessage?.directChatMessageBelongsTo,

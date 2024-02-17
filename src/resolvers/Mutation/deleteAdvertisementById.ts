@@ -1,5 +1,5 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { Advertisement } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables to delete a donation record from the database.
@@ -8,7 +8,7 @@ import { Advertisement } from "../../models";
  * @returns Boolean value denoting whether the deletion was successful or not.
  */
 export const deleteAdvertisementById: MutationResolvers["deleteAdvertisementById"] =
-  async (_parent: any, args: { id: any }) => {
+  async (_parent, args: { id: string }) => {
     const deletedAdvertisement = await Advertisement.deleteOne({
       _id: args.id,
     });

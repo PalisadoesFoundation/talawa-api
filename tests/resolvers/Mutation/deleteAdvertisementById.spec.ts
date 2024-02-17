@@ -1,20 +1,20 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
+import type { Document } from "mongoose";
 import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type {
   InterfaceAdvertisement,
   InterfaceDonation,
 } from "../../../src/models";
 import { Advertisement } from "../../../src/models";
+import { deleteAdvertisementById } from "../../../src/resolvers/Mutation/deleteAdvertisementById";
 import type { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { deleteAdvertisementById } from "../../../src/resolvers/Mutation/deleteAdvertisementById";
 
 let testAdvertisement: InterfaceAdvertisement &
-  Document<any, any, InterfaceDonation>;
+  Document<unknown, unknown, InterfaceDonation>;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
@@ -55,7 +55,7 @@ describe("resolvers -> Mutation -> deleteAdvertiementById", () => {
 
   it(`returns true if deletion of ads was successful`, async () => {
     const args: MutationDeleteDonationByIdArgs = {
-      id: testAdvertisement._id,
+      id: testAdvertisement._id.toString(),
     };
 
     const deleteDonationByIdPayload = await deleteAdvertisementById?.(

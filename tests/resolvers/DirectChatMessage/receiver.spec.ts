@@ -22,8 +22,11 @@ afterAll(async () => {
 
 describe("resolvers -> DirectChatMessage -> receiver", () => {
   it(`returns user object for parent.receiver`, async () => {
-    const parent = testDirectChatMessage!.toObject();
-
+    const parent = testDirectChatMessage?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    
+ }
     const receiverPayload = await receiverResolver?.(parent, {}, {});
 
     const receiver = await User.findOne({

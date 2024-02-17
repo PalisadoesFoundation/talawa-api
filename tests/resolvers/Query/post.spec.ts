@@ -30,14 +30,14 @@ describe("resolvers -> Query -> post", () => {
       };
 
       await postResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(POST_NOT_FOUND_ERROR.DESC);
     }
   });
 
   it(`returns post object`, async () => {
     const args: QueryPostArgs = {
-      id: testPost?._id,
+      id: testPost?._id.toString() || "",
     };
 
     const postPayload = await postResolver?.({}, args, {});

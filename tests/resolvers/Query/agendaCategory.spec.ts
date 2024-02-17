@@ -1,17 +1,17 @@
 import "dotenv/config";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import { AgendaCategoryModel, Organization } from "../../../src/models";
+import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AGENDA_CATEGORY_NOT_FOUND_ERROR } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { AgendaCategoryModel, Organization } from "../../../src/models";
+import { agendaCategory } from "../../../src/resolvers/Query/agendaCategory";
+import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
+import { connect, disconnect } from "../../helpers/db";
 import {
   createTestUser,
   type TestOrganizationType,
   type TestUserType,
 } from "../../helpers/userAndOrg";
-import { agendaCategory } from "../../../src/resolvers/Query/agendaCategory";
-import { Types } from "mongoose";
-import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;

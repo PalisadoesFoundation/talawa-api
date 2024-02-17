@@ -4,7 +4,7 @@ import { Post } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
-// @ts-ignore
+
 /**
  * This query will retrieve from the database a list of posts
  * in the organisation under the specified limit for the specified page in the pagination.

@@ -1,15 +1,15 @@
-import { Plugin } from "../../models";
 import _ from "lodash";
-import pluginData from "./pluginData.json";
-import { logger } from "../../libraries";
 import mongoose from "mongoose";
+import { logger } from "../../libraries";
+import { Plugin } from "../../models";
+import pluginData from "./pluginData.json";
 // Only loads plugin data for the time if it's not currently present in the database
 const loadPlugins = async (): Promise<void> => {
   const res = await Plugin.find();
   const databaseTitle = mongoose.connection.db.databaseName;
   if (_.isEmpty(res)) {
     //no previous data then update with our new data. (Only happens once)
-    pluginData.forEach(async (plugin: any) => {
+    pluginData.forEach(async (plugin: unknown) => {
       await Plugin.create(plugin);
     });
     logger.info(

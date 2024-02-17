@@ -1,14 +1,15 @@
-import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
+import type { ExecException } from "child_process";
+import { exec } from "child_process";
+import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
-import path from "path";
-import * as cryptolib from "crypto";
 import inquirer from "inquirer";
 import mongodb from "mongodb";
-import * as redis from "redis";
-import { exec } from "child_process";
 import nodemailer from "nodemailer";
-import type { ExecException } from "child_process";
+import path from "path";
+import * as redis from "redis";
+// eslint-disable-next-line no-restricted-imports
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 
 dotenv.config();
 

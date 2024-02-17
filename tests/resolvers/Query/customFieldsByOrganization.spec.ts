@@ -77,11 +77,11 @@ describe("resolvers => Query => customFieldsByOrganization", () => {
 
     try {
       await customFieldsByOrganization?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
         ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }

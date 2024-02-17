@@ -30,7 +30,7 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
 let testDirectChat: InterfaceDirectChat &
-  Document<any, any, InterfaceDirectChat>;
+  Document<unknown, unknown, InterfaceDirectChat>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -96,9 +96,9 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         await import("../../../src/resolvers/Mutation/sendMessageToDirectChat");
 
       await sendMessageToDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -121,9 +121,9 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         await import("../../../src/resolvers/Mutation/sendMessageToDirectChat");
 
       await sendMessageToDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

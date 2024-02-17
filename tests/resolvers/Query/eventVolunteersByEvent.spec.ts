@@ -1,10 +1,10 @@
 import type mongoose from "mongoose";
-import { connect, disconnect } from "../../helpers/db";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { EventVolunteer } from "../../../src/models";
 import { eventVolunteersByEvent } from "../../../src/resolvers/Query/eventVolunteersByEvent";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEventAndVolunteer } from "../../helpers/events";
-import { EventVolunteer } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;

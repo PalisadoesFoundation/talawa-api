@@ -1,19 +1,19 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { Advertisement, User } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-  INPUT_NOT_FOUND_ERROR,
   END_DATE_VALIDATION_ERROR,
-  START_DATE_VALIDATION_ERROR,
   FIELD_NON_EMPTY_ERROR,
+  INPUT_NOT_FOUND_ERROR,
+  START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import { Advertisement, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
   async (_parent, args, _context) => {
-    const { _id, ...otherFields } = args.input;
+    const {  ...otherFields } = args.input;
 
     //If there is no input
     if (Object.keys(otherFields).length === 0) {
@@ -26,7 +26,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
 
     // Check for unintended null values in permitted fields, if all fields are permitted
     for (const field of Object.keys(args.input)) {
-      const fieldValue = (args.input as Record<string, any>)[field];
+      const fieldValue = (args.input as Record<string, unknown>)[field];
       if (
         fieldValue === null ||
         (typeof fieldValue === "string" && fieldValue.trim() === "")
@@ -87,7 +87,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
         _id: args.input._id,
       },
       {
-        ...(args.input as any),
+        ...(args.input as Record<string, unknown>),
       },
       {
         new: true,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "dotenv/config";
 import { childTags as childTagsResolver } from "../../../src/resolvers/UserTag/childTags";
 import type {

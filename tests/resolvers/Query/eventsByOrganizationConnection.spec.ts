@@ -1,14 +1,15 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import "dotenv/config";
-import { eventsByOrganizationConnection as eventsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/eventsByOrganizationConnection";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import type { QueryEventsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Event } from "../../../src/models";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { eventsByOrganizationConnection as eventsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/eventsByOrganizationConnection";
+import type { QueryEventsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestEventType } from "../../helpers/events";
 import { createEventWithRegistrant } from "../../helpers/events";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvents: TestEventType[];

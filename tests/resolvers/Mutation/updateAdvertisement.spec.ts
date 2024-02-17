@@ -1,26 +1,26 @@
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Advertisement } from "../../../src/models";
-import type { MutationUpdateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
-import { updateAdvertisement as updateAdvertisementResolver } from "../../../src/resolvers/Mutation/updateAdvertisement";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
   END_DATE_VALIDATION_ERROR,
+  FIELD_NON_EMPTY_ERROR,
   INPUT_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
-  FIELD_NON_EMPTY_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
+import { Advertisement } from "../../../src/models";
+import { updateAdvertisement as updateAdvertisementResolver } from "../../../src/resolvers/Mutation/updateAdvertisement";
+import type { MutationUpdateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
   createTestAdvertisement,
-  type TestAdvertisementType,
   createTestSuperAdmin,
+  type TestAdvertisementType,
   type TestSuperAdminType,
 } from "../../helpers/advertisement";
+import { connect, disconnect } from "../../helpers/db";
+import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -60,8 +60,8 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverNotFoundError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -89,8 +89,8 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverNotFoundError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
@@ -120,25 +120,23 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverNotFoundError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
         ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE,
       );
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
 
   it(`updates the advertisement with _id === args.id and returns it`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
+ 
 
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
+
     const args: MutationUpdateAdvertisementArgs = {
       input: {
-        _id: testAdvertisement!._id,
+        _id: testAdvertisement?._id,
         name: "New Advertisement Name",
         link: "Updated Advertisement Link",
         type: "POPUP",
@@ -161,7 +159,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     const { advertisement } = updateAdvertisementPayload || {};
 
     const updatedTestAdvertisement = await Advertisement.findOne({
-      _id: testAdvertisement!._id,
+      _id: testAdvertisement?._id,
     }).lean();
 
     let expectedAdvertisement;
@@ -194,7 +192,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     try {
       const args: MutationUpdateAdvertisementArgs = {
         input: {
-          _id: testAdvertisement!._id,
+          _id: testAdvertisement?._id,
           name: "New Advertisement Name",
           link: "Updated Advertisement Link",
           type: "POPUP",
@@ -211,9 +209,9 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       } = await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverValidationError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(END_DATE_VALIDATION_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${END_DATE_VALIDATION_ERROR.MESSAGE}`,
       );
     }
@@ -228,7 +226,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     try {
       const args: MutationUpdateAdvertisementArgs = {
         input: {
-          _id: testAdvertisement!._id,
+          _id: testAdvertisement?._id,
           startDate: "2023-12-26",
         },
       };
@@ -239,9 +237,9 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       } = await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverValidationError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(START_DATE_VALIDATION_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${START_DATE_VALIDATION_ERROR.MESSAGE}`,
       );
     }
@@ -257,7 +255,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     try {
       const args: MutationUpdateAdvertisementArgs = {
         input: {
-          _id: testAdvertisement!._id,
+          _id: testAdvertisement?._id,
         },
       };
 
@@ -267,9 +265,9 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverInputError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(INPUT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${INPUT_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -284,7 +282,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     try {
       const args: MutationUpdateAdvertisementArgs = {
         input: {
-          _id: testAdvertisement!._id,
+          _id: testAdvertisement?._id,
           name: null,
         },
       };
@@ -295,9 +293,9 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverInputError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(FIELD_NON_EMPTY_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${FIELD_NON_EMPTY_ERROR.MESSAGE}`,
       );
     }

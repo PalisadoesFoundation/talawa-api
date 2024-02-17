@@ -22,12 +22,14 @@ afterAll(async () => {
 
 describe("resolvers -> MembershipRequest -> user", () => {
   it(`returns user object for parent.user`, async () => {
-    const parent = testMembershipRequest!.toObject();
-
+    const parent = testMembershipRequest?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
     const userPayload = await userResolver?.(parent, {}, {});
 
     const user = await User.findOne({
-      _id: testMembershipRequest!.user,
+      _id: testMembershipRequest?.user,
     }).lean();
 
     expect(userPayload).toEqual(user);

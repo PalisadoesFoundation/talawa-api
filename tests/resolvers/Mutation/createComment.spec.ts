@@ -46,8 +46,8 @@ describe("resolvers -> Mutation -> createComment", () => {
       };
 
       await createCommentResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

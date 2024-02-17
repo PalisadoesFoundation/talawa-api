@@ -65,9 +65,9 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         "../../../src/resolvers/Mutation/createDirectChat"
       );
       await createDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -92,9 +92,9 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         "../../../src/resolvers/Mutation/createDirectChat"
       );
       await createDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
   it(`creates the directChat and returns it`, async () => {

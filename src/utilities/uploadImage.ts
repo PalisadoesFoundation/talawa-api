@@ -14,6 +14,7 @@ import { imageExtensionCheck } from "./imageExtensionCheck";
  * @returns Path of an uploaded image.
  */
 export const uploadImage = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   newImageFile: any,
   oldImagePath: string | null,
 ): Promise<{ newImagePath: string; imageAlreadyInDbPath: string }> => {
@@ -33,7 +34,7 @@ export const uploadImage = async (
         ),
       )
       .on("close", resolve)
-      .on("error", (error: any) => reject(error))
+      .on("error", (error: unknown) => reject(error))
       .on("finish", () =>
         resolve({
           path,

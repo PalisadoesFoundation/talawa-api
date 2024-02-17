@@ -13,7 +13,7 @@ import { nanoid } from "nanoid";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganizations: (InterfaceOrganization &
-  Document<any, any, InterfaceOrganization>)[];
+  Document<unknown, unknown, InterfaceOrganization>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -230,7 +230,7 @@ describe("resolvers -> Query -> organizationsConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        id_in: [testOrganizations[1]._id],
+        id_in: [testOrganizations[1]._id.toString()],
         name_in: [testOrganizations[1].name],
         description_in: [testOrganizations[1].description],
         apiUrl_in: [testOrganizations[1].apiUrl ?? ""],
@@ -277,7 +277,7 @@ describe("resolvers -> Query -> organizationsConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        id_not_in: [testOrganizations[0]._id],
+        id_not_in: [testOrganizations[0]._id.toString()],
         name_not_in: [testOrganizations[0].name],
         description_not_in: [testOrganizations[0].description],
         apiUrl_not_in: [testOrganizations[0].apiUrl ?? ""],

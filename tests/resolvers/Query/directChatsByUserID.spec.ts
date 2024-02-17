@@ -32,8 +32,8 @@ describe("resolvers -> Query -> directChatsByUserID", () => {
       };
 
       await directChatsByUserIDResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual("DirectChats not found");
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual("DirectChats not found");
     }
   });
 

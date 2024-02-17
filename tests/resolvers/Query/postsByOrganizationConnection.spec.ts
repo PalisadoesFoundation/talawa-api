@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import "dotenv/config";
 import { postsByOrganizationConnection as postsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/postsByOrganizationConnection";
@@ -21,7 +22,7 @@ import { BASE_URL } from "../../../src/constants";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
 let testUser: TestUserType;
-let testPosts: (InterfacePost & Document<any, any, InterfacePost>)[];
+let testPosts: (InterfacePost & Document<unknown, unknown, InterfacePost>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -138,10 +139,10 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     postsByOrganizationConnectionPayload?.edges.map((post) => {
       return {
         ...post,
-        organization: post!.organization._id,
+        organization: post?.organization._id,
       };
     });
-    postsByOrganizationConnectionPayload!.edges = postsWithId;
+    postsByOrganizationConnectionPayload?.edges = postsWithId;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -170,8 +171,8 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     try {
       await postsByOrganizationConnectionResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error).toEqual("parameter.missing");
+    } catch (error: unknown) {
+      expect((error as Error)).toEqual("parameter.missing");
     }
   });
 
@@ -186,8 +187,8 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     try {
       await postsByOrganizationConnectionResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual("Skip parameter is missing");
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual("Skip parameter is missing");
     }
   });
 
@@ -225,7 +226,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
         organization: post?.organization._id,
       };
     });
-    postsByOrganizationConnectionPayload!.edges = postsWithId;
+    postsByOrganizationConnectionPayload?.edges = postsWithId;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -287,7 +288,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
         organization: post?.organization._id,
       };
     });
-    postsByOrganizationConnectionPayload!.edges = postsWithId;
+    postsByOrganizationConnectionPayload?.edges = postsWithId;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {

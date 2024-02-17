@@ -22,7 +22,7 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-let testGroupChat: InterfaceGroupChat & Document<any, any, InterfaceGroupChat>;
+let testGroupChat: InterfaceGroupChat & Document<unknown, unknown, InterfaceGroupChat>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -60,9 +60,9 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
 
       await sendMessageToGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -85,9 +85,9 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
 
       await sendMessageToGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -111,9 +111,9 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
 
       await sendMessageToGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 

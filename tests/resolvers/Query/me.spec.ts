@@ -30,8 +30,8 @@ describe("resolvers -> Query -> me", () => {
       };
 
       await meResolver?.({}, {}, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
