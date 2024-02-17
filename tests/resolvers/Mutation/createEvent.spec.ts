@@ -56,9 +56,9 @@ beforeAll(async () => {
     visibleInSearch: true,
   });
 
-  await User.updateOne(
+  await AppUserProfile.updateOne(
     {
-      _id: testUser?._id,
+      userId: testUser?._id,
     },
     {
       $push: {
