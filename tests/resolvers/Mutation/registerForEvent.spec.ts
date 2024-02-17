@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event, EventAttendee } from "../../../src/models";
+import { User, EventAttendee } from "../../../src/models";
 import type { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -19,18 +19,16 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
-let randomTestUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  randomTestUser = await createTestUser();
   [testUser, , testEvent] = await createTestEventWithRegistrants();
 });
 

@@ -1,17 +1,12 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event, EventAttendee } from "../../../src/models";
-import type {
-  MutationRegisterEventAttendeeArgs,
-  MutationRegisterForEventArgs,
-} from "../../../src/types/generatedGraphQLTypes";
+import { User, EventAttendee } from "../../../src/models";
+import type { MutationRegisterEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { registerForEvent as registerForEventResolver } from "../../../src/resolvers/Mutation/registerForEvent";
 import {
   EVENT_NOT_FOUND_ERROR,
-  REGISTRANT_ALREADY_EXIST_ERROR,
   USER_ALREADY_REGISTERED_FOR_EVENT,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -28,8 +23,6 @@ import {
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
-import { debug, log } from "console";
-import { registerEventAttendee } from "../../../src/resolvers/Mutation/registerEventAttendee";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
