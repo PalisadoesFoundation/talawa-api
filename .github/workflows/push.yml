@@ -149,6 +149,22 @@ jobs:
         with:
           name: documentation-api
           path: talawa-api-docs
+
+  Empty-Commit:
+    name: Create Empty Commit
+    runs-on: ubuntu-latest
+    needs: Generate-Documentation
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Empty Commit
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git commit --allow-empty -m "Empty commit"
+          git push origin develop:automated-docs
   
   Copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
