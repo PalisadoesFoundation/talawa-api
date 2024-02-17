@@ -9,7 +9,7 @@ export type TestEventType =
   | null;
 
 export const createTestEventWithRegistrants = async (
-  isAdmin = true
+  isAdmin = true,
 ): Promise<[TestUserType, TestOrganizationType, TestEventType]> => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
 
@@ -40,7 +40,7 @@ export const createTestEventWithRegistrants = async (
         createdEvents: testEvent._id,
         registeredEvents: testEvent._id,
       },
-    }
+    },
   );
 
   return [testUser, testOrganization, testEvent];

@@ -47,6 +47,12 @@ export const inputs = gql`
     eventId: ID
   }
 
+  input CreateAgendaCategoryInput {
+    name: String!
+    description: String
+    organizationId: ID!
+  }
+
   input CursorPaginationInput {
     cursor: String
     direction: PaginationDirection!
@@ -86,6 +92,18 @@ export const inputs = gql`
     latitude: Latitude
     longitude: Longitude
     organizationId: ID!
+  }
+
+  input EventVolunteerInput {
+    userId: ID!
+    eventId: ID!
+  }
+
+  input UpdateEventVolunteerInput {
+    eventId: ID
+    isAssigned: Boolean
+    isInvited: Boolean
+    response: EventVolunteerResponse
   }
 
   input EventWhereInput {
@@ -245,6 +263,12 @@ export const inputs = gql`
     recaptchaToken: String!
   }
 
+  input RecurrenceRuleInput {
+    frequency: Frequency
+    weekDays: [WeekDays]
+    count: Int
+  }
+
   input ToggleUserTagAssignInput {
     userId: ID!
     tagId: ID!
@@ -316,6 +340,11 @@ export const inputs = gql`
   input UpdateActionItemCategoryInput {
     name: String
     isDisabled: Boolean
+  }
+
+  input UpdateAgendaCategoryInput {
+    name: String
+    description: String
   }
 
   input AddressInput {

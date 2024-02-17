@@ -12,7 +12,7 @@ import { User } from "../../models";
 export const saveFcmToken: MutationResolvers["saveFcmToken"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   await User.updateOne(
     {
@@ -22,7 +22,7 @@ export const saveFcmToken: MutationResolvers["saveFcmToken"] = async (
       $set: {
         token: args.token,
       },
-    }
+    },
   );
 
   return true;

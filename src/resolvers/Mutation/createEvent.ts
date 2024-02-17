@@ -1,6 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent, InterfaceUser } from "../../models";
+import type { InterfaceEvent } from "../../models";
 import { User, Organization } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
@@ -10,27 +10,30 @@ import {
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
-import { EventAttendee } from "../../models/EventAttendee";
-import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import type mongoose from "mongoose";
 import { session } from "../../db";
-import { Weekly, Once } from "../../helpers/eventInstances";
+import {
+  createSingleEvent,
+  createRecurringEvent,
+} from "../../helpers/event/createEventHelpers";
 
 /**
  * This function enables to create an event.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
- * @param context - context of the entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * 2. If the organization exists
- * 3. If the user is a part of the organization.
+ * @param context - context of entire application
+ * @remarks The following steps are followed:
+ * 1. Check if the user exists
+ * 2. Check if the organization exists
+ * 3. Check if the user is a part of the organization.
+ * 4. If the event is recurring, create the recurring event instances.
+ * 5. If the event is non-recurring, create a single event.
  * @returns Created event
  */
+
 export const createEvent: MutationResolvers["createEvent"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -41,7 +44,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -54,16 +57,16 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const userCreatedOrganization = currentUser.createdOrganizations.some(
-    (createdOrganization) => createdOrganization.equals(organization._id)
+    (createdOrganization) => createdOrganization.equals(organization._id),
   );
 
   const userJoinedOrganization = currentUser.joinedOrganizations.some(
-    (joinedOrganization) => joinedOrganization.equals(organization._id)
+    (joinedOrganization) => joinedOrganization.equals(organization._id),
   );
 
   // Checks whether currentUser neither created nor joined the organization.
@@ -77,7 +80,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
       ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM
+      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -85,50 +88,52 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   const validationResultTitle = isValidString(args.data?.title ?? "", 256);
   const validationResultDescription = isValidString(
     args.data?.description ?? "",
-    500
+    500,
   );
   const validationResultLocation = isValidString(args.data?.location ?? "", 50);
 
   if (!validationResultTitle.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
 
   if (!validationResultDescription.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
 
   if (!validationResultLocation.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
 
   const compareDatesResult = compareDates(
     args.data?.startDate,
-    args.data?.endDate
+    args.data?.endDate,
   );
 
   if (compareDatesResult !== "") {
     throw new errors.InputValidationError(
       requestContext.translate(compareDatesResult),
-      compareDatesResult
+      compareDatesResult,
     );
   }
-  /*istanbul ignore next*/
+
+  /* c8 ignore start */
   if (session) {
+    // start a transaction
     session.startTransaction();
   }
 
@@ -176,61 +181,48 @@ export const createEvent: MutationResolvers["createEvent"] = async (
           );
           break;
       }
-    } else {
-      createdEvent = await Once.generateEvent(
+  /* c8 ignore stop */
+  try {
+    let createdEvent: InterfaceEvent;
+
+    if (args.data.recurring) {
+      // create recurring event instances
+      createdEvent = await createRecurringEvent(
         args,
-        currentUser,
-        organization,
-        session
+        currentUser?._id.toString(),
+        organization?._id.toString(),
+        session,
+      );
+    } else {
+      // create a single non-recurring event
+      createdEvent = await createSingleEvent(
+        args,
+        currentUser?._id.toString(),
+        organization?._id.toString(),
+        session,
       );
     }
-
     for (const event of createdEvent) {
       await associateEventWithUser(currentUser, event, session);
       await cacheEvents([event]);
     }
-    /*istanbul ignore next*/
+    /* c8 ignore start */
     if (session) {
+      // commit transaction if everything's successful
       await session.commitTransaction();
     }
 
-    // Returns the createdEvent.
-    return createdEvent[0];
+    /* c8 ignore stop */
+    return createdEvent;
   } catch (error) {
-    /*istanbul ignore next*/
+    /* c8 ignore start */
     if (session) {
+      // abort transaction if something fails
       await session.abortTransaction();
     }
+
     throw error;
   }
+
+  /* c8 ignore stop */
 };
-
-async function associateEventWithUser(
-  currentUser: InterfaceUser,
-  createdEvent: InterfaceEvent,
-  session: mongoose.ClientSession
-): Promise<void> {
-  await EventAttendee.create(
-    [
-      {
-        userId: currentUser._id.toString(),
-        eventId: createdEvent._id,
-      },
-    ],
-    { session }
-  );
-
-  await User.updateOne(
-    {
-      _id: currentUser._id,
-    },
-    {
-      $push: {
-        eventAdmin: createdEvent._id,
-        createdEvents: createdEvent._id,
-        registeredEvents: createdEvent._id,
-      },
-    },
-    { session }
-  );
-}

@@ -55,7 +55,7 @@ beforeAll(async () => {
         createdEvents: [testEvent._id],
         registeredEvents: [testEvent._id],
       },
-    }
+    },
   );
 });
 
@@ -92,7 +92,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -120,7 +120,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -149,7 +149,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -166,7 +166,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     if (updatedEvent !== null) {
@@ -181,7 +181,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         $push: {
           eventAdmin: testEvent?._id,
         },
-      }
+      },
     );
 
     const args: MutationUpdateEventArgs = {
@@ -226,7 +226,7 @@ describe("Check for validation conditions", () => {
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationUpdateEventArgs = {
@@ -261,14 +261,14 @@ describe("Check for validation conditions", () => {
       await updateEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
       );
     }
   });
   it(`throws String Length Validation error if description is greater than 500 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationUpdateEventArgs = {
@@ -303,14 +303,14 @@ describe("Check for validation conditions", () => {
       await updateEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
       );
     }
   });
   it(`throws String Length Validation error if location is greater than 50 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationUpdateEventArgs = {
@@ -344,14 +344,14 @@ describe("Check for validation conditions", () => {
       await updateEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`,
       );
     }
   });
   it(`throws Date Validation error if start date is greater than end date`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationUpdateEventArgs = {

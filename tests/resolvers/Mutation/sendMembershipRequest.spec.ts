@@ -98,7 +98,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
         $set: {
           membershipRequests: [],
         },
-      }
+      },
     );
 
     await User.updateOne(
@@ -109,7 +109,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
         $set: {
           membershipRequests: [],
         },
-      }
+      },
     );
 
     const args: MutationSendMembershipRequestArgs = {
@@ -123,14 +123,14 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
     const sendMembershipRequestPayload = await sendMembershipRequestResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(sendMembershipRequestPayload).toEqual(
       expect.objectContaining({
         user: testUser?._id,
         organization: testOrganization?._id,
-      })
+      }),
     );
   });
 });
