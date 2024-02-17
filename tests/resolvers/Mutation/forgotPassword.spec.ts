@@ -79,10 +79,9 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     expect(forgotPasswordPayload).toEqual(true);
 
-    const updatedTestUser = await User
-      .findOne({
-        _id: testUser?._id ?? "",
-      })
+    const updatedTestUser = await User.findOne({
+      _id: testUser?._id ?? "",
+    })
       .select(["password"])
       .lean();
 

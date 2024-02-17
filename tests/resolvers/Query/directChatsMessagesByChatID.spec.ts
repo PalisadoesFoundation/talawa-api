@@ -79,7 +79,7 @@ describe("resolvers -> Query -> directChatsMessagesByChatID", () => {
   it(`returns list of all directChatMessages found
    for directChat with _id === args.id`, async () => {
     const args: QueryDirectChatsMessagesByChatIdArgs = {
-      id: testDirectChats[0]?._id.toString() || ""  ,
+      id: testDirectChats[0]?._id.toString() || "",
     };
 
     const directChatsMessagesByChatIdPayload =

@@ -32,7 +32,9 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
 
       await uploadEncodedVideo(vid, null);
     } catch (error: unknown) {
-      expect((error as Error).message).toEqual(`Translated ${INVALID_FILE_TYPE.MESSAGE}`);
+      expect((error as Error).message).toEqual(
+        `Translated ${INVALID_FILE_TYPE.MESSAGE}`,
+      );
       expect(spy).toBeCalledWith(INVALID_FILE_TYPE.MESSAGE);
     }
   });

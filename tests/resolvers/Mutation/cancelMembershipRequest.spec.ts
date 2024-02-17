@@ -55,7 +55,9 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
 
       await cancelMembershipRequestResolver?.({}, args, context);
     } catch (error: unknown) {
-      expect((error as Error).message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -83,7 +85,9 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
 
       await cancelMembershipRequestResolver?.({}, args, context);
     } catch (error: unknown) {
-      expect((error as Error).message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -138,7 +142,9 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
 
       await cancelMembershipRequestResolver?.({}, args, context);
     } catch (error: unknown) {
-      expect((error as Error).message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 

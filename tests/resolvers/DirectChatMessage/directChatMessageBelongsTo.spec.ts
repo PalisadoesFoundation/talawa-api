@@ -28,7 +28,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
       throw new Error("Parent object is undefined.");
     }
 
-    if (typeof directChatMessageBelongsToResolver !== 'function') {
+    if (typeof directChatMessageBelongsToResolver !== "function") {
       throw new Error("directChatMessageBelongsToResolver is not a function.");
     }
 

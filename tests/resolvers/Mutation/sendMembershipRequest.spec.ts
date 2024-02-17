@@ -56,7 +56,9 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       await sendMembershipRequestResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -81,7 +83,9 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       await sendMembershipRequestResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 

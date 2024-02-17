@@ -22,7 +22,8 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-let testGroupChat: InterfaceGroupChat & Document<unknown, unknown, InterfaceGroupChat>;
+let testGroupChat: InterfaceGroupChat &
+  Document<unknown, unknown, InterfaceGroupChat>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -113,7 +114,9 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 

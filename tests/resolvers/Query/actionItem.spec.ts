@@ -31,7 +31,9 @@ describe("resolvers -> Query -> actionItem", () => {
 
       await actionItemResolver?.({}, args, {});
     } catch (error: unknown) {
-      expect((error as Error).message).toEqual(ACTION_ITEM_NOT_FOUND_ERROR.DESC);
+      expect((error as Error).message).toEqual(
+        ACTION_ITEM_NOT_FOUND_ERROR.DESC,
+      );
     }
   });
 

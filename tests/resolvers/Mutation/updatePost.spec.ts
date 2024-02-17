@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
   not an creator of post with _id === args.id`, async () => {
     try {
       const args: MutationUpdatePostArgs = {
-        id: testPost?._id.toString()?? "",
+        id: testPost?._id.toString() ?? "",
       };
 
       const context = {
@@ -74,7 +74,9 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
       await updatePostResolver?.({}, args, context);
     } catch (error: unknown) {
-      expect((error as Error).message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -101,7 +103,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
   });
   it(`updates the post with imageUrl and returns the updated post`, async () => {
     const args: MutationUpdatePostArgs = {
-      id: testPost?._id.toString() || ""  ,
+      id: testPost?._id.toString() || "",
       data: {
         title: "newTitle",
         text: "nextText",
@@ -245,7 +247,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
     );
     try {
       const args: MutationUpdatePostArgs = {
-        id: testPost?._id.toString() ||  "",
+        id: testPost?._id.toString() || "",
         data: {
           text: "Testing text",
         },
@@ -261,7 +263,9 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
       await updatePostResolver?.({}, args, context);
     } catch (error: unknown) {
-      expect((error as Error).message).toEqual(`Please provide a title to pin post`);
+      expect((error as Error).message).toEqual(
+        `Please provide a title to pin post`,
+      );
     }
   });
 });

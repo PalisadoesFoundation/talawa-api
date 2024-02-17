@@ -38,7 +38,6 @@ function roleDirectiveTransformer(
               USER_NOT_FOUND_ERROR.MESSAGE,
               USER_NOT_FOUND_ERROR.CODE,
               USER_NOT_FOUND_ERROR.PARAM,
-              
             );
           }
 

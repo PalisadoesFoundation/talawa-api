@@ -15,7 +15,8 @@ import { createTestPost } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-let testComment: InterfaceComment & Document<unknown, unknown, InterfaceComment>;
+let testComment: InterfaceComment &
+  Document<unknown, unknown, InterfaceComment>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

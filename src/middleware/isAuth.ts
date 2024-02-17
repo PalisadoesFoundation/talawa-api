@@ -47,7 +47,7 @@ export const isAuth = (request: Request): InterfaceAuthData => {
   // to be changed in production
   // only tokens created with this key will be valid tokens
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let decodedToken:any;
+  let decodedToken: any;
   try {
     decodedToken = jwt.verify(
       token,

@@ -67,7 +67,9 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       await createDirectChatResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 

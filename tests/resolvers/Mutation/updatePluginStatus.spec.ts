@@ -69,7 +69,9 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
       await updatePluginStatusResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(PLUGIN_NOT_FOUND.MESSAGE);
-      expect((error as Error).message).toEqual(`Translated ${PLUGIN_NOT_FOUND.MESSAGE}`);
+      expect((error as Error).message).toEqual(
+        `Translated ${PLUGIN_NOT_FOUND.MESSAGE}`,
+      );
     }
   });
 

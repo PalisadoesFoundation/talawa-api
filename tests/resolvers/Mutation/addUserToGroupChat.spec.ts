@@ -234,7 +234,9 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       await addUserToGroupChat?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_ALREADY_MEMBER_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(USER_ALREADY_MEMBER_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_ALREADY_MEMBER_ERROR.MESSAGE,
+      );
     }
   });
 

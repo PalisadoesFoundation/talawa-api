@@ -172,7 +172,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     try {
       await postsByOrganizationConnectionResolver?.({}, args, {});
     } catch (error: unknown) {
-      expect((error as Error)).toEqual("parameter.missing");
+      expect(error as Error).toEqual("parameter.missing");
     }
   });
 

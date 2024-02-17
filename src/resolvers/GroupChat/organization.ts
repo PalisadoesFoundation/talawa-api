@@ -22,8 +22,7 @@ export const organization: GroupChatResolvers["organization"] = async (
   const organization = await Organization.findOne({
     _id: parent.organization,
   }).lean();
-if(organization)
-  await cacheOrganizations([organization]);
+  if (organization) await cacheOrganizations([organization]);
 
   return organization as InterfaceOrganization;
 };

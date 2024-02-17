@@ -13,7 +13,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
   async (_parent, args, _context) => {
-    const {  ...otherFields } = args.input;
+    const { ...otherFields } = args.input;
 
     //If there is no input
     if (Object.keys(otherFields).length === 0) {

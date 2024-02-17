@@ -1,3 +1,16 @@
+import { composeResolvers } from "@graphql-tools/resolvers-composition";
+import {
+  DateResolver,
+  DateTimeResolver,
+  EmailAddressResolver,
+  LatitudeResolver,
+  LongitudeResolver,
+  PhoneNumberResolver,
+  PositiveIntResolver,
+  TimeResolver,
+  URLResolver,
+} from "graphql-scalars";
+import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
 import type { Resolvers } from "../types/generatedGraphQLTypes";
 import { ActionItem } from "./ActionItem";
 import { ActionItemCategory } from "./ActionItemCategory";
@@ -12,27 +25,14 @@ import { GroupChat } from "./GroupChat";
 import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
 import { Mutation } from "./Mutation";
-import { UserFamily } from "./UserFamily";
 import { Organization } from "./Organization";
 import { Post } from "./Post";
 import { Query } from "./Query";
 import { Subscription } from "./Subscription";
 import { User } from "./User";
+import { UserFamily } from "./UserFamily";
 import { UserTag } from "./UserTag";
-import { composeResolvers } from "@graphql-tools/resolvers-composition";
 import { currentUserExists } from "./middleware/currentUserExists";
-import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
-import {
-  DateResolver,
-  DateTimeResolver,
-  EmailAddressResolver,
-  LatitudeResolver,
-  LongitudeResolver,
-  PhoneNumberResolver,
-  PositiveIntResolver,
-  TimeResolver,
-  URLResolver,
-} from "graphql-scalars";
 
 const resolvers: Resolvers = {
   ActionItem,

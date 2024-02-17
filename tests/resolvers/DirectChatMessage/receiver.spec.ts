@@ -25,8 +25,7 @@ describe("resolvers -> DirectChatMessage -> receiver", () => {
     const parent = testDirectChatMessage?.toObject();
     if (!parent) {
       throw new Error("Parent object is undefined.");
-    
- }
+    }
     const receiverPayload = await receiverResolver?.(parent, {}, {});
 
     const receiver = await User.findOne({

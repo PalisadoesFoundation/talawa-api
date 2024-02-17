@@ -7,7 +7,7 @@ export class InvalidFileTypeError extends ApplicationError {
     message = "Invalid File Type",
     code: string | null = null,
     param: string | null = null,
-    metadata: Record<string, string>  = {},
+    metadata: Record<string, string> = {},
   ) {
     const errorJson = [
       {

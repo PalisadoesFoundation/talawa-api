@@ -131,9 +131,6 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
   });
 
   it(`updates the advertisement with _id === args.id and returns it`, async () => {
- 
-
-
     const args: MutationUpdateAdvertisementArgs = {
       input: {
         _id: testAdvertisement?._id,

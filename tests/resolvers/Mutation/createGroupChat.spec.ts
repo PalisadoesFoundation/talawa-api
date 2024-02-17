@@ -53,7 +53,9 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
 
       await createGroupChatResolver?.({}, args, context);
     } catch (error: unknown) {
-      expect((error as Error).message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 

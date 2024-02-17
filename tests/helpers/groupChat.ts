@@ -13,7 +13,8 @@ export type TestGroupChatType =
   | null;
 
 export type TestGroupChatMessageType =
-  | (InterfaceGroupChatMessage & Document<unknown, unknown, InterfaceGroupChatMessage>)
+  | (InterfaceGroupChatMessage &
+      Document<unknown, unknown, InterfaceGroupChatMessage>)
   | null;
 
 export const createTestGroupChat = async (): Promise<
