@@ -83,10 +83,10 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganization?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
       );
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
       );
     }
   });
@@ -100,7 +100,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     // );
 
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL
+      async (encodedImageURL: string) => encodedImageURL,
     );
 
     await User.findOneAndUpdate(
@@ -111,7 +111,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         $set: {
           adminApproved: true,
         },
-      }
+      },
     );
     await AppUserProfile.updateOne(
       {
@@ -121,7 +121,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         $set: {
           isSuperAdmin: true,
         },
-      }
+      },
     );
 
     const args: MutationCreateOrganizationArgs = {
@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     const createOrganizationPayload = await createOrganizationResolver?.(
       {},
       args,
-      context
+      context,
     );
     expect(createOrganizationPayload).toEqual(
       expect.objectContaining({
@@ -174,7 +174,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         admins: [testUser?._id],
         members: [testUser?._id],
         image: "imagePath",
-      })
+      }),
     );
     expect(createOrganizationPayload?.image).toEqual("imagePath");
 
@@ -193,10 +193,10 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       expect.objectContaining({
         createdOrganizations: [createOrganizationPayload?._id],
         adminFor: [createOrganizationPayload?._id],
-      })
+      }),
     );
     expect(updatedTestUser?.joinedOrganizations).toContainEqual(
-      createOrganizationPayload?._id
+      createOrganizationPayload?._id,
     );
 
     const defaultCategory = await ActionItemCategory.findOne({
@@ -208,7 +208,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         organizationId: createOrganizationPayload?._id,
         name: "Default",
         isDisabled: false,
-      })
+      }),
     );
   });
   it(`creates the organization without image and returns it`, async () => {
@@ -216,7 +216,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       async (newImagePath, imageAlreadyInDbPath) => ({
         newImagePath,
         imageAlreadyInDbPath: imageAlreadyInDbPath || "",
-      })
+      }),
     );
     const args: MutationCreateOrganizationArgs = {
       data: {
@@ -245,7 +245,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     const createOrganizationPayload = await createOrganizationResolver?.(
       {},
       args,
-      context
+      context,
     );
     expect(createOrganizationPayload).toEqual(
       expect.objectContaining({
@@ -267,7 +267,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         creatorId: testUser?._id,
         admins: [testUser?._id],
         members: [testUser?._id],
-      })
+      }),
     );
     expect(createOrganizationPayload?.image).toBe(null);
   });
@@ -275,7 +275,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
   it(`throws String Length Validation error if name is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationCreateOrganizationArgs = {
@@ -305,14 +305,14 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
       );
     }
   });
   it(`throws String Length Validation error if description is greater than 500 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationCreateOrganizationArgs = {
@@ -343,14 +343,14 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
       );
     }
   });
   it("throws Address Validation Error for an invalid address", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const invalidAddress = {
@@ -420,14 +420,14 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       }
     } else {
       console.error(
-        "Error: createOrganizationResolver is undefined in the test suite"
+        "Error: createOrganizationResolver is undefined in the test suite",
       );
     }
   });
   it("throws Address Validation Error for missing address", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const missingAddress = {}; // No address field in the data
@@ -456,7 +456,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       }
     } else {
       console.error(
-        "Error: createOrganizationResolver is undefined in the test suite"
+        "Error: createOrganizationResolver is undefined in the test suite",
       );
     }
   });
@@ -529,7 +529,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       // console.log((error as Error).message);
 
       expect((error as Error).message).toEqual(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });

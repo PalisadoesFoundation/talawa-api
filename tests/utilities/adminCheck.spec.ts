@@ -48,11 +48,11 @@ describe("utilities -> adminCheck", () => {
       const { adminCheck } = await import("../../src/utilities");
       await adminCheck(
         testUser?._id,
-        testOrganization ?? ({} as InterfaceOrganization)
+        testOrganization ?? ({} as InterfaceOrganization),
       );
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
     }
     expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
@@ -69,7 +69,7 @@ describe("utilities -> adminCheck", () => {
       {
         new: true,
         upsert: true,
-      }
+      },
     );
 
     const { adminCheck } = await import("../../src/utilities");
@@ -77,8 +77,8 @@ describe("utilities -> adminCheck", () => {
     await expect(
       adminCheck(
         updatedUser?.userId?.toString() ?? "",
-        testOrganization ?? ({} as InterfaceOrganization)
-      )
+        testOrganization ?? ({} as InterfaceOrganization),
+      ),
     ).resolves.not.toThrowError();
   });
 
@@ -95,7 +95,7 @@ describe("utilities -> adminCheck", () => {
       {
         new: true,
         upsert: true,
-      }
+      },
     );
 
     const { adminCheck } = await import("../../src/utilities");
@@ -103,8 +103,8 @@ describe("utilities -> adminCheck", () => {
     await expect(
       adminCheck(
         testUser?._id,
-        updatedOrganization ?? ({} as InterfaceOrganization)
-      )
+        updatedOrganization ?? ({} as InterfaceOrganization),
+      ),
     ).resolves.not.toThrowError();
   });
   it("throws error if user is not found with the specific Id", async () => {
@@ -118,12 +118,12 @@ describe("utilities -> adminCheck", () => {
       const { adminCheck } = await import("../../src/utilities");
       await adminCheck(
         new mongoose.Types.ObjectId(),
-        testOrganization ?? ({} as InterfaceOrganization)
+        testOrganization ?? ({} as InterfaceOrganization),
       );
     } catch (error: unknown) {
       if (!(error instanceof ApplicationError)) return;
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
     }
     expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);

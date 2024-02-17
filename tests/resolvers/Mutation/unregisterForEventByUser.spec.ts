@@ -1,26 +1,26 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, EventAttendee } from "../../../src/models";
+import { EventAttendee, User } from "../../../src/models";
 import type { MutationUnregisterForEventByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import {
   EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_UNREGISTERED_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -94,7 +94,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_ALREADY_UNREGISTERED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_ALREADY_UNREGISTERED_ERROR.MESSAGE}`
+        `Translated ${USER_ALREADY_UNREGISTERED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -114,7 +114,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
         $push: {
           registeredEvents: testEvent?._id,
         },
-      }
+      },
     );
 
     const args: MutationUnregisterForEventByUserArgs = {

@@ -56,7 +56,7 @@ beforeAll(async () => {
     },
     {
       new: true,
-    }
+    },
   );
 });
 
@@ -138,7 +138,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedComment !== null) {
@@ -154,7 +154,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
           $pull: {
             adminFor: testPost?.organization,
           },
-        }
+        },
       );
 
       const args: MutationRemoveCommentArgs = {
@@ -173,7 +173,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -191,7 +191,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedComment !== null) {
@@ -207,7 +207,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
         $push: {
           adminFor: testPost?.organization,
         },
-      }
+      },
     );
 
     const args: MutationRemoveCommentArgs = {
@@ -221,7 +221,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
     const removeCommentPayload = await removeCommentResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const testUpdatedPost = await Post.findOne({
@@ -262,7 +262,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

@@ -33,7 +33,7 @@ export const createTestUserFunc = async (): Promise<TestUserType> => {
 export const createTestUserFamilyWithAdmin = async (
   userID: string,
   isMember = true,
-  isAdmin = true
+  isAdmin = true,
 ): Promise<TestUserFamilyType> => {
   const testUser = await createTestUserFunc();
   if (testUser) {
@@ -54,7 +54,7 @@ export const createTestUserFamilyWithAdmin = async (
           joinedUserFamily: testUserFamily._id,
           adminForUserFamily: testUserFamily._id,
         },
-      }
+      },
     );
 
     return testUserFamily;
@@ -65,13 +65,13 @@ export const createTestUserFamilyWithAdmin = async (
 
 export const createTestUserAndUserFamily = async (
   isMember = true,
-  isAdmin = true
+  isAdmin = true,
 ): Promise<[TestUserType, TestUserFamilyType]> => {
   const testUser = await createTestUserFunc();
   const testUserFamily = await createTestUserFamilyWithAdmin(
     testUser?._id,
     isMember,
-    isAdmin
+    isAdmin,
   );
 
   return [testUser, testUserFamily];

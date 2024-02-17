@@ -14,7 +14,7 @@ export const getSort = (
         | PostOrderByInput
         | UserOrderByInput
       >
-    | undefined
+    | undefined,
 ): unknown => {
   let sortPayload = {};
 

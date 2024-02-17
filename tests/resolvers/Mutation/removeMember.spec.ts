@@ -1,10 +1,19 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { Organization, User } from "../../../src/models";
 import type { MutationRemoveMemberArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
@@ -14,20 +23,11 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_REMOVING_SELF,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  afterEach,
-  vi,
-} from "vitest";
+import { createTestUserFunc } from "../../helpers/user";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import { createTestUserFunc } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -67,7 +67,7 @@ beforeAll(async () => {
         adminFor: testOrganization._id,
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -79,7 +79,7 @@ beforeAll(async () => {
         adminFor: testOrganization._id,
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -90,7 +90,7 @@ beforeAll(async () => {
       $push: {
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -104,7 +104,7 @@ beforeAll(async () => {
           joinedOrganizations: testOrganization._id,
         },
       },
-    }
+    },
   );
 });
 
@@ -140,7 +140,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
         await import("../../../src/resolvers/Mutation/removeMember");
 
       await removeMemberResolverOrgNotFoundError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
@@ -169,10 +169,10 @@ describe("resolvers -> Mutation -> removeMember", () => {
       );
 
       await removeMemberResolverAdminError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
     }
   });
@@ -199,10 +199,10 @@ describe("resolvers -> Mutation -> removeMember", () => {
       );
 
       await removeMemberResolverNotFoundError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -228,10 +228,10 @@ describe("resolvers -> Mutation -> removeMember", () => {
         await import("../../../src/resolvers/Mutation/removeMember");
 
       await removeMemberResolverMemberNotFoundError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(MEMBER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${MEMBER_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${MEMBER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -257,9 +257,11 @@ describe("resolvers -> Mutation -> removeMember", () => {
         await import("../../../src/resolvers/Mutation/removeMember");
 
       await removeMemberResolverRemoveSelfError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_REMOVING_SELF.MESSAGE}`);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_REMOVING_SELF.MESSAGE}`,
+      );
     }
   });
 
@@ -284,10 +286,10 @@ describe("resolvers -> Mutation -> removeMember", () => {
         await import("../../../src/resolvers/Mutation/removeMember");
 
       await removeMemberResolverRemoveAdminError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_ADMIN.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ADMIN_REMOVING_ADMIN.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${ADMIN_REMOVING_ADMIN.MESSAGE}`,
       );
     }
   });
@@ -313,10 +315,10 @@ describe("resolvers -> Mutation -> removeMember", () => {
         await import("../../../src/resolvers/Mutation/removeMember");
 
       await removeMemberResolverRemoveAdminError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`,
       );
     }
   });
@@ -340,7 +342,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
     const updatedOrganization = await removeMemberResolverRemoveAdminError?.(
       {},
       args,
-      context
+      context,
     );
 
     const removedUser = await User.findOne({
@@ -349,7 +351,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
     expect(updatedOrganization?.members).not.toContain(testUsers[2]?._id);
     expect(removedUser?.joinedOrganizations).not.toContain(
-      testOrganization?._id
+      testOrganization?._id,
     );
   });
 });

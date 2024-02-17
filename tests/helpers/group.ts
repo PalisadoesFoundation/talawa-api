@@ -5,7 +5,7 @@ import { Group } from "../../src/models";
 import type { Document } from "mongoose";
 
 export type TestGroupType =
-  | (InterfaceGroup & Document<any, any, InterfaceGroup>)
+  | (InterfaceGroup & Document<unknown, unknown, InterfaceGroup>)
   | null;
 
 export const createTestGroup = async (): Promise<

@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -169,7 +169,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -203,7 +203,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       // console.log(error);
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -252,7 +252,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -278,7 +278,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_ORGANIZATION_ADMIN.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_ORGANIZATION_ADMIN.MESSAGE}`
+        `Translated ${USER_NOT_ORGANIZATION_ADMIN.MESSAGE}`,
       );
     }
   });
@@ -304,7 +304,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -329,10 +329,10 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       await removeAdminAdminError?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
       );
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
     }
   });
@@ -347,7 +347,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
         $set: {
           creatorId: testUserRemover?._id,
         },
-      }
+      },
     );
 
     await User.updateOne(
@@ -358,7 +358,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
         $set: {
           adminApproved: true,
         },
-      }
+      },
     );
     await AppUserProfile.updateOne(
       {
@@ -368,7 +368,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
         $set: {
           isSuperAdmin: true,
         },
-      }
+      },
     );
 
     const args: MutationRemoveAdminArgs = {

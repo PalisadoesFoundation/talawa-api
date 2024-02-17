@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import {
   requestContextNamespace,
@@ -54,7 +55,7 @@ describe("middleware -> requestContext", () => {
     middleware()(
       mockRequest as Request,
       mockResponse as Response,
-      nextFunction as NextFunction
+      nextFunction as NextFunction,
     );
     expect(nextFunction).toBeCalledTimes(1);
   });
@@ -91,7 +92,7 @@ describe("middleware -> requestContext", () => {
       translate({});
     } catch (error: any) {
       expect(error.message).toEqual(
-        "i18n is not initialized, try app.use(i18n.init);"
+        "i18n is not initialized, try app.use(i18n.init);",
       );
     }
   });
@@ -101,7 +102,7 @@ describe("middleware -> requestContext", () => {
       translatePlural({});
     } catch (error: any) {
       expect(error.message).toEqual(
-        "i18n is not initialized, try app.use(i18n.init);"
+        "i18n is not initialized, try app.use(i18n.init);",
       );
     }
   });

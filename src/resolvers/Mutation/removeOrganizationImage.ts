@@ -42,7 +42,7 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -54,7 +54,7 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_IMAGE_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_IMAGE_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_IMAGE_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -72,7 +72,7 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     if (updatedOrganization !== null) {

@@ -66,9 +66,11 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         await import("../../../src/resolvers/Mutation/joinPublicOrganization");
 
       await joinPublicOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
   it(`throws UnauthorizedError message if organization with _id === args.organizationId  required registration for the users`, async () => {
@@ -89,9 +91,11 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         await import("../../../src/resolvers/Mutation/joinPublicOrganization");
 
       await joinPublicOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -112,10 +116,9 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         },
         {
           new: true,
-        }
+        },
       );
-
-      await cacheOrganizations([updatedOrganizaiton!]);
+      if (updatedOrganizaiton) await cacheOrganizations([updatedOrganizaiton]);
 
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -129,9 +132,9 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         await import("../../../src/resolvers/Mutation/joinPublicOrganization");
 
       await joinPublicOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -153,9 +156,11 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         await import("../../../src/resolvers/Mutation/joinPublicOrganization");
 
       await joinPublicOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_ALREADY_MEMBER_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_ALREADY_MEMBER_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_ALREADY_MEMBER_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -171,10 +176,9 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       },
       {
         new: true,
-      }
+      },
     );
-
-    await cacheOrganizations([updatedOrganizaiton!]);
+    if (updatedOrganizaiton) await cacheOrganizations([updatedOrganizaiton]);
 
     const args: MutationJoinPublicOrganizationArgs = {
       organizationId: testOrganization?.id,

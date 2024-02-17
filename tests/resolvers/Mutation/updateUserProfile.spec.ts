@@ -26,8 +26,8 @@ import {
 } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
-let testUser2: InterfaceUser & Document<any, any, InterfaceUser>;
+let testUser: InterfaceUser & Document<unknown, unknown, InterfaceUser>;
+let testUser2: InterfaceUser & Document<unknown, unknown, InterfaceUser>;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
@@ -107,10 +107,10 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       );
 
       await updateUserProfileResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -135,10 +135,10 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         await import("../../../src/resolvers/Mutation/updateUserProfile");
 
       await updateUserProfileResolverUserError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -166,10 +166,10 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       );
 
       await updateUserProfileResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`,
       );
     }
   });
@@ -196,10 +196,10 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         await import("../../../src/resolvers/Mutation/updateUserProfile");
 
       await updateUserProfileResolverEmailError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`,
       );
     }
   });
@@ -218,7 +218,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -243,7 +243,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -271,7 +271,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const testUserobj = await User.findById({ _id: testUser.id });
@@ -301,7 +301,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const testUserobj = await User.findById({ _id: testUser.id });
@@ -333,7 +333,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -358,7 +358,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     };
 
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL
+      async (encodedImageURL: string) => encodedImageURL,
     );
 
     const context = {
@@ -369,7 +369,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -389,7 +389,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     };
 
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL
+      async (encodedImageURL: string) => encodedImageURL,
     );
 
     const context = {
@@ -400,7 +400,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserProfilePayload).toEqual({

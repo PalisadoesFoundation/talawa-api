@@ -60,7 +60,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         ...paginateOptions,
         populate: ["registeredEvents"],
         select: ["-password"],
-      }
+      },
     );
 
     let users: InterfaceUser[] = []; // Change the type of users

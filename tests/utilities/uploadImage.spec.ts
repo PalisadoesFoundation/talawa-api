@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import dotenv from "dotenv";
 import fs from "fs";
 import {
@@ -62,8 +63,8 @@ try {
               .createReadStream(
                 path.join(
                   __dirname,
-                  "../../public/markdown/images/talawa-logo-lite-200x200.png"
-                )
+                  "../../public/markdown/images/talawa-logo-lite-200x200.png",
+                ),
               )
               .on("error", (error) => {
                 console.log(error);
@@ -79,7 +80,7 @@ try {
             async (oldImagePath: string | null, newImagePath: string) => {
               console.log(oldImagePath, newImagePath);
               return "";
-            }
+            },
           );
         const { uploadImage } = await import("../../src/utilities/uploadImage");
         const uploadImagePayload = await uploadImage(pngImage, null);
@@ -94,21 +95,21 @@ try {
           },
           {
             new: true,
-          }
+          },
         ).lean();
         expect(mockedImageAlreadyInDb).toHaveBeenCalledWith(
           null,
-          testUserObj?.image
+          testUserObj?.image,
         );
         expect(uploadImagePayload?.newImagePath).toEqual(testUserObj?.image);
         fs.unlink(
           path.join(
             __dirname,
-            "../../".concat(uploadImagePayload.newImagePath)
+            "../../".concat(uploadImagePayload.newImagePath),
           ),
           (err) => {
             if (err) throw err;
-          }
+          },
         );
       } catch (error) {
         console.log(error);
@@ -123,8 +124,8 @@ try {
               .createReadStream(
                 path.join(
                   __dirname,
-                  "../../public/markdown/images/talawa-logo-lite-200x200.png"
-                )
+                  "../../public/markdown/images/talawa-logo-lite-200x200.png",
+                ),
               )
               .on("error", (err) => {
                 console.log(err);
@@ -140,7 +141,7 @@ try {
             async (oldImagePath: string | null, newImagePath: string) => {
               console.log(oldImagePath, newImagePath);
               return newImagePath;
-            }
+            },
           );
         const { uploadImage } = await import("../../src/utilities/uploadImage");
         const testUserBeforeObj = await User.findById({
@@ -167,25 +168,25 @@ try {
           },
           {
             new: true,
-          }
+          },
         ).lean();
         expect(mockedDeleteImage).toBeCalledWith(
           oldImagePath,
-          testUserObj?.image
+          testUserObj?.image,
         );
         expect(mockedImageAlreadyInDb).toHaveBeenCalledWith(
           oldImagePath,
-          testUserObj?.image
+          testUserObj?.image,
         );
         expect(uploadImagePayload?.newImagePath).toEqual(testUserObj?.image);
         fs.unlink(
           path.join(
             __dirname,
-            "../../".concat(uploadImagePayload.newImagePath)
+            "../../".concat(uploadImagePayload.newImagePath),
           ),
           (err) => {
             if (err) throw err;
-          }
+          },
         );
       } catch (error) {
         console.log(error);

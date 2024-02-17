@@ -19,6 +19,7 @@ export type TypeImagePath =
 
 const getImageHash = (oldSrc: TypeImagePath): object => {
   return new Promise((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     imageHash(oldSrc, 16, true, (error: Error, data: any) => {
       if (error) {
         reject(error);
@@ -41,7 +42,7 @@ const getImageHash = (oldSrc: TypeImagePath): object => {
  */
 export const reuploadDuplicateCheck = async (
   oldImagePath: TypeImagePath | null,
-  newImagePath: TypeImagePath
+  newImagePath: TypeImagePath,
 ): Promise<boolean> => {
   /*
   This function checks whether a user is trying to re-upload the same profile picture
@@ -68,7 +69,7 @@ export const reuploadDuplicateCheck = async (
           param: "fileType",
         },
       ],
-      requestContext.translate("invalid.fileType")
+      requestContext.translate("invalid.fileType"),
     );
   }
 };

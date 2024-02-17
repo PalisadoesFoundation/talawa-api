@@ -31,7 +31,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 
   randomUser = await createTestUser();
@@ -75,7 +75,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
       await createActionItemCategoryResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -94,7 +94,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
       await createActionItemCategoryResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ADMIN.MESSAGE
+        USER_NOT_AUTHORIZED_ADMIN.MESSAGE,
       );
     }
   });
@@ -112,14 +112,14 @@ describe("resolvers -> Mutation -> createCategory", () => {
     const createCategoryPayload = await createActionItemCategoryResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
         organizationId: testOrganization?._id,
         name: "Default",
-      })
+      }),
     );
   });
 
@@ -133,7 +133,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     const args: MutationCreateActionItemCategoryArgs = {
@@ -148,14 +148,14 @@ describe("resolvers -> Mutation -> createCategory", () => {
     const createCategoryPayload = await createActionItemCategoryResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
         organizationId: testOrganization?._id,
         name: "Default2",
-      })
+      }),
     );
   });
 
@@ -173,7 +173,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
       await createActionItemCategoryResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        ACTION_ITEM_CATEGORY_ALREADY_EXISTS.MESSAGE
+        ACTION_ITEM_CATEGORY_ALREADY_EXISTS.MESSAGE,
       );
     }
   });

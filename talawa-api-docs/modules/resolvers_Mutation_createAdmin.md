@@ -31,11 +31,12 @@ context of entire application
 **`Remarks`**
 
 The following checks are done:
+
 1. If the organization exists
 2. If the current user is the creator of the organization
 3. If the user exists
 4. If the user is a member of the organization
-4. If the user is already an admin of the organization
+5. If the user is already an admin of the organization
 
 #### Defined in
 

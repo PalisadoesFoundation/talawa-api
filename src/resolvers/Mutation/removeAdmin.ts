@@ -28,7 +28,7 @@ import { superAdminCheck } from "../../utilities";
 export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization: InterfaceOrganization;
 
@@ -52,7 +52,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -67,7 +67,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     throw new errors.NotFoundError(
       USER_NOT_FOUND_ERROR.MESSAGE,
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -76,7 +76,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const userAppProfile = await AppUserProfile.findOne({
@@ -86,7 +86,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -97,19 +97,19 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
   // Checks whether user is an admin of the organization.
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
-    Types.ObjectId(admin).equals(user._id)
+    Types.ObjectId(admin).equals(user._id),
   );
 
   if (!userIsOrganizationAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(`${USER_NOT_ORGANIZATION_ADMIN.MESSAGE}`),
       USER_NOT_ORGANIZATION_ADMIN.CODE,
-      USER_NOT_ORGANIZATION_ADMIN.PARAM
+      USER_NOT_ORGANIZATION_ADMIN.PARAM,
     );
   }
 
@@ -124,13 +124,13 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     {
       $set: {
         admins: organization.admins.filter(
-          (admin) => admin.toString() !== user._id.toString()
+          (admin) => admin.toString() !== user._id.toString(),
         ),
       },
     },
     {
       new: true,
-    }
+    },
   );
 
   if (updatedOrganization !== null) {
@@ -147,12 +147,12 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
         adminFor: userAppProfile.adminFor.filter(
           (adminForOrganization) =>
             adminForOrganization &&
-            adminForOrganization.toString() !== organization._id.toString()
+            adminForOrganization.toString() !== organization._id.toString(),
         ),
       },
     },
     {
       new: true,
-    }
+    },
   ).lean();
 };

@@ -39,7 +39,7 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
     const currentUserAppProfile = await AppUserProfile.findOne({
@@ -50,7 +50,7 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -62,13 +62,13 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
       (orgId) =>
-        orgId && Types.ObjectId(orgId.toString()).equals(organization._id)
+        orgId && Types.ObjectId(orgId.toString()).equals(organization._id),
     );
 
     if (
@@ -77,7 +77,7 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -85,7 +85,7 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
       throw new errors.InputValidationError(
         requestContext.translate(CUSTOM_FIELD_NAME_MISSING.MESSAGE),
         CUSTOM_FIELD_NAME_MISSING.CODE,
-        CUSTOM_FIELD_NAME_MISSING.PARAM
+        CUSTOM_FIELD_NAME_MISSING.PARAM,
       );
     }
 
@@ -93,7 +93,7 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
       throw new errors.InputValidationError(
         requestContext.translate(CUSTOM_FIELD_TYPE_MISSING.MESSAGE),
         CUSTOM_FIELD_TYPE_MISSING.CODE,
-        CUSTOM_FIELD_TYPE_MISSING.PARAM
+        CUSTOM_FIELD_TYPE_MISSING.PARAM,
       );
     }
 
@@ -109,7 +109,7 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
       { _id: organization._id },
       {
         $push: { collectionFields: newCollectionField._id },
-      }
+      },
     ).lean();
 
     return newCollectionField;

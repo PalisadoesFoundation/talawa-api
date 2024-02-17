@@ -73,7 +73,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       await assignUserTagResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -103,7 +103,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       await assignUserTagResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -136,7 +136,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(TAG_NOT_FOUND.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${TAG_NOT_FOUND.MESSAGE}`
+        `Translated ${TAG_NOT_FOUND.MESSAGE}`,
       );
     }
   });
@@ -167,10 +167,10 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       await assignUserTagResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -201,10 +201,10 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       await assignUserTagResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE}`
+        `Translated ${USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
-        `${USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE}`
+        `${USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE}`,
       );
     }
   });
@@ -260,7 +260,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       await assignUserTagResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_ALREADY_HAS_TAG.MESSAGE}`
+        `Translated ${USER_ALREADY_HAS_TAG.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(`${USER_ALREADY_HAS_TAG.MESSAGE}`);
     }
@@ -293,10 +293,10 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       await assignUserTagResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });

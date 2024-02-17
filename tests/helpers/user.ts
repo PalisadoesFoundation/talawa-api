@@ -24,7 +24,7 @@ export const createTestUser = async (): Promise<TestUserType> => {
     },
     {
       appUserProfileId: testUserAppProfile._id,
-    }
+    },
   );
   return testUser;
 };

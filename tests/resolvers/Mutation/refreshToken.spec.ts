@@ -71,7 +71,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       if (error instanceof Error) {
         expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
         expect(error.message).toEqual(
-          `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
+          `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`,
         );
       }
     }
@@ -88,7 +88,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         testUser ? testUser.toObject() : ({} as InterfaceUser),
         testUserAppProfile
           ? testUserAppProfile
-          : ({} as InterfaceAppUserProfile)
+          : ({} as InterfaceAppUserProfile),
       );
 
       const args: MutationRefreshTokenArgs = {
@@ -104,7 +104,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       if (error instanceof Error) {
         expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
         expect(error.message).toEqual(
-          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
         );
 
         spy.mockRestore();
@@ -127,14 +127,14 @@ describe("resolvers -> Mutation -> refreshToken", () => {
           $inc: {
             tokenVersion: 1,
           },
-        }
+        },
       );
 
       refreshToken = await createRefreshToken(
         testUser ? testUser.toObject() : ({} as InterfaceUser),
         testUserAppProfile
           ? testUserAppProfile
-          : ({} as InterfaceAppUserProfile)
+          : ({} as InterfaceAppUserProfile),
       );
 
       const args: MutationRefreshTokenArgs = {
@@ -150,7 +150,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       if (error instanceof Error) {
         expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
         expect(error.message).toEqual(
-          `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
+          `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`,
         );
       }
     }
@@ -171,14 +171,14 @@ describe("resolvers -> Mutation -> refreshToken", () => {
           $inc: {
             tokenVersion: 1,
           },
-        }
+        },
       );
 
       refreshToken = await createRefreshToken(
         testUser ? testUser.toObject() : ({} as InterfaceUser),
         testUserAppProfile
           ? testUserAppProfile
-          : ({} as InterfaceAppUserProfile)
+          : ({} as InterfaceAppUserProfile),
       );
 
       const args: MutationRefreshTokenArgs = {
@@ -194,7 +194,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       if (error instanceof Error) {
         expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
         expect(error.message).toEqual(
-          `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
+          `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`,
         );
       }
     }
@@ -220,14 +220,14 @@ describe("resolvers -> Mutation -> refreshToken", () => {
     const updatedUserAppProfile = await AppUserProfile.findOneAndUpdate(
       { userId: jwtPayload.userId },
       { $set: { token: newRefreshToken }, $inc: { tokenVersion: 1 } },
-      { new: true }
+      { new: true },
     );
 
     expect(updatedUserAppProfile).toBeDefined();
     expect(updatedUserAppProfile?.token).toBe(newRefreshToken);
     if (testUserAppProfile?.tokenVersion)
       expect(updatedUserAppProfile?.tokenVersion).toBe(
-        testUserAppProfile?.tokenVersion + 1
+        testUserAppProfile?.tokenVersion + 1,
       );
 
     // Restore the original function
@@ -243,12 +243,12 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         $inc: {
           tokenVersion: -4,
         },
-      }
+      },
     );
 
     refreshToken = await createRefreshToken(
       testUser ? testUser.toObject() : ({} as InterfaceUser),
-      testUserAppProfile ? testUserAppProfile : ({} as InterfaceAppUserProfile)
+      testUserAppProfile ? testUserAppProfile : ({} as InterfaceAppUserProfile),
     );
     // console.log(refreshToken)
     const args: MutationRefreshTokenArgs = {
@@ -278,7 +278,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
     }).lean();
     const newRefreshToken = await createRefreshToken(
       newUser ? newUser.toObject() : ({} as InterfaceUser),
-      newUserAppProfile ? newUserAppProfile : ({} as InterfaceAppUserProfile)
+      newUserAppProfile ? newUserAppProfile : ({} as InterfaceAppUserProfile),
     );
     await User.deleteOne({
       _id: newUser?._id,
@@ -298,7 +298,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       if (error instanceof Error) {
         expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
         expect(error.message).toEqual(
-          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
         );
       }
     }
@@ -314,7 +314,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
     }).lean();
     const newRefreshToken = await createRefreshToken(
       newUser ? newUser.toObject() : ({} as InterfaceUser),
-      newUserAppProfile ? newUserAppProfile : ({} as InterfaceAppUserProfile)
+      newUserAppProfile ? newUserAppProfile : ({} as InterfaceAppUserProfile),
     );
     // await User.deleteOne({
     //   _id: newUser?._id,
@@ -334,7 +334,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       if (error instanceof Error) {
         expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
         expect(error.message).toEqual(
-          `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+          `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
         );
       }
     }

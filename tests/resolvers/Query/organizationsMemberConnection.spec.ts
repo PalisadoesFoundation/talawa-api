@@ -65,7 +65,7 @@ beforeAll(async () => {
       $push: {
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
   await AppUserProfile.updateOne(
     {
@@ -76,7 +76,7 @@ beforeAll(async () => {
         createdOrganizations: testOrganization._id,
         adminFor: testOrganization._id,
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -87,7 +87,7 @@ beforeAll(async () => {
       $push: {
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
   await AppUserProfile.updateOne(
     {
@@ -97,7 +97,7 @@ beforeAll(async () => {
       $push: {
         adminFor: testOrganization._id,
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -108,7 +108,7 @@ beforeAll(async () => {
       $push: {
         joinedOrganizations: [testOrganization._id],
       },
-    }
+    },
   );
   await AppUserProfile.updateOne(
     {
@@ -118,7 +118,7 @@ beforeAll(async () => {
       $push: {
         adminFor: testOrganization._id,
       },
-    }
+    },
   );
 });
 
@@ -826,7 +826,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await organizationsMemberConnectionResolver?.({}, args, {});
     } catch (error: unknown) {
       expect(error).toEqual(
-        "Missing Skip parameter. Set it to either 0 or some other value"
+        "Missing Skip parameter. Set it to either 0 or some other value",
       );
     }
   });
@@ -902,7 +902,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         $set: {
           image: `image/image.png`,
         },
-      }
+      },
     );
     const where = {
       joinedOrganizations: {

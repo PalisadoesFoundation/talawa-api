@@ -59,7 +59,7 @@ describe("resolvers -> Organization -> creatorId", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       const parent = testOrganization?.toObject();
@@ -70,10 +70,10 @@ describe("resolvers -> Organization -> creatorId", () => {
       if (parent) {
         await creatorResolver?.(parent, {}, {});
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -90,7 +90,7 @@ describe("resolvers -> Organization -> creatorId", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     const parent = testOrganization?.toObject();

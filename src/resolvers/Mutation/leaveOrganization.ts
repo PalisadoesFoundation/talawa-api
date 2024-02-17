@@ -27,7 +27,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization;
 
@@ -49,7 +49,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -62,7 +62,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -72,12 +72,12 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
   const currentUserIsOrganizationMember = organization.members.some((member) =>
-    Types.ObjectId(member).equals(currentUser?._id)
+    Types.ObjectId(member).equals(currentUser?._id),
   );
 
   // Checks whether currentUser is not a member of organzation.
@@ -85,11 +85,11 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     throw new errors.ConflictError(
       requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
       MEMBER_NOT_FOUND_ERROR.CODE,
-      MEMBER_NOT_FOUND_ERROR.PARAM
+      MEMBER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserIsOrgAdmin = organization.admins.some((admin) =>
-    Types.ObjectId(admin).equals(currentUser._id)
+    Types.ObjectId(admin).equals(currentUser._id),
   );
 
   // Removes currentUser._id from admins and members lists of organzation's document.
@@ -108,7 +108,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
         $pull: {
           organizations: organization._id,
         },
-      }
+      },
     );
     updateQuery = {
       $pull: {
@@ -125,7 +125,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     updateQuery,
     {
       new: true,
-    }
+    },
   );
 
   if (updatedOrganization !== null) {
@@ -147,7 +147,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     },
     {
       new: true,
-    }
+    },
   )
     .select(["-password"])
     .lean();

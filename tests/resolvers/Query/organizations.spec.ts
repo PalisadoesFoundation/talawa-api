@@ -38,8 +38,10 @@ describe("resolvers -> Query -> organizations", () => {
       };
 
       await organizationsResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.DESC,
+      );
     }
   });
 

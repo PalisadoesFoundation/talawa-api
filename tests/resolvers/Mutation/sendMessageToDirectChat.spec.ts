@@ -30,7 +30,7 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
 let testDirectChat: InterfaceDirectChat &
-  Document<any, any, InterfaceDirectChat>;
+  Document<unknown, unknown, InterfaceDirectChat>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -58,7 +58,7 @@ beforeAll(async () => {
         adminFor: [testOrganization._id],
         joinedOrganizations: [testOrganization._id],
       },
-    }
+    },
   );
 
   testDirectChat = await DirectChat.create({
@@ -96,9 +96,9 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         await import("../../../src/resolvers/Mutation/sendMessageToDirectChat");
 
       await sendMessageToDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -121,9 +121,9 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         await import("../../../src/resolvers/Mutation/sendMessageToDirectChat");
 
       await sendMessageToDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -136,7 +136,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         $push: {
           users: testUsers[0]?._id,
         },
-      }
+      },
     );
 
     const args: MutationSendMessageToDirectChatArgs = {
@@ -149,7 +149,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         _action: "MESSAGE_SENT_TO_DIRECT_CHAT",
         _payload: {
           messageSentToDirectChat: InterfaceDirectChatMessage;
-        }
+        },
       ): {
         _action: string;
         _payload: { messageSentToDirectChat: InterfaceDirectChatMessage };
@@ -172,7 +172,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         sender: testUsers[0]?._id,
         receiver: testUsers[1]?._id,
         messageContent: "messageContent",
-      })
+      }),
     );
   });
 });

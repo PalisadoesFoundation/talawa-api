@@ -2,6 +2,7 @@ import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface representing a document for a group in the database(MongoDB).
  */
@@ -54,8 +55,10 @@ const groupSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+createLoggingMiddleware(groupSchema, "Group");
 
 const groupModel = (): Model<InterfaceGroup> =>
   model<InterfaceGroup>("Group", groupSchema);

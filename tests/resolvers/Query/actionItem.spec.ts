@@ -30,8 +30,10 @@ describe("resolvers -> Query -> actionItem", () => {
       };
 
       await actionItemResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(ACTION_ITEM_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ACTION_ITEM_NOT_FOUND_ERROR.DESC,
+      );
     }
   });
 
@@ -45,7 +47,7 @@ describe("resolvers -> Query -> actionItem", () => {
     expect(actionItemPayload).toEqual(
       expect.objectContaining({
         _id: testActionItem?._id,
-      })
+      }),
     );
   });
 });

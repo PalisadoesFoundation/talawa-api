@@ -28,7 +28,7 @@ This is an interface representing a document for a chat in the database(MongoDB)
 
 [src/models/MessageChat.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/MessageChat.ts#L8)
 
-___
+---
 
 ### createdAt
 
@@ -38,7 +38,7 @@ ___
 
 [src/models/MessageChat.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/MessageChat.ts#L13)
 
-___
+---
 
 ### languageBarrier
 
@@ -48,7 +48,7 @@ ___
 
 [src/models/MessageChat.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/MessageChat.ts#L10)
 
-___
+---
 
 ### message
 
@@ -58,7 +58,7 @@ ___
 
 [src/models/MessageChat.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/MessageChat.ts#L9)
 
-___
+---
 
 ### receiver
 
@@ -68,7 +68,7 @@ ___
 
 [src/models/MessageChat.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/MessageChat.ts#L12)
 
-___
+---
 
 ### sender
 
@@ -78,7 +78,7 @@ ___
 
 [src/models/MessageChat.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/MessageChat.ts#L11)
 
-___
+---
 
 ### updatedAt
 

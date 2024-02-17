@@ -42,7 +42,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 
   randomUser = await createTestUser();
@@ -105,7 +105,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       await updateActionItemResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        ACTION_ITEM_NOT_FOUND_ERROR.MESSAGE
+        ACTION_ITEM_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -145,7 +145,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       await updateActionItemResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE
+        USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE,
       );
     }
   });
@@ -166,7 +166,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       await updateActionItemResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -186,14 +186,14 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     const updatedActionItemPayload = await updateActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
         assigneeId: assignedTestUser?._id,
         actionItemCategoryId: testCategory?._id,
-      })
+      }),
     );
   });
 
@@ -207,7 +207,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     const args: MutationUpdateActionItemArgs = {
@@ -224,14 +224,14 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     const updatedActionItemPayload = await updateActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
         assigneeId: testUser?._id,
         actionItemCategoryId: testCategory?._id,
-      })
+      }),
     );
   });
 
@@ -245,7 +245,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     await User.updateOne(
@@ -254,7 +254,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       },
       {
         $push: { joinedOrganizations: testOrganization?._id },
-      }
+      },
     );
 
     try {
@@ -285,7 +285,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     const args: MutationUpdateActionItemArgs = {
@@ -302,14 +302,14 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     const updatedActionItemPayload = await updateActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
         actionItemCategoryId: testCategory?._id,
         assigneeId: testUser?._id,
-      })
+      }),
     );
   });
   it("throws error if user does not have appUserProfile", async () => {
@@ -329,7 +329,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       await updateActionItemResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

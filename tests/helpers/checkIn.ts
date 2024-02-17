@@ -1,7 +1,7 @@
-import { nanoid } from "nanoid";
-import { CheckIn, EventAttendee } from "../../src/models";
-import type { InterfaceCheckIn, InterfaceEvent } from "../../src/models";
 import type { Document } from "mongoose";
+import { nanoid } from "nanoid";
+import type { InterfaceCheckIn, InterfaceEvent } from "../../src/models";
+import { CheckIn, EventAttendee } from "../../src/models";
 import { createTestEventWithRegistrants } from "./eventsWithRegistrants";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 export type TestEventType =
@@ -35,7 +35,7 @@ export const createEventWithCheckedInUser = async (): Promise<
     },
     {
       checkInId: checkIn?._id,
-    }
+    },
   );
 
   return [testUser, testOrg, testEvent, checkIn];

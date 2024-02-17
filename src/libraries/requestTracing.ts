@@ -1,6 +1,6 @@
 import cls from "cls-hooked";
 // No type defintions available for package 'cls-bluebird'
-// @ts-ignore
+// @ts-expect-error--ts-ignore
 import clsBluebird from "cls-bluebird";
 import { customAlphabet } from "nanoid";
 import type { NextFunction, Request, Response } from "express";
@@ -49,7 +49,7 @@ export const middleware = () => {
 
 export const trace = async <T>(
   tracingId: string,
-  method: () => T
+  method: () => T,
 ): Promise<void> => {
   await requestTracingNamespace.runAndReturn<T>(() => {
     setTracingId(tracingId || nanoid());

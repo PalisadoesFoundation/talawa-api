@@ -39,7 +39,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
     const currentUserAppProfile = await AppUserProfile.findOne({
@@ -49,7 +49,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
     superAdminCheck(currentUserAppProfile);
@@ -83,17 +83,17 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     if (!validationResultName.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
     if (!validationResultDescription.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
     if (!validationResultAddress.isAddressValid) {
@@ -132,7 +132,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
         $push: {
           joinedOrganizations: createdOrganization._id,
         },
-      }
+      },
     );
     await AppUserProfile.updateOne(
       {
@@ -143,7 +143,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
           createdOrganizations: createdOrganization._id,
           adminFor: createdOrganization._id,
         },
-      }
+      },
     );
 
     // Returns createdOrganization.

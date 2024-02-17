@@ -57,7 +57,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await testUser!.remove();
+  await testUser?.remove();
   await disconnect(MONGOOSE_INSTANCE);
 });
 
@@ -89,7 +89,7 @@ it("throws UnauthenticatedError when context is expired", async () => {
       },
       {
         contextValue: authenticatedContext,
-      }
+      },
     );
   } catch (err) {
     if (err instanceof errors.UnauthenticatedError) {
@@ -126,7 +126,7 @@ it("throws UnauthenticatedError when context: isAuth == false", async () => {
       },
       {
         contextValue: authenticatedContext,
-      }
+      },
     );
   } catch (err) {
     if (err instanceof errors.UnauthenticatedError) {
@@ -163,10 +163,10 @@ it("checks if the resolver is supplied, and return null data, if not", async () 
     },
     {
       contextValue: authenticatedContext,
-    }
+    },
   );
 
-  //@ts-ignore
+  //@ts-expect-error-ts-ignore
   expect(result.body.singleResult.data).toEqual({ hello: null });
 });
 
@@ -198,8 +198,8 @@ it("returns data if isAuth == true and expire == false", async () => {
     },
     {
       contextValue: authenticatedContext,
-    }
+    },
   );
-  //@ts-ignore
+  //@ts-expect-error-ignore
   expect(result.body.singleResult.data).toEqual({ hello: "hi" });
 });

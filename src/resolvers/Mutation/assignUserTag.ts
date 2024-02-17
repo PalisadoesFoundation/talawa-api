@@ -34,7 +34,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const assignUserTag: MutationResolvers["assignUserTag"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -45,7 +45,7 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -56,7 +56,7 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -69,7 +69,7 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(TAG_NOT_FOUND.MESSAGE),
       TAG_NOT_FOUND.CODE,
-      TAG_NOT_FOUND.PARAM
+      TAG_NOT_FOUND.PARAM,
     );
   }
 
@@ -77,14 +77,14 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
 
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (orgId) =>
-      orgId && Types.ObjectId(orgId.toString()).equals(tag.organizationId)
+      orgId && Types.ObjectId(orgId.toString()).equals(tag.organizationId),
   );
   //check whether current user can assign tag to user or not
   if (!(currentUserIsOrganizationAdmin || currentUserAppProfile.isSuperAdmin)) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -97,23 +97,23 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   // Check that the user to which the tag is to be assigned is a member of the tag's organization
   const requestUserBelongsToTagOrganization =
     requestUser.joinedOrganizations.some((organization) =>
-      organization.equals(tag.organizationId)
+      organization.equals(tag.organizationId),
     );
 
   if (!requestUserBelongsToTagOrganization) {
     throw new errors.UnauthorizedError(
       requestContext.translate(
-        USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE
+        USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE,
       ),
       USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.CODE,
-      USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.PARAM
+      USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.PARAM,
     );
   }
 
@@ -126,7 +126,7 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
     throw new errors.ConflictError(
       requestContext.translate(USER_ALREADY_HAS_TAG.MESSAGE),
       USER_ALREADY_HAS_TAG.CODE,
-      USER_ALREADY_HAS_TAG.PARAM
+      USER_ALREADY_HAS_TAG.PARAM,
     );
   }
 

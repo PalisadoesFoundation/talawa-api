@@ -1,5 +1,6 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Encoded Video.
  */
@@ -30,6 +31,8 @@ const encodedVideoSchema = new Schema({
     default: 1,
   },
 });
+
+createLoggingMiddleware(encodedVideoSchema, "EncodedVideo");
 
 const encodedVideoModel = (): Model<InterfaceEncodedVideo> =>
   model<InterfaceEncodedVideo>("EncodedVideo", encodedVideoSchema);

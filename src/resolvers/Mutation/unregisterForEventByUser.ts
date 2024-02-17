@@ -43,7 +43,7 @@ export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUs
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
         EVENT_NOT_FOUND_ERROR.CODE,
-        EVENT_NOT_FOUND_ERROR.PARAM
+        EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -56,7 +56,7 @@ export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUs
       throw new errors.NotFoundError(
         requestContext.translate(USER_ALREADY_UNREGISTERED_ERROR.MESSAGE),
         USER_ALREADY_UNREGISTERED_ERROR.CODE,
-        USER_ALREADY_UNREGISTERED_ERROR.PARAM
+        USER_ALREADY_UNREGISTERED_ERROR.PARAM,
       );
     }
 

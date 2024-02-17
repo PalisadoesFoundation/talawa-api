@@ -1,10 +1,9 @@
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfacePost } from "../../models";
 import { Post } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
-// @ts-ignore
 /**
  * This query will retrieve from the database a list of posts
  * in the organisation under the specified limit for the specified page in the pagination.
@@ -49,7 +48,7 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
         organization: args.id,
         ...where,
       },
-      options
+      options,
     );
 
     const posts = postsmodel.docs.map((post) => {

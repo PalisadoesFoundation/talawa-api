@@ -68,9 +68,11 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
         "../../../src/resolvers/Mutation/addOrganizationImage"
       );
       await addOrganizationImage?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
   it(`updates organization's image with the old image and returns the updated organization`, async () => {
@@ -82,10 +84,10 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
         $set: {
           image: testImagePath,
         },
-      }
+      },
     );
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL
+      async (encodedImageURL: string) => encodedImageURL,
     );
     const args: MutationAddOrganizationImageArgs = {
       organizationId: testOrganization?.id,
@@ -97,7 +99,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
     const addOrganizationImagePayload = await addOrganizationImageResolver?.(
       {},
       args,
-      context
+      context,
     );
     const updatedTestOrganization = await Organization.findOne({
       _id: testOrganization?._id,

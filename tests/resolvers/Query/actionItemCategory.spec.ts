@@ -30,8 +30,10 @@ describe("resolvers -> Query -> actionItemCategory", () => {
       };
 
       await actionItemCategoryResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.DESC,
+      );
     }
   });
 
@@ -43,13 +45,13 @@ describe("resolvers -> Query -> actionItemCategory", () => {
     const actionItemCategoryPayload = await actionItemCategoryResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     expect(actionItemCategoryPayload).toEqual(
       expect.objectContaining({
         _id: testCategory?._id,
-      })
+      }),
     );
   });
 });

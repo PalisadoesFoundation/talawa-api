@@ -38,7 +38,7 @@ beforeAll(async () => {
   testEvent = resultsArray[2];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -50,7 +50,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
   it(`throws NotFoundError if no event exists with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationAdminRemoveEventArgs = {
@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       const args: MutationAdminRemoveEventArgs = {
@@ -95,7 +95,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -113,7 +113,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedEvent !== null) {
@@ -147,7 +147,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -165,7 +165,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ADMIN.MESSAGE
+        USER_NOT_AUTHORIZED_ADMIN.MESSAGE,
       );
     }
   });
@@ -190,7 +190,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -206,7 +206,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -224,7 +224,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
     const adminRemoveEventPayload = await adminRemoveEventResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(adminRemoveEventPayload).toEqual({
@@ -246,13 +246,13 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
     expect(testUpdatedUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([]),
-      })
+      }),
     );
     expect(testUpdatedAppUser).toEqual(
       expect.objectContaining({
         createdEvents: expect.arrayContaining([]),
         eventAdmin: expect.arrayContaining([]),
-      })
+      }),
     );
   });
 });

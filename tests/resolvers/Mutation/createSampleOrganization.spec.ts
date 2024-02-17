@@ -39,7 +39,7 @@ describe("createSampleOrganization resolver", async () => {
   it("should NOT throw error when user is ADMIN", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const ORGANIZATION_ID = faker.database.mongodbObjectId();
@@ -63,7 +63,7 @@ describe("createSampleOrganization resolver", async () => {
   it("should NOT throw error when user is SUPERADMIN", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const ORGANIZATION_ID = faker.database.mongodbObjectId();
@@ -77,7 +77,7 @@ describe("createSampleOrganization resolver", async () => {
       const adminResult = await createSampleOrganization(
         parent,
         args,
-        adminContext
+        adminContext,
       );
 
       expect(adminResult).toBe(true);
@@ -88,7 +88,7 @@ describe("createSampleOrganization resolver", async () => {
   it("should throw unauthorized error for non-admins", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const ORGANIZATION_ID = faker.database.mongodbObjectId();
@@ -111,7 +111,7 @@ describe("createSampleOrganization resolver", async () => {
   it("should throw error when the current user doesn't exist", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const args = {};
@@ -150,7 +150,7 @@ describe("createSampleOrganization resolver", async () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });

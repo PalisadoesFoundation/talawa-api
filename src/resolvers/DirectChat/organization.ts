@@ -1,3 +1,4 @@
+import type { InterfaceOrganization } from "../../models";
 import { Organization } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
@@ -8,21 +9,20 @@ import type { DirectChatResolvers } from "../../types/generatedGraphQLTypes";
  * @returns An `object` that contains Organization data.
  */
 export const organization: DirectChatResolvers["organization"] = async (
-  parent
+  parent,
 ) => {
   const organizationFoundInCache = await findOrganizationsInCache([
     parent.organization,
   ]);
 
   if (!organizationFoundInCache.includes(null)) {
-    return organizationFoundInCache[0]!;
+    return organizationFoundInCache[0] as InterfaceOrganization;
   }
 
   const organization = await Organization.findOne({
     _id: parent.organization,
   }).lean();
+  if (organization) cacheOrganizations([organization]);
 
-  cacheOrganizations([organization!]);
-
-  return organization!;
+  return organization as InterfaceOrganization;
 };

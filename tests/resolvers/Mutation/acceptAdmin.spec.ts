@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -92,7 +92,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
     }
   });
@@ -106,7 +106,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
         $set: {
           isSuperAdmin: true,
         },
-      }
+      },
     );
     await User.updateOne(
       {
@@ -116,7 +116,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
         $set: {
           adminApproved: false,
         },
-      }
+      },
     );
 
     const args: MutationAcceptAdminArgs = {
@@ -162,7 +162,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -191,7 +191,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
     }
   });

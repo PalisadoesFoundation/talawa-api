@@ -16,10 +16,10 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name             | Type                                          |
+| :--------------- | :-------------------------------------------- |
 | `requestingUser` | [`User`](types_generatedGraphQLTypes.md#user) |
-| `requestedUser` | [`User`](types_generatedGraphQLTypes.md#user) |
+| `requestedUser`  | [`User`](types_generatedGraphQLTypes.md#user) |
 
 #### Returns
 

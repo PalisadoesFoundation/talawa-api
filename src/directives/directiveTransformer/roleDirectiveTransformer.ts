@@ -7,7 +7,7 @@ import { User } from "../../models";
 
 function roleDirectiveTransformer(
   schema: GraphQLSchema,
-  directiveName: string
+  directiveName: string,
 ): GraphQLSchema {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
@@ -15,7 +15,7 @@ function roleDirectiveTransformer(
       const roleDirective = getDirective(
         schema,
         fieldConfig,
-        directiveName
+        directiveName,
       )?.[0];
 
       if (roleDirective) {
@@ -27,7 +27,7 @@ function roleDirectiveTransformer(
           root,
           args,
           context,
-          info
+          info,
         ): Promise<string> => {
           const currentUser = await User.findOne({
             _id: context.userId,
@@ -37,7 +37,7 @@ function roleDirectiveTransformer(
             throw new errors.NotFoundError(
               USER_NOT_FOUND_ERROR.MESSAGE,
               USER_NOT_FOUND_ERROR.CODE,
-              USER_NOT_FOUND_ERROR.PARAM
+              USER_NOT_FOUND_ERROR.PARAM,
             );
           }
 

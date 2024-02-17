@@ -16,7 +16,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const removeUserTag: MutationResolvers["removeUserTag"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -27,7 +27,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -37,7 +37,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -50,7 +50,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(TAG_NOT_FOUND.MESSAGE),
       TAG_NOT_FOUND.CODE,
-      TAG_NOT_FOUND.PARAM
+      TAG_NOT_FOUND.PARAM,
     );
   }
 
@@ -58,7 +58,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (organization) =>
       organization &&
-      Types.ObjectId(organization.toString()).equals(tag.organizationId)
+      Types.ObjectId(organization.toString()).equals(tag.organizationId),
   );
 
   // Checks whether currentUser cannot delete the tag folder.
@@ -66,7 +66,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -87,7 +87,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
       },
       {
         _id: 1,
-      }
+      },
     );
     currentParents = currentParents
       .map((tag) => tag._id)

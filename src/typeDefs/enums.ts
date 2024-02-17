@@ -25,6 +25,13 @@ export const enums = gql`
     location_DESC
   }
 
+  enum Frequency {
+    YEARLY
+    MONTHLY
+    WEEKLY
+    DAILY
+  }
+
   enum OrganizationOrderByInput {
     id_ASC
     id_DESC
@@ -98,6 +105,17 @@ export const enums = gql`
     SUPERADMIN
     NON_USER
   }
+
+  enum WeekDays {
+    MO
+    TU
+    WE
+    TH
+    FR
+    SA
+    SU
+  }
+
   enum EducationGrade {
     NO_GRADE
     PRE_KG
@@ -127,6 +145,11 @@ export const enums = gql`
     MALE
     FEMALE
     OTHER
+  }
+
+  enum EventVolunteerResponse {
+    YES
+    NO
   }
 
   enum MaritalStatus {

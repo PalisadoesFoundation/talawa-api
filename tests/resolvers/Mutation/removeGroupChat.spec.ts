@@ -50,7 +50,7 @@ beforeAll(async () => {
     },
     {
       new: true,
-    }
+    },
   );
 });
 
@@ -84,10 +84,10 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       );
 
       await removeGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${CHAT_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${CHAT_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -108,7 +108,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
           $set: {
             organization: Types.ObjectId().toString(),
           },
-        }
+        },
       );
 
       const args: MutationRemoveGroupChatArgs = {
@@ -124,10 +124,10 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       );
 
       await removeGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -149,7 +149,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        }
+        },
       );
 
       const updatedOrganization = await Organization.findOneAndUpdate(
@@ -163,7 +163,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -183,10 +183,10 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       );
 
       await removeGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
     }
   });
@@ -204,7 +204,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -226,7 +226,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
     const removeGroupChatPayload = await removeGroupChatResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removeGroupChatPayload).toEqual({

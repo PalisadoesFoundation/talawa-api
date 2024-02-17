@@ -22,8 +22,10 @@ afterAll(async () => {
 
 describe("resolvers -> GroupChatMessage -> groupChatMessageBelongsTo", () => {
   it(`returns groupChatMessageBelongsTo object for parent.groupChatMessageBelongsTo`, async () => {
-    const parent = testGroupChatMessage!.toObject();
-
+    const parent = testGroupChatMessage?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
     const groupChatMessageBelongsToPayload =
       await groupChatMessageBelongsToResolver?.(parent, {}, {});
 

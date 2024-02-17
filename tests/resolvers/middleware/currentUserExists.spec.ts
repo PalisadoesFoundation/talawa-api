@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
@@ -53,14 +54,14 @@ describe("resolvers -> Middleware -> currentUserExists", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
 
   it(`throws no error if a user exists with _id === context.userId`, async () => {
     const context = {
-      userId: testUser!.id.toString(),
+      userId: testUser?.id.toString(),
     };
 
     const nextResolver = await composedResolver({}, {}, context, {});

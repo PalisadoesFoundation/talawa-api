@@ -31,10 +31,10 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
           email: testUser?.email ?? "",
           otp: "otp",
         },
-        process.env.NODE_ENV!,
+        process.env.NODE_ENV ?? "",
         {
           expiresIn: 99999999,
-        }
+        },
       );
 
       const args: MutationForgotPasswordArgs = {
@@ -46,8 +46,8 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       };
 
       await forgotPasswordResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(INVALID_OTP);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(INVALID_OTP);
     }
   });
 
@@ -64,7 +64,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       process.env.NODE_ENV ?? "",
       {
         expiresIn: 99999999,
-      }
+      },
     );
 
     const args: MutationForgotPasswordArgs = {
@@ -79,13 +79,12 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     expect(forgotPasswordPayload).toEqual(true);
 
-    const updatedTestUser = await User!
-      .findOne({
-        _id: testUser?._id ?? "",
-      })
+    const updatedTestUser = await User.findOne({
+      _id: testUser?._id ?? "",
+    })
       .select(["password"])
       .lean();
 
-    expect(updatedTestUser?.password).not.toEqual(testUser!.password);
+    expect(updatedTestUser?.password).not.toEqual(testUser?.password);
   });
 });

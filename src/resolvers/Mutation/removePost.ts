@@ -30,7 +30,7 @@ import { deletePreviousVideo as deleteVideo } from "../../utilities/encodedVideo
 export const removePost: MutationResolvers["removePost"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Get the currentUser with _id === context.userId exists.
   const currentUser = await User.findOne({
@@ -42,7 +42,7 @@ export const removePost: MutationResolvers["removePost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -52,7 +52,7 @@ export const removePost: MutationResolvers["removePost"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -76,7 +76,7 @@ export const removePost: MutationResolvers["removePost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
       POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM
+      POST_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -85,14 +85,14 @@ export const removePost: MutationResolvers["removePost"] = async (
   const isSuperAdmin = currentUserAppProfile.isSuperAdmin;
   const isAdminOfPostOrganization = currentUserAppProfile?.adminFor.some(
     (orgID) =>
-      orgID && Types.ObjectId(orgID?.toString()).equals(post?.organization)
+      orgID && Types.ObjectId(orgID?.toString()).equals(post?.organization),
   );
 
   if (!isCreator && !isSuperAdmin && !isAdminOfPostOrganization) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -125,7 +125,7 @@ export const removePost: MutationResolvers["removePost"] = async (
     },
     {
       new: true,
-    }
+    },
   ).lean();
 
   if (updatedOrganization !== null) {

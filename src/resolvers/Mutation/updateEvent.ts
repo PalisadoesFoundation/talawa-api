@@ -26,7 +26,7 @@ import { Types } from "mongoose";
 export const updateEvent: MutationResolvers["updateEvent"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -37,7 +37,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -47,7 +47,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -72,13 +72,13 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM
+      EVENT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const currentUserIsEventAdmin = event.admins.some(
     (admin) =>
-      admin === context.userID || Types.ObjectId(admin).equals(context.userId)
+      admin === context.userID || Types.ObjectId(admin).equals(context.userId),
   );
 
   // checks if current user is an admin of the event with _id === args.id
@@ -89,7 +89,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -97,31 +97,31 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   const validationResultTitle = isValidString(args.data?.title ?? "", 256);
   const validationResultDescription = isValidString(
     args.data?.description ?? "",
-    500
+    500,
   );
   const validationResultLocation = isValidString(args.data?.location ?? "", 50);
   if (!validationResultTitle.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   if (!validationResultDescription.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   if (!validationResultLocation.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
 
@@ -135,7 +135,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     },
     {
       new: true,
-    }
+    },
   ).lean();
 
   if (updatedEvent !== null) {

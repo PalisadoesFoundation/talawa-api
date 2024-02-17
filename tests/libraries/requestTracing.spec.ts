@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEmitter } from "stream";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import {
@@ -45,22 +46,22 @@ describe("middleware -> requestContext", () => {
     };
     const resHeaderMethod = (
       tracingIdHeaderName: string,
-      tracingID: string
+      tracingID: string,
     ): string => {
       return requestTracingNamespace.set(tracingIdHeaderName, tracingID);
     };
     const myHeaders = new Headers();
     myHeaders.append("X-Tracing-Id", "UserTracingId");
-    // @ts-ignore
+    // @ts-expect-error-ignore
     mockRequest.header = reqHeaderMethod;
-    // @ts-ignore
+    // @ts-expect-error-ignore
     mockRequest.headers = myHeaders;
-    // @ts-ignore
+    // @ts-expect-error-ignore
     mockResponse.header = resHeaderMethod;
     middleware()(
       mockRequest as Request,
       mockResponse as Response,
-      nextFunction as NextFunction
+      nextFunction as NextFunction,
     );
     expect(tracingIdHeaderName).toBe("X-Tracing-Id");
     expect(nextFunction).toBeCalledTimes(1);

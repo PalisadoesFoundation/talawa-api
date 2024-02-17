@@ -1,27 +1,28 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import "dotenv/config";
+import type mongoose from "mongoose";
+import type { Document } from "mongoose";
+import { Types } from "mongoose";
 import { postsByOrganizationConnection as postsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/postsByOrganizationConnection";
 import { connect, disconnect } from "../../helpers/db";
-import type { Document } from "mongoose";
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
 
-import type { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { nanoid } from "nanoid";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { BASE_URL } from "../../../src/constants";
 import type { InterfacePost } from "../../../src/models";
 import { Post } from "../../../src/models";
-import { nanoid } from "nanoid";
-import { BASE_URL } from "../../../src/constants";
+import type { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
 let testUser: TestUserType;
-let testPosts: (InterfacePost & Document<any, any, InterfacePost>)[];
+let testPosts: (InterfacePost & Document<unknown, unknown, InterfacePost>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -138,10 +139,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     postsByOrganizationConnectionPayload?.edges.map((post) => {
       return {
         ...post,
-        organization: post!.organization._id,
+        organization: post?.organization._id,
       };
     });
-    postsByOrganizationConnectionPayload!.edges = postsWithId;
+    if (postsByOrganizationConnectionPayload)
+      postsByOrganizationConnectionPayload.edges = postsWithId;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -170,8 +172,8 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     try {
       await postsByOrganizationConnectionResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error).toEqual("parameter.missing");
+    } catch (error: unknown) {
+      expect(error as Error).toEqual("parameter.missing");
     }
   });
 
@@ -186,8 +188,8 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     try {
       await postsByOrganizationConnectionResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual("Skip parameter is missing");
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual("Skip parameter is missing");
     }
   });
 
@@ -225,7 +227,8 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
         organization: post?.organization._id,
       };
     });
-    postsByOrganizationConnectionPayload!.edges = postsWithId;
+    if (postsByOrganizationConnectionPayload)
+      postsByOrganizationConnectionPayload.edges = postsWithId;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -251,7 +254,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
         $set: {
           imageUrl: undefined,
         },
-      }
+      },
     );
 
     const where = {
@@ -287,7 +290,8 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
         organization: post?.organization._id,
       };
     });
-    postsByOrganizationConnectionPayload!.edges = postsWithId;
+    if (postsByOrganizationConnectionPayload)
+      postsByOrganizationConnectionPayload.edges = postsWithId;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {

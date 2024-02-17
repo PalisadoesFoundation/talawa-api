@@ -13,7 +13,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -24,7 +24,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -34,7 +34,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -47,7 +47,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(TAG_NOT_FOUND.MESSAGE),
       TAG_NOT_FOUND.CODE,
-      TAG_NOT_FOUND.PARAM
+      TAG_NOT_FOUND.PARAM,
     );
   }
 
@@ -56,8 +56,8 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     (organization) =>
       organization &&
       Types.ObjectId(organization.toString()).equals(
-        existingTag?.organizationId
-      )
+        existingTag?.organizationId,
+      ),
   );
 
   // Checks whether currentUser can update the tag
@@ -65,7 +65,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -74,7 +74,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     throw new errors.ConflictError(
       requestContext.translate(NO_CHANGE_IN_TAG_NAME.MESSAGE),
       NO_CHANGE_IN_TAG_NAME.CODE,
-      NO_CHANGE_IN_TAG_NAME.PARAM
+      NO_CHANGE_IN_TAG_NAME.PARAM,
     );
   }
 
@@ -89,7 +89,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     throw new errors.ConflictError(
       requestContext.translate(TAG_ALREADY_EXISTS.MESSAGE),
       TAG_ALREADY_EXISTS.CODE,
-      TAG_ALREADY_EXISTS.PARAM
+      TAG_ALREADY_EXISTS.PARAM,
     );
   }
 
@@ -103,6 +103,6 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     },
     {
       new: true,
-    }
+    },
   ).lean();
 };

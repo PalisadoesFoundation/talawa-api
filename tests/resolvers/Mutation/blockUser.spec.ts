@@ -60,7 +60,7 @@ beforeAll(async () => {
       $set: {
         joinedOrganizations: [testOrganization._id],
       },
-    }
+    },
   );
   await AppUserProfile.updateOne(
     {
@@ -70,11 +70,11 @@ beforeAll(async () => {
       $set: {
         createdOrganizations: [testOrganization._id],
       },
-    }
+    },
   );
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -101,7 +101,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
       await blockUserResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -126,7 +126,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
   it(`throws member not found error if user with args.userId is not a member of the organization`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     try {
@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
   it(`throws cannot block self error if  context.userId === args.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     try {
@@ -187,7 +187,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -206,7 +206,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
       await blockUserResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ADMIN.MESSAGE
+        USER_NOT_AUTHORIZED_ADMIN.MESSAGE,
       );
     }
   });
@@ -226,7 +226,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -241,7 +241,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
           $push: {
             adminFor: testOrganization?._id,
           },
-        }
+        },
       );
 
       const args: MutationBlockUserArgs = {
@@ -256,7 +256,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
       await blockUserResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -274,7 +274,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {

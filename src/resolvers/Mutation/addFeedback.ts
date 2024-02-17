@@ -11,7 +11,7 @@ import { Event, EventAttendee, CheckIn, Feedback } from "../../models";
 export const addFeedback: MutationResolvers["addFeedback"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentEventExists = await Event.exists({
     _id: args.data.eventId,
@@ -21,7 +21,7 @@ export const addFeedback: MutationResolvers["addFeedback"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM
+      EVENT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -36,7 +36,7 @@ export const addFeedback: MutationResolvers["addFeedback"] = async (
     throw new errors.ConflictError(
       requestContext.translate(USER_NOT_REGISTERED_FOR_EVENT.MESSAGE),
       USER_NOT_REGISTERED_FOR_EVENT.CODE,
-      USER_NOT_REGISTERED_FOR_EVENT.PARAM
+      USER_NOT_REGISTERED_FOR_EVENT.PARAM,
     );
   }
 
@@ -44,7 +44,7 @@ export const addFeedback: MutationResolvers["addFeedback"] = async (
     throw new errors.ConflictError(
       requestContext.translate(USER_NOT_CHECKED_IN.MESSAGE),
       USER_NOT_CHECKED_IN.CODE,
-      USER_NOT_CHECKED_IN.PARAM
+      USER_NOT_CHECKED_IN.PARAM,
     );
   }
 
@@ -52,7 +52,7 @@ export const addFeedback: MutationResolvers["addFeedback"] = async (
     throw new errors.ConflictError(
       requestContext.translate(FEEDBACK_ALREADY_SUBMITTED.MESSAGE),
       FEEDBACK_ALREADY_SUBMITTED.CODE,
-      FEEDBACK_ALREADY_SUBMITTED.PARAM
+      FEEDBACK_ALREADY_SUBMITTED.PARAM,
     );
   }
 

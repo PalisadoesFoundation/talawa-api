@@ -32,7 +32,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
       throw new errors.NotFoundError(
         requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
         CHAT_NOT_FOUND_ERROR.CODE,
-        CHAT_NOT_FOUND_ERROR.PARAM
+        CHAT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -56,7 +56,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -64,7 +64,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     await adminCheck(context.userId, organization);
 
     const userIsMemberOfGroupChat = groupChat.users.some((user) =>
-      user.equals(args.userId)
+      user.equals(args.userId),
     );
 
     // Checks if user with _id === args.userId is not a member of groupChat.
@@ -72,7 +72,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -84,12 +84,12 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
       {
         $set: {
           users: groupChat.users.filter(
-            (user) => user.toString() !== args.userId.toString()
+            (user) => user.toString() !== args.userId.toString(),
           ),
         },
       },
       {
         new: true,
-      }
+      },
     ).lean();
   };

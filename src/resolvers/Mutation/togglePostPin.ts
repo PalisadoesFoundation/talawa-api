@@ -20,7 +20,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Get the current user
   const currentUser = await User.findOne({
@@ -32,7 +32,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -42,7 +42,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
   // Check if the post object exists
@@ -65,7 +65,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
       POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM
+      POST_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -73,7 +73,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (organizationId) =>
       organizationId &&
-      Types.ObjectId(organizationId.toString()).equals(post?.organization)
+      Types.ObjectId(organizationId.toString()).equals(post?.organization),
   );
 
   if (
@@ -83,7 +83,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
       USER_NOT_AUTHORIZED_TO_PIN.CODE,
-      USER_NOT_AUTHORIZED_TO_PIN.PARAM
+      USER_NOT_AUTHORIZED_TO_PIN.PARAM,
     );
   }
 
@@ -105,7 +105,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     }
   }
   const currentPostIsPinned = organization?.pinnedPosts.some((postID) =>
-    Types.ObjectId(postID).equals(args.id)
+    Types.ObjectId(postID).equals(args.id),
   );
 
   if (currentPostIsPinned) {
@@ -120,7 +120,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -136,7 +136,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
           pinned: false,
           title: "",
         },
-      }
+      },
     ).lean();
 
     if (updatedPost !== null) {
@@ -148,7 +148,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     if (!args.title) {
       throw new errors.InputValidationError(
         requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
-        PLEASE_PROVIDE_TITLE.CODE
+        PLEASE_PROVIDE_TITLE.CODE,
       );
     }
 
@@ -157,9 +157,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       if (!validationResultTitle.isLessThanMaxLength) {
         throw new errors.InputValidationError(
           requestContext.translate(
-            `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+            `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
           ),
-          LENGTH_VALIDATION_ERROR.CODE
+          LENGTH_VALIDATION_ERROR.CODE,
         );
       }
     }
@@ -175,7 +175,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -190,7 +190,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
           pinned: true,
           title: args?.title,
         },
-      }
+      },
     ).lean();
 
     if (updatedPost !== null) {

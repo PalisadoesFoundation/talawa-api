@@ -24,7 +24,7 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
       throw new errors.NotFoundError(
         requestContext.translate(PLUGIN_NOT_FOUND.MESSAGE),
         PLUGIN_NOT_FOUND.CODE,
-        PLUGIN_NOT_FOUND.PARAM
+        PLUGIN_NOT_FOUND.PARAM,
       );
     }
 
@@ -33,7 +33,7 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
     if (uninstalledOrgsList.includes(mongoose.Types.ObjectId(currOrgID))) {
       //if already uninstalled then install it by removing from array
       uninstalledOrgsList = uninstalledOrgsList.filter(
-        (oid: unknown) => oid != currOrgID
+        (oid: unknown) => oid != currOrgID,
       );
     } else {
       //not already present then uninstall plugin on that org by adding it to the list
@@ -50,7 +50,7 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     // calls subscription

@@ -86,7 +86,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -95,7 +95,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     try {
@@ -117,7 +117,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       await updateUserPasswordResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        INVALID_CREDENTIALS_ERROR.MESSAGE
+        INVALID_CREDENTIALS_ERROR.MESSAGE,
       );
     }
   });
@@ -126,7 +126,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     try {
@@ -149,7 +149,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       await updateUserPasswordResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        INVALID_CREDENTIALS_ERROR.MESSAGE
+        INVALID_CREDENTIALS_ERROR.MESSAGE,
       );
     }
   });
@@ -158,7 +158,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     try {
@@ -181,7 +181,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       await updateUserPasswordResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        INVALID_CREDENTIALS_ERROR.MESSAGE
+        INVALID_CREDENTIALS_ERROR.MESSAGE,
       );
     }
   });
@@ -202,7 +202,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     const updateUserPasswordPayload = await updateUserPasswordResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserPasswordPayload).not.toBeNull();
@@ -229,7 +229,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       console.log((error as Error).message);
       // expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

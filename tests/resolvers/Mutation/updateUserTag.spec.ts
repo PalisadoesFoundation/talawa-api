@@ -73,7 +73,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       await updateUserTagResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -106,7 +106,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(TAG_NOT_FOUND.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${TAG_NOT_FOUND.MESSAGE}`
+        `Translated ${TAG_NOT_FOUND.MESSAGE}`,
       );
     }
   });
@@ -137,10 +137,10 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       await updateUserTagResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -171,7 +171,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       await updateUserTagResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${NO_CHANGE_IN_TAG_NAME.MESSAGE}`
+        `Translated ${NO_CHANGE_IN_TAG_NAME.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(`${NO_CHANGE_IN_TAG_NAME.MESSAGE}`);
     }
@@ -203,7 +203,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       await updateUserTagResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${TAG_ALREADY_EXISTS.MESSAGE}`
+        `Translated ${TAG_ALREADY_EXISTS.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(`${TAG_ALREADY_EXISTS.MESSAGE}`);
     }
@@ -265,7 +265,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
         $set: {
           appUserProfileId: null,
         },
-      }
+      },
     );
 
     try {
@@ -273,7 +273,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });

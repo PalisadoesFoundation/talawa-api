@@ -31,7 +31,7 @@ beforeAll(async () => {
   testOrganization = resultsArray[1];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -50,7 +50,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $set: {
             creatorId: Types.ObjectId().toString(),
           },
-        }
+        },
       );
 
       const args: MutationCreateMemberArgs = {
@@ -80,7 +80,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $set: {
             creatorId: testUser?._id,
           },
-        }
+        },
       );
 
       await AppUserProfile.updateOne(
@@ -91,7 +91,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $set: {
             isSuperAdmin: true,
           },
-        }
+        },
       );
 
       const args: MutationCreateMemberArgs = {
@@ -127,7 +127,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       await createMemberResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -143,7 +143,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $push: {
             members: testUser?._id,
           },
-        }
+        },
       );
 
       const args: MutationCreateMemberArgs = {
@@ -171,7 +171,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       .lean();
 
     const updatedOrganizationCheck = updatedTestOrganization?.members.some(
-      (member) => member.equals(testUser?._id)
+      (member) => member.equals(testUser?._id),
     );
 
     expect(updatedOrganizationCheck).toBe(true);
@@ -199,7 +199,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       await createMemberResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

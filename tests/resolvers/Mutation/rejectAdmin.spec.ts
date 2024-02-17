@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       await rejectAdminResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
 
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
@@ -106,7 +106,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
           $set: {
             isSuperAdmin: true,
           },
-        }
+        },
       );
 
       const args: MutationRejectAdminArgs = {
@@ -166,7 +166,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
       );
     }
   });

@@ -19,7 +19,7 @@ export const removeSampleOrganization: MutationResolvers["removeSampleOrganizati
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
     const currentUserAppProfile = await AppUserProfile.findOne({
@@ -29,7 +29,7 @@ export const removeSampleOrganization: MutationResolvers["removeSampleOrganizati
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -41,21 +41,21 @@ export const removeSampleOrganization: MutationResolvers["removeSampleOrganizati
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     const currentUserOrgAdmin = currentUserAppProfile.adminFor.some(
       (org) =>
         org &&
-        Types.ObjectId(org.toString()).equals(existingOrganization.documentId)
+        Types.ObjectId(org.toString()).equals(existingOrganization.documentId),
     );
 
     if (!currentUserAppProfile.isSuperAdmin && !currentUserOrgAdmin) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 

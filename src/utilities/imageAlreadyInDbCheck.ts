@@ -15,13 +15,14 @@ import { INVALID_FILE_TYPE } from "../constants";
  */
 export const imageAlreadyInDbCheck = async (
   oldImagePath: string | null,
-  newImagePath: string
+  newImagePath: string,
 ): Promise<string> => {
   try {
     let fileName;
 
     const getImageHash = (): Promise<string> =>
       new Promise((resolve, reject) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         imageHash(`./${newImagePath}`, 16, true, (error: any, data: any) => {
           if (error) {
             reject(error);
@@ -46,7 +47,7 @@ export const imageAlreadyInDbCheck = async (
     } else {
       const imageIsDuplicate = await reuploadDuplicateCheck(
         oldImagePath,
-        newImagePath
+        newImagePath,
       );
 
       if (imageIsDuplicate === false) {
@@ -60,7 +61,7 @@ export const imageAlreadyInDbCheck = async (
             $inc: {
               numberOfUses: 1,
             },
-          }
+          },
         );
       }
 
@@ -79,7 +80,7 @@ export const imageAlreadyInDbCheck = async (
           param: INVALID_FILE_TYPE.PARAM,
         },
       ],
-      requestContext.translate(INVALID_FILE_TYPE.MESSAGE)
+      requestContext.translate(INVALID_FILE_TYPE.MESSAGE),
     );
   }
 };

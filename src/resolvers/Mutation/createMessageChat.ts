@@ -19,7 +19,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const createMessageChat: MutationResolvers["createMessageChat"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -28,7 +28,7 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -45,7 +45,7 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const receiverUserAppProfile = await AppUserProfile.findOne({
@@ -55,7 +55,7 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -63,7 +63,7 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
   // Boolean to identify whether both sender and receiver for messageChat have the same appLanguageCode.

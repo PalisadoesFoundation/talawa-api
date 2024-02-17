@@ -14,8 +14,9 @@ import { imageExtensionCheck } from "./imageExtensionCheck";
  * @returns Path of an uploaded image.
  */
 export const uploadImage = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   newImageFile: any,
-  oldImagePath: string | null
+  oldImagePath: string | null,
 ): Promise<{ newImagePath: string; imageAlreadyInDbPath: string }> => {
   const id = shortid.generate();
 
@@ -29,16 +30,16 @@ export const uploadImage = async (
     createReadStream()
       .pipe(
         createWriteStream(
-          path.join(__dirname, "../../images", `/${id}-${filename}`)
-        )
+          path.join(__dirname, "../../images", `/${id}-${filename}`),
+        ),
       )
       .on("close", resolve)
-      .on("error", (error: any) => reject(error))
+      .on("error", (error: unknown) => reject(error))
       .on("finish", () =>
         resolve({
           path,
-        })
-      )
+        }),
+      ),
   );
 
   const newImagePath = `images/${id}-${filename}`;
@@ -54,7 +55,7 @@ export const uploadImage = async (
 
   const imageAlreadyInDbPath = await imageAlreadyInDbCheck(
     oldImagePath,
-    newImagePath
+    newImagePath,
   );
 
   return {

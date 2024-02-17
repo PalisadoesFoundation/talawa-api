@@ -32,7 +32,7 @@ import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEn
 export const createPost: MutationResolvers["createPost"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Get the current user
   const currentUser = await User.findOne({
@@ -45,7 +45,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -56,7 +56,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -81,7 +81,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -103,12 +103,12 @@ export const createPost: MutationResolvers["createPost"] = async (
   if (args.data?.title && !args.data.pinned) {
     throw new errors.InputValidationError(
       requestContext.translate(POST_NEEDS_TO_BE_PINNED.MESSAGE),
-      POST_NEEDS_TO_BE_PINNED.CODE
+      POST_NEEDS_TO_BE_PINNED.CODE,
     );
   } else if (!args.data?.title && args.data.pinned) {
     throw new errors.InputValidationError(
       requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
-      PLEASE_PROVIDE_TITLE.CODE
+      PLEASE_PROVIDE_TITLE.CODE,
     );
   }
 
@@ -119,17 +119,17 @@ export const createPost: MutationResolvers["createPost"] = async (
     if (!validationResultTitle.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
     if (!validationResultText.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
   }
@@ -139,8 +139,8 @@ export const createPost: MutationResolvers["createPost"] = async (
     const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
         Types.ObjectId(organizationId?.toString()).equals(
-          args.data.organizationId
-        )
+          args.data.organizationId,
+        ),
     );
 
     if (
@@ -149,7 +149,7 @@ export const createPost: MutationResolvers["createPost"] = async (
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
         USER_NOT_AUTHORIZED_TO_PIN.CODE,
-        USER_NOT_AUTHORIZED_TO_PIN.PARAM
+        USER_NOT_AUTHORIZED_TO_PIN.PARAM,
       );
     }
   }
@@ -179,7 +179,7 @@ export const createPost: MutationResolvers["createPost"] = async (
       },
       {
         new: true,
-      }
+      },
     );
 
     await cacheOrganizations([updatedOrganizaiton as InterfaceOrganization]);

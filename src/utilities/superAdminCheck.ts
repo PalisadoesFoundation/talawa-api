@@ -3,7 +3,7 @@ import { errors, requestContext } from "../libraries";
 import type { InterfaceAppUserProfile } from "../models";
 
 export const superAdminCheck = (
-  appUserProfile: InterfaceAppUserProfile
+  appUserProfile: InterfaceAppUserProfile,
 ): void => {
   const userIsSuperAdmin: boolean = appUserProfile.isSuperAdmin;
 
@@ -11,7 +11,7 @@ export const superAdminCheck = (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE),
       USER_NOT_AUTHORIZED_SUPERADMIN.CODE,
-      USER_NOT_AUTHORIZED_SUPERADMIN.PARAM
+      USER_NOT_AUTHORIZED_SUPERADMIN.PARAM,
     );
   }
 };

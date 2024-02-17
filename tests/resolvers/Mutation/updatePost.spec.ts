@@ -32,7 +32,7 @@ beforeEach(async () => {
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 afterEach(async () => {
@@ -51,8 +51,8 @@ describe("resolvers -> Mutation -> updatePost", () => {
       };
 
       await updatePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
   not an creator of post with _id === args.id`, async () => {
     try {
       const args: MutationUpdatePostArgs = {
-        id: testPost?._id,
+        id: testPost?._id.toString() ?? "",
       };
 
       const context = {
@@ -69,18 +69,20 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
       await Post.updateOne(
         { _id: testPost?._id },
-        { $set: { creatorId: Types.ObjectId().toString() } }
+        { $set: { creatorId: Types.ObjectId().toString() } },
       );
 
       await updatePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
   it(`updates the post with _id === args.id and returns the updated post`, async () => {
     const args: MutationUpdatePostArgs = {
-      id: testPost?._id,
+      id: testPost?._id.toString() || "",
       data: {
         title: "newTitle",
         text: "nextText",
@@ -101,7 +103,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
   });
   it(`updates the post with imageUrl and returns the updated post`, async () => {
     const args: MutationUpdatePostArgs = {
-      id: testPost?._id,
+      id: testPost?._id.toString() || "",
       data: {
         title: "newTitle",
         text: "nextText",
@@ -124,7 +126,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
   });
   it(`updates the post with videoUrl and returns the updated post`, async () => {
     const args: MutationUpdatePostArgs = {
-      id: testPost?._id,
+      id: testPost?._id.toString() || "",
       data: {
         title: "newTitle",
         text: "nextText",
@@ -147,11 +149,11 @@ describe("resolvers -> Mutation -> updatePost", () => {
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationUpdatePostArgs = {
-        id: testPost?._id,
+        id: testPost?._id.toString() || "",
         data: {
           text: "random",
           videoUrl: "",
@@ -170,20 +172,20 @@ describe("resolvers -> Mutation -> updatePost", () => {
       );
 
       await updatePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
       );
     }
   });
   it(`throws String Length Validation error if text is greater than 500 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationUpdatePostArgs = {
-        id: testPost?._id,
+        id: testPost?._id.toString() || "",
         data: {
           text: "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
           videoUrl: "",
@@ -201,9 +203,9 @@ describe("resolvers -> Mutation -> updatePost", () => {
       );
 
       await updatePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
       );
     }
   });
@@ -211,11 +213,11 @@ describe("resolvers -> Mutation -> updatePost", () => {
   it("throws error if title is provided and post is not pinned", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationUpdatePostArgs = {
-        id: testPost2?._id,
+        id: testPost2?._id.toString() || "",
         data: {
           title: "Test title",
           text: "Test text",
@@ -231,9 +233,9 @@ describe("resolvers -> Mutation -> updatePost", () => {
       );
 
       await updatePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `Post needs to be pinned inorder to add a title`
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Post needs to be pinned inorder to add a title`,
       );
     }
   });
@@ -241,11 +243,11 @@ describe("resolvers -> Mutation -> updatePost", () => {
   it(`throws error if title is not provided and post is pinned`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationUpdatePostArgs = {
-        id: testPost?._id,
+        id: testPost?._id.toString() || "",
         data: {
           text: "Testing text",
         },
@@ -260,8 +262,10 @@ describe("resolvers -> Mutation -> updatePost", () => {
       );
 
       await updatePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(`Please provide a title to pin post`);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Please provide a title to pin post`,
+      );
     }
   });
 });

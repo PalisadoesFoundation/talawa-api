@@ -7,7 +7,7 @@ export class NotFoundError extends ApplicationError {
     message = "Not Found",
     code: string | null = null,
     param: string | null = null,
-    metadata: Record<any, any> = {}
+    metadata: Record<string, string> = {},
   ) {
     const errorJson = [
       {
