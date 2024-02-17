@@ -27,7 +27,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const removeActionItem: MutationResolvers["removeActionItem"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -38,7 +38,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -49,7 +49,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -64,7 +64,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ACTION_ITEM_NOT_FOUND_ERROR.MESSAGE),
       ACTION_ITEM_NOT_FOUND_ERROR.CODE,
-      ACTION_ITEM_NOT_FOUND_ERROR.PARAM
+      ACTION_ITEM_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -72,8 +72,8 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     (ogranizationId) =>
       ogranizationId === actionItem.actionItemCategoryId.organizationId ||
       Types.ObjectId(ogranizationId?.toString()).equals(
-        actionItem.actionItemCategoryId.organizationId
-      )
+        actionItem.actionItemCategoryId.organizationId,
+      ),
   );
 
   let currentUserIsEventAdmin = false;
@@ -100,14 +100,15 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
         EVENT_NOT_FOUND_ERROR.CODE,
-        EVENT_NOT_FOUND_ERROR.PARAM
+        EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     // Checks if the currUser is an admin of the event
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
-        admin === context.userID || Types.ObjectId(admin).equals(context.userId)
+        admin === context.userID ||
+        Types.ObjectId(admin).equals(context.userId),
     );
   }
 
@@ -120,7 +121,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 

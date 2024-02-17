@@ -13,10 +13,10 @@ import type { InterfaceUserFamily } from "../models/userFamily";
  */
 export const adminCheck = async (
   userId: string | Types.ObjectId,
-  userFamily: InterfaceUserFamily
+  userFamily: InterfaceUserFamily,
 ): Promise<void> => {
   const userIsUserFamilyAdmin = userFamily.admins.some(
-    (admin) => admin === userId || Types.ObjectId(admin).equals(userId)
+    (admin) => admin === userId || Types.ObjectId(admin).equals(userId),
   );
 
   // const user = await User.findOne({
@@ -31,7 +31,7 @@ export const adminCheck = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(`${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`),
       USER_NOT_AUTHORIZED_ADMIN.CODE,
-      USER_NOT_AUTHORIZED_ADMIN.PARAM
+      USER_NOT_AUTHORIZED_ADMIN.PARAM,
     );
   }
 };

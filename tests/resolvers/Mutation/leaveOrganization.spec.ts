@@ -70,7 +70,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -119,7 +119,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -157,7 +157,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -175,7 +175,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
     const leaveOrganizationPayload = await leaveOrganizationResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const updatedTestUser = await User.findOne({
@@ -217,7 +217,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

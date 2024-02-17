@@ -20,7 +20,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const createGroupChat: MutationResolvers["createGroupChat"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization;
 
@@ -42,7 +42,7 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -60,7 +60,7 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 

@@ -91,7 +91,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE
+        REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE,
       );
     }
   });
@@ -110,7 +110,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
         $set: {
           registeredEvents: [],
         },
-      }
+      },
     );
 
     const args: MutationRegisterForEventArgs = {
@@ -124,7 +124,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     const registerForEventPayload = await registerForEventResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const testRegisterForEventPayload = await Event.findOne({

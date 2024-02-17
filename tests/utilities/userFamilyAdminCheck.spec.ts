@@ -54,11 +54,11 @@ describe("utilities -> userFamilyAdminCheck", () => {
       );
       await adminCheck(
         testUser?._id,
-        testUserFamily ?? ({} as InterfaceUserFamily)
+        testUserFamily ?? ({} as InterfaceUserFamily),
       );
     } catch (error) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
     }
     expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
@@ -75,7 +75,7 @@ describe("utilities -> userFamilyAdminCheck", () => {
       {
         new: true,
         upsert: true,
-      }
+      },
     );
 
     const { adminCheck } = await import(
@@ -85,8 +85,8 @@ describe("utilities -> userFamilyAdminCheck", () => {
     await expect(
       adminCheck(
         updatedUser?.userId?.toString() ?? "",
-        testUserFamily ?? ({} as InterfaceUserFamily)
-      )
+        testUserFamily ?? ({} as InterfaceUserFamily),
+      ),
     ).resolves.not.toThrowError();
   });
 
@@ -103,7 +103,7 @@ describe("utilities -> userFamilyAdminCheck", () => {
       {
         new: true,
         upsert: true,
-      }
+      },
     );
 
     const { adminCheck } = await import(
@@ -113,8 +113,8 @@ describe("utilities -> userFamilyAdminCheck", () => {
     await expect(
       adminCheck(
         testUser?._id,
-        updatedUserFamily ?? ({} as InterfaceUserFamily)
-      )
+        updatedUserFamily ?? ({} as InterfaceUserFamily),
+      ),
     ).resolves.not.toThrowError();
   });
   it("throws error if user is not found with the specific Id", async () => {
@@ -130,11 +130,11 @@ describe("utilities -> userFamilyAdminCheck", () => {
       );
       await adminCheck(
         new mongoose.Types.ObjectId(),
-        testUserFamily ?? ({} as InterfaceUserFamily)
+        testUserFamily ?? ({} as InterfaceUserFamily),
       );
     } catch (error) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
     }
     expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);

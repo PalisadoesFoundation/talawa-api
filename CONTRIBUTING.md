@@ -120,7 +120,7 @@ The process of proposing a change to Talawa API can be summarized as:
             1. [Introduction To Testing In JavaScript With Jest](https://www.youtube.com/watch?v=FgnxcUQ5vho)
             2. [Jest Crash Course](https://www.youtube.com/watch?v=7r4xVDI2vho)
             3. [Testing NodeJS applications with JEST](https://www.youtube.com/watch?v=8gHEv5iNRKk)
-7. **_Test Code Coverage_:**
+1. **_Test Code Coverage_:**
    1. _General Information_
       1. The current code coverage of the repo is: [![codecov](https://codecov.io/gh/PalisadoesFoundation/talawa-api/branch/develop/graph/badge.svg?token=CECBQTAOKM)](https://codecov.io/gh/PalisadoesFoundation/talawa-api)
       2. You can determine the percentage test coverage of your code by running these two commands in sequence:
@@ -139,12 +139,12 @@ The process of proposing a change to Talawa API can be summarized as:
          3. Remember to add the `Repository Upload Token` for your forked repo. This can be found under `Settings` of your `codecov.io` account.
          4. Use the value of this token to create a secret named CODE_COV for your forked repo.
          5. You will see your code coverage reports with every push to your repo after following these steps
-8. After making changes you can add them to git locally using `git add <file_name>`(to add changes only in a particular file) or `git add .` (to add all changes).
-9. After adding the changes you need to commit them using `git commit -m '<commit message>'`(look at the commit guidelines below for commit messages).
-10. Once you have successfully commited your changes, you need to push the changes to the forked repo on github using: `git push origin <branch_name>`.(Here branch name must be name of the branch you want to push the changes to.)
-11. Now create a pull request to the Talawa repository from your forked repo. Open an issue regarding the same and link your PR to it.
-12. Ensure the test suite passes, either locally or on CI once a PR has been created.
-13. Review and address comments on your pull request if requested.
+1. After making changes you can add them to git locally using `git add <file_name>`(to add changes only in a particular file) or `git add .` (to add all changes).
+1. After adding the changes you need to commit them using `git commit -m '<commit message>'`(look at the commit guidelines below for commit messages).
+1. Once you have successfully commited your changes, you need to push the changes to the forked repo on github using: `git push origin <branch_name>`.(Here branch name must be name of the branch you want to push the changes to.)
+1. Now create a pull request to the Talawa repository from your forked repo. Open an issue regarding the same and link your PR to it.
+1. Ensure the test suite passes, either locally or on CI once a PR has been created.
+1. Review and address comments on your pull request if requested.
 
 ## Upgrading Code
 
@@ -241,18 +241,22 @@ To fix formatting issues in code use this command:-
 <br/>
 
 ### Generating Table of Contents
+
 To generate table of contents for markdown files use this command:-
+
 ```bash
 npm run update:toc
 ```
+
 And if you want to generate table of content for specific file you can use the `markdown-toc` package directly as shown:-
+
 ```bash
 npx markdown-toc -i README.md
 ```
+
 Remember to replace `README.md` with the name of the file you want to generate table of contents for.
 </br>
 For more information on how to use `markdown-toc` package, visit [this link](https://www.npmjs.com/package/markdown-toc).
-
 
 ### Automation using husky
 

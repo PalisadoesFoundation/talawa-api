@@ -30,19 +30,19 @@ beforeAll(async () => {
   const testDirectChat1 = await createTestDirectChatwithUsers(
     testUser1?._id,
     testOrganization?._id,
-    [testUser1?._id, testUser2?._id]
+    [testUser1?._id, testUser2?._id],
   );
   const testDirectChat2 = await createTestDirectChatwithUsers(
     testUser2?._id,
     testOrganization?._id,
-    [testUser2?._id]
+    [testUser2?._id],
   );
 
   testDirectChats = [testDirectChat1, testDirectChat2];
   await createDirectChatMessage(
     testUser1?._id,
     testUser2?._id,
-    testDirectChats[0]?._id
+    testDirectChats[0]?._id,
   );
 });
 
@@ -90,7 +90,7 @@ describe("resolvers -> Query -> directChatsMessagesByChatID", () => {
     }).lean();
 
     expect(directChatsMessagesByChatIdPayload).toEqual(
-      directChatMessagesByChatId
+      directChatMessagesByChatId,
     );
   });
 });

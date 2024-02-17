@@ -47,7 +47,7 @@ describe("removeUserCustomData mutation", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const args = {
@@ -60,7 +60,7 @@ describe("removeUserCustomData mutation", () => {
     const removeCustomData = await removeUserCustomData?.({}, args, context);
 
     expect(removeCustomData?.organizationId).toBe(
-      addedCustomData?.organizationId
+      addedCustomData?.organizationId,
     );
     expect(removeCustomData?.userId).toBe(addedCustomData?.userId);
     expect(removeCustomData?.values).toStrictEqual(addedCustomData?.values);
@@ -84,7 +84,7 @@ describe("removeUserCustomData mutation", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const args = {
@@ -99,7 +99,7 @@ describe("removeUserCustomData mutation", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -119,7 +119,7 @@ describe("removeUserCustomData mutation", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const args = {
@@ -134,7 +134,7 @@ describe("removeUserCustomData mutation", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -154,7 +154,7 @@ describe("removeUserCustomData mutation", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const args = {
@@ -168,10 +168,10 @@ describe("removeUserCustomData mutation", () => {
       await removeUserCustomData?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
       expect((error as Error).message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -191,7 +191,7 @@ describe("removeUserCustomData mutation", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const args = {
@@ -205,10 +205,10 @@ describe("removeUserCustomData mutation", () => {
       await removeUserCustomData?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
       expect((error as Error).message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -230,7 +230,7 @@ describe("removeUserCustomData mutation", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(CUSTOM_DATA_NOT_FOUND.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${CUSTOM_DATA_NOT_FOUND.MESSAGE}`
+        `Translated ${CUSTOM_DATA_NOT_FOUND.MESSAGE}`,
       );
     }
   });
@@ -251,7 +251,7 @@ describe("removeUserCustomData mutation", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

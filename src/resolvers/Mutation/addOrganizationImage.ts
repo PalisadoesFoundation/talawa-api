@@ -41,7 +41,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -51,7 +51,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
     // Upload Image
     const uploadImageFileName = await uploadEncodedImage(
       args.file,
-      organization.image
+      organization.image,
     );
     // Updates the organization with new image and returns the updated organization.
     const updatedOrganization = await Organization.findOneAndUpdate(
@@ -65,7 +65,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     if (updatedOrganization !== null) {

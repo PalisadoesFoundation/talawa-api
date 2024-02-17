@@ -17,11 +17,11 @@ import { AGENDA_CATEGORY_NOT_FOUND_ERROR } from "../../constants";
 
 export const agendaCategory: QueryResolvers["agendaCategory"] = async (
   _parent,
-  args
+  args,
 ) => {
   // Find the AgendaCategory by ID
   const foundAgendaCategory = await AgendaCategoryModel.findById(
-    args.id
+    args.id,
   ).lean();
 
   // If the AgendaCategory is not found, throw a NotFoundError
@@ -29,7 +29,7 @@ export const agendaCategory: QueryResolvers["agendaCategory"] = async (
     throw new errors.NotFoundError(
       AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
       AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
-      AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
+      AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM,
     );
   }
   return foundAgendaCategory;

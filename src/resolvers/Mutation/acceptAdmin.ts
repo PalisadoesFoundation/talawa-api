@@ -19,7 +19,7 @@ import { superAdminCheck } from "../../utilities/superAdminCheck";
 export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -29,7 +29,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -41,7 +41,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE),
       USER_NOT_AUTHORIZED_SUPERADMIN.CODE,
-      USER_NOT_AUTHORIZED_SUPERADMIN.PARAM
+      USER_NOT_AUTHORIZED_SUPERADMIN.PARAM,
     );
   }
 
@@ -55,7 +55,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -67,7 +67,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
       $set: {
         adminApproved: true,
       },
-    }
+    },
   );
 
   return true;

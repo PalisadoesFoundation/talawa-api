@@ -62,7 +62,6 @@ beforeAll(async () => {
     createdBy: testAdminUser?._id,
     createdAt: new Date(),
   });
-
 });
 
 afterAll(async () => {
@@ -147,7 +146,6 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
     const context = {
       userId: testUser?._id,
     };
- 
 
     const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
       {},

@@ -18,7 +18,7 @@ export interface InterfaceJwtTokenPayload {
  */
 export const createAccessToken = (
   user: InterfaceUser,
-  appUserProfile: InterfaceAppUserProfile
+  appUserProfile: InterfaceAppUserProfile,
 ): string => {
   return jwt.sign(
     {
@@ -31,13 +31,13 @@ export const createAccessToken = (
     ACCESS_TOKEN_SECRET as string,
     {
       expiresIn: "40m",
-    }
+    },
   );
 };
 
 export const createRefreshToken = (
   user: InterfaceUser,
-  appUserProfile: InterfaceAppUserProfile
+  appUserProfile: InterfaceAppUserProfile,
 ): string => {
   return jwt.sign(
     {
@@ -50,7 +50,7 @@ export const createRefreshToken = (
     REFRESH_TOKEN_SECRET as string,
     {
       expiresIn: "30d",
-    }
+    },
   );
 };
 

@@ -5,7 +5,7 @@ import { errors, requestContext } from "../../libraries";
 
 function authDirectiveTransformer(
   schema: GraphQLSchema,
-  directiveName: string
+  directiveName: string,
 ): GraphQLSchema {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
@@ -13,7 +13,7 @@ function authDirectiveTransformer(
       const authDirective = getDirective(
         schema,
         fieldConfig,
-        directiveName
+        directiveName,
       )?.[0];
       if (authDirective) {
         const { resolve = defaultFieldResolver } = fieldConfig;
@@ -23,7 +23,7 @@ function authDirectiveTransformer(
             throw new errors.UnauthenticatedError(
               requestContext.translate("user.notAuthenticated"),
               "user.notAuthenticated --auth directive",
-              "userAuthentication"
+              "userAuthentication",
             );
           return resolve(root, args, context, info) as string;
         };

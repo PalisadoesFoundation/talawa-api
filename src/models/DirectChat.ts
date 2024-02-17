@@ -60,7 +60,7 @@ const directChatSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const directChatModel = (): Model<InterfaceDirectChat> =>

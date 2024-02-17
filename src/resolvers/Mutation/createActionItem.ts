@@ -39,7 +39,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const createActionItem: MutationResolvers["createActionItem"] = async (
   _parent,
   args,
-  context
+  context,
 ): Promise<InterfaceActionItem> => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -50,7 +50,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -60,7 +60,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -73,7 +73,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -86,7 +86,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
       ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.CODE,
-      ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.PARAM
+      ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -94,7 +94,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
     (organizationId) =>
       organizationId === actionItemCategory.organizationId ||
-      Types.ObjectId(organizationId).equals(actionItemCategory.organizationId)
+      Types.ObjectId(organizationId).equals(actionItemCategory.organizationId),
   );
 
   // Checks if the asignee is a member of the organization
@@ -102,7 +102,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
       USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
-      USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM
+      USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
     );
   }
 
@@ -130,14 +130,15 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
         EVENT_NOT_FOUND_ERROR.CODE,
-        EVENT_NOT_FOUND_ERROR.PARAM
+        EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     // Checks if the currUser is an admin of the event
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
-        admin === context.userID || Types.ObjectId(admin).equals(context.userId)
+        admin === context.userID ||
+        Types.ObjectId(admin).equals(context.userId),
     );
   }
 
@@ -147,8 +148,8 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       (organizationId &&
         organizationId === actionItemCategory.organizationId) ||
       Types.ObjectId(organizationId?.toString()).equals(
-        actionItemCategory.organizationId
-      )
+        actionItemCategory.organizationId,
+      ),
   );
 
   // Checks whether currentUser with _id === context.userId is authorized for the operation.
@@ -160,7 +161,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 

@@ -47,7 +47,7 @@ export const createTestEvent = async (): Promise<
         $push: {
           registeredEvents: testEvent._id,
         },
-      }
+      },
     );
     await AppUserProfile.updateOne(
       {
@@ -58,7 +58,7 @@ export const createTestEvent = async (): Promise<
           eventAdmin: testEvent._id,
           createdEvents: testEvent._id,
         },
-      }
+      },
     );
 
     return [testUser, testOrganization, testEvent];
@@ -71,7 +71,7 @@ export const createEventWithRegistrant = async (
   userId: string,
   organizationId: string,
   allDay: boolean,
-  recurrance: string
+  recurrance: string,
 ): Promise<TestEventType> => {
   const testEvent = await Event.create({
     creatorId: userId,
@@ -103,7 +103,7 @@ export const createEventWithRegistrant = async (
       $push: {
         registeredEvents: testEvent._id,
       },
-    }
+    },
   );
   await AppUserProfile.updateOne(
     {
@@ -114,7 +114,7 @@ export const createEventWithRegistrant = async (
         eventAdmin: testEvent._id,
         createdEvents: testEvent._id,
       },
-    }
+    },
   );
   return testEvent;
 };

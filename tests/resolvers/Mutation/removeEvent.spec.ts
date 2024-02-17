@@ -110,7 +110,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
           $set: {
             adminFor: [],
           },
-        }
+        },
       );
 
       await Event.updateOne(
@@ -121,7 +121,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
           $set: {
             admins: [],
           },
-        }
+        },
       );
 
       const args: MutationRemoveEventArgs = {
@@ -140,7 +140,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -154,7 +154,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         $push: {
           adminFor: testOrganization?._id,
         },
-      }
+      },
     );
 
     const updatedEvent = await Event.findOneAndUpdate(
@@ -168,7 +168,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedEvent !== null) {
@@ -252,7 +252,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

@@ -66,7 +66,7 @@ describe("resolvers -> Query -> user", () => {
         $set: {
           image: `images/newImage.png`,
         },
-      }
+      },
     );
 
     const args: QueryUserArgs = {

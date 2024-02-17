@@ -37,7 +37,7 @@ beforeAll(async () => {
   testGroupChat = resultsArray[2];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -67,7 +67,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
     } catch (error: unknown) {
       // console.log(error);?
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -98,7 +98,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
           $set: {
             organization: Types.ObjectId().toString(),
           },
-        }
+        },
       );
 
       const args: MutationAdminRemoveGroupArgs = {
@@ -112,7 +112,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       await adminRemoveGroupResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -127,7 +127,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        }
+        },
       );
 
       const args: MutationAdminRemoveGroupArgs = {
@@ -155,7 +155,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        }
+        },
       );
 
       const updatedOrganization = await Organization.findOneAndUpdate(
@@ -169,7 +169,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         },
         {
           new: true,
-        }
+        },
       );
       if (updatedOrganization) cacheOrganizations([updatedOrganization]);
 
@@ -184,7 +184,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       await adminRemoveGroupResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ADMIN.MESSAGE
+        USER_NOT_AUTHORIZED_ADMIN.MESSAGE,
       );
     }
   });
@@ -201,7 +201,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       },
       {
         new: true,
-      }
+      },
     );
     if (updatedOrganization) cacheOrganizations([updatedOrganization]);
 
@@ -216,7 +216,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
     const adminRemoveGroupPayload = await adminRemoveGroupResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(adminRemoveGroupPayload).toEqual({

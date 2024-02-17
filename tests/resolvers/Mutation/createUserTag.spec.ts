@@ -83,7 +83,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -114,7 +114,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -146,7 +146,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(TAG_NOT_FOUND.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${TAG_NOT_FOUND.MESSAGE}`
+        `Translated ${TAG_NOT_FOUND.MESSAGE}`,
       );
     }
   });
@@ -178,7 +178,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(INCORRECT_TAG_INPUT.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${INCORRECT_TAG_INPUT.MESSAGE}`
+        `Translated ${INCORRECT_TAG_INPUT.MESSAGE}`,
       );
     }
   });
@@ -210,7 +210,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE}`,
       );
     }
   });
@@ -242,7 +242,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(TAG_ALREADY_EXISTS.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${TAG_ALREADY_EXISTS.MESSAGE}`
+        `Translated ${TAG_ALREADY_EXISTS.MESSAGE}`,
       );
     }
   });
@@ -250,7 +250,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
   it(`tag should be successfully added`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
 
     const args: MutationCreateUserTagArgs = {
@@ -276,7 +276,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
         organizationId: testOrganization?._id,
         name: "TestUserTag",
         parentTagId: testTag?._id,
-      })
+      }),
     );
 
     const createdTagExists = await OrganizationTagUser.exists({
@@ -311,7 +311,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });

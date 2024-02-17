@@ -32,7 +32,7 @@ beforeAll(async () => {
   testUser = await createTestUser();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
         },
         {
           isSuperAdmin: true,
-        }
+        },
       );
 
       const context = {
@@ -93,7 +93,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
       // console.log((error as Error).message);
 
       expect((error as Error).message).toEqual(
-        `${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -120,7 +120,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
       // console.log((error as Error).message);
 
       expect((error as Error).message).toEqual(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -154,7 +154,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
       // console.log(`-----------------${(error as Error).message}`);
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
     }
   });
@@ -167,7 +167,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
       },
       {
         isSuperAdmin: true,
-      }
+      },
     );
 
     const args: MutationBlockPluginCreationBySuperadminArgs = {

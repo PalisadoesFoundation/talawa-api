@@ -1,11 +1,11 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type mongoose from "mongoose";
 import * as fs from "fs";
-import { uploadEncodedImage } from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { EncodedImage } from "../../../src/models/EncodedImage";
-import { connect, disconnect } from "../../helpers/db";
+import type mongoose from "mongoose";
 import path from "path";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { IMAGE_SIZE_LIMIT_KB, INVALID_FILE_TYPE } from "../../../src/constants";
+import { EncodedImage } from "../../../src/models/EncodedImage";
+import { uploadEncodedImage } from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { connect, disconnect } from "../../helpers/db";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testPreviousImagePath: string;
@@ -48,7 +48,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
       await uploadEncodedImage(img, null);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${INVALID_FILE_TYPE.MESSAGE}`
+        `Translated ${INVALID_FILE_TYPE.MESSAGE}`,
       );
 
       expect(spy).toBeCalledWith(INVALID_FILE_TYPE.MESSAGE);

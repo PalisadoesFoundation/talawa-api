@@ -27,7 +27,7 @@ import { adminCheck } from "../../utilities";
 export const blockUser: MutationResolvers["blockUser"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization;
 
@@ -51,7 +51,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -64,21 +64,21 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   // Check whether the user - args.userId is a member of the organization before blocking
   const userIsOrganizationMember = organization?.members.some(
     (member) =>
-      member === args.userId || Types.ObjectId(member).equals(args.userId)
+      member === args.userId || Types.ObjectId(member).equals(args.userId),
   );
 
   if (!userIsOrganizationMember) {
     throw new errors.NotFoundError(
       requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
       MEMBER_NOT_FOUND_ERROR.CODE,
-      MEMBER_NOT_FOUND_ERROR.PARAM
+      MEMBER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -86,7 +86,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_BLOCKING_SELF.MESSAGE),
       USER_BLOCKING_SELF.CODE,
-      USER_BLOCKING_SELF.PARAM
+      USER_BLOCKING_SELF.PARAM,
     );
   }
 
@@ -94,7 +94,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlocked = organization.blockedUsers.some((blockedUser) =>
-    Types.ObjectId(blockedUser).equals(args.userId)
+    Types.ObjectId(blockedUser).equals(args.userId),
   );
 
   // Checks whether user with _id === args.userId is already blocked from organization.
@@ -102,7 +102,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -118,7 +118,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     },
     {
       new: true,
-    }
+    },
   );
 
   if (updatedOrganization !== null) {
@@ -140,7 +140,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     },
     {
       new: true,
-    }
+    },
   )
     .select(["-password"])
     .lean();

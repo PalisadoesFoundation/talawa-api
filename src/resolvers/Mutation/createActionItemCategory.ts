@@ -35,7 +35,7 @@ export const createActionItemCategory: MutationResolvers["createActionItemCatego
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -61,7 +61,7 @@ export const createActionItemCategory: MutationResolvers["createActionItemCatego
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -78,7 +78,7 @@ export const createActionItemCategory: MutationResolvers["createActionItemCatego
       throw new errors.ConflictError(
         requestContext.translate(ACTION_ITEM_CATEGORY_ALREADY_EXISTS.MESSAGE),
         ACTION_ITEM_CATEGORY_ALREADY_EXISTS.CODE,
-        ACTION_ITEM_CATEGORY_ALREADY_EXISTS.PARAM
+        ACTION_ITEM_CATEGORY_ALREADY_EXISTS.PARAM,
       );
     }
 

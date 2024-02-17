@@ -16,8 +16,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                                                            |
+| :------ | :-------------------------------------------------------------- |
 | `posts` | [`InterfacePost`](../interfaces/models_Post.InterfacePost.md)[] |
 
 #### Returns

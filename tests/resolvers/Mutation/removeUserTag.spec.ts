@@ -95,7 +95,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -123,7 +123,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(TAG_NOT_FOUND.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${TAG_NOT_FOUND.MESSAGE}`
+        `Translated ${TAG_NOT_FOUND.MESSAGE}`,
       );
     }
   });
@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -159,7 +159,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
   it(`deletes the tag (along with all its child tags) from the OrganizationTagUser model and its corresponding entries from TagUser model`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
 
     const args: MutationRemoveUserTagArgs = {
@@ -223,7 +223,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });

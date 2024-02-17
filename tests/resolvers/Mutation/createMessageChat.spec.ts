@@ -84,7 +84,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -114,7 +114,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       // console.log(error);
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -150,7 +150,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -186,7 +186,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -204,7 +204,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
         _action: "CHAT_CHANNEL",
         _payload: {
           directMessageChat: InterfaceMessageChat;
-        }
+        },
       ): {
         _action: string;
         _payload: { directMessageChat: InterfaceMessageChat };
@@ -224,7 +224,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
     const createMessageChatPayload = await createMessageChatResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createMessageChatPayload).toEqual(
@@ -233,7 +233,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
         receiver: testUsers[1]?._id,
         message: "message",
         languageBarrier: false,
-      })
+      }),
     );
   });
 });

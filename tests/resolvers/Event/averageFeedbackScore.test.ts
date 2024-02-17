@@ -31,7 +31,7 @@ describe("resolvers -> Event -> averageFeedbackScore", () => {
     const averageFeedbackScorePayload = await averageFeedbackScoreResolver?.(
       parent,
       {},
-      {}
+      {},
     );
 
     expect(averageFeedbackScorePayload).toEqual(0);
@@ -42,7 +42,7 @@ describe("resolvers -> Event -> averageFeedbackScore", () => {
     if (!testCheckIn) throw new Error("testCheckIn is null");
     await createFeedbackWithIDs(
       testEvent._id.toString(),
-      testCheckIn._id.toString()
+      testCheckIn._id.toString(),
     );
 
     const parent = testEvent.toObject();
@@ -50,7 +50,7 @@ describe("resolvers -> Event -> averageFeedbackScore", () => {
     const averageFeedbackScorePayload = await averageFeedbackScoreResolver?.(
       parent,
       {},
-      {}
+      {},
     );
 
     expect(averageFeedbackScorePayload).toEqual(3);

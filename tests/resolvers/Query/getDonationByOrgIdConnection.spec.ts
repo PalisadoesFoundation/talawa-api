@@ -44,7 +44,7 @@ describe("resolvers -> Query -> getDonationByOrgIdConnection", () => {
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
-      donationsByOrganization
+      donationsByOrganization,
     );
   });
 
@@ -66,7 +66,7 @@ describe("resolvers -> Query -> getDonationByOrgIdConnection", () => {
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
-      donationsByOrganization
+      donationsByOrganization,
     );
   });
 
@@ -88,7 +88,7 @@ describe("resolvers -> Query -> getDonationByOrgIdConnection", () => {
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
-      donationsByOrganization
+      donationsByOrganization,
     );
   });
 
@@ -110,7 +110,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
-      donationsByOrganization
+      donationsByOrganization,
     );
   });
 
@@ -132,7 +132,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
-      donationsByOrganization
+      donationsByOrganization,
     );
   });
 
@@ -154,7 +154,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
-      donationsByOrganization
+      donationsByOrganization,
     );
   });
 
@@ -176,7 +176,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
-      donationsByOrganization
+      donationsByOrganization,
     );
   });
 
@@ -198,7 +198,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
-      donationsByOrganization
+      donationsByOrganization,
     );
   });
 
@@ -220,7 +220,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
-      donationsByOrganization
+      donationsByOrganization,
     );
   });
 
@@ -244,7 +244,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
-      donationsByOrganization
+      donationsByOrganization,
     );
   });
 
@@ -270,7 +270,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
-      donationsByOrganization
+      donationsByOrganization,
     );
   });
 });

@@ -86,7 +86,7 @@ beforeAll(async () => {
         joinedOrganizations: [testOrganization._id],
         organizationsBlockedBy: [testOrganization._id],
       },
-    }
+    },
   );
   await AppUserProfile.updateOne(
     {
@@ -97,7 +97,7 @@ beforeAll(async () => {
         createdOrganizations: [testOrganization._id],
         adminFor: [testOrganization._id],
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -108,7 +108,7 @@ beforeAll(async () => {
       $set: {
         joinedOrganizations: [testOrganization._id],
       },
-    }
+    },
   );
 
   const testMembershipRequest = await MembershipRequest.create({
@@ -124,7 +124,7 @@ beforeAll(async () => {
       $push: {
         membershipRequests: testMembershipRequest._id,
       },
-    }
+    },
   );
 
   testPost = await Post.create({
@@ -155,7 +155,7 @@ beforeAll(async () => {
         membershipRequests: testMembershipRequest._id,
         posts: testPost._id,
       },
-    }
+    },
   );
 
   testComment = await Comment.create({
@@ -172,7 +172,7 @@ beforeAll(async () => {
       $inc: {
         commentCount: 1,
       },
-    }
+    },
   );
 });
 
@@ -209,7 +209,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -237,7 +237,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -261,7 +261,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -283,7 +283,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
     }
   });
@@ -300,7 +300,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -315,7 +315,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         $set: {
           adminApproved: true,
         },
-      }
+      },
     );
     await AppUserProfile.updateOne(
       {
@@ -323,7 +323,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       },
       {
         isSuperAdmin: true,
-      }
+      },
     );
 
     const args: MutationRemoveOrganizationArgs = {
@@ -337,7 +337,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     const removeOrganizationPayload = await removeOrganizationResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const updatedTestUser = await User.findOne({
@@ -439,7 +439,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     const removeOrganizationPayload = await removeOrganizationResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removeOrganizationPayload?.user).toEqual({
@@ -473,7 +473,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });

@@ -44,7 +44,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 
   randomUser = await createTestUser();
@@ -101,7 +101,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       await removeActionItemResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        ACTION_ITEM_NOT_FOUND_ERROR.MESSAGE
+        ACTION_ITEM_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -119,7 +119,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       await removeActionItemResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -136,14 +136,14 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     const removedActionItemPayload = await removeActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     // console.log(removedActionItemPayload);
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
         assigneeId: assignedTestUser?._id,
-      })
+      }),
     );
   });
 
@@ -163,7 +163,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     const args: MutationRemoveActionItemArgs = {
@@ -177,13 +177,13 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     const removedActionItemPayload = await removeActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
         assigneeId: randomUser?._id,
-      })
+      }),
     );
   });
 
@@ -203,7 +203,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     try {
@@ -237,7 +237,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     const args: MutationRemoveActionItemArgs = {
@@ -251,13 +251,13 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     const removedActionItemPayload = await removeActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
         assigneeId: randomUser?._id,
-      })
+      }),
     );
   });
   it("throws an error if user does not have appUserProfile", async () => {
@@ -274,7 +274,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       await removeActionItemResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

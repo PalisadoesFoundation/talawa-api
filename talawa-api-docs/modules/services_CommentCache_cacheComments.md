@@ -16,8 +16,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type                                                                     |
+| :--------- | :----------------------------------------------------------------------- |
 | `comments` | [`InterfaceComment`](../interfaces/models_Comment.InterfaceComment.md)[] |
 
 #### Returns

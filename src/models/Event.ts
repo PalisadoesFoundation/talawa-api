@@ -187,7 +187,7 @@ const eventSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const eventModel = (): Model<InterfaceEvent> =>

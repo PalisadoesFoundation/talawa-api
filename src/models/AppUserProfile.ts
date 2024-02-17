@@ -90,13 +90,13 @@ const appUserSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 appUserSchema.plugin(mongoosePaginate);
 const appUserProfileModel = (): PaginateModel<InterfaceAppUserProfile> =>
   model<InterfaceAppUserProfile, PaginateModel<InterfaceAppUserProfile>>(
     "AppUserProfile",
-    appUserSchema
+    appUserSchema,
   );
 
 export const AppUserProfile = (models.AppUserProfile ||

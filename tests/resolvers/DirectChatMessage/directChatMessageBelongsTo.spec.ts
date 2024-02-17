@@ -32,7 +32,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
     }).lean();
 
     expect(directChatMessageBelongsToPayload).toEqual(
-      directChatMessageBelongsTo
+      directChatMessageBelongsTo,
     );
   });
 });

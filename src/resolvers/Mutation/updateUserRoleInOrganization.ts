@@ -32,7 +32,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -43,20 +43,20 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     // Checks whether user to be removed is a member of the organization.
     const userIsOrganizationMember = organization?.members.some((member) =>
-      Types.ObjectId(member).equals(user._id)
+      Types.ObjectId(member).equals(user._id),
     );
 
     if (!userIsOrganizationMember) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
         USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
-        USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM
+        USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
       );
     }
 
@@ -66,7 +66,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
     const loggedInUserAppProfile = await AppUserProfile.findOne({
@@ -76,12 +76,12 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
     // Check whether loggedIn user is admin of the organization.
     const loggedInUserIsOrganizationAdmin = organization?.admins.some((admin) =>
-      Types.ObjectId(admin).equals(loggedInUser._id)
+      Types.ObjectId(admin).equals(loggedInUser._id),
     );
 
     if (
@@ -91,7 +91,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
         USER_NOT_AUTHORIZED_ADMIN.CODE,
-        USER_NOT_AUTHORIZED_ADMIN.PARAM
+        USER_NOT_AUTHORIZED_ADMIN.PARAM,
       );
     }
     // Admin of Org cannot change the role of SUPERADMIN in an organization.
@@ -103,7 +103,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
         USER_NOT_AUTHORIZED_ADMIN.CODE,
-        USER_NOT_AUTHORIZED_ADMIN.PARAM
+        USER_NOT_AUTHORIZED_ADMIN.PARAM,
       );
     }
     // ADMIN cannot change the role of itself
@@ -114,7 +114,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       throw new errors.ConflictError(
         requestContext.translate(ADMIN_CANNOT_CHANGE_ITS_ROLE.MESSAGE),
         ADMIN_CANNOT_CHANGE_ITS_ROLE.CODE,
-        ADMIN_CANNOT_CHANGE_ITS_ROLE.PARAM
+        ADMIN_CANNOT_CHANGE_ITS_ROLE.PARAM,
       );
     }
 
@@ -123,7 +123,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       throw new errors.UnauthorizedError(
         requestContext.translate(ADMIN_CHANGING_ROLE_OF_CREATOR.MESSAGE),
         ADMIN_CHANGING_ROLE_OF_CREATOR.CODE,
-        ADMIN_CHANGING_ROLE_OF_CREATOR.PARAM
+        ADMIN_CHANGING_ROLE_OF_CREATOR.PARAM,
       );
     }
 
@@ -133,11 +133,11 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
         { _id: args.organizationId },
         {
           $push: { admins: args.userId },
-        }
+        },
       );
       await AppUserProfile.updateOne(
         { userId: args.userId },
-        { $push: { adminFor: args.organizationId } }
+        { $push: { adminFor: args.organizationId } },
       );
       return { ...organization, ...updatedOrg };
     } else {
@@ -145,11 +145,11 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
         { _id: args.organizationId },
         {
           $pull: { admins: args.userId },
-        }
+        },
       ).lean();
       await AppUserProfile.updateOne(
         { userId: args.userId },
-        { $pull: { adminFor: args.organizationId } }
+        { $pull: { adminFor: args.organizationId } },
       );
       return { ...organization, ...updatedOrg };
     }

@@ -42,7 +42,7 @@ describe("createAccessToken", () => {
       user ? user.toObject() : ({} as InterfaceUser),
       appUserProfile
         ? appUserProfile.toObject()
-        : ({} as InterfaceAppUserProfile)
+        : ({} as InterfaceAppUserProfile),
     );
 
     expect(token).toBeDefined();
@@ -51,16 +51,16 @@ describe("createAccessToken", () => {
 
     expect(decodedToken).not.toBeNull();
     expect((decodedToken as InterfaceJwtTokenPayload).tokenVersion).toBe(
-      appUserProfile?.tokenVersion
+      appUserProfile?.tokenVersion,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).userId).toBe(
-      user && user._id ? user._id.toString() : undefined
+      user && user._id ? user._id.toString() : undefined,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).firstName).toBe(
-      user?.firstName
+      user?.firstName,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).lastName).toBe(
-      user?.lastName
+      user?.lastName,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).email).toBe(user?.email);
   });
@@ -72,7 +72,7 @@ describe("createRefreshToken", () => {
       user ? user.toObject() : ({} as InterfaceUser),
       appUserProfile
         ? appUserProfile.toObject()
-        : ({} as InterfaceAppUserProfile)
+        : ({} as InterfaceAppUserProfile),
     );
 
     expect(token).toBeDefined();
@@ -80,16 +80,16 @@ describe("createRefreshToken", () => {
     const decodedToken = jwt.decode(token);
 
     expect((decodedToken as InterfaceJwtTokenPayload).tokenVersion).toBe(
-      appUserProfile?.tokenVersion
+      appUserProfile?.tokenVersion,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).userId).toBe(
-      user && user._id ? user._id.toString() : undefined
+      user && user._id ? user._id.toString() : undefined,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).firstName).toBe(
-      user?.firstName
+      user?.firstName,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).lastName).toBe(
-      user?.lastName
+      user?.lastName,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).email).toBe(user?.email);
   });

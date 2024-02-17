@@ -13,7 +13,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
  */
 export const userLanguage: QueryResolvers["userLanguage"] = async (
   _parent,
-  args
+  args,
 ) => {
   const user = await User.findOne({
     _id: args.userId,
@@ -23,7 +23,7 @@ export const userLanguage: QueryResolvers["userLanguage"] = async (
     throw new errors.NotFoundError(
       USER_NOT_FOUND_ERROR.DESC,
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const appUserProfile = await AppUserProfile.findOne({
@@ -35,7 +35,7 @@ export const userLanguage: QueryResolvers["userLanguage"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 

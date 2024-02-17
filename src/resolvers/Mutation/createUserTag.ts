@@ -20,7 +20,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const createUserTag: MutationResolvers["createUserTag"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Get the current user
   const currentUser = await User.findOne({
@@ -32,7 +32,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -44,7 +44,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -57,7 +57,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -65,15 +65,15 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (organizationId) =>
       Types.ObjectId(organizationId?.toString()).equals(
-        args.input.organizationId
-      )
+        args.input.organizationId,
+      ),
   );
 
   if (!currentUserAppProfile.isSuperAdmin && !currentUserIsOrganizationAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE),
       USER_NOT_AUTHORIZED_TO_CREATE_TAG.CODE,
-      USER_NOT_AUTHORIZED_TO_CREATE_TAG.PARAM
+      USER_NOT_AUTHORIZED_TO_CREATE_TAG.PARAM,
     );
   }
 
@@ -88,7 +88,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
       throw new errors.NotFoundError(
         requestContext.translate(TAG_NOT_FOUND.MESSAGE),
         TAG_NOT_FOUND.CODE,
-        TAG_NOT_FOUND.PARAM
+        TAG_NOT_FOUND.PARAM,
       );
     }
 
@@ -100,7 +100,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
       throw new errors.NotFoundError(
         requestContext.translate(INCORRECT_TAG_INPUT.MESSAGE),
         INCORRECT_TAG_INPUT.CODE,
-        INCORRECT_TAG_INPUT.PARAM
+        INCORRECT_TAG_INPUT.PARAM,
       );
     }
   }
@@ -114,7 +114,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
     throw new errors.ConflictError(
       requestContext.translate(TAG_ALREADY_EXISTS.MESSAGE),
       TAG_ALREADY_EXISTS.CODE,
-      TAG_ALREADY_EXISTS.PARAM
+      TAG_ALREADY_EXISTS.PARAM,
     );
   }
 

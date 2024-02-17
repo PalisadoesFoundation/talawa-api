@@ -9,7 +9,7 @@ export type TestEventType =
   | null;
 
 export const createTestEventWithRegistrants = async (
-  isAdmin = true
+  isAdmin = true,
 ): Promise<[TestUserType, TestOrganizationType, TestEventType]> => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
 
@@ -38,7 +38,7 @@ export const createTestEventWithRegistrants = async (
       $push: {
         registeredEvents: testEvent._id,
       },
-    }
+    },
   );
   await AppUserProfile.updateOne(
     {
@@ -49,7 +49,7 @@ export const createTestEventWithRegistrants = async (
         eventAdmin: isAdmin ? testEvent._id : [],
         createdEvents: testEvent._id,
       },
-    }
+    },
   );
 
   return [testUser, testOrganization, testEvent];

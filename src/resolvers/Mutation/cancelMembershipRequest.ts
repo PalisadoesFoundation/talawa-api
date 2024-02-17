@@ -32,7 +32,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
-        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -58,7 +58,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -71,12 +71,12 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     const currentUserCreatedMembershipRequest = currentUser._id.equals(
-      membershipRequest.user
+      membershipRequest.user,
     );
 
     // Checks whether currentUser is the creator of membershipRequest.
@@ -84,7 +84,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -105,7 +105,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -121,7 +121,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         $pull: {
           membershipRequests: membershipRequest._id,
         },
-      }
+      },
     );
 
     // Returns the deleted membershipRequest.

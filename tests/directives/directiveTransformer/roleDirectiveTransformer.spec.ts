@@ -102,7 +102,7 @@ it("throws NotFoundError if no user exists with _id === context.userId", async (
       },
       {
         contextValue: authenticatedContext,
-      }
+      },
     );
   } catch (err) {
     if (err instanceof errors.NotFoundError) {

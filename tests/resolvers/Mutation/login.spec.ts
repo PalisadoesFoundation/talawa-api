@@ -43,7 +43,7 @@ beforeAll(async () => {
       $set: {
         password: hashedTestPassword,
       },
-    }
+    },
   );
   const testOrganization = temp[1];
   const testMembershipRequest = await MembershipRequest.create({
@@ -59,7 +59,7 @@ beforeAll(async () => {
       $push: {
         membershipRequests: testMembershipRequest._id,
       },
-    }
+    },
   );
 
   await Organization.updateOne(
@@ -70,7 +70,7 @@ beforeAll(async () => {
       $push: {
         membershipRequests: testMembershipRequest._id,
       },
-    }
+    },
   );
 });
 
@@ -108,7 +108,7 @@ describe("resolvers -> Mutation -> login", () => {
       if (error instanceof Error) {
         expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
         expect(error.message).toEqual(
-          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
         );
       }
     }
@@ -130,7 +130,7 @@ describe("resolvers -> Mutation -> login", () => {
         $set: {
           password: hashedTestPassword,
         },
-      }
+      },
     );
     const args: MutationLoginArgs = {
       data: {
@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> login", () => {
         user: expect.objectContaining({
           appUserProfileId: userAppProfile?._id,
         }),
-      })
+      }),
     );
   });
 
@@ -220,7 +220,7 @@ email === args.data.email`, async () => {
     const updatedUser = await AppUserProfile.findOneAndUpdate(
       { userId: testUser?._id },
       { token: newToken, $inc: { tokenVersion: 1 } },
-      { new: true }
+      { new: true },
     );
 
     expect(updatedUser).toBeDefined();
@@ -228,7 +228,7 @@ email === args.data.email`, async () => {
 
     if (mockUserAppProfile?.tokenVersion !== undefined) {
       expect(updatedUser?.tokenVersion).toBe(
-        mockUserAppProfile?.tokenVersion + 1
+        mockUserAppProfile?.tokenVersion + 1,
       );
     }
   });
@@ -258,7 +258,7 @@ email === args.data.email`, async () => {
     expect(loginPayload).toEqual(
       expect.objectContaining({
         user: testUser,
-      })
+      }),
     );
     expect(loginPayload?.user).toBeDefined();
     expect(typeof loginPayload?.accessToken).toBe("string");

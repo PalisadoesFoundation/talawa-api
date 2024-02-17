@@ -50,7 +50,7 @@ describe("resolvers -> Query -> myLanguage", () => {
       },
       {
         appUserProfileId: testAppUserProfile._id,
-      }
+      },
     );
 
     const context = {

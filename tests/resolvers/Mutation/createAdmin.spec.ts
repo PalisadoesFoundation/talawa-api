@@ -33,7 +33,7 @@ beforeAll(async () => {
   testOrganization = resultsArray[1];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -58,7 +58,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       await createAdminResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -73,7 +73,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $set: {
             creatorId: Types.ObjectId().toString(),
           },
-        }
+        },
       );
 
       const args: MutationCreateAdminArgs = {
@@ -103,7 +103,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $set: {
             creatorId: testUser?._id,
           },
-        }
+        },
       );
 
       await AppUserProfile.updateOne(
@@ -114,7 +114,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $set: {
             isSuperAdmin: true,
           },
-        }
+        },
       );
 
       const args: MutationCreateAdminArgs = {
@@ -154,7 +154,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       await createAdminResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -180,7 +180,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       await createAdminResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -202,7 +202,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       await createAdminResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -221,7 +221,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -242,7 +242,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       await createAdminResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -259,7 +259,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -311,7 +311,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     } catch (error: unknown) {
       // console.log(error)
       expect((error as Error).message).toEqual(
-        `${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });

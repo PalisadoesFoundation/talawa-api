@@ -13,7 +13,7 @@ import { errors } from "../../libraries";
 export const checkAuth: QueryResolvers["checkAuth"] = async (
   _parent,
   _args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -23,7 +23,7 @@ export const checkAuth: QueryResolvers["checkAuth"] = async (
     throw new errors.NotFoundError(
       USER_NOT_FOUND_ERROR.DESC,
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -33,7 +33,7 @@ export const checkAuth: QueryResolvers["checkAuth"] = async (
     throw new errors.UnauthorizedError(
       USER_NOT_FOUND_ERROR.DESC,
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 

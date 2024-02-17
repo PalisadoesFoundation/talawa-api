@@ -18,7 +18,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const unlikePost: MutationResolvers["unlikePost"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let post: InterfacePost | null;
 
@@ -39,12 +39,12 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
       POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM
+      POST_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const currentUserHasLikedPost = post.likedBy.some((liker) =>
-    liker.equals(context.userId)
+    liker.equals(context.userId),
   );
 
   if (currentUserHasLikedPost === true) {
@@ -62,7 +62,7 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     if (updatedPost !== null) {

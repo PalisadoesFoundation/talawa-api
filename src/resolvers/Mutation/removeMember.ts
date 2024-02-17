@@ -29,7 +29,7 @@ import { adminCheck } from "../../utilities";
 export const removeMember: MutationResolvers["removeMember"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization: InterfaceOrganization;
 
@@ -51,7 +51,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -71,19 +71,19 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const userIsOrganizationMember = organization?.members.some((member) =>
-    Types.ObjectId(member).equals(user._id)
+    Types.ObjectId(member).equals(user._id),
   );
 
   if (!userIsOrganizationMember) {
     throw new errors.NotFoundError(
       requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
       MEMBER_NOT_FOUND_ERROR.CODE,
-      MEMBER_NOT_FOUND_ERROR.PARAM
+      MEMBER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -92,12 +92,12 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     throw new errors.ConflictError(
       requestContext.translate(USER_REMOVING_SELF.MESSAGE),
       USER_REMOVING_SELF.CODE,
-      USER_REMOVING_SELF.PARAM
+      USER_REMOVING_SELF.PARAM,
     );
   }
 
   const userIsOrganizationAdmin = organization?.admins.some((admin) =>
-    Types.ObjectId(admin).equals(user._id)
+    Types.ObjectId(admin).equals(user._id),
   );
 
   /*
@@ -108,7 +108,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     throw new errors.ConflictError(
       requestContext.translate(ADMIN_REMOVING_ADMIN.MESSAGE),
       ADMIN_REMOVING_ADMIN.CODE,
-      ADMIN_REMOVING_ADMIN.PARAM
+      ADMIN_REMOVING_ADMIN.PARAM,
     );
   }
 
@@ -123,7 +123,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
       ADMIN_REMOVING_CREATOR.CODE,
-      ADMIN_REMOVING_CREATOR.PARAM
+      ADMIN_REMOVING_CREATOR.PARAM,
     );
   }
 
@@ -135,13 +135,13 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     {
       $set: {
         members: organization?.members.filter(
-          (member) => member.toString() !== user._id.toString()
+          (member) => member.toString() !== user._id.toString(),
         ),
       },
     },
     {
       new: true,
-    }
+    },
   ).lean();
   if (organization) await cacheOrganizations([organization]);
 
@@ -154,10 +154,10 @@ export const removeMember: MutationResolvers["removeMember"] = async (
       $set: {
         joinedOrganizations: user.joinedOrganizations.filter(
           (joinedOrganization) =>
-            joinedOrganization.toString() !== organization?._id.toString()
+            joinedOrganization.toString() !== organization?._id.toString(),
         ),
       },
-    }
+    },
   );
 
   return organization ?? ({} as InterfaceOrganization);

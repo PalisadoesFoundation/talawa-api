@@ -15,7 +15,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -25,7 +25,7 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
@@ -35,7 +35,7 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -59,20 +59,20 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM
+      EVENT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const isUserEventAdmin = event.admins.some(
     (admin) =>
-      admin === context.userID || Types.ObjectId(admin).equals(context.userId)
+      admin === context.userID || Types.ObjectId(admin).equals(context.userId),
   );
 
   if (!isUserEventAdmin && !currentUserAppProfile.isSuperAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -84,7 +84,7 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -96,7 +96,7 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     throw new errors.ConflictError(
       requestContext.translate(USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE),
       USER_ALREADY_REGISTERED_FOR_EVENT.CODE,
-      USER_ALREADY_REGISTERED_FOR_EVENT.PARAM
+      USER_ALREADY_REGISTERED_FOR_EVENT.PARAM,
     );
   }
 

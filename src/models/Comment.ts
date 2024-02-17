@@ -62,7 +62,7 @@ const commentSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const commentModel = (): Model<InterfaceComment> =>

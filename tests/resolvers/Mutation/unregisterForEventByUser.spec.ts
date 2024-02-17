@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -94,7 +94,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_ALREADY_UNREGISTERED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_ALREADY_UNREGISTERED_ERROR.MESSAGE}`
+        `Translated ${USER_ALREADY_UNREGISTERED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -114,7 +114,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
         $push: {
           registeredEvents: testEvent?._id,
         },
-      }
+      },
     );
 
     const args: MutationUnregisterForEventByUserArgs = {
