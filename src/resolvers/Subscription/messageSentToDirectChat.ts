@@ -25,6 +25,6 @@ export const messageSentToDirectChat: SubscriptionResolvers["messageSentToDirect
       (_parent, _args, context) =>
         context.pubsub.asyncIterator([MESSAGE_SENT_TO_DIRECT_CHAT]),
 
-      (payload, _variables, context) => filterFunction(payload, context),
+      (payload, _variables, context) => filterFunction(payload, context)
     ),
   };

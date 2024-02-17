@@ -202,7 +202,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -227,7 +227,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -255,7 +255,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const testUserobj = await User.findById({ _id: testUser.id });
@@ -285,7 +285,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const testUserobj = await User.findById({ _id: testUser.id });
@@ -319,7 +319,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -333,7 +333,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     });
   });
 
-  it("When Image is given updates the current user's object with the uploaded image and returns it", async () => {
+  it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
     const args: MutationUpdateUserProfileArgs = {
       data: {
         email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -344,7 +344,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     };
 
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL,
+      async (encodedImageURL: string) => encodedImageURL
     );
 
     const context = {
@@ -355,7 +355,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -662,7 +662,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     };
 
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL,
+      async (encodedImageURL: string) => encodedImageURL
     );
 
     const context = {
@@ -673,7 +673,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(updateUserProfilePayload).toEqual({

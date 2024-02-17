@@ -15,7 +15,7 @@ import { imageExtensionCheck } from "./imageExtensionCheck";
  */
 export const uploadImage = async (
   newImageFile: any,
-  oldImagePath: string | null,
+  oldImagePath: string | null
 ): Promise<{ newImagePath: string; imageAlreadyInDbPath: string }> => {
   const id = shortid.generate();
 
@@ -29,16 +29,16 @@ export const uploadImage = async (
     createReadStream()
       .pipe(
         createWriteStream(
-          path.join(__dirname, "../../images", `/${id}-${filename}`),
-        ),
+          path.join(__dirname, "../../images", `/${id}-${filename}`)
+        )
       )
       .on("close", resolve)
       .on("error", (error: any) => reject(error))
       .on("finish", () =>
         resolve({
           path,
-        }),
-      ),
+        })
+      )
   );
 
   const newImagePath = `images/${id}-${filename}`;
@@ -54,7 +54,7 @@ export const uploadImage = async (
 
   const imageAlreadyInDbPath = await imageAlreadyInDbCheck(
     oldImagePath,
-    newImagePath,
+    newImagePath
   );
 
   return {

@@ -3,7 +3,6 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceCheckIn } from "./CheckIn";
-import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 export interface InterfaceEventAttendee {
   _id: Schema.Types.ObjectId;
@@ -32,8 +31,6 @@ const eventAttendeeSchema = new Schema({
 });
 
 eventAttendeeSchema.index({ userId: 1, eventId: 1 }, { unique: true });
-
-createLoggingMiddleware(eventAttendeeSchema, "EventAttendee");
 
 const eventAttendeeModel = (): Model<InterfaceEventAttendee> =>
   model<InterfaceEventAttendee>("EventAttendee", eventAttendeeSchema);

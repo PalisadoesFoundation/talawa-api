@@ -32,12 +32,12 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
   const isPasswordValid = await bcrypt.compare(
     args.data.password,
-    user.password,
+    user.password
   );
   // Checks whether password is invalid.
   if (isPasswordValid === false) {
@@ -49,7 +49,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
           param: INVALID_CREDENTIALS_ERROR.PARAM,
         },
       ],
-      requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE),
+      requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE)
     );
   }
   const accessToken = await createAccessToken(user);
@@ -69,13 +69,13 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
       },
       {
         userType: "SUPERADMIN",
-      },
+      }
     );
   }
 
   await User.findOneAndUpdate(
     { _id: user._id },
-    { token: refreshToken, $inc: { tokenVersion: 1 } },
+    { token: refreshToken, $inc: { tokenVersion: 1 } }
   );
 
   // Assigns new value with populated fields to user object.

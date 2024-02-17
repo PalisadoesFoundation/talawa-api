@@ -1,7 +1,7 @@
 export const encodedVideoExtentionCheck = (encodedUrl: string): boolean => {
   const extension = encodedUrl.substring(
     "data:".length,
-    encodedUrl.indexOf(";base64"),
+    encodedUrl.indexOf(";base64")
   );
 
   console.log(extension);

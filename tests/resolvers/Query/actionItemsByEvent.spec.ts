@@ -29,7 +29,7 @@ describe("resolvers -> Query -> actionItemsByEvent", () => {
     const actionItemsByEventPayload = await actionItemsByEventsResolver?.(
       {},
       args,
-      {},
+      {}
     );
 
     const actionItemsByEventInfo = await ActionItem.find({

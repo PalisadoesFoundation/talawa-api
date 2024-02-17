@@ -52,7 +52,7 @@ export const getLimit = (limit: number): number => {
 // Generates the sortingObject that can be passed in the .sort() method
 export const getSortingObject = (
   direction: "FORWARD" | "BACKWARD",
-  sortingObject: Record<string, number>,
+  sortingObject: Record<string, number>
 ): Record<string, number> => {
   // We assume that the resolver would always be written with respect to the sorting that needs to be implemented for forward pagination
   if (direction === "FORWARD") return sortingObject;
@@ -73,7 +73,7 @@ type FilterObjectType = {
 
 // Generates the sorting arguments for filterQuery that can be passed into the .find() method
 export function getFilterObject(
-  args: CursorPaginationInput,
+  args: CursorPaginationInput
 ): FilterObjectType | null {
   if (args.cursor) {
     if (args.direction === "FORWARD") return { _id: { $gt: args.cursor } };
@@ -105,11 +105,11 @@ The function returns a promise which would resolve to the desired connection obj
 */
 export function generateConnectionObject<
   T1 extends { _id: Types.ObjectId },
-  T2 extends { _id: Types.ObjectId },
+  T2 extends { _id: Types.ObjectId }
 >(
   args: CursorPaginationInput,
   allFetchedObjects: T2[] | null,
-  getNodeFromResult: GetNodeFromResultFnType<T1, T2>,
+  getNodeFromResult: GetNodeFromResultFnType<T1, T2>
 ): InterfaceConnectionResult<T1> {
   // Initialize the connection object
   const connectionObject = graphqlConnectionFactory<T1>();

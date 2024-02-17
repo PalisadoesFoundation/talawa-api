@@ -22,7 +22,7 @@ export const createSampleOrganization: MutationResolvers["createSampleOrganizati
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -35,7 +35,7 @@ export const createSampleOrganization: MutationResolvers["createSampleOrganizati
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 
@@ -47,7 +47,7 @@ export const createSampleOrganization: MutationResolvers["createSampleOrganizati
       throw new errors.UnauthorizedError(
         requestContext.translate(SAMPLE_ORGANIZATION_ALREADY_EXISTS.MESSAGE),
         SAMPLE_ORGANIZATION_ALREADY_EXISTS.CODE,
-        SAMPLE_ORGANIZATION_ALREADY_EXISTS.PARAM,
+        SAMPLE_ORGANIZATION_ALREADY_EXISTS.PARAM
       );
     }
 

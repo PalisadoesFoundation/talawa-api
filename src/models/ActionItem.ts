@@ -96,7 +96,7 @@ const actionItemSchema = new Schema(
       required: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const actionItemModel = (): Model<InterfaceActionItem> =>

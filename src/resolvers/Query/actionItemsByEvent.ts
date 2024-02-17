@@ -8,7 +8,7 @@ import { ActionItem } from "../../models";
  */
 export const actionItemsByEvent: QueryResolvers["actionItemsByEvent"] = async (
   _parent,
-  args,
+  args
 ) => {
   const actionItems = await ActionItem.find({
     eventId: args.eventId,

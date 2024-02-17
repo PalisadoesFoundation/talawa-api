@@ -28,7 +28,7 @@ export const createRecurringEvent = async (
   args: MutationCreateEventArgs,
   creatorId: string,
   organizationId: string,
-  session: mongoose.ClientSession,
+  session: mongoose.ClientSession
 ): Promise<InterfaceEvent> => {
   const { data } = args;
   let { recurrenceRuleData } = args;
@@ -45,7 +45,7 @@ export const createRecurringEvent = async (
   const recurrenceRuleString = generateRecurrenceRuleString(
     recurrenceRuleData,
     data?.startDate,
-    data?.endDate,
+    data?.endDate
   );
 
   // create a base recurring event first, based on which all the
@@ -61,7 +61,7 @@ export const createRecurringEvent = async (
         organization: organizationId,
       },
     ],
-    { session },
+    { session }
   );
 
   // get the dates for the recurringInstances, and the date of the last instance
@@ -69,7 +69,7 @@ export const createRecurringEvent = async (
   const recurringInstanceDates = getRecurringInstanceDates(
     recurrenceRuleString,
     data.startDate,
-    data.endDate,
+    data.endDate
   );
 
   // get the date for the latest created instance
@@ -83,7 +83,7 @@ export const createRecurringEvent = async (
     organizationId,
     baseRecurringEvent[0]?._id.toString(),
     latestInstanceDate,
-    session,
+    session
   );
 
   // generate the recurring instances and get an instance back

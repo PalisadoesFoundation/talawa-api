@@ -43,6 +43,8 @@ serviceAccountKey.json
 cert.pem
 key.pem
 csr.pem
+# Added FNM configuration files
+.node-version
 
 # MacOS
 

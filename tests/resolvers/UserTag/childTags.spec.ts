@@ -80,16 +80,16 @@ describe("resolvers -> Tag -> childTags", () => {
     const payload = (await childTagsResolver?.(
       parent,
       args,
-      {},
+      {}
     )) as UserTagsConnectionResult;
 
     expect(payload.errors.length).toEqual(0);
     expect(payload.data).not.toBeNull();
     expect(payload.data!.pageInfo.startCursor).toEqual(
-      testChildTag1!._id.toString(),
+      testChildTag1!._id.toString()
     );
     expect(payload.data!.pageInfo.endCursor).toEqual(
-      testChildTag2!._id.toString(),
+      testChildTag2!._id.toString()
     );
     expect(payload.data!.edges[0].node).toEqual(testChildTag1);
   });

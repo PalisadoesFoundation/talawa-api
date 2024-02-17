@@ -21,7 +21,7 @@ export const removeEventAttendee: MutationResolvers["removeEventAttendee"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -45,19 +45,19 @@ export const removeEventAttendee: MutationResolvers["removeEventAttendee"] =
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
         EVENT_NOT_FOUND_ERROR.CODE,
-        EVENT_NOT_FOUND_ERROR.PARAM,
+        EVENT_NOT_FOUND_ERROR.PARAM
       );
     }
 
     const isUserEventAdmin = currentEvent.admins.some(
-      (admin) => admin.toString() === context.userId.toString(),
+      (admin) => admin.toString() === context.userId.toString()
     );
 
     if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 
@@ -69,7 +69,7 @@ export const removeEventAttendee: MutationResolvers["removeEventAttendee"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -81,7 +81,7 @@ export const removeEventAttendee: MutationResolvers["removeEventAttendee"] =
       throw new errors.ConflictError(
         requestContext.translate(USER_NOT_REGISTERED_FOR_EVENT.MESSAGE),
         USER_NOT_REGISTERED_FOR_EVENT.CODE,
-        USER_NOT_REGISTERED_FOR_EVENT.PARAM,
+        USER_NOT_REGISTERED_FOR_EVENT.PARAM
       );
     }
 

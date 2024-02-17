@@ -49,7 +49,7 @@ beforeAll(async () => {
       $inc: {
         commentCount: 1,
       },
-    },
+    }
   );
 });
 

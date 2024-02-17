@@ -45,7 +45,7 @@ describe("resolvers -> Query -> actionItem", () => {
     expect(actionItemPayload).toEqual(
       expect.objectContaining({
         _id: testActionItem?._id,
-      }),
+      })
     );
   });
 });

@@ -106,7 +106,7 @@ describe("utilities -> imageAlreadyInDbCheck", () => {
 
     const fileName = await imageAlreadyInDbCheck(
       testOldImagePath,
-      testNewImagePath,
+      testNewImagePath
     );
 
     expect(fileName).toEqual(testOldImagePath);
@@ -153,7 +153,7 @@ describe("utilities -> imageAlreadyInDbCheck", () => {
 
     const fileName = await imageAlreadyInDbCheck(
       testOldImagePath,
-      testNewImagePath,
+      testNewImagePath
     );
 
     const existingImageHash = await ImageHash.findOne({

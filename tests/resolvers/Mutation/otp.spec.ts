@@ -48,7 +48,7 @@ describe("resolvers -> Mutation -> otp", () => {
 
     vi.doMock("../../../src/constants", async () => {
       const actualConstants: object = await vi.importActual(
-        "../../../src/constants",
+        "../../../src/constants"
       );
 
       return {

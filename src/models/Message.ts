@@ -2,7 +2,6 @@ import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceGroup } from "./Group";
 import type { InterfaceUser } from "./User";
-import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Message.
  */
@@ -61,10 +60,8 @@ const messageSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
-
-createLoggingMiddleware(messageSchema, "Message");
 
 const messageModel = (): Model<InterfaceMessage> =>
   model<InterfaceMessage>("Message", messageSchema);

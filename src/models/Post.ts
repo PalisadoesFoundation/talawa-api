@@ -3,7 +3,6 @@ import { Schema, model, models } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
-import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Post.
  */
@@ -93,14 +92,12 @@ const postSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 postSchema.plugin(mongoosePaginate);
 
 postSchema.index({ organization: 1 }, { unique: false });
-
-createLoggingMiddleware(postSchema, "Post");
 
 const postModel = (): PaginateModel<InterfacePost> =>
   model<InterfacePost, PaginateModel<InterfacePost>>("Post", postSchema);

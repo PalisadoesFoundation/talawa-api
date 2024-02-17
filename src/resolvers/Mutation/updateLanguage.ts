@@ -12,7 +12,7 @@ import { User } from "../../models";
 export const updateLanguage: MutationResolvers["updateLanguage"] = async (
   _parent,
   args,
-  context,
+  context
 ) => {
   return await User.findOneAndUpdate(
     {
@@ -25,6 +25,6 @@ export const updateLanguage: MutationResolvers["updateLanguage"] = async (
     },
     {
       new: true,
-    },
+    }
   ).lean();
 };

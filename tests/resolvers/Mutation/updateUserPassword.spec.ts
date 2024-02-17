@@ -84,7 +84,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -93,7 +93,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message,
+      (message) => message
     );
 
     try {
@@ -122,7 +122,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message,
+      (message) => message
     );
 
     try {
@@ -152,7 +152,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message,
+      (message) => message
     );
 
     try {
@@ -194,7 +194,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     const updateUserPasswordPayload = await updateUserPasswordResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(updateUserPasswordPayload).not.toBeNull();

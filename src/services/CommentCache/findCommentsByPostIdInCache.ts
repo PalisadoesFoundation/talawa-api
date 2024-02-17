@@ -4,7 +4,7 @@ import { Types } from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findCommentsByPostIdInCache(
-  postID: Types.ObjectId,
+  postID: Types.ObjectId
 ): Promise<(InterfaceComment | null)[]> {
   if (!postID) {
     return [null];

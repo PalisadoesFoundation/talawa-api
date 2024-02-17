@@ -1,7 +1,6 @@
 import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceEvent } from "./Event";
-import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 export interface InterfaceFeedback {
   _id: Types.ObjectId;
@@ -32,15 +31,13 @@ const feedbackSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 // We will also create an index here for faster database querying
 feedbackSchema.index({
   eventId: 1,
 });
-
-createLoggingMiddleware(feedbackSchema, "Feedback");
 
 const feedbackModel = (): Model<InterfaceFeedback> =>
   model<InterfaceFeedback>("Feedback", feedbackSchema);

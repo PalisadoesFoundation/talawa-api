@@ -80,7 +80,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -110,7 +110,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
     }
   });
@@ -124,7 +124,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         $set: {
           admins: [testUser?._id],
         },
-      },
+      }
     );
 
     await User.updateOne(
@@ -135,7 +135,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         $set: {
           adminFor: [testOrganization?._id],
         },
-      },
+      }
     );
 
     const args: MutationUpdateOrganizationArgs = {
@@ -159,7 +159,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     const updateOrganizationPayload = await updateOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const testUpdateOrganizationPayload = await Organization.findOne({
@@ -178,7 +178,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         $set: {
           admins: [testUser?._id],
         },
-      },
+      }
     );
 
     await User.updateOne(
@@ -189,7 +189,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         $set: {
           adminFor: [testOrganization?._id],
         },
-      },
+      }
     );
 
     const args: MutationUpdateOrganizationArgs = {
@@ -205,7 +205,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     };
 
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL,
+      async (encodedImageURL: string) => encodedImageURL
     );
 
     const context = {
@@ -215,7 +215,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     const updateOrganizationPayload = await updateOrganizationResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const testUpdateOrganizationPayload = await Organization.findOne({

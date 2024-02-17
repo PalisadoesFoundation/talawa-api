@@ -277,7 +277,7 @@ const userSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 userSchema.plugin(mongoosePaginate);

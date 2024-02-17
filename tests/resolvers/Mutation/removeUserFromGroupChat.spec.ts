@@ -78,7 +78,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        },
+        }
       );
 
       const args: MutationRemoveUserFromGroupChatArgs = {
@@ -115,7 +115,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
           $push: {
             admins: testUser?._id,
           },
-        },
+        }
       );
 
       await User.updateOne(
@@ -126,7 +126,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
           $push: {
             adminFor: testOrganization?._id,
           },
-        },
+        }
       );
 
       const args: MutationRemoveUserFromGroupChatArgs = {
@@ -152,7 +152,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
   with _id === args.ChatId and returns the updated groupChat`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`,
+      (message) => `Translated ${message}`
     );
 
     await GroupChat.updateOne(
@@ -163,7 +163,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         $push: {
           users: testUser?._id,
         },
-      },
+      }
     );
 
     const args: MutationRemoveUserFromGroupChatArgs = {
@@ -183,7 +183,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
     }).lean();
 
     expect(removeUserFromGroupChatPayload).toEqual(
-      testRemoveUserFromGroupChatPayload,
+      testRemoveUserFromGroupChatPayload
     );
   });
 

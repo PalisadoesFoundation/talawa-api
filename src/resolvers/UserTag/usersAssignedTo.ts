@@ -11,7 +11,7 @@ import { validatePaginationArgs } from "../../libraries/validators/validatePagin
 
 export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   parent,
-  args,
+  args
 ) => {
   const errors = validatePaginationArgs(args.input);
 
@@ -48,7 +48,7 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
       getSortingObject(args.input.direction, {
         // The default sorting logic of ascending order by MongoID should always be provided
         _id: 1,
-      }),
+      })
     )
     .limit(getLimit(args.input.limit))
     .populate("userId")
@@ -57,6 +57,6 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   return generateConnectionObject<InterfaceUser, InterfaceTagUser>(
     args.input,
     allUserObjects,
-    (userTag) => userTag.userId,
+    (userTag) => userTag.userId
   );
 };

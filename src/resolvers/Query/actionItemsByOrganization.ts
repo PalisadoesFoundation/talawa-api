@@ -13,7 +13,7 @@ export const actionItemsByOrganization: QueryResolvers["actionItemsByOrganizatio
       organizationId: args.organizationId,
     });
     const actionItemCategoriesIds = actionItemCategories.map(
-      (category) => category._id,
+      (category) => category._id
     );
 
     const actionItems = await ActionItem.find({

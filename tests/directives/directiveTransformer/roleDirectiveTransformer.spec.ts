@@ -103,7 +103,7 @@ it("throws NotFoundError if no user exists with _id === context.userId", async (
       },
       {
         contextValue: authenticatedContext,
-      },
+      }
     );
   } catch (err) {
     if (err instanceof errors.NotFoundError) {
@@ -143,7 +143,7 @@ it("throws UnauthenticatedError if user exists but userType != requires", async 
       },
       {
         contextValue: authenticatedContext,
-      },
+      }
     );
 
     //@ts-ignore
@@ -185,7 +185,7 @@ it("returns data if user exists and userType === requires", async () => {
     },
     {
       contextValue: authenticatedContext,
-    },
+    }
   );
 
   //@ts-ignore
@@ -223,7 +223,7 @@ it("checks if the resolver is supplied, and return null data, if not", async () 
     },
     {
       contextValue: authenticatedContext,
-    },
+    }
   );
   //@ts-ignore
 

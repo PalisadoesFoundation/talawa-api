@@ -56,7 +56,7 @@ beforeAll(async () => {
     },
     {
       new: true,
-    },
+    }
   );
 });
 
@@ -138,7 +138,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
         },
         {
           new: true,
-        },
+        }
       );
 
       if (updatedComment !== null) {
@@ -154,7 +154,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
           $pull: {
             adminFor: testPost?.organization,
           },
-        },
+        }
       );
 
       const args: MutationRemoveCommentArgs = {
@@ -189,7 +189,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       },
       {
         new: true,
-      },
+      }
     );
 
     if (updatedComment !== null) {
@@ -205,7 +205,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
         $push: {
           adminFor: testPost?.organization,
         },
-      },
+      }
     );
 
     const args: MutationRemoveCommentArgs = {
@@ -219,7 +219,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
     const removeCommentPayload = await removeCommentResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const testUpdatedPost = await Post.findOne({

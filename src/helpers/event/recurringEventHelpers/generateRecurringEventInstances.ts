@@ -76,12 +76,12 @@ export const generateRecurringEventInstances = async ({
     (recurringEventInstance) => ({
       userId: creatorId,
       eventId: recurringEventInstance?._id.toString(),
-    }),
+    })
   );
 
   // get event instances ids for updating user event fields to include generated instances
   const eventInstanceIds = recurringEventInstances.map((instance) =>
-    instance._id.toString(),
+    instance._id.toString()
   );
 
   // perform database operations
@@ -96,15 +96,15 @@ export const generateRecurringEventInstances = async ({
           registeredEvents: { $each: eventInstanceIds },
         },
       },
-      { session },
+      { session }
     ),
   ]);
 
   // cache the instances
   await Promise.all(
     recurringEventInstances.map((recurringEventInstance) =>
-      cacheEvents([recurringEventInstance]),
-    ),
+      cacheEvents([recurringEventInstance])
+    )
   );
 
   return recurringEventInstances[0];

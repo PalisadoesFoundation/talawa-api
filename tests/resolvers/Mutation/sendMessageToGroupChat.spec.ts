@@ -126,7 +126,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         $push: {
           users: testUser?._id,
         },
-      },
+      }
     );
 
     const args: MutationSendMessageToGroupChatArgs = {
@@ -139,7 +139,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         _action: "MESSAGE_SENT_TO_GROUP_CHAT",
         _payload: {
           messageSentToGroupChat: InterfaceGroupChatMessage;
-        },
+        }
       ): {
         _action: string;
         _payload: { messageSentToGroupChat: InterfaceGroupChatMessage };
@@ -161,7 +161,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         groupChatMessageBelongsTo: testGroupChat._id,
         sender: testUser?._id,
         messageContent: "messageContent",
-      }),
+      })
     );
   });
 });

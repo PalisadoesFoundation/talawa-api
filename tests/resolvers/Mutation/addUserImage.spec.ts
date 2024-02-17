@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -75,7 +75,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       file: "newImageFile.png",
     };
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL,
+      async (encodedImageURL: string) => encodedImageURL
     );
     const context = {
       userId: testUser?._id,
@@ -84,7 +84,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
     const addUserImagePayload = await addUserImageResolverUserImage?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(addUserImagePayload).toEqual({

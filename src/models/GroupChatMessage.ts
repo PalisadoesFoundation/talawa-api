@@ -2,7 +2,6 @@ import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceGroupChat } from "./GroupChat";
 import type { InterfaceUser } from "./User";
-import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Group Chat Message.
  */
@@ -49,10 +48,8 @@ const groupChatMessageSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
-
-createLoggingMiddleware(groupChatMessageSchema, "GroupChatMessage");
 
 const groupChatMessageModel = (): Model<InterfaceGroupChatMessage> =>
   model<InterfaceGroupChatMessage>("GroupChatMessage", groupChatMessageSchema);

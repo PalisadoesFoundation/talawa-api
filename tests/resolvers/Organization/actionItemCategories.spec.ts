@@ -26,7 +26,7 @@ describe("resolvers -> Organization -> actionItemCategories", () => {
       const actionCategoriesPayload = await actionItemCategoriesResolver?.(
         parent,
         {},
-        {},
+        {}
       );
 
       const categories = await ActionItemCategory.find({

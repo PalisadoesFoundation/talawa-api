@@ -4,7 +4,7 @@ import OrganizationCache from "../redisCache";
 
 // Function to store organizations in the cache using pipelining
 export async function cacheOrganizations(
-  organizations: InterfaceOrganization[],
+  organizations: InterfaceOrganization[]
 ): Promise<void> {
   try {
     const pipeline = OrganizationCache.pipeline();

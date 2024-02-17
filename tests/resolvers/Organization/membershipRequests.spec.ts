@@ -36,7 +36,7 @@ beforeAll(async () => {
     },
     {
       new: true,
-    },
+    }
   );
 
   testOrganization = await Organization.findOneAndUpdate(
@@ -50,7 +50,7 @@ beforeAll(async () => {
     },
     {
       new: true,
-    },
+    }
   );
 });
 
@@ -66,7 +66,7 @@ describe("resolvers -> Organization -> membershipRequests", () => {
       const membershipRequestsPayload = await membershipRequestsResolver?.(
         parent,
         {},
-        {},
+        {}
       );
 
       const membershipRequests = await MembershipRequest.find({

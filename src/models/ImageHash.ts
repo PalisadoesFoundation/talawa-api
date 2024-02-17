@@ -1,6 +1,5 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
-import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Image Hash.
  */
@@ -39,8 +38,6 @@ const imageHashSchema = new Schema({
     default: "ACTIVE",
   },
 });
-
-createLoggingMiddleware(imageHashSchema, "ImageHash");
 
 const imageHashModel = (): Model<InterfaceImageHash> =>
   model<InterfaceImageHash>("ImageHash", imageHashSchema);

@@ -14,6 +14,6 @@ export const directMessageChat: SubscriptionResolvers["directMessageChat"] = {
   subscribe: withFilter(
     (_parent, _args, context) => context.pubsub.asyncIterator(CHAT_CHANNEL),
 
-    (payload) => payload?.directMessageChat,
+    (payload) => payload?.directMessageChat
   ),
 };

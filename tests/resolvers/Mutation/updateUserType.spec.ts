@@ -67,7 +67,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -97,7 +97,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
     }
   });
@@ -118,7 +118,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
         },
         {
           new: true,
-        },
+        }
       );
 
       const args: MutationUpdateUserTypeArgs = {
@@ -139,7 +139,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -168,7 +168,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE}`,
+        `Translated ${SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE}`
       );
     }
   });
@@ -176,7 +176,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
   it(`updates user.userType of user with _id === args.data.id to args.data.userType`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => `Translated ${message}`,
+      (message) => `Translated ${message}`
     );
 
     await User.updateOne(
@@ -188,7 +188,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
       },
       {
         new: true,
-      },
+      }
     );
 
     const args: MutationUpdateUserTypeArgs = {
@@ -208,7 +208,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     const updateUserTypePayload = await updateUserTypeResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(updateUserTypePayload).toEqual(true);

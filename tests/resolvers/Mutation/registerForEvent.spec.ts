@@ -108,7 +108,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
         $set: {
           registeredEvents: [],
         },
-      },
+      }
     );
 
     const args: MutationRegisterForEventArgs = {
@@ -122,7 +122,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     const registerForEventPayload = await registerForEventResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     const testRegisterForEventPayload = await Event.findOne({

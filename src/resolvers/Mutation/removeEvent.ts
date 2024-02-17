@@ -24,7 +24,7 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
 export const removeEvent: MutationResolvers["removeEvent"] = async (
   _parent,
   args,
-  context,
+  context
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -35,7 +35,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -60,18 +60,18 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM,
+      EVENT_NOT_FOUND_ERROR.PARAM
     );
   }
 
   // Boolean to determine whether user is an admin of organization.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.equals(event?.organization),
+    (organization) => organization.equals(event?.organization)
   );
 
   // Boolean to determine whether user is an admin of event.
   const currentUserIsEventAdmin = event.admins.some((admin) =>
-    admin.equals(currentUser._id),
+    admin.equals(currentUser._id)
   );
 
   // Checks whether currentUser cannot delete event.
@@ -85,7 +85,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 
@@ -97,7 +97,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
       $pull: {
         createdEvents: event._id,
       },
-    },
+    }
   );
 
   await User.updateMany(
@@ -108,7 +108,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
       $pull: {
         eventAdmin: event._id,
       },
-    },
+    }
   );
 
   const updatedEvent = await Event.findOneAndUpdate(
@@ -120,7 +120,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     },
     {
       new: true,
-    },
+    }
   );
 
   if (updatedEvent !== null) {

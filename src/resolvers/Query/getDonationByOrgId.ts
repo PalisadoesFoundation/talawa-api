@@ -9,7 +9,7 @@ import { Donation } from "../../models";
  */
 export const getDonationByOrgId: QueryResolvers["getDonationByOrgId"] = async (
   _parent,
-  args,
+  args
 ) => {
   return await Donation.find({
     orgId: args.orgId,

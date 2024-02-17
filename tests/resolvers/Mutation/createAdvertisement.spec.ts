@@ -71,14 +71,14 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     const createdAdvertisementPayload = await createAdvertisementResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(createdAdvertisementPayload).toHaveProperty("name", "myad");
 
     expect(createdAdvertisementPayload).toHaveProperty(
       "link",
-      "https://www.example.com",
+      "https://www.example.com"
     );
 
     expect(createdAdvertisementPayload).toHaveProperty("type", "POPUP");

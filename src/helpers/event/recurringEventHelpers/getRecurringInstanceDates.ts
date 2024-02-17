@@ -24,7 +24,7 @@ export function getRecurringInstanceDates(
   recurrenceRuleString: string,
   recurrenceStartDate: Date,
   eventEndDate: Date | null,
-  queryUptoDate: Date = recurrenceStartDate,
+  queryUptoDate: Date = recurrenceStartDate
 ): Date[] {
   // get the rrule object
   const recurrenceRuleObject: RRule = rrulestr(recurrenceRuleString);
@@ -37,23 +37,23 @@ export function getRecurringInstanceDates(
   // and have a specific value during queries
   let limitEndDate = addYears(
     queryUptoDate,
-    RECURRING_EVENT_INSTANCES_DAILY_LIMIT,
+    RECURRING_EVENT_INSTANCES_DAILY_LIMIT
   );
 
   if (recurrenceFrequency === Frequency.WEEKLY) {
     limitEndDate = addYears(
       queryUptoDate,
-      RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT,
+      RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT
     );
   } else if (recurrenceFrequency === Frequency.MONTHLY) {
     limitEndDate = addYears(
       queryUptoDate,
-      RECURRING_EVENT_INSTANCES_MONTHLY_LIMIT,
+      RECURRING_EVENT_INSTANCES_MONTHLY_LIMIT
     );
   } else if (recurrenceFrequency === Frequency.YEARLY) {
     limitEndDate = addYears(
       queryUptoDate,
-      RECURRING_EVENT_INSTANCES_YEARLY_LIMIT,
+      RECURRING_EVENT_INSTANCES_YEARLY_LIMIT
     );
   }
 
@@ -62,14 +62,14 @@ export function getRecurringInstanceDates(
 
   // the date upto which we would generate the instances in this operation
   const generateUptoDate = new Date(
-    Math.min(eventEndDate.getTime(), limitEndDate.getTime()),
+    Math.min(eventEndDate.getTime(), limitEndDate.getTime())
   );
 
   // get the dates of recurrence
   const recurringInstanceDates = recurrenceRuleObject.between(
     recurrenceStartDate,
     generateUptoDate,
-    true,
+    true
   );
 
   return recurringInstanceDates;

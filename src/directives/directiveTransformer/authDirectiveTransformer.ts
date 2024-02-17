@@ -6,13 +6,13 @@ import { errors, requestContext } from "../../libraries";
 function authDirectiveTransformer(schema, directiveName): any {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (
-      fieldConfig: GraphQLFieldConfig<any, any>,
+      fieldConfig: GraphQLFieldConfig<any, any>
     ): any => {
       // Check whether this field has the specified directive
       const authDirective = getDirective(
         schema,
         fieldConfig,
-        directiveName,
+        directiveName
       )?.[0];
       if (authDirective) {
         //@ts-ignore
@@ -23,7 +23,7 @@ function authDirectiveTransformer(schema, directiveName): any {
             throw new errors.UnauthenticatedError(
               requestContext.translate("user.notAuthenticated"),
               "user.notAuthenticated --auth directive",
-              "userAuthentication",
+              "userAuthentication"
             );
           return resolve(root, args, context, info);
         };

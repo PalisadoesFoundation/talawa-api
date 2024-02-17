@@ -251,7 +251,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
         $set: {
           imageUrl: undefined,
         },
-      },
+      }
     );
 
     const where = {

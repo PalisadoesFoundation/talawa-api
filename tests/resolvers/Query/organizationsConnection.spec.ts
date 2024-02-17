@@ -74,7 +74,7 @@ beforeAll(async () => {
           testOrganizations[2]._id,
         ],
       },
-    },
+    }
   );
 });
 

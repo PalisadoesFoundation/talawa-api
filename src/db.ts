@@ -20,24 +20,24 @@ export const connect = async (): Promise<void> => {
         logger.error("\n\n\n\x1b[1m\x1b[31m%s\x1b[0m", error);
         logger.error(
           "\n\n\x1b[1m\x1b[34m%s\x1b[0m",
-          `- Connection to MongoDB failed: There are several potential causes for this issue, including:`,
+          `- Connection to MongoDB failed: There are several potential causes for this issue, including:`
         );
         logger.error(
           "\x1b[1m\x1b[33m%s\x1b[0m",
-          `- Unstable Network Connection`,
+          `- Unstable Network Connection`
         );
         logger.error("\x1b[1m\x1b[33m%s\x1b[0m", `- Invalid Connection String`);
         logger.error(
           "\x1b[1m\x1b[33m%s\x1b[0m",
-          `- MongoDB Server may not be running`,
+          `- MongoDB Server may not be running`
         );
         logger.error(
           "\x1b[1m\x1b[33m%s\x1b[0m",
-          `- Firewall may not be configured to allow incoming connections on MongoDB port.`,
+          `- Firewall may not be configured to allow incoming connections on MongoDB port.`
         );
         logger.error(
           "\x1b[1m\x1b[31m%s\x1b[0m",
-          `- Please try again with the fixes !`,
+          `- Please try again with the fixes !`
         );
       } else {
         logger.error("Error while connecting to mongo database", error);

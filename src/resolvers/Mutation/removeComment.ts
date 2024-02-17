@@ -26,7 +26,7 @@ import { cachePosts } from "../../services/PostCache/cachePosts";
 export const removeComment: MutationResolvers["removeComment"] = async (
   _parent,
   args,
-  context,
+  context
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -37,7 +37,7 @@ export const removeComment: MutationResolvers["removeComment"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -60,12 +60,12 @@ export const removeComment: MutationResolvers["removeComment"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(COMMENT_NOT_FOUND_ERROR.MESSAGE),
       COMMENT_NOT_FOUND_ERROR.CODE,
-      COMMENT_NOT_FOUND_ERROR.PARAM,
+      COMMENT_NOT_FOUND_ERROR.PARAM
     );
   }
 
   const isCurrentUserAdminOfOrganization = currentUser.adminFor.some(
-    (organization) => organization.equals(comment.postId.organization),
+    (organization) => organization.equals(comment.postId.organization)
   );
 
   // Checks whether currentUser with _id === context.userId has the authorization to delete the comment
@@ -77,7 +77,7 @@ export const removeComment: MutationResolvers["removeComment"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -94,7 +94,7 @@ export const removeComment: MutationResolvers["removeComment"] = async (
     },
     {
       new: true,
-    },
+    }
   ).lean();
 
   if (updatedPost !== null) {

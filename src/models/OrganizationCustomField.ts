@@ -1,6 +1,5 @@
 import type { Model } from "mongoose";
 import mongoose from "mongoose";
-import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 export interface InterfaceOrganizationCustomField {
   _id: string;
@@ -26,17 +25,12 @@ const organizationCustomFieldSchema = new mongoose.Schema({
   },
 });
 
-createLoggingMiddleware(
-  organizationCustomFieldSchema,
-  "OrganizationCustomField",
-);
-
 // Define and export the model directly
 const OrganizationCustomField: Model<InterfaceOrganizationCustomField> =
   mongoose.models.CustomField ||
   mongoose.model<InterfaceOrganizationCustomField>(
     "CustomField",
-    organizationCustomFieldSchema,
+    organizationCustomFieldSchema
   );
 
 export { OrganizationCustomField };

@@ -23,7 +23,7 @@ export const directChatsMessagesByChatID: QueryResolvers["directChatsMessagesByC
       throw new errors.NotFoundError(
         CHAT_NOT_FOUND_ERROR.DESC,
         CHAT_NOT_FOUND_ERROR.CODE,
-        CHAT_NOT_FOUND_ERROR.PARAM,
+        CHAT_NOT_FOUND_ERROR.PARAM
       );
     }
 

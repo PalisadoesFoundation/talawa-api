@@ -55,7 +55,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
   it(`throws NotFoundError if current user with _id === context.userId does not exist`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`,
+      (message) => `Translated ${message}`
     );
 
     try {
@@ -74,7 +74,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       await togglePostPinResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -82,7 +82,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
   it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`,
+      (message) => `Translated ${message}`
     );
 
     try {
@@ -101,7 +101,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       await togglePostPinResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${POST_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${POST_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -128,7 +128,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`,
+        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`
       );
     }
   });
@@ -136,7 +136,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
   it(`adds a post to the pinnedPosts for an org`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`,
+      (message) => `Translated ${message}`
     );
     const args: MutationTogglePostPinArgs = {
       id: testPost?._id,
@@ -160,7 +160,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
     }).lean();
 
     const currentPostIsPinned = organization?.pinnedPosts.some((p) =>
-      p.equals(args.id),
+      p.equals(args.id)
     );
 
     expect(currentPostIsPinned).toBeTruthy();
@@ -170,7 +170,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
   it(`removes a post from the pinnedPosts for an org`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`,
+      (message) => `Translated ${message}`
     );
 
     const args: MutationTogglePostPinArgs = {
@@ -195,7 +195,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
     }).lean();
 
     const currentPostIsPinned = organization?.pinnedPosts.some((p) =>
-      p.equals(args.id),
+      p.equals(args.id)
     );
 
     expect(currentPostIsPinned).toBeFalsy();
@@ -205,7 +205,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
   it("throws error if title is not provided to pin post", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+      (message) => message
     );
     try {
       const args: MutationTogglePostPinArgs = {
@@ -229,7 +229,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+      (message) => message
     );
     try {
       const args: MutationTogglePostPinArgs = {
@@ -249,7 +249,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       await togglePostPinResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       );
     }
   });

@@ -20,7 +20,7 @@ export const directChatsByUserID: QueryResolvers["directChatsByUserID"] =
       throw new errors.NotFoundError(
         "DirectChats not found",
         "directChats.notFound",
-        "directChats",
+        "directChats"
       );
     }
 

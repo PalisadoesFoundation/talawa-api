@@ -31,7 +31,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message,
+    (message) => message
   );
 
   randomUser = await createTestUser();
@@ -108,14 +108,14 @@ describe("resolvers -> Mutation -> createCategory", () => {
     const createCategoryPayload = await createActionItemCategoryResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
         organizationId: testOrganization?._id,
         name: "Default",
-      }),
+      })
     );
   });
 
@@ -129,7 +129,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
       },
       {
         new: true,
-      },
+      }
     );
 
     const args: MutationCreateActionItemCategoryArgs = {
@@ -144,14 +144,14 @@ describe("resolvers -> Mutation -> createCategory", () => {
     const createCategoryPayload = await createActionItemCategoryResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
         organizationId: testOrganization?._id,
         name: "Default2",
-      }),
+      })
     );
   });
 
@@ -169,7 +169,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
       await createActionItemCategoryResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        ACTION_ITEM_CATEGORY_ALREADY_EXISTS.MESSAGE,
+        ACTION_ITEM_CATEGORY_ALREADY_EXISTS.MESSAGE
       );
     }
   });

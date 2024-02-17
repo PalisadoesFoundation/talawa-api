@@ -33,7 +33,7 @@ export const removeOrganizationCustomField: MutationResolvers["removeOrganizatio
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -45,12 +45,12 @@ export const removeOrganizationCustomField: MutationResolvers["removeOrganizatio
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 
     const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-      (organization) => organization.equals(organization._id),
+      (organization) => organization.equals(organization._id)
     );
 
     if (
@@ -59,24 +59,25 @@ export const removeOrganizationCustomField: MutationResolvers["removeOrganizatio
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 
     organization.customFields = organization.customFields.filter(
-      (field) => !field.equals(customFieldId),
+      (field) => !field.equals(customFieldId)
     );
 
     await organization.save();
 
-    const removedCustomField =
-      await OrganizationCustomField.findByIdAndDelete(customFieldId);
+    const removedCustomField = await OrganizationCustomField.findByIdAndDelete(
+      customFieldId
+    );
 
     if (!removedCustomField) {
       throw new errors.UnauthorizedError(
         requestContext.translate(CUSTOM_FIELD_NOT_FOUND.MESSAGE),
         CUSTOM_FIELD_NOT_FOUND.CODE,
-        CUSTOM_FIELD_NOT_FOUND.PARAM,
+        CUSTOM_FIELD_NOT_FOUND.PARAM
       );
     }
 

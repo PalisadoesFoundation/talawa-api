@@ -64,7 +64,7 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -89,10 +89,10 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
       await removeEventVolunteerResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE,
+        EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE
       );
       expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -110,7 +110,7 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
     const deletedVolunteer = await removeEventVolunteerResolver?.(
       {},
       args,
-      context,
+      context
     );
 
     expect(deletedVolunteer).toEqual(
@@ -120,7 +120,7 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
         isInvited: testEventVolunteer?.isInvited,
         isAssigned: testEventVolunteer?.isAssigned,
         response: testEventVolunteer?.response,
-      }),
+      })
     );
   });
 });

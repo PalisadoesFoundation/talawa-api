@@ -18,7 +18,7 @@ import { superAdminCheck } from "../../utilities";
 export const updateUserType: MutationResolvers["updateUserType"] = async (
   _parent,
   args,
-  context,
+  context
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -30,7 +30,7 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -39,7 +39,7 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
     throw new errors.InputValidationError(
       requestContext.translate(SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE),
       SUPERADMIN_CANT_CHANGE_OWN_ROLE.CODE,
-      SUPERADMIN_CANT_CHANGE_OWN_ROLE.PARAM,
+      SUPERADMIN_CANT_CHANGE_OWN_ROLE.PARAM
     );
   }
 
@@ -51,7 +51,7 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -62,7 +62,7 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
     {
       userType: args.data.userType!,
       adminApproved: true,
-    },
+    }
   );
 
   return true;

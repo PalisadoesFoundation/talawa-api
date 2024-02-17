@@ -10,7 +10,7 @@ import { Donation } from "../../models";
  */
 export const createDonation: MutationResolvers["createDonation"] = async (
   _parent,
-  args,
+  args
 ) => {
   const createdDonation = await Donation.create({
     amount: args.amount,

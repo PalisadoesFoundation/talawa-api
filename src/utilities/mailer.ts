@@ -22,7 +22,7 @@ export interface InterfaceMailFields {
  * @returns Promise along with resolve and reject methods.
  */
 export const mailer = (
-  mailFields: InterfaceMailFields,
+  mailFields: InterfaceMailFields
 ): Promise<SMTPTransport.SentMessageInfo | string> => {
   // Nodemailer configuration
   let transporter: Transporter<SMTPTransport.SentMessageInfo>;
@@ -68,7 +68,7 @@ export const mailer = (
         } else {
           resolve(info);
         }
-      },
+      }
     );
   });
 };

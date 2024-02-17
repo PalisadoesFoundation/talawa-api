@@ -2,7 +2,7 @@ import OrganizationCache from "../redisCache";
 import type { InterfaceOrganization } from "../../models";
 
 export async function deleteOrganizationFromCache(
-  organization: InterfaceOrganization,
+  organization: InterfaceOrganization
 ): Promise<void> {
   const key = `organization:${organization._id}`;
 

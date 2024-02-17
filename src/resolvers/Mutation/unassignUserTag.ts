@@ -11,7 +11,7 @@ import {
 export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
   _parent,
   args,
-  context,
+  context
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -22,7 +22,7 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -35,13 +35,13 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(TAG_NOT_FOUND.MESSAGE),
       TAG_NOT_FOUND.CODE,
-      TAG_NOT_FOUND.PARAM,
+      TAG_NOT_FOUND.PARAM
     );
   }
 
   // Boolean to determine whether user is an admin of organization of the tag.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.equals(tag?.organizationId),
+    (organization) => organization.equals(tag?.organizationId)
   );
 
   // Checks whether currentUser can assign the tag or not.
@@ -52,7 +52,7 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 
@@ -65,7 +65,7 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -78,7 +78,7 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
     throw new errors.ConflictError(
       requestContext.translate(USER_DOES_NOT_HAVE_THE_TAG.MESSAGE),
       USER_DOES_NOT_HAVE_THE_TAG.CODE,
-      USER_DOES_NOT_HAVE_THE_TAG.PARAM,
+      USER_DOES_NOT_HAVE_THE_TAG.PARAM
     );
   }
 

@@ -3,7 +3,7 @@ import path from "path";
 import { EncodedVideo } from "../../models/EncodedVideo";
 
 export const deletePreviousVideo = async (
-  videoToBeDeletedPath: string,
+  videoToBeDeletedPath: string
 ): Promise<void> => {
   const videoToBeDeleted = await EncodedVideo.findOne({
     fileName: videoToBeDeletedPath!,
@@ -24,6 +24,6 @@ export const deletePreviousVideo = async (
       $inc: {
         numberOfUses: -1,
       },
-    },
+    }
   );
 };

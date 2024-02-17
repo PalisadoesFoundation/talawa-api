@@ -10,7 +10,7 @@ import { USER_NOT_FOUND_ERROR } from "../../constants";
  */
 export const userLanguage: QueryResolvers["userLanguage"] = async (
   _parent,
-  args,
+  args
 ) => {
   const user = await User.findOne({
     _id: args.userId,
@@ -22,7 +22,7 @@ export const userLanguage: QueryResolvers["userLanguage"] = async (
     throw new errors.NotFoundError(
       USER_NOT_FOUND_ERROR.DESC,
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

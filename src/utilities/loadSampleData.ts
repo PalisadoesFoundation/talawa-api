@@ -51,7 +51,7 @@ async function insertCollections(collections: string[]): Promise<void> {
     for (const collection of collections) {
       const data = await fs.readFile(
         path.join(__dirname, `../../sample_data/${collection}.json`),
-        "utf8",
+        "utf8"
       );
       const docs = JSON.parse(data) as Record<string, unknown>[];
 

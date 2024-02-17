@@ -100,7 +100,7 @@ describe("middleware -> isAuth", () => {
     expect(verifyMocked).toHaveBeenCalledWith(
       testToken,
       ACCESS_TOKEN_SECRET as string,
-      expect.anything(),
+      expect.anything()
     );
     expect(authData).toEqual(testAuthData);
   });
@@ -129,7 +129,7 @@ describe("middleware -> isAuth", () => {
     expect(verifyMocked).toHaveBeenCalledWith(
       testToken,
       ACCESS_TOKEN_SECRET as string,
-      expect.anything(),
+      expect.anything()
     );
     expect(infoSpy).toBeCalledWith("decoded token is not present");
     expect(authData).toEqual(testAuthData);
@@ -191,7 +191,7 @@ describe("middleware -> isAuth", () => {
     expect(verifyMocked).toHaveBeenCalledWith(
       testToken,
       ACCESS_TOKEN_SECRET as string,
-      expect.anything(),
+      expect.anything()
     );
     expect(authData).toEqual(testAuthData);
   });

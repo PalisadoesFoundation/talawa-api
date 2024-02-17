@@ -1,6 +1,5 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
-import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Plugin Field.
  */
@@ -38,8 +37,6 @@ const pluginFieldSchema = new Schema({
     default: Date.now,
   },
 });
-
-createLoggingMiddleware(pluginFieldSchema, "PluginField");
 
 const pluginFieldModel = (): Model<InterfacePluginField> =>
   model<InterfacePluginField>("PluginField", pluginFieldSchema);

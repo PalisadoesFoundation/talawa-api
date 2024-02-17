@@ -18,7 +18,7 @@ import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEn
 export const updatePost: MutationResolvers["updatePost"] = async (
   _parent,
   args,
-  context,
+  context
 ) => {
   let post: InterfacePost | null;
 
@@ -40,7 +40,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
       POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM,
+      POST_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -51,21 +51,21 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 
   if (args.data?.imageUrl && args.data?.imageUrl !== null) {
     args.data.imageUrl = await uploadEncodedImage(
       args.data.imageUrl,
-      post.imageUrl,
+      post.imageUrl
     );
   }
 
   if (args.data?.videoUrl && args.data?.videoUrl !== null) {
     args.data.videoUrl = await uploadEncodedVideo(
       args.data.videoUrl,
-      post.videoUrl,
+      post.videoUrl
     );
   }
 
@@ -73,12 +73,12 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   if (args.data?.title && !post.pinned) {
     throw new errors.InputValidationError(
       requestContext.translate(POST_NEEDS_TO_BE_PINNED.MESSAGE),
-      POST_NEEDS_TO_BE_PINNED.CODE,
+      POST_NEEDS_TO_BE_PINNED.CODE
     );
   } else if (!args.data?.title && post.pinned) {
     throw new errors.InputValidationError(
       requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
-      PLEASE_PROVIDE_TITLE.CODE,
+      PLEASE_PROVIDE_TITLE.CODE
     );
   }
 
@@ -88,17 +88,17 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   if (!validationResultTitle.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       ),
-      LENGTH_VALIDATION_ERROR.CODE,
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResultText.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
       ),
-      LENGTH_VALIDATION_ERROR.CODE,
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
 
@@ -111,7 +111,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     },
     {
       new: true,
-    },
+    }
   ).lean();
 
   if (updatedPost !== null) {

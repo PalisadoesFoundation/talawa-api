@@ -30,7 +30,7 @@ describe("resolvers -> Event -> averageFeedbackScore", () => {
     const averageFeedbackScorePayload = await averageFeedbackScoreResolver?.(
       parent,
       {},
-      {},
+      {}
     );
 
     expect(averageFeedbackScorePayload).toEqual(0);
@@ -44,7 +44,7 @@ describe("resolvers -> Event -> averageFeedbackScore", () => {
     const averageFeedbackScorePayload = await averageFeedbackScoreResolver?.(
       parent,
       {},
-      {},
+      {}
     );
 
     expect(averageFeedbackScorePayload).toEqual(3);

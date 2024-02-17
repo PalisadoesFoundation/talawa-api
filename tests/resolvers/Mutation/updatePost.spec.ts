@@ -32,7 +32,7 @@ beforeEach(async () => {
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message,
+    (message) => message
   );
 });
 afterEach(async () => {
@@ -69,7 +69,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
       await Post.updateOne(
         { _id: testPost?._id },
-        { $set: { creatorId: Types.ObjectId().toString() } },
+        { $set: { creatorId: Types.ObjectId().toString() } }
       );
 
       await updatePostResolver?.({}, args, context);
@@ -147,7 +147,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+      (message) => message
     );
     try {
       const args: MutationUpdatePostArgs = {
@@ -172,14 +172,14 @@ describe("resolvers -> Mutation -> updatePost", () => {
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       );
     }
   });
   it(`throws String Length Validation error if text is greater than 500 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+      (message) => message
     );
     try {
       const args: MutationUpdatePostArgs = {
@@ -203,7 +203,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
       );
     }
   });
@@ -211,7 +211,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
   it("throws error if title is provided and post is not pinned", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+      (message) => message
     );
     try {
       const args: MutationUpdatePostArgs = {
@@ -233,7 +233,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Post needs to be pinned inorder to add a title`,
+        `Post needs to be pinned inorder to add a title`
       );
     }
   });
@@ -241,7 +241,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
   it(`throws error if title is not provided and post is pinned`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+      (message) => message
     );
     try {
       const args: MutationUpdatePostArgs = {

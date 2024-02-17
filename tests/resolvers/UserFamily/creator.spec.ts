@@ -60,7 +60,7 @@ describe("resolvers -> UserFamily -> creator", () => {
         },
         {
           new: true,
-        },
+        }
       );
 
       const parent = testUserFamily?.toObject();
@@ -74,7 +74,7 @@ describe("resolvers -> UserFamily -> creator", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -91,7 +91,7 @@ describe("resolvers -> UserFamily -> creator", () => {
       },
       {
         new: true,
-      },
+      }
     );
 
     const parent = testUserFamily?.toObject();

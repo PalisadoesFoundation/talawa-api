@@ -45,7 +45,7 @@ describe("utilities -> superAdminCheck", () => {
     } catch (error: unknown) {
       if (!(error instanceof Error)) return;
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
     }

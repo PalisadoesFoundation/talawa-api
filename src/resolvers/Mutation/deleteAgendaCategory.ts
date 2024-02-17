@@ -35,14 +35,14 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
       throw new errors.NotFoundError(
         USER_NOT_FOUND_ERROR.MESSAGE,
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
     if (!agendaCategory) {
       throw new errors.NotFoundError(
         AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
         AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM,
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -54,7 +54,7 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
     const currentUserIsOrgAdmin = currentUser.adminFor.some(
       (organizationId) =>
         organizationId === currentOrg?._id ||
-        Types.ObjectId(organizationId).equals(organizationId),
+        Types.ObjectId(organizationId).equals(organizationId)
     );
     // If the user is a normal user, throw an error
     if (
@@ -64,7 +64,7 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
       throw new errors.UnauthorizedError(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 
