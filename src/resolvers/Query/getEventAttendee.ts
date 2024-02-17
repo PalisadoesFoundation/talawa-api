@@ -3,7 +3,7 @@ import { EventAttendee } from "../../models";
 
 export const getEventAttendee: QueryResolvers["getEventAttendee"] = async (
   _parent,
-  args
+  args,
 ) => {
   const eventAttendee = await EventAttendee.findOne({
     eventId: args.eventId,

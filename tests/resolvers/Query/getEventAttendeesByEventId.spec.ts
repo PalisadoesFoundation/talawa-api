@@ -50,7 +50,7 @@ describe(`resolvers -> Query -> getEventAttendeeByEventId `, () => {
     const getEventAttendeeByEventIdPayload = await getEventAttendeesByEventId?.(
       {},
       args,
-      {}
+      {},
     );
 
     const eventAttendeesPayload = await EventAttendee.find({
@@ -58,7 +58,7 @@ describe(`resolvers -> Query -> getEventAttendeeByEventId `, () => {
     }).lean();
 
     expect(getEventAttendeeByEventIdPayload).toMatchObject(
-      eventAttendeesPayload
+      eventAttendeesPayload,
     );
   });
 });

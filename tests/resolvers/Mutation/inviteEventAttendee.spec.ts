@@ -56,7 +56,7 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
       await inviteEventAttendeeResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
 
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -87,7 +87,7 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
       await inviteEventAttendeeResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`,
       );
 
       expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
@@ -118,7 +118,7 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
       await inviteEventAttendeeResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
@@ -148,7 +148,7 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
       await inviteEventAttendeeResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -206,10 +206,10 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
       await inviteEventAttendeeResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_ALREADY_INVITED_FOR_EVENT.MESSAGE}`
+        `Translated ${USER_ALREADY_INVITED_FOR_EVENT.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
-        USER_ALREADY_INVITED_FOR_EVENT.MESSAGE
+        USER_ALREADY_INVITED_FOR_EVENT.MESSAGE,
       );
     }
   });

@@ -86,9 +86,8 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
         $push: {
           registeredEvents: event._id,
         },
-      }
+      },
     );
-
 
     return currentUserIsEventRegistrant;
   } else {
@@ -106,7 +105,7 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
         $push: {
           registeredEvents: event._id,
         },
-      }
+      },
     );
 
     return registeredAttendee.toObject();

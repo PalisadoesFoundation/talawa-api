@@ -128,7 +128,7 @@ describe(`resolvers -> Mutation - > registerForEvent`, () => {
       await registerForEventResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
 
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
@@ -185,7 +185,7 @@ describe(`resolvers -> Mutation - > registerForEvent`, () => {
         $set: {
           registeredEvents: [],
         },
-      }
+      },
     );
 
     const args: MutationRegisterEventAttendeeArgs = {
@@ -236,7 +236,7 @@ describe(`resolvers -> Mutation - > registerForEvent`, () => {
         $set: {
           registeredEvents: [],
         },
-      }
+      },
     );
 
     const args: MutationRegisterEventAttendeeArgs = {
@@ -299,11 +299,11 @@ describe(`resolvers -> Mutation - > registerForEvent`, () => {
       await registerForEventResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE
+        USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE,
       );
 
       expect(spy).toHaveBeenCalledWith(
-        USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE
+        USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE,
       );
     }
   });
