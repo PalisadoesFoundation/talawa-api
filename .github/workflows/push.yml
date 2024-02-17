@@ -167,7 +167,7 @@ jobs:
   
   Copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/automated-docs' && contains(github.event.head_commit.message, 'Empty commit')
+    # if: github.ref == 'refs/heads/automated-docs' && contains(github.event.head_commit.message, 'Empty commit')
     steps:
     - uses: actions/checkout@v3
     - uses: dmnemec/copy_file_to_another_repo_action@v1.1.1
