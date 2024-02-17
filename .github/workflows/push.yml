@@ -158,6 +158,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Empty Commit
         run: |
           git config --global user.name "${{ github.actor }}"
