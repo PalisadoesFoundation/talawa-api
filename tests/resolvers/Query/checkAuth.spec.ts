@@ -57,7 +57,7 @@ describe("resolvers -> Query -> checkAuth", () => {
       },
       {
         image: `path`,
-      }
+      },
     );
 
     testUser = await User.findOne({

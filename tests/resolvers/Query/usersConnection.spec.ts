@@ -24,7 +24,7 @@ beforeAll(async () => {
     testUsers[0]?._id,
     testOrganization?._id,
     true,
-    "ONCE"
+    "ONCE",
   );
 });
 
@@ -42,7 +42,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
     const users = await User.find()
       .limit(0)
@@ -99,7 +99,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     const users = await User.find(where)
@@ -169,7 +169,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     const users = await User.find(where)
@@ -239,7 +239,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     const users = await User.find(where)
@@ -301,7 +301,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
     /* eslint-enable */
     const users = await User.find(where)
@@ -371,7 +371,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     const users = await User.find(where)
@@ -421,7 +421,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     const users = await User.find(where)
@@ -458,7 +458,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     const users = await User.find(where)
@@ -503,7 +503,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     const users = await User.find(where)
@@ -548,7 +548,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     const users = await User.find(where)
@@ -593,7 +593,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     const users = await User.find(where)
@@ -635,7 +635,7 @@ describe("resolvers -> Query -> usersConnection", () => {
     const usersConnectionPayload = await usersConnectionResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     const users = await User.find(where)

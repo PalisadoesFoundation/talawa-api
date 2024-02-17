@@ -53,7 +53,7 @@ describe("resolvers -> Query -> users", () => {
     } catch (error: any) {
       expect(spy).toBeCalledWith(UNAUTHENTICATED_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${UNAUTHENTICATED_ERROR.MESSAGE}`
+        `Translated ${UNAUTHENTICATED_ERROR.MESSAGE}`,
       );
     }
 
@@ -170,7 +170,7 @@ describe("resolvers -> Query -> users", () => {
             registeredEvents: testEvent._id,
             eventAdmin: testEvent._id,
           },
-        }
+        },
       );
 
       await User.updateOne(
@@ -182,7 +182,7 @@ describe("resolvers -> Query -> users", () => {
             joinedOrganizations: testOrganization._id,
             organizationsBlockedBy: testOrganization._id,
           },
-        }
+        },
       );
 
       await Organization.updateOne(
@@ -193,7 +193,7 @@ describe("resolvers -> Query -> users", () => {
           $push: {
             blockedUsers: testUsers[1]._id,
           },
-        }
+        },
       );
     });
 
@@ -980,7 +980,7 @@ describe("resolvers -> Query -> users", () => {
         $set: {
           image: "images/image.png",
         },
-      }
+      },
     );
 
     const args: QueryUsersArgs = {

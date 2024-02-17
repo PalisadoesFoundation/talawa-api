@@ -39,7 +39,7 @@ beforeAll(async () => {
       $set: {
         password: hashedTestPassword,
       },
-    }
+    },
   );
   const testOrganization = temp[1];
   const testMembershipRequest = await MembershipRequest.create({
@@ -55,7 +55,7 @@ beforeAll(async () => {
       $push: {
         membershipRequests: testMembershipRequest._id,
       },
-    }
+    },
   );
 
   await Organization.updateOne(
@@ -66,7 +66,7 @@ beforeAll(async () => {
       $push: {
         membershipRequests: testMembershipRequest._id,
       },
-    }
+    },
   );
 });
 
@@ -104,7 +104,7 @@ describe("resolvers -> Mutation -> login", () => {
       if (error instanceof Error) {
         expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
         expect(error.message).toEqual(
-          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
         );
       }
     }
@@ -183,7 +183,7 @@ email === args.data.email`, async () => {
     const updatedUser = await User.findOneAndUpdate(
       { _id: testUser?._id },
       { token: newToken, $inc: { tokenVersion: 1 } },
-      { new: true }
+      { new: true },
     );
 
     expect(updatedUser).toBeDefined();

@@ -71,7 +71,7 @@ beforeAll(async () => {
         adminFor: testOrganization._id,
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -83,7 +83,7 @@ beforeAll(async () => {
         adminFor: testOrganization._id,
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -95,7 +95,7 @@ beforeAll(async () => {
         adminFor: [testOrganization._id],
         joinedOrganizations: [testOrganization._id],
       },
-    }
+    },
   );
 });
 
@@ -814,7 +814,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       // eslint-disable-next-line
     } catch (error: any) {
       expect(error).toEqual(
-        "Missing Skip parameter. Set it to either 0 or some other value"
+        "Missing Skip parameter. Set it to either 0 or some other value",
       );
     }
   });
@@ -892,7 +892,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         $set: {
           image: `image/image.png`,
         },
-      }
+      },
     );
     const where = {
       joinedOrganizations: {
@@ -957,7 +957,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         $set: {
           image: `image/image.png`,
         },
-      }
+      },
     );
     const where = {
       joinedOrganizations: {

@@ -92,7 +92,7 @@ jobs:
           verbose: true
           fail_ci_if_error: false
           name: '${{env.CODECOV_UNIQUE_NAME}}'  
-
+            
   Generate-Documentation:
     name: Generate Documentation
     runs-on: ubuntu-latest
@@ -203,3 +203,52 @@ jobs:
           script: |
             python3 /usr/local/bin/scripts/create_env.py --access_token_secret $INPUT_ACCESS_TOKEN_SECRET --refresh_token_secret $INPUT_REFRESH_TOKEN_SECRET --recaptcha_secret_key $INPUT_RECAPTCHA_SECRET_KEY --mail_username $INPUT_MAIL_USERNAME --mail_password $INPUT_MAIL_PASSWORD --last_resort_superadmin_email $INPUT_LAST_RESORT_SUPERADMIN_EMAIL
             python3 /usr/local/bin/scripts/deploy.py --path ~/develop --branch develop
+
+  Check-Schema: 
+    name: Check Schema
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Restore node_modules from cache
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.cache-name }}-
+            ${{ runner.os }}-node-
+            ${{ runner.os }}-    
+
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Generate schema.graphql
+        run: npm run gen:schema
+        
+    # A separate step for extracting branch name from $GITHUB_HEAD_REF/$GITHUB_REF
+    # $GITHUB_HEAD_REF on pull_request and $GITHUB_REF on push
+    # If GITHUB_HEAD_REF is not set, extract the branch name from GITHUB_REF using parameter expansion to remove "refs/heads/" prefix
+    # If GITHUB_HEAD_REF is set, directly assign its value to the branch variable
+    
+      - name: Extract branch name
+        shell: bash
+        run: | 
+          if [ -z "$GITHUB_HEAD_REF" ]; then
+            branch=${GITHUB_REF#refs/heads/}
+          else
+            branch=$GITHUB_HEAD_REF
+          fi
+          echo "branch=$branch" >> $GITHUB_OUTPUT
+        id: extract_branch  
+
+      - uses: kamilkisiela/graphql-inspector@master
+        with:
+          schema: ${{ steps.extract_branch.outputs.branch }}:schema.graphql    

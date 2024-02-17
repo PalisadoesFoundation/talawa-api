@@ -10,7 +10,7 @@ import { encryptEmail } from "./encryptionModule";
 
 export const generateUserData = async (
   organizationId: string,
-  userType: string
+  userType: string,
 ): Promise<InterfaceUser & mongoose.Document<any, any, InterfaceUser>> => {
   const gender: "male" | "female" = faker.helpers.arrayElement([
     "male",
@@ -56,7 +56,7 @@ export const generateUserData = async (
 };
 
 const createUser = async (
-  generatedUser: InterfaceUser & mongoose.Document<any, any, InterfaceUser>
+  generatedUser: InterfaceUser & mongoose.Document<any, any, InterfaceUser>,
 ): Promise<InterfaceUser & mongoose.Document<any, any, InterfaceUser>> => {
   const savedUser = await generatedUser.save();
   const sampleModel = new SampleData({
@@ -69,7 +69,7 @@ const createUser = async (
 
 export const generateEventData = async (
   users: InterfaceUser[],
-  organizationId: string
+  organizationId: string,
 ): Promise<InterfaceEvent> => {
   const today = new Date();
   const oneWeekFromNow = new Date();
@@ -82,7 +82,7 @@ export const generateEventData = async (
 
   const duration = Math.floor(Math.random() * 7) + 1; // Random duration between 1 and 7 days
   const endDate = new Date(
-    startDate.getTime() + duration * 24 * 60 * 60 * 1000
+    startDate.getTime() + duration * 24 * 60 * 60 * 1000,
   );
 
   const event = new Event({
@@ -125,7 +125,7 @@ export const generateEventData = async (
   await User.findByIdAndUpdate(
     creatorId,
     { $push: { eventsCreated: event._id } },
-    { new: true }
+    { new: true },
   );
 
   return event;
@@ -133,7 +133,7 @@ export const generateEventData = async (
 
 export const generatePostData = async (
   users: InterfaceUser[],
-  organizationId: string
+  organizationId: string,
 ): Promise<InterfacePost & mongoose.Document<any, any, InterfacePost>> => {
   const post = new Post({
     status: "ACTIVE",
@@ -164,7 +164,7 @@ export const generatePostData = async (
 const createPosts = async (
   numPosts: number,
   users: InterfaceUser[],
-  organizationId: string
+  organizationId: string,
 ): Promise<(InterfacePost & mongoose.Document<any, any, InterfacePost>)[]> => {
   const posts = [];
   for (let i = 0; i < numPosts; i++) {
@@ -177,7 +177,7 @@ const createPosts = async (
 const createEvents = async (
   numEvents: number,
   users: InterfaceUser[],
-  organizationId: string
+  organizationId: string,
 ): Promise<InterfaceEvent[]> => {
   const events = [];
 
@@ -190,7 +190,7 @@ const createEvents = async (
 
 export const generateRandomPlugins = async (
   numberOfPlugins: number,
-  users: string[]
+  users: string[],
 ): Promise<Promise<any>[]> => {
   const pluginPromises = [];
   for (let i = 0; i < numberOfPlugins; i++) {

@@ -30,7 +30,7 @@ describe("resolvers -> EventVolunteer -> event", () => {
     const eventPayload = await eventResolver?.(
       parent as InterfaceEventVolunteer,
       {},
-      {}
+      {},
     );
 
     expect(eventPayload).toEqual(testEvent?.toObject());

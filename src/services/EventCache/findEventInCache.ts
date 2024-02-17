@@ -4,7 +4,7 @@ import { Types } from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findEventsInCache(
-  ids: string[]
+  ids: string[],
 ): Promise<(InterfaceEvent | null)[]> {
   if (ids.length === 0) {
     return [null];

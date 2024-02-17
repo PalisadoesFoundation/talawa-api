@@ -7,7 +7,7 @@ import { decryptEmail } from "../../utilities/encryptionModule";
  * @returns An object that contains the list of blocked users for the organization.
  */
 export const blockedUsers: OrganizationResolvers["blockedUsers"] = async (
-  parent
+  parent,
 ) => {
   const blockedUsers = await User.find({
     _id: {
