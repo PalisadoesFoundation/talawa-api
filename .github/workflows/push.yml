@@ -151,24 +151,24 @@ jobs:
           name: documentation-api
           path: talawa-api-docs
 
-  Empty-Commit:
-    name: Create Empty Commit
-    runs-on: ubuntu-latest
-    needs: Generate-Documentation
-    if: github.ref == 'refs/heads/develop'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-          # token: ${{ secrets.TOKN_EMPTY_COMMIT }}
-      - name: Empty Commit
-        run: |
-          git config --global user.name "tasneemkoushar"
-          git config --global user.email "imatasneemkoushar@gmail.com"
-          git config --global url.https://${{ secrets.TOKN_EMPTY_COMMIT }}@github.com/.insteadOf https://github.com/
-          git commit --allow-empty -m "Empty commit"
-          git push -f https://$TOKN_EMPTY_COMMIT@github.com/PalisadoesFoundation/talawa-api.git HEAD:automated-docs
+  # Empty-Commit:
+  #   name: Create Empty Commit
+  #   runs-on: ubuntu-latest
+  #   needs: Generate-Documentation
+  #   if: github.ref == 'refs/heads/develop'
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+  #       # with:
+  #       #   persist-credentials: false
+  #         # token: ${{ secrets.TOKN_EMPTY_COMMIT }}
+  #     - name: Empty Commit
+  #       run: |
+  #         git config --global user.name "tasneemkoushar"
+  #         git config --global user.email "imatasneemkoushar@gmail.com"
+  #         git config --global url.https://${{ secrets.TOKN_EMPTY_COMMIT }}@github.com/.insteadOf https://github.com/
+  #         git commit --allow-empty -m "Empty commit"
+  #         git push -f https://$TOKN_EMPTY_COMMIT@github.com/PalisadoesFoundation/talawa-api.git HEAD:automated-docs
   
   Copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
