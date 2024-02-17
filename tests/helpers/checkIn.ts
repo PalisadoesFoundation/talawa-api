@@ -35,7 +35,7 @@ export const createEventWithCheckedInUser = async (): Promise<
     },
     {
       checkInId: checkIn!._id,
-    }
+    },
   );
 
   return [testUser, testOrg, testEvent, checkIn];

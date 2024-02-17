@@ -56,7 +56,7 @@ const directChatMessageSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(directChatMessageSchema, "DirectChatMessage");
@@ -64,7 +64,7 @@ createLoggingMiddleware(directChatMessageSchema, "DirectChatMessage");
 const directChatMessageModel = (): Model<InterfaceDirectChatMessage> =>
   model<InterfaceDirectChatMessage>(
     "DirectChatMessage",
-    directChatMessageSchema
+    directChatMessageSchema,
   );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

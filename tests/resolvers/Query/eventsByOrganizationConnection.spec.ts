@@ -20,19 +20,19 @@ beforeAll(async () => {
     testUser?._id,
     testOrganization?._id,
     true,
-    "ONCE"
+    "ONCE",
   );
   const testEvent2 = await createEventWithRegistrant(
     testUser?._id,
     testOrganization?._id,
     false,
-    "DAILY"
+    "DAILY",
   );
   const testEvent3 = await createEventWithRegistrant(
     testUser?._id,
     testOrganization?._id,
     false,
-    "DAILY"
+    "DAILY",
   );
   testEvents = [testEvent1, testEvent2, testEvent3];
 });

@@ -11,7 +11,7 @@ import { Language } from "../../models";
  */
 export const getlanguage: QueryResolvers["getlanguage"] = async (
   _parent,
-  args
+  args,
 ) => {
   const languages = await Language.find({
     "translation.lang_code": args.lang_code,

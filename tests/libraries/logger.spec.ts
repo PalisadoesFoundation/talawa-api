@@ -69,14 +69,14 @@ describe("logger functions", () => {
         undefined, // splat()
         undefined, // simple()
         undefined, // timestamp()
-        undefined // printf()
+        undefined, // printf()
       );
     } else {
       expect(format.combine).toHaveBeenCalledWith(
         undefined, // splat()
         undefined, // simple()
         undefined, // timestamp()
-        undefined // printf()
+        undefined, // printf()
       );
     }
   });

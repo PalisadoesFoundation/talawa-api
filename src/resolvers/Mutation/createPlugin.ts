@@ -12,7 +12,7 @@ import { Plugin } from "../../models";
 export const createPlugin: MutationResolvers["createPlugin"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Creates new plugin.
   const createdPlugin = await Plugin.create({

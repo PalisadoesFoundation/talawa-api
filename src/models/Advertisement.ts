@@ -97,7 +97,7 @@ const advertisementSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(advertisementSchema, "Advertisement");

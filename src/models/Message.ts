@@ -61,7 +61,7 @@ const messageSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(messageSchema, "Message");
