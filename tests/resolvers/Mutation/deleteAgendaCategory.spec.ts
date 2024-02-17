@@ -10,7 +10,6 @@ import {
   AgendaCategoryModel,
   AppUserProfile,
   Organization,
-  User,
 } from "../../../src/models";
 import { deleteAgendaCategory } from "../../../src/resolvers/Mutation/deleteAgendaCategory";
 import type { MutationDeleteAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";

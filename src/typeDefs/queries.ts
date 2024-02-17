@@ -65,7 +65,7 @@ export const queries = gql`
 
     joinedOrganizations(id: ID): [Organization]
 
-    me: User! @auth
+    me: UserData! @auth
 
     myLanguage: String @auth
 

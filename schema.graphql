@@ -936,7 +936,7 @@ type Query {
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
   isSampleOrganization(id: ID!): Boolean!
   joinedOrganizations(id: ID): [Organization]
-  me: User!
+  me: UserData!
   myLanguage: String
   organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
   organizationsConnection(first: Int, orderBy: OrganizationOrderByInput, skip: Int, where: OrganizationWhereInput): [Organization]!

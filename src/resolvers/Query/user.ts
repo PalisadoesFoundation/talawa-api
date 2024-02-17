@@ -24,7 +24,7 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     throw new errors.NotFoundError(
       USER_NOT_FOUND_ERROR.DESC,
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -34,6 +34,9 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
   const userAppProfile: InterfaceAppUserProfile = await AppUserProfile.findOne({
     userId: user._id,
   })
+    .populate("createdOrganizations")
+    .populate("createdEvents")
+    .populate("eventAdmin")
     .populate("adminFor")
     .lean();
 

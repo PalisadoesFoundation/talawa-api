@@ -1,7 +1,12 @@
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
-import { errors } from "../../libraries";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { errors } from "../../libraries";
+import type {
+  InterfaceEvent,
+  InterfaceOrganization,
+  InterfaceUser,
+} from "../../models";
+import { AppUserProfile, User } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This query fetch the current user from the database.
  * @param _parent-
@@ -15,21 +20,49 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
     _id: context.userId,
   })
     .select(["-password"])
-    .populate("createdOrganizations")
-    .populate("createdEvents")
+
     .populate("joinedOrganizations")
     .populate("registeredEvents")
-    .populate("eventAdmin")
-    .populate("adminFor")
+
     .lean();
 
   if (!currentUser) {
     throw new errors.NotFoundError(
       USER_NOT_FOUND_ERROR.DESC,
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-
-  return currentUser;
+  const userAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  })
+    .populate("createdOrganizations")
+    .populate("createdEvents")
+    .populate("eventAdmin")
+    .populate("adminFor")
+    .lean();
+  if (!userAppProfile) {
+    throw new errors.NotFoundError(
+      USER_NOT_FOUND_ERROR.DESC,
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  return {
+    user: currentUser,
+    appUserProfile: {
+      // ...userAppProfile,
+      _id: userAppProfile._id.toString(),
+      userId: userAppProfile.userId as InterfaceUser,
+      adminFor: userAppProfile.adminFor as InterfaceOrganization[],
+      appLanguageCode: userAppProfile.appLanguageCode,
+      isSuperAdmin: userAppProfile.isSuperAdmin,
+      pluginCreationAllowed: userAppProfile.pluginCreationAllowed,
+      tokenVersion: userAppProfile.tokenVersion,
+      eventAdmin: userAppProfile.eventAdmin as InterfaceEvent[],
+      createdEvents: userAppProfile.createdEvents as InterfaceEvent[],
+      createdOrganizations:
+        userAppProfile.createdOrganizations as InterfaceOrganization[],
+    },
+  };
 };

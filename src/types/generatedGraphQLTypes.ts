@@ -1547,7 +1547,7 @@ export type Query = {
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']['output']>;
   isSampleOrganization: Scalars['Boolean']['output'];
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
-  me: User;
+  me: UserData;
   myLanguage?: Maybe<Scalars['String']['output']>;
   organizations?: Maybe<Array<Maybe<Organization>>>;
   organizationsConnection: Array<Maybe<Organization>>;
@@ -3154,7 +3154,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
   isSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<QueryIsSampleOrganizationArgs, 'id'>>;
   joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryJoinedOrganizationsArgs>>;
-  me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  me?: Resolver<ResolversTypes['UserData'], ParentType, ContextType>;
   myLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryOrganizationsArgs>>;
   organizationsConnection?: Resolver<Array<Maybe<ResolversTypes['Organization']>>, ParentType, ContextType, Partial<QueryOrganizationsConnectionArgs>>;
