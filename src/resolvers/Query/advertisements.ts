@@ -8,7 +8,7 @@ import { Advertisement } from "../../models";
 export const advertisements: QueryResolvers["advertisements"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const advertisements = await Advertisement.find().lean();
   const advertisementsWithMediaURLResolved = advertisements.map(
@@ -18,7 +18,7 @@ export const advertisements: QueryResolvers["advertisements"] = async (
       organization: {
         _id: advertisement.organizationId,
       },
-    })
+    }),
   );
 
   return advertisementsWithMediaURLResolved;

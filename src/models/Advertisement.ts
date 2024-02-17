@@ -98,7 +98,7 @@ const advertisementSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 advertisementSchema.plugin(mongoosePaginate);
@@ -110,7 +110,7 @@ createLoggingMiddleware(advertisementSchema, "Advertisement");
 const advertisementModel = (): PaginateModel<InterfaceAdvertisement> =>
   model<InterfaceAdvertisement, PaginateModel<InterfaceAdvertisement>>(
     "Advertisement",
-    advertisementSchema
+    advertisementSchema,
   );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

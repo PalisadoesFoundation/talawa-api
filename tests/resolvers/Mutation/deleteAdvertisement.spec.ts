@@ -82,7 +82,7 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -106,7 +106,7 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -130,14 +130,14 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
 
   it(`creates the ad and then deleting the ad`, async () => {
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
     const args: MutationCreateAdvertisementArgs = {
       input: {
@@ -161,7 +161,7 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
     const createdAdvertisementPayload = await createAdvertisementResolver?.(
       {},
       args,
-      context
+      context,
     );
     const createdAdvertisementId = createdAdvertisementPayload?._id || "";
 
@@ -173,7 +173,7 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
     const deleteAdvertisementPayload = await deleteAdvertisement?.(
       {},
       { id: createdAdvertisementId },
-      context
+      context,
     );
 
     expect(deleteAdvertisementPayload).toEqual({
@@ -197,13 +197,13 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       await deleteAdvertisement?.(
         {},
         { id: "64d1f8cb77a4b51004f824b8" },
-        context
+        context,
       );
     } catch (error: unknown) {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -227,7 +227,7 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });

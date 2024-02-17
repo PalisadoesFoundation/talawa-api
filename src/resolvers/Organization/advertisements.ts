@@ -13,7 +13,7 @@ import { parseRelayConnectionArguments } from "../../utilities/parseRelayConnect
 export const advertisements: OrganizationResolvers["advertisements"] = async (
   parent,
   args,
-  context
+  context,
 ) => {
   const paginationArgs = parseRelayConnectionArguments(args, 10);
 

@@ -184,7 +184,7 @@ const organizationSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(organizationSchema, "Organization");

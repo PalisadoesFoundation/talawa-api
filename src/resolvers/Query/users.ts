@@ -17,7 +17,7 @@ import { getWhere } from "./helperFunctions/getWhere";
 export const users: QueryResolvers["users"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const where = getWhere<InterfaceUser>(args.where);
   const sort = getSort(args.orderBy);
@@ -30,7 +30,7 @@ export const users: QueryResolvers["users"] = async (
     throw new errors.UnauthenticatedError(
       requestContext.translate(UNAUTHENTICATED_ERROR.MESSAGE),
       UNAUTHENTICATED_ERROR.CODE,
-      UNAUTHENTICATED_ERROR.PARAM
+      UNAUTHENTICATED_ERROR.PARAM,
     );
   }
   const filterCriteria = {

@@ -49,7 +49,7 @@ const groupChatMessageSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(groupChatMessageSchema, "GroupChatMessage");

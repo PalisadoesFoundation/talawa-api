@@ -43,7 +43,7 @@ describe("resolvers -> Organization -> advertisements", () => {
     const advertisementConnection = await AdvertisementResolvers?.(
       parent,
       args,
-      {}
+      {},
     );
 
     if (advertisementConnection) {
@@ -74,7 +74,7 @@ describe("resolvers -> Organization -> advertisements", () => {
     const advertisements: unknown[] = Array.from({ length: 4 }).map(
       (_, index) => ({
         _id: `advertisement_${index}`,
-      })
+      }),
     );
     const pageInfo: ConnectionPageInfo = {
       hasNextPage: false,
@@ -144,7 +144,7 @@ describe("parseConnectionArguments", () => {
       last: 5,
     };
     expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError
+      GraphQLError,
     );
   });
 
@@ -154,7 +154,7 @@ describe("parseConnectionArguments", () => {
       before: "cursor",
     };
     expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError
+      GraphQLError,
     );
   });
 
@@ -164,14 +164,14 @@ describe("parseConnectionArguments", () => {
       after: "cursor",
     };
     expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError
+      GraphQLError,
     );
   });
 
   it("should throw an error when neither 'first' nor 'last' are provided", () => {
     const args: RelayConnectionArguments = {};
     expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError
+      GraphQLError,
     );
   });
 });

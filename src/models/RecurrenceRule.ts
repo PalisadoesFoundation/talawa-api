@@ -90,7 +90,7 @@ const recurrenceRuleSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const recurrenceRuleModel = (): Model<InterfaceRecurrenceRule> =>

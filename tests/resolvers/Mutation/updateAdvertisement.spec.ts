@@ -66,7 +66,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     } catch (error: unknown) {
       if (!(error instanceof ApplicationError)) return;
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -96,7 +96,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     } catch (error: unknown) {
       if (!(error instanceof ApplicationError)) return;
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
@@ -128,10 +128,10 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     } catch (error: unknown) {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toHaveBeenLastCalledWith(
-        ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE
+        ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE,
       );
       expect(error.message).toEqual(
-        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -140,11 +140,11 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message: string) => `Translated ${message}`
+      (message: string) => `Translated ${message}`,
     );
     const args: MutationUpdateAdvertisementArgs = {
       input: {
-        _id: testAdvertisement!._id,
+        _id: testAdvertisement._id,
         name: "New Advertisement Name",
         mediaFile: "data:image/png;base64,bWaWEgY29udGVudA==",
         type: "POPUP",
@@ -162,12 +162,12 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     const updateAdvertisementPayload = await updateAdvertisementResolver?.(
       {},
       args,
-      context
+      context,
     );
     const advertisement = updateAdvertisementPayload || {};
 
     const updatedTestAdvertisement = await Advertisement.findOne({
-      _id: testAdvertisement!._id,
+      _id: testAdvertisement._id,
     }).lean();
 
     let expectedAdvertisement;
@@ -195,11 +195,11 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message: string) => `Translated ${message}`
+      (message: string) => `Translated ${message}`,
     );
     const args: MutationUpdateAdvertisementArgs = {
       input: {
-        _id: testAdvertisement!._id,
+        _id: testAdvertisement._id,
         name: "New Advertisement Name",
         mediaFile: "data:video/mp4;base64,rWaWEgY29udGVudA==",
         type: "POPUP",
@@ -211,12 +211,12 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     const updateAdvertisementPayload = await updateAdvertisementResolver?.(
       {},
       args,
-      context
+      context,
     );
     const advertisement = updateAdvertisementPayload || {};
 
     const updatedTestAdvertisement = await Advertisement.findOne({
-      _id: testAdvertisement!._id,
+      _id: testAdvertisement._id,
     }).lean();
 
     let expectedAdvertisement;
@@ -244,11 +244,11 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message: string) => `Translated ${message}`
+      (message: string) => `Translated ${message}`,
     );
     const args: MutationUpdateAdvertisementArgs = {
       input: {
-        _id: testAdvertisement!._id,
+        _id: testAdvertisement._id,
         name: "New Advertisement Name",
         mediaFile: "unsupportedFile.txt",
         type: "POPUP",
@@ -264,12 +264,12 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
       () => {
         throw new Error("Unsupported file type.");
-      }
+      },
     );
 
     // Ensure that an error is thrown when updateAdvertisementResolver is called
     await expect(
-      updateAdvertisementResolver?.({}, args, context)
+      updateAdvertisementResolver?.({}, args, context),
     ).rejects.toThrowError("Unsupported file type.");
   });
 
@@ -283,7 +283,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     try {
       const args: MutationUpdateAdvertisementArgs = {
         input: {
-          _id: testAdvertisement!._id,
+          _id: testAdvertisement._id,
           name: "New Advertisement Name",
           mediaFile: "data:video/mp4;base64,bWVkaWgY29udGVudA==",
           type: "POPUP",
@@ -304,7 +304,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toHaveBeenLastCalledWith(END_DATE_VALIDATION_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${END_DATE_VALIDATION_ERROR.MESSAGE}`
+        `Translated ${END_DATE_VALIDATION_ERROR.MESSAGE}`,
       );
     }
   });
@@ -318,7 +318,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     try {
       const args: MutationUpdateAdvertisementArgs = {
         input: {
-          _id: testAdvertisement!._id,
+          _id: testAdvertisement._id,
           startDate: "2023-12-26",
         },
       };
@@ -333,7 +333,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toHaveBeenLastCalledWith(START_DATE_VALIDATION_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${START_DATE_VALIDATION_ERROR.MESSAGE}`
+        `Translated ${START_DATE_VALIDATION_ERROR.MESSAGE}`,
       );
     }
   });
@@ -348,7 +348,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     try {
       const args: MutationUpdateAdvertisementArgs = {
         input: {
-          _id: testAdvertisement!._id,
+          _id: testAdvertisement._id,
         },
       };
 
@@ -362,7 +362,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toHaveBeenLastCalledWith(INPUT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${INPUT_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${INPUT_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -376,7 +376,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     try {
       const args: MutationUpdateAdvertisementArgs = {
         input: {
-          _id: testAdvertisement!._id,
+          _id: testAdvertisement._id,
           name: null,
         },
       };
@@ -391,7 +391,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toHaveBeenLastCalledWith(FIELD_NON_EMPTY_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${FIELD_NON_EMPTY_ERROR.MESSAGE}`
+        `Translated ${FIELD_NON_EMPTY_ERROR.MESSAGE}`,
       );
     }
   });

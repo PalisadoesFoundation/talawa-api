@@ -28,7 +28,7 @@ const organizationCustomFieldSchema = new mongoose.Schema({
 
 createLoggingMiddleware(
   organizationCustomFieldSchema,
-  "OrganizationCustomField"
+  "OrganizationCustomField",
 );
 
 // Define and export the model directly
@@ -36,7 +36,7 @@ const OrganizationCustomField: Model<InterfaceOrganizationCustomField> =
   mongoose.models.CustomField ||
   mongoose.model<InterfaceOrganizationCustomField>(
     "CustomField",
-    organizationCustomFieldSchema
+    organizationCustomFieldSchema,
   );
 
 export { OrganizationCustomField };

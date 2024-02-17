@@ -22,7 +22,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       throw new errors.InputValidationError(
         requestContext.translate(INPUT_NOT_FOUND_ERROR.MESSAGE),
         INPUT_NOT_FOUND_ERROR.CODE,
-        INPUT_NOT_FOUND_ERROR.PARAM
+        INPUT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -35,7 +35,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
         throw new errors.InputValidationError(
           requestContext.translate(FIELD_NON_EMPTY_ERROR.MESSAGE),
           FIELD_NON_EMPTY_ERROR.CODE,
-          FIELD_NON_EMPTY_ERROR.PARAM
+          FIELD_NON_EMPTY_ERROR.PARAM,
         );
       }
     }
@@ -48,7 +48,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -56,7 +56,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -70,7 +70,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       throw new errors.InputValidationError(
         requestContext.translate(START_DATE_VALIDATION_ERROR.MESSAGE),
         START_DATE_VALIDATION_ERROR.CODE,
-        START_DATE_VALIDATION_ERROR.PARAM
+        START_DATE_VALIDATION_ERROR.PARAM,
       );
     }
 
@@ -79,7 +79,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       throw new errors.InputValidationError(
         requestContext.translate(END_DATE_VALIDATION_ERROR.MESSAGE),
         END_DATE_VALIDATION_ERROR.CODE,
-        END_DATE_VALIDATION_ERROR.PARAM
+        END_DATE_VALIDATION_ERROR.PARAM,
       );
     }
 
@@ -108,14 +108,14 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     if (!updatedAdvertisement) {
       throw new errors.NotFoundError(
         requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
         ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
-        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM
+        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 

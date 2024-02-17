@@ -26,7 +26,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 
   randomUser = await createTestUser();
@@ -50,7 +50,7 @@ beforeAll(async () => {
       $push: {
         adminFor: testOrganization?._id,
       },
-    }
+    },
   );
   testAgendaCategory = await AgendaCategoryModel.create({
     name: "Sample Agenda Category",
@@ -102,7 +102,7 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
       await updateAgendaCategoryResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -124,7 +124,7 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
       await updateAgendaCategoryResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -145,14 +145,14 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
     const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updatedAgendaCategoryPayload).toEqual(
       expect.objectContaining({
         name: "Updated Name",
         description: "Updated Description",
-      })
+      }),
     );
   });
   //   it(`updates the agenda category and returns it for the admin`, async () => {
@@ -191,7 +191,7 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
       },
       {
         new: true,
-      }
+      },
     );
     const context = {
       userId: superAdminTestUser?._id,
@@ -207,14 +207,14 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
     const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updatedAgendaCategoryPayload).toEqual(
       expect.objectContaining({
         name: "Updated Name",
         description: "Updated Description",
-      })
+      }),
     );
   });
 });

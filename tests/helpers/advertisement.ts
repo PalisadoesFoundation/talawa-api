@@ -4,7 +4,7 @@ import type { InterfaceUser } from "../../src/models";
 import { nanoid } from "nanoid";
 import type { Document } from "mongoose";
 import { createTestUserAndOrganization } from "./userAndOrg";
-import { PopulatedDoc } from "mongoose";
+import type { PopulatedDoc } from "mongoose";
 
 export type TestAdvertisementType = {
   _id: string;

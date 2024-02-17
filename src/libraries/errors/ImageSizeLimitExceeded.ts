@@ -7,7 +7,7 @@ export class ImageSizeLimitExceeded extends ApplicationError {
     message = "Image Size Limit Exceeded",
     code: string | null = null,
     param: string | null = null,
-    metadata: Record<any, any> = {}
+    metadata: Record<any, any> = {},
   ) {
     const errorJson = [
       {

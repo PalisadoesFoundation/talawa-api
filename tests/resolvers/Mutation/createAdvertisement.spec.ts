@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -116,7 +116,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -144,7 +144,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     const createdAdvertisementPayload = await createAdvertisementResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createdAdvertisementPayload).toHaveProperty("name", "myad");
@@ -173,18 +173,18 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
       () => {
         throw new Error("Unsupported file type.");
-      }
+      },
     );
 
     // Ensure that an error is thrown when createPostResolverImage is called
     await expect(createAdvertisement?.({}, args, context)).rejects.toThrowError(
-      "Unsupported file type."
+      "Unsupported file type.",
     );
   });
 
   it(`should create the ad and returns `, async () => {
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
     const args: MutationCreateAdvertisementArgs = {
       input: {
@@ -208,7 +208,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     const createdAdvertisementPayload = await createAdvertisementResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createdAdvertisementPayload).toHaveProperty("name", "myad");

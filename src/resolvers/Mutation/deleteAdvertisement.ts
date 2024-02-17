@@ -18,7 +18,7 @@ export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -26,7 +26,7 @@ export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -38,7 +38,7 @@ export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
       throw new errors.NotFoundError(
         requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
         ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
-        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM
+        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 

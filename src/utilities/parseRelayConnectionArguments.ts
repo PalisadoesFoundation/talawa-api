@@ -36,7 +36,7 @@ export type ParsedRelayConnectionArguments = {
  */
 export function parseRelayConnectionArguments(
   args: RelayConnectionArguments,
-  maximumLimit: number
+  maximumLimit: number,
 ): ParsedRelayConnectionArguments {
   const paginationArgs: ParsedRelayConnectionArguments = {
     cursor: null,
@@ -47,12 +47,12 @@ export function parseRelayConnectionArguments(
   if (isNotNullish(args.first)) {
     if (isNotNullish(args.last)) {
       throw new GraphQLError(
-        "Argument first cannot be provided with argument last."
+        "Argument first cannot be provided with argument last.",
       );
     }
     if (isNotNullish(args.before)) {
       throw new GraphQLError(
-        "Argument before cannot be provided with argument first."
+        "Argument before cannot be provided with argument first.",
       );
     }
     if (args.first > maximumLimit) {
@@ -68,7 +68,7 @@ export function parseRelayConnectionArguments(
   } else if (isNotNullish(args.last)) {
     if (isNotNullish(args.after)) {
       throw new GraphQLError(
-        "Argument after cannot be provided with argument last."
+        "Argument after cannot be provided with argument last.",
       );
     }
     if (args.last > maximumLimit) {
@@ -83,7 +83,7 @@ export function parseRelayConnectionArguments(
     }
   } else {
     throw new GraphQLError(
-      `Either argument first or argument last must be provided.`
+      `Either argument first or argument last must be provided.`,
     );
   }
 
