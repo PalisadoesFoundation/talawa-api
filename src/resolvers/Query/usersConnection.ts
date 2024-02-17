@@ -14,7 +14,7 @@ import { getWhere } from "./helperFunctions/getWhere";
  */
 export const usersConnection: QueryResolvers["usersConnection"] = async (
   _parent,
-  args
+  args,
 ) => {
   const where = getWhere<InterfaceUser>(args.where);
   const sort = getSort(args.orderBy);

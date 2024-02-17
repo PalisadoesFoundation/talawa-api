@@ -34,7 +34,7 @@ export const getWhere = <T = unknown>(
             ActionItemWhereInput
         >
       >
-    | undefined
+    | undefined,
 ): FilterQuery<T> => {
   let wherePayload: FilterQuery<T> = {};
 

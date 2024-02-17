@@ -47,7 +47,7 @@ const messageChatSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(messageChatSchema, "MessageChat");

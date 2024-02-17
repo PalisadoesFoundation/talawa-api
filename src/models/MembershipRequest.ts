@@ -42,7 +42,7 @@ createLoggingMiddleware(membershipRequestSchema, "MembershipRequest");
 const membershipRequestModel = (): Model<InterfaceMembershipRequest> =>
   model<InterfaceMembershipRequest>(
     "MembershipRequest",
-    membershipRequestSchema
+    membershipRequestSchema,
   );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

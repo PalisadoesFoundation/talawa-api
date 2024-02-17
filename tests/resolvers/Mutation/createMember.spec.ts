@@ -30,7 +30,7 @@ beforeAll(async () => {
   testOrganization = resultsArray[1];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -49,7 +49,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $set: {
             creatorId: Types.ObjectId().toString(),
           },
-        }
+        },
       );
 
       const args: MutationCreateMemberArgs = {
@@ -79,7 +79,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $set: {
             creatorId: testUser?._id,
           },
-        }
+        },
       );
 
       await User.updateOne(
@@ -90,7 +90,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $set: {
             userType: "SUPERADMIN",
           },
-        }
+        },
       );
 
       const args: MutationCreateMemberArgs = {
@@ -140,7 +140,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $push: {
             members: testUser?._id,
           },
-        }
+        },
       );
 
       const args: MutationCreateMemberArgs = {
@@ -168,7 +168,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       .lean();
 
     const updatedOrganizationCheck = updatedTestOrganization?.members.some(
-      (member) => member.equals(testUser?._id)
+      (member) => member.equals(testUser?._id),
     );
 
     expect(updatedOrganizationCheck).toBe(true);

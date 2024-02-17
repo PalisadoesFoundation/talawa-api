@@ -54,7 +54,7 @@ const donationSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(donationSchema, "Donation");

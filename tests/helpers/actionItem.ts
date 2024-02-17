@@ -20,7 +20,7 @@ export const createTestActionItem = async (): Promise<
     TestOrganizationType,
     TestActionItemCategoryType,
     TestActionItemType,
-    TestUserType
+    TestUserType,
   ]
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
@@ -119,7 +119,7 @@ export const createTestActionItems = async (): Promise<
     },
     {
       eventId: testEvent?._id,
-    }
+    },
   );
 
   await ActionItem.updateOne(
@@ -128,7 +128,7 @@ export const createTestActionItems = async (): Promise<
     },
     {
       eventId: testEvent?._id,
-    }
+    },
   );
 
   return [testUser, testEvent, testOrganization];
