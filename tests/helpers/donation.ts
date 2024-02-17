@@ -30,7 +30,7 @@ export const createTestDonation = async (): Promise<
 };
 
 export const createTestDonationsForOrganization = async (
-  organization: TestOrganizationType
+  organization: TestOrganizationType,
 ): Promise<TestDonationType[]> => {
   const testUser1 = await createTestUser();
   const testDonation1 = await Donation.create({

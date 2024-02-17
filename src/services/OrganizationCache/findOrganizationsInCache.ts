@@ -4,7 +4,7 @@ import { Types } from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findOrganizationsInCache(
-  ids: string[]
+  ids: string[],
 ): Promise<(InterfaceOrganization | null)[]> {
   if (ids.length === 0) {
     return [null];
@@ -78,7 +78,7 @@ export async function findOrganizationsInCache(
             ? organization.membershipRequests.map(
                 (membershipRequest: string) => {
                   return Types.ObjectId(membershipRequest);
-                }
+                },
               )
             : [],
 

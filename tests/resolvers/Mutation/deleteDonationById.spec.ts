@@ -44,7 +44,7 @@ describe("resolvers -> Mutation -> deleteDonationById", () => {
     const deleteDonationByIdPayload = await deleteDonationByIdResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     expect(deleteDonationByIdPayload).toEqual({
@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> deleteDonationById", () => {
     const deleteDonationByIdPayload = await deleteDonationByIdResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     expect(deleteDonationByIdPayload).toEqual({

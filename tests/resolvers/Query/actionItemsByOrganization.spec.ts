@@ -6,16 +6,14 @@ import { actionItemsByOrganization as actionItemsByOrganizationResolver } from "
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type mongoose from "mongoose";
 import { createTestActionItems } from "../../helpers/actionItem";
-import type { TestEventType } from "../../helpers/events";
-import { TestOrganizationType } from "../../helpers/userAndOrg";
+import type { TestOrganizationType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testEvent: TestEventType;
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [, testEvent, testOrganization] = await createTestActionItems();
+  [, , testOrganization] = await createTestActionItems();
 });
 
 afterAll(async () => {
@@ -35,7 +33,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
       organizationId: args.organizationId,
     });
     const actionItemCategoriesIds = actionItemCategories.map(
-      (category) => category._id
+      (category) => category._id,
     );
 
     const actionItemsByOrganizationInfo = await ActionItem.find({
@@ -43,7 +41,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
     }).lean();
 
     expect(actionItemsByOrganizationPayload).toEqual(
-      actionItemsByOrganizationInfo
+      actionItemsByOrganizationInfo,
     );
   });
 });

@@ -38,7 +38,7 @@ type UpdateActionItemInputType = {
 export const updateActionItem: MutationResolvers["updateActionItem"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -49,7 +49,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -64,7 +64,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ACTION_ITEM_NOT_FOUND_ERROR.MESSAGE),
       ACTION_ITEM_NOT_FOUND_ERROR.CODE,
-      ACTION_ITEM_NOT_FOUND_ERROR.PARAM
+      ACTION_ITEM_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -72,7 +72,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
 
   if (args.data.assigneeId) {
     sameAssignedUser = Types.ObjectId(actionItem.assigneeId).equals(
-      args.data.assigneeId
+      args.data.assigneeId,
     );
 
     if (!sameAssignedUser) {
@@ -85,7 +85,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
         throw new errors.NotFoundError(
           requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
           USER_NOT_FOUND_ERROR.CODE,
-          USER_NOT_FOUND_ERROR.PARAM
+          USER_NOT_FOUND_ERROR.PARAM,
         );
       }
 
@@ -94,7 +94,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       userIsOrganizationMember = newAssignedUser.joinedOrganizations.some(
         (organizationId) =>
           organizationId === currorganizationId ||
-          Types.ObjectId(organizationId).equals(currorganizationId)
+          Types.ObjectId(organizationId).equals(currorganizationId),
       );
 
       // Checks if the new asignee is a member of the organization
@@ -102,7 +102,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
         throw new errors.NotFoundError(
           requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
           USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
-          USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM
+          USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
         );
       }
     }
@@ -112,8 +112,8 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     (ogranizationId) =>
       ogranizationId === actionItem.actionItemCategoryId.organizationId ||
       Types.ObjectId(ogranizationId).equals(
-        actionItem.actionItemCategoryId.organizationId
-      )
+        actionItem.actionItemCategoryId.organizationId,
+      ),
   );
 
   let currentUserIsEventAdmin = false;
@@ -140,14 +140,15 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
         EVENT_NOT_FOUND_ERROR.CODE,
-        EVENT_NOT_FOUND_ERROR.PARAM
+        EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     // Checks if the currUser is an admin of the event
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
-        admin === context.userID || Types.ObjectId(admin).equals(context.userId)
+        admin === context.userID ||
+        Types.ObjectId(admin).equals(context.userId),
     );
   }
 
@@ -160,7 +161,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -183,7 +184,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     },
     {
       new: true,
-    }
+    },
   ).lean();
 
   return updatedActionItem;

@@ -11,14 +11,14 @@ import { reuploadDuplicateCheck } from "./reuploadDuplicateCheck";
  */
 export const deleteImage = async (
   imageToBeDeleted: string,
-  imageBelongingToItem?: string
+  imageBelongingToItem?: string,
 ): Promise<void> => {
   let imageIsDuplicate = false;
 
   if (imageBelongingToItem) {
     imageIsDuplicate = await reuploadDuplicateCheck(
       imageToBeDeleted,
-      imageBelongingToItem
+      imageBelongingToItem,
     );
   }
 
@@ -55,7 +55,7 @@ export const deleteImage = async (
         $inc: {
           numberOfUses: -1,
         },
-      }
+      },
     );
   }
 };

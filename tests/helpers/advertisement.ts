@@ -30,7 +30,7 @@ export const createTestAdvertisement =
 
     // Create test advertisement in the database
     const createdAdvertisement = await Advertisement.create(
-      testAdvertisementData
+      testAdvertisementData,
     );
 
     return createdAdvertisement.toObject();

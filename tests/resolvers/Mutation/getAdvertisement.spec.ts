@@ -73,7 +73,7 @@ describe("resolvers -> Mutation -> getAdvertisement", () => {
     const createdAdvertisementPayload = await createAdvertisementResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const { getAdvertisements: getAdvertisementResolver } = await import(
@@ -82,7 +82,7 @@ describe("resolvers -> Mutation -> getAdvertisement", () => {
     const getAdvertisementPayload = await getAdvertisementResolver?.(
       {},
       args,
-      context
+      context,
     );
     if (getAdvertisementPayload) {
       const lastIndex = getAdvertisementPayload.length - 1;
@@ -90,12 +90,12 @@ describe("resolvers -> Mutation -> getAdvertisement", () => {
 
       expect(getAdvertisementPayload[lastIndex]).toHaveProperty(
         "link",
-        "https://www.example.com"
+        "https://www.example.com",
       );
 
       expect(getAdvertisementPayload[lastIndex]).toHaveProperty(
         "type",
-        "POPUP"
+        "POPUP",
       );
     }
   });
