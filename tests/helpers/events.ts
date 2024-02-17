@@ -9,7 +9,6 @@ import { EventVolunteerResponse } from "../../src/constants";
 export type TestEventType =
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   (InterfaceEvent & Document<any, any, InterfaceEvent>) | null;
-export type TestEventType = (InterfaceEvent & Document) | null;
 
 export type TestEventVolunteerType =
   | (InterfaceEventVolunteer & Document)
