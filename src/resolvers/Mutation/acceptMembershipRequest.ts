@@ -35,7 +35,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
-        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -46,7 +46,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -57,7 +57,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -65,7 +65,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     await adminCheck(context.userId, organization);
 
     const userIsOrganizationMember = organization.members.some(
-      (member: Types.ObjectId) => member.equals(user?._id)
+      (member: Types.ObjectId) => member.equals(user?._id),
     );
 
     // Checks whether user is already a member of organization.
@@ -73,7 +73,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       throw new errors.ConflictError(
         requestContext.translate(USER_ALREADY_MEMBER_ERROR.MESSAGE),
         USER_ALREADY_MEMBER_ERROR.CODE,
-        USER_ALREADY_MEMBER_ERROR.PARAM
+        USER_ALREADY_MEMBER_ERROR.PARAM,
       );
     }
 
@@ -97,7 +97,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -116,7 +116,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
         $pull: {
           membershipRequests: membershipRequest._id,
         },
-      }
+      },
     );
 
     return membershipRequest;

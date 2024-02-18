@@ -10,7 +10,7 @@ import { Donation } from "../../models";
  */
 export const getDonationById: QueryResolvers["getDonationById"] = async (
   _parent,
-  args
+  args,
 ) => {
   const donation = await Donation.findOne({
     _id: args.id,

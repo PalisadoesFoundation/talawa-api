@@ -37,7 +37,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 
   randomUser = await createTestUser();
@@ -52,7 +52,7 @@ beforeAll(async () => {
     },
     {
       new: true,
-    }
+    },
   );
 
   [testUser, testOrganization, testCategory] = await createTestCategory();
@@ -111,7 +111,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       await createActionItemResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE
+        ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -161,7 +161,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       },
       {
         $push: { joinedOrganizations: testOrganization?._id },
-      }
+      },
     );
 
     try {
@@ -218,13 +218,13 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     const createActionItemPayload = await createActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createActionItemPayload).toEqual(
       expect.objectContaining({
         actionItemCategoryId: testCategory?._id,
-      })
+      }),
     );
   });
 
@@ -243,13 +243,13 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     const createActionItemPayload = await createActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createActionItemPayload).toEqual(
       expect.objectContaining({
         actionItemCategoryId: testCategory?._id,
-      })
+      }),
     );
   });
 
@@ -268,13 +268,13 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     const createActionItemPayload = await createActionItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createActionItemPayload).toEqual(
       expect.objectContaining({
         actionItemCategoryId: testCategory?._id,
-      })
+      }),
     );
   });
 });

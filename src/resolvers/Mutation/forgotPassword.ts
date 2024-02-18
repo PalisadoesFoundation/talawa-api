@@ -22,7 +22,7 @@ import jwt from "jsonwebtoken";
  */
 export const forgotPassword: MutationResolvers["forgotPassword"] = async (
   _parent,
-  args
+  args,
 ) => {
   const { userOtp, newPassword, otpToken } = args.data;
 
@@ -73,7 +73,7 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
     },
     {
       password: hashedPassword,
-    }
+    },
   );
 
   // Returns true if operation is successful.

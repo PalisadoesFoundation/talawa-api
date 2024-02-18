@@ -48,7 +48,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
       await uploadEncodedImage(img, null);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${INVALID_FILE_TYPE.MESSAGE}`
+        `Translated ${INVALID_FILE_TYPE.MESSAGE}`,
       );
 
       expect(spy).toBeCalledWith(INVALID_FILE_TYPE.MESSAGE);

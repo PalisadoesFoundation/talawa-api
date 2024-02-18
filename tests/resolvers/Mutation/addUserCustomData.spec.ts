@@ -42,7 +42,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
     expect(customDataDoc?.values).toHaveProperty(args.dataName, args.dataValue);
     expect(customDataDoc?.userId.toString()).toBe(testUser?._id.toString());
     expect(customDataDoc?.organizationId.toString()).toBe(
-      testOrganization?._id.toString()
+      testOrganization?._id.toString(),
     );
     expect(customDataDoc?.userId.toString()).toBe(testUser?._id.toString());
   });
@@ -67,7 +67,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -91,10 +91,10 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       await addUserCustomData?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });

@@ -40,7 +40,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
         ACCESS_TOKEN_SECRET as string,
         {
           expiresIn: 99999999,
-        }
+        },
       );
 
       const args: MutationForgotPasswordArgs = {
@@ -165,7 +165,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       ACCESS_TOKEN_SECRET as string,
       {
         expiresIn: 99999999,
-      }
+      },
     );
 
     const args: MutationForgotPasswordArgs = {

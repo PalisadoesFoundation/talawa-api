@@ -15,7 +15,7 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
 export const addUserImage: MutationResolvers["addUserImage"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -26,13 +26,13 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const imageToUploadFilePath = await uploadEncodedImage(
     args.file,
-    currentUser.image
+    currentUser.image,
   );
 
   // Updates the user with new image and returns the updated user.
@@ -47,6 +47,6 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
     },
     {
       new: true,
-    }
+    },
   ).lean();
 };
