@@ -167,12 +167,12 @@ jobs:
           git config --global user.name "${{github.actor}}"
           git config --global user.email "${{env.email}}"
           git config --global url.https://${{ secrets.TALAWA_DOCS_SYNC }}@github.com/.insteadOf https://github.com/
-          git commit --allow-empty -m "Empty commit"
+          git commit --allow-empty -m "Trigger Documentation Workflow"
           git push origin develop:automated-docs --force
   
   Copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/automated-docs' && contains(github.event.head_commit.message, 'Empty commit')
+    if: github.ref == 'refs/heads/automated-docs' && contains(github.event.head_commit.message, 'Trigger Documentation Workflow')
     needs : Generate-Documentation
     steps:
     - uses: actions/checkout@v2
