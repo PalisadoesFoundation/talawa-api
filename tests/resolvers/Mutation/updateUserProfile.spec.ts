@@ -110,7 +110,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -138,7 +138,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -169,7 +169,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`,
       );
     }
   });
@@ -199,7 +199,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`,
       );
     }
   });
@@ -218,7 +218,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -243,7 +243,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -271,7 +271,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const testUserobj = await User.findById({ _id: testUser.id });
@@ -301,7 +301,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const testUserobj = await User.findById({ _id: testUser.id });
@@ -333,7 +333,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -358,7 +358,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     };
 
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL
+      async (encodedImageURL: string) => encodedImageURL,
     );
 
     const context = {
@@ -369,7 +369,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserProfilePayload).toEqual({
@@ -389,7 +389,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     };
 
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL
+      async (encodedImageURL: string) => encodedImageURL,
     );
 
     const context = {
@@ -400,7 +400,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserProfilePayload).toEqual({

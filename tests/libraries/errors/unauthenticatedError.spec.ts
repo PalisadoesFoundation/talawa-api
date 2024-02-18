@@ -9,7 +9,7 @@ describe("libraries -> errors -> unauthenticatedError", () => {
       throw new errors.UnauthenticatedError(
         UNAUTHENTICATED_ERROR.MESSAGE,
         UNAUTHENTICATED_ERROR.CODE,
-        UNAUTHENTICATED_ERROR.PARAM
+        UNAUTHENTICATED_ERROR.PARAM,
       );
     } catch (error: any) {
       expect(error.errors).toEqual([

@@ -47,7 +47,7 @@ describe("resolvers -> Mutation -> createDonation", () => {
         orgId: testOrganization?._id,
         payPalId: "payPalId",
         userId: testUser?._id,
-      })
+      }),
     );
   });
 });
