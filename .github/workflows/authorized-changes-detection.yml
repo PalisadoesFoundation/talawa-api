@@ -15,8 +15,9 @@ on:
     paths:
       - '.github/**'
       - '.husky/**'
-      - '.scripts/**'      
+      - 'scripts/**'      
       - '.env.sample'
+      - '.node-version'
       - 'tsconfig.json'
       - '.gitignore'
       - '.eslintrc.json'

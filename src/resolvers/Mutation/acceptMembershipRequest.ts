@@ -21,7 +21,6 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
  * 3. Whether the user exists
  * 4. whether currentUser with _id === context.userId is an admin of organization.
  * 5. Whether user is already a member of organization.
- * 6. Whether the user is a new user or not
  */
 export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest"] =
   async (_parent, args, context) => {
@@ -36,7 +35,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
-        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -47,7 +46,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -58,7 +57,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -66,7 +65,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     await adminCheck(context.userId, organization);
 
     const userIsOrganizationMember = organization.members.some(
-      (member: Types.ObjectId) => member.equals(user?._id)
+      (member: Types.ObjectId) => member.equals(user?._id),
     );
 
     // Checks whether user is already a member of organization.
@@ -74,7 +73,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       throw new errors.ConflictError(
         requestContext.translate(USER_ALREADY_MEMBER_ERROR.MESSAGE),
         USER_ALREADY_MEMBER_ERROR.CODE,
-        USER_ALREADY_MEMBER_ERROR.PARAM
+        USER_ALREADY_MEMBER_ERROR.PARAM,
       );
     }
 
@@ -98,44 +97,27 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
-      // If adminAprooved is false, it means it is the very first request or a very fresh member has made the request! Hence we need to update this variable also
-      if (user.adminApproved == false) {
-        await User.updateOne(
-          {
-            _id: user._id,
-          },
-          {
-            $set: {
-              adminApproved: true,
-            },
-            $push: {
-              joinedOrganizations: organization._id,
-            },
-            $pull: {
-              membershipRequests: membershipRequest._id,
-            },
-          }
-        );
-      } else {
-        await User.updateOne(
-          {
-            _id: user._id,
-          },
-          {
-            $push: {
-              joinedOrganizations: organization._id,
-            },
-            $pull: {
-              membershipRequests: membershipRequest._id,
-            },
-          }
-        );
-      }
     }
+
+    // Update the user
+    await User.updateOne(
+      {
+        _id: user._id,
+      },
+      {
+        $push: {
+          joinedOrganizations: organization._id,
+        },
+        $pull: {
+          membershipRequests: membershipRequest._id,
+        },
+      },
+    );
+
     return membershipRequest;
   };

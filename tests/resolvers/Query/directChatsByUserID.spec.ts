@@ -46,7 +46,7 @@ describe("resolvers -> Query -> directChatsByUserID", () => {
     const directChatsByUserIdPayload = await directChatsByUserIDResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     const directChatsByUserId = await DirectChat.find({

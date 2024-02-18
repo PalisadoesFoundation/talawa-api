@@ -30,6 +30,8 @@ const config: CodegenConfig = {
           ActionItemCategory:
             "../models/ActionItemCategory#InterfaceActionItemCategory",
 
+          AgendaCategory: "../models/AgendaCategory#InterfaceAgendaCategory",
+
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
           MessageChat: "../models/MessageChat#InterfaceMessageChat",
@@ -46,6 +48,9 @@ const config: CodegenConfig = {
           Event: "../models/Event#InterfaceEvent",
 
           EventAttendee: "../models/EventAttendee#InterfaceEventAttendee",
+
+          UserFamily: "../models/userFamily#InterfaceUserFamily",
+          EventVolunteer: "../models/EventVolunteer#InterfaceEventVolunteer",
 
           Feedback: "../models/Feedback#InterfaceFeedback",
 
@@ -78,8 +83,6 @@ const config: CodegenConfig = {
           UserTag: "../models/OrganizationTagUser#InterfaceOrganizationTagUser",
 
           User: "../models/User#InterfaceUser",
-
-          UserToReturn: "../models/User#InterfaceUserToReturn",
         },
 
         useTypeImports: true,

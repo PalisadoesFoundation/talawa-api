@@ -10,10 +10,10 @@ export type TestMembershipRequestType =
       Document<any, any, InterfaceMembershipRequest>)
   | null;
 
-export const createTestMembershipRequest = async (
-  givenUser?: TestUserType
-): Promise<[TestUserType, TestOrganizationType, TestMembershipRequestType]> => {
-  const testUser = givenUser == null ? await createTestUser() : givenUser;
+export const createTestMembershipRequest = async (): Promise<
+  [TestUserType, TestOrganizationType, TestMembershipRequestType]
+> => {
+  const testUser = await createTestUser();
 
   if (testUser) {
     const testOrganization = await Organization.create({
@@ -40,7 +40,7 @@ export const createTestMembershipRequest = async (
           adminFor: testOrganization._id,
           membershipRequests: testMembershipRequest._id,
         },
-      }
+      },
     );
 
     await Organization.updateOne(
@@ -51,7 +51,7 @@ export const createTestMembershipRequest = async (
         $push: {
           membershipRequests: testMembershipRequest._id,
         },
-      }
+      },
     );
 
     return [testUser, testOrganization, testMembershipRequest];
@@ -85,7 +85,7 @@ export const createTestMembershipRequestAsNew = async (): Promise<
       },
       {
         new: true,
-      }
+      },
     );
 
     testOrganization = await Organization.findOneAndUpdate(
@@ -99,7 +99,7 @@ export const createTestMembershipRequestAsNew = async (): Promise<
       },
       {
         new: true,
-      }
+      },
     );
     return [testUser, testOrganization, testMembershipRequest];
   } else {

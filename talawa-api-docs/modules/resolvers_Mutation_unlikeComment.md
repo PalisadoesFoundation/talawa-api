@@ -36,4 +36,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/unlikeComment.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/fe9d65c/src/resolvers/Mutation/unlikeComment.ts#L17)
+[src/resolvers/Mutation/unlikeComment.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/resolvers/Mutation/unlikeComment.ts#L17)

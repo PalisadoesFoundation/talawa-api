@@ -19,7 +19,7 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
 export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: args.data?.id || context.userId,
@@ -29,7 +29,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -42,7 +42,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       throw new errors.ConflictError(
         requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
         EMAIL_ALREADY_EXISTS_ERROR.MESSAGE,
-        EMAIL_ALREADY_EXISTS_ERROR.PARAM
+        EMAIL_ALREADY_EXISTS_ERROR.PARAM,
       );
     }
   }
@@ -52,7 +52,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   if (args.file) {
     uploadImageFileName = await uploadEncodedImage(
       args.file,
-      currentUser?.image
+      currentUser?.image,
     );
   }
 
@@ -129,7 +129,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     {
       new: true,
       runValidators: true,
-    }
+    },
   ).lean();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   updatedUser!.image = updatedUser?.image

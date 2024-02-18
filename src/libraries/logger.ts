@@ -16,11 +16,14 @@ const formats = {
         `${info.level || "-"} ${info.timestamp || "-"} ${
           getTracingId() || "-"
         } ${info.message} ${
-          JSON.stringify(
-            _.omit(info, ["level", "message", "stack", "timestamp"])
-          ) || "-"
-        } ${info.stack || ""}`
-    )
+          Object.keys(_.omit(info, ["level", "message", "stack", "timestamp"]))
+            .length === 0
+            ? ""
+            : JSON.stringify(
+                _.omit(info, ["level", "message", "stack", "timestamp"]),
+              )
+        } ${info.stack || ""}`,
+    ),
   ),
   non_colorized: combine(
     splat(),
@@ -31,11 +34,14 @@ const formats = {
         `${info.level || "-"} ${info.timestamp || "-"} ${
           getTracingId() || "-"
         } ${info.message} ${
-          JSON.stringify(
-            _.omit(info, ["level", "message", "stack", "timestamp"])
-          ) || "-"
-        } ${info.stack || ""}`
-    )
+          Object.keys(_.omit(info, ["level", "message", "stack", "timestamp"]))
+            .length === 0
+            ? ""
+            : JSON.stringify(
+                _.omit(info, ["level", "message", "stack", "timestamp"]),
+              )
+        } ${info.stack || ""}`,
+    ),
   ),
 };
 

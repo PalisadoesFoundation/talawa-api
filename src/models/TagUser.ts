@@ -2,6 +2,7 @@ import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganizationTagUser } from "./OrganizationTagUser";
 import type { InterfaceUser } from "./User";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 export interface InterfaceTagUser {
   _id: Types.ObjectId;
@@ -24,6 +25,8 @@ const tagUserSchema = new Schema({
 });
 
 tagUserSchema.index({ userId: 1, tagId: 1 }, { unique: true });
+
+createLoggingMiddleware(tagUserSchema, "TagUser");
 
 const tagUserModel = (): Model<InterfaceTagUser> =>
   model<InterfaceTagUser>("TagUser", tagUserSchema);

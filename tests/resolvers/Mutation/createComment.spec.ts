@@ -23,7 +23,7 @@ beforeAll(async () => {
   testPost = resultsArray[2];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -66,13 +66,13 @@ describe("resolvers -> Mutation -> createComment", () => {
     const createCommentPayload = await createCommentResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createCommentPayload).toEqual(
       expect.objectContaining({
         text: "text",
-      })
+      }),
     );
 
     const testUpdatedPost = await Post.findOne({
@@ -83,7 +83,7 @@ describe("resolvers -> Mutation -> createComment", () => {
 
     expect(testUpdatedPost?.commentCount).toEqual(1);
     expect(createCommentPayload?.postId.toString()).toEqual(
-      testPost?._id.toString()
+      testPost?._id.toString(),
     );
   });
 });

@@ -100,7 +100,7 @@ async function setNodeEnvironment(): Promise<void> {
  */
 async function accessAndRefreshTokens(
   accessTokenSecret: string | null,
-  refreshTokenSecret: string | null
+  refreshTokenSecret: string | null,
 ): Promise<void> {
   const config = dotenv.parse(fs.readFileSync(".env"));
 
@@ -183,12 +183,12 @@ async function askForTransactionLogPath(): Promise<string> {
         break;
       } catch {
         console.error(
-          "The file is not readable/writable. Please enter a valid file path."
+          "The file is not readable/writable. Please enter a valid file path.",
         );
       }
     } else {
       console.error(
-        "Invalid path or file does not exist. Please enter a valid file path."
+        "Invalid path or file does not exist. Please enter a valid file path.",
       );
     }
   }
@@ -350,7 +350,7 @@ async function redisConfiguration(): Promise<void> {
  */
 async function askForSuperAdminEmail(): Promise<string> {
   console.log(
-    "\nPlease make sure to register with this email before logging in.\n"
+    "\nPlease make sure to register with this email before logging in.\n",
   );
   const { email } = await inquirer.prompt([
     {
@@ -558,7 +558,7 @@ async function recaptcha(): Promise<void> {
 async function recaptchaSiteKey(): Promise<void> {
   if (process.env.RECAPTCHA_SITE_KEY) {
     console.log(
-      `\nreCAPTCHA site key already exists with the value ${process.env.RECAPTCHA_SITE_KEY}`
+      `\nreCAPTCHA site key already exists with the value ${process.env.RECAPTCHA_SITE_KEY}`,
     );
   }
 
@@ -636,14 +636,14 @@ function abort(): void {
 async function twoFactorAuth(): Promise<void> {
   console.log("\nIMPORTANT");
   console.log(
-    "\nEnsure that you have Two-Factor Authentication set up on your Google Account."
+    "\nEnsure that you have Two-Factor Authentication set up on your Google Account.",
   );
   console.log("\nVisit Url: https://myaccount.google.com");
   console.log(
-    "\nSelect Security and under Signing in to Google section select App Passwords."
+    "\nSelect Security and under Signing in to Google section select App Passwords.",
   );
   console.log(
-    "\nClick on Select app section and choose Other(Custom name), enter talawa as the custom name and press Generate button."
+    "\nClick on Select app section and choose Other(Custom name), enter talawa as the custom name and press Generate button.",
   );
 
   const { email, password } = await inquirer.prompt([
@@ -741,57 +741,9 @@ async function importData(): Promise<void> {
           abort();
         }
         console.log(`Output: ${stdout}`);
-      }
+      },
     );
   }
-}
-
-//Import sample data
-/**
- * The function `importDefaultOrganization` will import the default organization
- * with wiping of existing data.
- * @returns The function returns a Promise that resolves to `void`.
- */
-
-async function importDefaultOrganization(): Promise<void> {
-  return new Promise<void>(async (resolve, reject) => {
-    if (!process.env.MONGO_DB_URL) {
-      console.log("Couldn't find mongodb url");
-      return;
-    }
-    const client = new mongodb.MongoClient(process.env.MONGO_DB_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    try {
-      await client.connect();
-      const db = client.db();
-      const collections = await db.listCollections().toArray();
-      if (collections.length > 0) {
-        resolve;
-      } else {
-        await exec(
-          "npm run import:sample-data-defaultOrg",
-          (error: ExecException | null, stdout: string, stderr: string) => {
-            if (error) {
-              console.error(`Error: ${error.message}`);
-              abort();
-            }
-            if (stderr) {
-              console.error(`Error: ${stderr}`);
-              abort();
-            }
-            console.log(`Output: ${stdout}`);
-            resolve;
-          }
-        );
-      }
-      client.close();
-    } catch (e: any) {
-      console.log(`Couldn't import the default Organization`);
-      reject;
-    }
-  });
 }
 
 type VerifySmtpConnectionReturnType = {
@@ -810,7 +762,7 @@ type VerifySmtpConnectionReturnType = {
  * be `true` and the `error` property will be `null`. If the SMTP connection verification fails
  */
 async function verifySmtpConnection(
-  config: Record<string, string>
+  config: Record<string, string>,
 ): Promise<VerifySmtpConnectionReturnType> {
   const transporter = nodemailer.createTransport({
     host: config.SMTP_HOST,
@@ -877,7 +829,7 @@ async function configureSmtp(): Promise<void> {
 
   if (!isValidSmtpConfig) {
     console.error(
-      "Invalid SMTP configuration. Please provide all required parameters."
+      "Invalid SMTP configuration. Please provide all required parameters.",
     );
     return;
   }
@@ -886,7 +838,7 @@ async function configureSmtp(): Promise<void> {
 
   if (!success) {
     console.error(
-      "SMTP configuration verification failed. Please check your SMTP settings."
+      "SMTP configuration verification failed. Please check your SMTP settings.",
     );
     if (error instanceof Error) {
       console.log(error.message);
@@ -924,7 +876,7 @@ async function main(): Promise<void> {
     refreshToken: string | null = "";
   if (process.env.ACCESS_TOKEN_SECRET) {
     console.log(
-      `\nAccess token secret already exists with the value:\n${process.env.ACCESS_TOKEN_SECRET}`
+      `\nAccess token secret already exists with the value:\n${process.env.ACCESS_TOKEN_SECRET}`,
     );
   }
   const { shouldGenerateAccessToken } = await inquirer.prompt({
@@ -940,7 +892,7 @@ async function main(): Promise<void> {
 
   if (process.env.REFRESH_TOKEN_SECRET) {
     console.log(
-      `\nRefresh token secret already exists with the value:\n${process.env.REFRESH_TOKEN_SECRET}`
+      `\nRefresh token secret already exists with the value:\n${process.env.REFRESH_TOKEN_SECRET}`,
     );
   }
   const { shouldGenerateRefreshToken } = await inquirer.prompt({
@@ -966,7 +918,7 @@ async function main(): Promise<void> {
   if (shouldLog) {
     if (process.env.LOG_PATH) {
       console.log(
-        `\n Log path already exists with the value:\n${process.env.LOG_PATH}`
+        `\n Log path already exists with the value:\n${process.env.LOG_PATH}`,
       );
     }
     let logPath: string | null = null;
@@ -1045,7 +997,7 @@ async function main(): Promise<void> {
     // MongoDB configuration
     if (process.env.MONGO_DB_URL) {
       console.log(
-        `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
+        `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`,
       );
 
       const { shouldSetupMongo } = await inquirer.prompt({
@@ -1064,7 +1016,7 @@ async function main(): Promise<void> {
   }
   if (process.env.RECAPTCHA_SECRET_KEY) {
     console.log(
-      `\nreCAPTCHA secret key already exists with the value ${process.env.RECAPTCHA_SECRET_KEY}`
+      `\nreCAPTCHA secret key already exists with the value ${process.env.RECAPTCHA_SECRET_KEY}`,
     );
   }
   const { shouldSetRecaptcha } = await inquirer.prompt({
@@ -1080,12 +1032,12 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    "\n You can configure either SMTP or Mail for sending emails through Talawa.\n"
+    "\n You can configure either SMTP or Mail for sending emails through Talawa.\n",
   );
 
   if (process.env.MAIL_USERNAME) {
     console.log(
-      `Mail username already exists with the value ${process.env.MAIL_USERNAME}`
+      `Mail username already exists with the value ${process.env.MAIL_USERNAME}`,
     );
   }
 
@@ -1118,7 +1070,7 @@ async function main(): Promise<void> {
 
   if (process.env.LAST_RESORT_SUPERADMIN_EMAIL) {
     console.log(
-      `\nSuper Admin of last resort already exists with the value ${process.env.LAST_RESORT_SUPERADMIN_EMAIL}`
+      `\nSuper Admin of last resort already exists with the value ${process.env.LAST_RESORT_SUPERADMIN_EMAIL}`,
     );
   }
 
@@ -1141,7 +1093,7 @@ async function main(): Promise<void> {
   ) {
     if (process.env.MAIL_USERNAME) {
       console.log(
-        "No super admin email configured, setting it to mail username's value."
+        "No super admin email configured, setting it to mail username's value.",
       );
     }
     const config = dotenv.parse(fs.readFileSync(".env"));
@@ -1158,10 +1110,9 @@ async function main(): Promise<void> {
         default: false,
       },
     ]);
+
     if (shouldRunDataImport) {
       await importData();
-    } else {
-      await importDefaultOrganization();
     }
   }
 
@@ -1184,7 +1135,7 @@ async function main(): Promise<void> {
   await setImageUploadSize(imageSizeLimit * 1000);
 
   console.log(
-    "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
+    "\nCongratulations! Talawa API has been successfully setup! 🥂🎉",
   );
 }
 

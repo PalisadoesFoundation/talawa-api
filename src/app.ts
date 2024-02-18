@@ -11,7 +11,6 @@ import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
 //@ts-ignore
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
-
 const app = express();
 
 app.use(requestTracing.middleware());
@@ -62,7 +61,7 @@ app.use(
   helmet({
     contentSecurityPolicy:
       process.env.NODE_ENV === "production" ? undefined : false,
-  })
+  }),
 );
 app.use(mongoSanitize());
 app.use(cors());
@@ -82,8 +81,8 @@ app.use(
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
     {
       stream: stream,
-    }
-  )
+    },
+  ),
 );
 
 app.use("/images", express.static(path.join(__dirname, "./../images")));
@@ -98,7 +97,7 @@ app.get("/", (req, res) =>
   res.json({
     "talawa-version": "v1",
     status: "healthy",
-  })
+  }),
 );
 
 export default app;
