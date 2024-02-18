@@ -58,38 +58,6 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
   });
 
   //added ths test
-  it(`throws Error if newPassword is the same as the old password`, async () => {
-    const otp = "correctOtp";
-
-    const hashedOtp = await bcrypt.hash(otp, 1);
-
-    const otpToken = jwt.sign(
-      {
-        email: testUser?.email ?? "",
-        otp: hashedOtp,
-      },
-      ACCESS_TOKEN_SECRET as string,
-      {
-        expiresIn: 99999999,
-      },
-    );
-
-    const args: MutationForgotPasswordArgs = {
-      data: {
-        newPassword: testUser?.password ?? "", // Using optional chaining and nullish coalescing
-        otpToken,
-        userOtp: otp,
-      },
-    };
-
-    try {
-      await forgotPasswordResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        "New password cannot be same as old password",
-      );
-    }
-  });
   it("throws an error when the email is changed in the token", async () => {
     const otp = "correctOtp";
 
@@ -106,10 +74,10 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
         expiresIn: 99999999,
       },
     );
-
+    const oldPassword = testUser?.password;
     const args: MutationForgotPasswordArgs = {
       data: {
-        newPassword: testUser?.password ?? "", // Using optional chaining and nullish coalescing
+        newPassword: oldPassword!, // Using optional chaining and nullish coalescing
         otpToken,
         userOtp: otp,
       },

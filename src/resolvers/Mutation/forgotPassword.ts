@@ -52,18 +52,6 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
   if (!user) {
     throw new Error(USER_NOT_FOUND_ERROR.MESSAGE);
   }
-  const oldHashedPassword: string = user.password;
-
-  //Checks whether the old password is same as the new one
-  const isSameAsOldPassword = await bcrypt.compare(
-    newPassword,
-    oldHashedPassword,
-  );
-
-  if (isSameAsOldPassword == true) {
-    throw new Error("New password cannot be same as old password");
-  }
-
   const hashedPassword = await bcrypt.hash(newPassword, 12);
 
   // Updates password field for user's document with email === email.
