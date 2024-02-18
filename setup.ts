@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -17,7 +18,7 @@ dotenv.config();
  * The function `checkEnvFile` checks if any fields are missing in the .env file compared to the .env.sample file, and
  * if so, it copies the missing fields from .env.sampale to .env.
  */
-function checkEnvFile(): void {
+export function checkEnvFile(): void {
   const env = dotenv.parse(fs.readFileSync(".env"));
   const envSample = dotenv.parse(fs.readFileSync(".env.sample"));
   const misplaced = Object.keys(envSample).filter((key) => !(key in env));
