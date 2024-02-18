@@ -15,7 +15,7 @@ export interface InterfaceAgendaCategory {
 }
 
 /**
- * This is the Mongoose schema for an agenda category (test-change).
+ * This is the Mongoose schema for an agenda category.
  * @param name - Name of the agenda category.
  * @param description - Optional description of the agenda category.
  * @param organization - Reference to the organization associated with the agenda category.

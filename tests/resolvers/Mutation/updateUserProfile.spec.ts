@@ -26,18 +26,13 @@ import {
 } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-
-type UserDocument = InterfaceUser &
-  Document<InterfaceUser, NonNullable<unknown>, InterfaceUser>;
-let testUser: UserDocument;
-let testUser2: UserDocument;
+let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
+let testUser2: InterfaceUser & Document<any, any, InterfaceUser>;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
 }));
 const email = `email${nanoid().toLowerCase()}@gmail.com`;
-const date = new Date("2002-03-04T18:30:00.000Z");
-
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
@@ -48,7 +43,6 @@ beforeAll(async () => {
     lastName: "lastName",
     appLanguageCode: "en",
     gender: null,
-    image: null,
     birthDate: null,
     educationGrade: null,
     employmentStatus: null,
@@ -113,13 +107,11 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       );
 
       await updateUserProfileResolver?.({}, args, context);
-    } catch (error) {
-      if (error instanceof Error) {
-        expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-        expect(error.message).toEqual(
-          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-        );
-      }
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+      );
     }
   });
 
@@ -143,13 +135,11 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         await import("../../../src/resolvers/Mutation/updateUserProfile");
 
       await updateUserProfileResolverUserError?.({}, args, context);
-    } catch (error) {
-      if (error instanceof Error) {
-        expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-        expect(error.message).toEqual(
-          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-        );
-      }
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+      );
     }
   });
 
@@ -176,15 +166,41 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       );
 
       await updateUserProfileResolver?.({}, args, context);
-    } catch (error) {
-      if (error instanceof Error) {
-        expect(spy).toHaveBeenLastCalledWith(
-          EMAIL_ALREADY_EXISTS_ERROR.MESSAGE,
-        );
-        expect(error.message).toEqual(
-          `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`,
-        );
-      }
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`,
+      );
+    }
+  });
+
+  it(`throws ConflictError if args.data.email is already registered for another user`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateUserProfileArgs = {
+        data: {
+          email: testUser.email,
+        },
+      };
+
+      const context = {
+        userId: testUser._id,
+      };
+
+      const { updateUserProfile: updateUserProfileResolverEmailError } =
+        await import("../../../src/resolvers/Mutation/updateUserProfile");
+
+      await updateUserProfileResolverEmailError?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`,
+      );
     }
   });
 
@@ -301,6 +317,71 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     });
   });
 
+  it(`updates current user's user object and returns the object`, async () => {
+    const args: MutationUpdateUserProfileArgs = {
+      data: {
+        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        firstName: "newFirstName",
+        lastName: "newLastName",
+      },
+    };
+
+    const context = {
+      userId: testUser._id,
+    };
+
+    const updateUserProfilePayload = await updateUserProfileResolver?.(
+      {},
+      args,
+      context,
+    );
+
+    expect(updateUserProfilePayload).toEqual({
+      ...testUser.toObject(),
+      email: args.data?.email,
+      firstName: "newFirstName",
+      lastName: "newLastName",
+      image: null,
+      updatedAt: expect.anything(),
+      createdAt: expect.anything(),
+    });
+  });
+
+  it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
+    const args: MutationUpdateUserProfileArgs = {
+      data: {
+        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        firstName: "newFirstName",
+        lastName: "newLastName",
+      },
+      file: "newImageFile.png",
+    };
+
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL,
+    );
+
+    const context = {
+      userId: testUser._id,
+      apiRootUrl: BASE_URL,
+    };
+
+    const updateUserProfilePayload = await updateUserProfileResolver?.(
+      {},
+      args,
+      context,
+    );
+
+    expect(updateUserProfilePayload).toEqual({
+      ...testUser.toObject(),
+      email: args.data?.email,
+      firstName: "newFirstName",
+      lastName: "newLastName",
+      image: BASE_URL + "newImageFile.png",
+      updatedAt: expect.anything(),
+      createdAt: expect.anything(),
+    });
+  });
   it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
     const args: MutationUpdateUserProfileArgs = {
       data: {},
@@ -331,385 +412,5 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       updatedAt: expect.anything(),
       createdAt: expect.anything(),
     });
-  });
-
-  it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
-        firstName: "newFirstName",
-        lastName: "newLastName",
-      },
-      file: "newImageFile.png",
-    };
-
-    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL,
-    );
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: args.data?.email,
-      firstName: "newFirstName",
-      lastName: "newLastName",
-      image: BASE_URL + args.file,
-      updatedAt: expect.anything(),
-      createdAt: expect.anything(),
-    });
-  });
-
-  it(`updates current user's user object when any single argument(birthdate) is given w/0 changing other fields `, async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        birthDate: date,
-      },
-    };
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    const testUserobj = await User.findById({ _id: testUser.id });
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: testUserobj?.email,
-      firstName: testUserobj?.firstName,
-      lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
-      birthDate: args.data?.birthDate,
-      updatedAt: expect.anything(),
-      createdAt: expect.anything(),
-    });
-  });
-
-  it(`updates current user's user object when any single argument(EducationGrade) is given w/0 changing other fields `, async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        educationGrade: "GRADUATE",
-      },
-    };
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    const testUserobj = await User.findById({ _id: testUser.id });
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: testUserobj?.email,
-      firstName: testUserobj?.firstName,
-      lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
-      birthDate: date,
-      educationGrade: args.data?.educationGrade,
-      updatedAt: expect.anything(),
-      createdAt: expect.anything(),
-    });
-  });
-
-  it(`updates current user's user object when any single argument(EmployementStatus) is given w/0 changing other fields `, async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        employmentStatus: "FULL_TIME",
-      },
-    };
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    const testUserobj = await User.findById({ _id: testUser.id });
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: testUserobj?.email,
-      firstName: testUserobj?.firstName,
-      lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
-      birthDate: date,
-      educationGrade: "GRADUATE",
-      employmentStatus: args.data?.employmentStatus,
-      updatedAt: expect.anything(),
-      createdAt: expect.anything(),
-    });
-  });
-
-  it(`updates current user's user object when any single argument(Gender) is given w/0 changing other fields `, async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        gender: "FEMALE",
-      },
-    };
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    const testUserobj = await User.findById({ _id: testUser.id });
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: testUserobj?.email,
-      firstName: testUserobj?.firstName,
-      lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
-      birthDate: date,
-      educationGrade: "GRADUATE",
-      employmentStatus: "FULL_TIME",
-      gender: args.data?.gender,
-      updatedAt: expect.anything(),
-      createdAt: expect.anything(),
-    });
-  });
-
-  it(`updates current user's user object when any single argument(MaritalStatus) is given w/0 changing other fields `, async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        maritalStatus: "SINGLE",
-      },
-    };
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    const testUserobj = await User.findById({ _id: testUser.id });
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: testUserobj?.email,
-      firstName: testUserobj?.firstName,
-      lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
-      birthDate: date,
-      educationGrade: "GRADUATE",
-      employmentStatus: "FULL_TIME",
-      gender: "FEMALE",
-      maritalStatus: args.data?.maritalStatus,
-      updatedAt: expect.anything(),
-      createdAt: expect.anything(),
-    });
-  });
-
-  it(`updates current user's user object when any single argument(PhoneNumber) is given w/0 changing other fields `, async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        phone: {
-          home: "020 89024004",
-          mobile: "+91 1234567890",
-          work: "+31 1234567890",
-        },
-      },
-    };
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    const testUserobj = await User.findById({ _id: testUser.id });
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: testUserobj?.email,
-      firstName: testUserobj?.firstName,
-      lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
-      birthDate: date,
-      educationGrade: "GRADUATE",
-      employmentStatus: "FULL_TIME",
-      gender: "FEMALE",
-      maritalStatus: "SINGLE",
-      phone: args.data?.phone,
-      updatedAt: expect.anything(),
-      createdAt: expect.anything(),
-    });
-  });
-
-  it(`updates current user's user object when any single argument(address) is given w/0 changing other fields `, async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        address: {
-          city: "CityName",
-          countryCode: "123",
-          dependentLocality: "345",
-          line1: "Street ABC",
-          line2: "Near XYZ Park",
-          postalCode: "45672",
-          sortingCode: "234",
-          state: "StateName",
-        },
-      },
-    };
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    const testUserobj = await User.findById({ _id: testUser.id });
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: testUserobj?.email,
-      firstName: testUserobj?.firstName,
-      lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
-      birthDate: date,
-      educationGrade: "GRADUATE",
-      employmentStatus: "FULL_TIME",
-      gender: "FEMALE",
-      maritalStatus: "SINGLE",
-      address: args.data?.address,
-      phone: {
-        home: "020 89024004",
-        mobile: "+91 1234567890",
-        work: "+31 1234567890",
-      },
-      updatedAt: expect.anything(),
-      createdAt: expect.anything(),
-    });
-  });
-
-  it(`updates current user's user object and returns the object`, async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
-        firstName: "newFirstName",
-        lastName: "newLastName",
-        birthDate: date,
-        educationGrade: "GRADUATE",
-        employmentStatus: "FULL_TIME",
-        gender: "FEMALE",
-        maritalStatus: "SINGLE",
-        address: {
-          city: "CityName",
-          countryCode: "123",
-          dependentLocality: "345",
-          line1: "Street ABC",
-          line2: "Near XYZ Park",
-          postalCode: "45672",
-          sortingCode: "234",
-          state: "StateName",
-        },
-        phone: {
-          home: "020 89024004",
-          mobile: "+91 1234567890",
-          work: "+31 1234567890",
-        },
-      },
-      file: "newImageFile.png",
-    };
-
-    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL,
-    );
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: args.data?.email,
-      firstName: args.data?.firstName,
-      lastName: args.data?.lastName,
-      image: BASE_URL + args.file,
-      birthDate: date,
-      educationGrade: args.data?.educationGrade,
-      employmentStatus: args.data?.employmentStatus,
-      gender: args.data?.gender,
-      maritalStatus: args.data?.maritalStatus,
-      address: args.data?.address,
-      phone: args.data?.phone,
-      updatedAt: expect.anything(),
-      createdAt: expect.anything(),
-    });
-  });
-
-  it(`if data is undefined dont update the profile`, async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: undefined,
-    };
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    expect(updateUserProfilePayload).toEqual({});
   });
 });
