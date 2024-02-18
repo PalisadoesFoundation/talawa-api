@@ -175,8 +175,8 @@ jobs:
     if: github.ref == 'refs/heads/automated-docs' && contains(github.event.head_commit.message, 'Empty commit')
     needs : Generate-Documentation
     steps:
-    - uses: actions/checkout@v3
-    - uses: dmnemec/copy_file_to_another_repo_action@v1.1.1
+    - uses: actions/checkout@v2
+    - uses: dmnemec/copy_file_to_another_repo_action@main
       env:
         API_TOKEN_GITHUB: ${{secrets.TALAWA_DOCS_SYNC}}
       with:
