@@ -1,14 +1,8 @@
 import bcrypt from "bcryptjs";
 import { jwtDecode } from "jwt-decode";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { INVALID_OTP } from "../../constants";
 import { User } from "../../models";
-import {
-  ACCESS_TOKEN_SECRET,
-  INVALID_OTP,
-  USER_NOT_FOUND_ERROR,
-} from "../../constants";
-import jwt from "jsonwebtoken";
-
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables a user to restore password.
  * @param _parent - parent of current request
@@ -26,14 +20,7 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
 ) => {
   const { userOtp, newPassword, otpToken } = args.data;
 
-  try {
-    await jwt.verify(otpToken, ACCESS_TOKEN_SECRET as string);
-  } catch (error) {
-    throw new Error(INVALID_OTP);
-  }
-
   // Extracts email and otp out of otpToken.
-
   const { email, otp } = jwtDecode<{
     email: string;
     otp: string;

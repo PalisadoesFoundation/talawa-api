@@ -1,15 +1,9 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import "dotenv/config";
 import type { MutationForgotPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { forgotPassword as forgotPasswordResolver } from "../../../src/resolvers/Mutation/forgotPassword";
-import {
-  INVALID_OTP,
-  ACCESS_TOKEN_SECRET,
-  USER_NOT_FOUND_ERROR,
-} from "../../../src/constants";
+import { INVALID_OTP } from "../../../src/constants";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -37,7 +31,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
           email: testUser?.email ?? "",
           otp: "otp",
         },
-        ACCESS_TOKEN_SECRET as string,
+        process.env.NODE_ENV!,
         {
           expiresIn: 99999999,
         },
@@ -162,7 +156,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
         email: testUser?.email ?? "",
         otp: hashedOtp,
       },
-      ACCESS_TOKEN_SECRET as string,
+      process.env.NODE_ENV ?? "",
       {
         expiresIn: 99999999,
       },
@@ -180,7 +174,6 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     expect(forgotPasswordPayload).toEqual(true);
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const updatedTestUser = await User!
       .findOne({
         _id: testUser?._id ?? "",
@@ -188,6 +181,6 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       .select(["password"])
       .lean();
 
-    expect(updatedTestUser?.password).not.toEqual(testUser?.password);
+    expect(updatedTestUser?.password).not.toEqual(testUser!.password);
   });
 });
