@@ -164,7 +164,7 @@ export const types = gql`
     title: String!
     description: String!
     startDate: Date!
-    endDate: Date!
+    endDate: Date
     images: [String]
     startTime: Time
     endTime: Time
