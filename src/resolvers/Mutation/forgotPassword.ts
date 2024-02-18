@@ -57,7 +57,7 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
   //Checks whether the old password is same as the new one
   const isSameAsOldPassword = await bcrypt.compare(
     newPassword,
-    oldHashedPassword
+    oldHashedPassword,
   );
 
   if (isSameAsOldPassword == true) {

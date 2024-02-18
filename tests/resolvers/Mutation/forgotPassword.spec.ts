@@ -71,7 +71,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       ACCESS_TOKEN_SECRET as string,
       {
         expiresIn: 99999999,
-      }
+      },
     );
 
     const args: MutationForgotPasswordArgs = {
@@ -86,7 +86,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       await forgotPasswordResolver?.({}, args, {});
     } catch (error: any) {
       expect(error.message).toEqual(
-        "New password cannot be same as old password"
+        "New password cannot be same as old password",
       );
     }
   });
@@ -104,7 +104,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       process.env.NODE_ENV ?? "",
       {
         expiresIn: 99999999,
-      }
+      },
     );
 
     const args: MutationForgotPasswordArgs = {
@@ -135,7 +135,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       ACCESS_TOKEN_SECRET as string,
       {
         expiresIn: 99999999,
-      }
+      },
     );
 
     const args: MutationForgotPasswordArgs = {
