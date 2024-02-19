@@ -99,8 +99,6 @@ type AuthData {
 
 type CheckIn {
   _id: ID!
-  allotedRoom: String
-  allotedSeat: String
   createdAt: DateTime!
   event: Event!
   feedbackSubmitted: Boolean!
@@ -110,8 +108,6 @@ type CheckIn {
 }
 
 input CheckInInput {
-  allotedRoom: String
-  allotedSeat: String
   eventId: ID!
   userId: ID!
 }
@@ -286,6 +282,19 @@ type Event {
   status: Status!
   title: String!
   updatedAt: DateTime!
+}
+
+type EventAttendee {
+  _id: ID!
+  checkInId: ID
+  createdAt: DateTime!
+  eventId: ID!
+  isCheckedIn: Boolean!
+  isCheckedOut: Boolean!
+  isInvited: Boolean!
+  isRegistered: Boolean!
+  updatedAt: DateTime!
+  userId: ID!
 }
 
 input EventAttendeeInput {
@@ -575,6 +584,8 @@ type Mutation {
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
+  checkInEventAttendee(data: EventAttendeeInput!): EventAttendee!
+  checkOutEventAttendee(data: EventAttendeeInput!): EventAttendee!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): User!
@@ -598,6 +609,7 @@ type Mutation {
   deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
+  inviteEventAttendee(data: EventAttendeeInput!): EventAttendee!
   joinPublicOrganization(organizationId: ID!): User!
   leaveOrganization(organizationId: ID!): User!
   likeComment(id: ID!): Comment
@@ -607,7 +619,8 @@ type Mutation {
   otp(data: OTPInput!): OtpData!
   recaptcha(data: RecaptchaVerification!): Boolean!
   refreshToken(refreshToken: String!): ExtendSession!
-  registerForEvent(id: ID!): Event!
+  registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
+  registerForEvent(id: ID!): EventAttendee!
   rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeActionItem(id: ID!): ActionItem!
@@ -919,6 +932,8 @@ type Query {
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
+  getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
+  getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean

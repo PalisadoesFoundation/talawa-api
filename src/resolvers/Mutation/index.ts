@@ -36,6 +36,7 @@ import { createActionItemCategory } from "./createActionItemCategory";
 import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
 import { deleteAgendaCategory } from "./deleteAgendaCategory";
+import { inviteEventAttendee } from "./inviteEventAttendee";
 import { forgotPassword } from "./forgotPassword";
 import { joinPublicOrganization } from "./joinPublicOrganization";
 import { createEventVolunteer } from "./createEventVolunteer";
@@ -48,6 +49,7 @@ import { otp } from "./otp";
 import { recaptcha } from "./recaptcha";
 import { refreshToken } from "./refreshToken";
 import { registerForEvent } from "./registerForEvent";
+import { registerEventAttendee } from "./registerEventAttendee";
 import { rejectAdmin } from "./rejectAdmin";
 import { rejectMembershipRequest } from "./rejectMembershipRequest";
 import { removeAdmin } from "./removeAdmin";
@@ -145,6 +147,7 @@ export const Mutation: MutationResolvers = {
   deleteAdvertisementById,
   deleteAgendaCategory,
   forgotPassword,
+  inviteEventAttendee,
   joinPublicOrganization,
   createEventVolunteer,
   leaveOrganization,
@@ -156,6 +159,7 @@ export const Mutation: MutationResolvers = {
   recaptcha,
   refreshToken,
   registerForEvent,
+  registerEventAttendee,
   rejectAdmin,
   rejectMembershipRequest,
   removeAdmin,
