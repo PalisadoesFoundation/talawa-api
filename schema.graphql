@@ -830,9 +830,21 @@ type Post {
   videoUrl: URL
 }
 
+
 type PostEdge {
   cursor: String!
   node: Post!
+
+"""A connection to a list of items."""
+type PostConnection {
+  aggregate: AggregatePost!
+
+  """A list of edges."""
+  edges: [Post]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
 }
 
 input PostInput {
@@ -932,7 +944,7 @@ type Query {
   plugin(orgId: ID!): [Plugin]
   post(id: ID!): Post
   postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
-  postsByOrganizationConnection(first: Int, id: ID!, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): PostsConnection
+  postsByOrganizationConnection(first: Int, id: ID!, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): PostConnection
   registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
   registrantsByEvent(id: ID!): [User]
   user(id: ID!): User!
