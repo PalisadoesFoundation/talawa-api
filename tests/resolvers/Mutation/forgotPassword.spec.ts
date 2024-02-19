@@ -3,7 +3,11 @@ import type { MutationForgotPasswordArgs } from "../../../src/types/generatedGra
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { forgotPassword as forgotPasswordResolver } from "../../../src/resolvers/Mutation/forgotPassword";
-import { INVALID_OTP } from "../../../src/constants";
+import {
+  ACCESS_TOKEN_SECRET,
+  INVALID_OTP,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -22,7 +26,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
-
+/* eslint-disable */
 describe("resolvers -> Mutation -> forgotPassword", () => {
   it(`throws Error if args.otp is incorrect`, async () => {
     try {
