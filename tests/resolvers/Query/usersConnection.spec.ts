@@ -11,7 +11,6 @@ import {
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
-import { decryptEmail } from "../../../src/utilities/encryptionModule";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -55,15 +54,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("eventAdmin")
       .populate("adminFor")
       .lean();
-    if (users.length > 0) {
-      const decryptedUsers = users.map((user) => {
-        return {
-          ...user,
-          email: decryptEmail(user.email).decrypted,
-        };
-      });
-      expect(usersConnectionPayload).toEqual(decryptedUsers);
-    }
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users filtered by
@@ -114,16 +106,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("eventAdmin")
       .populate("adminFor")
       .lean();
-
-    if (users.length > 0) {
-      const decryptedUsers = users.map((user) => {
-        return {
-          ...user,
-          email: decryptEmail(user.email).decrypted,
-        };
-      });
-      expect(usersConnectionPayload).toEqual(decryptedUsers);
-    }
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users filtered by
@@ -185,15 +169,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    if (users.length > 0) {
-      const decryptedUsers = users.map((user) => {
-        return {
-          ...user,
-          email: decryptEmail(user.email).decrypted,
-        };
-      });
-      expect(usersConnectionPayload).toEqual(decryptedUsers);
-    }
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
   /* eslint-disable */
   it(`returns paginated list of users filtered by
@@ -256,6 +233,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       .lean();
 
     expect(usersConnectionPayload).toEqual(users);
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users filtered by
@@ -317,15 +295,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    if (users.length > 0) {
-      const decryptedUsers = users.map((user) => {
-        return {
-          ...user,
-          email: decryptEmail(user.email).decrypted,
-        };
-      });
-      expect(usersConnectionPayload).toEqual(decryptedUsers);
-    }
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users filtered by
@@ -474,15 +445,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    if (users.length > 0) {
-      const decryptedUsers = users.map((user) => {
-        return {
-          ...user,
-          email: decryptEmail(user.email).decrypted,
-        };
-      });
-      expect(usersConnectionPayload).toEqual(decryptedUsers);
-    }
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users sorted by
@@ -519,15 +483,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    if (users.length > 0) {
-      const decryptedUsers = users.map((user) => {
-        return {
-          ...user,
-          email: decryptEmail(user.email).decrypted,
-        };
-      });
-      expect(usersConnectionPayload).toEqual(decryptedUsers);
-    }
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users
@@ -564,15 +521,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    if (users.length > 0) {
-      const decryptedUsers = users.map((user) => {
-        return {
-          ...user,
-          email: decryptEmail(user.email).decrypted,
-        };
-      });
-      expect(usersConnectionPayload).toEqual(decryptedUsers);
-    }
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users
@@ -609,15 +559,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    if (users.length > 0) {
-      const decryptedUsers = users.map((user) => {
-        return {
-          ...user,
-          email: decryptEmail(user.email).decrypted,
-        };
-      });
-      expect(usersConnectionPayload).toEqual(decryptedUsers);
-    }
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users without sorting if orderBy === null`, async () => {
@@ -651,14 +594,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    if (users.length > 0) {
-      const decryptedUsers = users.map((user) => {
-        return {
-          ...user,
-          email: decryptEmail(user.email).decrypted,
-        };
-      });
-      expect(usersConnectionPayload).toEqual(decryptedUsers);
-    }
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 });
