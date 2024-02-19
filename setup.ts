@@ -1102,21 +1102,6 @@ async function main(): Promise<void> {
     updateEnvVariable(config);
   }
 
-  if (!isDockerInstallation) {
-    const { shouldRunDataImport } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "shouldRunDataImport",
-        message: "Do you want to import sample data?",
-        default: false,
-      },
-    ]);
-
-    if (shouldRunDataImport) {
-      await importData();
-    }
-  }
-
   const { imageSizeLimit } = await inquirer.prompt([
     {
       type: "input",
@@ -1134,6 +1119,20 @@ async function main(): Promise<void> {
   ]);
 
   await setImageUploadSize(imageSizeLimit * 1000);
+  if (!isDockerInstallation) {
+    const { shouldRunDataImport } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "shouldRunDataImport",
+        message: "Do you want to import sample data?",
+        default: false,
+      },
+    ]);
+
+    if (shouldRunDataImport) {
+      await importData();
+    }
+  }
 
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉",
