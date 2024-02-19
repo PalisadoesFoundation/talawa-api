@@ -18,7 +18,7 @@ import { cacheComments } from "../../services/CommentCache/cacheComments";
 export const likeComment: MutationResolvers["likeComment"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let comment;
 
@@ -41,12 +41,12 @@ export const likeComment: MutationResolvers["likeComment"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(COMMENT_NOT_FOUND_ERROR.MESSAGE),
       COMMENT_NOT_FOUND_ERROR.CODE,
-      COMMENT_NOT_FOUND_ERROR.PARAM
+      COMMENT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const currentUserHasLikedComment = comment.likedBy.some((likedByUser) =>
-    likedByUser.equals(context.userId)
+    likedByUser.equals(context.userId),
   );
 
   // Checks whether currentUser with _id === context.userId has not already liked the comment.
@@ -69,7 +69,7 @@ export const likeComment: MutationResolvers["likeComment"] = async (
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     if (updatedComment !== null) {

@@ -6,7 +6,6 @@ import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
-import { LOG } from "../constants";
 
 import { identifier_count } from "./identifier_count";
 
@@ -293,7 +292,7 @@ const userSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 userSchema.plugin(mongoosePaginate);

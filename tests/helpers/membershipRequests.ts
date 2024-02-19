@@ -40,7 +40,7 @@ export const createTestMembershipRequest = async (): Promise<
           adminFor: testOrganization._id,
           membershipRequests: testMembershipRequest._id,
         },
-      }
+      },
     );
 
     await Organization.updateOne(
@@ -51,7 +51,7 @@ export const createTestMembershipRequest = async (): Promise<
         $push: {
           membershipRequests: testMembershipRequest._id,
         },
-      }
+      },
     );
 
     return [testUser, testOrganization, testMembershipRequest];
@@ -85,7 +85,7 @@ export const createTestMembershipRequestAsNew = async (): Promise<
       },
       {
         new: true,
-      }
+      },
     );
 
     testOrganization = await Organization.findOneAndUpdate(
@@ -99,7 +99,7 @@ export const createTestMembershipRequestAsNew = async (): Promise<
       },
       {
         new: true,
-      }
+      },
     );
     return [testUser, testOrganization, testMembershipRequest];
   } else {

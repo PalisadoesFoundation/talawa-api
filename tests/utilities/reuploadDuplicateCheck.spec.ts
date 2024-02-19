@@ -69,7 +69,7 @@ describe("utilities -> reuploadDuplicateCheck", () => {
 
     const reuploadDuplicateCheckPayload = await reuploadDuplicateCheck(
       testNewImagePathCopy,
-      testNewImagePath
+      testNewImagePath,
     );
 
     expect(reuploadDuplicateCheckPayload).toBe(true);
@@ -82,7 +82,7 @@ describe("utilities -> reuploadDuplicateCheck", () => {
 
     const reuploadDuplicateCheckPayload = await reuploadDuplicateCheck(
       null,
-      testNewImagePath
+      testNewImagePath,
     );
 
     expect(reuploadDuplicateCheckPayload).toBe(false);
