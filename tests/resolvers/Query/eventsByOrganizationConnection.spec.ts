@@ -499,12 +499,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       startDate,
     });
 
-    const newRecurrenceStartDate = addYears(
+    const queryUptoDate = addYears(
       convertToUTCDate(newMockDate),
       RECURRING_EVENT_INSTANCES_QUERY_LIMIT,
     );
     const newGenerateUptoDate = addYears(
-      newRecurrenceStartDate,
+      queryUptoDate,
       RECURRING_EVENT_INSTANCES_DAILY_LIMIT,
     );
 
@@ -619,12 +619,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       startDate,
     });
 
-    const newRecurrenceStartDate = addYears(
+    const queryUptoDate = addYears(
       convertToUTCDate(newMockDate),
       RECURRING_EVENT_INSTANCES_QUERY_LIMIT,
     );
     const newGenerateUptoDate = addYears(
-      newRecurrenceStartDate,
+      queryUptoDate,
       RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT,
     );
 
