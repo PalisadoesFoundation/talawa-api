@@ -195,6 +195,8 @@ export const mutations = gql`
 
     removeEventVolunteer(id: ID!): EventVolunteer! @auth
 
+    removeEventVolunteerGroup(id: ID!): EventVolunteerGroup! @auth
+
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
     removeMember(data: UserAndOrganizationInput!): Organization! @auth

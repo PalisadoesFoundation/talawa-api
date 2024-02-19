@@ -25,11 +25,8 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent } from "../../helpers/events";
 import type { TestEventType } from "../../helpers/events";
 import { createTestUser } from "../../helpers/user";
-import type {
-  InterfaceEventVolunteerGroup} from "../../../src/models";
-import {
-  EventVolunteerGroup
-} from "../../../src/models";
+import type { InterfaceEventVolunteerGroup } from "../../../src/models";
+import { EventVolunteerGroup } from "../../../src/models";
 
 export type TestEventVolunteerGroupType =
   | (InterfaceEventVolunteerGroup & Document)
@@ -231,6 +228,14 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
       {},
       args,
       context
+    );
+
+    const updatedGroup = await EventVolunteerGroup.findOne({
+      _id: testGroup?._id,
+    });
+
+    expect(updatedGroup?.volunteers.toString()).toEqual(
+      [createdVolunteer?._id.toString()].toString()
     );
 
     expect(createdVolunteer).toEqual(

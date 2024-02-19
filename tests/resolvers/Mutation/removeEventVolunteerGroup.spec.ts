@@ -22,7 +22,7 @@ import type {
 import {
   createTestEvent,
 } from "../../helpers/events";
-import { EventVolunteer, EventVolunteerGroup, User } from "../../../src/models";
+import { EventVolunteer, EventVolunteerGroup } from "../../../src/models";
 import { createTestUser } from "../../helpers/user";
 import type { TestEventVolunteerGroupType } from "./createEventVolunteer.spec";
 
@@ -59,7 +59,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Mutation -> removeEventVolunteer", () => {
+describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
@@ -73,15 +73,17 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
 
     try {
       const args: MutationUpdateEventVolunteerArgs = {
-        id: testEventVolunteer?._id,
+        id: testGroup?._id,
       };
 
       const context = { userId: Types.ObjectId().toString() };
 
-      const { removeEventVolunteer: removeEventVolunteerResolver } =
-        await import("../../../src/resolvers/Mutation/removeEventVolunteer");
+      const { removeEventVolunteerGroup: removeEventVolunteerGroupResolver } =
+        await import(
+          "../../../src/resolvers/Mutation/removeEventVolunteerGroup"
+        );
 
-      await removeEventVolunteerResolver?.({}, args, context);
+      await removeEventVolunteerGroupResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
@@ -90,7 +92,7 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
     }
   });
 
-  it(`throws NotFoundError if no event volunteer exists with _id === args.id`, async () => {
+  it(`throws NotFoundError if no event volunteer group exists with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -104,10 +106,12 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
 
       const context = { userId: testUser?._id };
 
-      const { removeEventVolunteer: removeEventVolunteerResolver } =
-        await import("../../../src/resolvers/Mutation/removeEventVolunteer");
+      const { removeEventVolunteerGroup: removeEventVolunteerGroupResolver } =
+        await import(
+          "../../../src/resolvers/Mutation/removeEventVolunteerGroup"
+        );
 
-      await removeEventVolunteerResolver?.({}, args, context);
+      await removeEventVolunteerGroupResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
         EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE
@@ -124,11 +128,10 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
     };
 
     const context = { userId: testUser?._id };
-    const { removeEventVolunteer: removeEventVolunteerResolver } = await import(
-      "../../../src/resolvers/Mutation/removeEventVolunteer"
-    );
+    const { removeEventVolunteerGroup: removeEventVolunteerGroupResolver } =
+      await import("../../../src/resolvers/Mutation/removeEventVolunteerGroup");
 
-    const deletedVolunteer = await removeEventVolunteerResolver?.(
+    const deletedVolunteer = await removeEventVolunteerGroupResolver?.(
       {},
       args,
       context

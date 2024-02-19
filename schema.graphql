@@ -957,6 +957,7 @@ type Mutation {
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
   removeFund(id: ID!): Fund!
+  removeEventVolunteerGroup(id: ID!): EventVolunteerGroup!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!

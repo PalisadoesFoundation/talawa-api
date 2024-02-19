@@ -77,5 +77,16 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
       isInvited: true,
       creatorId: context.userId,
     });
+
+    await EventVolunteerGroup.findOneAndUpdate(
+      {
+        _id: args.data.groupId,
+      },
+      {
+        $push: {
+          volunteers: createdVolunteer._id,
+        },
+      }
+    );
     return createdVolunteer.toObject();
   };
