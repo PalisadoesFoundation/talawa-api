@@ -29,6 +29,7 @@ import { createEvent } from "./createEvent";
 import { createEventVolunteer } from "./createEventVolunteer";
 import { createFund } from "./createFund";
 import { createFundraisingCampaign } from "./createFundraisingCampaign";
+import { createEventVolunteerGroup } from "./createEventVolunteerGroup";
 import { createGroupChat } from "./createGroupChat";
 import { createMember } from "./createMember";
 import { createMessageChat } from "./createMessageChat";
@@ -157,6 +158,7 @@ export const Mutation: MutationResolvers = {
   forgotPassword,
   joinPublicOrganization,
   createEventVolunteer,
+  createEventVolunteerGroup,
   leaveOrganization,
   likeComment,
   likePost,
