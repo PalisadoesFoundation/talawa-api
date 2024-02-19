@@ -220,6 +220,12 @@ export const USER_ALREADY_REGISTERED_FOR_EVENT = {
   PARAM: "user.alreadyRegistered",
 };
 
+export const USER_ALREADY_INVITED_FOR_EVENT = {
+  MESSAGE: "The user has already been invited for the event",
+  CODE: "user.alreadyInvited",
+  PARAM: "user.alreadyInvited",
+};
+
 export const USER_NOT_REGISTERED_FOR_EVENT = {
   MESSAGE: "The user is not registered for the event",
   CODE: "user.notRegistered",
