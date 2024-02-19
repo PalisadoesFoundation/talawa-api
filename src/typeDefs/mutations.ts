@@ -132,7 +132,7 @@ export const mutations = gql`
 
     deleteDonationById(id: ID!): DeletePayload!
 
-    deleteVenue(venueId: ID!, organizationId: ID!): Venue @auth
+    deleteVenue(id: ID!): Venue @auth
 
     editVenue(data: EditVenueInput!): Venue @auth
 

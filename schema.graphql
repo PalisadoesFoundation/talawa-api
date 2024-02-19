@@ -607,7 +607,7 @@ type Mutation {
   deleteAdvertisementById(id: ID!): DeletePayload!
   deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
-  deleteVenue(organizationId: ID!, venueId: ID!): Venue
+  deleteVenue(id: ID!): Venue
   editVenue(data: EditVenueInput!): Venue
   forgotPassword(data: ForgotPasswordData!): Boolean!
   joinPublicOrganization(organizationId: ID!): User!

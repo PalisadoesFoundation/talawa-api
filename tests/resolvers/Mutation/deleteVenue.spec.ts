@@ -46,7 +46,7 @@ beforeAll(async () => {
     name: "testVenue",
     description: "description",
     capacity: Math.floor(Math.random() * 100),
-    organization: testOrganization?.id,
+    organization: Types.ObjectId().toString(),
   });
 
   const { requestContext } = await import("../../../src/libraries");
@@ -63,8 +63,7 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationDeleteVenueArgs = {
-        venueId: testVenue?.id,
-        organizationId: testOrganization?.id,
+        id: testVenue?.id,
       };
 
       const context = {
@@ -85,12 +84,34 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
     }
   });
 
+  it(`throws NotFoundError if the provided venue doesn't exist`, async () => {
+    try {
+      const args: MutationDeleteVenueArgs = {
+        id: Types.ObjectId().toString(),
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { deleteVenue } = await import(
+        "../../../src/resolvers/Mutation/deleteVenue"
+      );
+      await deleteVenue?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(VENUE_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
+  });
+
   it(`throws NotFoundError if no organization exists with _id === args.data.or
   _id: testVenue?.id,ganizationId`, async () => {
     try {
       const args: MutationDeleteVenueArgs = {
-        venueId: testVenue?.id,
-        organizationId: Types.ObjectId().toString(),
+        id: testVenue?.id,
       };
 
       const context = {
@@ -113,9 +134,17 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
 
   it(`throws UnauthorizedError if user with _id === context.userId is neither an admin of the organization with _id === args.organizationId nor a SUPERADMIN`, async () => {
     try {
+      await Venue.findOneAndUpdate(
+        {
+          _id: testVenue?._id,
+        },
+        {
+          $set: { organization: testOrganization?._id },
+        },
+        { new: true },
+      );
       const args: MutationDeleteVenueArgs = {
-        venueId: testVenue?.id,
-        organizationId: testOrganization?.id,
+        id: testVenue?.id,
       };
 
       const context = {
@@ -137,45 +166,20 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
     }
   });
 
-  it(`throws NotFoundError if the provided venue doesn't exist`, async () => {
-    try {
-      testOrganization = await Organization.findByIdAndUpdate(
-        {
-          _id: testOrganization?._id,
-        },
-        {
-          $push: {
-            admins: [testUser?.id],
-          },
-        },
-        { new: true },
-      );
-      const args: MutationDeleteVenueArgs = {
-        venueId: Types.ObjectId().toString(),
-        organizationId: testOrganization?.id,
-      };
-
-      const context = {
-        userId: testUser?.id,
-      };
-
-      const { deleteVenue } = await import(
-        "../../../src/resolvers/Mutation/deleteVenue"
-      );
-      await deleteVenue?.({}, args, context);
-    } catch (error: unknown) {
-      if (error instanceof NotFoundError) {
-        expect(error.message).toEqual(VENUE_NOT_FOUND_ERROR.MESSAGE);
-      } else {
-        fail(`Expected NotFoundError, but got ${error}`);
-      }
-    }
-  });
-
   it(`Deletes the venue inside the provided organization`, async () => {
+    await Organization.findByIdAndUpdate(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $push: {
+          admins: [testUser?.id],
+        },
+      },
+      { new: true },
+    );
     const args: MutationDeleteVenueArgs = {
-      venueId: testVenue?.id,
-      organizationId: testOrganization?.id,
+      id: testVenue?.id,
     };
 
     const context = {

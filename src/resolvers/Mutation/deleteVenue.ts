@@ -39,8 +39,20 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
     );
   }
 
-  const organization = await Organization.findOne({
-    _id: args.organizationId,
+  const venue = await Venue.findOne({
+    _id: args.id,
+  });
+
+  if (!venue) {
+    throw new errors.NotFoundError(
+      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
+      VENUE_NOT_FOUND_ERROR.CODE,
+      VENUE_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  const organization = await Organization.findById({
+    _id: venue.organization,
   });
 
   // Checks whether organization exists.
@@ -63,18 +75,6 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
       requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
       ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
       ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM,
-    );
-  }
-
-  const venue = await Venue.findOne({
-    _id: args.venueId,
-  });
-
-  if (!venue) {
-    throw new errors.NotFoundError(
-      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
-      VENUE_NOT_FOUND_ERROR.CODE,
-      VENUE_NOT_FOUND_ERROR.PARAM,
     );
   }
 
