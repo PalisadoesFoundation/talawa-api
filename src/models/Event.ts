@@ -2,7 +2,6 @@ import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
-import type { InterfaceRecurrenceRule } from "./RecurrenceRule";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
 
@@ -187,7 +186,7 @@ const eventSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 createLoggingMiddleware(eventSchema, "Event");

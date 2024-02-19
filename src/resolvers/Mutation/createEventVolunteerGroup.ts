@@ -4,7 +4,6 @@ import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_AUTHORIZED_ADMIN,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 
@@ -27,7 +26,7 @@ export const createEventVolunteerGroup: MutationResolvers["createEventVolunteerG
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
     const event = await Event.findById(args.data.eventId);
@@ -35,19 +34,19 @@ export const createEventVolunteerGroup: MutationResolvers["createEventVolunteerG
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
         EVENT_NOT_FOUND_ERROR.CODE,
-        EVENT_NOT_FOUND_ERROR.PARAM
+        EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     const userIsEventAdmin = event.admins.some(
-      (admin) => admin.toString() === currentUser._id.toString()
+      (admin) => admin.toString() === currentUser._id.toString(),
     );
 
     if (!userIsEventAdmin) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -67,7 +66,7 @@ export const createEventVolunteerGroup: MutationResolvers["createEventVolunteerG
         $push: {
           volunteerGroups: createdVolunteerGroup._id,
         },
-      }
+      },
     );
 
     return createdVolunteerGroup.toObject();

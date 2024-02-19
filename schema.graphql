@@ -886,6 +886,14 @@ type Mutation {
     name: String!
     organizationId: ID!
   ): ActionItemCategory!
+  createActionItem(
+    actionItemCategoryId: ID!
+    data: CreateActionItemInput!
+  ): ActionItem!
+  createActionItemCategory(
+    name: String!
+    organizationId: ID!
+  ): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): User!
   createAdvertisement(
     endDate: Date!
@@ -913,6 +921,9 @@ type Mutation {
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
   createFund(data: FundInput!): Fund!
   createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
+  createEventVolunteerGroup(
+    data: EventVolunteerGroupInput!
+  ): EventVolunteerGroup!
   createEventVolunteerGroup(
     data: EventVolunteerGroupInput!
   ): EventVolunteerGroup!
@@ -1009,6 +1020,10 @@ type Mutation {
     data: UpdateEventVolunteerInput
     id: ID!
   ): EventVolunteer!
+  updateEventVolunteerGroup(
+    data: UpdateEventVolunteerGroupInput
+    id: ID!
+  ): EventVolunteerGroup!
   updateLanguage(languageCode: String!): User!
   updateOrganization(
     data: UpdateOrganizationInput

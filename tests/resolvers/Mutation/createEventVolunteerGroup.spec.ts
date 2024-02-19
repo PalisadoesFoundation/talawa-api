@@ -15,7 +15,6 @@ import {
 } from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -129,7 +128,7 @@ describe("resolvers -> Mutation -> createEventVolunteerGroup", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -152,13 +151,13 @@ describe("resolvers -> Mutation -> createEventVolunteerGroup", () => {
     const createdGroup = await createEventVolunteerGroupResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const updatedEvent = await Event.findOne({ _id: testEvent?._id });
 
     expect(updatedEvent?.volunteerGroups.toString()).toEqual(
-      [createdGroup?._id.toString()].toString()
+      [createdGroup?._id.toString()].toString(),
     );
 
     expect(createdGroup).toEqual(
@@ -167,7 +166,7 @@ describe("resolvers -> Mutation -> createEventVolunteerGroup", () => {
         eventId: Types.ObjectId(testEvent?.id),
         creatorId: eventAdminUser?._id,
         leaderId: eventAdminUser?._id,
-      })
+      }),
     );
   });
 });
