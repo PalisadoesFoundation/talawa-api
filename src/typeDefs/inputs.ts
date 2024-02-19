@@ -14,8 +14,6 @@ export const inputs = gql`
   input CheckInInput {
     userId: ID!
     eventId: ID!
-    allotedRoom: String
-    allotedSeat: String
   }
 
   input createChatInput {
@@ -45,6 +43,13 @@ export const inputs = gql`
     preCompletionNotes: String
     dueDate: Date
     eventId: ID
+  }
+
+  input ActionItemWhereInput {
+    actionItemCategory_id: ID
+    event_id: ID
+    is_active: Boolean
+    is_completed: Boolean
   }
 
   input CreateAgendaCategoryInput {
