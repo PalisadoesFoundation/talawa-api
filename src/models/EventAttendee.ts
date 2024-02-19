@@ -10,6 +10,10 @@ export interface InterfaceEventAttendee {
   userId: PopulatedDoc<InterfaceUser & Document>;
   eventId: PopulatedDoc<InterfaceEvent & Document>;
   checkInId: PopulatedDoc<InterfaceCheckIn & Document> | null;
+  isInvited: boolean;
+  isRegistered: boolean;
+  isCheckedIn: boolean;
+  isCheckedOut: boolean;
 }
 
 const eventAttendeeSchema = new Schema({
@@ -28,6 +32,30 @@ const eventAttendeeSchema = new Schema({
     required: false,
     default: null,
     ref: "CheckIn",
+  },
+
+  isInvited: {
+    type: Boolean,
+    default: false,
+    required: true,
+  },
+
+  isRegistered: {
+    type: Boolean,
+    default: false,
+    required: true,
+  },
+
+  isCheckedIn: {
+    type: Boolean,
+    default: false,
+    required: true,
+  },
+
+  isCheckedOut: {
+    type: Boolean,
+    default: false,
+    required: true,
   },
 });
 

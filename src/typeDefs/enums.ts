@@ -2,6 +2,11 @@ import { gql } from "graphql-tag";
 
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const enums = gql`
+  enum ActionItemsOrderByInput {
+    createdAt_ASC
+    createdAt_DESC
+  }
+
   enum EventOrderByInput {
     id_ASC
     id_DESC
