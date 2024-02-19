@@ -13,17 +13,12 @@ import {
 } from "vitest";
 import type {
   TestEventType,
-  TestEventVolunteerType} from "../../helpers/events";
-import {
-  createTestEvent,
+  TestEventVolunteerType,
 } from "../../helpers/events";
+import { createTestEvent } from "../../helpers/events";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import type {
-  InterfaceEventVolunteer} from "../../../src/models";
-import {
-  EventVolunteer,
-  EventVolunteerGroup
-} from "../../../src/models";
+import type { InterfaceEventVolunteer } from "../../../src/models";
+import { EventVolunteer, EventVolunteerGroup } from "../../../src/models";
 import type { TestEventVolunteerGroupType } from "../Mutation/createEventVolunteer.spec";
 import { createTestUser } from "../../helpers/user";
 
@@ -67,7 +62,7 @@ describe("resolvers -> EventVolunteer -> group", () => {
     const groupPayload = await groupResolver?.(
       parent as InterfaceEventVolunteer,
       {},
-      {}
+      {},
     );
     console.log(groupPayload);
     console.log(testGroup);

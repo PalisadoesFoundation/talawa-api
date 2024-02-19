@@ -19,7 +19,7 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import type { TestEventType} from "../../helpers/events";
+import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 import { createTestUser } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
@@ -79,7 +79,7 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -109,10 +109,10 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
       await updateEventVolunteerGroupResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE
+        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE,
       );
       expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -144,7 +144,7 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -167,7 +167,7 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
     const updatedGroup = await updateEventVolunteerGroupResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updatedGroup).toEqual(
@@ -175,7 +175,7 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
         name: "updated",
         eventId: testEvent?._id,
         volunteersRequired: 10,
-      })
+      }),
     );
   });
 
@@ -200,7 +200,7 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
     const updatedGroup = await updateEventVolunteerGroupResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     console.log(updatedGroup);
@@ -211,7 +211,7 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
         name: testGroup2?.name,
         volunteersRequired: testGroup2?.volunteersRequired,
         eventId: testGroup2?.eventId,
-      })
+      }),
     );
   });
 });

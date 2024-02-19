@@ -3,13 +3,10 @@ import { creator as creatorResolver } from "../../../src/resolvers/EventVoluntee
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type { TestEventType} from "../../helpers/events";
+import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
-import type {
-  InterfaceEventVolunteerGroup} from "../../../src/models";
-import {
-  EventVolunteerGroup
-} from "../../../src/models";
+import type { InterfaceEventVolunteerGroup } from "../../../src/models";
+import { EventVolunteerGroup } from "../../../src/models";
 import type { TestUserType } from "../../helpers/user";
 import type { TestEventVolunteerGroupType } from "../Mutation/createEventVolunteer.spec";
 
@@ -40,7 +37,7 @@ describe("resolvers -> EventVolunteer -> creator", () => {
     const creatorPayload = await creatorResolver?.(
       parent as InterfaceEventVolunteerGroup,
       {},
-      {}
+      {},
     );
 
     expect(creatorPayload?._id).toEqual(eventAdminUser?._id);

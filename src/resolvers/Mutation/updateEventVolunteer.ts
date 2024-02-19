@@ -29,7 +29,7 @@ export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -41,7 +41,7 @@ export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE),
         EVENT_VOLUNTEER_NOT_FOUND_ERROR.CODE,
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM
+        EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -49,7 +49,7 @@ export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
       throw new errors.ConflictError(
         requestContext.translate(EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE),
         EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.CODE,
-        EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.PARAM
+        EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.PARAM,
       );
     }
 
@@ -80,7 +80,7 @@ export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
       {
         new: true,
         runValidators: true,
-      }
+      },
     ).lean();
 
     return updatedVolunteer as InterfaceEventVolunteer;

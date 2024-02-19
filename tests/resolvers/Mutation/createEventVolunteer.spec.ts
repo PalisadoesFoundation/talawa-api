@@ -114,7 +114,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE
+        EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -172,7 +172,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE
+        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -202,7 +202,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -227,7 +227,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
     const createdVolunteer = await createEventVolunteerResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const updatedGroup = await EventVolunteerGroup.findOne({
@@ -235,7 +235,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
     });
 
     expect(updatedGroup?.volunteers.toString()).toEqual(
-      [createdVolunteer?._id.toString()].toString()
+      [createdVolunteer?._id.toString()].toString(),
     );
 
     expect(createdVolunteer).toEqual(
@@ -246,7 +246,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
         creatorId: eventAdminUser?._id,
         isInvited: true,
         isAssigned: false,
-      })
+      }),
     );
   });
 });

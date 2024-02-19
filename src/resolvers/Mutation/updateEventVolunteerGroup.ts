@@ -2,12 +2,10 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import {
   EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
- USER_NOT_FOUND_ERROR } from "../../constants";
-import type {
-  InterfaceEventVolunteerGroup} from "../../models";
-import {
-  EventVolunteerGroup,
- User } from "../../models";
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
+import type { InterfaceEventVolunteerGroup } from "../../models";
+import { EventVolunteerGroup, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 /**
  * This function enables to update the Event Volunteer Group
@@ -29,7 +27,7 @@ export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerG
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -41,7 +39,7 @@ export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerG
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE),
         EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.CODE,
-        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM
+        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -49,7 +47,7 @@ export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerG
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -73,7 +71,7 @@ export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerG
       {
         new: true,
         runValidators: true,
-      }
+      },
     ).lean();
 
     return updatedGroup as InterfaceEventVolunteerGroup;

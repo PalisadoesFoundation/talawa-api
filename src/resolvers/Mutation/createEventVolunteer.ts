@@ -31,7 +31,7 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
     const volunteerUser = await User.findOne({ _id: args.data?.userId }).lean();
@@ -39,7 +39,7 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE),
         EVENT_VOLUNTEER_NOT_FOUND_ERROR.CODE,
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM
+        EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM,
       );
     }
     const event = await Event.findById(args.data.eventId);
@@ -47,7 +47,7 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
         EVENT_NOT_FOUND_ERROR.CODE,
-        EVENT_NOT_FOUND_ERROR.PARAM
+        EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
     const group = await EventVolunteerGroup.findOne({
@@ -57,7 +57,7 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE),
         EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.CODE,
-        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM
+        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -65,7 +65,7 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -86,7 +86,7 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
         $push: {
           volunteers: createdVolunteer._id,
         },
-      }
+      },
     );
     return createdVolunteer.toObject();
   };

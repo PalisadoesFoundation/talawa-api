@@ -29,7 +29,7 @@ export const removeEventVolunteer: MutationResolvers["removeEventVolunteer"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -41,7 +41,7 @@ export const removeEventVolunteer: MutationResolvers["removeEventVolunteer"] =
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE),
         EVENT_VOLUNTEER_NOT_FOUND_ERROR.CODE,
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM
+        EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -54,7 +54,7 @@ export const removeEventVolunteer: MutationResolvers["removeEventVolunteer"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -70,7 +70,7 @@ export const removeEventVolunteer: MutationResolvers["removeEventVolunteer"] =
         $pull: {
           volunteers: volunteer._id,
         },
-      }
+      },
     );
 
     return volunteer;

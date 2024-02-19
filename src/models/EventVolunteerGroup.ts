@@ -51,7 +51,7 @@ const eventVolunteerGroupSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Enable logging on changes in EventVolunteer collection
@@ -60,7 +60,7 @@ createLoggingMiddleware(eventVolunteerGroupSchema, "EventVolunteerGroup");
 const eventVolunteerGroupModel = (): Model<InterfaceEventVolunteerGroup> =>
   model<InterfaceEventVolunteerGroup>(
     "EventVolunteerGroup",
-    eventVolunteerGroupSchema
+    eventVolunteerGroupSchema,
   );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

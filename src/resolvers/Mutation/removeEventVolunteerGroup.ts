@@ -29,7 +29,7 @@ export const removeEventVolunteerGroup: MutationResolvers["removeEventVolunteerG
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -41,21 +41,21 @@ export const removeEventVolunteerGroup: MutationResolvers["removeEventVolunteerG
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE),
         EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.CODE,
-        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM
+        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     const event = await Event.findById(volunteerGroup.eventId);
 
     const userIsEventAdmin = event?.admins.some(
-      (admin) => admin._id.toString() === currentUser._id.toString()
+      (admin) => admin._id.toString() === currentUser._id.toString(),
     );
 
     if (!userIsEventAdmin) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
