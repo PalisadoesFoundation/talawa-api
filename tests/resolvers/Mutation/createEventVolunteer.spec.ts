@@ -94,7 +94,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE
+        EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE,
       );
     }
   });
@@ -145,7 +145,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
     const createdVolunteer = await createEventVolunteerResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createdVolunteer).toEqual(
@@ -155,7 +155,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
         creatorId: testUser1?._id,
         isInvited: true,
         isAssigned: false,
-      })
+      }),
     );
   });
 });

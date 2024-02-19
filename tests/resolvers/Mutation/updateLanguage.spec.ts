@@ -51,7 +51,7 @@ describe("resolvers -> Mutation -> updateLanguage", () => {
     const updateLanguagePayload = await updateLanguageResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const testUpdateLanguagePayload = await User.findOne({

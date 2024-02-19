@@ -15,7 +15,7 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
  */
 export const organizations: QueryResolvers["organizations"] = async (
   _parent,
-  args
+  args,
 ) => {
   const sort = getSort(args.orderBy);
 
@@ -39,7 +39,7 @@ export const organizations: QueryResolvers["organizations"] = async (
       throw new errors.NotFoundError(
         ORGANIZATION_NOT_FOUND_ERROR.DESC,
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 

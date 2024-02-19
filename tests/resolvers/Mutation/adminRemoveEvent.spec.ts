@@ -36,7 +36,7 @@ beforeAll(async () => {
   testEvent = resultsArray[2];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -48,7 +48,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
   it(`throws NotFoundError if no event exists with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationAdminRemoveEventArgs = {
@@ -79,7 +79,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       const args: MutationAdminRemoveEventArgs = {
@@ -109,7 +109,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedEvent !== null) {
@@ -143,7 +143,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -176,7 +176,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -194,7 +194,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
     const adminRemoveEventPayload = await adminRemoveEventResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(adminRemoveEventPayload).toEqual({
@@ -213,7 +213,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         createdEvents: expect.arrayContaining([]),
         eventAdmin: expect.arrayContaining([]),
         registeredEvents: expect.arrayContaining([]),
-      })
+      }),
     );
   });
 });

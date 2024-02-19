@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -92,7 +92,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
     }
   });
@@ -107,7 +107,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
           userType: "SUPERADMIN",
           adminApproved: true,
         },
-      }
+      },
     );
 
     const args: MutationAcceptAdminArgs = {
@@ -153,7 +153,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });

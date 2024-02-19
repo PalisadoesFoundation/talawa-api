@@ -36,7 +36,7 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -45,7 +45,7 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE),
         USER_FAMILY_NOT_FOUND_ERROR.CODE,
-        USER_FAMILY_NOT_FOUND_ERROR.PARAM
+        USER_FAMILY_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -61,7 +61,7 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
       throw new errors.ConflictError(
         requestContext.translate(USER_ALREADY_MEMBER_ERROR.MESSAGE),
         USER_ALREADY_MEMBER_ERROR.CODE,
-        USER_ALREADY_MEMBER_ERROR.PARAM
+        USER_ALREADY_MEMBER_ERROR.PARAM,
       );
     }
 
@@ -77,6 +77,6 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
       },
       {
         new: true,
-      }
+      },
     ).lean();
   };

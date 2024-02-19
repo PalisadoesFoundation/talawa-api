@@ -25,7 +25,7 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
           throw new errors.ConflictError(
             requestContext.translate(TRANSLATION_ALREADY_PRESENT_ERROR.MESSAGE),
             TRANSLATION_ALREADY_PRESENT_ERROR.CODE,
-            TRANSLATION_ALREADY_PRESENT_ERROR.PARAM
+            TRANSLATION_ALREADY_PRESENT_ERROR.PARAM,
           );
         }
       });
@@ -45,7 +45,7 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
         },
         {
           new: true,
-        }
+        },
       ).lean();
     }
 

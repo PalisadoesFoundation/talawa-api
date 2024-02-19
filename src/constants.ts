@@ -220,6 +220,12 @@ export const USER_ALREADY_REGISTERED_FOR_EVENT = {
   PARAM: "user.alreadyRegistered",
 };
 
+export const USER_ALREADY_INVITED_FOR_EVENT = {
+  MESSAGE: "The user has already been invited for the event",
+  CODE: "user.alreadyInvited",
+  PARAM: "user.alreadyInvited",
+};
+
 export const USER_NOT_REGISTERED_FOR_EVENT = {
   MESSAGE: "The user is not registered for the event",
   CODE: "user.notRegistered",
@@ -544,6 +550,11 @@ export const RECURRING_EVENT_INSTANCES_DAILY_LIMIT = 1;
 export const RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT = 2;
 export const RECURRING_EVENT_INSTANCES_MONTHLY_LIMIT = 5;
 export const RECURRING_EVENT_INSTANCES_YEARLY_LIMIT = 10;
+
+// recurrence rules query date limit in years
+// i.e. query limit date to find the pending recurrence patterns
+// and then generate new instances ahead of this date
+export const RECURRING_EVENT_INSTANCES_QUERY_LIMIT = 1;
 
 // recurring event days
 export const RECURRENCE_WEEKDAYS = [

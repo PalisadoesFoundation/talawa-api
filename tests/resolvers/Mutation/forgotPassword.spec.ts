@@ -34,7 +34,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
         process.env.NODE_ENV!,
         {
           expiresIn: 99999999,
-        }
+        },
       );
 
       const args: MutationForgotPasswordArgs = {
@@ -64,7 +64,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       process.env.NODE_ENV ?? "",
       {
         expiresIn: 99999999,
-      }
+      },
     );
 
     const args: MutationForgotPasswordArgs = {

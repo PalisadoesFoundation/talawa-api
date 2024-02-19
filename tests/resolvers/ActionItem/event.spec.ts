@@ -51,7 +51,7 @@ describe("resolvers -> ActionItem -> event", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     const parent = updatedTestActionItem?.toObject();
@@ -59,7 +59,7 @@ describe("resolvers -> ActionItem -> event", () => {
     const eventByPayload = await eventResolver?.(
       parent as InterfaceActionItem,
       {},
-      {}
+      {},
     );
 
     expect(eventByPayload?._id).toEqual(updatedTestActionItem?.eventId);

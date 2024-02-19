@@ -58,7 +58,7 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
         orgId: Types.ObjectId().toString(),
       };
 
-      const context = async () => {
+      const context = async (): Promise<void> => {
         pubsub;
       };
 
@@ -92,7 +92,7 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
     const updatePluginStatusPayload = await updatePluginStatus?.(
       {},
       args,
-      context
+      context,
     );
 
     const testUpdatePluginStatusPayload = await Plugin.findOne({
@@ -121,7 +121,7 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
     const updatePluginStatusPayload = await updatePluginStatus?.(
       {},
       args,
-      context
+      context,
     );
 
     const testUpdatePluginStatusPayload = await Plugin.findOne({

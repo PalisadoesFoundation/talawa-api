@@ -45,7 +45,7 @@ const eventVolunteerSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Enable logging on changes in EventVolunteer collection

@@ -51,7 +51,7 @@ describe("utilities -> deleteImage.ts", () => {
 
   it("should delete Image when numberOfUser <=1", async () => {
     vi.spyOn(fs, "unlink").mockImplementationOnce(
-      (_imagePath: any, callback: any) => callback(null)
+      (_imagePath: any, callback: any) => callback(null),
     );
     const reuploadUtilities = await import(
       "../../src/utilities/reuploadDuplicateCheck"
@@ -60,7 +60,7 @@ describe("utilities -> deleteImage.ts", () => {
     vi.spyOn(reuploadUtilities, "reuploadDuplicateCheck").mockImplementation(
       async () => {
         return false;
-      }
+      },
     );
     const { logger } = await import("../../src/libraries");
 
@@ -74,10 +74,10 @@ describe("utilities -> deleteImage.ts", () => {
 
     expect(fs.unlink).toBeCalledWith(
       testImageToBeDeleted,
-      expect.any(Function)
+      expect.any(Function),
     );
     expect(logSpy).toBeCalledWith(
-      "Image is only used once and therefore can be deleted"
+      "Image is only used once and therefore can be deleted",
     );
     expect(logSpy).toBeCalledWith("File deleted!");
     expect(testHashObj?.toObject()).toEqual({
@@ -98,7 +98,7 @@ describe("utilities -> deleteImage.ts", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     const reuploadUtilities = await import(
@@ -108,7 +108,7 @@ describe("utilities -> deleteImage.ts", () => {
     vi.spyOn(reuploadUtilities, "reuploadDuplicateCheck").mockImplementation(
       async () => {
         return false;
-      }
+      },
     );
     const { logger } = await import("../../src/libraries");
 
@@ -141,12 +141,12 @@ describe("utilities -> deleteImage.ts", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       const error = new Error("There was an error deleting the file.");
       vi.spyOn(fs, "unlink").mockImplementationOnce(
-        (_imagePath: any, callback: any) => callback(error)
+        (_imagePath: any, callback: any) => callback(error),
       );
 
       const reuploadUtilities = await import(
@@ -156,7 +156,7 @@ describe("utilities -> deleteImage.ts", () => {
       vi.spyOn(reuploadUtilities, "reuploadDuplicateCheck").mockImplementation(
         async () => {
           return false;
-        }
+        },
       );
 
       const { logger } = await import("../../src/libraries");
@@ -169,7 +169,7 @@ describe("utilities -> deleteImage.ts", () => {
 
       expect(fs.unlink).toBeCalledWith(
         testImageToBeDeleted,
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(logSpy).not.toBeCalled();
     } catch (error: unknown) {

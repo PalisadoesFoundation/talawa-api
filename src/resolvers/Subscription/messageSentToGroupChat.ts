@@ -6,7 +6,7 @@ const MESSAGE_SENT_TO_GROUP_CHAT = "MESSAGE_SENT_TO_GROUP_CHAT";
 
 export const filterFunction = async function (
   payload: any,
-  context: any
+  context: any,
 ): Promise<boolean> {
   const { currentUserId } = context.context;
   const groupChatId = payload.messageSentToGroupChat.groupChatMessageBelongsTo;
@@ -17,7 +17,7 @@ export const filterFunction = async function (
 
   if (groupChat) {
     const currentUserIsGroupChatMember = groupChat.users.some((user) =>
-      user.equals(currentUserId)
+      user.equals(currentUserId),
     );
     return currentUserIsGroupChatMember;
   } else {
@@ -39,6 +39,6 @@ export const messageSentToGroupChat: SubscriptionResolvers["messageSentToGroupCh
       (_parent, _args, context) =>
         context.pubsub.asyncIterator([MESSAGE_SENT_TO_GROUP_CHAT]),
 
-      (payload, _variables, context) => filterFunction(payload, context)
+      (payload, _variables, context) => filterFunction(payload, context),
     ),
   };

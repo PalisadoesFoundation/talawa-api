@@ -116,7 +116,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -154,7 +154,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -172,7 +172,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
     const leaveOrganizationPayload = await leaveOrganizationResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const updatedTestUser = await User.findOne({

@@ -58,7 +58,7 @@ beforeAll(async () => {
         adminFor: [testOrganization._id],
         joinedOrganizations: [testOrganization._id],
       },
-    }
+    },
   );
 
   testDirectChat = await DirectChat.create({
@@ -136,7 +136,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         $push: {
           users: testUsers[0]?._id,
         },
-      }
+      },
     );
 
     const args: MutationSendMessageToDirectChatArgs = {
@@ -149,7 +149,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         _action: "MESSAGE_SENT_TO_DIRECT_CHAT",
         _payload: {
           messageSentToDirectChat: InterfaceDirectChatMessage;
-        }
+        },
       ): {
         _action: string;
         _payload: { messageSentToDirectChat: InterfaceDirectChatMessage };
@@ -172,7 +172,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         sender: testUsers[0]?._id,
         receiver: testUsers[1]?._id,
         messageContent: "messageContent",
-      })
+      }),
     );
   });
 });

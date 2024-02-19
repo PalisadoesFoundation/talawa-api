@@ -21,22 +21,24 @@ import { cacheEvents } from "../../../services/EventCache/cacheEvents";
  */
 
 interface InterfaceGenerateRecurringInstances {
-  data: EventInput;
+  data: InterfaceRecurringEvent;
   baseRecurringEventId: string;
   recurrenceRuleId: string;
   recurringInstanceDates: Date[];
   creatorId: string;
   organizationId: string;
+  status?: string;
   session: mongoose.ClientSession;
 }
 
-interface InterfaceRecurringEvent extends EventInput {
-  isBaseRecurringEvent: boolean;
-  recurrenceRuleId: string;
-  baseRecurringEventId: string;
-  creatorId: string;
-  admins: string[];
-  organization: string;
+export interface InterfaceRecurringEvent extends EventInput {
+  isBaseRecurringEvent?: boolean;
+  recurrenceRuleId?: string;
+  baseRecurringEventId?: string;
+  creatorId?: string;
+  admins?: string[];
+  organization?: string;
+  status?: string;
 }
 
 export const generateRecurringEventInstances = async ({
@@ -49,7 +51,7 @@ export const generateRecurringEventInstances = async ({
   session,
 }: InterfaceGenerateRecurringInstances): Promise<InterfaceEvent> => {
   const recurringInstances: InterfaceRecurringEvent[] = [];
-  recurringInstanceDates.map((date) => {
+  recurringInstanceDates.map((date): void => {
     const createdEventInstance = {
       ...data,
       startDate: date,
@@ -59,8 +61,9 @@ export const generateRecurringEventInstances = async ({
       recurrenceRuleId,
       baseRecurringEventId,
       creatorId,
-      admins: [creatorId],
+      admins: data.admins && data.admins.length ? data.admins : [creatorId],
       organization: organizationId,
+      status: data.status,
     };
 
     recurringInstances.push(createdEventInstance);
@@ -76,12 +79,12 @@ export const generateRecurringEventInstances = async ({
     (recurringEventInstance) => ({
       userId: creatorId,
       eventId: recurringEventInstance?._id.toString(),
-    })
+    }),
   );
 
   // get event instances ids for updating user event fields to include generated instances
   const eventInstanceIds = recurringEventInstances.map((instance) =>
-    instance._id.toString()
+    instance._id.toString(),
   );
 
   // perform database operations
@@ -96,15 +99,15 @@ export const generateRecurringEventInstances = async ({
           registeredEvents: { $each: eventInstanceIds },
         },
       },
-      { session }
+      { session },
     ),
   ]);
 
   // cache the instances
   await Promise.all(
     recurringEventInstances.map((recurringEventInstance) =>
-      cacheEvents([recurringEventInstance])
-    )
+      cacheEvents([recurringEventInstance]),
+    ),
   );
 
   return recurringEventInstances[0];
