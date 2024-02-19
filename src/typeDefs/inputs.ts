@@ -45,6 +45,13 @@ export const inputs = gql`
     eventId: ID
   }
 
+  input ActionItemWhereInput {
+    actionItemCategory_id: ID
+    event_id: ID
+    is_active: Boolean
+    is_completed: Boolean
+  }
+
   input CreateAgendaCategoryInput {
     name: String!
     description: String
