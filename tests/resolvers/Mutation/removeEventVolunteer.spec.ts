@@ -5,6 +5,7 @@ import { connect, disconnect } from "../../helpers/db";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -18,10 +19,9 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type {
   TestEventType,
-  TestEventVolunteerType} from "../../helpers/events";
-import {
-  createTestEvent,
+  TestEventVolunteerType,
 } from "../../helpers/events";
+import { createTestEvent } from "../../helpers/events";
 import { EventVolunteer, EventVolunteerGroup, User } from "../../../src/models";
 import { createTestUser } from "../../helpers/user";
 import type { TestEventVolunteerGroupType } from "./createEventVolunteer.spec";
@@ -118,12 +118,38 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
     }
   });
 
+  it(`throws UnauthorizedError if current user is not leader of group`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateEventVolunteerArgs = {
+        id: testEventVolunteer?._id,
+      };
+
+      const context = { userId: testUser?._id };
+
+      const { removeEventVolunteer: removeEventVolunteerResolver } =
+        await import("../../../src/resolvers/Mutation/removeEventVolunteer");
+
+      await removeEventVolunteerResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
+  });
+
   it(`removes event volunteer with _id === args.id and returns it`, async () => {
     const args: MutationUpdateEventVolunteerArgs = {
       id: testEventVolunteer?._id,
     };
 
-    const context = { userId: testUser?._id };
+    const context = { userId: eventAdminUser?._id };
     const { removeEventVolunteer: removeEventVolunteerResolver } = await import(
       "../../../src/resolvers/Mutation/removeEventVolunteer"
     );

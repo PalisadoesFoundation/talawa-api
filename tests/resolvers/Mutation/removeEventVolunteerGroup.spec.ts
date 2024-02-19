@@ -5,6 +5,8 @@ import { connect, disconnect } from "../../helpers/db";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
+  EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -18,10 +20,9 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type {
   TestEventType,
-  TestEventVolunteerType} from "../../helpers/events";
-import {
-  createTestEvent,
+  TestEventVolunteerType,
 } from "../../helpers/events";
+import { createTestEvent } from "../../helpers/events";
 import { EventVolunteer, EventVolunteerGroup } from "../../../src/models";
 import { createTestUser } from "../../helpers/user";
 import type { TestEventVolunteerGroupType } from "./createEventVolunteer.spec";
@@ -114,42 +115,64 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
       await removeEventVolunteerGroupResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE
+        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE
       );
       expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
 
-  it(`removes event volunteer with _id === args.id and returns it`, async () => {
+  it(`throws UnauthorizedError if current user is not an event admin`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateEventVolunteerArgs = {
+        id: testGroup?._id,
+      };
+
+      const context = { userId: testUser?._id };
+
+      const { removeEventVolunteerGroup: removeEventVolunteerGroupResolver } =
+        await import(
+          "../../../src/resolvers/Mutation/removeEventVolunteerGroup"
+        );
+
+      await removeEventVolunteerGroupResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
+  });
+
+  it(`removes event volunteer group with _id === args.id and returns it`, async () => {
     const args: MutationUpdateEventVolunteerArgs = {
-      id: testEventVolunteer?._id,
+      id: testGroup?._id,
     };
 
-    const context = { userId: testUser?._id };
+    const context = { userId: eventAdminUser?._id };
     const { removeEventVolunteerGroup: removeEventVolunteerGroupResolver } =
       await import("../../../src/resolvers/Mutation/removeEventVolunteerGroup");
 
-    const deletedVolunteer = await removeEventVolunteerGroupResolver?.(
+    const deletedVolunteerGroup = await removeEventVolunteerGroupResolver?.(
       {},
       args,
       context
     );
 
-    const updatedGroup = await EventVolunteerGroup.findOne({
-      _id: testGroup?._id,
-    });
-
-    expect(updatedGroup?.volunteers.toString()).toEqual("");
-
-    expect(deletedVolunteer).toEqual(
+    expect(deletedVolunteerGroup).toEqual(
       expect.objectContaining({
-        _id: testEventVolunteer?._id,
-        userId: testEventVolunteer?.userId,
-        isInvited: testEventVolunteer?.isInvited,
-        isAssigned: testEventVolunteer?.isAssigned,
-        response: testEventVolunteer?.response,
+        _id: testGroup?._id,
+        leaderId: testGroup?.leaderId,
+        name: testGroup?.name,
+        creatorId: testGroup?.creatorId,
+        eventId: testGroup?.eventId,
       })
     );
   });
