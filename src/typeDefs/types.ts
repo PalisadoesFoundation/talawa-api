@@ -185,7 +185,6 @@ export const types = gql`
     status: Status!
     feedback: [Feedback!]!
     averageFeedbackScore: Float
-    venue: ID
   }
 
   type EventVolunteer {
