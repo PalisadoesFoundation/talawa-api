@@ -4,7 +4,6 @@ import type { MutationUpdateEventVolunteerArgs } from "../../../src/types/genera
 import { connect, disconnect } from "../../helpers/db";
 import {
   USER_NOT_FOUND_ERROR,
-  EVENT_VOLUNTEER_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
@@ -18,10 +17,7 @@ import {
   afterEach,
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import type {
-  TestEventType,
-  TestEventVolunteerType,
-} from "../../helpers/events";
+import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 import { EventVolunteer, EventVolunteerGroup } from "../../../src/models";
 import { createTestUser } from "../../helpers/user";
@@ -31,7 +27,6 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let eventAdminUser: TestUserType;
 let testEvent: TestEventType;
-let testEventVolunteer: TestEventVolunteerType;
 let testGroup: TestEventVolunteerGroupType;
 
 beforeAll(async () => {
@@ -46,7 +41,7 @@ beforeAll(async () => {
     name: "Test group",
   });
 
-  testEventVolunteer = await EventVolunteer.create({
+  await EventVolunteer.create({
     creatorId: eventAdminUser?._id,
     userId: testUser?._id,
     eventId: testEvent?._id,
@@ -88,7 +83,7 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -115,10 +110,10 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
       await removeEventVolunteerGroupResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE
+        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE,
       );
       expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -146,7 +141,7 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
     } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -163,7 +158,7 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
     const deletedVolunteerGroup = await removeEventVolunteerGroupResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(deletedVolunteerGroup).toEqual(
@@ -173,7 +168,7 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
         name: testGroup?.name,
         creatorId: testGroup?.creatorId,
         eventId: testGroup?.eventId,
-      })
+      }),
     );
   });
 });
