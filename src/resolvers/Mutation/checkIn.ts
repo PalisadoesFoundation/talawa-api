@@ -2,7 +2,6 @@ import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
-  USER_NOT_REGISTERED_FOR_EVENT,
   USER_ALREADY_CHECKED_IN,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -12,6 +11,29 @@ import { User, Event, EventAttendee, CheckIn } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
+
+/**
+ * Handles the check-in process for event attendees.
+ * 
+ * This resolver function allows event admins or superadmins to check-in attendees for a specific event.
+ * It verifies the existence of the current user, the event, and the attendee to be checked in,
+ * and ensures proper authorization before performing the check-in operation.
+ * 
+ * @param _parent - The parent resolver.
+ * @param args - Arguments containing data for the check-in, including the eventId, userId, allotedSeat, and allotedRoom.
+ * @param context - Context object containing user authentication and request information.
+ * @returns The check-in data if successful.
+ * @throws NotFoundError if the current user, event, or attendee is not found.
+ * @throws UnauthorizedError if the current user lacks authorization to perform the check-in operation.
+ * @throws ConflictError if the attendee is already checked in for the event.
+ * @remarks
+ * The function performs the following checks and operations:
+ * 1. Verifies the existence of the current user, event, and attendee.
+ * 2. Checks if the current user is authorized to perform the check-in operation.
+ * 3. Checks if the attendee is already registered for the event. If so, updates the check-in status and isCheckedIn.
+ * 4. Checks if the attendee is not already checked in for the event then creates a new check-in entry and create new eventAttendee with chechInId and isCheckedIn.
+
+ */
 
 export const checkIn: MutationResolvers["checkIn"] = async (
   _parent,
@@ -85,36 +107,35 @@ export const checkIn: MutationResolvers["checkIn"] = async (
   });
 
   if (attendeeData === null) {
-    throw new errors.ConflictError(
-      requestContext.translate(USER_NOT_REGISTERED_FOR_EVENT.MESSAGE),
-      USER_NOT_REGISTERED_FOR_EVENT.CODE,
-      USER_NOT_REGISTERED_FOR_EVENT.PARAM,
-    );
+    const checkInAttendee = await EventAttendee.create({
+      eventId: args.data.eventId,
+      userId: args.data.userId,
+    });
+
+    const checkIn = await CheckIn.create({
+      eventAttendeeId: checkInAttendee._id,
+    });
+
+    checkInAttendee.checkInId = checkIn._id;
+    checkInAttendee.save();
+
+    return checkIn.toObject();
   }
 
-  if (attendeeData.checkInId !== null) {
+  if (attendeeData.isCheckedIn) {
     throw new errors.ConflictError(
       requestContext.translate(USER_ALREADY_CHECKED_IN.MESSAGE),
       USER_ALREADY_CHECKED_IN.CODE,
       USER_ALREADY_CHECKED_IN.PARAM,
     );
   }
-
   const checkIn = await CheckIn.create({
-    eventAttendeeId: attendeeData!._id,
-    allotedSeat: args.data.allotedSeat,
-    allotedRoom: args.data.allotedRoom,
+    eventAttendeeId: attendeeData._id,
   });
 
-  await EventAttendee.updateOne(
-    {
-      eventId: args.data.eventId,
-      userId: args.data.userId,
-    },
-    {
-      checkInId: checkIn._id,
-    },
-  );
+  attendeeData.isCheckedIn = true;
+  attendeeData.checkInId = checkIn._id;
+  await attendeeData.save();
 
   return checkIn.toObject();
 };
