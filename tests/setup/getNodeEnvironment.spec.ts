@@ -1,7 +1,6 @@
 import inquirer from "inquirer";
-import { getNodeEnvironment } from '../../setup'
-import { vi, describe, it, expect} from 'vitest'
-
+import { getNodeEnvironment } from "../../setup";
+import { vi, describe, it, expect } from "vitest";
 /*
   These tests ensure that the getNodeEnvironment function behaves correctly based on user input through inquirer.prompt.
   The function getNodeEnvironment() is expected to return the selected environment ('development' or 'production').
@@ -23,32 +22,36 @@ import { vi, describe, it, expect} from 'vitest'
   These tests cover both possible user selections ('development' and 'production'), validating the behavior of getNodeEnvironment().
   They provide comprehensive testing of the function's functionality and ensure its reliability under different user inputs.
 */
-describe('getNodeEnvironment', () => {
+describe("getNodeEnvironment", () => {
   it('should return "development" when user selects it', async () => {
-    vi.spyOn(inquirer, "prompt").mockImplementationOnce(() => Promise.resolve({nodeEnv: 'development'}))
+    vi.spyOn(inquirer, "prompt").mockImplementationOnce(() =>
+      Promise.resolve({ nodeEnv: "development" }),
+    );
     const result = await getNodeEnvironment();
-    expect(result).toBe('development');
+    expect(result).toBe("development");
     expect(inquirer.prompt).toHaveBeenCalledWith([
       {
-        type: 'list',
-        name: 'nodeEnv',
-        message: 'Select Node environment:',
-        choices: ['development', 'production'],
-        default: 'development',
+        type: "list",
+        name: "nodeEnv",
+        message: "Select Node environment:",
+        choices: ["development", "production"],
+        default: "development",
       },
     ]);
   });
   it('should return "production" when user selects it', async () => {
-    vi.spyOn(inquirer, "prompt").mockImplementationOnce(() => Promise.resolve({nodeEnv: 'production'}))
+    vi.spyOn(inquirer, "prompt").mockImplementationOnce(() =>
+      Promise.resolve({ nodeEnv: "production" }),
+    );
     const result = await getNodeEnvironment();
-    expect(result).toBe('production');
+    expect(result).toBe("production");
     expect(inquirer.prompt).toHaveBeenCalledWith([
       {
-        type: 'list',
-        name: 'nodeEnv',
-        message: 'Select Node environment:',
-        choices: ['development', 'production'],
-        default: 'development',
+        type: "list",
+        name: "nodeEnv",
+        message: "Select Node environment:",
+        choices: ["development", "production"],
+        default: "development",
       },
     ]);
   });

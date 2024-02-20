@@ -74,7 +74,7 @@ export async function getNodeEnvironment(): Promise<string> {
  * The function `setNodeEnvironment` sets the Node environment by reading the value from a file, updating the process
  * environment variable, and updating a configuration file.
  */
-async function setNodeEnvironment(): Promise<void> {
+export async function setNodeEnvironment(): Promise<void> {
   try {
     const nodeEnv = await getNodeEnvironment();
     process.env.NODE_ENV = nodeEnv;
