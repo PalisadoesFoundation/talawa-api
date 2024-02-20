@@ -36,7 +36,7 @@ export const otp: MutationResolvers["otp"] = async (_parent, args) => {
     ACCESS_TOKEN_SECRET as string,
     {
       expiresIn: "15m",
-    }
+    },
   );
 
   const subject = "OTP for Talawa-admin forgot password";

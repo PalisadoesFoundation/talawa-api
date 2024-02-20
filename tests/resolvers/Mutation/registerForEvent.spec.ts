@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event, EventAttendee } from "../../../src/models";
+import { User, EventAttendee } from "../../../src/models";
 import type { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -62,42 +62,22 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       );
 
       await registerForEventResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
-  it(`throws error if user with _id === context.userId is already a registrant of event with _id === args.id`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-
-    try {
-      const args: MutationRegisterForEventArgs = {
-        id: testEvent!._id,
-      };
-
-      const context = {
-        userId: testUser!._id,
-      };
-
-      const { registerForEvent: registerForEventResolver } = await import(
-        "../../../src/resolvers/Mutation/registerForEvent"
-      );
-
-      await registerForEventResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
-      expect(error.message).toEqual(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
-    }
-  });
-
-  it(`registers user with _id === context.userId as a registrant for event with _id === args.id`, async () => {
+  it("If current user is already invited for the event then update the isRegistered to true only", async () => {
     await EventAttendee.deleteOne({
-      userId: testUser!._id,
-      eventId: testEvent!._id,
+      userId: testUser?._id,
+      eventId: testEvent?._id,
+    });
+
+    await EventAttendee.create({
+      userId: testUser?._id,
+      eventId: testEvent?._id,
+      isInvited: true,
     });
 
     await User.updateOne(
@@ -108,28 +88,32 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
         $set: {
           registeredEvents: [],
         },
-      }
+      },
     );
 
     const args: MutationRegisterForEventArgs = {
-      id: testEvent!._id,
+      id: testEvent?._id,
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const registerForEventPayload = await registerForEventResolver?.(
       {},
       args,
-      context
+      context,
     );
-
-    const testRegisterForEventPayload = await Event.findOne({
-      _id: testEvent?._id,
+    const registeredUserPayload = await EventAttendee.findOne({
+      userId: testUser?._id,
+      eventId: testEvent?._id,
     }).lean();
 
-    expect(registerForEventPayload).toEqual(testRegisterForEventPayload);
+    expect(registerForEventPayload?.isInvited).toBeTruthy();
+    expect(registerForEventPayload?.isRegistered).toBeTruthy();
+    if (registeredUserPayload) {
+      expect(registerForEventPayload).toMatchObject(registeredUserPayload);
+    }
 
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
@@ -138,5 +122,83 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       .lean();
 
     expect(updatedTestUser?.registeredEvents).toEqual([testEvent?._id]);
+  });
+
+  it(`If user is not invited then directly invite user to event`, async () => {
+    await EventAttendee.deleteOne({
+      userId: testUser?._id,
+      eventId: testEvent?._id,
+    });
+
+    await User.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $set: {
+          registeredEvents: [],
+        },
+      },
+    );
+
+    const args: MutationRegisterForEventArgs = {
+      id: testEvent?._id,
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    const registerForEventPayload = await registerForEventResolver?.(
+      {},
+      args,
+      context,
+    );
+    const registeredUserPayload = await EventAttendee.findOne({
+      userId: testUser?._id,
+      eventId: testEvent?._id,
+    }).lean();
+
+    expect(registerForEventPayload?.isInvited).toBeFalsy();
+    expect(registerForEventPayload?.isRegistered).toBeTruthy();
+    if (registeredUserPayload) {
+      expect(registerForEventPayload).toMatchObject(registeredUserPayload);
+    }
+
+    const updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["registeredEvents"])
+      .lean();
+
+    expect(updatedTestUser?.registeredEvents).toEqual([testEvent?._id]);
+  });
+
+  it(`throws error if user with _id === context.userId is already a registrant of event with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+
+    try {
+      const args: MutationRegisterForEventArgs = {
+        id: testEvent?._id,
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      const { registerForEvent: registerForEventResolver } = await import(
+        "../../../src/resolvers/Mutation/registerForEvent"
+      );
+
+      await registerForEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE,
+      );
+      expect(spy).toBeCalledWith(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
+    }
   });
 });

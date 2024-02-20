@@ -1,5 +1,6 @@
 import type { Types, Document, PopulatedDoc, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database document.
  */
@@ -69,6 +70,8 @@ const languageSchema = new Schema({
     default: Date.now,
   },
 });
+
+createLoggingMiddleware(languageSchema, "Language");
 
 const languageModel = (): Model<InterfaceLanguage> =>
   model<InterfaceLanguage>("Language", languageSchema);

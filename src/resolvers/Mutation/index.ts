@@ -19,6 +19,7 @@ import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { checkIn } from "./checkIn";
 import { createMember } from "./createMember";
 import { createActionItem } from "./createActionItem";
+import { createAgendaCategory } from "./createAgendaCategory";
 import { createAdmin } from "./createAdmin";
 import { createComment } from "./createComment";
 import { createDirectChat } from "./createDirectChat";
@@ -34,8 +35,11 @@ import { createSampleOrganization } from "./createSampleOrganization";
 import { createActionItemCategory } from "./createActionItemCategory";
 import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
+import { deleteAgendaCategory } from "./deleteAgendaCategory";
+import { inviteEventAttendee } from "./inviteEventAttendee";
 import { forgotPassword } from "./forgotPassword";
 import { joinPublicOrganization } from "./joinPublicOrganization";
+import { createEventVolunteer } from "./createEventVolunteer";
 import { leaveOrganization } from "./leaveOrganization";
 import { likeComment } from "./likeComment";
 import { likePost } from "./likePost";
@@ -45,6 +49,7 @@ import { otp } from "./otp";
 import { recaptcha } from "./recaptcha";
 import { refreshToken } from "./refreshToken";
 import { registerForEvent } from "./registerForEvent";
+import { registerEventAttendee } from "./registerEventAttendee";
 import { rejectAdmin } from "./rejectAdmin";
 import { rejectMembershipRequest } from "./rejectMembershipRequest";
 import { removeAdmin } from "./removeAdmin";
@@ -53,6 +58,11 @@ import { removeComment } from "./removeComment";
 import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
+import { addUserToUserFamily } from "./addUserToUserFamily";
+import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
+import { removeUserFamily } from "./removeUserFamily";
+import { createUserFamily } from "./createUserFamily";
+import { removeEventVolunteer } from "./removeEventVolunteer";
 import { removeGroupChat } from "./removeGroupChat";
 import { removeAdvertisement } from "./removeAdvertisement";
 import { removeMember } from "./removeMember";
@@ -80,6 +90,7 @@ import { unregisterForEventByUser } from "./unregisterForEventByUser";
 import { updateActionItem } from "./updateActionItem";
 import { updateActionItemCategory } from "./updateActionItemCategory";
 import { updateEvent } from "./updateEvent";
+import { updateEventVolunteer } from "./updateEventVolunteer";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
 import { updatePluginStatus } from "./updatePluginStatus";
@@ -90,6 +101,7 @@ import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
 import { deleteAdvertisementById } from "./deleteAdvertisementById";
 import { updateAdvertisement } from "./updateAdvertisement";
+import { updateAgendaCategory } from "./updateAgendaCategory";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -104,6 +116,10 @@ export const Mutation: MutationResolvers = {
   addUserToGroupChat,
   adminRemoveEvent,
   adminRemoveGroup,
+  addUserToUserFamily,
+  removeUserFamily,
+  removeUserFromUserFamily,
+  createUserFamily,
   assignUserTag,
   blockPluginCreationBySuperadmin,
   blockUser,
@@ -115,6 +131,7 @@ export const Mutation: MutationResolvers = {
   createActionItem,
   createComment,
   createAdvertisement,
+  createAgendaCategory,
   createDirectChat,
   createDonation,
   createEvent,
@@ -128,8 +145,11 @@ export const Mutation: MutationResolvers = {
   createUserTag,
   deleteDonationById,
   deleteAdvertisementById,
+  deleteAgendaCategory,
   forgotPassword,
+  inviteEventAttendee,
   joinPublicOrganization,
+  createEventVolunteer,
   leaveOrganization,
   likeComment,
   likePost,
@@ -139,6 +159,7 @@ export const Mutation: MutationResolvers = {
   recaptcha,
   refreshToken,
   registerForEvent,
+  registerEventAttendee,
   rejectAdmin,
   rejectMembershipRequest,
   removeAdmin,
@@ -147,6 +168,7 @@ export const Mutation: MutationResolvers = {
   removeDirectChat,
   removeEvent,
   removeEventAttendee,
+  removeEventVolunteer,
   removeAdvertisement,
   removeGroupChat,
   removeMember,
@@ -173,7 +195,9 @@ export const Mutation: MutationResolvers = {
   unregisterForEventByUser,
   updateActionItem,
   updateActionItemCategory,
+  updateAgendaCategory,
   updateEvent,
+  updateEventVolunteer,
   updateLanguage,
   updateOrganization,
   updatePluginStatus,

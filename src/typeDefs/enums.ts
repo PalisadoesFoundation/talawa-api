@@ -2,6 +2,11 @@ import { gql } from "graphql-tag";
 
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const enums = gql`
+  enum ActionItemsOrderByInput {
+    createdAt_ASC
+    createdAt_DESC
+  }
+
   enum EventOrderByInput {
     id_ASC
     id_DESC
@@ -23,6 +28,13 @@ export const enums = gql`
     recurrance_DESC
     location_ASC
     location_DESC
+  }
+
+  enum Frequency {
+    YEARLY
+    MONTHLY
+    WEEKLY
+    DAILY
   }
 
   enum OrganizationOrderByInput {
@@ -100,6 +112,17 @@ export const enums = gql`
     SUPERADMIN
     NON_USER
   }
+
+  enum WeekDays {
+    MO
+    TU
+    WE
+    TH
+    FR
+    SA
+    SU
+  }
+
   enum EducationGrade {
     NO_GRADE
     PRE_KG
@@ -129,6 +152,11 @@ export const enums = gql`
     MALE
     FEMALE
     OTHER
+  }
+
+  enum EventVolunteerResponse {
+    YES
+    NO
   }
 
   enum MaritalStatus {

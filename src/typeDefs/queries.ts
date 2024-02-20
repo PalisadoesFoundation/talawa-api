@@ -11,13 +11,19 @@ export const queries = gql`
 
     actionItemsByEvent(eventId: ID!): [ActionItem]
 
-    actionItemsByOrganization(organizationId: ID!): [ActionItem]
+    actionItemsByOrganization(
+      organizationId: ID!
+      where: ActionItemWhereInput
+      orderBy: ActionItemsOrderByInput
+    ): [ActionItem]
 
     actionItemCategory(id: ID!): ActionItemCategory
 
     actionItemCategoriesByOrganization(
       organizationId: ID!
     ): [ActionItemCategory]
+
+    agendaCategory(id: ID!): AgendaCategory!
 
     checkAuth: User! @auth
 
@@ -40,7 +46,13 @@ export const queries = gql`
       orderBy: EventOrderByInput
     ): [Event!]!
 
+    eventVolunteersByEvent(id: ID!): [EventVolunteer]
+
     getDonationById(id: ID!): Donation!
+
+    getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
+
+    getEventAttendee(userId: ID!, eventId: ID!): EventAttendee
 
     getDonationByOrgId(orgId: ID!): [Donation]
 

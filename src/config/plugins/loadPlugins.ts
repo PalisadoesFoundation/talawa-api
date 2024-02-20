@@ -14,13 +14,13 @@ const loadPlugins = async (): Promise<void> => {
     });
     logger.info(
       "\x1b[1m\x1b[32m%s\x1b[0m",
-      `Uploaded Plugins in ${databaseTitle} `
+      `Uploaded Plugins in ${databaseTitle} `,
     );
   } else {
     //plugin data already present
     logger.info(
       "\x1b[1m\x1b[32m%s\x1b[0m",
-      `Plugin data already present at ${databaseTitle}`
+      `Plugin data already present at ${databaseTitle}`,
     );
   }
 };

@@ -43,13 +43,13 @@ describe("resolvers -> Query -> actionItemCategory", () => {
     const actionItemCategoryPayload = await actionItemCategoryResolver?.(
       {},
       args,
-      {}
+      {},
     );
 
     expect(actionItemCategoryPayload).toEqual(
       expect.objectContaining({
         _id: testCategory?._id,
-      })
+      }),
     );
   });
 });

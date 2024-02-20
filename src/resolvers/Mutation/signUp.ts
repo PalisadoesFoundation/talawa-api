@@ -36,7 +36,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     throw new errors.ConflictError(
       requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
       EMAIL_ALREADY_EXISTS_ERROR.CODE,
-      EMAIL_ALREADY_EXISTS_ERROR.PARAM
+      EMAIL_ALREADY_EXISTS_ERROR.PARAM,
     );
   }
 
@@ -46,11 +46,23 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     args.data.selectedOrgainzation,
   ]);
 
+
   organization = organizationFoundInCache[0];
-  if (organizationFoundInCache[0] == null) {
-    organization = await Organization.findOne({
-      _id: args.data.selectedOrgainzation,
-    }).lean();
+    if (organizationFoundInCache[0] == null) {
+      organization = await Organization.findOne({
+        _id: args.data.organizationUserBelongsToId,
+      }).lean();
+
+      await cacheOrganizations([organization!]);
+    }
+
+    if (!organization) {
+      throw new errors.NotFoundError(
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+      );
+    }
   }
 
   const isLastResortSuperAdmin =

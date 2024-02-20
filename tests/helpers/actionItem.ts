@@ -20,7 +20,7 @@ export const createTestActionItem = async (): Promise<
     TestOrganizationType,
     TestActionItemCategoryType,
     TestActionItemType,
-    TestUserType
+    TestUserType,
   ]
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
@@ -69,11 +69,18 @@ export const createTestActionItems = async (): Promise<
   const randomUser = await createTestUser();
   const [testUser, testOrganization, testCategory] = await createTestCategory();
 
+  const testCategory2 = await ActionItemCategory.create({
+    creatorId: testUser?._id,
+    organizationId: testOrganization?._id,
+    name: "ActionItemCategory 2",
+  });
+
   const testActionItem1 = await ActionItem.create({
     creatorId: testUser?._id,
     assigneeId: randomUser?._id,
     assignerId: testUser?._id,
     actionItemCategoryId: testCategory?._id,
+    isCompleted: true,
   });
 
   const testActionItem2 = await ActionItem.create({
@@ -81,6 +88,15 @@ export const createTestActionItems = async (): Promise<
     assigneeId: randomUser?._id,
     assignerId: testUser?._id,
     actionItemCategoryId: testCategory?._id,
+    isCompleted: false,
+  });
+
+  await ActionItem.create({
+    creatorId: testUser?._id,
+    assigneeId: randomUser?._id,
+    assignerId: testUser?._id,
+    actionItemCategoryId: testCategory2?._id,
+    isCompleted: true,
   });
 
   const testEvent = await Event.create({
@@ -88,7 +104,7 @@ export const createTestActionItems = async (): Promise<
     description: `description${nanoid().toLowerCase()}`,
     allDay: true,
     startDate: new Date(),
-    recurring: true,
+    recurring: false,
     isPublic: true,
     isRegisterable: true,
     creatorId: testUser?._id,
@@ -103,7 +119,7 @@ export const createTestActionItems = async (): Promise<
     },
     {
       eventId: testEvent?._id,
-    }
+    },
   );
 
   await ActionItem.updateOne(
@@ -112,7 +128,7 @@ export const createTestActionItems = async (): Promise<
     },
     {
       eventId: testEvent?._id,
-    }
+    },
   );
 
   return [testUser, testEvent, testOrganization];

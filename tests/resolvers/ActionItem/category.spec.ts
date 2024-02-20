@@ -28,7 +28,7 @@ describe("resolvers -> ActionItem -> actionItemCategory", () => {
     const actionItemCategoryPayload = await actionItemCategoryResolver?.(
       parent,
       {},
-      {}
+      {},
     );
 
     const actionItemCategoryObject = await ActionItemCategory.findOne({

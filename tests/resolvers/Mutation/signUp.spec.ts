@@ -165,7 +165,7 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it(`when uploadImage is called with newFile `, async () => {
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL
+      async (encodedImageURL: string) => encodedImageURL,
     );
 
     const email = `email${nanoid().toLowerCase()}@gmail.com`;

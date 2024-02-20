@@ -1,5 +1,6 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Plugin.
  */
@@ -39,6 +40,8 @@ const pluginSchema = new Schema({
     },
   ],
 });
+
+createLoggingMiddleware(pluginSchema, "Plugin");
 
 const pluginModel = (): Model<InterfacePlugin> =>
   model<InterfacePlugin>("Plugin", pluginSchema);
