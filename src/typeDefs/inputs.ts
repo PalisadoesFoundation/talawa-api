@@ -291,6 +291,7 @@ export const inputs = gql`
     title: String
     description: String
     recurring: Boolean
+    isRecurringEventException: Boolean
     recurrance: Recurrance
     isPublic: Boolean
     isRegisterable: Boolean

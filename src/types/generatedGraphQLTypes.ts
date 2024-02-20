@@ -1243,6 +1243,7 @@ export type MutationUpdateAgendaCategoryArgs = {
 export type MutationUpdateEventArgs = {
   data?: InputMaybe<UpdateEventInput>;
   id: Scalars['ID']['input'];
+  recurrenceRuleData?: InputMaybe<RecurrenceRuleInput>;
 };
 
 
@@ -1912,6 +1913,7 @@ export type UpdateEventInput = {
   endDate?: InputMaybe<Scalars['Date']['input']>;
   endTime?: InputMaybe<Scalars['Time']['input']>;
   isPublic?: InputMaybe<Scalars['Boolean']['input']>;
+  isRecurringEventException?: InputMaybe<Scalars['Boolean']['input']>;
   isRegisterable?: InputMaybe<Scalars['Boolean']['input']>;
   latitude?: InputMaybe<Scalars['Latitude']['input']>;
   location?: InputMaybe<Scalars['String']['input']>;

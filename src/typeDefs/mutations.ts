@@ -255,7 +255,11 @@ export const mutations = gql`
       input: UpdateAdvertisementInput!
     ): UpdateAdvertisementPayload @auth
 
-    updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
+    updateEvent(
+      id: ID!
+      data: UpdateEventInput
+      recurrenceRuleData: RecurrenceRuleInput
+    ): Event! @auth
 
     updateEventVolunteer(
       id: ID!
