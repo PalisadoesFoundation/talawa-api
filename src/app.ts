@@ -37,7 +37,6 @@ const corsOptions: cors.CorsOptions = {
     next(new Error("Unauthorized"));
   },
 };
-/* eslint-disable-line */
 
 i18n.configure({
   directory: `${__dirname}/../locales`,
