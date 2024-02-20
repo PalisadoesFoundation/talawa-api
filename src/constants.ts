@@ -1,5 +1,5 @@
-import { getEnvIssues, envSchema } from "./env";
 import crypto from "crypto";
+import { envSchema, getEnvIssues } from "./env";
 
 const issues = getEnvIssues();
 let ENV = process.env;
@@ -75,7 +75,18 @@ export const FEEDBACK_ALREADY_SUBMITTED = {
   CODE: "feedback.alreadySubmitted",
   PARAM: "feedback.alreadySubmitted",
 };
-
+export const FUND_ALREADY_EXISTS = {
+  DESC: "Fund already exists",
+  CODE: "fund.alreadyExists",
+  MESSAGE: "fund.alreadyExists",
+  PARAM: "fund",
+};
+export const FUND_NOT_FOUND_ERROR = {
+  DESC: "Fund not found",
+  CODE: "fund.notFound",
+  MESSAGE: "fund.notFound",
+  PARAM: "fund",
+};
 export const INVALID_OTP = "Invalid OTP";
 
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";

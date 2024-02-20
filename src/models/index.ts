@@ -30,3 +30,4 @@ export * from "./User";
 export * from "./TagUser";
 export * from "./Venue";
 export * from "./AgendaCategory";
+export * from "./Fund";
