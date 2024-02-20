@@ -86,6 +86,17 @@ export type ActionItemCategory = {
   updatedAt: Scalars['Date']['output'];
 };
 
+export type ActionItemWhereInput = {
+  actionItemCategory_id?: InputMaybe<Scalars['ID']['input']>;
+  event_id?: InputMaybe<Scalars['ID']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  is_completed?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type ActionItemsOrderByInput =
+  | 'createdAt_ASC'
+  | 'createdAt_DESC';
+
 export type Address = {
   __typename?: 'Address';
   city?: Maybe<Scalars['String']['output']>;
@@ -1824,7 +1835,9 @@ export type QueryActionItemsByEventArgs = {
 
 
 export type QueryActionItemsByOrganizationArgs = {
+  orderBy?: InputMaybe<ActionItemsOrderByInput>;
   organizationId: Scalars['ID']['input'];
+  where?: InputMaybe<ActionItemWhereInput>;
 };
 
 
@@ -2492,6 +2505,8 @@ export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
 export type ResolversTypes = {
   ActionItem: ResolverTypeWrapper<InterfaceActionItemModel>;
   ActionItemCategory: ResolverTypeWrapper<InterfaceActionItemCategoryModel>;
+  ActionItemWhereInput: ActionItemWhereInput;
+  ActionItemsOrderByInput: ActionItemsOrderByInput;
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
   Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'creator'> & { creator?: Maybe<ResolversTypes['User']> }>;
@@ -2649,6 +2664,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   ActionItem: InterfaceActionItemModel;
   ActionItemCategory: InterfaceActionItemCategoryModel;
+  ActionItemWhereInput: ActionItemWhereInput;
   Address: Address;
   AddressInput: AddressInput;
   Advertisement: Omit<Advertisement, 'creator'> & { creator?: Maybe<ResolversParentTypes['User']> };
