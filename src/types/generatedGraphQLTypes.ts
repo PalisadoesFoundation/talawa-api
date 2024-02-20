@@ -85,6 +85,17 @@ export type ActionItemCategory = {
   updatedAt: Scalars['Date']['output'];
 };
 
+export type ActionItemWhereInput = {
+  actionItemCategory_id?: InputMaybe<Scalars['ID']['input']>;
+  event_id?: InputMaybe<Scalars['ID']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  is_completed?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type ActionItemsOrderByInput =
+  | 'createdAt_ASC'
+  | 'createdAt_DESC';
+
 export type Address = {
   __typename?: 'Address';
   city?: Maybe<Scalars['String']['output']>;
@@ -159,8 +170,6 @@ export type AuthData = {
 export type CheckIn = {
   __typename?: 'CheckIn';
   _id: Scalars['ID']['output'];
-  allotedRoom?: Maybe<Scalars['String']['output']>;
-  allotedSeat?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['DateTime']['output'];
   event: Event;
   feedbackSubmitted: Scalars['Boolean']['output'];
@@ -170,8 +179,6 @@ export type CheckIn = {
 };
 
 export type CheckInInput = {
-  allotedRoom?: InputMaybe<Scalars['String']['input']>;
-  allotedSeat?: InputMaybe<Scalars['String']['input']>;
   eventId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
 };
@@ -350,6 +357,20 @@ export type Event = {
 
 export type EventAdminsArgs = {
   adminId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type EventAttendee = {
+  __typename?: 'EventAttendee';
+  _id: Scalars['ID']['output'];
+  checkInId?: Maybe<Scalars['ID']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  eventId: Scalars['ID']['output'];
+  isCheckedIn: Scalars['Boolean']['output'];
+  isCheckedOut: Scalars['Boolean']['output'];
+  isInvited: Scalars['Boolean']['output'];
+  isRegistered: Scalars['Boolean']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  userId: Scalars['ID']['output'];
 };
 
 export type EventAttendeeInput = {
@@ -646,6 +667,8 @@ export type Mutation = {
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
   checkIn: CheckIn;
+  checkInEventAttendee: EventAttendee;
+  checkOutEventAttendee: EventAttendee;
   createActionItem: ActionItem;
   createActionItemCategory: ActionItemCategory;
   createAdmin: User;
@@ -669,6 +692,7 @@ export type Mutation = {
   deleteAgendaCategory: Scalars['ID']['output'];
   deleteDonationById: DeletePayload;
   forgotPassword: Scalars['Boolean']['output'];
+  inviteEventAttendee: EventAttendee;
   joinPublicOrganization: User;
   leaveOrganization: User;
   likeComment?: Maybe<Comment>;
@@ -678,7 +702,8 @@ export type Mutation = {
   otp: OtpData;
   recaptcha: Scalars['Boolean']['output'];
   refreshToken: ExtendSession;
-  registerForEvent: Event;
+  registerEventAttendee: EventAttendee;
+  registerForEvent: EventAttendee;
   rejectAdmin: Scalars['Boolean']['output'];
   rejectMembershipRequest: MembershipRequest;
   removeActionItem: ActionItem;
@@ -831,6 +856,16 @@ export type MutationCheckInArgs = {
 };
 
 
+export type MutationCheckInEventAttendeeArgs = {
+  data: EventAttendeeInput;
+};
+
+
+export type MutationCheckOutEventAttendeeArgs = {
+  data: EventAttendeeInput;
+};
+
+
 export type MutationCreateActionItemArgs = {
   actionItemCategoryId: Scalars['ID']['input'];
   data: CreateActionItemInput;
@@ -960,6 +995,11 @@ export type MutationForgotPasswordArgs = {
 };
 
 
+export type MutationInviteEventAttendeeArgs = {
+  data: EventAttendeeInput;
+};
+
+
 export type MutationJoinPublicOrganizationArgs = {
   organizationId: Scalars['ID']['input'];
 };
@@ -997,6 +1037,11 @@ export type MutationRecaptchaArgs = {
 
 export type MutationRefreshTokenArgs = {
   refreshToken: Scalars['String']['input'];
+};
+
+
+export type MutationRegisterEventAttendeeArgs = {
+  data: EventAttendeeInput;
 };
 
 
@@ -1531,6 +1576,8 @@ export type Query = {
   getDonationById: Donation;
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
   getDonationByOrgIdConnection: Array<Donation>;
+  getEventAttendee?: Maybe<EventAttendee>;
+  getEventAttendeesByEventId?: Maybe<Array<Maybe<EventAttendee>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']['output']>;
@@ -1575,7 +1622,9 @@ export type QueryActionItemsByEventArgs = {
 
 
 export type QueryActionItemsByOrganizationArgs = {
+  orderBy?: InputMaybe<ActionItemsOrderByInput>;
   organizationId: Scalars['ID']['input'];
+  where?: InputMaybe<ActionItemWhereInput>;
 };
 
 
@@ -1648,6 +1697,17 @@ export type QueryGetDonationByOrgIdConnectionArgs = {
   orgId: Scalars['ID']['input'];
   skip?: InputMaybe<Scalars['Int']['input']>;
   where?: InputMaybe<DonationWhereInput>;
+};
+
+
+export type QueryGetEventAttendeeArgs = {
+  eventId: Scalars['ID']['input'];
+  userId: Scalars['ID']['input'];
+};
+
+
+export type QueryGetEventAttendeesByEventIdArgs = {
+  eventId: Scalars['ID']['input'];
 };
 
 
@@ -2226,6 +2286,8 @@ export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
 export type ResolversTypes = {
   ActionItem: ResolverTypeWrapper<InterfaceActionItemModel>;
   ActionItemCategory: ResolverTypeWrapper<InterfaceActionItemCategoryModel>;
+  ActionItemWhereInput: ActionItemWhereInput;
+  ActionItemsOrderByInput: ActionItemsOrderByInput;
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
   Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'creator'> & { creator?: Maybe<ResolversTypes['User']> }>;
@@ -2260,6 +2322,7 @@ export type ResolversTypes = {
   EmploymentStatus: EmploymentStatus;
   Error: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Error']>;
   Event: ResolverTypeWrapper<InterfaceEventModel>;
+  EventAttendee: ResolverTypeWrapper<InterfaceEventAttendeeModel>;
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
@@ -2377,6 +2440,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   ActionItem: InterfaceActionItemModel;
   ActionItemCategory: InterfaceActionItemCategoryModel;
+  ActionItemWhereInput: ActionItemWhereInput;
   Address: Address;
   AddressInput: AddressInput;
   Advertisement: Omit<Advertisement, 'creator'> & { creator?: Maybe<ResolversParentTypes['User']> };
@@ -2408,6 +2472,7 @@ export type ResolversParentTypes = {
   EmailAddress: Scalars['EmailAddress']['output'];
   Error: ResolversInterfaceTypes<ResolversParentTypes>['Error'];
   Event: InterfaceEventModel;
+  EventAttendee: InterfaceEventAttendeeModel;
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
   EventVolunteer: InterfaceEventVolunteerModel;
@@ -2607,8 +2672,6 @@ export type AuthDataResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type CheckInResolvers<ContextType = any, ParentType extends ResolversParentTypes['CheckIn'] = ResolversParentTypes['CheckIn']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  allotedRoom?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  allotedSeat?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
   feedbackSubmitted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -2738,6 +2801,20 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EventAttendeeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventAttendee'] = ResolversParentTypes['EventAttendee']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  checkInId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  eventId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isCheckedIn?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isCheckedOut?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isInvited?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isRegistered?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2917,6 +2994,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
+  checkInEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationCheckInEventAttendeeArgs, 'data'>>;
+  checkOutEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationCheckOutEventAttendeeArgs, 'data'>>;
   createActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationCreateActionItemArgs, 'actionItemCategoryId' | 'data'>>;
   createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'name' | 'organizationId'>>;
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
@@ -2940,6 +3019,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteAgendaCategory?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteAgendaCategoryArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
+  inviteEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationInviteEventAttendeeArgs, 'data'>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;
   leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'organizationId'>>;
   likeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationLikeCommentArgs, 'id'>>;
@@ -2949,7 +3029,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otp?: Resolver<ResolversTypes['OtpData'], ParentType, ContextType, RequireFields<MutationOtpArgs, 'data'>>;
   recaptcha?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRecaptchaArgs, 'data'>>;
   refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
-  registerForEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
+  registerEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationRegisterEventAttendeeArgs, 'data'>>;
+  registerForEvent?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
   rejectAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectAdminArgs, 'id'>>;
   rejectMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationRejectMembershipRequestArgs, 'membershipRequestId'>>;
   removeActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationRemoveActionItemArgs, 'id'>>;
@@ -3132,6 +3213,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationById?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<QueryGetDonationByIdArgs, 'id'>>;
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
+  getEventAttendee?: Resolver<Maybe<ResolversTypes['EventAttendee']>, ParentType, ContextType, RequireFields<QueryGetEventAttendeeArgs, 'eventId' | 'userId'>>;
+  getEventAttendeesByEventId?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventAttendee']>>>, ParentType, ContextType, RequireFields<QueryGetEventAttendeesByEventIdArgs, 'eventId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
@@ -3330,6 +3413,7 @@ export type Resolvers<ContextType = any> = {
   EmailAddress?: GraphQLScalarType;
   Error?: ErrorResolvers<ContextType>;
   Event?: EventResolvers<ContextType>;
+  EventAttendee?: EventAttendeeResolvers<ContextType>;
   EventVolunteer?: EventVolunteerResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Feedback?: FeedbackResolvers<ContextType>;
