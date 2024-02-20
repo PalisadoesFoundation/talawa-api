@@ -78,8 +78,8 @@ export function getFilterObject(
   args: CursorPaginationInput,
 ): FilterObjectType | null {
   if (args.cursor) {
-    if (args.direction === "FORWARD") return { _id: { $gt: args.cursor } };
-    else return { _id: { $lt: args.cursor } };
+    if (args.direction === "FORWARD") return { _id: { $lt: args.cursor } };
+    else return { _id: { $gt: args.cursor } };
   }
 
   return null;
@@ -150,7 +150,7 @@ export function generateConnectionObject<
     node: getNodeFromResult(object),
     cursor: object._id.toString(),
   }));
-
+  connectionObject.totalCount = allFetchedObjects.length;
   // Set the start and end cursor
   connectionObject.pageInfo.startCursor = connectionObject.edges[0].cursor;
   connectionObject.pageInfo.endCursor =

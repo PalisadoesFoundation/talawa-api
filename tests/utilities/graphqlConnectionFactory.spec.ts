@@ -87,7 +87,7 @@ describe("utilities -> graphqlConnectionFactory -> getFilterObject", () => {
     const payload = getFilterObject(args);
 
     expect(payload).toEqual({
-      _id: { $gt: "12345" },
+      _id: { $lt: "12345" },
     });
   });
 
@@ -101,7 +101,7 @@ describe("utilities -> graphqlConnectionFactory -> getFilterObject", () => {
     const payload = getFilterObject(args);
 
     expect(payload).toEqual({
-      _id: { $lt: "12345" },
+      _id: { $gt: "12345" },
     });
   });
 });
