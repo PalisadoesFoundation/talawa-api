@@ -153,6 +153,14 @@ export const inputs = gql`
     newPassword: String!
     otpToken: String!
   }
+  input FundInput {
+    name: String!
+    organizationId: ID!
+    refrenceNumber: String
+    taxDeductible: Boolean!
+    isDefault: Boolean!
+    isArchived: Boolean!
+  }
 
   input LanguageInput {
     en_value: String!
@@ -302,6 +310,12 @@ export const inputs = gql`
     allDay: Boolean
     startTime: Time
     endTime: Time
+  }
+  input UpdateFundInput {
+    name: String
+    taxDeductible: Boolean
+    isDefault: Boolean
+    isArchived: Boolean
   }
 
   # Implements CursorPaginationInput
