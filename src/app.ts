@@ -20,6 +20,7 @@ const apiLimiter = rateLimit({
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
 
+// eslint-disable-next-line  @typescript-eslint/no-unused-vars
 const corsOptions: cors.CorsOptions = {
   origin: (origin, next) => {
     if (process.env.NODE_ENV === "development") {
@@ -36,6 +37,7 @@ const corsOptions: cors.CorsOptions = {
     next(new Error("Unauthorized"));
   },
 };
+/* eslint-disable-line */
 
 i18n.configure({
   directory: `${__dirname}/../locales`,

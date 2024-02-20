@@ -64,10 +64,21 @@ type Advertisement {
   updatedAt: DateTime!
 }
 
+type AdvertisementEdge {
+  cursor: String
+  node: Advertisement
+}
+
 enum AdvertisementType {
   BANNER
   MENU
   POPUP
+}
+
+type AdvertisementsConnection {
+  edges: [AdvertisementEdge]
+  pageInfo: ConnectionPageInfo
+  totalCount: Int
 }
 
 type AgendaCategory {
@@ -166,21 +177,6 @@ input CreateAdvertisementInput {
 
 type CreateAdvertisementPayload {
   advertisement: Advertisement
-}
-
-type AdvertisementEdge {
-  cursor: String
-  node: Advertisement
-}
-
-type AdvertisementsConnection {
-  edges: [AdvertisementEdge]
-  pageInfo: ConnectionPageInfo
-  totalCount: Int
-}
-
-extend type Organization {
-  advertisements(after: String, before: String, first: Int, last: Int): AdvertisementsConnection
 }
 
 input CreateAgendaCategoryInput {
@@ -696,6 +692,7 @@ type Organization {
   actionItemCategories: [ActionItemCategory]
   address: Address
   admins(adminId: ID): [User!]
+  advertisements(after: String, before: String, first: Int, last: Int): AdvertisementsConnection
   agendaCategories: [AgendaCategory]
   apiUrl: URL!
   blockedUsers: [User]

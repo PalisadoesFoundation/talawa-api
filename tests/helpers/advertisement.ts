@@ -1,10 +1,8 @@
 import { Advertisement, User } from "../../src/models";
 import type { InterfaceUser } from "../../src/models";
-
 import { nanoid } from "nanoid";
-import type { Document } from "mongoose";
 import { createTestUserAndOrganization } from "./userAndOrg";
-import type { PopulatedDoc } from "mongoose";
+import type { Document, PopulatedDoc } from "mongoose";
 
 export type TestAdvertisementType = {
   _id: string;
@@ -39,10 +37,9 @@ export const createTestAdvertisement =
 
     return createdAdvertisement.toObject();
   };
-
 export type TestSuperAdminType =
-  | (InterfaceUser & Document<any, any, InterfaceUser>)
-  | null;
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
 export const createTestSuperAdmin = async (): Promise<TestSuperAdminType> => {
   const testSuperAdmin = await User.create({
