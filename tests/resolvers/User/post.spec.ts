@@ -53,6 +53,22 @@ describe("resolvers -> User -> post", () => {
     }
     expect(query).toEqual({ _id: { $gt: result.cursor } });
   });
+  it("if first is greater than the maximum limit it should set limit to the maximum limit", () => {
+    const args: RelayConnectionArguments = {
+      first: 11,
+      after: "cursor",
+    };
+    const result = parseRelayConnectionArguments(args, 10);
+    expect(result.limit).toBe(10);
+  });
+  it("if last is greater than the maximum limit it should set limit to the maximum limit", () => {
+    const args: RelayConnectionArguments = {
+      last: 11,
+      before: "cursor",
+    };
+    const result = parseRelayConnectionArguments(args, 10);
+    expect(result.limit).toBe(10);
+  });
   it("handle post beyond the limit correctly", () => {
     const args: RelayConnectionArguments = {
       first: 5,
