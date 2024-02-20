@@ -163,6 +163,172 @@ input CreateUserTagInput {
   parentTagId: ID
 }
 
+enum Currency {
+  AED
+  AFN
+  ALL
+  AMD
+  ANG
+  AOA
+  ARS
+  AUD
+  AWG
+  AZN
+  BAM
+  BBD
+  BDT
+  BGN
+  BHD
+  BIF
+  BMD
+  BND
+  BOB
+  BRL
+  BSD
+  BTN
+  BWP
+  BYN
+  BZD
+  CAD
+  CDF
+  CHF
+  CLP
+  CNY
+  COP
+  CRC
+  CUP
+  CVE
+  CZK
+  DJF
+  DKK
+  DOP
+  DZD
+  EGP
+  ERN
+  ETB
+  EUR
+  FJD
+  FKP
+  FOK
+  FRO
+  GBP
+  GEL
+  GGP
+  GHS
+  GIP
+  GMD
+  GNF
+  GTQ
+  GYD
+  HKD
+  HNL
+  HRK
+  HTG
+  HUF
+  IDR
+  ILS
+  IMP
+  INR
+  IQD
+  IRR
+  ISK
+  JEP
+  JMD
+  JOD
+  JPY
+  KES
+  KGS
+  KHR
+  KID
+  KMF
+  KRW
+  KWD
+  KYD
+  KZT
+  LAK
+  LBP
+  LKR
+  LRD
+  LSL
+  LYD
+  MAD
+  MDL
+  MGA
+  MKD
+  MMK
+  MNT
+  MOP
+  MRU
+  MUR
+  MVR
+  MWK
+  MXN
+  MYR
+  MZN
+  NAD
+  NGN
+  NIO
+  NOK
+  NPR
+  NZD
+  OMR
+  PAB
+  PEN
+  PGK
+  PHP
+  PKR
+  PLN
+  PYG
+  QAR
+  RON
+  RSD
+  RUB
+  RWF
+  SAR
+  SBD
+  SCR
+  SDG
+  SEK
+  SGD
+  SHP
+  SLL
+  SOS
+  SPL
+  SRD
+  STN
+  SVC
+  SYP
+  SZL
+  THB
+  TJS
+  TMT
+  TND
+  TOP
+  TRY
+  TTD
+  TVD
+  TWD
+  TZS
+  UAH
+  UGX
+  USD
+  UYU
+  UZS
+  VEF
+  VND
+  VUV
+  WST
+  XAF
+  XCD
+  XDR
+  XOF
+  XPF
+  YER
+  ZAR
+  ZMW
+  ZWD
+}
+
 input CursorPaginationInput {
   cursor: String
   direction: PaginationDirection!
@@ -431,6 +597,40 @@ enum Frequency {
   YEARLY
 }
 
+type Fund {
+  _id: ID!
+  campaign: [FundraisingCampaign]!
+  createdAt: DateTime!
+  isArchived: Boolean!
+  isDefault: Boolean!
+  name: String!
+  organizationId: ID!
+  refrenceNumber: String
+  taxDeductible: Boolean!
+  updatedAt: DateTime!
+}
+
+input FundInput {
+  isArchived: Boolean!
+  isDefault: Boolean!
+  name: String!
+  organizationId: ID!
+  refrenceNumber: String
+  taxDeductible: Boolean!
+}
+
+type FundraisingCampaign {
+  _id: ID!
+  createdAt: DateTime!
+  currency: Currency!
+  endDate: Date!
+  fund: Fund!
+  fundingGoal: Float!
+  name: String!
+  startDate: Date!
+  updatedAt: DateTime!
+}
+
 enum Gender {
   FEMALE
   MALE
@@ -596,6 +796,7 @@ type Mutation {
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
+  createFund(data: FundInput!): Fund!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
@@ -662,6 +863,7 @@ type Mutation {
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
+  updateFund(data: UpdateFundInput!, id: ID!): Fund!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
@@ -1070,6 +1272,13 @@ input UpdateEventVolunteerInput {
   isAssigned: Boolean
   isInvited: Boolean
   response: EventVolunteerResponse
+}
+
+input UpdateFundInput {
+  isArchived: Boolean
+  isDefault: Boolean
+  name: String
+  taxDeductible: Boolean
 }
 
 input UpdateOrganizationInput {
