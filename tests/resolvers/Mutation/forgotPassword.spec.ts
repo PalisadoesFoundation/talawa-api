@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import "dotenv/config";
 import type { MutationForgotPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -52,8 +50,10 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       };
 
       await forgotPasswordResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(INVALID_OTP);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(INVALID_OTP);
+      }
     }
   });
 
@@ -77,6 +77,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
     const oldPassword = testUser?.password;
     const args: MutationForgotPasswordArgs = {
       data: {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         newPassword: oldPassword!, // Using optional chaining and nullish coalescing
         otpToken,
         userOtp: otp,
@@ -85,8 +86,10 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     try {
       await forgotPasswordResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(INVALID_OTP);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(INVALID_OTP);
+      }
     }
   });
   it(`throws an error when the user is not found`, async () => {
@@ -116,8 +119,10 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     try {
       await forgotPasswordResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      }
     }
   });
   it(`changes the password if args.otp is correct`, async () => {
