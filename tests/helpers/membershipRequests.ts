@@ -11,7 +11,7 @@ export type TestMembershipRequestType =
   | null;
 
 export const createTestMembershipRequest = async (
-  givenUser?: TestUserType
+  givenUser?: TestUserType,
 ): Promise<[TestUserType, TestOrganizationType, TestMembershipRequestType]> => {
   const testUser = givenUser == null ? await createTestUser() : givenUser;
 

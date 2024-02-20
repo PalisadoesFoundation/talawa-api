@@ -98,10 +98,10 @@ describe("resolvers -> Mutation -> signUp", () => {
     });
 
     const updatedOrganization = await Organization.findById(
-      testOrganization?._id
+      testOrganization?._id,
     ).select("members");
     expect(updatedOrganization?.members.includes(testUser?._id)).toBe(true);
-    expect(createdUser?.adminApproved).toBe(true);
+    expect(createdUser?.adminApproved).toBe(false);
 
     expect(typeof signUpPayload?.accessToken).toEqual("string");
     expect(signUpPayload?.accessToken.length).toBeGreaterThan(1);
@@ -115,7 +115,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     const localTestOrganization = await createTestUserAndOrganization(
       true,
       true,
-      true
+      true,
     );
     const args: MutationSignUpArgs = {
       data: {
@@ -152,7 +152,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     if (password != null) {
       const ifRightPassword = await bcrypt.compare(
         args.data.password,
-        password.password
+        password.password,
       );
       expect(ifRightPassword).toBe(true);
     }
@@ -220,7 +220,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     const localTestOrganization = await createTestUserAndOrganization(
       true,
       true,
-      true
+      true,
     );
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
     const args: MutationSignUpArgs = {

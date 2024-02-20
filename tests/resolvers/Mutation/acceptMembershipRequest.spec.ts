@@ -71,8 +71,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (
-       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any
+    ) {
       expect(spy).toHaveBeenCalledWith(
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE,
       );
@@ -114,7 +115,8 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any) {
+      error: any
+    ) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
@@ -154,8 +156,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (
-       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any
+    ) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
@@ -209,7 +212,8 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any) {
+      error: any
+    ) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
@@ -250,69 +254,14 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (
-       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any
+    ) {
       expect(spy).toHaveBeenCalledWith(USER_ALREADY_MEMBER_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${USER_ALREADY_MEMBER_ERROR.MESSAGE}`,
       );
     }
-  });
-
-  it(`accepts the membershipRequest for a newly created member and returns it`, async () => {
-    await Organization.updateOne(
-      {
-        _id: testOrganization?._id,
-      },
-      {
-        $set: {
-          members: [],
-        },
-      },
-    );
-
-    const args: MutationAcceptMembershipRequestArgs = {
-      membershipRequestId: testMembershipRequest?.id,
-    };
-
-    const context = {
-      userId: testUser?.id,
-    };
-    const { acceptMembershipRequest: acceptMembershipRequestResolver } =
-      await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
-    const acceptMembershipRequestPayload =
-      await acceptMembershipRequestResolver?.({}, args, context);
-
-    expect(acceptMembershipRequestPayload?._id).toEqual(
-      testMembershipRequest?._id,
-    );
-
-    const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization?._id,
-    })
-      .select(["members", "membershipRequests"])
-      .lean();
-
-    expect(updatedTestOrganization).toEqual(
-      expect.objectContaining({
-        members: expect.arrayContaining([testUser?._id]),
-        membershipRequests: expect.arrayContaining([]),
-      }),
-    );
-
-    const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
-    })
-      .select(["joinedOrganizations", "membershipRequests", "adminApproved"])
-      .lean();
-
-    expect(updatedTestUser).toEqual(
-      expect.objectContaining({
-        joinedOrganizations: expect.arrayContaining([testOrganization?._id]),
-        membershipRequests: expect.arrayContaining([]),
-      }),
-    );
-    expect(updatedTestUser?.adminApproved).toBe(true);
   });
   it(`accepts the membershipRequest for already existing member and returns it`, async () => {
     const testUser = await createAdminApprovedTestUser();
@@ -325,7 +274,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         $set: {
           members: [],
         },
-      }
+      },
     );
 
     const args: MutationAcceptMembershipRequestArgs = {
@@ -341,7 +290,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       await acceptMembershipRequestResolver?.({}, args, context);
 
     expect(String(acceptMembershipRequestPayload?._id)).toBe(
-      String(localTestData[2]?.id)
+      String(localTestData[2]?.id),
     );
 
     const updatedTestOrganization = await Organization.findOne({
@@ -351,7 +300,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       .lean();
     expect(updatedTestOrganization?.members.length).toBe(1);
     expect(String(updatedTestOrganization?.members[0])).toEqual(
-      String(localTestData[0]?.id)
+      String(localTestData[0]?.id),
     );
     expect(updatedTestOrganization?.membershipRequests.length).toEqual(0);
 
@@ -365,7 +314,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       expect.objectContaining({
         joinedOrganizations: expect.arrayContaining([localTestData[1]?._id]),
         membershipRequests: expect.arrayContaining([]),
-      })
+      }),
     );
   });
 });

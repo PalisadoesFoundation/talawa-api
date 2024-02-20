@@ -773,7 +773,7 @@ async function importDefaultOrganization(): Promise<void> {
       console.log("Collections exist, skipping import.");
     } else {
       const { stdout, stderr } = await exec(
-        "npm run import:sample-data-defaultOrg"
+        "npm run import:sample-data-defaultOrg",
       );
       if (stderr) {
         console.error(`Error: ${stderr}`);

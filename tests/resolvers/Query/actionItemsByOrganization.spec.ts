@@ -13,7 +13,6 @@ import { createTestActionItems } from "../../helpers/actionItem";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 
-
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
 let testEvent: TestEventType;

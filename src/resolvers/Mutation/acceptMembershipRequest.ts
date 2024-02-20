@@ -103,40 +103,19 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
-      // If adminAprooved is false, it means it is the very first request or a very fresh member has made the request! Hence we need to update this variable also
-      if (user.adminApproved == false) {
-        await User.updateOne(
-          {
-            _id: user._id,
+      await User.updateOne(
+        {
+          _id: user._id,
+        },
+        {
+          $push: {
+            joinedOrganizations: organization._id,
           },
-          {
-            $set: {
-              adminApproved: true,
-            },
-            $push: {
-              joinedOrganizations: organization._id,
-            },
-            $pull: {
-              membershipRequests: membershipRequest._id,
-            },
-          }
-        );
-      } else {
-        await User.updateOne(
-          {
-            _id: user._id,
+          $pull: {
+            membershipRequests: membershipRequest._id,
           },
-          {
-            $push: {
-              joinedOrganizations: organization._id,
-            },
-            $pull: {
-              membershipRequests: membershipRequest._id,
-            },
-          }
-        );
-      }
-    }
+        },
+      );
     }
     return membershipRequest;
   };

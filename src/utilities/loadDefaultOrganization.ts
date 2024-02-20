@@ -63,13 +63,13 @@ export async function loadDefaultOrganization(): Promise<void> {
   const session = await mongoose.startSession();
   const userData = await fs.readFileSync(
     path.join(__dirname, `../../sample_data/defaultOrganizationAdmin.json`),
-    "utf8"
+    "utf8",
   );
   const userDocs = JSON.parse(userData) as Record<string, unknown>[];
   await User.insertMany(userDocs);
   const data = await fs.readFileSync(
     path.join(__dirname, `../../sample_data/defaultOrganization.json`),
-    "utf8"
+    "utf8",
   );
   const docs = JSON.parse(data) as Record<string, unknown>[];
   await Organization.insertMany(docs);

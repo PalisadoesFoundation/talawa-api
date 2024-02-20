@@ -46,23 +46,23 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     args.data.selectedOrgainzation,
   ]);
 
-
   organization = organizationFoundInCache[0];
-    if (organizationFoundInCache[0] == null) {
-      organization = await Organization.findOne({
-        _id: args.data.organizationUserBelongsToId,
-      }).lean();
+  if (organizationFoundInCache[0] == null) {
+    organization = await Organization.findOne({
+      _id: args.data.selectedOrgainzation,
+    }).lean();
 
-      await cacheOrganizations([organization!]);
+    if (organization != null) {
+      await cacheOrganizations([organization]);
     }
+  }
 
-    if (!organization) {
-      throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-        ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
-      );
-    }
+  if (!organization) {
+    throw new errors.NotFoundError(
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+    );
   }
 
   const isLastResortSuperAdmin =
@@ -88,7 +88,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         image: uploadImageFileName ? uploadImageFileName : null,
         password: hashedPassword,
         userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
-        adminApproved: true,
+        adminApproved: isLastResortSuperAdmin,
         joinedOrganizations: [args.data.selectedOrgainzation],
       });
       const updatedUser: InterfaceUser = {
@@ -107,7 +107,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         },
         {
           new: true,
-        }
+        },
       );
       const accessToken = await createAccessToken(createdUser);
       const refreshToken = await createRefreshToken(createdUser);
@@ -149,7 +149,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         {
           new: true,
           projection: { password: 0 },
-        }
+        },
       ).lean();
 
       if (updatedOrganization !== null) {
@@ -168,14 +168,14 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         {
           new: true,
           projection: { password: 0 },
-        }
+        },
       );
     }
   } else {
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
