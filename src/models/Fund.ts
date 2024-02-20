@@ -3,7 +3,7 @@ import type { Model, PopulatedDoc, Types } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceFundCampaign } from "./FundCampaign";
 /**
- * This is an interface representing a document for direct chat in the database(MongoDB).
+ * This is an interface representing a document for fund in the database(MongoDB).
  */
 export interface InterfaceFund {
   _id: Types.ObjectId;
@@ -18,6 +18,19 @@ export interface InterfaceFund {
   updatedAt: Date;
 }
 
+/**
+ * This is the structure of a file
+ * @param organizationId - Organization ID to which the fund belongs
+ * @param name - Name of the fund
+ * @param refrenceNumber - Reference number of the fund
+ * @param taxDeductible - Whether the fund is tax deductible
+ * @param isDefault - Whether the fund is default
+ * @param isArchived - Whether the fund is archived
+ * @param campaign - Campaigns associated with the fund
+ * @param createdAt - Timestamp of creation
+ * @param updatedAt - Timestamp of updation
+ *
+ */
 const fundSchema = new Schema(
   {
     organizationId: {
@@ -31,7 +44,6 @@ const fundSchema = new Schema(
     },
     refrenceNumber: {
       type: String,
-      required: true,
     },
     taxDeductible: {
       type: Boolean,

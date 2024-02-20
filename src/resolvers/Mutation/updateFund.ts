@@ -1,4 +1,5 @@
 import {
+  FUND_ALREADY_EXISTS,
   FUND_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -19,6 +20,7 @@ import { adminCheck } from "../../utilities";
  * 2. If the Fund of the organization exists.
  * 3. If the organization exists.
  * 4.If the user is authorized to update the fund.
+ * 5. If the fund already exists with the same name.
  * @returns Updated Fund.
  */
 
@@ -62,7 +64,23 @@ export const updateFund: MutationResolvers["updateFund"] = async (
     );
   }
   //checks if the user is authorized to update the fund
-  adminCheck(currentUser._id, organizaton);
+  await adminCheck(currentUser._id, organizaton);
+
+  //if the name is provided, checks if the fund already exists with the same name
+  if (args.data.name) {
+    const exisitingFund = await Fund.findOne({
+      name: args.data.name,
+      organizationId: fund.organizationId,
+    });
+    //checks if the fund already exists
+    if (exisitingFund) {
+      throw new errors.ConflictError(
+        requestContext.translate(FUND_ALREADY_EXISTS.MESSAGE),
+        FUND_ALREADY_EXISTS.CODE,
+        FUND_ALREADY_EXISTS.PARAM,
+      );
+    }
+  }
   //updates the fund with the provided data
   const updatedFund = await Fund.findOneAndUpdate(
     {

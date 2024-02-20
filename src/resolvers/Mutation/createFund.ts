@@ -50,7 +50,7 @@ export const createFund: MutationResolvers["createFund"] = async (
     );
   }
   //checks whether the user is admin of organization or not
-  adminCheck(currentUser._id, organization);
+  await adminCheck(currentUser._id, organization);
 
   const exisitingFund = await Fund.findOne({
     name: args.data.name,
@@ -73,5 +73,6 @@ export const createFund: MutationResolvers["createFund"] = async (
     isDefault: args.data.isDefault,
     isArchived: args.data.isArchived,
   });
+
   return createdFund.toObject();
 };
