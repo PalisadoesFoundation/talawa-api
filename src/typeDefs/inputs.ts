@@ -45,6 +45,13 @@ export const inputs = gql`
     eventId: ID
   }
 
+  input ActionItemWhereInput {
+    actionItemCategory_id: ID
+    event_id: ID
+    is_active: Boolean
+    is_completed: Boolean
+  }
+
   input CreateAgendaCategoryInput {
     name: String!
     description: String
@@ -145,6 +152,14 @@ export const inputs = gql`
     userOtp: String!
     newPassword: String!
     otpToken: String!
+  }
+  input FundInput {
+    name: String!
+    organizationId: ID!
+    refrenceNumber: String
+    taxDeductible: Boolean!
+    isDefault: Boolean!
+    isArchived: Boolean!
   }
 
   input LanguageInput {
@@ -295,6 +310,12 @@ export const inputs = gql`
     allDay: Boolean
     startTime: Time
     endTime: Time
+  }
+  input UpdateFundInput {
+    name: String
+    taxDeductible: Boolean
+    isDefault: Boolean
+    isArchived: Boolean
   }
 
   # Implements CursorPaginationInput
