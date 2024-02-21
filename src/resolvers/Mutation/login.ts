@@ -55,12 +55,8 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   }
   let appUserProfile = await AppUserProfile.findOne({
     userId: user._id.toString(),
-  })
-    .populate("createdOrganizations")
-    .populate("createdEvents")
-    .populate("eventAdmin")
-    .populate("adminFor")
-    .lean();
+  }).lean();
+
   if (!appUserProfile) {
     appUserProfile = await AppUserProfile.create({
       userId: user._id.toString(),
@@ -132,6 +128,13 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     .populate("membershipRequests")
     .populate("organizationsBlockedBy")
     .lean();
+  appUserProfile = await AppUserProfile.findOne({
+    userId: user?._id.toString(),
+  })
+    .populate("createdOrganizations")
+    .populate("createdEvents")
+    .populate("eventAdmin")
+    .populate("adminFor");
 
   return {
     user: user as InterfaceUser,
