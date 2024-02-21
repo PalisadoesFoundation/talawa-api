@@ -59,8 +59,6 @@ export const types = gql`
   type CheckIn {
     _id: ID!
     time: DateTime!
-    allotedRoom: String
-    allotedSeat: String
     user: User!
     event: Event!
     feedbackSubmitted: Boolean!
@@ -225,11 +223,48 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
+  type EventAttendee {
+    _id: ID!
+    userId: ID!
+    eventId: ID!
+    checkInId: ID
+    isInvited: Boolean!
+    isRegistered: Boolean!
+    isCheckedIn: Boolean!
+    isCheckedOut: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
   type Feedback {
     _id: ID!
     event: Event!
     rating: Int!
     review: String
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
+  type Fund {
+    _id: ID!
+    organizationId: ID!
+    name: String!
+    refrenceNumber: String
+    taxDeductible: Boolean!
+    isDefault: Boolean!
+    isArchived: Boolean!
+    campaign: [FundraisingCampaign]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+  type FundraisingCampaign {
+    _id: ID!
+    fund: Fund!
+    name: String!
+    startDate: Date!
+    endDate: Date!
+    fundingGoal: Float!
+    currency: Currency!
     createdAt: DateTime!
     updatedAt: DateTime!
   }

@@ -29,3 +29,4 @@ export * from "./SampleData";
 export * from "./User";
 export * from "./TagUser";
 export * from "./AgendaCategory";
+export * from "./Fund";
