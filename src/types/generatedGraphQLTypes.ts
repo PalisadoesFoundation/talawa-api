@@ -1836,9 +1836,9 @@ export type RecurrenceRuleInput = {
 };
 
 export type RecurringEventUpdateType =
-  | 'AllEvents'
-  | 'ThisAndFollowingEvents'
-  | 'ThisEvent';
+  | 'AllInstances'
+  | 'ThisAndFollowingInstances'
+  | 'ThisInstance';
 
 export type Status =
   | 'ACTIVE'

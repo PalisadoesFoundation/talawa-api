@@ -1,9 +1,9 @@
 import type mongoose from "mongoose";
 import { InterfaceEvent } from "../../../models";
 import { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
-import { updateCurrentRecurringInstance } from "./updateCurrentRecurringInstance";
-import { updateAllRecurringInstances } from "./updateAllRecurringInstances";
-import { updateCurrentAndFollowingInstances } from "./updateCurrentAndFollowingInstances";
+import { updateThisInstance } from "./updateThisInstance";
+import { updateAllInstances } from "./updateAllInstances";
+import { updateThisAndFollowingInstances } from "./updateThisAndFollowingInstances";
 
 export const updateRecurringEvent = async (
   args: MutationUpdateEventArgs,
@@ -16,19 +16,15 @@ export const updateRecurringEvent = async (
     (args.data?.isRecurringEventException &&
       args.data?.isRecurringEventException !==
         event.isRecurringEventException) ||
-    args.recurringEventUpdateType === "ThisEvent"
+    args.recurringEventUpdateType === "ThisInstance"
   ) {
-    updatedEvent = await updateCurrentRecurringInstance(args, event, session);
-  } else if (args.recurringEventUpdateType === "AllEvents") {
+    updatedEvent = await updateThisInstance(args, event, session);
+  } else if (args.recurringEventUpdateType === "AllInstances") {
     // perform a regular bulk update on all the instances
-    updatedEvent = await updateAllRecurringInstances(args, event, session);
+    updatedEvent = await updateAllInstances(args, event, session);
   } else {
     // update current and following events
-    updatedEvent = await updateCurrentAndFollowingInstances(
-      event,
-      // args,
-      // session,
-    );
+    updatedEvent = await updateThisAndFollowingInstances(args, event, session);
   }
 
   return updatedEvent;

@@ -30,6 +30,7 @@ export const createRecurringEvent = async (
   creatorId: string,
   organizationId: string,
   session: mongoose.ClientSession,
+  baseRecurringEventId: string | null = null,
   generateAhead: boolean = false,
 ): Promise<InterfaceEvent> => {
   const { data } = args;
@@ -52,19 +53,24 @@ export const createRecurringEvent = async (
 
   // create a base recurring event first, based on which all the
   // recurring instances would be dynamically generated
-  const baseRecurringEvent = await Event.create(
-    [
-      {
-        ...data,
-        recurring: true,
-        isBaseRecurringEvent: true,
-        creatorId,
-        admins: [creatorId],
-        organization: organizationId,
-      },
-    ],
-    { session },
-  );
+
+  if (!baseRecurringEventId) {
+    const baseRecurringEvent = await Event.create(
+      [
+        {
+          ...data,
+          recurring: true,
+          isBaseRecurringEvent: true,
+          creatorId,
+          admins: [creatorId],
+          organization: organizationId,
+        },
+      ],
+      { session },
+    );
+
+    baseRecurringEventId = baseRecurringEvent[0]._id.toString();
+  }
 
   // get the dates for the recurringInstances, and the date of the last instance
   // to be generated in this operation (rest would be generated dynamically during query)
@@ -84,7 +90,7 @@ export const createRecurringEvent = async (
     data.startDate,
     data.endDate,
     organizationId,
-    baseRecurringEvent[0]?._id.toString(),
+    baseRecurringEventId as string,
     latestInstanceDate,
     session,
   );
@@ -92,7 +98,7 @@ export const createRecurringEvent = async (
   // generate the recurring instances and get an instance back
   const recurringEventInstance = await generateRecurringEventInstances({
     data,
-    baseRecurringEventId: baseRecurringEvent[0]?._id.toString(),
+    baseRecurringEventId: baseRecurringEventId as string,
     recurrenceRuleId: recurrenceRule?._id.toString(),
     recurringInstanceDates,
     creatorId,

@@ -71,6 +71,7 @@ export const updateSingleEvent = async (
       creatorId,
       organizationId,
       session,
+      null,
       true,
     );
 

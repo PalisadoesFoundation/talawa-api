@@ -3,7 +3,7 @@ import { Event, InterfaceEvent } from "../../../models";
 import { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import { RecurrenceRule } from "../../../models/RecurrenceRule";
 
-export const updateAllRecurringInstances = async (
+export const updateAllInstances = async (
   args: MutationUpdateEventArgs,
   event: InterfaceEvent,
   session: mongoose.ClientSession,
@@ -26,7 +26,8 @@ export const updateAllRecurringInstances = async (
     (recurrenceRule.endDate === null && baseRecurringEvent.endDate === null) ||
     (recurrenceRule.endDate &&
       baseRecurringEvent.endDate &&
-      recurrenceRule.endDate.toISOString() === baseRecurringEvent.endDate)
+      recurrenceRule.endDate.toString() ===
+        baseRecurringEvent.endDate.toString())
   ) {
     await Event.updateOne(
       {
@@ -40,8 +41,6 @@ export const updateAllRecurringInstances = async (
       },
     );
   }
-
-  console.log("here");
 
   await Event.updateMany(
     {

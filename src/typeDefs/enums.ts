@@ -31,9 +31,9 @@ export const enums = gql`
   }
 
   enum RecurringEventUpdateType {
-    AllEvents
-    ThisEvent
-    ThisAndFollowingEvents
+    AllInstances
+    ThisInstance
+    ThisAndFollowingInstances
   }
 
   enum Frequency {
