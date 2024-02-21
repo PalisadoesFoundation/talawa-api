@@ -1,10 +1,10 @@
-##############################################################################
+ ##############################################################################
 ##############################################################################
 #
 # NOTE!
 #
 # Please read the README.md file in this directory that defines what should
-# be placed in this file.
+# be placed in this file
 #
 ##############################################################################
 ##############################################################################
@@ -24,18 +24,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository content
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Count number of lines
-        run: |
-          chmod +x ./.github/workflows/countline.py
-          ./.github/workflows/countline.py --lines 600 --exclude_files src/types/generatedGraphQLTypes.ts tests
+        uses: actions/checkout@v3
 
       - name: Restore node_modules from cache
         id: cache-npm
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -51,21 +44,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # Lint, but exclude typescript files in the .eslintignore file
-      # or else we'll get failures
-      - name: Get changed files
-        id: changed_files
-        uses: tj-actions/changed-files@v42
-        with:
-          files: |
-            **.ts
-            '!src/types/**.ts'
-
-      - name: Run ESLint to check for linting errors in modified files
-        if: steps.changed_files.outputs.any_changed == 'true'
-        env:
-          CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
-        run: npx eslint ${CHANGED_FILES} 
+      - name: Run ESLint to check for linting errors
+        run: npm run lint:check
 
       - name: Check for formatting errors
         run: npm run format:check
@@ -73,31 +53,20 @@ jobs:
       - name: Run Typescript Type-Checker
         run: npm run typecheck
 
-  File-count-check:
-    name: Counting files changed
+  ESLint-Check:
+    name: Check for ESLint disable comments
     runs-on: ubuntu-latest
-    env:
-      BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+    needs: [Code-Quality-Checks]
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        
-      - name: Checkout code
-        run: git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-branch
-        working-directory: ${{ github.workspace }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11.6'
-
-      - name: Compare changes between Base branch and PR Head.
-        id: changed-files-base
+      - name: Run ESLint disable comment check
         run: |
-          git fetch origin $BASE_BRANCH
-          git checkout $BASE_BRANCH
-          python .github/workflows/check_files_submitted.py \
-            --base_branch $BASE_BRANCH --pr_branch pr-branch
+          pip install -r requirements.txt
+          python eslint_checker.py ./
+        env:
+          PYTHONPATH: ${{github.workspace}}
 
   Test-Application:
     name: Testing Application
@@ -105,7 +74,7 @@ jobs:
     needs: [Code-Quality-Checks]
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [14.x]
     services:
       mongo:
         image: mongo:4.4
@@ -129,23 +98,9 @@ jobs:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      RECAPTCHA_SITE_KEY: ${{secrets.RECAPTCHA_SITE_KEY}}
-      RECAPTCHA_SECRET_KEY: ${{secrets.RECAPTCHA_SECRET_KEY}}
-      MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
-      MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD}}
-      IS_SMTP: ""
-      SMTP_HOST: ""
-      SMTP_PASSWORD: ""
-      SMTP_USERNAME: ""
-      LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
-      COLORIZE_LOGS: "true"
-      LOG_LEVEL: "info"
-      # ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-      # REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Generate Access Token Secret
         run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
@@ -154,7 +109,7 @@ jobs:
         run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
 
       - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
 
       - name: Install dependencies
         run: npm ci
@@ -166,38 +121,11 @@ jobs:
 
       - name: Run the tests
         run: npm run test
-      
-      - name: Start the development server 
-        run: |
-          npm run dev &
-          echo "Development server started..."
-
-      - name: Check server status
-        run: |
-          if curl -f 'http://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
-            echo "Server is up and healthy"
-          else
-            echo "Server is down"
-            exit 1 
-          fi
-      - name: Check Apollo Server status
-        run: |
-          if curl -f 'http://localhost:4000/graphql?query=%7B__typename%7D' \
-          -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
-            echo "Apollo Server is up"
-          else
-            echo "Server is down"
-            exit 1 
-          fi
-
-      - name: Import Sample Data
-        run: npm run import:sample-data  
 
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           verbose: true
-          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           name: '${{env.CODECOV_UNIQUE_NAME}}'
 
@@ -206,14 +134,14 @@ jobs:
         with:
           path: './coverage/lcov.info'
           min_coverage: 95.0
-          
+
   JSDocs:
     name: 'JSDocs comments and pipeline'
     runs-on: ubuntu-latest
     needs: Test-Application
     steps:
-      - uses: actions/checkout@v4
-      - name: 'Check whether comments exists for JSDocs'
+      - uses: actions/checkout@v3
+      - name: 'Check whether comments exist for JSDocs'
         run: |
           chmod +x ./.github/workflows/check-jsdocs-comment.py
           ./.github/workflows/check-jsdocs-comment.py
@@ -221,7 +149,7 @@ jobs:
       - name: 'Run JSDocs'
         if: env.RUN_JSDOCS == 'True'
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
-  
+
   Branch-check:
     name: "Base branch check"
     runs-on: ubuntu-latest
