@@ -13,7 +13,10 @@ import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
 import { session } from "../../db";
-import { updateSingleEvent } from "../../helpers/event/updateEventHelpers";
+import {
+  updateRecurringEvent,
+  updateSingleEvent,
+} from "../../helpers/event/updateEventHelpers";
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -130,10 +133,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
 
     if (event.recurring) {
       // update recurring event
-      // updatedEvent = await updateRecurringEvent(
-      //   args,
-      //   session,
-      // );
+      updatedEvent = await updateRecurringEvent(args, event, session);
     } else {
       // update single event
       updatedEvent = await updateSingleEvent(args, event, session);

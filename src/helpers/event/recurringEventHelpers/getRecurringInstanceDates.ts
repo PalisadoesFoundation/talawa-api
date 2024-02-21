@@ -1,4 +1,4 @@
-import { addYears } from "date-fns";
+import { addDays, addYears } from "date-fns";
 import { Frequency, rrulestr } from "rrule";
 import type { RRule } from "rrule";
 import {
@@ -13,6 +13,7 @@ import {
  * @param recurrenceRuleString - the rrule string for the recurrenceRule.
  * @param recurrenceStartDate - the starting date from which we want to generate instances.
  * @param eventEndDate - the end date of the event
+ * @param generateAhead - if we want to generate instances ahead of the recurrenceStartDate
  * @param queryUptoDate - the limit date to query recurrenceRules (To be used for dynamic instance generation during queries).
  * @remarks The following steps are followed:
  * 1. Get the date limit for instance generation based on its recurrence frequency.
@@ -24,6 +25,7 @@ export function getRecurringInstanceDates(
   recurrenceRuleString: string,
   recurrenceStartDate: Date,
   eventEndDate: Date | null,
+  generateAhead: boolean,
   queryUptoDate: Date = recurrenceStartDate,
 ): Date[] {
   // get the rrule object
@@ -64,6 +66,11 @@ export function getRecurringInstanceDates(
   const generateUptoDate = new Date(
     Math.min(eventEndDate.getTime(), limitEndDate.getTime()),
   );
+
+  // generate ahead in case a single event is made recurring to avoid ovarlap
+  if (generateAhead) {
+    recurrenceStartDate = addDays(recurrenceStartDate, 1);
+  }
 
   // get the dates of recurrence
   const recurringInstanceDates = recurrenceRuleObject.between(

@@ -71,6 +71,7 @@ export const updateSingleEvent = async (
       creatorId,
       organizationId,
       session,
+      true,
     );
 
     // add the baseRecurringEventId to the current event to make it a part of the recurrence
@@ -79,6 +80,8 @@ export const updateSingleEvent = async (
         _id: eventId,
       },
       {
+        ...(args.data as Partial<InterfaceEvent>),
+        recurrenceRuleId: updatedEvent.recurrenceRuleId,
         baseRecurringEventId: updatedEvent.baseRecurringEventId,
       },
       { session },

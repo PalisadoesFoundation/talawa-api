@@ -1244,6 +1244,7 @@ export type MutationUpdateEventArgs = {
   data?: InputMaybe<UpdateEventInput>;
   id: Scalars['ID']['input'];
   recurrenceRuleData?: InputMaybe<RecurrenceRuleInput>;
+  recurringEventUpdateType?: InputMaybe<RecurringEventUpdateType>;
 };
 
 
@@ -1834,6 +1835,11 @@ export type RecurrenceRuleInput = {
   weekDays?: InputMaybe<Array<InputMaybe<WeekDays>>>;
 };
 
+export type RecurringEventUpdateType =
+  | 'AllEvents'
+  | 'ThisAndFollowingEvents'
+  | 'ThisEvent';
+
 export type Status =
   | 'ACTIVE'
   | 'BLOCKED'
@@ -2386,6 +2392,7 @@ export type ResolversTypes = {
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
   RecurrenceRuleInput: RecurrenceRuleInput;
+  RecurringEventUpdateType: RecurringEventUpdateType;
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Subscription: ResolverTypeWrapper<{}>;

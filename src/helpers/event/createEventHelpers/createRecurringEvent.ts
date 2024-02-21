@@ -12,6 +12,7 @@ import {
 /**
  * This function creates the instances of a recurring event upto a certain date.
  * @param args - payload of the createEvent mutation
+ * @param generateAhead - whether we want to generate recurring events ahead of the startDate (in case a single event is made recurring)
  * @param creatorId - _id of the creator
  * @param organizationId - _id of the organization the events belongs to
  * @remarks The following steps are followed:
@@ -29,6 +30,7 @@ export const createRecurringEvent = async (
   creatorId: string,
   organizationId: string,
   session: mongoose.ClientSession,
+  generateAhead: boolean = false,
 ): Promise<InterfaceEvent> => {
   const { data } = args;
   let { recurrenceRuleData } = args;
@@ -70,6 +72,7 @@ export const createRecurringEvent = async (
     recurrenceRuleString,
     data.startDate,
     data.endDate,
+    generateAhead,
   );
 
   // get the date for the latest created instance
