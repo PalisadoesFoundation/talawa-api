@@ -6,7 +6,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { Fund } from "../../../src/models";
+import { Fund, FundraisingCampaign } from "../../../src/models";
 import { removeFund } from "../../../src/resolvers/Mutation/removeFund";
 import type { TestFundType } from "../../helpers/Fund";
 import { createTestFund } from "../../helpers/Fund";
@@ -101,11 +101,14 @@ describe("resolvers->Mutation->removeFund", () => {
       userId: testUser2?._id,
     };
     const campaign = await createTestFundraisingCampaign(testfund2?._id);
-    console.log(campaign);
+
     await removeFund?.({}, args, context);
     const fund = await Fund.findOne({ _id: testfund2?._id });
     expect(fund).toBeNull();
-    // const campaignFound = await FundraisingCampaign.findOne({ _id: campaign?._id });
-    // expect(campaignFound).toBeNull();
+    const campaignFound = await FundraisingCampaign.findOne({
+      _id: campaign?._id,
+    });
+
+    expect(campaignFound).toBeNull();
   });
 });

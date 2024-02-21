@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 import {
+  Fund,
   FundraisingCampaign,
   type InterfaceFundraisingCampaign,
 } from "../../src/models";
@@ -21,16 +22,16 @@ export const createTestFundraisingCampaign = async (
     currency: "USD",
     fundingGoal: 1000,
   });
-  // await Fund.updateOne(
-  //   {
-  //     _id: fundId,
-  //   },
-  //   {
-  //     $push: {
-  //       campaigns: testFundraisingCampaign._id,
-  //     },
-  //   },
-  // );
+  await Fund.updateOne(
+    {
+      _id: fundId,
+    },
+    {
+      $push: {
+        campaigns: testFundraisingCampaign._id,
+      },
+    },
+  );
 
   return testFundraisingCampaign;
 };

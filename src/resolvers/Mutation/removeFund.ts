@@ -66,7 +66,7 @@ export const removeFund: MutationResolvers["removeFund"] = async (
   //deletes all the campaigns associated with the fund
   for (const campaignId of fund.campaigns) {
     await FundraisingCampaign.findByIdAndDelete({
-      campaignId,
+      _id: campaignId,
     });
   }
 

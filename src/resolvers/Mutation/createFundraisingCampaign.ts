@@ -39,12 +39,12 @@ export const createFundraisingCampaign: MutationResolvers["createFundraisingCamp
     }
     const startDate = args.data.startDate;
     const endDate = args.data.endDate;
+
     // Checks whether startDate is valid.
     if (new Date(startDate) < new Date(new Date().toDateString())) {
       throw new errors.InputValidationError(
-        requestContext.translate(
-          START_DATE_VALIDATION_ERROR.MESSAGE,
-        ).START_DATE_VALIDATION_ERROR.CODE,
+        requestContext.translate(START_DATE_VALIDATION_ERROR.MESSAGE),
+        START_DATE_VALIDATION_ERROR.CODE,
         START_DATE_VALIDATION_ERROR.PARAM,
       );
     }
