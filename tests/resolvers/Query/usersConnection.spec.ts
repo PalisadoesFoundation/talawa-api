@@ -154,7 +154,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       {},
     );
     const usersPayload = usersConnectionPayload?.map(
-     // @ts-expect-error-ignore
+      // @ts-expect-error-ignore
       (userConnection) => userConnection?.user,
     );
 
@@ -275,7 +275,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       {},
     );
     const usersPayload = usersConnectionPayload?.map(
-     // @ts-expect-error-ignore
+      // @ts-expect-error-ignore
       (userConnection) => userConnection?.user,
     );
 
@@ -418,7 +418,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       {},
     );
     const usersPayload = usersConnectionPayload?.map(
-     // @ts-expect-error-ignore
+      // @ts-expect-error-ignore
       (userConnection) => userConnection?.user,
     );
 
@@ -455,7 +455,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       {},
     );
     const usersPayload = usersConnectionPayload?.map(
-     // @ts-expect-error-ignore
+      // @ts-expect-error-ignore
       (userConnection) => userConnection?.user,
     );
 
@@ -489,7 +489,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       {},
     );
     const usersPayload = usersConnectionPayload?.map(
-     // @ts-expect-error-ignore
+      // @ts-expect-error-ignore
       (userConnection) => userConnection?.user,
     );
 
