@@ -5,12 +5,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceAppUserProfile,
-  InterfaceEvent,
-  InterfaceOrganization,
-  InterfaceUser,
-} from "../../models";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
 import { AppUserProfile, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
@@ -100,22 +95,15 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
         {
           new: true,
         },
-      ).lean();
+      )
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .lean();
 
     return {
       user: updatedUser as InterfaceUser,
-      appUserProfile: {
-        _id: updatedAppUserProfile._id.toString(),
-        userId: updatedAppUserProfile.userId as InterfaceUser,
-        adminFor: updatedAppUserProfile.adminFor as InterfaceOrganization[],
-        appLanguageCode: updatedAppUserProfile.appLanguageCode,
-        isSuperAdmin: updatedAppUserProfile.isSuperAdmin,
-        pluginCreationAllowed: updatedAppUserProfile.pluginCreationAllowed,
-        tokenVersion: updatedAppUserProfile.tokenVersion,
-        eventAdmin: updatedAppUserProfile.eventAdmin as InterfaceEvent[],
-        createdEvents: updatedAppUserProfile.createdEvents as InterfaceEvent[],
-        createdOrganizations:
-          updatedAppUserProfile.createdOrganizations as InterfaceOrganization[],
-      },
+      appUserProfile: updatedAppUserProfile,
     };
   };

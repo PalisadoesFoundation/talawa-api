@@ -1,11 +1,10 @@
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors } from "../../libraries";
-import type {
-  InterfaceEvent,
-  InterfaceOrganization,
-  InterfaceUser,
+import {
+  AppUserProfile,
+  User,
+  type InterfaceAppUserProfile,
 } from "../../models";
-import { AppUserProfile, User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This query fetch the current user from the database.
@@ -50,19 +49,6 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
   }
   return {
     user: currentUser,
-    appUserProfile: {
-      // ...userAppProfile,
-      _id: userAppProfile._id.toString(),
-      userId: userAppProfile.userId as InterfaceUser,
-      adminFor: userAppProfile.adminFor as InterfaceOrganization[],
-      appLanguageCode: userAppProfile.appLanguageCode,
-      isSuperAdmin: userAppProfile.isSuperAdmin,
-      pluginCreationAllowed: userAppProfile.pluginCreationAllowed,
-      tokenVersion: userAppProfile.tokenVersion,
-      eventAdmin: userAppProfile.eventAdmin as InterfaceEvent[],
-      createdEvents: userAppProfile.createdEvents as InterfaceEvent[],
-      createdOrganizations:
-        userAppProfile.createdOrganizations as InterfaceOrganization[],
-    },
+    appUserProfile: userAppProfile as InterfaceAppUserProfile,
   };
 };

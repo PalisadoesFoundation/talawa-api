@@ -94,6 +94,7 @@ scalar Any
 type AppUserProfile {
   _id: ID!
   adminFor: [Organization]
+  appLanguageCode: String!
   createdEvents: [Event]
   createdOrganizations: [Organization]
   eventAdmin: [Event]
@@ -949,8 +950,8 @@ type Query {
   registrantsByEvent(id: ID!): [User]
   user(id: ID!): UserData!
   userLanguage(userId: ID!): String
-  users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]
-  usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]!
+  users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]
+  usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]!
 }
 
 input RecaptchaVerification {
@@ -1112,7 +1113,6 @@ type User {
   _id: ID!
   address: Address
   adminApproved: Boolean
-  appLanguageCode: String!
   appUserProfileId: AppUserProfile
   birthDate: Date
   createdAt: DateTime!

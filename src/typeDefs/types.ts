@@ -430,7 +430,7 @@ export const types = gql`
     appUserProfileId: AppUserProfile
     address: Address
     adminApproved: Boolean
-    appLanguageCode: String!
+
     birthDate: Date
     createdAt: DateTime!
     educationGrade: EducationGrade
@@ -465,6 +465,7 @@ export const types = gql`
     eventAdmin: [Event]
     pluginCreationAllowed: Boolean!
     isSuperAdmin: Boolean!
+    appLanguageCode: String!
   }
   type UserCustomData {
     _id: ID!

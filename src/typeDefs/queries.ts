@@ -115,13 +115,13 @@ export const queries = gql`
       skip: Int
 
       adminApproved: Boolean
-    ): [User] @auth
+    ): [UserData] @auth
 
     usersConnection(
       where: UserWhereInput
       first: Int
       skip: Int
       orderBy: UserOrderByInput
-    ): [User]! @auth
+    ): [UserData]! @auth
   }
 `;

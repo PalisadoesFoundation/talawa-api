@@ -1,6 +1,6 @@
 import { UNAUTHENTICATED_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceUser } from "../../models";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
 import { AppUserProfile, User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getSort } from "./helperFunctions/getSort";
@@ -65,16 +65,24 @@ export const users: QueryResolvers["users"] = async (
     .populate("organizationsBlockedBy")
     .lean();
 
-  return users.map((user) => {
+  return users.map(async (user) => {
     const isSuperAdmin = currentUserAppProfile.isSuperAdmin;
+    const appUserProfil = await AppUserProfile.findOne({ userId: user._id })
+      .populate("createdOrganizations")
+      .populate("createdEvents")
+      .populate("eventAdmin")
+      .populate("adminFor");
 
     return {
-      ...user,
-      image: user.image ? `${context.apiRootUrl}${user.image}` : null,
-      organizationsBlockedBy:
-        isSuperAdmin && currentUser._id !== user._id
-          ? user.organizationsBlockedBy
-          : [],
+      user: {
+        ...user,
+        image: user.image ? `${context.apiRootUrl}${user.image}` : null,
+        organizationsBlockedBy:
+          isSuperAdmin && currentUser._id !== user._id
+            ? user.organizationsBlockedBy
+            : [],
+      },
+      appUserProfile: appUserProfil as InterfaceAppUserProfile,
     };
   });
 };

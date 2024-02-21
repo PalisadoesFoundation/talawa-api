@@ -29,7 +29,7 @@ const config: CodegenConfig = {
 
           ActionItemCategory:
             "../models/ActionItemCategory#InterfaceActionItemCategory",
-
+          AppUserProfile: "../models/AppUserProfile#InterfaceAppUserProfile",
           AgendaCategory: "../models/AgendaCategory#InterfaceAgendaCategory",
 
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
