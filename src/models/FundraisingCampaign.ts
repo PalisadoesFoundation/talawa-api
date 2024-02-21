@@ -229,5 +229,5 @@ const fundraisingCampaignModel = (): Model<InterfaceFundraisingCampaign> =>
     fundraisingCampaignSchema,
   );
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const FundraisingCampaign = (models.fundraisingCampaignModel ||
+export const FundraisingCampaign = (models.FundraisingCampaign ||
   fundraisingCampaignModel()) as ReturnType<typeof fundraisingCampaignModel>;
