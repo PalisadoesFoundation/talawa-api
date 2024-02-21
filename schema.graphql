@@ -622,6 +622,15 @@ type Fund {
   updatedAt: DateTime!
 }
 
+input FundCampaignInput {
+  currency: Currency!
+  endDate: Date!
+  fundId: ID!
+  fundingGoal: Float!
+  name: String!
+  startDate: Date!
+}
+
 input FundInput {
   isArchived: Boolean!
   isDefault: Boolean!
@@ -809,6 +818,7 @@ type Mutation {
   createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
   createFund(data: FundInput!): Fund!
+  createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
@@ -844,6 +854,7 @@ type Mutation {
   removeEvent(id: ID!): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
+  removeFund(id: ID!): Fund!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -1148,6 +1159,7 @@ type Query {
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
+  getFundById(id: ID!): Fund!
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
