@@ -112,7 +112,7 @@ enum CurrencyType {
  */
 export interface InterfaceFundraisingCampaign {
   _id: Types.ObjectId;
-  fund: PopulatedDoc<InterfaceFund & Document>;
+  fundId: PopulatedDoc<InterfaceFund & Document>;
   name: string;
   startDate: Date;
   endDate: Date;
@@ -123,7 +123,7 @@ export interface InterfaceFundraisingCampaign {
 }
 const fundraisingCampaignSchema = new Schema(
   {
-    fund: {
+    fundId: {
       type: Schema.Types.ObjectId,
       ref: "Fund",
       required: true,
@@ -154,7 +154,10 @@ const fundraisingCampaignSchema = new Schema(
   },
 );
 const fundraisingCampaignModel = (): Model<InterfaceFundraisingCampaign> =>
-  model<InterfaceFundraisingCampaign>("Fund", fundraisingCampaignSchema);
+  model<InterfaceFundraisingCampaign>(
+    "FundraisingCampaign",
+    fundraisingCampaignSchema,
+  );
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const FundraisingCampaign = (models.Fund ||
+export const FundraisingCampaign = (models.fundraisingCampaignModel ||
   fundraisingCampaignModel()) as ReturnType<typeof fundraisingCampaignModel>;
