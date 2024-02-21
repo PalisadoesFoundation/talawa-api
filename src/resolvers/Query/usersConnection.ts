@@ -27,18 +27,20 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
     .populate("joinedOrganizations")
     .populate("registeredEvents")
     .lean();
-  return users.map(async (user) => {
-    const userAppProfile = await AppUserProfile.findOne({
-      userId: user._id,
-    })
-      .populate("createdOrganizations")
-      .populate("createdEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
-      .lean();
-    return {
-      user,
-      appUserProfile: userAppProfile as InterfaceAppUserProfile,
-    };
-  });
+  return await Promise.all(
+    users.map(async (user) => {
+      const userAppProfile = await AppUserProfile.findOne({
+        userId: user._id,
+      })
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .lean();
+      return {
+        user: user as InterfaceUser,
+        appUserProfile: userAppProfile as InterfaceAppUserProfile,
+      };
+    }),
+  );
 };
