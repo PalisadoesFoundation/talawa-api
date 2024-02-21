@@ -221,6 +221,30 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
+  type Fund {
+    _id: ID!
+    organizationId: ID!
+    name: String!
+    refrenceNumber: String
+    taxDeductible: Boolean!
+    isDefault: Boolean!
+    isArchived: Boolean!
+    campaign: [FundraisingCampaign]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+  type FundraisingCampaign {
+    _id: ID!
+    fund: Fund!
+    name: String!
+    startDate: Date!
+    endDate: Date!
+    fundingGoal: Float!
+    currency: Currency!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
   type Group {
     _id: ID!
     title: String!
