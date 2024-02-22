@@ -6,7 +6,7 @@ import type {
 import type { InterfaceRecurringEvent } from "../recurringEventHelpers/generateRecurringEventInstances";
 
 export const getEventData = (
-  updateEventInputData: UpdateEventInput,
+  updateEventInputData: UpdateEventInput | undefined | null,
   event: InterfaceEvent,
 ): InterfaceRecurringEvent => {
   // get the event's current data

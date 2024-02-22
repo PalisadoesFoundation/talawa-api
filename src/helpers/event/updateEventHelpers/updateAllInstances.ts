@@ -46,6 +46,7 @@ export const updateAllInstances = async (
   await Event.updateMany(
     {
       recurrenceRuleId,
+      isRecurringEventException: false,
     },
     {
       ...(args.data as Partial<InterfaceEvent>),

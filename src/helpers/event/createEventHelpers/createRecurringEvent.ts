@@ -12,7 +12,6 @@ import {
 /**
  * This function creates the instances of a recurring event upto a certain date.
  * @param args - payload of the createEvent mutation
- * @param generateAhead - whether we want to generate recurring events ahead of the startDate (in case a single event is made recurring)
  * @param creatorId - _id of the creator
  * @param organizationId - _id of the organization the events belongs to
  * @remarks The following steps are followed:
@@ -30,7 +29,6 @@ export const createRecurringEvent = async (
   creatorId: string,
   organizationId: string,
   session: mongoose.ClientSession,
-  baseRecurringEventId: string | null = null,
 ): Promise<InterfaceEvent> => {
   const { data } = args;
   let { recurrenceRuleData } = args;
@@ -52,24 +50,19 @@ export const createRecurringEvent = async (
 
   // create a base recurring event first, based on which all the
   // recurring instances would be dynamically generated
-
-  if (!baseRecurringEventId) {
-    const baseRecurringEvent = await Event.create(
-      [
-        {
-          ...data,
-          recurring: true,
-          isBaseRecurringEvent: true,
-          creatorId,
-          admins: [creatorId],
-          organization: organizationId,
-        },
-      ],
-      { session },
-    );
-
-    baseRecurringEventId = baseRecurringEvent[0]._id.toString();
-  }
+  const baseRecurringEvent = await Event.create(
+    [
+      {
+        ...data,
+        recurring: true,
+        isBaseRecurringEvent: true,
+        creatorId,
+        admins: [creatorId],
+        organization: organizationId,
+      },
+    ],
+    { session },
+  );
 
   // get the dates for the recurringInstances, and the date of the last instance
   // to be generated in this operation (rest would be generated dynamically during query)
@@ -88,7 +81,7 @@ export const createRecurringEvent = async (
     data.startDate,
     data.endDate,
     organizationId,
-    baseRecurringEventId as string,
+    baseRecurringEvent[0]?._id.toString(),
     latestInstanceDate,
     session,
   );
@@ -96,7 +89,7 @@ export const createRecurringEvent = async (
   // generate the recurring instances and get an instance back
   const recurringEventInstance = await generateRecurringEventInstances({
     data,
-    baseRecurringEventId: baseRecurringEventId as string,
+    baseRecurringEventId: baseRecurringEvent[0]?._id.toString(),
     recurrenceRuleId: recurrenceRule?._id.toString(),
     recurringInstanceDates,
     creatorId,
