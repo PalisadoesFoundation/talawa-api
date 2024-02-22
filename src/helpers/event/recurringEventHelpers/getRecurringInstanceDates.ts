@@ -13,7 +13,6 @@ import {
  * @param recurrenceRuleString - the rrule string for the recurrenceRule.
  * @param recurrenceStartDate - the starting date from which we want to generate instances.
  * @param eventEndDate - the end date of the event
- * @param generateAhead - if we want to generate instances ahead of the recurrenceStartDate
  * @param queryUptoDate - the limit date to query recurrenceRules (To be used for dynamic instance generation during queries).
  * @remarks The following steps are followed:
  * 1. Get the date limit for instance generation based on its recurrence frequency.
