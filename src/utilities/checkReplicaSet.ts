@@ -8,7 +8,7 @@ export const checkReplicaSet = async (): Promise<boolean> => {
       hello: 1,
     });
 
-    if ("hosts" in result) {
+    if ("hosts" in result && "setName" in result) {
       return true;
     } else {
       return false;

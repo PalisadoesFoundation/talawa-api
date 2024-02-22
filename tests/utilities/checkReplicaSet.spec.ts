@@ -14,7 +14,7 @@ afterAll(async (): Promise<void> => {
 });
 
 interface InterfaceAdminDbMock1 {
-  command: () => Promise<{ hosts: string[] }>;
+  command: () => Promise<{ hosts: string[]; setName: string }>;
 }
 interface InterfaceAdminDbMock2 {
   command: () => Promise<object>;
@@ -23,8 +23,9 @@ interface InterfaceAdminDbMock2 {
 describe("checkReplicaSet", () => {
   it("should return true if replica set is configured", async () => {
     const adminDbMock: InterfaceAdminDbMock1 = {
-      command: async (): Promise<{ hosts: string[] }> => ({
+      command: async (): Promise<{ hosts: string[]; setName: string }> => ({
         hosts: ["host1", "host2"],
+        setName: "xyz",
       }),
     };
     //@ts-expect-error cant find the right type
@@ -40,7 +41,6 @@ describe("checkReplicaSet", () => {
     };
     //@ts-expect-error cant find the right type
     mongoose.connection.db.admin = (): object => adminDbMock;
-
     const result = await checkReplicaSet();
 
     expect(result).toBe(false);
