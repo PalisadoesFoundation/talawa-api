@@ -1,6 +1,7 @@
 import type mongoose from "mongoose";
-import { Event, InterfaceEvent } from "../../../models";
-import { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
+import type { InterfaceEvent } from "../../../models";
+import { Event } from "../../../models";
+import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import { RecurrenceRule } from "../../../models/RecurrenceRule";
 
 export const updateAllInstances = async (
@@ -23,7 +24,7 @@ export const updateAllInstances = async (
   }
 
   if (
-    (recurrenceRule.endDate === null && baseRecurringEvent.endDate === null) ||
+    (!recurrenceRule.endDate && !baseRecurringEvent.endDate) ||
     (recurrenceRule.endDate &&
       baseRecurringEvent.endDate &&
       recurrenceRule.endDate.toString() ===

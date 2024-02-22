@@ -1,4 +1,4 @@
-import { addDays, addYears } from "date-fns";
+import { addYears } from "date-fns";
 import { Frequency, rrulestr } from "rrule";
 import type { RRule } from "rrule";
 import {
@@ -25,7 +25,6 @@ export function getRecurringInstanceDates(
   recurrenceRuleString: string,
   recurrenceStartDate: Date,
   eventEndDate: Date | null,
-  generateAhead: boolean,
   queryUptoDate: Date = recurrenceStartDate,
 ): Date[] {
   // get the rrule object
@@ -66,11 +65,6 @@ export function getRecurringInstanceDates(
   const generateUptoDate = new Date(
     Math.min(eventEndDate.getTime(), limitEndDate.getTime()),
   );
-
-  // generate ahead in case a single event is made recurring to avoid ovarlap
-  if (generateAhead) {
-    recurrenceStartDate = addDays(recurrenceStartDate, 1);
-  }
 
   // get the dates of recurrence
   const recurringInstanceDates = recurrenceRuleObject.between(

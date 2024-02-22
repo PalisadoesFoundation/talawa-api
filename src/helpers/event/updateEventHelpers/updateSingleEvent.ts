@@ -2,13 +2,15 @@ import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
 import { Event } from "../../../models";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
-import type {
-  EventInput,
-  MutationCreateEventArgs,
-  MutationUpdateEventArgs,
-  Recurrance,
-} from "../../../types/generatedGraphQLTypes";
-import { createRecurringEvent } from "../createEventHelpers";
+import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
+import { getEventData } from "./getEventData";
+import {
+  createRecurrenceRule,
+  generateRecurrenceRuleString,
+  generateRecurringEventInstances,
+  getRecurringInstanceDates,
+} from "../recurringEventHelpers";
+import { addDays } from "date-fns";
 
 /**
  * This function generates a single non-recurring event.
@@ -32,58 +34,93 @@ export const updateSingleEvent = async (
   let updatedEvent: InterfaceEvent = event;
 
   if (args.data?.recurring) {
-    // if the single event is made recurring
+    // get the data from args
+    const { data: updateEventInputData } = args;
+    let { recurrenceRuleData } = args;
 
-    // get the current event data
-    const {
-      _id: eventId,
-      recurrance,
-      creatorId,
-      organization: organizationId,
-      ...eventData
-    } = event;
+    // get latest eventData to be used for baseRecurringEvent and recurring instances
+    const eventData = getEventData(updateEventInputData, event);
 
-    // get the data from the update event input args
-    const { data: updateEventInputData, recurrenceRuleData } = args;
+    if (!recurrenceRuleData) {
+      // create a default weekly recurrence rule
+      recurrenceRuleData = {
+        frequency: "WEEKLY",
+      };
+    }
 
-    // get the data based on which the baseRecurringEvent and recurring instances would be generated
-    // i.e. take the current event data, and the update it based on the update event input
-    const updatedEventData: EventInput = {
-      ...eventData,
-      ...Object.fromEntries(
-        Object.entries(updateEventInputData).filter(
-          ([value]) => value !== null,
-        ),
-      ),
-      recurrance: recurrance as Recurrance,
-      organizationId,
-    };
+    // get the recurrence startDate, if provided, else, use event startDate
+    const startDateString = eventData.startDate || event.startDate;
+    const startDate = new Date(startDateString);
 
-    // get the "args" argument for the createRecurringEvent function
-    const createRecurringEventArgs: MutationCreateEventArgs = {
-      data: updatedEventData,
+    // get the recurrence endDate, if provided or made null (infinitely recurring)
+    // else, use event endDate
+    const endDateString =
+      eventData.endDate || eventData.endDate === null
+        ? eventData.endDate
+        : event.endDate;
+    const endDate = endDateString ? new Date(endDateString) : null;
+
+    // generate a recurrence rule string which would be used to generate rrule object
+    const recurrenceRuleString = generateRecurrenceRuleString(
       recurrenceRuleData,
-    };
-
-    // convert the single event into a recurring event
-    updatedEvent = await createRecurringEvent(
-      createRecurringEventArgs,
-      creatorId,
-      organizationId,
-      session,
-      null,
-      true,
+      startDate,
+      endDate ? endDate : undefined,
     );
 
-    // add the baseRecurringEventId to the current event to make it a part of the recurrence
+    // create a baseRecurringEvent
+    const baseRecurringEvent = await Event.create(
+      [
+        {
+          ...eventData,
+          organization: eventData.organizationId,
+          recurring: true,
+          isBaseRecurringEvent: true,
+        },
+      ],
+      { session },
+    );
+
+    // get recurrence dates
+    const recurringInstanceDates = getRecurringInstanceDates(
+      recurrenceRuleString,
+      addDays(event.startDate, 1), // generate instances ahead of current event date to avoid overlap
+      endDate,
+    );
+
+    // get the startDate of the latest instance following the recurrence
+    const latestInstanceDate =
+      recurringInstanceDates[recurringInstanceDates.length - 1];
+
+    // create the recurrencerule
+    const recurrenceRule = await createRecurrenceRule(
+      recurrenceRuleString,
+      startDate,
+      endDate,
+      eventData.organizationId,
+      baseRecurringEvent[0]._id.toString(),
+      latestInstanceDate,
+      session,
+    );
+
+    // generate the recurring instances and get an instance back
+    const recurringEventInstance = await generateRecurringEventInstances({
+      data: eventData,
+      baseRecurringEventId: baseRecurringEvent[0]._id.toString(),
+      recurrenceRuleId: recurrenceRule?._id.toString(),
+      recurringInstanceDates,
+      creatorId: event.creatorId,
+      organizationId: eventData.organizationId,
+      session,
+    });
+
+    // add the baseRecurringEventId to the current event to connect it with recurring instances
     await Event.updateOne(
       {
-        _id: eventId,
+        _id: event._id,
       },
       {
         ...(args.data as Partial<InterfaceEvent>),
-        recurrenceRuleId: updatedEvent.recurrenceRuleId,
-        baseRecurringEventId: updatedEvent.baseRecurringEventId,
+        baseRecurringEventId: recurringEventInstance.baseRecurringEventId,
       },
       { session },
     );

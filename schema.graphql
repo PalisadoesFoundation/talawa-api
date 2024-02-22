@@ -672,7 +672,7 @@ type Mutation {
   updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
-  updateEvent(data: UpdateEventInput, id: ID!): Event!
+  updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventUpdateType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
@@ -986,6 +986,12 @@ input RecurrenceRuleInput {
   weekDays: [WeekDays]
 }
 
+enum RecurringEventUpdateType {
+  AllInstances
+  ThisAndFollowingInstances
+  ThisInstance
+}
+
 enum Status {
   ACTIVE
   BLOCKED
@@ -1066,6 +1072,7 @@ input UpdateEventInput {
   endDate: Date
   endTime: Time
   isPublic: Boolean
+  isRecurringEventException: Boolean
   isRegisterable: Boolean
   latitude: Latitude
   location: String

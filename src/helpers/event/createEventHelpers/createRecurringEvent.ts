@@ -31,7 +31,6 @@ export const createRecurringEvent = async (
   organizationId: string,
   session: mongoose.ClientSession,
   baseRecurringEventId: string | null = null,
-  generateAhead: boolean = false,
 ): Promise<InterfaceEvent> => {
   const { data } = args;
   let { recurrenceRuleData } = args;
@@ -78,7 +77,6 @@ export const createRecurringEvent = async (
     recurrenceRuleString,
     data.startDate,
     data.endDate,
-    generateAhead,
   );
 
   // get the date for the latest created instance

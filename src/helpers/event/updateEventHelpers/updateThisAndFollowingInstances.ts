@@ -175,7 +175,7 @@ export const updateThisAndFollowingInstances = async (
   // update the baseRecurringEvent if it is the latest recurrence rule that the instances are following
   if (
     recurrenceRule &&
-    ((recurrenceRule.endDate === null && baseRecurringEvent.endDate === null) ||
+    ((!recurrenceRule.endDate && !baseRecurringEvent.endDate) ||
       (recurrenceRule.endDate &&
         baseRecurringEvent.endDate &&
         recurrenceRule.endDate.toString() ===

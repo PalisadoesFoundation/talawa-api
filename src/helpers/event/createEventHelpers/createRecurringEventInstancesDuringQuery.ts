@@ -82,7 +82,6 @@ export const createRecurringEventInstancesDuringQuery = async (
         recurrenceRuleString,
         currentRecurrenceStartDate,
         recurrenceEndDate,
-        false,
         queryUptoDate,
       );
 
