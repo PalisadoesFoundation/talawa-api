@@ -53,6 +53,7 @@ const config: CodegenConfig = {
           EventVolunteer: "../models/EventVolunteer#InterfaceEventVolunteer",
 
           Feedback: "../models/Feedback#InterfaceFeedback",
+          Fund: "../models/Fund#InterfaceFund",
 
           // File: '../models/File#InterfaceFile',
 
