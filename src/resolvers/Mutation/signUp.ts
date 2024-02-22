@@ -7,9 +7,8 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type {
-  InterfaceEvent,
+  InterfaceAppUserProfile,
   InterfaceOrganization,
-  InterfaceUser,
 } from "../../models";
 import { AppUserProfile, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
@@ -132,7 +131,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     // userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
     adminApproved: isLastResortSuperAdmin,
   });
-  const appUserProfile = await AppUserProfile.create({
+  let appUserProfile: InterfaceAppUserProfile = await AppUserProfile.create({
     userId: createdUser._id,
     appLanguageCode: args.data.appLanguageCode || "en",
     isSuperAdmin: isLastResortSuperAdmin,
@@ -164,24 +163,19 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   }`);
 
   const filteredCreatedUser = updatedUser.toObject();
+  appUserProfile = (await AppUserProfile.findOne({
+    userId: updatedUser?._id.toString(),
+  })
+    .populate("createdOrganizations")
+    .populate("createdEvents")
+    .populate("eventAdmin")
+    .populate("adminFor")) as InterfaceAppUserProfile;
 
   delete filteredCreatedUser.password;
 
   return {
     user: filteredCreatedUser,
-    appUserProfile: {
-      _id: appUserProfile._id.toString(),
-      userId: appUserProfile.userId as InterfaceUser,
-      adminFor: appUserProfile.adminFor as InterfaceOrganization[],
-      appLanguageCode: appUserProfile.appLanguageCode,
-      isSuperAdmin: appUserProfile.isSuperAdmin,
-      pluginCreationAllowed: appUserProfile.pluginCreationAllowed,
-      tokenVersion: appUserProfile.tokenVersion,
-      eventAdmin: appUserProfile.eventAdmin as InterfaceEvent[],
-      createdEvents: appUserProfile.createdEvents as InterfaceEvent[],
-      createdOrganizations:
-        appUserProfile.createdOrganizations as InterfaceOrganization[],
-    },
+    appUserProfile: appUserProfile as InterfaceAppUserProfile,
     accessToken,
     refreshToken,
   };

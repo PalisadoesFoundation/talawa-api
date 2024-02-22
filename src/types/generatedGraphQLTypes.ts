@@ -1,6 +1,7 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 import type { InterfaceActionItem as InterfaceActionItemModel } from '../models/ActionItem';
 import type { InterfaceActionItemCategory as InterfaceActionItemCategoryModel } from '../models/ActionItemCategory';
+import type { InterfaceAppUserProfile as InterfaceAppUserProfileModel } from '../models/AppUserProfile';
 import type { InterfaceAgendaCategory as InterfaceAgendaCategoryModel } from '../models/AgendaCategory';
 import type { InterfaceCheckIn as InterfaceCheckInModel } from '../models/CheckIn';
 import type { InterfaceMessageChat as InterfaceMessageChatModel } from '../models/MessageChat';
@@ -153,6 +154,7 @@ export type AppUserProfile = {
   __typename?: 'AppUserProfile';
   _id: Scalars['ID']['output'];
   adminFor?: Maybe<Array<Maybe<Organization>>>;
+  appLanguageCode: Scalars['String']['output'];
   createdEvents?: Maybe<Array<Maybe<Event>>>;
   createdOrganizations?: Maybe<Array<Maybe<Organization>>>;
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
@@ -1560,8 +1562,8 @@ export type Query = {
   registrantsByEvent?: Maybe<Array<Maybe<User>>>;
   user: UserData;
   userLanguage?: Maybe<Scalars['String']['output']>;
-  users?: Maybe<Array<Maybe<User>>>;
-  usersConnection: Array<Maybe<User>>;
+  users?: Maybe<Array<Maybe<UserData>>>;
+  usersConnection: Array<Maybe<UserData>>;
 };
 
 
@@ -1924,7 +1926,6 @@ export type User = {
   _id: Scalars['ID']['output'];
   address?: Maybe<Address>;
   adminApproved?: Maybe<Scalars['Boolean']['output']>;
-  appLanguageCode: Scalars['String']['output'];
   appUserProfileId?: Maybe<AppUserProfile>;
   birthDate?: Maybe<Scalars['Date']['output']>;
   createdAt: Scalars['DateTime']['output'];
@@ -2235,7 +2236,7 @@ export type ResolversTypes = {
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   Any: ResolverTypeWrapper<Scalars['Any']['output']>;
-  AppUserProfile: ResolverTypeWrapper<Omit<AppUserProfile, 'adminFor' | 'createdEvents' | 'createdOrganizations' | 'eventAdmin' | 'userId'> & { adminFor?: Maybe<Array<Maybe<ResolversTypes['Organization']>>>, createdEvents?: Maybe<Array<Maybe<ResolversTypes['Event']>>>, createdOrganizations?: Maybe<Array<Maybe<ResolversTypes['Organization']>>>, eventAdmin?: Maybe<Array<Maybe<ResolversTypes['Event']>>>, userId: ResolversTypes['User'] }>;
+  AppUserProfile: ResolverTypeWrapper<InterfaceAppUserProfileModel>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'appUserProfile' | 'user'> & { appUserProfile: ResolversTypes['AppUserProfile'], user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
@@ -2387,7 +2388,7 @@ export type ResolversParentTypes = {
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any']['output'];
-  AppUserProfile: Omit<AppUserProfile, 'adminFor' | 'createdEvents' | 'createdOrganizations' | 'eventAdmin' | 'userId'> & { adminFor?: Maybe<Array<Maybe<ResolversParentTypes['Organization']>>>, createdEvents?: Maybe<Array<Maybe<ResolversParentTypes['Event']>>>, createdOrganizations?: Maybe<Array<Maybe<ResolversParentTypes['Organization']>>>, eventAdmin?: Maybe<Array<Maybe<ResolversParentTypes['Event']>>>, userId: ResolversParentTypes['User'] };
+  AppUserProfile: InterfaceAppUserProfileModel;
   AuthData: Omit<AuthData, 'appUserProfile' | 'user'> & { appUserProfile: ResolversParentTypes['AppUserProfile'], user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean']['output'];
   CheckIn: InterfaceCheckInModel;
@@ -2606,6 +2607,7 @@ export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
 export type AppUserProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppUserProfile'] = ResolversParentTypes['AppUserProfile']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   createdOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
@@ -3167,8 +3169,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   registrantsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryRegistrantsByEventArgs, 'id'>>;
   user?: Resolver<ResolversTypes['UserData'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   userLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryUserLanguageArgs, 'userId'>>;
-  users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryUsersArgs>>;
-  usersConnection?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType, Partial<QueryUsersConnectionArgs>>;
+  users?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserData']>>>, ParentType, ContextType, Partial<QueryUsersArgs>>;
+  usersConnection?: Resolver<Array<Maybe<ResolversTypes['UserData']>>, ParentType, ContextType, Partial<QueryUsersConnectionArgs>>;
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
@@ -3217,7 +3219,6 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
   adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   appUserProfileId?: Resolver<Maybe<ResolversTypes['AppUserProfile']>, ParentType, ContextType>;
   birthDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

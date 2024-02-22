@@ -1,3 +1,4 @@
+//ts-ignore
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -43,6 +44,13 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user ?? null,
+    );
+    // console.log(usersPayload);
+
     const users = await User.find()
       .limit(0)
       .skip(0)
@@ -51,7 +59,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("registeredEvents")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 
   it(`returns paginated list of users filtered by
@@ -145,6 +153,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user,
+    );
 
     const users = await User.find(where)
       .limit(2)
@@ -155,7 +167,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("registeredEvents")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 
   it(`returns paginated list of users filtered by
@@ -262,6 +274,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user,
+    );
 
     const users = await User.find(where)
       .limit(2)
@@ -272,7 +288,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("registeredEvents")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 
   it(`returns paginated list of users filtered by
@@ -401,6 +417,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user,
+    );
 
     const users = await User.find(where)
       .limit(2)
@@ -411,7 +431,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("registeredEvents")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 
   it(`returns paginated list of users
@@ -434,6 +454,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user,
+    );
 
     const users = await User.find(where)
       .limit(2)
@@ -444,7 +468,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("registeredEvents")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 
   it(`returns paginated list of users without sorting if orderBy === null`, async () => {
@@ -464,6 +488,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user,
+    );
 
     const users = await User.find(where)
       .limit(2)
@@ -474,6 +502,6 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("registeredEvents")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 });

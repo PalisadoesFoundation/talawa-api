@@ -223,6 +223,10 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, {
         userId: testUsers[1]._id,
       });
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
 
       let users = await User.find({
         _id: testUsers[1].id,
@@ -239,7 +243,7 @@ describe("resolvers -> Query -> users", () => {
         image: null,
       }));
 
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
 
     it(`returns populated array for organizationsBlockedBy fields when the client is a SUPERADMIN`, async () => {
@@ -256,7 +260,10 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, {
         userId: testUsers[3]._id,
       });
-
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
       let users = await User.find({
         _id: testUsers[1].id,
       })
@@ -272,7 +279,7 @@ describe("resolvers -> Query -> users", () => {
         image: null,
       }));
 
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
 
     it(`returns list of all existing users filtered by
@@ -314,6 +321,10 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, {
         userId: testUsers[0]._id,
       });
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
 
       let users = await User.find(filterCriteria)
         .sort(sort)
@@ -327,7 +338,7 @@ describe("resolvers -> Query -> users", () => {
         organizationsBlockedBy: [],
       }));
 
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
 
     it(`returns list of all existing users filtered by
@@ -369,6 +380,10 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, {
         userId: testUsers[0]._id,
       });
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
 
       let users = await User.find(filterCriteria)
         .sort(sort)
@@ -384,7 +399,7 @@ describe("resolvers -> Query -> users", () => {
         image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
 
     it(`returns list of all existing users filtered by
@@ -419,7 +434,10 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, {
         userId: testUsers[0]._id,
       });
-
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
       let users = await User.find(where)
         .sort(sort)
         .select(["-password"])
@@ -433,7 +451,7 @@ describe("resolvers -> Query -> users", () => {
         image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
       // console.log(usersPayload);
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
 
     it(`returns list of all existing users filtered by
@@ -475,6 +493,10 @@ describe("resolvers -> Query -> users", () => {
       };
 
       const usersPayload = await usersResolver?.({}, args, context);
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
 
       let users = await User.find(where)
         .sort(sort)
@@ -491,7 +513,7 @@ describe("resolvers -> Query -> users", () => {
         image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
 
     it(`returns list of all existing users filtered by
@@ -534,7 +556,10 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, {
         userId: testUsers[0]._id,
       });
-
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
       let users = await User.find(where)
         .sort(sort)
         .select(["-password"])
@@ -548,7 +573,7 @@ describe("resolvers -> Query -> users", () => {
         image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
 
     it(`returns list of all existing users filtered by
@@ -592,7 +617,10 @@ describe("resolvers -> Query -> users", () => {
       };
 
       const usersPayload = await usersResolver?.({}, args, context);
-
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
       let users = await User.find(where)
         .sort(sort)
         .select(["-password"])
@@ -608,7 +636,7 @@ describe("resolvers -> Query -> users", () => {
         image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
 
     it(`returns list of all existing users filtered by
@@ -655,7 +683,10 @@ describe("resolvers -> Query -> users", () => {
       };
 
       const usersPayload = await usersResolver?.({}, args, context);
-
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
       let users = await User.find(where)
         .sort(sort)
         .select(["-password"])
@@ -671,7 +702,7 @@ describe("resolvers -> Query -> users", () => {
         image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
 
     it(`returns list of all existing users filtered by
@@ -705,7 +736,10 @@ describe("resolvers -> Query -> users", () => {
         userId: testUsers[0]._id,
       };
       const usersPayload = await usersResolver?.({}, args, context);
-
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
       let users = await User.find(where)
         .sort(sort)
         .select(["-password"])
@@ -721,7 +755,7 @@ describe("resolvers -> Query -> users", () => {
         image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
 
     it(`returns list of all existing users
@@ -743,7 +777,10 @@ describe("resolvers -> Query -> users", () => {
       };
 
       const usersPayload = await usersResolver?.({}, args, context);
-
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
       let users = await User.find(where)
         .sort(sort)
         .select(["-password"])
@@ -759,7 +796,7 @@ describe("resolvers -> Query -> users", () => {
         image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
 
     it(`returns list of all existing users
@@ -781,7 +818,10 @@ describe("resolvers -> Query -> users", () => {
       };
 
       const usersPayload = await usersResolver?.({}, args, context);
-
+      const payload = usersPayload?.map(
+        // @ts-expect-error-ignore
+        (userConnection) => userConnection?.user,
+      );
       let users = await User.find(where)
         .sort(sort)
         .select(["-password"])
@@ -799,7 +839,7 @@ describe("resolvers -> Query -> users", () => {
         image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
-      expect(usersPayload).toEqual(users);
+      expect(payload).toEqual(users);
     });
   });
   it(`returns list of all existing users
@@ -830,7 +870,10 @@ describe("resolvers -> Query -> users", () => {
     };
 
     const usersPayload = await usersResolver?.({}, args, context);
-
+    const payload = usersPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user,
+    );
     let users = await User.find(where)
       .sort(sort)
       .select(["-password"])
@@ -846,7 +889,7 @@ describe("resolvers -> Query -> users", () => {
       image: user.image ? `${context.apiRootUrl}${user.image}` : null,
     }));
 
-    expect(usersPayload).toEqual(users);
+    expect(payload).toEqual(users);
   });
   it("throws error if user does not have appUserProfile", async () => {
     const { requestContext } = await import("../../../src/libraries");

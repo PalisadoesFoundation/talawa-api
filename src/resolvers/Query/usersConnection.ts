@@ -1,6 +1,6 @@
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import { AppUserProfile, User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import type { InterfaceUser } from "../../models";
-import { User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -27,6 +27,20 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
     .populate("joinedOrganizations")
     .populate("registeredEvents")
     .lean();
-
-  return users;
+  return await Promise.all(
+    users.map(async (user) => {
+      const userAppProfile = await AppUserProfile.findOne({
+        userId: user._id,
+      })
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .lean();
+      return {
+        user: user as InterfaceUser,
+        appUserProfile: userAppProfile as InterfaceAppUserProfile,
+      };
+    }),
+  );
 };
