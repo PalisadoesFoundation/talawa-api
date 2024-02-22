@@ -13,7 +13,7 @@ export interface InterfaceEvent {
   title: string;
   description: string;
   attendees: string | undefined;
-  images: string | undefined;
+  images: string[];
   location: string | undefined;
   latitude: number | undefined;
   longitude: number;
