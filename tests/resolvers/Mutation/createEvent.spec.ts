@@ -1215,7 +1215,7 @@ describe("Check for validation conditions", () => {
   it(`throws Image Validation error if greater then 5 images are uploaded`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationCreateEventArgs = {
@@ -1258,7 +1258,7 @@ describe("Check for validation conditions", () => {
     } catch (error: unknown) {
       if (error instanceof InputValidationError) {
         expect(error.message).toEqual(
-          `Event validation failed: images: Up to 5 images are allowed.`
+          `Event validation failed: images: Up to 5 images are allowed.`,
         );
       }
     }
