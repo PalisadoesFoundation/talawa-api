@@ -19,13 +19,25 @@ dotenv.config();
  * if so, it copies the missing fields from .env.sampale to .env.
  */
 export function checkEnvFile(): void {
-  const env = dotenv.parse(fs.readFileSync(".env"));
-  const envSample = dotenv.parse(fs.readFileSync(".env.sample"));
-  const misplaced = Object.keys(envSample).filter((key) => !(key in env));
-  if (misplaced.length > 0) {
-    // copy the missing fields from .env.sample to .env
-    for (const key of misplaced) {
-      fs.appendFileSync(".env", `${key}=${envSample[key]}\n`);
+  if (process.env.NODE_ENV === "test") {
+    const env = dotenv.parse(fs.readFileSync(".env_test"));
+    const envSample = dotenv.parse(fs.readFileSync(".env.sample"));
+    const misplaced = Object.keys(envSample).filter((key) => !(key in env));
+    if (misplaced.length > 0) {
+      // copy the missing fields from .env.sample to .env
+      for (const key of misplaced) {
+        fs.appendFileSync(".env_test", `${key}=${envSample[key]}\n`);
+      }
+    }
+  } else {
+    const env = dotenv.parse(fs.readFileSync(".env"));
+    const envSample = dotenv.parse(fs.readFileSync(".env.sample"));
+    const misplaced = Object.keys(envSample).filter((key) => !(key in env));
+    if (misplaced.length > 0) {
+      // copy the missing fields from .env.sample to .env
+      for (const key of misplaced) {
+        fs.appendFileSync(".env", `${key}=${envSample[key]}\n`);
+      }
     }
   }
 }
@@ -38,16 +50,26 @@ export function checkEnvFile(): void {
  * can be either strings or numbers. These key-value pairs represent the environment variables that
  * need to be updated.
  */
-function updateEnvVariable(config: { [key: string]: string | number }): void {
-  const existingContent: string = fs.readFileSync(".env", "utf8");
-
-  let updatedContent: string = existingContent;
-  for (const key in config) {
-    const regex = new RegExp(`^${key}=.*`, "gm");
-    updatedContent = updatedContent.replace(regex, `${key}=${config[key]}`);
+export function updateEnvVariable(config: {
+  [key: string]: string | number;
+}): void {
+  if (process.env.NODE_ENV === "test") {
+    const existingContent: string = fs.readFileSync(".env_test", "utf8");
+    let updatedContent: string = existingContent;
+    for (const key in config) {
+      const regex = new RegExp(`^${key}=.*`, "gm");
+      updatedContent = updatedContent.replace(regex, `${key}=${config[key]}`);
+    }
+    fs.writeFileSync(".env_test", updatedContent, "utf8");
+  } else {
+    const existingContent: string = fs.readFileSync(".env", "utf8");
+    let updatedContent: string = existingContent;
+    for (const key in config) {
+      const regex = new RegExp(`^${key}=.*`, "gm");
+      updatedContent = updatedContent.replace(regex, `${key}=${config[key]}`);
+    }
+    fs.writeFileSync(".env", updatedContent, "utf8");
   }
-
-  fs.writeFileSync(".env", updatedContent, "utf8");
 }
 
 // Get the node environment
@@ -99,22 +121,38 @@ export async function setNodeEnvironment(): Promise<void> {
  * used in authentication systems to obtain new access tokens without requiring the user to
  * re-authenticate.
  */
-async function accessAndRefreshTokens(
+export async function accessAndRefreshTokens(
   accessTokenSecret: string | null,
   refreshTokenSecret: string | null,
 ): Promise<void> {
-  const config = dotenv.parse(fs.readFileSync(".env"));
+  if (process.env.NODE_ENV === "test") {
+    const config = dotenv.parse(fs.readFileSync(".env_test"));
 
-  if (accessTokenSecret === null) {
-    accessTokenSecret = cryptolib.randomBytes(32).toString("hex");
-    config.ACCESS_TOKEN_SECRET = accessTokenSecret;
-    updateEnvVariable(config);
-  }
+    if (accessTokenSecret === null) {
+      accessTokenSecret = cryptolib.randomBytes(32).toString("hex");
+      config.ACCESS_TOKEN_SECRET = accessTokenSecret;
+      updateEnvVariable(config);
+    }
 
-  if (refreshTokenSecret === null) {
-    refreshTokenSecret = cryptolib.randomBytes(32).toString("hex");
-    config.REFRESH_TOKEN_SECRET = refreshTokenSecret;
-    updateEnvVariable(config);
+    if (refreshTokenSecret === null) {
+      refreshTokenSecret = cryptolib.randomBytes(32).toString("hex");
+      config.REFRESH_TOKEN_SECRET = refreshTokenSecret;
+      updateEnvVariable(config);
+    }
+  } else {
+    const config = dotenv.parse(fs.readFileSync(".env"));
+
+    if (accessTokenSecret === null) {
+      accessTokenSecret = cryptolib.randomBytes(32).toString("hex");
+      config.ACCESS_TOKEN_SECRET = accessTokenSecret;
+      updateEnvVariable(config);
+    }
+
+    if (refreshTokenSecret === null) {
+      refreshTokenSecret = cryptolib.randomBytes(32).toString("hex");
+      config.REFRESH_TOKEN_SECRET = refreshTokenSecret;
+      updateEnvVariable(config);
+    }
   }
 }
 
@@ -864,6 +902,12 @@ async function main(): Promise<void> {
 
   if (!fs.existsSync(".env")) {
     fs.copyFileSync(".env.sample", ".env");
+  } else {
+    checkEnvFile();
+  }
+
+  if (!fs.existsSync(".env_test")) {
+    fs.copyFileSync(".env.sample", ".env_test");
   } else {
     checkEnvFile();
   }
