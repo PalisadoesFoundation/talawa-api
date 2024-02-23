@@ -97,16 +97,27 @@ export async function getNodeEnvironment(): Promise<string> {
  * environment variable, and updating a configuration file.
  */
 export async function setNodeEnvironment(): Promise<void> {
-  try {
-    const nodeEnv = await getNodeEnvironment();
-    process.env.NODE_ENV = nodeEnv;
+  if (process.env.NODE_ENV === "test") {
+    try {
+      const config = dotenv.parse(fs.readFileSync(".env_test"));
+      config.NODE_ENV = "development";
+      updateEnvVariable(config);
+    } catch (err) {
+      console.error(err);
+      abort();
+    }
+  } else {
+    try {
+      const nodeEnv = await getNodeEnvironment();
+      process.env.NODE_ENV = nodeEnv;
 
-    const config = dotenv.parse(fs.readFileSync(".env"));
-    config.NODE_ENV = nodeEnv;
-    updateEnvVariable(config);
-  } catch (err) {
-    console.error(err);
-    abort();
+      const config = dotenv.parse(fs.readFileSync(".env"));
+      config.NODE_ENV = nodeEnv;
+      updateEnvVariable(config);
+    } catch (err) {
+      console.error(err);
+      abort();
+    }
   }
 }
 
@@ -242,7 +253,7 @@ async function askForTransactionLogPath(): Promise<string> {
  * It is used to establish a connection to the Redis server.
  * @returns a Promise that resolves to a boolean value.
  */
-async function checkRedisConnection(url: string): Promise<boolean> {
+export async function checkRedisConnection(url: string): Promise<boolean> {
   let response = false;
   const client = redis.createClient({ url });
 
@@ -266,11 +277,20 @@ async function checkRedisConnection(url: string): Promise<boolean> {
  * @returns The function `askForRedisUrl` returns a promise that resolves to an object with the
  * properties `host`, `port`, and `password`.
  */
-async function askForRedisUrl(): Promise<{
+export async function askForRedisUrl(): Promise<{
   host: string;
   port: number;
   password: string;
 }> {
+  if (process.env.NODE_ENV === "test") {
+    const host = {
+      host: "localhost",
+      port: 6379,
+      password: "",
+    };
+    return host;
+  }
+
   const { host, port, password } = await inquirer.prompt([
     {
       type: "input",
@@ -301,8 +321,12 @@ async function askForRedisUrl(): Promise<{
  * through a list of Redis URLs and testing the connection.
  * @returns The function `checkExistingRedis` returns a Promise that resolves to a string or null.
  */
-async function checkExistingRedis(): Promise<string | null> {
+export async function checkExistingRedis(): Promise<string | null> {
   const existingRedisURL = ["redis://localhost:6379"];
+
+  if (process.env.NODE_ENV === "test") {
+    return existingRedisURL[0];
+  }
 
   for (const url of existingRedisURL) {
     if (!url) {
@@ -324,7 +348,7 @@ async function checkExistingRedis(): Promise<string | null> {
  * Redis URL, checking the connection, and updating the environment variables and .env file
  * accordingly.
  */
-async function redisConfiguration(): Promise<void> {
+export async function redisConfiguration(): Promise<void> {
   try {
     let host!: string;
     let port!: number;
@@ -366,16 +390,25 @@ async function redisConfiguration(): Promise<void> {
     }
 
     // Set the Redis parameters in process.env
-    process.env.REDIS_HOST = host;
-    process.env.REDIS_PORT = port.toString();
-    process.env.REDIS_PASSWORD = password;
+    if (process.env.NODE_ENV === "test") {
+      // Update the .env_test file
+      const config = dotenv.parse(fs.readFileSync(".env_test"));
+      config.REDIS_HOST = host;
+      config.REDIS_PORT = port.toString();
+      config.REDIS_PASSWORD = password;
+      updateEnvVariable(config);
+    } else {
+      process.env.REDIS_HOST = host;
+      process.env.REDIS_PORT = port.toString();
+      process.env.REDIS_PASSWORD = password;
 
-    // Update the .env file
-    const config = dotenv.parse(fs.readFileSync(".env"));
-    config.REDIS_HOST = host;
-    config.REDIS_PORT = port.toString();
-    config.REDIS_PASSWORD = password;
-    updateEnvVariable(config);
+      // Update the .env file
+      const config = dotenv.parse(fs.readFileSync(".env"));
+      config.REDIS_HOST = host;
+      config.REDIS_PORT = port.toString();
+      config.REDIS_PASSWORD = password;
+      updateEnvVariable(config);
+    }
   } catch (err) {
     console.error(err);
     abort();
