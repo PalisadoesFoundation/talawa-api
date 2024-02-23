@@ -326,20 +326,6 @@ export const inputs = gql`
     isArchived: Boolean
   }
 
-  # Implements CursorPaginationInput
-  input UsersConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
-  }
-
-  # Implements CursorPaginationInput
-  input UserTagsConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
-  }
-
   input UpdateAdvertisementInput {
     _id: ID!
     name: String
