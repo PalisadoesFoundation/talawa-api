@@ -98,6 +98,9 @@ export const mutations = gql`
       recurrenceRuleData: RecurrenceRuleInput
     ): Event! @auth
     createFund(data: FundInput!): Fund! @auth
+    createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
+      @auth
+
     createGroupChat(data: createGroupChatInput!): GroupChat! @auth
 
     createMessageChat(data: MessageChatInput!): MessageChat! @auth
@@ -182,6 +185,7 @@ export const mutations = gql`
     removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
 
     removeEvent(id: ID!): Event! @auth
+    removeFund(id: ID!): Fund! @auth
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
 

@@ -2,7 +2,7 @@ import type { Model, PopulatedDoc, Types } from "mongoose";
 
 import { Schema, model, models } from "mongoose";
 import type { InterfaceFund } from "./Fund";
-enum CurrencyType {
+export enum CurrencyType {
   AED = "AED", // United Arab Emirates Dirham
   AFN = "AFN", // Afghan Afghani
   ALL = "ALL", // Albanian Lek
@@ -95,7 +95,77 @@ enum CurrencyType {
   MGA = "MGA", // Malagasy Ariary
   MKD = "MKD", // Macedonian Denar
   MMK = "MMK", // Myanma Kyat
-  MNT = "MNT", // Mongolian
+  MNT = "MNT", // Mongolian Tugrik
+  MOP = "MOP", // Macanese Pataca
+  MRU = "MRU", // Mauritanian Ouguiya
+  MUR = "MUR", // Mauritian Rupee
+  MVR = "MVR", // Maldivian Rufiyaa
+  MWK = "MWK", // Malawian Kwacha
+  MXN = "MXN", // Mexican Peso
+  MYR = "MYR", // Malaysian Ringgit
+  MZN = "MZN", // Mozambican Metical
+  NAD = "NAD", // Namibian Dollar
+  NGN = "NGN", // Nigerian Naira
+  NIO = "NIO", // Nicaraguan Córdoba
+  NOK = "NOK", // Norwegian Krone
+  NPR = "NPR", // Nepalese Rupee
+  NZD = "NZD", // New Zealand Dollar
+  OMR = "OMR", // Omani Rial
+  PAB = "PAB", // Panamanian Balboa
+  PEN = "PEN", // Peruvian Nuevo Sol
+  PGK = "PGK", // Papua New Guinean Kina
+  PHP = "PHP", // Philippine Peso
+  PKR = "PKR", // Pakistani Rupee
+  PLN = "PLN", // Polish Zloty
+  PYG = "PYG", // Paraguayan Guarani
+  QAR = "QAR", // Qatari Rial
+  RON = "RON", // Romanian Leu
+  RSD = "RSD", // Serbian Dinar
+  RUB = "RUB", // Russian Ruble
+  RWF = "RWF", // Rwandan Franc
+  SAR = "SAR", // Saudi Riyal
+  SBD = "SBD", // Solomon Islands Dollar
+  SCR = "SCR", // Seychellois Rupee
+  SDG = "SDG", // Sudanese Pound
+  SEK = "SEK", // Swedish Krona
+  SGD = "SGD", // Singapore Dollar
+  SHP = "SHP", // Saint Helena Pound
+  SLL = "SLL", // Sierra Leonean Leone
+  SOS = "SOS", // Somali Shilling
+  SPL = "SPL", // Seborgan Luigino
+  SRD = "SRD", // Surinamese Dollar
+  STN = "STN", // São Tomé and Príncipe Dobra
+  SVC = "SVC", // Salvadoran Colón
+  SYP = "SYP", // Syrian Pound
+  SZL = "SZL", // Swazi Lilangeni
+  THB = "THB", // Thai Baht
+  TJS = "TJS", // Tajikistani Somoni
+  TMT = "TMT", // Turkmenistani Manat
+  TND = "TND", // Tunisian Dinar
+  TOP = "TOP", // Tongan Pa'anga
+  TRY = "TRY", // Turkish Lira
+  TTD = "TTD", // Trinidad and Tobago Dollar
+  TVD = "TVD", // Tuvaluan Dollar
+  TWD = "TWD", // New Taiwan Dollar
+  TZS = "TZS", // Tanzanian Shilling
+  UAH = "UAH", // Ukrainian Hryvnia
+  UGX = "UGX", // Ugandan Shilling
+  USD = "USD", // United States Dollar
+  UYU = "UYU", // Uruguayan Peso
+  UZS = "UZS", // Uzbekistan Som
+  VEF = "VEF", // Venezuelan Bolívar
+  VND = "VND", // Vietnamese Dong
+  VUV = "VUV", // Vanuatu Vatu
+  WST = "WST", // Samoan Tala
+  XAF = "XAF", // CFA Franc BEAC
+  XCD = "XCD", // East Caribbean Dollar
+  XDR = "XDR", // Special Drawing Rights
+  XOF = "XOF", // CFA Franc BCEAO
+  XPF = "XPF", // CFP Franc
+  YER = "YER", // Yemeni Rial
+  ZAR = "ZAR", // South African Rand
+  ZMW = "ZMW", // Zambian Kwacha
+  ZWD = "ZWD", // Zimbabwean Dollar
 }
 
 /**
@@ -110,9 +180,9 @@ enum CurrencyType {
  * @param updatedAt - Timestamp of updation
  *
  */
-export interface InterfaceFundCampaign {
+export interface InterfaceFundraisingCampaign {
   _id: Types.ObjectId;
-  fund: PopulatedDoc<InterfaceFund & Document>;
+  fundId: PopulatedDoc<InterfaceFund & Document>;
   name: string;
   startDate: Date;
   endDate: Date;
@@ -121,9 +191,9 @@ export interface InterfaceFundCampaign {
   createdAt: Date;
   updatedAt: Date;
 }
-const fundCampaignSchema = new Schema(
+const fundraisingCampaignSchema = new Schema(
   {
-    fund: {
+    fundId: {
       type: Schema.Types.ObjectId,
       ref: "Fund",
       required: true,
@@ -153,9 +223,11 @@ const fundCampaignSchema = new Schema(
     timestamps: true,
   },
 );
-const fundCampaignModel = (): Model<InterfaceFundCampaign> =>
-  model<InterfaceFundCampaign>("Fund", fundCampaignSchema);
+const fundraisingCampaignModel = (): Model<InterfaceFundraisingCampaign> =>
+  model<InterfaceFundraisingCampaign>(
+    "FundraisingCampaign",
+    fundraisingCampaignSchema,
+  );
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const FundCampaign = (models.Fund || fundCampaignModel()) as ReturnType<
-  typeof fundCampaignModel
->;
+export const FundraisingCampaign = (models.FundraisingCampaign ||
+  fundraisingCampaignModel()) as ReturnType<typeof fundraisingCampaignModel>;

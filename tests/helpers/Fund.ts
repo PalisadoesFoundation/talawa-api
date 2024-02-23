@@ -22,7 +22,7 @@ export const createTestFund = async (): Promise<
       taxDeductible: true,
       isDefault: true,
       isArchived: false,
-      campaign: [],
+      campaigns: [],
     });
     return [testUser, testOrganization, testFund];
   } else {
