@@ -2,26 +2,16 @@ import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
 import { Event } from "../../../models";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
-import { RecurrenceRule } from "../../../models/RecurrenceRule";
+import type { InterfaceRecurrenceRule } from "../../../models/RecurrenceRule";
 
 export const updateAllInstances = async (
   args: MutationUpdateEventArgs,
   event: InterfaceEvent,
+  recurrenceRule: InterfaceRecurrenceRule,
+  baseRecurringEvent: InterfaceEvent,
   session: mongoose.ClientSession,
 ): Promise<InterfaceEvent> => {
   const { _id: eventId, recurrenceRuleId, baseRecurringEventId } = event;
-
-  const recurrenceRule = await RecurrenceRule.findOne({
-    _id: recurrenceRuleId,
-  });
-
-  const baseRecurringEvent = await Event.findOne({
-    _id: baseRecurringEventId,
-  });
-
-  if (!recurrenceRule || !baseRecurringEvent) {
-    return event;
-  }
 
   if (
     (!recurrenceRule.endDate && !baseRecurringEvent.endDate) ||

@@ -127,7 +127,6 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   }
 
   /* c8 ignore stop */
-
   try {
     let updatedEvent: InterfaceEvent = event;
 
@@ -147,8 +146,8 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
 
     /* c8 ignore stop */
     return updatedEvent;
-  } catch (error) {
     /* c8 ignore start */
+  } catch (error) {
     if (session) {
       // abort transaction if something fails
       await session.abortTransaction();

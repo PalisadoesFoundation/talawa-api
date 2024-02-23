@@ -41,10 +41,5 @@ export const getEventData = (
     ),
   };
 
-  // // if the event is made infinitly recurring (i.e. endDate is null), remove it from the data
-  // if (!updatedEventData.endDate) {
-  //   delete updatedEventData.endDate;
-  // }
-
   return updatedEventData;
 };

@@ -2,7 +2,11 @@ import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
 import { Event, EventAttendee, User } from "../../../models";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
-import { RecurrenceRule } from "../../../models/RecurrenceRule";
+import type {
+  InterfaceRecurrenceRule} from "../../../models/RecurrenceRule";
+import {
+  RecurrenceRule,
+} from "../../../models/RecurrenceRule";
 import {
   createRecurrenceRule,
   generateRecurrenceRuleString,
@@ -14,21 +18,11 @@ import { getEventData } from "./getEventData";
 export const updateThisAndFollowingInstances = async (
   args: MutationUpdateEventArgs,
   event: InterfaceEvent,
+  recurrenceRule: InterfaceRecurrenceRule,
+  baseRecurringEvent: InterfaceEvent,
   session: mongoose.ClientSession,
 ): Promise<InterfaceEvent> => {
   let updatedEvent: InterfaceEvent = event;
-
-  const recurrenceRule = await RecurrenceRule.findOne({
-    _id: event.recurrenceRuleId,
-  });
-
-  const baseRecurringEvent = await Event.findOne({
-    _id: event.baseRecurringEventId,
-  });
-
-  if (!recurrenceRule || !baseRecurringEvent) {
-    return event;
-  }
 
   let newRecurrenceRuleString = recurrenceRule.recurrenceRuleString;
 
@@ -73,7 +67,7 @@ export const updateThisAndFollowingInstances = async (
       recurrenceStartDate,
       endDate,
       eventData.organizationId,
-      baseRecurringEvent._id,
+      baseRecurringEvent._id.toString(),
       latestInstanceDate,
       session,
     );
@@ -81,7 +75,7 @@ export const updateThisAndFollowingInstances = async (
     // generate the recurring instances and get an instance back
     updatedEvent = await generateRecurringEventInstances({
       data: eventData,
-      baseRecurringEventId: baseRecurringEvent._id,
+      baseRecurringEventId: baseRecurringEvent._id.toString(),
       recurrenceRuleId: newRecurrenceRule?._id.toString(),
       recurringInstanceDates,
       creatorId: event.creatorId,
@@ -155,14 +149,6 @@ export const updateThisAndFollowingInstances = async (
         },
         { session },
       ).lean();
-    } else {
-      // delete the recurrenceRule
-      await RecurrenceRule.deleteOne(
-        {
-          _id: recurrenceRule._id,
-        },
-        { session },
-      );
     }
   } else {
     // perform bulk update on the events following the current event's recurrence rule

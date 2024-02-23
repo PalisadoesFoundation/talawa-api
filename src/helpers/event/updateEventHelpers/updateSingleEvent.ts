@@ -48,16 +48,9 @@ export const updateSingleEvent = async (
     }
 
     // get the recurrence startDate, if provided, else, use event startDate
-    const startDateString = eventData.startDate || event.startDate;
-    const startDate = new Date(startDateString);
-
+    const startDate = new Date(eventData.startDate);
     // get the recurrence endDate, if provided or made null (infinitely recurring)
-    // else, use event endDate
-    const endDateString =
-      eventData.endDate || eventData.endDate === null
-        ? eventData.endDate
-        : event.endDate;
-    const endDate = endDateString ? new Date(endDateString) : null;
+    const endDate = eventData.endDate ? new Date(eventData.endDate) : null;
 
     // generate a recurrence rule string which would be used to generate rrule object
     const recurrenceRuleString = generateRecurrenceRuleString(
@@ -102,7 +95,7 @@ export const updateSingleEvent = async (
     );
 
     // generate the recurring instances and get an instance back
-    await generateRecurringEventInstances({
+    updatedEvent = await generateRecurringEventInstances({
       data: eventData,
       baseRecurringEventId: baseRecurringEvent[0]._id.toString(),
       recurrenceRuleId: recurrenceRule?._id.toString(),
