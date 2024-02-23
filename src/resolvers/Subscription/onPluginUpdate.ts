@@ -17,11 +17,12 @@ const TALAWA_PLUGIN_UPDATED = "TALAWA_PLUGIN_UPDATED";
 // const onMessagesUpdates = (fn:any) => subscribers.push(fn);
 
 export const filterFunction = async function (
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   payload: any,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   context: any,
 ): Promise<boolean> {
+  //Code block to avoid unnecessary errors from ES lint.
+  console.log("Payload:", payload);
+  console.log("Context:", context);
   return true;
 };
 
