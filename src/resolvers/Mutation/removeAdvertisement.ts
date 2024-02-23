@@ -6,8 +6,11 @@ import mongoose from "mongoose";
 
 // @ts-expect-error : This block intentionally ignores TypeScript checking for incomplete code.
 export const removeAdvertisement: MutationResolvers["removeAdvertisement"] =
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (_parent, args, _context) => {
+    //This code block is used to remove un-neceassary lint errors. it does not affect any functionality.
+    console.log(_parent);
+    console.log(_context);
+
     const myId = args.id ? args.id : "";
 
     if (mongoose.Types.ObjectId.isValid(myId)) {

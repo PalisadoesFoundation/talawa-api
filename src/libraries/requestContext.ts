@@ -60,19 +60,17 @@ export const init = <T>(options: InterfaceInitOptions<T> = {}): T => {
 };
 
 export const translate = (...args: any): any => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const __ = getRequestContextValue("translate");
-  if (typeof __ !== "function") {
+  const translateFunction = getRequestContextValue("translate");
+  if (typeof translateFunction !== "function") {
     throw new Error("i18n is not initialized, try app.use(i18n.init);");
   }
-  return __(...args);
+  return translateFunction(...args);
 };
 
 export const translatePlural = (...args: any): any => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const __n = getRequestContextValue("translatePlural");
-  if (typeof __n !== "function") {
+  const translatePluralFunction = getRequestContextValue("translatePlural");
+  if (typeof translatePluralFunction !== "function") {
     throw new Error("i18n is not initialized, try app.use(i18n.init);");
   }
-  return __n(...args);
+  return translatePluralFunction(...args);
 };
