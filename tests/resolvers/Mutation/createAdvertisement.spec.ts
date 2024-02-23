@@ -12,19 +12,9 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import type {
-  TestOrganizationType,
-  TestUserType,
-} from "../../helpers/userAndOrg";
-import {
-  createTestUserAndOrganization,
-  createTestUser,
-} from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let randomUser: TestUserType;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
@@ -35,8 +25,6 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
-  testOrganization = temp[1];
-  randomUser = await createTestUser();
 });
 
 afterAll(async () => {
