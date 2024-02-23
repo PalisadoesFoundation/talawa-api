@@ -32,15 +32,19 @@ export const updateThisAndFollowingInstances = async (
 
   let newRecurrenceRuleString = recurrenceRule.recurrenceRuleString;
 
-  const startDate = args.data?.startDate || recurrenceRule.startDate;
-  const endDate = args.data?.endDate || recurrenceRule.endDate;
-
   const { data: updateEventInputData, recurrenceRuleData } = args;
+
+  const startDate = updateEventInputData?.startDate || recurrenceRule.startDate;
+  const endDate =
+    updateEventInputData?.endDate || updateEventInputData?.endDate === null
+      ? updateEventInputData.endDate
+      : recurrenceRule.endDate;
+
   if (recurrenceRuleData) {
     newRecurrenceRuleString = generateRecurrenceRuleString(
       recurrenceRuleData,
       startDate,
-      endDate,
+      endDate ?? undefined,
     );
   }
 
@@ -50,12 +54,12 @@ export const updateThisAndFollowingInstances = async (
     const eventData = getEventData(updateEventInputData, event);
 
     // get the recurrence startDate, if provided, else, use event startDate
-    const eventStartDate = new Date(eventData.startDate);
+    const recurrenceStartDate = new Date(eventData.startDate);
 
     // get recurrence dates
     const recurringInstanceDates = getRecurringInstanceDates(
       newRecurrenceRuleString,
-      eventStartDate,
+      recurrenceStartDate,
       endDate,
     );
 
@@ -66,7 +70,7 @@ export const updateThisAndFollowingInstances = async (
     // create the recurrencerule
     const newRecurrenceRule = await createRecurrenceRule(
       newRecurrenceRuleString,
-      eventStartDate,
+      recurrenceStartDate,
       endDate,
       eventData.organizationId,
       baseRecurringEvent._id,
@@ -95,31 +99,33 @@ export const updateThisAndFollowingInstances = async (
       (recurringEventInstance) => recurringEventInstance._id,
     );
 
-    await Event.deleteMany(
-      {
-        _id: { $in: recurringEventInstancesIds },
-      },
-      { session },
-    );
-    await EventAttendee.deleteMany(
-      {
-        eventId: { $in: recurringEventInstancesIds },
-      },
-      { session },
-    );
-    await User.updateMany(
-      {
-        eventAdmin: { $in: recurringEventInstancesIds },
-      },
-      {
-        $pull: {
-          eventAdmin: { $in: recurringEventInstancesIds },
-          createdEvents: { $in: recurringEventInstancesIds },
-          registeredEvents: { $in: recurringEventInstancesIds },
+    await Promise.all([
+      Event.deleteMany(
+        {
+          _id: { $in: recurringEventInstancesIds },
         },
-      },
-      { session },
-    );
+        { session },
+      ),
+      EventAttendee.deleteMany(
+        {
+          eventId: { $in: recurringEventInstancesIds },
+        },
+        { session },
+      ),
+      User.updateOne(
+        {
+          _id: event.creatorId,
+        },
+        {
+          $pull: {
+            eventAdmin: { $in: recurringEventInstancesIds },
+            createdEvents: { $in: recurringEventInstancesIds },
+            registeredEvents: { $in: recurringEventInstancesIds },
+          },
+        },
+        { session },
+      ),
+    ]);
 
     const eventsFollowingCurrentRecurrence = await Event.find(
       {

@@ -1,6 +1,6 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
-import { Event } from "../../../models";
+import { Event, EventAttendee, User } from "../../../models";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import { getEventData } from "./getEventData";
@@ -10,7 +10,6 @@ import {
   generateRecurringEventInstances,
   getRecurringInstanceDates,
 } from "../recurringEventHelpers";
-import { addDays } from "date-fns";
 
 /**
  * This function generates a single non-recurring event.
@@ -83,7 +82,7 @@ export const updateSingleEvent = async (
     // get recurrence dates
     const recurringInstanceDates = getRecurringInstanceDates(
       recurrenceRuleString,
-      addDays(event.startDate, 1), // generate instances ahead of current event date to avoid overlap
+      startDate, // generate instances ahead of current event date to avoid overlap
       endDate,
     );
 
@@ -103,7 +102,7 @@ export const updateSingleEvent = async (
     );
 
     // generate the recurring instances and get an instance back
-    const recurringEventInstance = await generateRecurringEventInstances({
+    await generateRecurringEventInstances({
       data: eventData,
       baseRecurringEventId: baseRecurringEvent[0]._id.toString(),
       recurrenceRuleId: recurrenceRule?._id.toString(),
@@ -113,17 +112,32 @@ export const updateSingleEvent = async (
       session,
     });
 
-    // add the baseRecurringEventId to the current event to connect it with recurring instances
-    await Event.updateOne(
-      {
-        _id: event._id,
-      },
-      {
-        ...(args.data as Partial<InterfaceEvent>),
-        baseRecurringEventId: recurringEventInstance.baseRecurringEventId,
-      },
-      { session },
-    );
+    // remove the current event and its association
+    await Promise.all([
+      Event.deleteOne(
+        {
+          _id: event._id,
+        },
+        { session },
+      ),
+      EventAttendee.deleteOne({
+        eventId: event._id,
+        userId: event.creatorId,
+      }),
+      User.updateOne(
+        {
+          _id: event.creatorId,
+        },
+        {
+          $pull: {
+            eventAdmin: event._id,
+            createdEvents: event._id,
+            registeredEvents: event._id,
+          },
+        },
+        { session },
+      ),
+    ]);
   } else {
     // else (i.e. the event is still non-recurring), just perform a regular update
     updatedEvent = await Event.findOneAndUpdate(
