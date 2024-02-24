@@ -54,6 +54,8 @@ const config: CodegenConfig = {
 
           Feedback: "../models/Feedback#InterfaceFeedback",
           Fund: "../models/Fund#InterfaceFund",
+          FundraisingCampaign:
+            "../models/FundraisingCampaign#InterfaceFundraisingCampaign",
 
           // File: '../models/File#InterfaceFile',
 
