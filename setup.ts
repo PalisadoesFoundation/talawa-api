@@ -6,10 +6,21 @@ import path from "path";
 import * as cryptolib from "crypto";
 import inquirer from "inquirer";
 import mongodb from "mongodb";
-import * as redis from "redis";
 import { exec } from "child_process";
 import nodemailer from "nodemailer";
 import type { ExecException } from "child_process";
+/* eslint-disable */
+import {
+  askForMongoDBUrl,
+  checkConnection,
+  checkExistingMongoDB,
+} from "./src/setup/MongoDB";
+import {
+  askForRedisUrl,
+  checkExistingRedis,
+  checkRedisConnection,
+} from "./src/setup/redisConfiguration";
+/* eslint-enable */
 
 dotenv.config();
 
@@ -245,103 +256,6 @@ async function askForTransactionLogPath(): Promise<string> {
   return logPath;
 }
 
-// Check connection to Redis with the specified URL.
-/**
- * The function `checkRedisConnection` checks if a connection to Redis can be established using the
- * provided URL.
- * @param url - The `url` parameter is a string that represents the URL of the Redis server.
- * It is used to establish a connection to the Redis server.
- * @returns a Promise that resolves to a boolean value.
- */
-export async function checkRedisConnection(url: string): Promise<boolean> {
-  let response = false;
-  const client = redis.createClient({ url });
-
-  console.log("\nChecking Redis connection....");
-
-  try {
-    await client.connect();
-    response = true;
-  } catch (error) {
-    console.log(`\nConnection to Redis failed. Please try again.\n`);
-  } finally {
-    client.quit();
-  }
-  return response;
-}
-
-// Redis url prompt
-/**
- * The function `askForRedisUrl` prompts the user to enter the Redis hostname, port, and password, and
- * returns an object with these values.
- * @returns The function `askForRedisUrl` returns a promise that resolves to an object with the
- * properties `host`, `port`, and `password`.
- */
-export async function askForRedisUrl(): Promise<{
-  host: string;
-  port: number;
-  password: string;
-}> {
-  if (process.env.NODE_ENV === "test") {
-    const host = {
-      host: "localhost",
-      port: 6379,
-      password: "",
-    };
-    return host;
-  }
-
-  const { host, port, password } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "host",
-      message: "Enter Redis hostname (default: localhost):",
-      default: "localhost",
-    },
-    {
-      type: "input",
-      name: "port",
-      message: "Enter Redis port (default: 6379):",
-      default: 6379,
-    },
-    {
-      type: "password",
-      name: "password",
-      message:
-        "Enter Redis password (optional : Leave empty for local connections) :",
-    },
-  ]);
-
-  return { host, port, password };
-}
-
-//check existing redis url
-/**
- * The function `checkExistingRedis` checks if there is an existing Redis connection by iterating
- * through a list of Redis URLs and testing the connection.
- * @returns The function `checkExistingRedis` returns a Promise that resolves to a string or null.
- */
-export async function checkExistingRedis(): Promise<string | null> {
-  const existingRedisURL = ["redis://localhost:6379"];
-
-  if (process.env.NODE_ENV === "test") {
-    return existingRedisURL[0];
-  }
-
-  for (const url of existingRedisURL) {
-    if (!url) {
-      continue;
-    }
-
-    const isConnected = await checkRedisConnection(url);
-    if (isConnected) {
-      return url;
-    }
-  }
-
-  return null;
-}
-
 // get the redis url
 /**
  * The `redisConfiguration` function updates the Redis configuration by prompting the user for the
@@ -389,7 +303,7 @@ export async function redisConfiguration(): Promise<void> {
       console.log("\nConnection to Redis successful! 🎉");
     }
 
-    // Set the Redis parameters in process.env
+    // Set the Redis parameters in .env_test
     if (process.env.NODE_ENV === "test") {
       // Update the .env_test file
       const config = dotenv.parse(fs.readFileSync(".env_test"));
@@ -398,6 +312,7 @@ export async function redisConfiguration(): Promise<void> {
       config.REDIS_PASSWORD = password;
       updateEnvVariable(config);
     } else {
+      // Set the Redis parameters in process.env
       process.env.REDIS_HOST = host;
       process.env.REDIS_PORT = port.toString();
       process.env.REDIS_PASSWORD = password;
@@ -455,85 +370,12 @@ async function superAdmin(): Promise<void> {
   }
 }
 
-// Function to check if Existing MongoDB instance is running
-/**
- * The function `checkExistingMongoDB` checks for an existing MongoDB connection by iterating through a
- * list of URLs and testing the connection using the `checkConnection` function.
- * @returns The function `checkExistingMongoDB` returns a promise that resolves to a string or null.
- */
-async function checkExistingMongoDB(): Promise<string | null> {
-  const existingMongoDbUrls = [
-    process.env.MONGO_DB_URL,
-    "mongodb://localhost:27017",
-  ];
-
-  for (const url of existingMongoDbUrls) {
-    if (!url) {
-      continue;
-    }
-
-    const isConnected = await checkConnection(url);
-    if (isConnected) {
-      return url;
-    }
-  }
-
-  return null;
-}
-
-// Check the connection to MongoDB with the specified URL.
-/**
- * The function `checkConnection` is an asynchronous function that checks the connection to a MongoDB
- * database using the provided URL and returns a boolean value indicating whether the connection was
- * successful or not.
- * @param url - The `url` parameter is a string that represents the connection URL for the
- * MongoDB server. It typically includes the protocol (e.g., `mongodb://`), the host and port
- * information, and any authentication credentials if required.
- * @returns a Promise that resolves to a boolean value. The boolean value indicates whether the
- * connection to the MongoDB server was successful (true) or not (false).
- */
-async function checkConnection(url: string): Promise<boolean> {
-  console.log("\nChecking MongoDB connection....");
-
-  try {
-    const connection = await mongodb.connect(url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 1000,
-    });
-    await connection.close();
-    return true;
-  } catch (error) {
-    console.log(`\nConnection to MongoDB failed. Please try again.\n`);
-    return false;
-  }
-}
-
-//Mongodb url prompt
-/**
- * The function `askForMongoDBUrl` prompts the user to enter a MongoDB URL and returns the entered URL
- * as a string.
- * @returns a Promise that resolves to a string.
- */
-async function askForMongoDBUrl(): Promise<string> {
-  const { url } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "url",
-      message: "Enter your MongoDB URL:",
-      default: process.env.MONGO_DB_URL,
-    },
-  ]);
-
-  return url;
-}
-
 // Get the mongodb url
 /**
  * The `mongoDB` function connects to a MongoDB database by asking for a URL, checking the connection,
  * and updating the environment variable with the URL.
  */
-async function mongoDB(): Promise<void> {
+export async function mongoDB(): Promise<void> {
   let DB_URL = process.env.MONGO_DB_URL;
 
   try {
@@ -564,12 +406,20 @@ async function mongoDB(): Promise<void> {
     if (isConnected) {
       console.log("\nConnection to MongoDB successful! 🎉");
     }
-    DB_URL = `${url?.endsWith("/talawa-api") ? url : `${url}/talawa-api`}`;
-    const config = dotenv.parse(fs.readFileSync(".env"));
-    config.MONGO_DB_URL = DB_URL;
-    // Modifying the environment variable to be able to access the URL in importData function.
-    process.env.MONGO_DB_URL = DB_URL;
-    updateEnvVariable(config);
+    if (process.env.NODE_ENV === "test") {
+      DB_URL = `${url?.endsWith("/talawa-api") ? url : `${url}/talawa-api`}`;
+      const config = dotenv.parse(fs.readFileSync(".env_test"));
+      // Not updating actual environmental variable when in testing environment.
+      config.MONGO_DB_URL = DB_URL;
+      updateEnvVariable(config);
+    } else {
+      DB_URL = `${url?.endsWith("/talawa-api") ? url : `${url}/talawa-api`}`;
+      const config = dotenv.parse(fs.readFileSync(".env"));
+      config.MONGO_DB_URL = DB_URL;
+      // Modifying the environment variable to be able to access the URL in importData function.
+      process.env.MONGO_DB_URL = DB_URL;
+      updateEnvVariable(config);
+    }
   } catch (err) {
     console.error(err);
     abort();

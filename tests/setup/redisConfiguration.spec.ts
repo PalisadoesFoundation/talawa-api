@@ -1,63 +1,73 @@
-import { it, expect, describe, vi } from 'vitest';
-import { redisConfiguration } from '../../setup';
-import  inquirer from 'inquirer'; // Assuming inquirer is used for prompts
-import dotenv from 'dotenv';
-import fs from 'fs';
+import { it, expect, describe, vi } from "vitest";
+import { redisConfiguration } from "../../setup";
+import inquirer from "inquirer"; // Assuming inquirer is used for prompts
+import dotenv from "dotenv";
+import fs from "fs";
+import * as module from "../../src/setup/redisConfiguration";
 
-describe('redisConfiguration', () => {
-  it('connects to existing Redis URL if confirmed', async () => {
-    const mockInquirer = vi.spyOn(inquirer, "prompt").mockImplementationOnce(() =>
-      Promise.resolve({ keepValues: true }),
-    )
-
-    await redisConfiguration();
-
-    expect(mockInquirer).toBeCalledWith({
-      type: 'confirm',
-      name: 'keepValues',
-      message: `Do you want to connect to the detected Redis URL?`,
-      default: true,
-    });
-
-    const env = dotenv.parse(fs.readFileSync('.env_test'));
-    expect(env.REDIS_HOST).toBe('localhost');
-    expect(env.REDIS_PORT).toBe('6379');
-    expect(env.REDIS_PASSWORD).toBe('');
-  });
-
-  it('asks for new Redis URL and connects if confirmed', async () => {
-    const mockInquirer = vi.spyOn(inquirer, "prompt").mockImplementationOnce(() =>
-      Promise.resolve({ keepValues: false }),
-    )
+/**
+ * This test suite verifies the behavior of the `redisConfiguration` function
+ * in the setup module.
+ */
+describe("Setup -> redisConfiguration", () => {
+  /**
+   * Test case: connects to existing Redis URL if confirmed
+   *
+   * Description:
+   * This test verifies that the redisConfiguration function connects to an
+   * existing Redis URL if the user confirms to keep the values.
+   */
+  it("connects to existing Redis URL if confirmed", async () => {
+    const existingUrl = "redis://localhost:6379";
+    vi.spyOn(module, "checkExistingRedis").mockImplementationOnce(() =>
+      Promise.resolve(existingUrl),
+    );
+    const mockInquirer = vi
+      .spyOn(inquirer, "prompt")
+      .mockImplementationOnce(() => Promise.resolve({ keepValues: true }));
 
     await redisConfiguration();
 
     expect(mockInquirer).toBeCalledWith({
-      type: 'confirm',
-      name: 'keepValues',
+      type: "confirm",
+      name: "keepValues",
       message: `Do you want to connect to the detected Redis URL?`,
       default: true,
     });
-    const env = dotenv.parse(fs.readFileSync('.env_test'));
-    expect(env.REDIS_HOST).toBe('localhost');
-    expect(env.REDIS_PORT).toBe('6379');
-    expect(env.REDIS_PASSWORD).toBe('');
+
+    const env = dotenv.parse(fs.readFileSync(".env_test"));
+    expect(env.REDIS_HOST).toBe("localhost");
+    expect(env.REDIS_PORT).toBe("6379");
+    expect(env.REDIS_PASSWORD).toBe("");
   });
 
-  // it('handles errors gracefully', async () => {
-  //   const mockError = new Error('Some error occurred');
-  //   mockCheckExistingRedis.mockRejectedValue(mockError); // Or any other error
+  /**
+   * Test case: asks for new Redis URL and connects if confirmed
+   *
+   * Description:
+   * This test verifies that the redisConfiguration function prompts the user
+   * for a new Redis URL and connects if the user confirms.
+   */
+  it("asks for new Redis URL and connects if confirmed", async () => {
+    vi.spyOn(module, "checkExistingRedis").mockImplementationOnce(() =>
+      Promise.resolve(null),
+    );
+    vi.spyOn(module, "askForRedisUrl").mockImplementationOnce(() =>
+      Promise.resolve({
+        host: "test",
+        port: 6378,
+        password: "",
+      }),
+    );
+    vi.spyOn(module, "checkRedisConnection").mockImplementationOnce(() =>
+      Promise.resolve(true),
+    );
 
-  //   await expect(redisConfiguration()).rejects.toThrowError(mockError);
-  //   expect(mockUpdateEnvVariable).not.toHaveBeenCalled();
-  // });
+    await redisConfiguration();
 
-//   it('handles connection errors and retries', async () => {
-//     mockCheckExistingRedis.mockReturnValue(null);
-//     mockCheckRedisConnection.mockReturnValue(false, true, true); // Reject twice, succeed on third try
-
-//     await expect(redisConfiguration()).resolves.not.toThrow();
-//     expect(mockCheckRedisConnection).toBeCalledTimes(3);
-//   });
+    const env = dotenv.parse(fs.readFileSync(".env_test"));
+    expect(env.REDIS_HOST).toBe("test");
+    expect(env.REDIS_PORT).toBe("6378");
+    expect(env.REDIS_PASSWORD).toBe("");
+  });
 });
-
