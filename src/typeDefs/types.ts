@@ -92,12 +92,15 @@ export const types = gql`
     creator: User!
   }
 
-  # A page info type adhering to Relay Specification for both cursor based pagination
-  type ConnectionPageInfo {
+  """
+  Default connection page info for containing the metadata for a connection
+  instance.
+  """
+  type DefaultConnectionPageInfo implements ConnectionPageInfo {
+    endCursor: String
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
     startCursor: String
-    endCursor: String
   }
 
   type DeletePayload {
@@ -507,42 +510,74 @@ export const types = gql`
     aggregate: AggregateUser!
   }
 
-  type UserEdge {
-    node: User!
-    cursor: String!
-  }
-
   type UserTag {
+    """
+    A field to get the mongodb object id identifier for this UserTag.
+    """
     _id: ID!
+    """
+    A field to get the name of this UserTag.
+    """
     name: String!
+    """
+    A field to traverse the Organization that created this UserTag.
+    """
     organization: Organization
+    """
+    A field to traverse the parent UserTag of this UserTag.
+    """
     parentTag: UserTag
-    childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
-    usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!
+    """
+    A connection field to traverse a list of UserTag this UserTag is a
+    parent to.
+    """
+    childTags(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): UserTagsConnection
+    """
+    A connection field to traverse a list of User this UserTag is assigned
+    to.
+    """
+    usersAssignedTo(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): UsersConnection
   }
 
-  type UsersConnectionResult {
-    data: UsersConnection
-    errors: [ConnectionError!]!
-  }
-
-  type UserTagsConnectionResult {
-    data: UserTagsConnection
-    errors: [ConnectionError!]!
-  }
-
+  """
+  A default connection on the UserTag type.
+  """
   type UserTagsConnection {
-    edges: [UserTagEdge!]!
-    pageInfo: ConnectionPageInfo!
+    edges: [UserTagsConnectionEdge!]!
+    pageInfo: DefaultConnectionPageInfo!
   }
 
-  type UserTagEdge {
-    node: UserTag!
+  """
+  A default connection edge on the UserTag type for UserTagsConnection.
+  """
+  type UserTagsConnectionEdge {
     cursor: String!
+    node: UserTag!
   }
 
+  """
+  A default connection on the User type.
+  """
   type UsersConnection {
-    edges: [UserEdge!]!
-    pageInfo: ConnectionPageInfo!
+    edges: [UsersConnectionEdge!]!
+    pageInfo: DefaultConnectionPageInfo!
+  }
+
+  """
+  A default connection edge on the User type for UsersConnection.
+  """
+  type UsersConnectionEdge {
+    cursor: String!
+    node: User!
   }
 `;
