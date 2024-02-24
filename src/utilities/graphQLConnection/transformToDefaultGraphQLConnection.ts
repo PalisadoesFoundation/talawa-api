@@ -1,3 +1,4 @@
+import type { Types } from "mongoose";
 import {
   type DefaultGraphQLConnection,
   generateDefaultGraphQLConnection,
@@ -52,8 +53,7 @@ export type TransformToDefaultGraphQLConnectionArguments<T0, T1, T2> = {
 export function transformToDefaultGraphQLConnection<
   T0,
   T1 extends {
-    /* eslint-disable  @typescript-eslint/no-explicit-any */
-    _id: any;
+    _id: string | Types.ObjectId;
   },
   T2,
 >({
@@ -62,7 +62,7 @@ export function transformToDefaultGraphQLConnection<
    * function defined below will execute, the assumption is that `_id` is to be used as the
    * cursor for the graphQL connection edges list.
    */
-  createCursor = (object): string => object._id,
+  createCursor = (object): string => object._id.toString(),
   /**
    * If no custom callback function `createNode` is provided by the function caller, the default
    * function defined below will execute, the assumption is that the type of objects within
@@ -71,7 +71,7 @@ export function transformToDefaultGraphQLConnection<
   createNode = (object): T2 =>
     ({
       ...object,
-      _id: object._id,
+      _id: object._id.toString(),
     }) as unknown as T2,
   objectList,
   parsedArgs: { cursor, direction, limit },

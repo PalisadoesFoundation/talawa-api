@@ -23,14 +23,6 @@ export type ParseGraphQLConnectionWhereResult<T0> =
     };
 
 /**
- * This is typescript type of the callback function `parseWhere`.
- */
-export type ParseGraphQLConnectionWhere<T0> = (
-  /* eslint-disable  @typescript-eslint/no-explicit-any */
-  ...args: any[]
-) => ParseGraphQLConnectionWhereResult<T0>;
-
-/**
  * This is typescript type of the object containing the validated and transformed connection
  * arguments passed to `parseGraphQLConnectionArgumentsWithWhere` function.
  */
@@ -79,12 +71,12 @@ export async function parseGraphQLConnectionArgumentsWithWhere<T0, T1>({
   args,
   maximumLimit = MAXIMUM_FETCH_LIMIT,
   parseCursor,
-  parseWhere,
+  parseWhereResult,
 }: {
   args: DefaultGraphQLConnectionArguments;
   maximumLimit?: number;
   parseCursor: ParseGraphQLConnectionCursor<T0>;
-  parseWhere: ParseGraphQLConnectionWhere<T1>;
+  parseWhereResult: ParseGraphQLConnectionWhereResult<T1>;
 }): ParseGraphQLConnectionArgumentsWithWhereResult<T0, T1> {
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArguments({
@@ -92,7 +84,6 @@ export async function parseGraphQLConnectionArgumentsWithWhere<T0, T1>({
       maximumLimit,
       parseCursor,
     });
-  const parseWhereResult = parseWhere();
 
   if (!parseGraphQLConnectionArgumentsResult.isSuccessful) {
     if (!parseWhereResult.isSuccessful) {

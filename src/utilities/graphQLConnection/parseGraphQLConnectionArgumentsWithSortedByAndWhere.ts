@@ -8,9 +8,8 @@ import {
   type ParsedGraphQLConnectionArguments,
   parseGraphQLConnectionArguments,
 } from "./parseGraphQLConnectionArguments";
-import type { ParseGraphQLConnectionSortedBy } from "./parseGraphQLConnectionArgumentsWithSortedBy";
-import type { ParseGraphQLConnectionWhere } from "./parseGraphQLConnectionArgumentsWithWhere";
-
+import type { ParseGraphQLConnectionSortedByResult } from "./parseGraphQLConnectionArgumentsWithSortedBy";
+import type { ParseGraphQLConnectionWhereResult } from "./parseGraphQLConnectionArgumentsWithWhere";
 /**
  * This is typescript type of the object containing validated and transformed connection
  * arguments passed to `parseGraphQLConnectionArgumentsWithSortedByAndWhere` function.
@@ -74,14 +73,14 @@ export async function parseGraphQLConnectionArgumentsWithSortedByAndWhere<
   args,
   maximumLimit = MAXIMUM_FETCH_LIMIT,
   parseCursor,
-  parseWhere,
-  parseSortedBy,
+  parseWhereResult,
+  parseSortedByResult,
 }: {
   args: DefaultGraphQLConnectionArguments;
   maximumLimit?: number;
   parseCursor: ParseGraphQLConnectionCursor<T0>;
-  parseWhere: ParseGraphQLConnectionWhere<T1>;
-  parseSortedBy: ParseGraphQLConnectionSortedBy<T2>;
+  parseWhereResult: ParseGraphQLConnectionWhereResult<T1>;
+  parseSortedByResult: ParseGraphQLConnectionSortedByResult<T2>;
 }): ParseGraphQLConnectionArgumentsWithSortedByAndWhereResult<T0, T1, T2> {
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArguments({
@@ -89,8 +88,6 @@ export async function parseGraphQLConnectionArgumentsWithSortedByAndWhere<
       parseCursor,
       maximumLimit,
     });
-  const parseWhereResult = parseWhere();
-  const parseSortedByResult = parseSortedBy();
 
   if (!parseGraphQLConnectionArgumentsResult.isSuccessful) {
     if (!parseWhereResult.isSuccessful) {

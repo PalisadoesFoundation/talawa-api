@@ -23,14 +23,6 @@ export type ParseGraphQLConnectionSortedByResult<T0> =
     };
 
 /**
- * This is typescript type of the callback function `parseSortedBy`.
- */
-export type ParseGraphQLConnectionSortedBy<T0> = (
-  /* eslint-disable  @typescript-eslint/no-explicit-any */
-  ...args: any[]
-) => ParseGraphQLConnectionSortedByResult<T0>;
-
-/**
  * This is typescript type of the object containing validated and transformed connection
  * arguments passed to `parseGraphQLConnectionArgumentsWithSortedBy` function.
  */
@@ -79,12 +71,12 @@ export async function parseGraphQLConnectionArgumentsWithSortedBy<T0, T1>({
   args,
   maximumLimit = MAXIMUM_FETCH_LIMIT,
   parseCursor,
-  parseSortedBy,
+  parseSortedByResult,
 }: {
   args: DefaultGraphQLConnectionArguments;
   maximumLimit?: number;
   parseCursor: ParseGraphQLConnectionCursor<T0>;
-  parseSortedBy: ParseGraphQLConnectionSortedBy<T1>;
+  parseSortedByResult: ParseGraphQLConnectionSortedByResult<T1>;
 }): ParseGraphQLConnectionArgumentsWithSortedByResult<T0, T1> {
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArguments({
@@ -92,7 +84,6 @@ export async function parseGraphQLConnectionArgumentsWithSortedBy<T0, T1>({
       parseCursor,
       maximumLimit,
     });
-  const parseSortedByResult = parseSortedBy();
 
   if (!parseGraphQLConnectionArgumentsResult.isSuccessful) {
     if (!parseSortedByResult.isSuccessful) {
