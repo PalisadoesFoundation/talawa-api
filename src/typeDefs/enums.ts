@@ -167,11 +167,13 @@ export const enums = gql`
     WIDOWED
     SEPERATED
   }
+
   enum AdvertisementType {
     BANNER
     POPUP
     MENU
   }
+
   enum Currency {
     AED # United Arab Emirates Dirham
     AFN # Afghan Afghani
@@ -336,5 +338,22 @@ export const enums = gql`
     ZAR # South African Rand
     ZMW # Zambian Kwacha
     ZWD # Zimbabwean Dollar
+  }
+
+  """
+  Possible variants of ordering in which sorting on a field should be
+  applied for a connection or other list type data structures.
+  """
+  enum SortedByOrder {
+    """
+    When the sorting order should be from the smallest value to largest
+    value.
+    """
+    ASCENDING
+    """
+    When the sorting order should be from the largest value to the smallest
+    value.
+    """
+    DESCENDING
   }
 `;
