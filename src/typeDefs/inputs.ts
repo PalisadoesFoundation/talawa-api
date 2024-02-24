@@ -169,6 +169,14 @@ export const inputs = gql`
     isDefault: Boolean!
     isArchived: Boolean!
   }
+  input FundCampaignInput {
+    name: String!
+    fundId: ID!
+    startDate: Date!
+    endDate: Date!
+    fundingGoal: Float!
+    currency: Currency!
+  }
 
   input LanguageInput {
     en_value: String!
@@ -324,20 +332,6 @@ export const inputs = gql`
     taxDeductible: Boolean
     isDefault: Boolean
     isArchived: Boolean
-  }
-
-  # Implements CursorPaginationInput
-  input UsersConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
-  }
-
-  # Implements CursorPaginationInput
-  input UserTagsConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
   }
 
   input UpdateAdvertisementInput {

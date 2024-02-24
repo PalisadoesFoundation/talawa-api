@@ -53,6 +53,7 @@ export const queries = gql`
     getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
 
     getEventAttendee(userId: ID!, eventId: ID!): EventAttendee
+    getFundById(id: ID!): Fund!
 
     getDonationByOrgId(orgId: ID!): [Donation]
 
