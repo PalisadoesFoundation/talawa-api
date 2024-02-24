@@ -18,9 +18,14 @@ import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 
 /**
  * Resolver function to fetch and return posts created by a user from the database.
+ * This function implements cursor-based pagination using GraphQL connection arguments.
+ *
  * @param parent - An object that is the return value of the resolver for this field's parent.
- * @param args - Arguments passed to the resolver.
- * @returns An object containing an array of posts,totalCount of post and pagination information.
+ * @param args - Arguments passed to the resolver. These should include pagination arguments such as `first`, `last`, `before`, and `after`.
+ *
+ * @returns A Promise that resolves to an object containing an array of posts, the total count of posts, and pagination information. The pagination information includes the `startCursor`, `endCursor`, `hasPreviousPage`, and `hasNextPage`.
+ *
+ * @throws GraphQLError Throws an error if the provided arguments are invalid.
  */
 export const posts: UserResolvers["posts"] = async (parent, args) => {
   const parseGraphQLConnectionArgumentsResult =
@@ -86,10 +91,15 @@ This is typescript type of the parsed cursor for this connection resolver.
 */
 type ParsedCursor = string;
 
-/*
-This function is used to validate and transform the cursor passed to this connnection
-resolver.
-*/
+/**
+ * This function is used to validate and transform the cursor passed to the `posts` connection resolver.
+ *
+ * @param args - An object that includes the cursor value, cursor name, cursor path, and the ID of the creator.
+ *
+ * @returns A Promise that resolves to an object that includes a boolean indicating whether the operation was successful, and the parsed cursor value. If the operation was not successful, the object also includes an array of errors.
+ *
+ * @throws Error Throws an error if the provided cursor is invalid.
+ * */
 export const parseCursor = async ({
   cursorValue,
   cursorName,
