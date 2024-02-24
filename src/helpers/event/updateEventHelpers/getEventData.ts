@@ -43,12 +43,8 @@ export const getEventData = (
   // get the updated event data
   const updatedEventData: InterfaceRecurringEvent = {
     ...eventCurrentData,
+    ...(updateEventInputData as Partial<InterfaceRecurringEvent>),
     recurrance: eventCurrentData.recurrance as Recurrance,
-    ...Object.fromEntries(
-      Object.entries(updateEventInputData ?? {}).filter(
-        ([value]) => value !== null,
-      ),
-    ),
   };
 
   return updatedEventData;
