@@ -1,10 +1,14 @@
 // Replace with the correct path
 import { GraphQLError } from "graphql";
 import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { nanoid } from "nanoid";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Post, type InterfaceUser } from "../../../src/models";
-import { posts as postResolver } from "../../../src/resolvers/User/posts";
+import {
+  parseCursor,
+  posts as postResolver,
+} from "../../../src/resolvers/User/posts";
 import type { PostEdge } from "../../../src/types/generatedGraphQLTypes";
 import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
 import { connect, disconnect } from "../../helpers/db";
@@ -101,5 +105,34 @@ describe("resolvers -> User -> post", () => {
     expect(connection?.pageInfo.hasPreviousPage).toBe(false);
     expect(connection?.pageInfo.startCursor).toEqual(testPost2?._id);
     expect(connection?.totalCount).toEqual(totalCount);
+  });
+});
+describe("parseCursor function", () => {
+  it("returns failure state if argument cursorValue is an invalid cursor", async () => {
+    const result = await parseCursor({
+      cursorName: "after",
+      cursorPath: ["after"],
+      cursorValue: Types.ObjectId().toString(),
+      creatorId: testUser?._id.toString() as string,
+    });
+
+    expect(result.isSuccessful).toEqual(false);
+    if (result.isSuccessful === false) {
+      expect(result.errors.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("returns success state if argument cursorValue is a valid cursor", async () => {
+    const result = await parseCursor({
+      cursorName: "after",
+      cursorPath: ["after"],
+      cursorValue: testPost?._id.toString() as string,
+      creatorId: testUser?._id.toString() as string,
+    });
+
+    expect(result.isSuccessful).toEqual(true);
+    if (result.isSuccessful === true) {
+      expect(result.parsedCursor).toEqual(testPost?._id.toString());
+    }
   });
 });
