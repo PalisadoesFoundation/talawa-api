@@ -12,17 +12,17 @@ import type { ParseGraphQLConnectionSortedBy } from "./parseGraphQLConnectionArg
 import type { ParseGraphQLConnectionWhere } from "./parseGraphQLConnectionArgumentsWithWhere";
 
 /**
-This is typescript type of the object containing validated and transformed connection
-arguments passed to `parseGraphQLConnectionArgumentsWithSortedByAndWhere` function.
-*/
+ * This is typescript type of the object containing validated and transformed connection
+ * arguments passed to `parseGraphQLConnectionArgumentsWithSortedByAndWhere` function.
+ */
 export type ParsedGraphQLConnectionArgumentsWithSortedByAndWhere<T0, T1, T2> = {
   filter: T1;
   sort: T2;
 } & ParsedGraphQLConnectionArguments<T0>;
 
 /**
-  This is typescript type of the object returned from `parseGraphQLConnectionArgumentsWithSortedByAndWhere` function.
-  */
+ * This is typescript type of the object returned from `parseGraphQLConnectionArgumentsWithSortedByAndWhere` function.
+ */
 export type ParseGraphQLConnectionArgumentsWithSortedByAndWhereResult<
   T0,
   T1,
@@ -43,9 +43,29 @@ export type ParseGraphQLConnectionArgumentsWithSortedByAndWhereResult<
 >;
 
 /**
-  This function is used for validating and transforming arguments for a custom graphQL
-  connection that also provides filtering and sorting capabilities.
-  */
+ * This function is used for validating and transforming arguments for a custom graphQL
+ * connection that also provides filtering and sorting capabilities.
+ * @example
+ * const result = await parseGraphQLConnectionArgumentsWithSortedBy(\{
+ *   args: \{
+ *     after,
+ *     first,
+ *   \},
+ *   maximumLimit: 20,
+ *   parseCursor,
+ *   parseSortedBy,
+ *   parseWhere,
+ * \})
+ * if (result.isSuccessful === false) \{
+ *    throw new GraphQLError("Invalid arguments provided.", \{
+ *      extensions: \{
+ *        code: "INVALID_ARGUMENTS",
+ *        errors: result.errors
+ *      \}
+ *   \})
+ * \}
+ * const \{ parsedArgs: \{ cursor, direction, filter, limit, sort \} \} = result;
+ */
 export async function parseGraphQLConnectionArgumentsWithSortedByAndWhere<
   T0,
   T1,
