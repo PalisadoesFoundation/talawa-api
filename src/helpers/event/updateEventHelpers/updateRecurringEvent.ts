@@ -36,7 +36,7 @@ export const updateRecurringEvent = async (
   });
 
   if (
-    (args.data?.isRecurringEventException &&
+    (args.data?.isRecurringEventException !== undefined &&
       args.data?.isRecurringEventException !==
         event.isRecurringEventException) ||
     args.recurringEventUpdateType === "ThisInstance"
