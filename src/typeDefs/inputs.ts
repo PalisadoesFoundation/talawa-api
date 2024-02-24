@@ -153,6 +153,22 @@ export const inputs = gql`
     newPassword: String!
     otpToken: String!
   }
+  input FundInput {
+    name: String!
+    organizationId: ID!
+    refrenceNumber: String
+    taxDeductible: Boolean!
+    isDefault: Boolean!
+    isArchived: Boolean!
+  }
+  input FundCampaignInput {
+    name: String!
+    fundId: ID!
+    startDate: Date!
+    endDate: Date!
+    fundingGoal: Float!
+    currency: Currency!
+  }
 
   input LanguageInput {
     en_value: String!
@@ -304,19 +320,11 @@ export const inputs = gql`
     startTime: Time
     endTime: Time
   }
-
-  # Implements CursorPaginationInput
-  input UsersConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
-  }
-
-  # Implements CursorPaginationInput
-  input UserTagsConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
+  input UpdateFundInput {
+    name: String
+    taxDeductible: Boolean
+    isDefault: Boolean
+    isArchived: Boolean
   }
 
   input UpdateAdvertisementInput {
