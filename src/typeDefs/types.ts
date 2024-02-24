@@ -232,13 +232,13 @@ export const types = gql`
     taxDeductible: Boolean!
     isDefault: Boolean!
     isArchived: Boolean!
-    campaign: [FundraisingCampaign]!
+    campaigns: [FundraisingCampaign]!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
   type FundraisingCampaign {
     _id: ID!
-    fund: Fund!
+    fundId: Fund!
     name: String!
     startDate: Date!
     endDate: Date!
@@ -246,6 +246,10 @@ export const types = gql`
     currency: Currency!
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+  type FundraisingPledge {
+    _id: ID!
+    campaigns: [FundraisingCampaign]!
   }
 
   type Group {

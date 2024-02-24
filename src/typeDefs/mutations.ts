@@ -185,11 +185,12 @@ export const mutations = gql`
     removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
 
     removeEvent(id: ID!): Event! @auth
-    removeFund(id: ID!): Fund! @auth
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
 
     removeEventVolunteer(id: ID!): EventVolunteer! @auth
+    removeFund(id: ID!): Fund! @auth
+    removeFundraisingCampaign(id: ID!): FundraisingCampaign! @auth
 
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
@@ -266,6 +267,10 @@ export const mutations = gql`
       data: UpdateEventVolunteerInput
     ): EventVolunteer! @auth
     updateFund(id: ID!, data: UpdateFundInput!): Fund! @auth
+    updateFundraisingCampaign(
+      id: ID!
+      data: UpdateFundCampaignInput!
+    ): FundraisingCampaign! @auth
     updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 
     updateLanguage(languageCode: String!): User! @auth

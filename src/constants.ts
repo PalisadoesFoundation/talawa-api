@@ -66,6 +66,18 @@ export const FUND_ALREADY_EXISTS = {
   MESSAGE: "fund.alreadyExists",
   PARAM: "fund",
 };
+export const FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR = {
+  DESC: "FundraisingCampaign not found",
+  CODE: "fundraisingCampaign.notFound",
+  MESSAGE: "fundraisingCampaign.notFound",
+  PARAM: "fundraisingCampaign",
+};
+export const FUNDRAISING_CAMPAIGN_ALREADY_EXISTS = {
+  DESC: "Fundraising Campaign already exists",
+  CODE: "fundraisingCampaign.alreadyExists",
+  MESSAGE: "fundraisingCampaign.alreadyExists",
+  PARAM: "fundraisingCampaign",
+};
 export const FUND_NOT_FOUND_ERROR = {
   DESC: "Fund not found",
   CODE: "fund.notFound",

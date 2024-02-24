@@ -1,5 +1,6 @@
 import {
   END_DATE_VALIDATION_ERROR,
+  FUNDRAISING_CAMPAIGN_ALREADY_EXISTS,
   FUND_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -35,6 +36,17 @@ export const createFundraisingCampaign: MutationResolvers["createFundraisingCamp
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+    // Checks whether fundraisingCampaign already exists.
+    const existigngCampaign = await FundraisingCampaign.findOne({
+      name: args.data.name,
+    }).lean();
+    if (existigngCampaign) {
+      throw new errors.ConflictError(
+        requestContext.translate(FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE),
+        FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.CODE,
+        FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.PARAM,
       );
     }
     const startDate = args.data.startDate;
@@ -88,7 +100,7 @@ export const createFundraisingCampaign: MutationResolvers["createFundraisingCamp
     });
 
     //add campaigin to the parent fund
-    await Fund.findByIdAndUpdate(
+    await Fund.findOneAndUpdate(
       {
         _id: args.data.fundId,
       },

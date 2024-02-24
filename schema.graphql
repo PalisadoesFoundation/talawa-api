@@ -646,7 +646,7 @@ enum Frequency {
 
 type Fund {
   _id: ID!
-  campaign: [FundraisingCampaign]!
+  campaigns: [FundraisingCampaign]!
   createdAt: DateTime!
   isArchived: Boolean!
   isDefault: Boolean!
@@ -680,11 +680,16 @@ type FundraisingCampaign {
   createdAt: DateTime!
   currency: Currency!
   endDate: Date!
-  fund: Fund!
+  fundId: Fund!
   fundingGoal: Float!
   name: String!
   startDate: Date!
   updatedAt: DateTime!
+}
+
+type FundraisingPledge {
+  _id: ID!
+  campaigns: [FundraisingCampaign]!
 }
 
 enum Gender {
@@ -890,6 +895,7 @@ type Mutation {
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
   removeFund(id: ID!): Fund!
+  removeFundraisingCampaign(id: ID!): FundraisingCampaign!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -922,6 +928,7 @@ type Mutation {
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
+  updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
@@ -1195,6 +1202,7 @@ type Query {
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getFundById(id: ID!): Fund!
+  getFundraisingCampaignById(id: ID!): FundraisingCampaign!
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
@@ -1349,6 +1357,14 @@ input UpdateEventVolunteerInput {
   isAssigned: Boolean
   isInvited: Boolean
   response: EventVolunteerResponse
+}
+
+input UpdateFundCampaignInput {
+  currency: Currency
+  endDate: Date
+  fundingGoal: Float
+  name: String
+  startDate: Date
 }
 
 input UpdateFundInput {

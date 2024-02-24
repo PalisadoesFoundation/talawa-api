@@ -325,6 +325,13 @@ export const inputs = gql`
     isDefault: Boolean
     isArchived: Boolean
   }
+  input UpdateFundCampaignInput {
+    name: String
+    startDate: Date
+    endDate: Date
+    fundingGoal: Float
+    currency: Currency
+  }
 
   input UpdateAdvertisementInput {
     _id: ID!
