@@ -12,17 +12,17 @@ import {
 } from "../recurringEventHelpers";
 
 /**
- * This function generates a single non-recurring event.
+ * This function updates a single non-recurring event.
  * @param args - the arguments provided for the updateEvent mutation.
  * @param event - the single event to be updated.
  * @remarks The following steps are followed:
  * 1. If the single event is made recurring with this update:
  *   - get the appropriate data to create the baseRecurringEvent and recurring event instances.
  *   - generate the instances with createRecurringEvent function.
- *   - update the current event to be part of the recurrence by adding the baseRecurringEventId to it.
+ *   - remove the current event and its associations as a new series has been created.
  * 2. If it's still a non-recurring event:
  *   - just perform a regular update.
- * @returns The created event.
+ * @returns The updated event.
  */
 
 export const updateSingleEvent = async (
@@ -75,7 +75,7 @@ export const updateSingleEvent = async (
     // get recurrence dates
     const recurringInstanceDates = getRecurringInstanceDates(
       recurrenceRuleString,
-      startDate, // generate instances ahead of current event date to avoid overlap
+      startDate,
       endDate,
     );
 

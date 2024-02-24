@@ -4,6 +4,18 @@ import { Event } from "../../../models";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import type { InterfaceRecurrenceRule } from "../../../models/RecurrenceRule";
 
+/**
+ * This function updates all instances of the recurring event following the given recurrenceRule.
+ * @param args - update event args.
+ * @param event - the event to be updated.
+ * @param recurrenceRule - the recurrence rule followed by the instances.
+ * @param baseRecurringEvent - the base recurring event.
+ * @remarks The following steps are followed:
+ * 1. get the current event data.
+ * 2. update the data provided in the input.
+ * @returns The updated event.
+ */
+
 export const updateAllInstances = async (
   args: MutationUpdateEventArgs,
   event: InterfaceEvent,
@@ -11,8 +23,6 @@ export const updateAllInstances = async (
   baseRecurringEvent: InterfaceEvent,
   session: mongoose.ClientSession,
 ): Promise<InterfaceEvent> => {
-  const { _id: eventId, recurrenceRuleId, baseRecurringEventId } = event;
-
   if (
     (!recurrenceRule.endDate && !baseRecurringEvent.endDate) ||
     (recurrenceRule.endDate &&
@@ -20,9 +30,11 @@ export const updateAllInstances = async (
       recurrenceRule.endDate.toString() ===
         baseRecurringEvent.endDate.toString())
   ) {
+    // if this was the latest recurrence rule, then update the baseRecurringEvent
+    // because new instances following this recurrence rule would be generated based on baseRecurringEvent
     await Event.updateOne(
       {
-        _id: baseRecurringEventId,
+        _id: baseRecurringEvent._id,
       },
       {
         ...(args.data as Partial<InterfaceEvent>),
@@ -33,9 +45,10 @@ export const updateAllInstances = async (
     );
   }
 
+  // update all the instances following this recurrence rule and are not exceptions
   await Event.updateMany(
     {
-      recurrenceRuleId,
+      recurrenceRuleId: recurrenceRule._id,
       isRecurringEventException: false,
     },
     {
@@ -47,7 +60,7 @@ export const updateAllInstances = async (
   );
 
   const updatedEvent = await Event.findOne({
-    _id: eventId,
+    _id: event._id,
   }).lean();
 
   return updatedEvent as InterfaceEvent;

@@ -1,7 +1,17 @@
 import type mongoose from "mongoose";
-import { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
-import { Event, InterfaceEvent } from "../../../models";
+import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
+import type { InterfaceEvent } from "../../../models";
+import { Event } from "../../../models";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
+
+/**
+ * This function updates only this instance of a recurrence pattern.
+ * @param args - update event args.
+ * @param event - the event to be updated.
+ * @remarks The following steps are followed:
+ * 1. Update this instance.
+ * @returns The updated recurring event instance.
+ */
 
 export const updateThisInstance = async (
   args: MutationUpdateEventArgs,
@@ -10,6 +20,7 @@ export const updateThisInstance = async (
 ): Promise<InterfaceEvent> => {
   let updatedEvent: InterfaceEvent = event;
 
+  // update this instance
   updatedEvent = await Event.findOneAndUpdate(
     {
       _id: args.id,

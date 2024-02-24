@@ -7,6 +7,17 @@ import { updateAllInstances } from "./updateAllInstances";
 import { updateThisAndFollowingInstances } from "./updateThisAndFollowingInstances";
 import { RecurrenceRule } from "../../../models/RecurrenceRule";
 
+/**
+ * This function updates the recurring event.
+ * @param args - update event args.
+ * @param event - the event to be updated.
+ * @remarks The following steps are followed:
+ * 1. get the recurrence rule.
+ * 2. get the base recurring event.
+ * 3. based on the type of update, call the function required.
+ * @returns The updated event.
+ */
+
 export const updateRecurringEvent = async (
   args: MutationUpdateEventArgs,
   event: InterfaceEvent,
@@ -14,10 +25,12 @@ export const updateRecurringEvent = async (
 ): Promise<InterfaceEvent> => {
   let updatedEvent: InterfaceEvent = event;
 
+  // get the recurrenceRule
   const recurrenceRule = await RecurrenceRule.find({
     _id: event.recurrenceRuleId,
   });
 
+  // get the baseRecurringEvent
   const baseRecurringEvent = await Event.find({
     _id: event.baseRecurringEventId,
   });
@@ -28,6 +41,7 @@ export const updateRecurringEvent = async (
         event.isRecurringEventException) ||
     args.recurringEventUpdateType === "ThisInstance"
   ) {
+    // if this is a single update or if the event's exception status has changed
     updatedEvent = await updateThisInstance(args, event, session);
   } else if (args.recurringEventUpdateType === "AllInstances") {
     // perform a regular bulk update on all the instances

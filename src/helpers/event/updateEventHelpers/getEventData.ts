@@ -5,6 +5,16 @@ import type {
 } from "../../../types/generatedGraphQLTypes";
 import type { InterfaceRecurringEvent } from "../recurringEventHelpers/generateRecurringEventInstances";
 
+/**
+ * This function get the data to be used for generating the recurring event instances.
+ * @param updateEventInputData - the update event input data.
+ * @param event - the event to be updated.
+ * @remarks The following steps are followed:
+ * 1. get the current event data.
+ * 2. update the data provided in the input.
+ * @returns The updated event data.
+ */
+
 export const getEventData = (
   updateEventInputData: UpdateEventInput | undefined | null,
   event: InterfaceEvent,
