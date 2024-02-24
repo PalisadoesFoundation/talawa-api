@@ -46,7 +46,7 @@ import fs from "fs";
   generating and updating token secrets as needed while preserving existing secrets when provided.
 */
 
-describe("accessAndRefreshTokens", () => {
+describe("Setup -> accessAndRefreshTokens", () => {
   it("generates and updates access token secret if null", async () => {
     const env = dotenv.parse(fs.readFileSync(".env_test"));
     const EXISTING_ACCESS_TOKEN = env.ACCESS_TOKEN_SECRET;
