@@ -24,7 +24,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 export const createMember: MutationResolvers["createMember"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Checks whether the current user is a superAdmin
   const currentUser = await User.findOne({
@@ -35,7 +35,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   superAdminCheck(currentUser);
@@ -61,7 +61,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -74,12 +74,12 @@ export const createMember: MutationResolvers["createMember"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const userIsOrganizationMember = organization?.members.some((member) =>
-    member.equals(user._id)
+    member.equals(user._id),
   );
 
   // Checks whether user with _id === args.input.userId is already an member of organization.
@@ -87,7 +87,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
       MEMBER_NOT_FOUND_ERROR.CODE,
-      MEMBER_NOT_FOUND_ERROR.PARAM
+      MEMBER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -103,7 +103,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     },
     {
       new: true,
-    }
+    },
   );
 
   // add user's id to members list on organization and return it.
@@ -118,7 +118,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     },
     {
       new: true,
-    }
+    },
   ).lean();
 
   if (updatedOrganization !== null) {
