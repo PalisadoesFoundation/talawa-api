@@ -22,6 +22,8 @@ import {
 } from "./src/setup/redisConfiguration";
 import { askToKeepValues } from "./src/setup/askToKeepValues";
 import { validateRecaptcha } from "./src/setup/reCaptcha";
+import { isValidEmail } from "./src/setup/isValidEmail";
+import e from "cors";
 /* eslint-enable */
 
 dotenv.config();
@@ -471,7 +473,7 @@ export async function recaptcha(): Promise<void> {
  * The function `recaptchaSiteKey` prompts the user to enter a reCAPTCHA site key, validates the input,
  * and updates the environment variable if the user chooses to keep the entered value.
  */
-async function recaptchaSiteKey(): Promise<void> {
+export async function recaptchaSiteKey(): Promise<void> {
   if (process.env.RECAPTCHA_SITE_KEY) {
     console.log(
       `\nreCAPTCHA site key already exists with the value ${process.env.RECAPTCHA_SITE_KEY}`,
@@ -494,25 +496,21 @@ async function recaptchaSiteKey(): Promise<void> {
 
   const shouldKeepDetails = await askToKeepValues();
 
-  if (shouldKeepDetails) {
-    const config = dotenv.parse(fs.readFileSync(".env"));
-    config.RECAPTCHA_SITE_KEY = recaptchaSiteKeyInp;
-    updateEnvVariable(config);
+  if (process.env.NODE_ENV === "test") {
+    if (shouldKeepDetails) {
+      const config = dotenv.parse(fs.readFileSync(".env_test"));
+      config.RECAPTCHA_SITE_KEY = recaptchaSiteKeyInp;
+      updateEnvVariable(config);
+    }
   } else {
-    await recaptchaSiteKey();
+    if (shouldKeepDetails) {
+      const config = dotenv.parse(fs.readFileSync(".env"));
+      config.RECAPTCHA_SITE_KEY = recaptchaSiteKeyInp;
+      updateEnvVariable(config);
+    } else {
+      await recaptchaSiteKey();
+    }
   }
-}
-
-/**
- * The function `isValidEmail` checks if a given email address is valid according to a specific pattern.
- * @param email - The `email` parameter is a string that represents an email address.
- * @returns a boolean value. It returns true if the email passed as an argument matches the specified
- * pattern, and false otherwise.
- */
-function isValidEmail(email: string): boolean {
-  const pattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-  const match = email.match(pattern);
-  return match !== null && match[0] === email;
 }
 
 /**
@@ -538,7 +536,7 @@ function abort(): void {
  * The function `twoFactorAuth` prompts the user to set up Two-Factor Authentication Google Account and
  * then collects their email and generated password to update environment variables.
  */
-async function twoFactorAuth(): Promise<void> {
+export async function twoFactorAuth(): Promise<void> {
   console.log("\nIMPORTANT");
   console.log(
     "\nEnsure that you have Two-Factor Authentication set up on your Google Account.",
@@ -565,11 +563,19 @@ async function twoFactorAuth(): Promise<void> {
       message: "Enter the generated password:",
     },
   ]);
-  const config = dotenv.parse(fs.readFileSync(".env"));
+  if (process.env.NODE_ENV === "test") {
+    const config = dotenv.parse(fs.readFileSync(".env_test"));
 
-  config.MAIL_USERNAME = email;
-  config.MAIL_PASSWORD = password;
-  updateEnvVariable(config);
+    config.MAIL_USERNAME = email;
+    config.MAIL_PASSWORD = password;
+    updateEnvVariable(config);
+  } else {
+    const config = dotenv.parse(fs.readFileSync(".env"));
+
+    config.MAIL_USERNAME = email;
+    config.MAIL_PASSWORD = password;
+    updateEnvVariable(config);
+  }
 }
 
 //Checks if the data exists and ask for deletion
