@@ -1594,7 +1594,7 @@ type UsersConnectionEdge {
 }
 
 type Venue {
-  _id: ID!
+  id: ID!
   capacity: Int!
   description: String
   imageUrl: URL
