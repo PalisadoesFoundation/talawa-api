@@ -109,29 +109,7 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
       );
     }
   });
-  it("throws error if the campaign already exists with the same name", async () => {
-    try {
-      const args: MutationCreateFundraisingCampaignArgs = {
-        data: {
-          name: testfund?.name || "",
-          fundId: testfund?._id,
-          startDate: new Date(new Date().toDateString()),
-          endDate: new Date(new Date().toDateString()),
-          currency: "USD",
-          fundingGoal: 1000,
-        },
-      };
-      const context = {
-        userId: testUser?._id,
-      };
-      await createFundraisingCampaign?.({}, args, context);
-    } catch (error: unknown) {
-      //   console.log(error);
-      expect((error as Error).message).toEqual(
-        FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE,
-      );
-    }
-  });
+
   it("throws error if startDate is invalid", async () => {
     try {
       const args: MutationCreateFundraisingCampaignArgs = {
@@ -200,5 +178,28 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
     console.log(fund);
     expect(fund?.campaigns?.includes(result?._id)).toBeTruthy();
     expect(result).toBeTruthy();
+  });
+  it("throws error if the campaign already exists with the same name", async () => {
+    try {
+      const args: MutationCreateFundraisingCampaignArgs = {
+        data: {
+          name: "testFundraisingCampaign",
+          fundId: testfund?._id,
+          startDate: new Date(new Date().toDateString()),
+          endDate: new Date(new Date().toDateString()),
+          currency: "USD",
+          fundingGoal: 1000,
+        },
+      };
+      const context = {
+        userId: testUser?._id,
+      };
+      await createFundraisingCampaign?.({}, args, context);
+    } catch (error: unknown) {
+      console.log(error);
+      expect((error as Error).message).toEqual(
+        FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE,
+      );
+    }
   });
 });
