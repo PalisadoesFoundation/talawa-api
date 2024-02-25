@@ -13,7 +13,11 @@ import { Fund } from "../../../src/models";
 import { createFundraisingCampaign } from "../../../src/resolvers/Mutation/createFundraisingCampaign";
 import type { MutationCreateFundraisingCampaignArgs } from "../../../src/types/generatedGraphQLTypes";
 import { createTestFund, type TestFundType } from "../../helpers/Fund";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUser } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
@@ -22,6 +26,7 @@ let testfund: TestFundType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
   const { requestContext } = await import("../../../src/libraries");
 
   vi.spyOn(requestContext, "translate").mockImplementation(
