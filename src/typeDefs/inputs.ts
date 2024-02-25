@@ -386,7 +386,7 @@ export const inputs = gql`
     lastName: String
     maritalStatus: MaritalStatus
     phone: UserPhoneInput
-    applangcode: String
+    appLanguageCode: String
     id: ID
   }
 

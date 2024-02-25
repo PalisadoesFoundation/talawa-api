@@ -2238,7 +2238,7 @@ export type UpdateOrganizationInput = {
 
 export type UpdateUserInput = {
   address?: InputMaybe<AddressInput>;
-  applangcode?: InputMaybe<Scalars['String']['input']>;
+  appLanguageCode?: InputMaybe<Scalars['String']['input']>;
   birthDate?: InputMaybe<Scalars['Date']['input']>;
   educationGrade?: InputMaybe<EducationGrade>;
   email?: InputMaybe<Scalars['EmailAddress']['input']>;
