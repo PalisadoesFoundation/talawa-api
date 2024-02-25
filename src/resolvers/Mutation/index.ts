@@ -28,6 +28,7 @@ import { createDonation } from "./createDonation";
 import { createEvent } from "./createEvent";
 import { createEventVolunteer } from "./createEventVolunteer";
 import { createFund } from "./createFund";
+import { createFundraisingCampaign } from "./createFundraisingCampaign";
 import { createGroupChat } from "./createGroupChat";
 import { createMember } from "./createMember";
 import { createMessageChat } from "./createMessageChat";
@@ -61,6 +62,7 @@ import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
 import { removeEventVolunteer } from "./removeEventVolunteer";
+import { removeFund } from "./removeFund";
 import { removeGroupChat } from "./removeGroupChat";
 import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
@@ -137,6 +139,7 @@ export const Mutation: MutationResolvers = {
   createDonation,
   createEvent,
   createFund,
+  createFundraisingCampaign,
   createGroupChat,
   createMessageChat,
   createOrganization,
@@ -171,6 +174,7 @@ export const Mutation: MutationResolvers = {
   removeEvent,
   removeEventAttendee,
   removeEventVolunteer,
+  removeFund,
   removeGroupChat,
   removeMember,
   removeOrganization,

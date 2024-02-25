@@ -1,14 +1,14 @@
-import type { PopulatedDoc, PaginateModel } from "mongoose";
+import type { PopulatedDoc, Model, Document } from "mongoose";
 import { Schema, model, models } from "mongoose";
-import mongoosePaginate from "mongoose-paginate-v2";
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+import type { InterfaceOrganization } from "./Organization";
 /**
  * This is an interface, that represents database - (MongoDB) document for Advertisement.
  */
 export interface InterfaceAdvertisement {
   _id: string;
-  organizationId: string;
+  organizationId: PopulatedDoc<InterfaceOrganization & Document>;
   name: string;
   mediaUrl: string;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
@@ -101,17 +101,12 @@ const advertisementSchema = new Schema(
   },
 );
 
-advertisementSchema.plugin(mongoosePaginate);
-
-advertisementSchema.index({ organization: 1 }, { unique: false });
+advertisementSchema.index({ organizationId: 1, name: 1 }, { unique: true });
 
 createLoggingMiddleware(advertisementSchema, "Advertisement");
 
-const advertisementModel = (): PaginateModel<InterfaceAdvertisement> =>
-  model<InterfaceAdvertisement, PaginateModel<InterfaceAdvertisement>>(
-    "Advertisement",
-    advertisementSchema,
-  );
+const advertisementModel = (): Model<InterfaceAdvertisement> =>
+  model<InterfaceAdvertisement>("Advertisement", advertisementSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Advertisement = (models.Advertisement ||

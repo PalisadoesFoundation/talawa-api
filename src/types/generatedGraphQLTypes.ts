@@ -15,6 +15,7 @@ import type { InterfaceUserFamily as InterfaceUserFamilyModel } from '../models/
 import type { InterfaceEventVolunteer as InterfaceEventVolunteerModel } from '../models/EventVolunteer';
 import type { InterfaceFeedback as InterfaceFeedbackModel } from '../models/Feedback';
 import type { InterfaceFund as InterfaceFundModel } from '../models/Fund';
+import type { InterfaceFundraisingCampaign as InterfaceFundraisingCampaignModel } from '../models/FundraisingCampaign';
 import type { InterfaceGroup as InterfaceGroupModel } from '../models/Group';
 import type { InterfaceGroupChat as InterfaceGroupChatModel } from '../models/GroupChat';
 import type { InterfaceGroupChatMessage as InterfaceGroupChatMessageModel } from '../models/GroupChatMessage';
@@ -223,11 +224,31 @@ export type CommentInput = {
 
 export type ConnectionError = InvalidCursor | MaximumValueError;
 
+/**
+ * The standard graphQL connection page info that contains metadata about a
+ * particular instance of a connection. ALl other custom connection page info
+ * types must implement this interface.
+ */
 export type ConnectionPageInfo = {
-  __typename?: 'ConnectionPageInfo';
+  /**
+   * A field to tell the value of cursor for the last edge of a particular instance of a
+   * connection.
+   */
   endCursor?: Maybe<Scalars['String']['output']>;
+  /**
+   * A field to tell whether the connection has additional edges after the
+   * edge with endCursor as its cursor.
+   */
   hasNextPage: Scalars['Boolean']['output'];
+  /**
+   * A field to tell whether the connection has additional edges
+   * before the edge with startCursor as its cursor.
+   */
   hasPreviousPage: Scalars['Boolean']['output'];
+  /**
+   * A field to tell the value of cursor for the first edge of a particular instance of a
+   * connection.
+   */
   startCursor?: Maybe<Scalars['String']['output']>;
 };
 
@@ -433,6 +454,18 @@ export type CursorPaginationInput = {
   cursor?: InputMaybe<Scalars['String']['input']>;
   direction: PaginationDirection;
   limit: Scalars['PositiveInt']['input'];
+};
+
+/**
+ * Default connection page info for containing the metadata for a connection
+ * instance.
+ */
+export type DefaultConnectionPageInfo = ConnectionPageInfo & {
+  __typename?: 'DefaultConnectionPageInfo';
+  endCursor?: Maybe<Scalars['String']['output']>;
+  hasNextPage: Scalars['Boolean']['output'];
+  hasPreviousPage: Scalars['Boolean']['output'];
+  startCursor?: Maybe<Scalars['String']['output']>;
 };
 
 export type DeletePayload = {
@@ -714,6 +747,15 @@ export type Fund = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type FundCampaignInput = {
+  currency: Currency;
+  endDate: Scalars['Date']['input'];
+  fundId: Scalars['ID']['input'];
+  fundingGoal: Scalars['Float']['input'];
+  name: Scalars['String']['input'];
+  startDate: Scalars['Date']['input'];
+};
+
 export type FundInput = {
   isArchived: Scalars['Boolean']['input'];
   isDefault: Scalars['Boolean']['input'];
@@ -908,6 +950,7 @@ export type Mutation = {
   createEvent: Event;
   createEventVolunteer: EventVolunteer;
   createFund: Fund;
+  createFundraisingCampaign: FundraisingCampaign;
   createGroupChat: GroupChat;
   createMember: Organization;
   createMessageChat: MessageChat;
@@ -942,6 +985,7 @@ export type Mutation = {
   removeEvent: Event;
   removeEventAttendee: User;
   removeEventVolunteer: EventVolunteer;
+  removeFund: Fund;
   removeGroupChat: GroupChat;
   removeMember: Organization;
   removeOrganization: User;
@@ -1159,6 +1203,11 @@ export type MutationCreateFundArgs = {
 };
 
 
+export type MutationCreateFundraisingCampaignArgs = {
+  data: FundCampaignInput;
+};
+
+
 export type MutationCreateGroupChatArgs = {
   data: CreateGroupChatInput;
 };
@@ -1321,6 +1370,11 @@ export type MutationRemoveEventAttendeeArgs = {
 
 
 export type MutationRemoveEventVolunteerArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationRemoveFundArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -1817,6 +1871,7 @@ export type Query = {
   getDonationByOrgIdConnection: Array<Donation>;
   getEventAttendee?: Maybe<EventAttendee>;
   getEventAttendeesByEventId?: Maybe<Array<Maybe<EventAttendee>>>;
+  getFundById: Fund;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']['output']>;
@@ -1950,6 +2005,11 @@ export type QueryGetEventAttendeesByEventIdArgs = {
 };
 
 
+export type QueryGetFundByIdArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type QueryGetlanguageArgs = {
   lang_code: Scalars['String']['input'];
 };
@@ -2073,6 +2133,22 @@ export type RecurrenceRuleInput = {
   frequency?: InputMaybe<Frequency>;
   weekDays?: InputMaybe<Array<InputMaybe<WeekDays>>>;
 };
+
+/**
+ * Possible variants of ordering in which sorting on a field should be
+ * applied for a connection or other list type data structures.
+ */
+export type SortedByOrder =
+  /**
+   * When the sorting order should be from the smallest value to largest
+   * value.
+   */
+  | 'ASCENDING'
+  /**
+   * When the sorting order should be from the largest value to the smallest
+   * value.
+   */
+  | 'DESCENDING';
 
 export type Status =
   | 'ACTIVE'
@@ -2276,12 +2352,6 @@ export type UserCustomData = {
   values: Scalars['JSON']['output'];
 };
 
-export type UserEdge = {
-  __typename?: 'UserEdge';
-  cursor: Scalars['String']['output'];
-  node: User;
-};
-
 export type UserFamily = {
   __typename?: 'UserFamily';
   _id: Scalars['ID']['output'];
@@ -2327,46 +2397,54 @@ export type UserPhoneInput = {
 
 export type UserTag = {
   __typename?: 'UserTag';
+  /** A field to get the mongodb object id identifier for this UserTag. */
   _id: Scalars['ID']['output'];
-  childTags: UserTagsConnectionResult;
+  /**
+   * A connection field to traverse a list of UserTag this UserTag is a
+   * parent to.
+   */
+  childTags?: Maybe<UserTagsConnection>;
+  /** A field to get the name of this UserTag. */
   name: Scalars['String']['output'];
+  /** A field to traverse the Organization that created this UserTag. */
   organization?: Maybe<Organization>;
+  /** A field to traverse the parent UserTag of this UserTag. */
   parentTag?: Maybe<UserTag>;
-  usersAssignedTo: UsersConnectionResult;
+  /**
+   * A connection field to traverse a list of User this UserTag is assigned
+   * to.
+   */
+  usersAssignedTo?: Maybe<UsersConnection>;
 };
 
 
 export type UserTagChildTagsArgs = {
-  input: UserTagsConnectionInput;
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['PositiveInt']['input']>;
+  last?: InputMaybe<Scalars['PositiveInt']['input']>;
 };
 
 
 export type UserTagUsersAssignedToArgs = {
-  input: UsersConnectionInput;
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['PositiveInt']['input']>;
+  last?: InputMaybe<Scalars['PositiveInt']['input']>;
 };
 
-export type UserTagEdge = {
-  __typename?: 'UserTagEdge';
-  cursor: Scalars['String']['output'];
-  node: UserTag;
-};
-
+/** A default connection on the UserTag type. */
 export type UserTagsConnection = {
   __typename?: 'UserTagsConnection';
-  edges: Array<UserTagEdge>;
-  pageInfo: ConnectionPageInfo;
+  edges: Array<UserTagsConnectionEdge>;
+  pageInfo: DefaultConnectionPageInfo;
 };
 
-export type UserTagsConnectionInput = {
-  cursor?: InputMaybe<Scalars['String']['input']>;
-  direction: PaginationDirection;
-  limit: Scalars['PositiveInt']['input'];
-};
-
-export type UserTagsConnectionResult = {
-  __typename?: 'UserTagsConnectionResult';
-  data?: Maybe<UserTagsConnection>;
-  errors: Array<ConnectionError>;
+/** A default connection edge on the UserTag type for UserTagsConnection. */
+export type UserTagsConnectionEdge = {
+  __typename?: 'UserTagsConnectionEdge';
+  cursor: Scalars['String']['output'];
+  node: UserTag;
 };
 
 export type UserType =
@@ -2410,22 +2488,18 @@ export type UserWhereInput = {
   lastName_starts_with?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** A default connection on the User type. */
 export type UsersConnection = {
   __typename?: 'UsersConnection';
-  edges: Array<UserEdge>;
-  pageInfo: ConnectionPageInfo;
+  edges: Array<UsersConnectionEdge>;
+  pageInfo: DefaultConnectionPageInfo;
 };
 
-export type UsersConnectionInput = {
-  cursor?: InputMaybe<Scalars['String']['input']>;
-  direction: PaginationDirection;
-  limit: Scalars['PositiveInt']['input'];
-};
-
-export type UsersConnectionResult = {
-  __typename?: 'UsersConnectionResult';
-  data?: Maybe<UsersConnection>;
-  errors: Array<ConnectionError>;
+/** A default connection edge on the User type for UsersConnection. */
+export type UsersConnectionEdge = {
+  __typename?: 'UsersConnectionEdge';
+  cursor: Scalars['String']['output'];
+  node: User;
 };
 
 export type WeekDays =
@@ -2523,6 +2597,7 @@ export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
 
 /** Mapping of interface types */
 export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
+  ConnectionPageInfo: ( DefaultConnectionPageInfo );
   Error: ( UnauthenticatedError ) | ( UnauthorizedError );
   FieldError: ( InvalidCursor ) | ( MaximumLengthError ) | ( MaximumValueError ) | ( MinimumLengthError ) | ( MinimumValueError );
 };
@@ -2551,7 +2626,7 @@ export type ResolversTypes = {
   Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
   ConnectionError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['ConnectionError']>;
-  ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
+  ConnectionPageInfo: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['ConnectionPageInfo']>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
   CreateActionItemInput: CreateActionItemInput;
   CreateAdvertisementInput: CreateAdvertisementInput;
@@ -2562,6 +2637,7 @@ export type ResolversTypes = {
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
+  DefaultConnectionPageInfo: ResolverTypeWrapper<DefaultConnectionPageInfo>;
   DeletePayload: ResolverTypeWrapper<DeletePayload>;
   DirectChat: ResolverTypeWrapper<InterfaceDirectChatModel>;
   DirectChatMessage: ResolverTypeWrapper<InterfaceDirectChatMessageModel>;
@@ -2588,8 +2664,9 @@ export type ResolversTypes = {
   ForgotPasswordData: ForgotPasswordData;
   Frequency: Frequency;
   Fund: ResolverTypeWrapper<InterfaceFundModel>;
+  FundCampaignInput: FundCampaignInput;
   FundInput: FundInput;
-  FundraisingCampaign: ResolverTypeWrapper<Omit<FundraisingCampaign, 'fund'> & { fund: ResolversTypes['Fund'] }>;
+  FundraisingCampaign: ResolverTypeWrapper<InterfaceFundraisingCampaignModel>;
   Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
   GroupChat: ResolverTypeWrapper<InterfaceGroupChatModel>;
@@ -2640,6 +2717,7 @@ export type ResolversTypes = {
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
   RecurrenceRuleInput: RecurrenceRuleInput;
+  SortedByOrder: SortedByOrder;
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Subscription: ResolverTypeWrapper<{}>;
@@ -2668,22 +2746,18 @@ export type ResolversTypes = {
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['User']>> }>;
   UserCustomData: ResolverTypeWrapper<UserCustomData>;
-  UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
   UserFamily: ResolverTypeWrapper<InterfaceUserFamilyModel>;
   UserInput: UserInput;
   UserOrderByInput: UserOrderByInput;
   UserPhone: ResolverTypeWrapper<UserPhone>;
   UserPhoneInput: UserPhoneInput;
   UserTag: ResolverTypeWrapper<InterfaceOrganizationTagUserModel>;
-  UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
-  UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversTypes['UserTagEdge']> }>;
-  UserTagsConnectionInput: UserTagsConnectionInput;
-  UserTagsConnectionResult: ResolverTypeWrapper<Omit<UserTagsConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UserTagsConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
+  UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversTypes['UserTagsConnectionEdge']> }>;
+  UserTagsConnectionEdge: ResolverTypeWrapper<Omit<UserTagsConnectionEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
   UserType: UserType;
   UserWhereInput: UserWhereInput;
-  UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
-  UsersConnectionInput: UsersConnectionInput;
-  UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
+  UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UsersConnectionEdge']> }>;
+  UsersConnectionEdge: ResolverTypeWrapper<Omit<UsersConnectionEdge, 'node'> & { node: ResolversTypes['User'] }>;
   WeekDays: WeekDays;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
@@ -2712,7 +2786,7 @@ export type ResolversParentTypes = {
   Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
   ConnectionError: ResolversUnionTypes<ResolversParentTypes>['ConnectionError'];
-  ConnectionPageInfo: ConnectionPageInfo;
+  ConnectionPageInfo: ResolversInterfaceTypes<ResolversParentTypes>['ConnectionPageInfo'];
   CountryCode: Scalars['CountryCode']['output'];
   CreateActionItemInput: CreateActionItemInput;
   CreateAdvertisementInput: CreateAdvertisementInput;
@@ -2722,6 +2796,7 @@ export type ResolversParentTypes = {
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
   DateTime: Scalars['DateTime']['output'];
+  DefaultConnectionPageInfo: DefaultConnectionPageInfo;
   DeletePayload: DeletePayload;
   DirectChat: InterfaceDirectChatModel;
   DirectChatMessage: InterfaceDirectChatMessageModel;
@@ -2743,8 +2818,9 @@ export type ResolversParentTypes = {
   Float: Scalars['Float']['output'];
   ForgotPasswordData: ForgotPasswordData;
   Fund: InterfaceFundModel;
+  FundCampaignInput: FundCampaignInput;
   FundInput: FundInput;
-  FundraisingCampaign: Omit<FundraisingCampaign, 'fund'> & { fund: ResolversParentTypes['Fund'] };
+  FundraisingCampaign: InterfaceFundraisingCampaignModel;
   Group: InterfaceGroupModel;
   GroupChat: InterfaceGroupChatModel;
   GroupChatMessage: InterfaceGroupChatMessageModel;
@@ -2815,20 +2891,16 @@ export type ResolversParentTypes = {
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['User']>> };
   UserCustomData: UserCustomData;
-  UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
   UserFamily: InterfaceUserFamilyModel;
   UserInput: UserInput;
   UserPhone: UserPhone;
   UserPhoneInput: UserPhoneInput;
   UserTag: InterfaceOrganizationTagUserModel;
-  UserTagEdge: Omit<UserTagEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
-  UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserTagEdge']> };
-  UserTagsConnectionInput: UserTagsConnectionInput;
-  UserTagsConnectionResult: Omit<UserTagsConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UserTagsConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
+  UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserTagsConnectionEdge']> };
+  UserTagsConnectionEdge: Omit<UserTagsConnectionEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
   UserWhereInput: UserWhereInput;
-  UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
-  UsersConnectionInput: UsersConnectionInput;
-  UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
+  UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UsersConnectionEdge']> };
+  UsersConnectionEdge: Omit<UsersConnectionEdge, 'node'> & { node: ResolversParentTypes['User'] };
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
@@ -2980,11 +3052,11 @@ export type ConnectionErrorResolvers<ContextType = any, ParentType extends Resol
 };
 
 export type ConnectionPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectionPageInfo'] = ResolversParentTypes['ConnectionPageInfo']> = {
+  __resolveType: TypeResolveFn<'DefaultConnectionPageInfo', ParentType, ContextType>;
   endCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export interface CountryCodeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['CountryCode'], any> {
@@ -3003,6 +3075,14 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
   name: 'DateTime';
 }
+
+export type DefaultConnectionPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefaultConnectionPageInfo'] = ResolversParentTypes['DefaultConnectionPageInfo']> = {
+  endCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export type DeletePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeletePayload'] = ResolversParentTypes['DeletePayload']> = {
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -3313,6 +3393,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationCreateEventArgs, 'data'>>;
   createEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationCreateEventVolunteerArgs, 'data'>>;
   createFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationCreateFundArgs, 'data'>>;
+  createFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignArgs, 'data'>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
   createMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
@@ -3347,6 +3428,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRemoveEventArgs, 'id'>>;
   removeEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveEventAttendeeArgs, 'data'>>;
   removeEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerArgs, 'id'>>;
+  removeFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationRemoveFundArgs, 'id'>>;
   removeGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveGroupChatArgs, 'chatId'>>;
   removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'data'>>;
   removeOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
@@ -3523,6 +3605,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
   getEventAttendee?: Resolver<Maybe<ResolversTypes['EventAttendee']>, ParentType, ContextType, RequireFields<QueryGetEventAttendeeArgs, 'eventId' | 'userId'>>;
   getEventAttendeesByEventId?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventAttendee']>>>, ParentType, ContextType, RequireFields<QueryGetEventAttendeesByEventIdArgs, 'eventId'>>;
+  getFundById?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<QueryGetFundByIdArgs, 'id'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
@@ -3634,12 +3717,6 @@ export type UserCustomDataResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserEdge'] = ResolversParentTypes['UserEdge']> = {
-  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  node?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type UserFamilyResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserFamily'] = ResolversParentTypes['UserFamily']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   admins?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
@@ -3658,41 +3735,35 @@ export type UserPhoneResolvers<ContextType = any, ParentType extends ResolversPa
 
 export type UserTagResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTag'] = ResolversParentTypes['UserTag']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  childTags?: Resolver<ResolversTypes['UserTagsConnectionResult'], ParentType, ContextType, RequireFields<UserTagChildTagsArgs, 'input'>>;
+  childTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagChildTagsArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType>;
-  usersAssignedTo?: Resolver<ResolversTypes['UsersConnectionResult'], ParentType, ContextType, RequireFields<UserTagUsersAssignedToArgs, 'input'>>;
+  usersAssignedTo?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType, Partial<UserTagUsersAssignedToArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UserTagEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagEdge'] = ResolversParentTypes['UserTagEdge']> = {
+export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
+  edges?: Resolver<Array<ResolversTypes['UserTagsConnectionEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserTagsConnectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnectionEdge'] = ResolversParentTypes['UserTagsConnectionEdge']> = {
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['UserTag'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
-  edges?: Resolver<Array<ResolversTypes['UserTagEdge']>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type UserTagsConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnectionResult'] = ResolversParentTypes['UserTagsConnectionResult']> = {
-  data?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType>;
-  errors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
-  edges?: Resolver<Array<ResolversTypes['UserEdge']>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['UsersConnectionEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UsersConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnectionResult'] = ResolversParentTypes['UsersConnectionResult']> = {
-  data?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType>;
-  errors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
+export type UsersConnectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnectionEdge'] = ResolversParentTypes['UsersConnectionEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3717,6 +3788,7 @@ export type Resolvers<ContextType = any> = {
   CreateAdvertisementPayload?: CreateAdvertisementPayloadResolvers<ContextType>;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
+  DefaultConnectionPageInfo?: DefaultConnectionPageInfoResolvers<ContextType>;
   DeletePayload?: DeletePayloadResolvers<ContextType>;
   DirectChat?: DirectChatResolvers<ContextType>;
   DirectChatMessage?: DirectChatMessageResolvers<ContextType>;
@@ -3771,15 +3843,13 @@ export type Resolvers<ContextType = any> = {
   User?: UserResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserCustomData?: UserCustomDataResolvers<ContextType>;
-  UserEdge?: UserEdgeResolvers<ContextType>;
   UserFamily?: UserFamilyResolvers<ContextType>;
   UserPhone?: UserPhoneResolvers<ContextType>;
   UserTag?: UserTagResolvers<ContextType>;
-  UserTagEdge?: UserTagEdgeResolvers<ContextType>;
   UserTagsConnection?: UserTagsConnectionResolvers<ContextType>;
-  UserTagsConnectionResult?: UserTagsConnectionResultResolvers<ContextType>;
+  UserTagsConnectionEdge?: UserTagsConnectionEdgeResolvers<ContextType>;
   UsersConnection?: UsersConnectionResolvers<ContextType>;
-  UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
+  UsersConnectionEdge?: UsersConnectionEdgeResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {

@@ -1,12 +1,12 @@
 import { Advertisement, User } from "../../src/models";
-import type { InterfaceUser } from "../../src/models";
+import type { InterfaceAdvertisement, InterfaceUser } from "../../src/models";
 import { nanoid } from "nanoid";
 import { createTestUserAndOrganization } from "./userAndOrg";
 import type { Document, PopulatedDoc } from "mongoose";
 
 export type TestAdvertisementType = {
   _id: string;
-  organizationId: string;
+  organizationId: PopulatedDoc<InterfaceAdvertisement & Document>;
   name: string;
   mediaUrl: string;
   creatorId: PopulatedDoc<InterfaceUser & Document>;

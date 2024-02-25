@@ -158,10 +158,34 @@ input CommentInput {
 
 union ConnectionError = InvalidCursor | MaximumValueError
 
-type ConnectionPageInfo {
+"""
+The standard graphQL connection page info that contains metadata about a
+particular instance of a connection. ALl other custom connection page info
+types must implement this interface.
+"""
+interface ConnectionPageInfo {
+  """
+  A field to tell the value of cursor for the last edge of a particular instance of a
+  connection.
+  """
   endCursor: String
+
+  """
+  A field to tell whether the connection has additional edges after the
+  edge with endCursor as its cursor.
+  """
   hasNextPage: Boolean!
+
+  """
+  A field to tell whether the connection has additional edges
+  before the edge with startCursor as its cursor.
+  """
   hasPreviousPage: Boolean!
+
+  """
+  A field to tell the value of cursor for the first edge of a particular instance of a
+  connection.
+  """
   startCursor: String
 }
 
@@ -374,6 +398,17 @@ input CursorPaginationInput {
 scalar Date
 
 scalar DateTime
+
+"""
+Default connection page info for containing the metadata for a connection
+instance.
+"""
+type DefaultConnectionPageInfo implements ConnectionPageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
 
 type DeletePayload {
   success: Boolean!
@@ -646,6 +681,15 @@ type Fund {
   updatedAt: DateTime!
 }
 
+input FundCampaignInput {
+  currency: Currency!
+  endDate: Date!
+  fundId: ID!
+  fundingGoal: Float!
+  name: String!
+  startDate: Date!
+}
+
 input FundInput {
   isArchived: Boolean!
   isDefault: Boolean!
@@ -833,6 +877,7 @@ type Mutation {
   createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
   createFund(data: FundInput!): Fund!
+  createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
@@ -867,6 +912,7 @@ type Mutation {
   removeEvent(id: ID!): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
+  removeFund(id: ID!): Fund!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -1172,6 +1218,7 @@ type Query {
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
+  getFundById(id: ID!): Fund!
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
@@ -1210,6 +1257,24 @@ input RecurrenceRuleInput {
   count: Int
   frequency: Frequency
   weekDays: [WeekDays]
+}
+
+"""
+Possible variants of ordering in which sorting on a field should be
+applied for a connection or other list type data structures.
+"""
+enum SortedByOrder {
+  """
+  When the sorting order should be from the smallest value to largest
+  value.
+  """
+  ASCENDING
+
+  """
+  When the sorting order should be from the largest value to the smallest
+  value.
+  """
+  DESCENDING
 }
 
 enum Status {
@@ -1405,11 +1470,6 @@ type UserCustomData {
   values: JSON!
 }
 
-type UserEdge {
-  cursor: String!
-  node: User!
-}
-
 type UserFamily {
   _id: ID!
   admins: [User!]!
@@ -1453,33 +1513,41 @@ input UserPhoneInput {
 }
 
 type UserTag {
+  """A field to get the mongodb object id identifier for this UserTag."""
   _id: ID!
-  childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
+
+  """
+  A connection field to traverse a list of UserTag this UserTag is a
+  parent to.
+  """
+  childTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
+
+  """A field to get the name of this UserTag."""
   name: String!
+
+  """A field to traverse the Organization that created this UserTag."""
   organization: Organization
+
+  """A field to traverse the parent UserTag of this UserTag."""
   parentTag: UserTag
-  usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!
+
+  """
+  A connection field to traverse a list of User this UserTag is assigned
+  to.
+  """
+  usersAssignedTo(after: String, before: String, first: PositiveInt, last: PositiveInt): UsersConnection
 }
 
-type UserTagEdge {
+"""A default connection on the UserTag type."""
+type UserTagsConnection {
+  edges: [UserTagsConnectionEdge!]!
+  pageInfo: DefaultConnectionPageInfo!
+}
+
+"""A default connection edge on the UserTag type for UserTagsConnection."""
+type UserTagsConnectionEdge {
   cursor: String!
   node: UserTag!
-}
-
-type UserTagsConnection {
-  edges: [UserTagEdge!]!
-  pageInfo: ConnectionPageInfo!
-}
-
-input UserTagsConnectionInput {
-  cursor: String
-  direction: PaginationDirection!
-  limit: PositiveInt!
-}
-
-type UserTagsConnectionResult {
-  data: UserTagsConnection
-  errors: [ConnectionError!]!
 }
 
 enum UserType {
@@ -1524,20 +1592,16 @@ input UserWhereInput {
   lastName_starts_with: String
 }
 
+"""A default connection on the User type."""
 type UsersConnection {
-  edges: [UserEdge!]!
-  pageInfo: ConnectionPageInfo!
+  edges: [UsersConnectionEdge!]!
+  pageInfo: DefaultConnectionPageInfo!
 }
 
-input UsersConnectionInput {
-  cursor: String
-  direction: PaginationDirection!
-  limit: PositiveInt!
-}
-
-type UsersConnectionResult {
-  data: UsersConnection
-  errors: [ConnectionError!]!
+"""A default connection edge on the User type for UsersConnection."""
+type UsersConnectionEdge {
+  cursor: String!
+  node: User!
 }
 
 enum WeekDays {
