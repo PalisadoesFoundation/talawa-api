@@ -7,21 +7,13 @@ services:
       - 27017:27017
     volumes:
       - mongodb-data:/data/db
-<<<<<<< HEAD
-
-=======
   
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
   redis-stack-server:
     image: redis/redis-stack-server:latest
     ports:
       - 6379:6379
     volumes:
-<<<<<<< HEAD
-      - redis-data:/data/redis
-=======
       - redis-data:/data/redis 
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
 
   talawa-api-container:
     build:

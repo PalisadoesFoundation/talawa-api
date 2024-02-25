@@ -16,11 +16,7 @@ export const creator: UserFamilyResolvers["creator"] = async (parent) => {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-<<<<<<< HEAD
-      USER_NOT_FOUND_ERROR.PARAM
-=======
       USER_NOT_FOUND_ERROR.PARAM,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
   }
 

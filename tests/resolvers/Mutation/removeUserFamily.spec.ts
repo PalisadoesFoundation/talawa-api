@@ -76,11 +76,7 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-=======
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -108,11 +104,7 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `Translated ${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`
-=======
         `Translated ${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -140,11 +132,7 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`
-=======
         `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });

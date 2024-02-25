@@ -20,11 +20,7 @@ import { superAdminCheck } from "../../utilities";
 export const removeUserFamily: MutationResolvers["removeUserFamily"] = async (
   _parent,
   args,
-<<<<<<< HEAD
-  context
-=======
   context,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
 ) => {
   const userFamily = await UserFamily.findOne({
     _id: args.familyId,
@@ -39,11 +35,7 @@ export const removeUserFamily: MutationResolvers["removeUserFamily"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-<<<<<<< HEAD
-      USER_NOT_FOUND_ERROR.PARAM
-=======
       USER_NOT_FOUND_ERROR.PARAM,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
   }
 
@@ -55,11 +47,7 @@ export const removeUserFamily: MutationResolvers["removeUserFamily"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE),
       USER_FAMILY_NOT_FOUND_ERROR.CODE,
-<<<<<<< HEAD
-      USER_FAMILY_NOT_FOUND_ERROR.PARAM
-=======
       USER_FAMILY_NOT_FOUND_ERROR.PARAM,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
   }
 

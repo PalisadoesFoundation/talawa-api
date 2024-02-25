@@ -17,11 +17,7 @@ COPY --from=dependencies /usr/src/app/node_modules ./node_modules
 COPY . .
 
 # Stage 3: Final image
-<<<<<<< HEAD
-FROM node:lts
-=======
 FROM node:lts 
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
 
 WORKDIR /usr/src/app
 

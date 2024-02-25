@@ -61,11 +61,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
     } catch (error) {
       expect(spy).toBeCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`
-=======
         `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -118,11 +114,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
     } catch (error) {
       expect(spy).toBeCalledWith(USER_ALREADY_MEMBER_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        USER_ALREADY_MEMBER_ERROR.MESSAGE
-=======
         USER_ALREADY_MEMBER_ERROR.MESSAGE,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -136,11 +128,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
         $set: {
           users: [],
         },
-<<<<<<< HEAD
-      }
-=======
       },
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
 
     const args: MutationAddUserToUserFamilyArgs = {
@@ -158,11 +146,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
     const addUserToUserFamilyPayload = await addUserToUserFamily?.(
       {},
       args,
-<<<<<<< HEAD
-      context
-=======
       context,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
     expect(addUserToUserFamilyPayload?._id).toEqual(testUserFamily?._id);
     expect(addUserToUserFamilyPayload?.users).toEqual([testUser?._id]);

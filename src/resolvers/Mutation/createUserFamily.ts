@@ -23,11 +23,7 @@ import { superAdminCheck } from "../../utilities";
 export const createUserFamily: MutationResolvers["createUserFamily"] = async (
   _parent,
   args,
-<<<<<<< HEAD
-  context
-=======
   context,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
 ) => {
   const currentUser = await User.findById({
     _id: context.userId,
@@ -38,11 +34,7 @@ export const createUserFamily: MutationResolvers["createUserFamily"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-<<<<<<< HEAD
-      USER_NOT_FOUND_ERROR.PARAM
-=======
       USER_NOT_FOUND_ERROR.PARAM,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
   }
 
@@ -60,15 +52,9 @@ export const createUserFamily: MutationResolvers["createUserFamily"] = async (
   if (!validationResultName.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-<<<<<<< HEAD
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
-      ),
-      LENGTH_VALIDATION_ERROR.CODE
-=======
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
       ),
       LENGTH_VALIDATION_ERROR.CODE,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
   }
 
@@ -77,11 +63,7 @@ export const createUserFamily: MutationResolvers["createUserFamily"] = async (
     throw new errors.InputValidationError(
       requestContext.translate(USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE),
       USER_FAMILY_MIN_MEMBERS_ERROR_CODE.CODE,
-<<<<<<< HEAD
-      USER_FAMILY_MIN_MEMBERS_ERROR_CODE.PARAM
-=======
       USER_FAMILY_MIN_MEMBERS_ERROR_CODE.PARAM,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
   }
 

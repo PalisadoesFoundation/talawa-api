@@ -54,19 +54,11 @@ describe("utilities -> userFamilyAdminCheck", () => {
       );
       await adminCheck(
         testUser?._id,
-<<<<<<< HEAD
-        testUserFamily ?? ({} as InterfaceUserFamily)
-      );
-    } catch (error) {
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
-=======
         testUserFamily ?? ({} as InterfaceUserFamily),
       );
     } catch (error) {
       expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
     expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
@@ -83,11 +75,7 @@ describe("utilities -> userFamilyAdminCheck", () => {
       {
         new: true,
         upsert: true,
-<<<<<<< HEAD
-      }
-=======
       },
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
 
     const { adminCheck } = await import(
@@ -97,13 +85,8 @@ describe("utilities -> userFamilyAdminCheck", () => {
     await expect(
       adminCheck(
         updatedUser?._id,
-<<<<<<< HEAD
-        testUserFamily ?? ({} as InterfaceUserFamily)
-      )
-=======
         testUserFamily ?? ({} as InterfaceUserFamily),
       ),
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     ).resolves.not.toThrowError();
   });
 
@@ -118,11 +101,7 @@ describe("utilities -> userFamilyAdminCheck", () => {
       {
         new: true,
         upsert: true,
-<<<<<<< HEAD
-      }
-=======
       },
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
 
     const updatedUserFamily = await UserFamily.findOneAndUpdate(
@@ -137,11 +116,7 @@ describe("utilities -> userFamilyAdminCheck", () => {
       {
         new: true,
         upsert: true,
-<<<<<<< HEAD
-      }
-=======
       },
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
 
     const { adminCheck } = await import(
@@ -151,13 +126,8 @@ describe("utilities -> userFamilyAdminCheck", () => {
     await expect(
       adminCheck(
         updatedUser?._id,
-<<<<<<< HEAD
-        updatedUserFamily ?? ({} as InterfaceUserFamily)
-      )
-=======
         updatedUserFamily ?? ({} as InterfaceUserFamily),
       ),
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     ).resolves.not.toThrowError();
   });
   it("throws error if user is not found with the specific Id", async () => {
@@ -173,19 +143,11 @@ describe("utilities -> userFamilyAdminCheck", () => {
       );
       await adminCheck(
         new mongoose.Types.ObjectId(),
-<<<<<<< HEAD
-        testUserFamily ?? ({} as InterfaceUserFamily)
-      );
-    } catch (error) {
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
-=======
         testUserFamily ?? ({} as InterfaceUserFamily),
       );
     } catch (error) {
       expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
     expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);

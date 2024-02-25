@@ -60,11 +60,7 @@ describe("resolvers -> UserFamily -> creator", () => {
         },
         {
           new: true,
-<<<<<<< HEAD
-        }
-=======
         },
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
 
       const parent = testUserFamily?.toObject();
@@ -78,11 +74,7 @@ describe("resolvers -> UserFamily -> creator", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-=======
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -99,11 +91,7 @@ describe("resolvers -> UserFamily -> creator", () => {
       },
       {
         new: true,
-<<<<<<< HEAD
-      }
-=======
       },
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
 
     const parent = testUserFamily?.toObject();

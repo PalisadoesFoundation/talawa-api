@@ -72,11 +72,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-=======
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -105,11 +101,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     } catch (error) {
       expect(spy).toBeCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`
-=======
         `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -139,11 +131,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     } catch (error) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `${USER_NOT_FOUND_ERROR.MESSAGE}`
-=======
         `${USER_NOT_FOUND_ERROR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -172,11 +160,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-=======
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -205,11 +189,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `Translated ${USER_REMOVING_SELF.MESSAGE}`
-=======
         `Translated ${USER_REMOVING_SELF.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -238,11 +218,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-=======
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -271,11 +247,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`
-=======
         `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -303,22 +275,14 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       const updatedUserFamily = await removeUserFromUserFamilyResolver?.(
         {},
         args,
-<<<<<<< HEAD
-        context
-=======
         context,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
 
       expect(updatedUserFamily?.users).not.toContain(testUsers[4]?._id);
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-<<<<<<< HEAD
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-=======
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
->>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
