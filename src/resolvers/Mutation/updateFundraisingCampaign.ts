@@ -1,9 +1,7 @@
 import {
-  END_DATE_VALIDATION_ERROR,
   FUNDRAISING_CAMPAIGN_ALREADY_EXISTS,
   FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR,
   FUND_NOT_FOUND_ERROR,
-  START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
@@ -15,6 +13,7 @@ import {
   type InterfaceFundraisingCampaign,
 } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { validateDate } from "../../utilities/dateValidator";
 
 /**
  * This function enables to update a fundraising campaign.
@@ -67,26 +66,7 @@ export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCamp
       endDate = args.data.endDate;
     }
 
-    //Checks if the start date is valid
-    if (
-      startDate &&
-      new Date(startDate) < new Date(new Date().toDateString())
-    ) {
-      throw new errors.InputValidationError(
-        requestContext.translate(START_DATE_VALIDATION_ERROR.MESSAGE),
-        START_DATE_VALIDATION_ERROR.CODE,
-        START_DATE_VALIDATION_ERROR.PARAM,
-      );
-    }
-
-    //Checks if the end date is valid
-    if (endDate && new Date(endDate) < new Date(startDate)) {
-      throw new errors.InputValidationError(
-        requestContext.translate(END_DATE_VALIDATION_ERROR.MESSAGE),
-        END_DATE_VALIDATION_ERROR.CODE,
-        END_DATE_VALIDATION_ERROR.PARAM,
-      );
-    }
+    validateDate(startDate, endDate);
     const fund = await Fund.findOne({
       _id: campaigin.fundId?.toString(),
     });

@@ -244,12 +244,18 @@ export const types = gql`
     endDate: Date!
     fundingGoal: Float!
     currency: Currency!
+    pledges: [FundraisingCampaignPledge]
     createdAt: DateTime!
     updatedAt: DateTime!
   }
-  type FundraisingPledge {
+  type FundraisingCampaignPledge {
     _id: ID!
     campaigns: [FundraisingCampaign]!
+    users: [User]!
+    startDate: Date
+    endDate: Date
+    amount: Float!
+    currency: Currency!
   }
 
   type Group {
