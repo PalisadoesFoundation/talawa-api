@@ -10,8 +10,8 @@ import {
 } from "./parseGraphQLConnectionArguments";
 
 /**
-This is typescript type of the object returned from callback function `parseSortedBy`.
-*/
+ *This is typescript type of the object returned from callback function `parseSortedBy`.
+ */
 export type ParseGraphQLConnectionSortedByResult<T0> =
   | {
       isSuccessful: false;
@@ -23,24 +23,16 @@ export type ParseGraphQLConnectionSortedByResult<T0> =
     };
 
 /**
-This is typescript type of the callback function `parseSortedBy`.
-*/
-export type ParseGraphQLConnectionSortedBy<T0> = (
-  /* eslint-disable  @typescript-eslint/no-explicit-any */
-  ...args: any[]
-) => ParseGraphQLConnectionSortedByResult<T0>;
-
-/**
-This is typescript type of the object containing validated and transformed connection
-arguments passed to `parseGraphQLConnectionArgumentsWithSortedBy` function.
-*/
+ * This is typescript type of the object containing validated and transformed connection
+ * arguments passed to `parseGraphQLConnectionArgumentsWithSortedBy` function.
+ */
 export type ParsedGraphQLConnectionArgumentsWithSortedBy<T0, T1> = {
   sort: T1;
 } & ParsedGraphQLConnectionArguments<T0>;
 
 /**
-This is typescript type of the object returned from `parseGraphQLConnectionArgumentsWithSortedBy` function.
-*/
+ * This is typescript type of the object returned from `parseGraphQLConnectionArgumentsWithSortedBy` function.
+ */
 export type ParseGraphQLConnectionArgumentsWithSortedByResult<T0, T1> = Promise<
   | {
       errors: DefaultGraphQLArgumentError[];
@@ -53,19 +45,38 @@ export type ParseGraphQLConnectionArgumentsWithSortedByResult<T0, T1> = Promise<
 >;
 
 /**
-This function is used for validating and transforming arguments for a graphQL connection that
-also provides sorting capabilities.
-*/
+ * This function is used for validating and transforming arguments for a graphQL connection that
+ * also provides sorting capabilities.
+ * @example
+ * const result = await parseGraphQLConnectionArgumentsWithSortedBy(\{
+ *   args: \{
+ *     after,
+ *     first,
+ *   \},
+ *   maximumLimit: 20,
+ *   parseCursor,
+ *   parseSortedBy,
+ * \})
+ * if (result.isSuccessful === false) \{
+ *    throw new GraphQLError("Invalid arguments provided.", \{
+ *      extensions: \{
+ *        code: "INVALID_ARGUMENTS",
+ *        errors: result.errors
+ *      \}
+ *   \})
+ * \}
+ * const \{ parsedArgs: \{ cursor, direction, limit, sort \} \} = result;
+ */
 export async function parseGraphQLConnectionArgumentsWithSortedBy<T0, T1>({
   args,
   maximumLimit = MAXIMUM_FETCH_LIMIT,
   parseCursor,
-  parseSortedBy,
+  parseSortedByResult,
 }: {
   args: DefaultGraphQLConnectionArguments;
   maximumLimit?: number;
   parseCursor: ParseGraphQLConnectionCursor<T0>;
-  parseSortedBy: ParseGraphQLConnectionSortedBy<T1>;
+  parseSortedByResult: ParseGraphQLConnectionSortedByResult<T1>;
 }): ParseGraphQLConnectionArgumentsWithSortedByResult<T0, T1> {
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArguments({
@@ -73,7 +84,6 @@ export async function parseGraphQLConnectionArgumentsWithSortedBy<T0, T1>({
       parseCursor,
       maximumLimit,
     });
-  const parseSortedByResult = parseSortedBy();
 
   if (!parseGraphQLConnectionArgumentsResult.isSuccessful) {
     if (!parseSortedByResult.isSuccessful) {

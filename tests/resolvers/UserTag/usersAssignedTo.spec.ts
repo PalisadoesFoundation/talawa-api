@@ -71,15 +71,15 @@ describe("usersAssignedTo resolver", () => {
     expect(connection).toEqual({
       edges: [
         {
-          cursor: tagUser?._id,
+          cursor: tagUser?._id.toString(),
           node: user?.toObject(),
         },
       ],
       pageInfo: {
-        endCursor: tagUser?._id,
+        endCursor: tagUser?._id.toString(),
         hasNextPage: false,
         hasPreviousPage: false,
-        startCursor: tagUser?._id,
+        startCursor: tagUser?._id.toString(),
       },
       totalCount,
     });
