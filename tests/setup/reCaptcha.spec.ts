@@ -5,6 +5,24 @@ import fs from "fs";
 import dotenv from "dotenv";
 import { recaptcha } from "../../setup";
 
+/*
+  Test Suite: Setup -> recaptcha
+
+  Description:
+  This test suite verifies the functionality of the recaptcha setup process, which is responsible for updating the application's configuration related to reCAPTCHA.
+
+  Before each test, all mocks are cleared to ensure a clean state for each test case execution.
+
+  Test Case 1:
+  Description: It should update .env_test with the secret key if the user chooses to keep details.
+  Expected Behavior: When the user provides a reCAPTCHA secret key and chooses to keep the details, the function should update the .env_test file with the provided secret key.
+
+  Test Case 2:
+  Description: It should not update .env_test if the user chooses not to keep details after entering the secret key.
+  Expected Behavior: When the user provides a reCAPTCHA secret key but chooses not to keep the details, the function should not update the .env_test file with the provided secret key.
+
+  Note: Each test case involves mocking user input using inquirer, mocking the askToKeepValues function, and asserting the expected behavior of the recaptcha setup function.
+*/
 describe("Setup -> recaptcha", () => {
   beforeEach(() => {
     vi.clearAllMocks();

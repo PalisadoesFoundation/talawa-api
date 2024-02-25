@@ -1,5 +1,5 @@
 import inquirer from "inquirer";
-import { getNodeEnvironment } from "../../setup";
+import { getNodeEnvironment } from "../../src/setup/getNodeEnvironment";
 import { vi, describe, it, expect } from "vitest";
 /*
   These tests ensure that the getNodeEnvironment function behaves correctly based on user input through inquirer.prompt.
@@ -22,7 +22,7 @@ import { vi, describe, it, expect } from "vitest";
   These tests cover both possible user selections ('development' and 'production'), validating the behavior of getNodeEnvironment().
   They provide comprehensive testing of the function's functionality and ensure its reliability under different user inputs.
 */
-describe("getNodeEnvironment", () => {
+describe("Setup -> getNodeEnvironment", () => {
   it('should return "development" when user selects it', async () => {
     vi.spyOn(inquirer, "prompt").mockImplementationOnce(() =>
       Promise.resolve({ nodeEnv: "development" }),
