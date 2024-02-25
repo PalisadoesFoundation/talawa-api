@@ -26,7 +26,6 @@ export const createMember: MutationResolvers["createMember"] = async (
   _parent,
   args,
   context,
-  context,
 ) => {
   // Checks whether the current user is a superAdmin
   const currentUser = await User.findOne({
@@ -96,7 +95,6 @@ export const createMember: MutationResolvers["createMember"] = async (
 
   const userIsOrganizationMember = organization?.members.some((member) =>
     member.equals(user._id),
-    member.equals(user._id),
   );
   console.log(userIsOrganizationMember);
   console.log(organization?.members);
@@ -133,31 +131,31 @@ export const createMember: MutationResolvers["createMember"] = async (
     {
       new: true,
     },
-    },
+
   );
 
-// add user's id to members list on organization and return it.
-const updatedOrganization = await Organization.findOneAndUpdate(
-  {
-    _id: organization?._id,
-  },
-  {
-    $push: {
-      members: args.input.userId,
+  // add user's id to members list on organization and return it.
+  const updatedOrganization = await Organization.findOneAndUpdate(
+    {
+      _id: organization?._id,
     },
-  },
-  {
-    new: true,
-  },
+    {
+      $push: {
+        members: args.input.userId,
+      },
     },
+    {
+      new: true,
+    },
+
   ).lean();
 
-if (updatedOrganization !== null) {
-  await cacheOrganizations([updatedOrganization]);
-}
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
 
-return {
-  organization: updatedOrganization,
-  userErrors: [],
-};
+  return {
+    organization: updatedOrganization,
+    userErrors: [],
+  };
 };

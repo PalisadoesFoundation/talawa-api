@@ -17,7 +17,6 @@ import type { Types } from "mongoose";
 export const childTags: UserTagResolvers["childTags"] = async (
   parent,
   args,
-  args,
 ) => {
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArguments({
@@ -114,40 +113,8 @@ export const parseCursor = async ({
     };
   }
 
-  if (args.input.cursor) {
-    const cursorExists = await OrganizationTagUser.exists({
-      _id: args.input.cursor,
-    });
-
-    if (!cursorExists)
-      return {
-        data: null,
-        errors: [
-          {
-            __typename: "InvalidCursor",
-            message: "The provided cursor does not exist in the database.",
-            path: ["input", "cursor"],
-          },
-        ],
-      };
-  }
-
-  const allChildTagObjects = await OrganizationTagUser.find({
-    ...getFilterObject(args.input),
-    parentTagId: parent._id,
-  })
-    .sort(
-      getSortingObject(args.input.direction, {
-        // The default sorting logic of ascending order by MongoID should always be provided
-        _id: 1,
-        name: 1,
-      }),
-    )
-    .limit(getLimit(args.input.limit))
-    .lean();
-
-  return generateConnectionObject<
-    InterfaceOrganizationTagUser,
-    InterfaceOrganizationTagUser
-  >(args.input, allChildTagObjects, (tag) => tag);
+  return {
+    isSuccessful: true,
+    parsedCursor: cursorValue,
+  };
 };

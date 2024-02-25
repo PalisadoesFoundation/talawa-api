@@ -253,6 +253,12 @@ export type CreateAdminPayload = {
   userErrors: Array<CreateAdminError>;
 };
 
+export type CreateAgendaCategoryInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  organizationId: Scalars['ID']['input'];
+};
+
 export type CreateCommentError = PostNotFoundError;
 
 export type CreateCommentPayload = {
@@ -269,12 +275,6 @@ export type CreateMemberPayload = {
   __typename?: 'CreateMemberPayload';
   organization?: Maybe<Organization>;
   userErrors: Array<CreateMemberError>;
-};
-
-export type CreateAgendaCategoryInput = {
-  description?: InputMaybe<Scalars['String']['input']>;
-  name: Scalars['String']['input'];
-  organizationId: Scalars['ID']['input'];
 };
 
 export type CreateUserTagInput = {
@@ -947,8 +947,8 @@ export type Mutation = {
   createAdmin: CreateAdminPayload;
   createAdvertisement: Advertisement;
   createAgendaCategory: AgendaCategory;
-  createComment: CreateCommentPayload;
-  createDirectChat: CreateDirectChatPayload;
+  createComment?: Maybe<Comment>;
+  createDirectChat: DirectChat;
   createDonation: Donation;
   createEvent: Event;
   createEventVolunteer: EventVolunteer;
@@ -2628,18 +2628,18 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping of union types */
 export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
-  ConnectionError: (InvalidCursor) | (MaximumValueError);
-  CreateAdminError: (OrganizationMemberNotFoundError) | (OrganizationNotFoundError) | (UserNotAuthorizedError) | (UserNotFoundError);
-  CreateCommentError: (PostNotFoundError);
-  CreateDirectChatError: (OrganizationNotFoundError) | (UserNotFoundError);
-  CreateMemberError: (MemberAlreadyInOrganizationError) | (OrganizationNotFoundError) | (UserNotFoundError);
+  ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
+  CreateAdminError: ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
+  CreateCommentError: ( PostNotFoundError );
+  CreateDirectChatError: ( OrganizationNotFoundError ) | ( UserNotFoundError );
+  CreateMemberError: ( MemberAlreadyInOrganizationError ) | ( OrganizationNotFoundError ) | ( UserNotFoundError );
 };
 
 /** Mapping of interface types */
 export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
-  ConnectionPageInfo: (DefaultConnectionPageInfo);
-  Error: (MemberAlreadyInOrganizationError) | (OrganizationMemberNotFoundError) | (OrganizationNotFoundError) | (PostNotFoundError) | (UnauthenticatedError) | (UnauthorizedError) | (UserNotAuthorizedError) | (UserNotFoundError);
-  FieldError: (InvalidCursor) | (MaximumLengthError) | (MaximumValueError) | (MinimumLengthError) | (MinimumValueError);
+  ConnectionPageInfo: ( DefaultConnectionPageInfo );
+  Error: ( MemberAlreadyInOrganizationError ) | ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( PostNotFoundError ) | ( UnauthenticatedError ) | ( UnauthorizedError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
+  FieldError: ( InvalidCursor ) | ( MaximumLengthError ) | ( MaximumValueError ) | ( MinimumLengthError ) | ( MinimumValueError );
 };
 
 /** Mapping between all available schema types and the resolvers types */
@@ -2669,12 +2669,12 @@ export type ResolversTypes = {
   CreateActionItemInput: CreateActionItemInput;
   CreateAdminError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateAdminError']>;
   CreateAdminPayload: ResolverTypeWrapper<Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversTypes['User']>, userErrors: Array<ResolversTypes['CreateAdminError']> }>;
+  CreateAgendaCategoryInput: CreateAgendaCategoryInput;
   CreateCommentError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateCommentError']>;
   CreateCommentPayload: ResolverTypeWrapper<Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversTypes['Comment']>, userErrors: Array<ResolversTypes['CreateCommentError']> }>;
   CreateDirectChatError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateDirectChatError']>;
   CreateMemberError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateMemberError']>;
   CreateMemberPayload: ResolverTypeWrapper<Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversTypes['Organization']>, userErrors: Array<ResolversTypes['CreateMemberError']> }>;
-  CreateAgendaCategoryInput: CreateAgendaCategoryInput;
   CreateUserTagInput: CreateUserTagInput;
   Currency: Currency;
   CursorPaginationInput: CursorPaginationInput;
@@ -2839,12 +2839,12 @@ export type ResolversParentTypes = {
   CreateActionItemInput: CreateActionItemInput;
   CreateAdminError: ResolversUnionTypes<ResolversParentTypes>['CreateAdminError'];
   CreateAdminPayload: Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversParentTypes['User']>, userErrors: Array<ResolversParentTypes['CreateAdminError']> };
+  CreateAgendaCategoryInput: CreateAgendaCategoryInput;
   CreateCommentError: ResolversUnionTypes<ResolversParentTypes>['CreateCommentError'];
   CreateCommentPayload: Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversParentTypes['Comment']>, userErrors: Array<ResolversParentTypes['CreateCommentError']> };
   CreateDirectChatError: ResolversUnionTypes<ResolversParentTypes>['CreateDirectChatError'];
   CreateMemberError: ResolversUnionTypes<ResolversParentTypes>['CreateMemberError'];
   CreateMemberPayload: Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversParentTypes['Organization']>, userErrors: Array<ResolversParentTypes['CreateMemberError']> };
-  CreateAgendaCategoryInput: CreateAgendaCategoryInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
@@ -2966,7 +2966,7 @@ export type ResolversParentTypes = {
   createUserFamilyInput: CreateUserFamilyInput;
 };
 
-export type AuthDirectiveArgs = {};
+export type AuthDirectiveArgs = { };
 
 export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = AuthDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
@@ -3468,8 +3468,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createAdmin?: Resolver<ResolversTypes['CreateAdminPayload'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'endDate' | 'link' | 'name' | 'orgId' | 'startDate' | 'type'>>;
   createAgendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<MutationCreateAgendaCategoryArgs, 'input'>>;
-  createComment?: Resolver<ResolversTypes['CreateCommentPayload'], ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
-  createDirectChat?: Resolver<ResolversTypes['createDirectChatPayload'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
+  createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
+  createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
   createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationCreateEventArgs, 'data'>>;
   createEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationCreateEventVolunteerArgs, 'data'>>;
@@ -3845,37 +3845,31 @@ export type UserTagResolvers<ContextType = any, ParentType extends ResolversPare
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType>;
-  usersAssignedTo?: Resolver<ResolversTypes['UsersConnectionResult'], ParentType, ContextType, RequireFields<UserTagUsersAssignedToArgs, 'input'>>;
+  usersAssignedTo?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType, Partial<UserTagUsersAssignedToArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UserTagEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagEdge'] = ResolversParentTypes['UserTagEdge']> = {
+export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
+  edges?: Resolver<Array<ResolversTypes['UserTagsConnectionEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserTagsConnectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnectionEdge'] = ResolversParentTypes['UserTagsConnectionEdge']> = {
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['UserTag'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
-  edges?: Resolver<Array<ResolversTypes['UserTagEdge']>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type UserTagsConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnectionResult'] = ResolversParentTypes['UserTagsConnectionResult']> = {
-  data?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType>;
-  errors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
-  edges?: Resolver<Array<ResolversTypes['UserEdge']>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['UsersConnectionEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UsersConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnectionResult'] = ResolversParentTypes['UsersConnectionResult']> = {
-  data?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType>;
-  errors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
+export type UsersConnectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnectionEdge'] = ResolversParentTypes['UsersConnectionEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

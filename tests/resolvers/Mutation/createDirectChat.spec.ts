@@ -50,30 +50,25 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
+    try {
+      const args: MutationCreateDirectChatArgs = {
+        data: {
+          organizationId: Types.ObjectId().toString(),
+          userIds: [],
+        },
+      };
+      const context = {
+        userId: testUser?.id,
+      };
 
-    const args: MutationCreateDirectChatArgs = {
-      data: {
-        organizationId: Types.ObjectId().toString(),
-        userIds: [],
-      },
-    };
-    const context = {
-      userId: testUser?.id,
-    };
-
-    const { createDirectChat: createDirectChatResolver } = await import(
-      "../../../src/resolvers/Mutation/createDirectChat"
-    );
-    const result = await createDirectChatResolver?.({}, args, context);
-    expect(result?.userErrors[0]).toStrictEqual({
-      __typename: "OrganizationNotFoundError",
-      message: ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
-    });
-    expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-    // } catch (error: any) {
-    //
-    //   expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-    // }
+      const { createDirectChat: createDirectChatResolver } = await import(
+        "../../../src/resolvers/Mutation/createDirectChat"
+      );
+      await createDirectChatResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    }
   });
 
   it(`throws NotFoundError message if no user exists with _id === context.userIds`, async () => {
@@ -81,31 +76,26 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
+    try {
+      const args: MutationCreateDirectChatArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          userIds: [Types.ObjectId().toString()],
+        },
+      };
 
-    const args: MutationCreateDirectChatArgs = {
-      data: {
-        organizationId: testOrganization?.id,
-        userIds: [Types.ObjectId().toString()],
-      },
-    };
+      const context = {
+        userId: testUser?.id,
+      };
 
-    const context = {
-      userId: testUser?.id,
-    };
-
-    const { createDirectChat: createDirectChatResolver } = await import(
-      "../../../src/resolvers/Mutation/createDirectChat"
-    );
-    const result = await createDirectChatResolver?.({}, args, context);
-    expect(result?.userErrors[0]).toStrictEqual({
-      __typename: "UserNotFoundError",
-      message: USER_NOT_FOUND_ERROR.MESSAGE,
-    });
-    expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-    // } catch (error: any) {
-    //   expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-    //   expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    // }
+      const { createDirectChat: createDirectChatResolver } = await import(
+        "../../../src/resolvers/Mutation/createDirectChat"
+      );
+      await createDirectChatResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
   });
   it(`creates the directChat and returns it`, async () => {
     const args: MutationCreateDirectChatArgs = {
@@ -128,13 +118,12 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       context,
     );
 
-    expect(createDirectChatPayload).toEqual({
-      directChat: expect.objectContaining({
+    expect(createDirectChatPayload).toEqual(
+      expect.objectContaining({
         creatorId: testUser?._id,
         users: [testUser?._id],
         organization: testOrganization?._id,
       }),
-      userErrors: expect.any(Array),
-    });
+    );
   });
 });
