@@ -125,7 +125,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     const createDirectChatPayload = await createDirectChatResolver?.(
       {},
       args,
-      context,
+      context,,
     );
 
     expect(createDirectChatPayload).toEqual({
@@ -134,7 +134,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         users: [testUser?._id],
         organization: testOrganization?._id,
       }),
-      userErrors: expect.any(Array),
+      userErrors: expect.any(Array),,
     });
   });
 });

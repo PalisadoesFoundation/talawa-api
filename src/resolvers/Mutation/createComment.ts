@@ -18,6 +18,7 @@ export const createComment: MutationResolvers["createComment"] = async (
   _parent,
   args,
   context,
+  context,
 ) => {
   // Check if the provided post exists
   const postExists = await Post.exists({

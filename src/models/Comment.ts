@@ -2,8 +2,9 @@ import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import type { InterfacePost } from "./Post";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
- * This is an interface representing a document for a comment in the database(MongoDB).
+ * This is an interface representing a document for a comment in the database - (MongoDB).
  */
 export interface InterfaceComment {
   _id: Types.ObjectId;
@@ -64,6 +65,8 @@ const commentSchema = new Schema(
     timestamps: true,
   },
 );
+
+createLoggingMiddleware(commentSchema, "Comment");
 
 const commentModel = (): Model<InterfaceComment> =>
   model<InterfaceComment>("Comment", commentSchema);

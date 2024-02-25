@@ -29,6 +29,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   _parent,
   args,
   context,
+  context,
 ) => {
   let organization;
 
@@ -111,6 +112,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
 
   const userIsOrganizationMember = organization.members.some((member) =>
     Types.ObjectId(member).equals(args.data.userId),
+    Types.ObjectId(member).equals(args.data.userId),
   );
 
   // Checks whether user with _id === args.data.userId is not a member of organization.
@@ -134,6 +136,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   }
 
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
+    Types.ObjectId(admin).equals(args.data.userId),
     Types.ObjectId(admin).equals(args.data.userId),
   );
 
@@ -168,32 +171,33 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     {
       new: true,
     },
+    },
   );
 
-  if (updatedOrganization !== null) {
-    await cacheOrganizations([updatedOrganization]);
-  }
+if (updatedOrganization !== null) {
+  await cacheOrganizations([updatedOrganization]);
+}
 
-  /*
-  Adds organization._id to adminFor list on user's document with _id === args.data.userId
-  and returns the updated user.
-  */
-  return {
-    user: await User.findOneAndUpdate(
-      {
-        _id: args.data.userId,
+/*
+Adds organization._id to adminFor list on user's document with _id === args.data.userId
+and returns the updated user.
+*/
+return {
+  user: await User.findOneAndUpdate(
+    {
+      _id: args.data.userId,
+    },
+    {
+      $push: {
+        adminFor: organization._id,
       },
-      {
-        $push: {
-          adminFor: organization._id,
-        },
-      },
-      {
-        new: true,
-      },
-    )
-      .select(["-password"])
-      .lean(),
-    userErrors: [],
-  };
+    },
+    {
+      new: true,
+    },
+  )
+    .select(["-password"])
+    .lean(),
+  userErrors: [],
+};
 };

@@ -1,6 +1,7 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface representing a document for a file in the database(MongoDB).
  */
@@ -57,6 +58,8 @@ const fileSchema = new Schema(
     timestamps: true,
   },
 );
+
+createLoggingMiddleware(fileSchema, "File");
 
 const fileModel = (): Model<InterfaceFile> =>
   model<InterfaceFile>("File", fileSchema);

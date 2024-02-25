@@ -23,6 +23,7 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   _parent,
   args,
   context,
+  context,
 ) => {
   let organization;
 
