@@ -56,7 +56,7 @@ describe("resolvers -> Mutation -> checkIn", () => {
       await checkInResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }

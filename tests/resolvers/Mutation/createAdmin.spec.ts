@@ -32,7 +32,7 @@ beforeAll(async () => {
   testOrganization = resultsArray[1];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message,,
+    (message) => message,
   );
 });
 
@@ -220,42 +220,42 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       {
         new: true,
       },
+
+    );
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
+
+    const args: MutationCreateAdminArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        userId: testUser?.id,
       },
-  );
+    };
 
-  if (updatedOrganization !== null) {
-    await cacheOrganizations([updatedOrganization]);
-  }
-
-  const args: MutationCreateAdminArgs = {
-    data: {
-      organizationId: testOrganization?.id,
+    const context = {
       userId: testUser?.id,
-    },
-  };
+    };
 
-  const context = {
-    userId: testUser?.id,
-  };
+    const createAdminPayload = await createAdminResolver?.({}, args, context);
 
-  const createAdminPayload = await createAdminResolver?.({}, args, context);
+    const updatedTestUser = {
+      user: await User.findOne({
+        _id: testUser?._id,
+      })
+        .select(["-password"])
+        .lean(),
+      userErrors: [],
+    };
+    expect(createAdminPayload).toEqual(updatedTestUser);
 
-  const updatedTestUser = {
-    user: await User.findOne({
-      _id: testUser?._id,
+    const updatedTestOrganization = await Organization.findOne({
+      _id: testOrganization?._id,
     })
-      .select(["-password"])
-      .lean(),
-    userErrors: [],
-  };
-  expect(createAdminPayload).toEqual(updatedTestUser);
+      .select(["admins"])
+      .lean();
 
-  const updatedTestOrganization = await Organization.findOne({
-    _id: testOrganization?._id,
-  })
-    .select(["admins"])
-    .lean();
-
-  expect(updatedTestOrganization?.admins).toEqual([testUser?._id]);
-});
+    expect(updatedTestOrganization?.admins).toEqual([testUser?._id]);
+  });
 });

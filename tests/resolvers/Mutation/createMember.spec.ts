@@ -30,7 +30,6 @@ beforeAll(async () => {
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message,
-    (message) => message,
   );
 });
 
