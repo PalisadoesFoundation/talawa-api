@@ -7,7 +7,6 @@ import * as cryptolib from "crypto";
 import inquirer from "inquirer";
 import mongodb from "mongodb";
 import { exec } from "child_process";
-import nodemailer from "nodemailer";
 import type { ExecException } from "child_process";
 /* eslint-disable */
 import {
@@ -24,6 +23,12 @@ import { askToKeepValues } from "./src/setup/askToKeepValues";
 import { validateRecaptcha } from "./src/setup/reCaptcha";
 import { isValidEmail } from "./src/setup/isValidEmail";
 import e from "cors";
+import { verifySmtpConnection } from "./src/setup/configureSmtp";
+import { askForSuperAdminEmail } from "./src/setup/superAdmin";
+import {
+  setImageUploadSize,
+  validateImageFileSize,
+} from "./src/setup/setImageUploadSize";
 /* eslint-enable */
 
 dotenv.config();
@@ -182,24 +187,6 @@ export async function accessAndRefreshTokens(
   }
 }
 
-//set the image size upload environment variable
-/**
- * The function `setImageUploadSize` sets the image upload size environment variable and changes the .env file
- * @returns The function `checkExistingRedis` returns a void Promise.
- */
-async function setImageUploadSize(size: number): Promise<void> {
-  if (size > MAXIMUM_IMAGE_SIZE_LIMIT_KB) {
-    size = MAXIMUM_IMAGE_SIZE_LIMIT_KB;
-  }
-  const config = dotenv.parse(fs.readFileSync(".env"));
-
-  config.IMAGE_SIZE_LIMIT_KB = size.toString();
-  fs.writeFileSync(".env", "");
-  for (const key in config) {
-    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-  }
-}
-
 function transactionLogPath(logPath: string | null): void {
   const config = dotenv.parse(fs.readFileSync(".env"));
   config.LOG = "true";
@@ -334,40 +321,23 @@ export async function redisConfiguration(): Promise<void> {
   }
 }
 
-//LAST_RESORT_SUPERADMIN_EMAIL prompt
-/**
- * The function `askForSuperAdminEmail` asks the user to enter an email address and returns it as a promise.
- * @returns The email entered by the user is being returned.
- */
-async function askForSuperAdminEmail(): Promise<string> {
-  console.log(
-    "\nPlease make sure to register with this email before logging in.\n",
-  );
-  const { email } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "email",
-      message:
-        "Enter the email which you wish to assign as the Super Admin of last resort :",
-      validate: (input: string) =>
-        isValidEmail(input) || "Invalid email. Please try again.",
-    },
-  ]);
-
-  return email;
-}
-
 // Get the super admin email
 /**
  * The function `superAdmin` prompts the user for a super admin email, updates a configuration file
  * with the email, and handles any errors that occur.
  */
-async function superAdmin(): Promise<void> {
+export async function superAdmin(): Promise<void> {
   try {
     const email = await askForSuperAdminEmail();
-    const config = dotenv.parse(fs.readFileSync(".env"));
-    config.LAST_RESORT_SUPERADMIN_EMAIL = email;
-    updateEnvVariable(config);
+    if (process.env.NODE_ENV === "test") {
+      const config = dotenv.parse(fs.readFileSync(".env_test"));
+      config.LAST_RESORT_SUPERADMIN_EMAIL = email;
+      updateEnvVariable(config);
+    } else {
+      const config = dotenv.parse(fs.readFileSync(".env"));
+      config.LAST_RESORT_SUPERADMIN_EMAIL = email;
+      updateEnvVariable(config);
+    }
   } catch (err) {
     console.log(err);
     abort();
@@ -514,16 +484,6 @@ export async function recaptchaSiteKey(): Promise<void> {
 }
 
 /**
- * The function validates whether a given image size is less than 20 and greater than 0.
- * @param string - The `number` parameter represents the input size of the string
- * validated. In this case, it is expected to be a number less than 20 and greater than 0.
- * @returns a boolean value.
- */
-function validateImageFileSize(size: number): boolean {
-  return size > 0;
-}
-
-/**
  * The `abort` function logs a message and exits the process.
  */
 function abort(): void {
@@ -657,52 +617,12 @@ async function importData(): Promise<void> {
   }
 }
 
-type VerifySmtpConnectionReturnType = {
-  success: boolean;
-  error: unknown;
-};
-
-/**
- * The function `verifySmtpConnection` verifies the SMTP connection using the provided configuration
- * and returns a success status and error message if applicable.
- * @param config - The `config` parameter is an object that contains the configuration settings for the
- * SMTP connection. It should have the following properties:
- * @returns The function `verifySmtpConnection` returns a Promise that resolves to an object of type
- * `VerifySmtpConnectionReturnType`. The `VerifySmtpConnectionReturnType` object has two properties:
- * `success` and `error`. If the SMTP connection is verified successfully, the `success` property will
- * be `true` and the `error` property will be `null`. If the SMTP connection verification fails
- */
-async function verifySmtpConnection(
-  config: Record<string, string>,
-): Promise<VerifySmtpConnectionReturnType> {
-  const transporter = nodemailer.createTransport({
-    host: config.SMTP_HOST,
-    port: Number(config.SMTP_PORT),
-    secure: config.SMTP_SSL_TLS === "true",
-    auth: {
-      user: config.SMTP_USERNAME,
-      pass: config.SMTP_PASSWORD,
-    },
-  });
-
-  try {
-    await transporter.verify();
-    console.log("SMTP connection verified successfully.");
-    return { success: true, error: null };
-  } catch (error: unknown) {
-    console.error("SMTP connection verification failed:");
-    return { success: false, error };
-  } finally {
-    transporter.close();
-  }
-}
-
 /**
  * The function `configureSmtp` prompts the user to configure SMTP settings for sending emails through
  * Talawa and saves the configuration in a .env file.
  * @returns a Promise that resolves to void.
  */
-async function configureSmtp(): Promise<void> {
+export async function configureSmtp(): Promise<void> {
   const smtpConfig = await inquirer.prompt([
     {
       type: "input",
@@ -757,11 +677,17 @@ async function configureSmtp(): Promise<void> {
     return;
   }
 
-  const config = dotenv.parse(fs.readFileSync(".env"));
-  config.IS_SMTP = "true";
-  Object.assign(config, smtpConfig);
-  updateEnvVariable(config);
-
+  if (process.env.NODE_ENV === "test") {
+    const config = dotenv.parse(fs.readFileSync(".env_test"));
+    config.IS_SMTP = "true";
+    Object.assign(config, smtpConfig);
+    updateEnvVariable(config);
+  } else {
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.IS_SMTP = "true";
+    Object.assign(config, smtpConfig);
+    updateEnvVariable(config);
+  }
   console.log("SMTP configuration saved successfully.");
 }
 
@@ -1035,6 +961,7 @@ async function main(): Promise<void> {
   ]);
 
   await setImageUploadSize(imageSizeLimit * 1000);
+
   if (!isDockerInstallation) {
     const { shouldRunDataImport } = await inquirer.prompt([
       {
