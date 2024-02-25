@@ -1,12 +1,15 @@
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, MembershipRequest, Organization } from "../../models";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { Types } from "mongoose";
 /**
  * This function enables to send membership request.
  * @param _parent - parent of current request
@@ -43,6 +46,34 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
         ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    const userExists = await User.exists({
+      _id: context.userId,
+    });
+
+    // Checks whether user exists.
+    if (userExists === false) {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    // Checks if the user is blocked
+    const user = await User.findById(context.userId).lean();
+    if (
+      user !== null &&
+      organization.blockedUsers.some((blockedUser) =>
+        Types.ObjectId(blockedUser).equals(user._id),
+      )
+    ) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
