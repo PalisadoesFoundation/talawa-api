@@ -215,7 +215,7 @@ describe("parseGraphQLConnectionArguments function", () => {
 
 describe("parseGraphQLConnectionArgumentsWithWhere function", () => {
   it(`returns the failure state if argument args contains invalid connection arguments
-     and argument function parseFilter returns the failure state`, async () => {
+     and argument parseWhereResult contains the failure state`, async () => {
     const result = await parseGraphQLConnectionArgumentsWithWhere({
       args: {
         first: 3,
@@ -225,10 +225,10 @@ describe("parseGraphQLConnectionArgumentsWithWhere function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         errors: [],
         isSuccessful: false,
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
@@ -244,16 +244,16 @@ describe("parseGraphQLConnectionArgumentsWithWhere function", () => {
         errors: [],
         isSuccessful: false,
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         isSuccessful: true,
         parsedWhere: {},
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
   });
 
-  it("returns the failure state if argument function parseFilter returns the failure state", async () => {
+  it("returns the failure state if argument parseWhereResult contains the failure state", async () => {
     const result = await parseGraphQLConnectionArgumentsWithWhere({
       args: {
         first: 1,
@@ -263,17 +263,17 @@ describe("parseGraphQLConnectionArgumentsWithWhere function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         errors: [],
         isSuccessful: false,
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
   });
 
   it(`returns the success state if argument args contains valid connection arguments and
-   argument function parseFilter returns a success state`, async () => {
+   argument parseWhereResult contains the success state`, async () => {
     const result = await parseGraphQLConnectionArgumentsWithWhere({
       args: {
         first: 1,
@@ -283,10 +283,10 @@ describe("parseGraphQLConnectionArgumentsWithWhere function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         isSuccessful: true,
         parsedWhere: {},
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(true);
@@ -295,7 +295,7 @@ describe("parseGraphQLConnectionArgumentsWithWhere function", () => {
 
 describe("parseGraphQLConnectionArgumentsWithSort function", () => {
   it(`returns the failure state if argument args contains invalid connection arguments and
-   argument function parseSort returns the failure state`, async () => {
+   argument parseSortResult contains the failure state`, async () => {
     const result = await parseGraphQLConnectionArgumentsWithSortedBy({
       args: {
         first: 3,
@@ -305,10 +305,10 @@ describe("parseGraphQLConnectionArgumentsWithSort function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseSortedBy: () => ({
+      parseSortedByResult: {
         errors: [],
         isSuccessful: false,
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
@@ -324,16 +324,16 @@ describe("parseGraphQLConnectionArgumentsWithSort function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseSortedBy: () => ({
+      parseSortedByResult: {
         isSuccessful: true,
         parsedSortedBy: {},
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
   });
 
-  it("returns the failure state if argument function parseSort returns the failure state", async () => {
+  it("returns the failure state if argument parseSortResult contains the failure state", async () => {
     const result = await parseGraphQLConnectionArgumentsWithSortedBy({
       args: {
         first: 1,
@@ -343,17 +343,17 @@ describe("parseGraphQLConnectionArgumentsWithSort function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseSortedBy: () => ({
+      parseSortedByResult: {
         errors: [],
         isSuccessful: false,
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
   });
 
   it(`returns the success state if argument args contains valid connection arguments and
-   argument parseSort returns a success state`, async () => {
+   argument parseSort returns the success state`, async () => {
     const result = await parseGraphQLConnectionArgumentsWithSortedBy({
       args: {
         first: 1,
@@ -363,10 +363,10 @@ describe("parseGraphQLConnectionArgumentsWithSort function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseSortedBy: () => ({
+      parseSortedByResult: {
         isSuccessful: true,
         parsedSortedBy: {},
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(true);
@@ -375,8 +375,8 @@ describe("parseGraphQLConnectionArgumentsWithSort function", () => {
 
 describe("parseGraphQLConnectionArgumentsWithSortedByAndWhere function", () => {
   it(`returns the failure state if argument args contains invalid connection arguments
-   and argument function parseFilter returns the failure state and argument function
-   parseSort returns the failure state`, async () => {
+   and argument parseWhereResult contains the failure state and argument parseSortResult
+   contains the failure state`, async () => {
     const result = await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args: {
         first: 3,
@@ -386,21 +386,21 @@ describe("parseGraphQLConnectionArgumentsWithSortedByAndWhere function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         errors: [],
         isSuccessful: false,
-      }),
-      parseSortedBy: () => ({
+      },
+      parseSortedByResult: {
         errors: [],
         isSuccessful: false,
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
   });
 
   it(`returns the failure state if argument args contains invalid connection arguments
-  and argument function parseFilter returns the failure state`, async () => {
+  and argument parseWhereResult contains the failure state`, async () => {
     const result = await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args: {
         first: 3,
@@ -410,21 +410,21 @@ describe("parseGraphQLConnectionArgumentsWithSortedByAndWhere function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         errors: [],
         isSuccessful: false,
-      }),
-      parseSortedBy: () => ({
+      },
+      parseSortedByResult: {
         isSuccessful: true,
         parsedSortedBy: {},
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
   });
 
   it(`returns the failure state if argument args contains invalid connection arguments
-  and argument function parseSort returns the failure state`, async () => {
+  and argument parseSortResult contains the failure state`, async () => {
     const result = await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args: {
         first: 3,
@@ -434,14 +434,14 @@ describe("parseGraphQLConnectionArgumentsWithSortedByAndWhere function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         isSuccessful: true,
         parsedWhere: {},
-      }),
-      parseSortedBy: () => ({
+      },
+      parseSortedByResult: {
         errors: [],
         isSuccessful: false,
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
@@ -457,21 +457,21 @@ describe("parseGraphQLConnectionArgumentsWithSortedByAndWhere function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         isSuccessful: true,
         parsedWhere: {},
-      }),
-      parseSortedBy: () => ({
+      },
+      parseSortedByResult: {
         isSuccessful: true,
         parsedSortedBy: {},
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
   });
 
-  it(`returns the failure state if argument function parseFilter returns the failure state
-  and argument function parseSort returns the failure state`, async () => {
+  it(`returns the failure state if argument parseWhereResult contains the failure state
+  and argument parseSortResult contains the failure state`, async () => {
     const result = await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args: {
         first: 1,
@@ -481,20 +481,20 @@ describe("parseGraphQLConnectionArgumentsWithSortedByAndWhere function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         errors: [],
         isSuccessful: false,
-      }),
-      parseSortedBy: () => ({
+      },
+      parseSortedByResult: {
         errors: [],
         isSuccessful: false,
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
   });
 
-  it(`returns the failure state if argument function parseFilter returns the failure state`, async () => {
+  it(`returns the failure state if argument parseWhereResult contains the failure state`, async () => {
     const result = await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args: {
         first: 1,
@@ -504,20 +504,20 @@ describe("parseGraphQLConnectionArgumentsWithSortedByAndWhere function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         errors: [],
         isSuccessful: false,
-      }),
-      parseSortedBy: () => ({
+      },
+      parseSortedByResult: {
         isSuccessful: true,
         parsedSortedBy: {},
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
   });
 
-  it("returns the failure state if argument function parseSort returns the failure state", async () => {
+  it("returns the failure state if argument parseSortResult contains the failure state", async () => {
     const result = await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args: {
         first: 1,
@@ -527,22 +527,22 @@ describe("parseGraphQLConnectionArgumentsWithSortedByAndWhere function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         isSuccessful: true,
         parsedWhere: {},
-      }),
-      parseSortedBy: () => ({
+      },
+      parseSortedByResult: {
         errors: [],
         isSuccessful: false,
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(false);
   });
 
   it(`returns the success state if argument args contains valid connection arguments
-  and argument function parseFilter returns a success state and argument callback
-  function parseSort returns a success state`, async () => {
+  and argument parseWhereResult contains the success state and argument parseSortResult
+  contains the success state`, async () => {
     const result = await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args: {
         first: 1,
@@ -552,14 +552,14 @@ describe("parseGraphQLConnectionArgumentsWithSortedByAndWhere function", () => {
         isSuccessful: true,
         parsedCursor: "parsedCursor",
       }),
-      parseWhere: () => ({
+      parseWhereResult: {
         isSuccessful: true,
         parsedWhere: {},
-      }),
-      parseSortedBy: () => ({
+      },
+      parseSortedByResult: {
         isSuccessful: true,
         parsedSortedBy: {},
-      }),
+      },
     });
 
     expect(result.isSuccessful).toEqual(true);
@@ -672,13 +672,13 @@ describe("transformToDefaultGraphQLConnection function", () => {
     it(`when argument cursor is non-null and length of objectList is equal to argument limit`, () => {
       const objectList = [
         {
-          _id: 1,
+          _id: "1",
         },
         {
-          _id: 2,
+          _id: "2",
         },
         {
-          _id: 3,
+          _id: "3",
         },
       ];
       const connection = transformToDefaultGraphQLConnection({
@@ -715,13 +715,13 @@ describe("transformToDefaultGraphQLConnection function", () => {
     it(`when argument cursor is null and length of objectList is equal to argument limit`, () => {
       const objectList = [
         {
-          _id: 1,
+          _id: "1",
         },
         {
-          _id: 2,
+          _id: "2",
         },
         {
-          _id: 3,
+          _id: "3",
         },
       ];
       const connection = transformToDefaultGraphQLConnection({
@@ -759,10 +759,10 @@ describe("transformToDefaultGraphQLConnection function", () => {
   it(`when argument cursor is non-null and length of objectList is less than argument limit`, () => {
     const objectList = [
       {
-        _id: 1,
+        _id: "1",
       },
       {
-        _id: 2,
+        _id: "2",
       },
     ];
     const connection = transformToDefaultGraphQLConnection({
@@ -798,10 +798,10 @@ describe("transformToDefaultGraphQLConnection function", () => {
   it(`when argument cursor is null and length of objectList is less than argument limit`, () => {
     const objectList = [
       {
-        _id: 1,
+        _id: "1",
       },
       {
-        _id: 2,
+        _id: "2",
       },
     ];
     const connection = transformToDefaultGraphQLConnection({
@@ -860,13 +860,13 @@ describe("transformToDefaultGraphQLConnection function", () => {
     it(`when argument cursor is non-null and length of objectList is equal to argument limit`, () => {
       const objectList = [
         {
-          _id: 1,
+          _id: "1",
         },
         {
-          _id: 2,
+          _id: "2",
         },
         {
-          _id: 3,
+          _id: "3",
         },
       ];
 
@@ -903,13 +903,13 @@ describe("transformToDefaultGraphQLConnection function", () => {
     it(`when argument cursor is null and length of objectList is equal to argument limit`, () => {
       const objectList = [
         {
-          _id: 1,
+          _id: "1",
         },
         {
-          _id: 2,
+          _id: "2",
         },
         {
-          _id: 3,
+          _id: "3",
         },
       ];
 
@@ -946,10 +946,10 @@ describe("transformToDefaultGraphQLConnection function", () => {
     it(`when argument cursor is non-null and length of objectList is less than argument limit`, () => {
       const objectList = [
         {
-          _id: 1,
+          _id: "1",
         },
         {
-          _id: 2,
+          _id: "2",
         },
       ];
 
@@ -985,10 +985,10 @@ describe("transformToDefaultGraphQLConnection function", () => {
     it(`when argument cursor is null and length of objectList is less than argument limit`, () => {
       const objectList = [
         {
-          _id: 1,
+          _id: "1",
         },
         {
-          _id: 2,
+          _id: "2",
         },
       ];
 
