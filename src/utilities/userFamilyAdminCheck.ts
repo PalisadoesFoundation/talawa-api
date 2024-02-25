@@ -13,10 +13,17 @@ import { User } from "../models";
  */
 export const adminCheck = async (
   userId: string | Types.ObjectId,
+<<<<<<< HEAD
   userFamily: InterfaceUserFamily
 ): Promise<void> => {
   const userIsUserFamilyAdmin = userFamily.admins.some(
     (admin) => admin === userId || Types.ObjectId(admin).equals(userId)
+=======
+  userFamily: InterfaceUserFamily,
+): Promise<void> => {
+  const userIsUserFamilyAdmin = userFamily.admins.some(
+    (admin) => admin === userId || Types.ObjectId(admin).equals(userId),
+>>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
   );
 
   const user = await User.findOne({
@@ -30,7 +37,11 @@ export const adminCheck = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(`${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`),
       USER_NOT_AUTHORIZED_ADMIN.CODE,
+<<<<<<< HEAD
       USER_NOT_AUTHORIZED_ADMIN.PARAM
+=======
+      USER_NOT_AUTHORIZED_ADMIN.PARAM,
+>>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
   }
 };

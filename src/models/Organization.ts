@@ -5,6 +5,7 @@ import type { InterfaceMessage } from "./Message";
 import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
@@ -174,8 +175,10 @@ const organizationSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+createLoggingMiddleware(organizationSchema, "Organization");
 
 const organizationModel = (): Model<InterfaceOrganization> =>
   model<InterfaceOrganization>("Organization", organizationSchema);

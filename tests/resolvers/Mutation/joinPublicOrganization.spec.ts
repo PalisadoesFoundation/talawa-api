@@ -112,7 +112,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       await cacheOrganizations([updatedOrganizaiton!]);
@@ -171,7 +171,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     await cacheOrganizations([updatedOrganizaiton!]);

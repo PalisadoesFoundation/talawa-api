@@ -46,14 +46,14 @@ const httpServer =
           cert: fs.readFileSync(path.join(__dirname, "../cert.pem")),
         },
         // :{}
-        app
+        app,
       )
     : http.createServer(app);
 
 const server = new ApolloServer({
   schema,
   formatError: (
-    error: any
+    error: any,
   ): { message: string; status: number; data: string[] } => {
     if (!error.originalError) {
       return error;
@@ -99,7 +99,7 @@ const wsServer = new WebSocketServer({
 const serverCleanup = useServer(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   { schema, context: (_ctx, _msg, _args) => ({ pubsub }) },
-  wsServer
+  wsServer,
 );
 
 async function startServer(): Promise<void> {
@@ -117,12 +117,12 @@ async function startServer(): Promise<void> {
         pubsub,
         apiRootUrl: `${req.protocol}://${req.get("host")}/`,
       }),
-    })
+    }),
   );
 
   // Modified server startup
   await new Promise<void>((resolve) =>
-    httpServer.listen({ port: 4000 }, resolve)
+    httpServer.listen({ port: 4000 }, resolve),
   );
 
   // Log all the configuration related issues
@@ -131,7 +131,7 @@ async function startServer(): Promise<void> {
   logger.info(
     `🚀 Server ready at ${
       process.env.NODE_ENV === "production" ? "https" : "http"
-    }://localhost:4000/graphql`
+    }://localhost:4000/graphql`,
   );
   logger.info(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
 }

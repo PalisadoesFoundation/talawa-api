@@ -72,7 +72,7 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
       await unassignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -102,7 +102,7 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
       await unassignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -164,10 +164,10 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
       await unassignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -197,10 +197,10 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
       await unassignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_DOES_NOT_HAVE_THE_TAG.MESSAGE}`
+        `Translated ${USER_DOES_NOT_HAVE_THE_TAG.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
-        `${USER_DOES_NOT_HAVE_THE_TAG.MESSAGE}`
+        `${USER_DOES_NOT_HAVE_THE_TAG.MESSAGE}`,
       );
     }
   });
@@ -209,7 +209,7 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
 
     const args: MutationUnassignUserTagArgs = {

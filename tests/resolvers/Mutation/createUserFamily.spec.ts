@@ -59,7 +59,11 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
+<<<<<<< HEAD
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+=======
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+>>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -89,7 +93,11 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect((error as Error).message).toEqual(
+<<<<<<< HEAD
         `${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+=======
+        `${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
+>>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -118,10 +126,17 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
       await createUserFamilyResolver?.({}, args, context);
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(
+<<<<<<< HEAD
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
       );
       expect((error as Error).message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
+=======
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
+      );
+      expect((error as Error).message).toEqual(
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
+>>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -150,10 +165,17 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
       await createUserFamilyResolver?.({}, args, context);
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(
+<<<<<<< HEAD
         USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE
       );
       expect((error as Error).message).toEqual(
         `${USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE}`
+=======
+        USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE,
+      );
+      expect((error as Error).message).toEqual(
+        `${USER_FAMILY_MIN_MEMBERS_ERROR_CODE.MESSAGE}`,
+>>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
       );
     }
   });
@@ -177,13 +199,21 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
     const createUserFamilyPayload = await createUserFamilyResolver?.(
       {},
       args,
+<<<<<<< HEAD
       context
+=======
+      context,
+>>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
 
     expect(createUserFamilyPayload).toEqual(
       expect.objectContaining({
         title: "title",
+<<<<<<< HEAD
       })
+=======
+      }),
+>>>>>>> 08a668823866ed5bfa7b412d358575e3a3889c71
     );
   });
 });

@@ -25,7 +25,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const groupChat = await GroupChat.findOne({
     _id: args.groupId,
@@ -36,7 +36,7 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
       CHAT_NOT_FOUND_ERROR.CODE,
-      CHAT_NOT_FOUND_ERROR.PARAM
+      CHAT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -61,7 +61,7 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -74,7 +74,7 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 

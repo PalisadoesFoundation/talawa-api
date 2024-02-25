@@ -14,8 +14,6 @@ export const inputs = gql`
   input CheckInInput {
     userId: ID!
     eventId: ID!
-    allotedRoom: String
-    allotedSeat: String
   }
 
   input createChatInput {
@@ -29,6 +27,11 @@ export const inputs = gql`
     title: String!
   }
 
+  input createUserFamilyInput {
+    title: String!
+    userIds: [ID!]!
+  }
+
   input CreateUserTagInput {
     name: String!
     parentTagId: ID
@@ -40,6 +43,19 @@ export const inputs = gql`
     preCompletionNotes: String
     dueDate: Date
     eventId: ID
+  }
+
+  input ActionItemWhereInput {
+    actionItemCategory_id: ID
+    event_id: ID
+    is_active: Boolean
+    is_completed: Boolean
+  }
+
+  input CreateAgendaCategoryInput {
+    name: String!
+    description: String
+    organizationId: ID!
   }
 
   input CursorPaginationInput {
@@ -80,6 +96,18 @@ export const inputs = gql`
     latitude: Latitude
     longitude: Longitude
     organizationId: ID!
+  }
+
+  input EventVolunteerInput {
+    userId: ID!
+    eventId: ID!
+  }
+
+  input UpdateEventVolunteerInput {
+    eventId: ID
+    isAssigned: Boolean
+    isInvited: Boolean
+    response: EventVolunteerResponse
   }
 
   input EventWhereInput {
@@ -124,6 +152,22 @@ export const inputs = gql`
     userOtp: String!
     newPassword: String!
     otpToken: String!
+  }
+  input FundInput {
+    name: String!
+    organizationId: ID!
+    refrenceNumber: String
+    taxDeductible: Boolean!
+    isDefault: Boolean!
+    isArchived: Boolean!
+  }
+  input FundCampaignInput {
+    name: String!
+    fundId: ID!
+    startDate: Date!
+    endDate: Date!
+    fundingGoal: Float!
+    currency: Currency!
   }
 
   input LanguageInput {
@@ -239,6 +283,12 @@ export const inputs = gql`
     recaptchaToken: String!
   }
 
+  input RecurrenceRuleInput {
+    frequency: Frequency
+    weekDays: [WeekDays]
+    count: Int
+  }
+
   input ToggleUserTagAssignInput {
     userId: ID!
     tagId: ID!
@@ -269,19 +319,11 @@ export const inputs = gql`
     startTime: Time
     endTime: Time
   }
-
-  # Implements CursorPaginationInput
-  input UsersConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
-  }
-
-  # Implements CursorPaginationInput
-  input UserTagsConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
+  input UpdateFundInput {
+    name: String
+    taxDeductible: Boolean
+    isDefault: Boolean
+    isArchived: Boolean
   }
 
   input UpdateAdvertisementInput {
@@ -309,6 +351,11 @@ export const inputs = gql`
   input UpdateActionItemCategoryInput {
     name: String
     isDisabled: Boolean
+  }
+
+  input UpdateAgendaCategoryInput {
+    name: String
+    description: String
   }
 
   input AddressInput {

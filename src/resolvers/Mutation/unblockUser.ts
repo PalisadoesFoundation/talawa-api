@@ -25,7 +25,7 @@ import { Types } from "mongoose";
 export const unblockUser: MutationResolvers["unblockUser"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization: InterfaceOrganization;
 
@@ -48,7 +48,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -61,7 +61,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -69,7 +69,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlockedFromOrganization = organization.blockedUsers.some(
-    (blockedUser) => Types.ObjectId(blockedUser).equals(user._id)
+    (blockedUser) => Types.ObjectId(blockedUser).equals(user._id),
   );
 
   // checks if user with _id === args.userId is blocked by organzation with _id == args.organizationId
@@ -77,7 +77,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -89,13 +89,13 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     {
       $set: {
         blockedUsers: organization.blockedUsers.filter(
-          (blockedUser) => !user._id.equals(blockedUser)
+          (blockedUser) => !user._id.equals(blockedUser),
         ),
       },
     },
     {
       new: true,
-    }
+    },
   ).lean();
 
   if (updatedOrganization !== null) {
@@ -111,14 +111,14 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
         organizationsBlockedBy: user.organizationsBlockedBy.filter(
           (organizationBlockedBy) =>
             !Types.ObjectId(String(organization._id)).equals(
-              organizationBlockedBy
-            )
+              organizationBlockedBy,
+            ),
         ),
       },
     },
     {
       new: true,
-    }
+    },
   )
     .select(["-password"])
     .lean();

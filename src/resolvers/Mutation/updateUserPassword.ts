@@ -17,13 +17,13 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     const isPasswordValid = await bcrypt.compare(
       args.data.previousPassword,
-      currentUser.password
+      currentUser.password,
     );
 
     // Checks whether password is invalid.
@@ -32,13 +32,13 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
         [
           {
             message: requestContext.translate(
-              INVALID_CREDENTIALS_ERROR.MESSAGE
+              INVALID_CREDENTIALS_ERROR.MESSAGE,
             ),
             code: INVALID_CREDENTIALS_ERROR.CODE,
             param: INVALID_CREDENTIALS_ERROR.PARAM,
           },
         ],
-        requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE)
+        requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE),
       );
     }
 
@@ -47,13 +47,13 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
         [
           {
             message: requestContext.translate(
-              INVALID_CREDENTIALS_ERROR.MESSAGE
+              INVALID_CREDENTIALS_ERROR.MESSAGE,
             ),
             code: INVALID_CREDENTIALS_ERROR.CODE,
             param: INVALID_CREDENTIALS_ERROR.PARAM,
           },
         ],
-        requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE)
+        requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE),
       );
     }
 
@@ -71,6 +71,6 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
       },
       {
         new: true,
-      }
+      },
     ).lean();
   };
