@@ -221,8 +221,8 @@ input CreateAgendaItemInput {
   duration: String!
   isNote: Boolean!
   itemType: ItemType!
-  organization: ID
-  relatedEvent: ID!
+  organizationId: ID
+  relatedEventId: ID!
   sequence: Int!
   title: String!
   urls: [String]
@@ -508,6 +508,7 @@ type Event {
   _id: ID!
   actionItems: [ActionItem]
   admins(adminId: ID): [User!]
+  agendaItems: [AgendaItem]
   allDay: Boolean!
   attendees: [User]
   attendeesCheckInStatus: [CheckInStatus!]!

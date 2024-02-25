@@ -50,14 +50,14 @@ export const inputs = gql`
     description: String
     duration: String!
     attachments: [String]
-    relatedEvent: ID!
+    relatedEventId: ID!
     createdBy: ID!
     urls: [String]
     user: String
     categories: [ID]
     sequence: Int!
     itemType: ItemType!
-    organization: ID
+    organizationId: ID
     isNote: Boolean!
   }
 

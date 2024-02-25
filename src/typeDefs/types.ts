@@ -208,6 +208,7 @@ export const types = gql`
     status: Status!
     feedback: [Feedback!]!
     averageFeedbackScore: Float
+    agendaItems: [AgendaItem]
   }
 
   type EventVolunteer {

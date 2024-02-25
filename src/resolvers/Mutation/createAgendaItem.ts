@@ -1,6 +1,6 @@
 // import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 // import { errors, requestContext } from "../../libraries";
-// import { User, Organization, AgendaItemModel } from "../../models";
+// import { User, Organization, AgendaItemModel,Event } from "../../models";
 // import {
 //   USER_NOT_FOUND_ERROR,
 //   ORGANIZATION_NOT_FOUND_ERROR,
@@ -25,6 +25,7 @@
 //   context
 // ) => {
 //   const userId = context.userId;
+
 //   const currentUser = await User.findById(userId).lean();
 
 //   if (!currentUser) {
@@ -34,20 +35,31 @@
 //       USER_NOT_FOUND_ERROR.PARAM
 //     );
 //   }
+//   const organizationFoundInCache = await findOrganizationsInCache([
+//     args.input.organizationId,
+//   ]);
 
-//   const organizationId = args.input.organization;
-//   const organization = await Organization.findById(organizationId).lean();
+//   const organization =
+//     organizationFoundInCache[0] ||
+//     (await Organization.findOne({
+//       _id: args.input.organizationId,
+//     }).lean());
 
+//   if (organizationFoundInCache[0] == null && organization) {
+//     await cacheOrganizations([organization]);
+//   }
+
+//   // Checks whether the organization with _id === args.organizationId exists.
 //   if (!organization) {
 //     throw new errors.NotFoundError(
 //       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
 //       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-//       ORGANIZATION_NOT_FOUND_ERROR.PARAM
+//       ORGANIZATION_NOT_FOUND_ERROR.PARAM,
 //     );
 //   }
 
 //   const isEventAdmin = currentUser.eventAdmin.some(
-//     (eventId) => eventId.toString() === args.input.relatedEvent
+//     (eventId) => eventId.toString() === args.input.relatedEventId
 //   );
 
 //   const hasAdminPermissions =
@@ -73,10 +85,18 @@
 //     createdAt: new Date(),
 //   });
 
-//   // Add the createdAgendaItem._id to the appropriate lists on currentUser's document
-//   await updateUserAgendaItems(
-//     currentUser._id.toString(),
-//     createdAgendaItem._id
+//    const eventId = args.input.relatedEventId;
+
+//   await Event.findByIdAndUpdate(
+//     {
+//       _id: eventId,
+//     },
+//     {
+//       $push: {
+//         agendaItems : createAgendaItem,
+//       },
+//     },
+//     { new: true },
 //   );
 //   return createdAgendaItem.toObject();
 // };
@@ -87,15 +107,3 @@
 //  * @param userId - The ID of the user.
 //  * @param agendaItemId - The ID of the agenda item to be added to the user's lists.
 //  */
-// async function updateUserAgendaItems(userId: string, agendaItemId: string) {
-//   await User.updateOne(
-//     {
-//       _id: userId,
-//     },
-//     {
-//       $push: {
-//         createdAgendaItems: agendaItemId,
-//       },
-//     }
-//   );
-// }

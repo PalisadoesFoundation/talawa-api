@@ -281,8 +281,8 @@ export type CreateAgendaItemInput = {
   duration: Scalars['String']['input'];
   isNote: Scalars['Boolean']['input'];
   itemType: ItemType;
-  organization?: InputMaybe<Scalars['ID']['input']>;
-  relatedEvent: Scalars['ID']['input'];
+  organizationId?: InputMaybe<Scalars['ID']['input']>;
+  relatedEventId: Scalars['ID']['input'];
   sequence: Scalars['Int']['input'];
   title: Scalars['String']['input'];
   urls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -565,6 +565,7 @@ export type Event = {
   _id: Scalars['ID']['output'];
   actionItems?: Maybe<Array<Maybe<ActionItem>>>;
   admins?: Maybe<Array<User>>;
+  agendaItems?: Maybe<Array<Maybe<AgendaItem>>>;
   allDay: Scalars['Boolean']['output'];
   attendees?: Maybe<Array<Maybe<User>>>;
   attendeesCheckInStatus: Array<CheckInStatus>;
@@ -3196,6 +3197,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   actionItems?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType, Partial<EventAdminsArgs>>;
+  agendaItems?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType>;
   allDay?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   attendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   attendeesCheckInStatus?: Resolver<Array<ResolversTypes['CheckInStatus']>, ParentType, ContextType>;
