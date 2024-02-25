@@ -15,7 +15,7 @@ services:
     volumes:
       - redis-data:/data/redis 
 
-  talawa-api-container:
+  talawa-api-dev-container:
     build:
       context: .
       dockerfile: Dockerfile.dev
