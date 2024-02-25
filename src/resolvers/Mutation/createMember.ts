@@ -25,7 +25,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 export const createMember: MutationResolvers["createMember"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Checks whether the current user is a superAdmin
   const currentUser = await User.findOne({
@@ -69,7 +69,7 @@ export const createMember: MutationResolvers["createMember"] = async (
         {
           __typename: "OrganizationNotFoundError",
           message: requestContext.translate(
-            ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+            ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
           ),
         },
       ],
@@ -94,7 +94,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   }
 
   const userIsOrganizationMember = organization?.members.some((member) =>
-    member.equals(user._id)
+    member.equals(user._id),
   );
   console.log(userIsOrganizationMember);
   console.log(organization?.members);
@@ -130,7 +130,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     },
     {
       new: true,
-    }
+    },
   );
 
   // add user's id to members list on organization and return it.
@@ -145,7 +145,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     },
     {
       new: true,
-    }
+    },
   ).lean();
 
   if (updatedOrganization !== null) {

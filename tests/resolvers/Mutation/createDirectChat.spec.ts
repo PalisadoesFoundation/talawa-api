@@ -125,7 +125,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     const createDirectChatPayload = await createDirectChatResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createDirectChatPayload).toEqual({

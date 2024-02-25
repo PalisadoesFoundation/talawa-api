@@ -14,7 +14,7 @@ export const createMemberErrors = gql`
   }
 
   union CreateMemberError =
-      UserNotFoundError
+    | UserNotFoundError
     | OrganizationNotFoundError
     | MemberAlreadyInOrganizationError
 `;

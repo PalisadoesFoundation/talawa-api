@@ -92,7 +92,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
           $set: {
             organization: Types.ObjectId().toString(),
           },
-        }
+        },
       );
 
       const args: MutationAddUserToGroupChatArgs = {
@@ -132,7 +132,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        }
+        },
       );
 
       await Organization.updateOne(
@@ -143,7 +143,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
           $set: {
             admins: [],
           },
-        }
+        },
       );
 
       const args: MutationAddUserToGroupChatArgs = {
@@ -160,7 +160,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       await addUserToGroupChat?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
 
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
@@ -184,7 +184,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -245,7 +245,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         $set: {
           users: [],
         },
-      }
+      },
     );
 
     const args: MutationAddUserToGroupChatArgs = {
@@ -262,7 +262,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     const addUserToGroupChatPayload = await addUserToGroupChat?.(
       {},
       args,
-      context
+      context,
     );
     expect(addUserToGroupChatPayload?._id).toEqual(testGroupChat?._id);
     expect(addUserToGroupChatPayload?.users).toEqual([testUser?._id]);

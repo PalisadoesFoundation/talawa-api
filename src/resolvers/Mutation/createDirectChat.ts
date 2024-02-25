@@ -22,7 +22,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization;
 
@@ -53,7 +53,7 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
         {
           __typename: "OrganizationNotFoundError",
           message: requestContext.translate(
-            ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+            ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
           ),
         },
       ],

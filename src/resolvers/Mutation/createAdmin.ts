@@ -28,7 +28,7 @@ import type { InterfaceOrganization } from "../../models";
 export const createAdmin: MutationResolvers["createAdmin"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization;
 
@@ -59,7 +59,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
         {
           __typename: "OrganizationNotFoundError",
           message: requestContext.translate(
-            ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+            ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
           ),
         },
       ],
@@ -110,7 +110,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   }
 
   const userIsOrganizationMember = organization.members.some((member) =>
-    Types.ObjectId(member).equals(args.data.userId)
+    Types.ObjectId(member).equals(args.data.userId),
   );
 
   // Checks whether user with _id === args.data.userId is not a member of organization.
@@ -126,7 +126,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
         {
           __typename: "OrganizationMemberNotFoundError",
           message: requestContext.translate(
-            ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE
+            ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE,
           ),
         },
       ],
@@ -134,7 +134,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   }
 
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
-    Types.ObjectId(admin).equals(args.data.userId)
+    Types.ObjectId(admin).equals(args.data.userId),
   );
 
   // Checks whether user with _id === args.data.userId is already an admin of organization.
@@ -167,7 +167,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     },
     {
       new: true,
-    }
+    },
   );
 
   if (updatedOrganization !== null) {
@@ -190,7 +190,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       },
       {
         new: true,
-      }
+      },
     )
       .select(["-password"])
       .lean(),

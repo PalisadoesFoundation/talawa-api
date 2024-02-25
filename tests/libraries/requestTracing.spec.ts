@@ -45,7 +45,7 @@ describe("middleware -> requestContext", () => {
     };
     const resHeaderMethod = (
       tracingIdHeaderName: string,
-      tracingID: string
+      tracingID: string,
     ): string => {
       return requestTracingNamespace.set(tracingIdHeaderName, tracingID);
     };
@@ -60,7 +60,7 @@ describe("middleware -> requestContext", () => {
     middleware()(
       mockRequest as Request,
       mockResponse as Response,
-      nextFunction as NextFunction
+      nextFunction as NextFunction,
     );
     expect(tracingIdHeaderName).toBe("X-Tracing-Id");
     expect(nextFunction).toBeCalledTimes(1);

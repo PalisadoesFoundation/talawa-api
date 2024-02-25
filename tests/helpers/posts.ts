@@ -14,7 +14,7 @@ export type TestCommentType =
   | null;
 
 export const createTestPost = async (
-  pinned = false
+  pinned = false,
 ): Promise<[TestUserType, TestOrganizationType, TestPostType]> => {
   const resultsArray = await createTestUserAndOrganization();
   const testUser = resultsArray[0];
@@ -35,7 +35,7 @@ export const createTestPost = async (
       $push: {
         posts: testPost._id,
       },
-    }
+    },
   );
 
   return [testUser, testOrganization, testPost];
@@ -64,7 +64,7 @@ export const createPostwithComment = async (): Promise<
         likeCount: 1,
         commentCount: 1,
       },
-    }
+    },
   );
 
   await Comment.updateOne(
@@ -78,14 +78,14 @@ export const createPostwithComment = async (): Promise<
       $inc: {
         likeCount: 1,
       },
-    }
+    },
   );
   return [testUser, testOrganization, testPost, testComment];
 };
 
 export const createSinglePostwithComment = async (
   userId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<[TestPostType, TestCommentType]> => {
   const testPost = await Post.create({
     text: `text${nanoid().toLowerCase()}`,
@@ -114,7 +114,7 @@ export const createSinglePostwithComment = async (
         likeCount: 1,
         commentCount: 1,
       },
-    }
+    },
   );
   return [testPost, testComment];
 };
@@ -122,7 +122,7 @@ export const createSinglePostwithComment = async (
 export const createTestSinglePost = async (
   userId: string,
   organizationId: string,
-  pinned = false
+  pinned = false,
 ): Promise<TestPostType> => {
   const testPost = await Post.create({
     text: `text${nanoid().toLowerCase()}`,

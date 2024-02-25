@@ -39,7 +39,7 @@ export const createTestDirectChatMessage = async (): Promise<
     TestUserType,
     TestOrganizationType,
     TestDirectChatType,
-    TestDirectChatMessageType
+    TestDirectChatMessageType,
   ]
 > => {
   const [testUser, testOrganization, testDirectChat] =
@@ -61,7 +61,7 @@ export const createTestDirectChatMessage = async (): Promise<
 export const createTestDirectMessageForMultipleUser = async (
   senderId: string,
   receiverId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<TestDirectChatType> => {
   const testDirectChat = await DirectChat.create({
     creatorId: senderId,
@@ -82,7 +82,7 @@ export const createTestDirectMessageForMultipleUser = async (
 export const createTestDirectChatwithUsers = async (
   creator: string,
   organizationId: string,
-  users: string[]
+  users: string[],
 ): Promise<TestDirectChatType> => {
   const testDirectChat = await DirectChat.create({
     creatorId: creator,
@@ -95,7 +95,7 @@ export const createTestDirectChatwithUsers = async (
 export const createDirectChatMessage = async (
   senderId: string,
   receiverId: string,
-  directChatId: string
+  directChatId: string,
 ): Promise<TestDirectChatMessageType> => {
   const directChatMessage = await DirectChatMessage.create({
     directChatMessageBelongsTo: directChatId,

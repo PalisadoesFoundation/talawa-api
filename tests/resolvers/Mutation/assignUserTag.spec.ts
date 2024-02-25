@@ -73,7 +73,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       await assignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -103,7 +103,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       await assignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -165,10 +165,10 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       await assignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -199,10 +199,10 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       await assignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE}`
+        `Translated ${USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
-        `${USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE}`
+        `${USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE}`,
       );
     }
   });
@@ -258,7 +258,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       await assignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_ALREADY_HAS_TAG.MESSAGE}`
+        `Translated ${USER_ALREADY_HAS_TAG.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(`${USER_ALREADY_HAS_TAG.MESSAGE}`);
     }

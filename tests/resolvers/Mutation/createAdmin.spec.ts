@@ -32,7 +32,7 @@ beforeAll(async () => {
   testOrganization = resultsArray[1];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -72,7 +72,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         $set: {
           creatorId: Types.ObjectId().toString(),
         },
-      }
+      },
     );
 
     const args: MutationCreateAdminArgs = {
@@ -105,7 +105,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         $set: {
           creatorId: testUser?._id,
         },
-      }
+      },
     );
 
     await User.updateOne(
@@ -116,7 +116,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         $set: {
           userType: "SUPERADMIN",
         },
-      }
+      },
     );
 
     const args: MutationCreateAdminArgs = {
@@ -179,7 +179,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -219,7 +219,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {

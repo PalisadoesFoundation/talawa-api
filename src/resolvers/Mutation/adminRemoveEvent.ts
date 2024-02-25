@@ -27,7 +27,7 @@ import { deleteEventFromCache } from "../../services/EventCache/deleteEventFromC
 export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let event;
 
@@ -50,7 +50,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM
+      EVENT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -74,7 +74,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -87,7 +87,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -108,7 +108,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
         createdEvents: event._id,
         registeredEvents: event._id,
       },
-    }
+    },
   );
 
   // Deletes the event.

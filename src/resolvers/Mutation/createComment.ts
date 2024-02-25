@@ -17,7 +17,7 @@ import { cachePosts } from "../../services/PostCache/cachePosts";
 export const createComment: MutationResolvers["createComment"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Check if the provided post exists
   const postExists = await Post.exists({
@@ -62,7 +62,7 @@ export const createComment: MutationResolvers["createComment"] = async (
     },
     {
       new: true,
-    }
+    },
   );
 
   if (updatedPost !== null) {

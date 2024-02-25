@@ -24,7 +24,7 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
 export const registerForEvent: MutationResolvers["registerForEvent"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let event: InterfaceEvent | null;
 
@@ -47,7 +47,7 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM
+      EVENT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -60,7 +60,7 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
     throw new errors.InputValidationError(
       requestContext.translate(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE),
       REGISTRANT_ALREADY_EXIST_ERROR.CODE,
-      REGISTRANT_ALREADY_EXIST_ERROR.PARAM
+      REGISTRANT_ALREADY_EXIST_ERROR.PARAM,
     );
   }
 
@@ -73,7 +73,7 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
       $push: {
         registeredEvents: event._id,
       },
-    }
+    },
   );
 
   await EventAttendee.create({

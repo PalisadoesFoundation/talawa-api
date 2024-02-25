@@ -45,13 +45,13 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
     const newCustomField = await addOrganizationCustomField?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(newCustomField?.name).toBe("testName");
     expect(newCustomField?.type).toBe("testType");
     expect(newCustomField?.organizationId.toString()).toBe(
-      testOrganization?._id.toString()
+      testOrganization?._id.toString(),
     );
   });
 
@@ -77,7 +77,7 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -101,7 +101,7 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(CUSTOM_FIELD_NAME_MISSING.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${CUSTOM_FIELD_NAME_MISSING.MESSAGE}`
+        `Translated ${CUSTOM_FIELD_NAME_MISSING.MESSAGE}`,
       );
     }
   });
@@ -125,7 +125,7 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(CUSTOM_FIELD_TYPE_MISSING.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${CUSTOM_FIELD_TYPE_MISSING.MESSAGE}`
+        `Translated ${CUSTOM_FIELD_TYPE_MISSING.MESSAGE}`,
       );
     }
   });
@@ -153,7 +153,7 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -175,10 +175,10 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
       await addOrganizationCustomField?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });

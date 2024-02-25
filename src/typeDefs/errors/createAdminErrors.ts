@@ -18,7 +18,7 @@ export const createAdminErrors = gql`
   }
 
   union CreateAdminError =
-      OrganizationNotFoundError
+    | OrganizationNotFoundError
     | UserNotFoundError
     | UserNotAuthorizedError
     | OrganizationMemberNotFoundError

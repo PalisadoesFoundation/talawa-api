@@ -4,7 +4,7 @@ import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const pinnedPosts: OrganizationResolvers["pinnedPosts"] = async (
-  parent
+  parent,
 ) => {
   const postsInCache = await findPostsInCache(parent.pinnedPosts);
 
