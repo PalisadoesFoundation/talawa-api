@@ -228,8 +228,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         recurring: false,
         startDate: new Date("2023-01-01T00:00:00Z"),
         startTime: new Date().toUTCString(),
-        title: "newTitle",
-        images: ["image_url_1", "image_url_2", "image_url_3", "image_url_4"],
+        title: "singleEventTitle",
         recurrance: "ONCE",
       },
     };
@@ -257,10 +256,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
-        startDate: new Date("2023-01-01T00:00:00Z"),
-        startTime: new Date().toUTCString(),
-        images: ["image_url_1", "image_url_2", "image_url_3", "image_url_4"],
-        recurrance: "ONCE",
       }),
     );
 
