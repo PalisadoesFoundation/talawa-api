@@ -276,12 +276,11 @@ export type CreateAgendaCategoryInput = {
 export type CreateAgendaItemInput = {
   attachments?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   categories?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  createdBy: Scalars['ID']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
   duration: Scalars['String']['input'];
   isNote: Scalars['Boolean']['input'];
   itemType: ItemType;
-  organizationId?: InputMaybe<Scalars['ID']['input']>;
+  organizationId: Scalars['ID']['input'];
   relatedEventId: Scalars['ID']['input'];
   sequence: Scalars['Int']['input'];
   title: Scalars['String']['input'];

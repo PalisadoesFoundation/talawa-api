@@ -1,28 +1,37 @@
 // import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 // import { errors, requestContext } from "../../libraries";
-// import { User, Organization, AgendaItemModel,Event } from "../../models";
+// import type {
+//   InterfaceEvent} from "../../models";
+// import {
+//   User,
+//   Organization,
+//   AgendaItemModel,
+//   Event
+// } from "../../models";
 // import {
 //   USER_NOT_FOUND_ERROR,
 //   ORGANIZATION_NOT_FOUND_ERROR,
 //   USER_NOT_AUTHORIZED_ERROR,
+//   EVENT_NOT_FOUND_ERROR,
 // } from "../../constants";
 // import { Types } from "mongoose";
-// import { adminCheck, superAdminCheck } from "../../utilities";
-
+// import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+// import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+// import { cacheEvents } from "../../services/EventCache/cacheEvents";
+// import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 // /**
 //  * Create an agenda item based on the provided input.
 //  *
-//  * @param _parent - The parent of the current request.
-//  * @param args - The payload provided with the request.
-//  * @param context - The context of the entire application.
-//  * @throws {NotFoundError} - If the user, organization, or agenda category is not found.
-//  * @throws {UnauthorizedError} - If the user is not authorized to perform the operation.
+//  * @param _parent - parent of current request
+//  * @param args - payload provided with the request
+//  * @param context - context of entire application
 //  * @returns The created agenda item.
 //  */
+
 // export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
 //   _parent,
 //   args,
-//   context
+//   context,
 // ) => {
 //   const userId = context.userId;
 
@@ -32,9 +41,10 @@
 //     throw new errors.NotFoundError(
 //       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
 //       USER_NOT_FOUND_ERROR.CODE,
-//       USER_NOT_FOUND_ERROR.PARAM
+//       USER_NOT_FOUND_ERROR.PARAM,
 //     );
 //   }
+
 //   const organizationFoundInCache = await findOrganizationsInCache([
 //     args.input.organizationId,
 //   ]);
@@ -58,52 +68,81 @@
 //     );
 //   }
 
-//   const isEventAdmin = currentUser.eventAdmin.some(
-//     (eventId) => eventId.toString() === args.input.relatedEventId
-//   );
+//   let currentUserIsEventAdmin = false;
 
-//   const hasAdminPermissions =
-//     currentUser.adminFor.includes(organizationId) ||
-//     currentUser.userType === "SUPERADMIN";
+//   if (args.input.relatedEventId) {
+//     let currEvent: InterfaceEvent | null;
 
-//   if (!hasAdminPermissions || isEventAdmin) {
-//     throw new errors.UnauthorizedError(
-//       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-//       USER_NOT_AUTHORIZED_ERROR.CODE,
-//       USER_NOT_AUTHORIZED_ERROR.PARAM
+//     const eventFoundInCache = await findEventsInCache([
+//       args.input.relatedEventId,
+//     ]);
+
+//     currEvent = eventFoundInCache[0];
+
+//     if (eventFoundInCache[0] === null) {
+//       currEvent = await Event.findOne({
+//         _id: args.input.relatedEventId,
+//       }).lean();
+
+//       if (currEvent !== null) {
+//         await cacheEvents([currEvent]);
+//       }
+//     }
+
+//     // Checks whether currEvent exists.
+//     if (!currEvent) {
+//       throw new errors.NotFoundError(
+//         requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
+//         EVENT_NOT_FOUND_ERROR.CODE,
+//         EVENT_NOT_FOUND_ERROR.PARAM,
+//       );
+//     }
+
+//     // Checks if the currUser is an admin of the event
+//     currentUserIsEventAdmin = currEvent.admins.some(
+//       (admin) =>
+//         admin === context.userID ||
+//         Types.ObjectId(admin).equals(context.userId),
 //     );
 //   }
 
-//   const categoryId = args.input?.categories as string | undefined;
-//   const category = categoryId ? Types.ObjectId(categoryId) : undefined;
+//   // Checks if the currUser is an admin of the organization
+//   const currentUserIsOrgAdmin = currentUser.adminFor.some(
+//     (ogranizationId) =>
+//       ogranizationId === args.input.organizationId ||
+//       Types.ObjectId(ogranizationId).equals(args.input.organizationId),
+//   );
+
+//   // Checks whether currentUser with _id === context.userId is authorized for the operation.
+//   if (
+//     currentUserIsEventAdmin === false &&
+//     currentUserIsOrgAdmin === false &&
+//     currentUser.userType !== "SUPERADMIN"
+//   ) {
+//     throw new errors.UnauthorizedError(
+//       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+//       USER_NOT_AUTHORIZED_ERROR.CODE,
+//       USER_NOT_AUTHORIZED_ERROR.PARAM,
+//     );
+//   }
 
 //   const createdAgendaItem = await AgendaItemModel.create({
 //     ...args.input,
 //     createdBy: currentUser._id,
-//     category: category,
 //     updatedAt: new Date(),
 //     createdAt: new Date(),
 //   });
 
-//    const eventId = args.input.relatedEventId;
-
 //   await Event.findByIdAndUpdate(
 //     {
-//       _id: eventId,
+//       _id: args.input.relatedEventId,
 //     },
 //     {
 //       $push: {
-//         agendaItems : createAgendaItem,
+//         agendaItems: createAgendaItem,
 //       },
 //     },
 //     { new: true },
 //   );
 //   return createdAgendaItem.toObject();
 // };
-
-// /**
-//  * Update the lists of agenda items on the user's document.
-//  *
-//  * @param userId - The ID of the user.
-//  * @param agendaItemId - The ID of the agenda item to be added to the user's lists.
-//  */

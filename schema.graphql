@@ -216,12 +216,11 @@ input CreateAgendaCategoryInput {
 input CreateAgendaItemInput {
   attachments: [String]
   categories: [ID]
-  createdBy: ID!
   description: String
   duration: String!
   isNote: Boolean!
   itemType: ItemType!
-  organizationId: ID
+  organizationId: ID!
   relatedEventId: ID!
   sequence: Int!
   title: String!
