@@ -1,17 +1,21 @@
 import "dotenv/config";
-import { usersAssignedTo as usersAssignedToResolver } from "../../../src/resolvers/UserTag/usersAssignedTo";
-import type {
-  UsersConnectionResult,
-  UserTagUsersAssignedToArgs,
-} from "../../../src/types/generatedGraphQLTypes";
+import {
+  parseCursor,
+  usersAssignedTo as usersAssignedToResolver,
+} from "../../../src/resolvers/UserTag/usersAssignedTo";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserTagType } from "../../helpers/tags";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTagsAndAssignToUser } from "../../helpers/tags";
-import { MAXIMUM_FETCH_LIMIT } from "../../../src/constants";
-import { TagUser } from "../../../src/models";
+import { GraphQLError } from "graphql";
+import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
+import {
+  User,
+  type InterfaceOrganizationTagUser,
+  TagUser,
+} from "../../../src/models";
 import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -26,75 +30,93 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Tag -> usersAssignedTo", () => {
-  it(`returns error object when the maximum fetch limit is exceeded`, async () => {
-    const parent = testTag!;
-
-    const args: UserTagUsersAssignedToArgs = {
-      input: {
-        limit: MAXIMUM_FETCH_LIMIT + 1,
-        direction: "FORWARD",
-      },
-    };
-
-    const payload = await usersAssignedToResolver?.(parent, args, {});
-
-    expect(payload!.errors.length).toEqual(1);
-    expect(payload!.errors[0]).toMatchObject({
-      __typename: "MaximumValueError",
-    });
-    expect(payload!.data).toBeNull();
+describe("usersAssignedTo resolver", () => {
+  it(`throws GraphQLError if invalid arguments are provided to the resolver`, async () => {
+    const parent = testTag as InterfaceOrganizationTagUser;
+    try {
+      await usersAssignedToResolver?.(parent, {}, {});
+    } catch (error) {
+      if (error instanceof GraphQLError) {
+        expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
+        expect(
+          (error.extensions.errors as DefaultGraphQLArgumentError[]).length,
+        ).toBeGreaterThan(0);
+      }
+    }
   });
 
-  it(`returns error object when the cursor provided is invalid`, async () => {
-    const parent = testTag!;
-
-    const args: UserTagUsersAssignedToArgs = {
-      input: {
-        limit: MAXIMUM_FETCH_LIMIT,
-        direction: "FORWARD",
-        cursor: Types.ObjectId().toString(),
-      },
-    };
-
-    const payload = await usersAssignedToResolver?.(parent, args, {});
-
-    expect(payload!.errors.length).toEqual(1);
-    expect(payload!.errors[0]).toMatchObject({
-      __typename: "InvalidCursor",
-    });
-    expect(payload!.data).toBeNull();
-  });
-
-  it(`returns correct connection object when the arguments are correct`, async () => {
-    const parent = testTag!;
-
-    const args: UserTagUsersAssignedToArgs = {
-      input: {
-        limit: MAXIMUM_FETCH_LIMIT,
-        direction: "FORWARD",
-      },
-    };
-
-    const payload = (await usersAssignedToResolver?.(
+  it(`returns the expected connection object`, async () => {
+    const parent = testTag as InterfaceOrganizationTagUser;
+    const connection = await usersAssignedToResolver?.(
       parent,
-      args,
+      {
+        first: 3,
+      },
       {},
-    )) as UsersConnectionResult;
+    );
 
-    expect(payload.errors.length).toEqual(0);
-    expect(payload.data).not.toBeNull();
-
-    const userTagObject = await TagUser.findOne({
-      tagId: testTag && testTag._id,
+    const tagUser = await TagUser.findOne({
+      tagId: testTag?._id,
+      userId: testUser?._id,
     });
 
-    expect(payload.data!.pageInfo.startCursor).toEqual(
-      userTagObject!._id.toString(),
-    );
-    expect(payload.data!.pageInfo.endCursor).toEqual(
-      userTagObject!._id.toString(),
-    );
-    expect(payload.data!.edges[0].node._id).toEqual(testUser && testUser._id);
+    const user = await User.findOne({
+      _id: testUser?._id,
+    });
+
+    const totalCount = await TagUser.find({
+      tagId: testTag?._id,
+    }).countDocuments();
+
+    expect(connection).toEqual({
+      edges: [
+        {
+          cursor: tagUser?._id.toString(),
+          node: user?.toObject(),
+        },
+      ],
+      pageInfo: {
+        endCursor: tagUser?._id.toString(),
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: tagUser?._id.toString(),
+      },
+      totalCount,
+    });
+  });
+});
+
+describe("parseCursor function", () => {
+  it("returns failure state if argument cursorValue is an invalid cursor", async () => {
+    const result = await parseCursor({
+      cursorName: "after",
+      cursorPath: ["after"],
+      cursorValue: Types.ObjectId().toString(),
+      tagId: testTag?._id.toString() as string,
+    });
+
+    expect(result.isSuccessful).toEqual(false);
+    if (result.isSuccessful === false) {
+      expect(result.errors.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("returns success state if argument cursorValue is a valid cursor", async () => {
+    const tagUser = await TagUser.findOne({
+      tagId: testTag?._id,
+      userId: testUser?._id,
+    });
+
+    const result = await parseCursor({
+      cursorName: "after",
+      cursorPath: ["after"],
+      cursorValue: tagUser?._id.toString() as string,
+      tagId: testTag?._id.toString() as string,
+    });
+
+    expect(result.isSuccessful).toEqual(true);
+    if (result.isSuccessful === true) {
+      expect(result.parsedCursor).toEqual(tagUser?._id.toString());
+    }
   });
 });
