@@ -1,6 +1,6 @@
 import { it, expect, describe, vi } from "vitest";
 import { redisConfiguration } from "../../setup";
-import inquirer from "inquirer"; // Assuming inquirer is used for prompts
+import inquirer from "inquirer";
 import dotenv from "dotenv";
 import fs from "fs";
 import * as module from "../../src/setup/redisConfiguration";
@@ -69,5 +69,32 @@ describe("Setup -> redisConfiguration", () => {
     expect(env.REDIS_HOST).toBe("test");
     expect(env.REDIS_PORT).toBe("6378");
     expect(env.REDIS_PASSWORD).toBe("");
+  });
+
+  it("Should return true for a successfull Redis Connection", async () => {
+    const validUrl = "redis://localhost:6379";
+    const result = await module.checkRedisConnection(validUrl);
+    expect(result).toBe(true);
+  });
+
+  it("Should ask for Redis Config, and return the entered values.", async () => {
+    const input = {
+      host: "localhost",
+      port: 6379,
+      password: "",
+    };
+    vi.spyOn(inquirer, "prompt").mockImplementationOnce(() =>
+      Promise.resolve(input),
+    );
+    const result = await module.askForRedisUrl();
+    expect(result).toEqual(input);
+  });
+
+  it("Should return URL, indicating redis is connected", async () => {
+    vi.spyOn(module, "checkRedisConnection").mockReturnValueOnce(
+      Promise.resolve(true),
+    );
+    const result = await module.checkExistingRedis();
+    expect(result).toBeDefined();
   });
 });

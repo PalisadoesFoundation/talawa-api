@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { importData } from "../../src/setup/importData";
-import * as shouldWipeExistingData from "../../src/setup/shouldWipeExistingData";
+import * as shouldWipeExistingData from "../../setup";
 
 /*
   This test suite verifies the behavior of the importData function, which is responsible for importing data into the application's MongoDB database.

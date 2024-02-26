@@ -4,6 +4,7 @@ import * as askToKeepValues from "../../src/setup/askToKeepValues";
 import fs from "fs";
 import dotenv from "dotenv";
 import { recaptcha } from "../../setup";
+import { validateRecaptcha } from "../../src/setup/reCaptcha";
 
 /*
   Test Suite: Setup -> recaptcha
@@ -64,5 +65,11 @@ describe("Setup -> recaptcha", () => {
 
     const env = dotenv.parse(fs.readFileSync(".env_test"));
     expect(env.RECAPTCHA_SECRET_KEY).not.toEqual(mockSecret);
+  });
+
+  it("should return false for a inValid reCaptcha token", async () => {
+    const inValidToken = "0p9j8asd56fgh7jkl98mnbvcxz123qwe4rt5y6ui54321";
+    const result = validateRecaptcha(inValidToken);
+    expect(result).toEqual(false);
   });
 });
