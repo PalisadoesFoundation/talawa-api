@@ -8,12 +8,10 @@ import {
 } from "../../../src/resolvers/Organization/advertisements";
 import { connect, disconnect } from "../../helpers/db";
 import { type TestAdvertisementType } from "../../helpers/advertisement";
-import {
-  createTestUserAndOrganization
-} from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type {
   TestUserType,
-  type TestOrganizationType
+  TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
 import { Types } from "mongoose";
