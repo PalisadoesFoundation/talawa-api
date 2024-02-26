@@ -1,7 +1,7 @@
 //Import sample data
 
-import { abort , shouldWipeExistingData } from "../../setup";
-import type { ExecException} from "child_process";
+import { abort, shouldWipeExistingData } from "../../setup";
+import type { ExecException } from "child_process";
 import { exec } from "child_process";
 
 /**

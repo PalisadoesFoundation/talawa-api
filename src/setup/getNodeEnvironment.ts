@@ -7,15 +7,15 @@ import inquirer from "inquirer";
  * @returns a Promise that resolves to a string representing the selected Node environment.
  */
 export async function getNodeEnvironment(): Promise<string> {
-    const { nodeEnv } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "nodeEnv",
-        message: "Select Node environment:",
-        choices: ["development", "production"],
-        default: "development",
-      },
-    ]);
-  
-    return nodeEnv;
-  }
+  const { nodeEnv } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "nodeEnv",
+      message: "Select Node environment:",
+      choices: ["development", "production"],
+      default: "development",
+    },
+  ]);
+
+  return nodeEnv;
+}

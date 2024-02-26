@@ -5,7 +5,7 @@
  * pattern, and false otherwise.
  */
 export function isValidEmail(email: string): boolean {
-    const pattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-    const match = email.match(pattern);
-    return match !== null && match[0] === email;
-  }
+  const pattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+  const match = email.match(pattern);
+  return match !== null && match[0] === email;
+}
