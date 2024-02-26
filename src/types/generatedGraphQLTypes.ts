@@ -709,7 +709,7 @@ export type Frequency =
 export type Fund = {
   __typename?: 'Fund';
   _id: Scalars['ID']['output'];
-  campaigns: Array<Maybe<FundraisingCampaign>>;
+  campaigns?: Maybe<Array<FundraisingCampaign>>;
   createdAt: Scalars['DateTime']['output'];
   isArchived: Scalars['Boolean']['output'];
   isDefault: Scalars['Boolean']['output'];
@@ -3258,7 +3258,7 @@ export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversP
 
 export type FundResolvers<ContextType = any, ParentType extends ResolversParentTypes['Fund'] = ResolversParentTypes['Fund']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  campaigns?: Resolver<Array<Maybe<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType>;
+  campaigns?: Resolver<Maybe<Array<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   isArchived?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

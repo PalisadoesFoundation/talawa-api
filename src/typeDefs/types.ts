@@ -232,7 +232,7 @@ export const types = gql`
     taxDeductible: Boolean!
     isDefault: Boolean!
     isArchived: Boolean!
-    campaigns: [FundraisingCampaign]!
+    campaigns: [FundraisingCampaign!]
     createdAt: DateTime!
     updatedAt: DateTime!
   }
