@@ -99,7 +99,7 @@
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.0",
-    "@graphql-codegen/typescript": "^4.0.4",
+    "@graphql-codegen/typescript": "^4.0.6",
     "@graphql-codegen/typescript-resolvers": "^4.0.4",
     "@graphql-eslint/eslint-plugin": "^3.20.1",
     "@types/bcryptjs": "^2.4.6",
