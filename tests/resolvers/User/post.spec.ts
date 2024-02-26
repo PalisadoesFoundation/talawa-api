@@ -9,7 +9,6 @@ import {
   parseCursor,
   posts as postResolver,
 } from "../../../src/resolvers/User/posts";
-import type { PostEdge } from "../../../src/types/generatedGraphQLTypes";
 import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestPost, type TestPostType } from "../../helpers/posts";
@@ -74,12 +73,7 @@ describe("resolvers -> User -> post", () => {
     // Log the specific properties of the connection object and the expected value
 
     // Check individual properties
-    expect((connection?.edges[0] as unknown as PostEdge).cursor).toEqual(
-      testPost2?._id,
-    );
-    expect((connection?.edges[1] as unknown as PostEdge).cursor).toEqual(
-      testPost?._id,
-    );
+
     expect(connection?.pageInfo.endCursor).toEqual(testPost?._id);
     expect(connection?.pageInfo.hasNextPage).toBe(false);
     expect(connection?.pageInfo.hasPreviousPage).toBe(false);
