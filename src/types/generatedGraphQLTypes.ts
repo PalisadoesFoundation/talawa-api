@@ -769,7 +769,7 @@ export type FundraisingCampaignPledge = {
   currency: Currency;
   endDate?: Maybe<Scalars['Date']['output']>;
   startDate?: Maybe<Scalars['Date']['output']>;
-  users: Array<Maybe<User>>;
+  users: Array<User>;
 };
 
 export type Gender =
@@ -3291,7 +3291,7 @@ export type FundraisingCampaignPledgeResolvers<ContextType = any, ParentType ext
   currency?: Resolver<ResolversTypes['Currency'], ParentType, ContextType>;
   endDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   startDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  users?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType>;
+  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
