@@ -7,7 +7,8 @@ import {
 } from "./index";
 
 /**
-This is typescript type of the single object callback function `parseCursor` takes in as an argument.
+ *This is typescript type of the single object callback function `parseCursor` takes in as
+ * an argument.
  */
 export type ParseGraphQLConnectionCursorArguments = {
   cursorName: "after" | "before";
@@ -16,11 +17,11 @@ export type ParseGraphQLConnectionCursorArguments = {
 };
 
 /**
-  This is typescript type of object returned from the callback function `parseCursor` passed
-  as an argument to `parseGraphQLConnectionArguments`, `parseGraphQLConnectionArgumentsWithSortedBy`,
-  `parseGraphQLConnectionArgumentsWithWhere` and `parseGraphQLConnectionArgumentsWithSortedByAndWhere`
-  functions.
-  */
+ * This is typescript type of object returned from the callback function `parseCursor` passed
+ * as an argument to `parseGraphQLConnectionArguments`, `parseGraphQLConnectionArgumentsWithSortedBy`,
+ * `parseGraphQLConnectionArgumentsWithWhere` and `parseGraphQLConnectionArgumentsWithSortedByAndWhere`
+ * functions.
+ */
 export type ParseGraphQLConnectionCursorResult<T0> = Promise<
   | {
       errors: DefaultGraphQLArgumentError[];
@@ -33,16 +34,16 @@ export type ParseGraphQLConnectionCursorResult<T0> = Promise<
 >;
 
 /**
-  This is typescript type of the callback function `parseCursor`.
-  */
+ * This is typescript type of the callback function `parseCursor`.
+ */
 export type ParseGraphQLConnectionCursor<T0> = (
   args: ParseGraphQLConnectionCursorArguments,
 ) => ParseGraphQLConnectionCursorResult<T0>;
 
 /**
-  This is typescript type of the object containing the validated and transformed connection
-  arguments passed to `parseGraphQLConnectionArguments` function.
-  */
+ * This is typescript type of the object containing the validated and transformed connection
+ * arguments passed to `parseGraphQLConnectionArguments` function.
+ */
 export type ParsedGraphQLConnectionArguments<T0> = {
   cursor: T0 | null;
   direction: GraphQLConnectionTraversalDirection;
@@ -50,9 +51,9 @@ export type ParsedGraphQLConnectionArguments<T0> = {
 };
 
 /**
-  This is typescript type of the object returned from `parseGraphQLConnectionArguments`
-  function.
-  */
+ * This is typescript type of the object returned from `parseGraphQLConnectionArguments`
+ * function.
+ */
 export type ParseGraphQLConnectionArgumentsResult<T0> =
   | {
       errors: DefaultGraphQLArgumentError[];
@@ -64,8 +65,26 @@ export type ParseGraphQLConnectionArgumentsResult<T0> =
     };
 
 /**
-  This function handles validating and transforming arguments of a base graphQL connection.
-  */
+ * This function handles validating and transforming arguments of a base graphQL connection.
+ * @example
+ * const result = await parseGraphQLConnectionArguments(\{
+ *   args: \{
+ *     after,
+ *     first,
+ *   \},
+ *   maximumLimit: 20,
+ *   parseCursor
+ * \})
+ * if (result.isSuccessful === false) \{
+ *    throw new GraphQLError("Invalid arguments provided.", \{
+ *      extensions: \{
+ *        code: "INVALID_ARGUMENTS",
+ *        errors: result.errors
+ *      \}
+ *   \})
+ * \}
+ * const \{ parsedArgs: \{ cursor, direction, limit \} \} = result;
+ */
 export async function parseGraphQLConnectionArguments<T0>({
   args,
   maximumLimit = MAXIMUM_FETCH_LIMIT,
