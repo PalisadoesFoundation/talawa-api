@@ -56,6 +56,8 @@ const config: CodegenConfig = {
           Fund: "../models/Fund#InterfaceFund",
           FundraisingCampaign:
             "../models/FundraisingCampaign#InterfaceFundraisingCampaign",
+          FundraisingCampaignPledge:
+            "../models/FundraisingCampaignPledge#InterfaceFundraisingCampaignPledges",
 
           // File: '../models/File#InterfaceFile',
 
