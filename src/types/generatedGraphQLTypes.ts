@@ -15,6 +15,7 @@ import type { InterfaceEventVolunteer as InterfaceEventVolunteerModel } from '..
 import type { InterfaceFeedback as InterfaceFeedbackModel } from '../models/Feedback';
 import type { InterfaceFund as InterfaceFundModel } from '../models/Fund';
 import type { InterfaceFundraisingCampaign as InterfaceFundraisingCampaignModel } from '../models/FundraisingCampaign';
+import type { InterfaceFundraisingCampaignPledges as InterfaceFundraisingCampaignPledgesModel } from '../models/FundraisingCampaignPledge';
 import type { InterfaceGroup as InterfaceGroupModel } from '../models/Group';
 import type { InterfaceGroupChat as InterfaceGroupChatModel } from '../models/GroupChat';
 import type { InterfaceGroupChatMessage as InterfaceGroupChatMessageModel } from '../models/GroupChatMessage';
@@ -708,7 +709,7 @@ export type Frequency =
 export type Fund = {
   __typename?: 'Fund';
   _id: Scalars['ID']['output'];
-  campaign: Array<Maybe<FundraisingCampaign>>;
+  campaigns?: Maybe<Array<FundraisingCampaign>>;
   createdAt: Scalars['DateTime']['output'];
   isArchived: Scalars['Boolean']['output'];
   isDefault: Scalars['Boolean']['output'];
@@ -728,6 +729,15 @@ export type FundCampaignInput = {
   startDate: Scalars['Date']['input'];
 };
 
+export type FundCampaignPledgeInput = {
+  amount: Scalars['Float']['input'];
+  campaignId: Scalars['ID']['input'];
+  currency: Currency;
+  endDate?: InputMaybe<Scalars['Date']['input']>;
+  startDate?: InputMaybe<Scalars['Date']['input']>;
+  userIds: Array<Scalars['ID']['input']>;
+};
+
 export type FundInput = {
   isArchived: Scalars['Boolean']['input'];
   isDefault: Scalars['Boolean']['input'];
@@ -743,11 +753,23 @@ export type FundraisingCampaign = {
   createdAt: Scalars['DateTime']['output'];
   currency: Currency;
   endDate: Scalars['Date']['output'];
-  fund: Fund;
+  fundId: Fund;
   fundingGoal: Scalars['Float']['output'];
   name: Scalars['String']['output'];
+  pledges?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
   startDate: Scalars['Date']['output'];
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type FundraisingCampaignPledge = {
+  __typename?: 'FundraisingCampaignPledge';
+  _id: Scalars['ID']['output'];
+  amount: Scalars['Float']['output'];
+  campaigns: Array<Maybe<FundraisingCampaign>>;
+  currency: Currency;
+  endDate?: Maybe<Scalars['Date']['output']>;
+  startDate?: Maybe<Scalars['Date']['output']>;
+  users: Array<Maybe<User>>;
 };
 
 export type Gender =
@@ -898,6 +920,7 @@ export type Mutation = {
   addLanguageTranslation: Language;
   addOrganizationCustomField: OrganizationCustomField;
   addOrganizationImage: Organization;
+  addPledgeToFundraisingCampaign: FundraisingCampaignPledge;
   addUserCustomData: UserCustomData;
   addUserImage: User;
   addUserToGroupChat: GroupChat;
@@ -923,6 +946,7 @@ export type Mutation = {
   createEventVolunteer: EventVolunteer;
   createFund: Fund;
   createFundraisingCampaign: FundraisingCampaign;
+  createFundraisingCampaignPledge: FundraisingCampaignPledge;
   createGroupChat: GroupChat;
   createMember: Organization;
   createMessageChat: MessageChat;
@@ -959,6 +983,8 @@ export type Mutation = {
   removeEventAttendee: User;
   removeEventVolunteer: EventVolunteer;
   removeFund: Fund;
+  removeFundraisingCampaign: FundraisingCampaign;
+  removeFundraisingCampaignPledge: FundraisingCampaignPledge;
   removeGroupChat: GroupChat;
   removeMember: Organization;
   removeOrganization: User;
@@ -991,6 +1017,8 @@ export type Mutation = {
   updateEvent: Event;
   updateEventVolunteer: EventVolunteer;
   updateFund: Fund;
+  updateFundraisingCampaign: FundraisingCampaign;
+  updateFundraisingCampaignPledge: FundraisingCampaignPledge;
   updateLanguage: User;
   updateOrganization: Organization;
   updatePluginStatus: Plugin;
@@ -1038,6 +1066,12 @@ export type MutationAddOrganizationCustomFieldArgs = {
 export type MutationAddOrganizationImageArgs = {
   file: Scalars['String']['input'];
   organizationId: Scalars['String']['input'];
+};
+
+
+export type MutationAddPledgeToFundraisingCampaignArgs = {
+  campaignId: Scalars['ID']['input'];
+  pledgeId: Scalars['ID']['input'];
 };
 
 
@@ -1183,6 +1217,11 @@ export type MutationCreateFundArgs = {
 
 export type MutationCreateFundraisingCampaignArgs = {
   data: FundCampaignInput;
+};
+
+
+export type MutationCreateFundraisingCampaignPledgeArgs = {
+  data: FundCampaignPledgeInput;
 };
 
 
@@ -1362,6 +1401,16 @@ export type MutationRemoveFundArgs = {
 };
 
 
+export type MutationRemoveFundraisingCampaignArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationRemoveFundraisingCampaignPledgeArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationRemoveGroupChatArgs = {
   chatId: Scalars['ID']['input'];
 };
@@ -1517,6 +1566,18 @@ export type MutationUpdateEventVolunteerArgs = {
 
 export type MutationUpdateFundArgs = {
   data: UpdateFundInput;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdateFundraisingCampaignArgs = {
+  data: UpdateFundCampaignInput;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdateFundraisingCampaignPledgeArgs = {
+  data: UpdateFundCampaignPledgeInput;
   id: Scalars['ID']['input'];
 };
 
@@ -1846,6 +1907,8 @@ export type Query = {
   getEventAttendee?: Maybe<EventAttendee>;
   getEventAttendeesByEventId?: Maybe<Array<Maybe<EventAttendee>>>;
   getFundById: Fund;
+  getFundraisingCampaignById: FundraisingCampaign;
+  getFundraisingCampaignPledgeById: FundraisingCampaignPledge;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']['output']>;
@@ -1980,6 +2043,16 @@ export type QueryGetEventAttendeesByEventIdArgs = {
 
 
 export type QueryGetFundByIdArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetFundraisingCampaignByIdArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetFundraisingCampaignPledgeByIdArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -2219,6 +2292,21 @@ export type UpdateEventVolunteerInput = {
   isAssigned?: InputMaybe<Scalars['Boolean']['input']>;
   isInvited?: InputMaybe<Scalars['Boolean']['input']>;
   response?: InputMaybe<EventVolunteerResponse>;
+};
+
+export type UpdateFundCampaignInput = {
+  currency?: InputMaybe<Currency>;
+  endDate?: InputMaybe<Scalars['Date']['input']>;
+  fundingGoal?: InputMaybe<Scalars['Float']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['Date']['input']>;
+};
+
+export type UpdateFundCampaignPledgeInput = {
+  amount?: InputMaybe<Scalars['Float']['input']>;
+  currency?: InputMaybe<Currency>;
+  endDate?: InputMaybe<Scalars['Date']['input']>;
+  startDate?: InputMaybe<Scalars['Date']['input']>;
 };
 
 export type UpdateFundInput = {
@@ -2635,8 +2723,10 @@ export type ResolversTypes = {
   Frequency: Frequency;
   Fund: ResolverTypeWrapper<InterfaceFundModel>;
   FundCampaignInput: FundCampaignInput;
+  FundCampaignPledgeInput: FundCampaignPledgeInput;
   FundInput: FundInput;
   FundraisingCampaign: ResolverTypeWrapper<InterfaceFundraisingCampaignModel>;
+  FundraisingCampaignPledge: ResolverTypeWrapper<InterfaceFundraisingCampaignPledgesModel>;
   Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
   GroupChat: ResolverTypeWrapper<InterfaceGroupChatModel>;
@@ -2705,6 +2795,8 @@ export type ResolversTypes = {
   UpdateAgendaCategoryInput: UpdateAgendaCategoryInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventVolunteerInput: UpdateEventVolunteerInput;
+  UpdateFundCampaignInput: UpdateFundCampaignInput;
+  UpdateFundCampaignPledgeInput: UpdateFundCampaignPledgeInput;
   UpdateFundInput: UpdateFundInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateUserInput: UpdateUserInput;
@@ -2785,8 +2877,10 @@ export type ResolversParentTypes = {
   ForgotPasswordData: ForgotPasswordData;
   Fund: InterfaceFundModel;
   FundCampaignInput: FundCampaignInput;
+  FundCampaignPledgeInput: FundCampaignPledgeInput;
   FundInput: FundInput;
   FundraisingCampaign: InterfaceFundraisingCampaignModel;
+  FundraisingCampaignPledge: InterfaceFundraisingCampaignPledgesModel;
   Group: InterfaceGroupModel;
   GroupChat: InterfaceGroupChatModel;
   GroupChatMessage: InterfaceGroupChatMessageModel;
@@ -2846,6 +2940,8 @@ export type ResolversParentTypes = {
   UpdateAgendaCategoryInput: UpdateAgendaCategoryInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventVolunteerInput: UpdateEventVolunteerInput;
+  UpdateFundCampaignInput: UpdateFundCampaignInput;
+  UpdateFundCampaignPledgeInput: UpdateFundCampaignPledgeInput;
   UpdateFundInput: UpdateFundInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateUserInput: UpdateUserInput;
@@ -3162,7 +3258,7 @@ export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversP
 
 export type FundResolvers<ContextType = any, ParentType extends ResolversParentTypes['Fund'] = ResolversParentTypes['Fund']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  campaign?: Resolver<Array<Maybe<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType>;
+  campaigns?: Resolver<Maybe<Array<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   isArchived?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -3179,11 +3275,23 @@ export type FundraisingCampaignResolvers<ContextType = any, ParentType extends R
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   currency?: Resolver<ResolversTypes['Currency'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  fund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType>;
+  fundId?: Resolver<ResolversTypes['Fund'], ParentType, ContextType>;
   fundingGoal?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pledges?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type FundraisingCampaignPledgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FundraisingCampaignPledge'] = ResolversParentTypes['FundraisingCampaignPledge']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  amount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  campaigns?: Resolver<Array<Maybe<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType>;
+  currency?: Resolver<ResolversTypes['Currency'], ParentType, ContextType>;
+  endDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  startDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  users?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3317,6 +3425,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addLanguageTranslation?: Resolver<ResolversTypes['Language'], ParentType, ContextType, RequireFields<MutationAddLanguageTranslationArgs, 'data'>>;
   addOrganizationCustomField?: Resolver<ResolversTypes['OrganizationCustomField'], ParentType, ContextType, RequireFields<MutationAddOrganizationCustomFieldArgs, 'name' | 'organizationId' | 'type'>>;
   addOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationAddOrganizationImageArgs, 'file' | 'organizationId'>>;
+  addPledgeToFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationAddPledgeToFundraisingCampaignArgs, 'campaignId' | 'pledgeId'>>;
   addUserCustomData?: Resolver<ResolversTypes['UserCustomData'], ParentType, ContextType, RequireFields<MutationAddUserCustomDataArgs, 'dataName' | 'dataValue' | 'organizationId'>>;
   addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
   addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;
@@ -3342,6 +3451,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationCreateEventVolunteerArgs, 'data'>>;
   createFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationCreateFundArgs, 'data'>>;
   createFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignArgs, 'data'>>;
+  createFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignPledgeArgs, 'data'>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
   createMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
@@ -3378,6 +3488,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveEventAttendeeArgs, 'data'>>;
   removeEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerArgs, 'id'>>;
   removeFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationRemoveFundArgs, 'id'>>;
+  removeFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignArgs, 'id'>>;
+  removeFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignPledgeArgs, 'id'>>;
   removeGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveGroupChatArgs, 'chatId'>>;
   removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'data'>>;
   removeOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
@@ -3410,6 +3522,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerArgs, 'id'>>;
   updateFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationUpdateFundArgs, 'data' | 'id'>>;
+  updateFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationUpdateFundraisingCampaignArgs, 'data' | 'id'>>;
+  updateFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationUpdateFundraisingCampaignPledgeArgs, 'data' | 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'orgId'>>;
@@ -3554,6 +3668,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getEventAttendee?: Resolver<Maybe<ResolversTypes['EventAttendee']>, ParentType, ContextType, RequireFields<QueryGetEventAttendeeArgs, 'eventId' | 'userId'>>;
   getEventAttendeesByEventId?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventAttendee']>>>, ParentType, ContextType, RequireFields<QueryGetEventAttendeesByEventIdArgs, 'eventId'>>;
   getFundById?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<QueryGetFundByIdArgs, 'id'>>;
+  getFundraisingCampaignById?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignByIdArgs, 'id'>>;
+  getFundraisingCampaignPledgeById?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignPledgeByIdArgs, 'id'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
@@ -3748,6 +3864,7 @@ export type Resolvers<ContextType = any> = {
   FieldError?: FieldErrorResolvers<ContextType>;
   Fund?: FundResolvers<ContextType>;
   FundraisingCampaign?: FundraisingCampaignResolvers<ContextType>;
+  FundraisingCampaignPledge?: FundraisingCampaignPledgeResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;

@@ -169,6 +169,14 @@ export const inputs = gql`
     fundingGoal: Float!
     currency: Currency!
   }
+  input FundCampaignPledgeInput {
+    campaignId: ID!
+    userIds: [ID!]!
+    startDate: Date
+    endDate: Date
+    amount: Float!
+    currency: Currency!
+  }
 
   input LanguageInput {
     en_value: String!
@@ -324,6 +332,19 @@ export const inputs = gql`
     taxDeductible: Boolean
     isDefault: Boolean
     isArchived: Boolean
+  }
+  input UpdateFundCampaignInput {
+    name: String
+    startDate: Date
+    endDate: Date
+    fundingGoal: Float
+    currency: Currency
+  }
+  input UpdateFundCampaignPledgeInput {
+    startDate: Date
+    endDate: Date
+    amount: Float
+    currency: Currency
   }
 
   input UpdateAdvertisementInput {
