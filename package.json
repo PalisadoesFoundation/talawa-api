@@ -98,7 +98,7 @@
     "zod-error": "^1.5.0"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/cli": "^5.0.2",
     "@graphql-codegen/typescript": "^4.0.4",
     "@graphql-codegen/typescript-resolvers": "^4.0.4",
     "@graphql-eslint/eslint-plugin": "^3.20.1",
