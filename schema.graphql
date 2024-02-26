@@ -29,6 +29,18 @@ type ActionItemCategory {
   updatedAt: Date!
 }
 
+input ActionItemWhereInput {
+  actionItemCategory_id: ID
+  event_id: ID
+  is_active: Boolean
+  is_completed: Boolean
+}
+
+enum ActionItemsOrderByInput {
+  createdAt_ASC
+  createdAt_DESC
+}
+
 type Address {
   city: String
   countryCode: String
@@ -99,8 +111,6 @@ type AuthData {
 
 type CheckIn {
   _id: ID!
-  allotedRoom: String
-  allotedSeat: String
   createdAt: DateTime!
   event: Event!
   feedbackSubmitted: Boolean!
@@ -110,8 +120,6 @@ type CheckIn {
 }
 
 input CheckInInput {
-  allotedRoom: String
-  allotedSeat: String
   eventId: ID!
   userId: ID!
 }
@@ -139,10 +147,34 @@ input CommentInput {
 
 union ConnectionError = InvalidCursor | MaximumValueError
 
-type ConnectionPageInfo {
+"""
+The standard graphQL connection page info that contains metadata about a
+particular instance of a connection. ALl other custom connection page info
+types must implement this interface.
+"""
+interface ConnectionPageInfo {
+  """
+  A field to tell the value of cursor for the last edge of a particular instance of a
+  connection.
+  """
   endCursor: String
+
+  """
+  A field to tell whether the connection has additional edges after the
+  edge with endCursor as its cursor.
+  """
   hasNextPage: Boolean!
+
+  """
+  A field to tell whether the connection has additional edges
+  before the edge with startCursor as its cursor.
+  """
   hasPreviousPage: Boolean!
+
+  """
+  A field to tell the value of cursor for the first edge of a particular instance of a
+  connection.
+  """
   startCursor: String
 }
 
@@ -167,6 +199,172 @@ input CreateUserTagInput {
   parentTagId: ID
 }
 
+enum Currency {
+  AED
+  AFN
+  ALL
+  AMD
+  ANG
+  AOA
+  ARS
+  AUD
+  AWG
+  AZN
+  BAM
+  BBD
+  BDT
+  BGN
+  BHD
+  BIF
+  BMD
+  BND
+  BOB
+  BRL
+  BSD
+  BTN
+  BWP
+  BYN
+  BZD
+  CAD
+  CDF
+  CHF
+  CLP
+  CNY
+  COP
+  CRC
+  CUP
+  CVE
+  CZK
+  DJF
+  DKK
+  DOP
+  DZD
+  EGP
+  ERN
+  ETB
+  EUR
+  FJD
+  FKP
+  FOK
+  FRO
+  GBP
+  GEL
+  GGP
+  GHS
+  GIP
+  GMD
+  GNF
+  GTQ
+  GYD
+  HKD
+  HNL
+  HRK
+  HTG
+  HUF
+  IDR
+  ILS
+  IMP
+  INR
+  IQD
+  IRR
+  ISK
+  JEP
+  JMD
+  JOD
+  JPY
+  KES
+  KGS
+  KHR
+  KID
+  KMF
+  KRW
+  KWD
+  KYD
+  KZT
+  LAK
+  LBP
+  LKR
+  LRD
+  LSL
+  LYD
+  MAD
+  MDL
+  MGA
+  MKD
+  MMK
+  MNT
+  MOP
+  MRU
+  MUR
+  MVR
+  MWK
+  MXN
+  MYR
+  MZN
+  NAD
+  NGN
+  NIO
+  NOK
+  NPR
+  NZD
+  OMR
+  PAB
+  PEN
+  PGK
+  PHP
+  PKR
+  PLN
+  PYG
+  QAR
+  RON
+  RSD
+  RUB
+  RWF
+  SAR
+  SBD
+  SCR
+  SDG
+  SEK
+  SGD
+  SHP
+  SLL
+  SOS
+  SPL
+  SRD
+  STN
+  SVC
+  SYP
+  SZL
+  THB
+  TJS
+  TMT
+  TND
+  TOP
+  TRY
+  TTD
+  TVD
+  TWD
+  TZS
+  UAH
+  UGX
+  USD
+  UYU
+  UZS
+  VEF
+  VND
+  VUV
+  WST
+  XAF
+  XCD
+  XDR
+  XOF
+  XPF
+  YER
+  ZAR
+  ZMW
+  ZWD
+}
+
 input CursorPaginationInput {
   cursor: String
   direction: PaginationDirection!
@@ -176,6 +374,17 @@ input CursorPaginationInput {
 scalar Date
 
 scalar DateTime
+
+"""
+Default connection page info for containing the metadata for a connection
+instance.
+"""
+type DefaultConnectionPageInfo implements ConnectionPageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
 
 type DeletePayload {
   success: Boolean!
@@ -286,6 +495,19 @@ type Event {
   status: Status!
   title: String!
   updatedAt: DateTime!
+}
+
+type EventAttendee {
+  _id: ID!
+  checkInId: ID
+  createdAt: DateTime!
+  eventId: ID!
+  isCheckedIn: Boolean!
+  isCheckedOut: Boolean!
+  isInvited: Boolean!
+  isRegistered: Boolean!
+  updatedAt: DateTime!
+  userId: ID!
 }
 
 input EventAttendeeInput {
@@ -420,6 +642,69 @@ enum Frequency {
   MONTHLY
   WEEKLY
   YEARLY
+}
+
+type Fund {
+  _id: ID!
+  campaigns: [FundraisingCampaign!]
+  createdAt: DateTime!
+  isArchived: Boolean!
+  isDefault: Boolean!
+  name: String!
+  organizationId: ID!
+  refrenceNumber: String
+  taxDeductible: Boolean!
+  updatedAt: DateTime!
+}
+
+input FundCampaignInput {
+  currency: Currency!
+  endDate: Date!
+  fundId: ID!
+  fundingGoal: Float!
+  name: String!
+  startDate: Date!
+}
+
+input FundCampaignPledgeInput {
+  amount: Float!
+  campaignId: ID!
+  currency: Currency!
+  endDate: Date
+  startDate: Date
+  userIds: [ID!]!
+}
+
+input FundInput {
+  isArchived: Boolean!
+  isDefault: Boolean!
+  name: String!
+  organizationId: ID!
+  refrenceNumber: String
+  taxDeductible: Boolean!
+}
+
+type FundraisingCampaign {
+  _id: ID!
+  createdAt: DateTime!
+  currency: Currency!
+  endDate: Date!
+  fundId: Fund!
+  fundingGoal: Float!
+  name: String!
+  pledges: [FundraisingCampaignPledge]
+  startDate: Date!
+  updatedAt: DateTime!
+}
+
+type FundraisingCampaignPledge {
+  _id: ID!
+  amount: Float!
+  campaigns: [FundraisingCampaign]!
+  currency: Currency!
+  endDate: Date
+  startDate: Date
+  users: [User]!
 }
 
 enum Gender {
@@ -564,6 +849,7 @@ type Mutation {
   addLanguageTranslation(data: LanguageInput!): Language!
   addOrganizationCustomField(name: String!, organizationId: ID!, type: String!): OrganizationCustomField!
   addOrganizationImage(file: String!, organizationId: String!): Organization!
+  addPledgeToFundraisingCampaign(campaignId: ID!, pledgeId: ID!): FundraisingCampaignPledge!
   addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
   addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
@@ -575,6 +861,8 @@ type Mutation {
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
+  checkInEventAttendee(data: EventAttendeeInput!): EventAttendee!
+  checkOutEventAttendee(data: EventAttendeeInput!): EventAttendee!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): User!
@@ -585,6 +873,9 @@ type Mutation {
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
+  createFund(data: FundInput!): Fund!
+  createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
+  createFundraisingCampaignPledge(data: FundCampaignPledgeInput!): FundraisingCampaignPledge!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
@@ -598,6 +889,7 @@ type Mutation {
   deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
+  inviteEventAttendee(data: EventAttendeeInput!): EventAttendee!
   joinPublicOrganization(organizationId: ID!): User!
   leaveOrganization(organizationId: ID!): User!
   likeComment(id: ID!): Comment
@@ -607,7 +899,8 @@ type Mutation {
   otp(data: OTPInput!): OtpData!
   recaptcha(data: RecaptchaVerification!): Boolean!
   refreshToken(refreshToken: String!): ExtendSession!
-  registerForEvent(id: ID!): Event!
+  registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
+  registerForEvent(id: ID!): EventAttendee!
   rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeActionItem(id: ID!): ActionItem!
@@ -618,6 +911,9 @@ type Mutation {
   removeEvent(id: ID!): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
+  removeFund(id: ID!): Fund!
+  removeFundraisingCampaign(id: ID!): FundraisingCampaign!
+  removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -649,6 +945,9 @@ type Mutation {
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
+  updateFund(data: UpdateFundInput!, id: ID!): Fund!
+  updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
+  updateFundraisingCampaignPledge(data: UpdateFundCampaignPledgeInput!, id: ID!): FundraisingCampaignPledge!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
@@ -903,7 +1202,7 @@ type Query {
   actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
   actionItemCategory(id: ID!): ActionItemCategory
   actionItemsByEvent(eventId: ID!): [ActionItem]
-  actionItemsByOrganization(organizationId: ID!): [ActionItem]
+  actionItemsByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
   agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
@@ -919,6 +1218,11 @@ type Query {
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
+  getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
+  getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
+  getFundById(id: ID!): Fund!
+  getFundraisingCampaignById(id: ID!): FundraisingCampaign!
+  getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
@@ -957,6 +1261,24 @@ input RecurrenceRuleInput {
   count: Int
   frequency: Frequency
   weekDays: [WeekDays]
+}
+
+"""
+Possible variants of ordering in which sorting on a field should be
+applied for a connection or other list type data structures.
+"""
+enum SortedByOrder {
+  """
+  When the sorting order should be from the smallest value to largest
+  value.
+  """
+  ASCENDING
+
+  """
+  When the sorting order should be from the largest value to the smallest
+  value.
+  """
+  DESCENDING
 }
 
 enum Status {
@@ -1057,6 +1379,28 @@ input UpdateEventVolunteerInput {
   response: EventVolunteerResponse
 }
 
+input UpdateFundCampaignInput {
+  currency: Currency
+  endDate: Date
+  fundingGoal: Float
+  name: String
+  startDate: Date
+}
+
+input UpdateFundCampaignPledgeInput {
+  amount: Float
+  currency: Currency
+  endDate: Date
+  startDate: Date
+}
+
+input UpdateFundInput {
+  isArchived: Boolean
+  isDefault: Boolean
+  name: String
+  taxDeductible: Boolean
+}
+
 input UpdateOrganizationInput {
   address: AddressInput
   description: String
@@ -1145,11 +1489,6 @@ type UserCustomData {
   values: JSON!
 }
 
-type UserEdge {
-  cursor: String!
-  node: User!
-}
-
 type UserFamily {
   _id: ID!
   admins: [User!]!
@@ -1193,33 +1532,41 @@ input UserPhoneInput {
 }
 
 type UserTag {
+  """A field to get the mongodb object id identifier for this UserTag."""
   _id: ID!
-  childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
+
+  """
+  A connection field to traverse a list of UserTag this UserTag is a
+  parent to.
+  """
+  childTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
+
+  """A field to get the name of this UserTag."""
   name: String!
+
+  """A field to traverse the Organization that created this UserTag."""
   organization: Organization
+
+  """A field to traverse the parent UserTag of this UserTag."""
   parentTag: UserTag
-  usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!
+
+  """
+  A connection field to traverse a list of User this UserTag is assigned
+  to.
+  """
+  usersAssignedTo(after: String, before: String, first: PositiveInt, last: PositiveInt): UsersConnection
 }
 
-type UserTagEdge {
+"""A default connection on the UserTag type."""
+type UserTagsConnection {
+  edges: [UserTagsConnectionEdge!]!
+  pageInfo: DefaultConnectionPageInfo!
+}
+
+"""A default connection edge on the UserTag type for UserTagsConnection."""
+type UserTagsConnectionEdge {
   cursor: String!
   node: UserTag!
-}
-
-type UserTagsConnection {
-  edges: [UserTagEdge!]!
-  pageInfo: ConnectionPageInfo!
-}
-
-input UserTagsConnectionInput {
-  cursor: String
-  direction: PaginationDirection!
-  limit: PositiveInt!
-}
-
-type UserTagsConnectionResult {
-  data: UserTagsConnection
-  errors: [ConnectionError!]!
 }
 
 enum UserType {
@@ -1264,20 +1611,16 @@ input UserWhereInput {
   lastName_starts_with: String
 }
 
+"""A default connection on the User type."""
 type UsersConnection {
-  edges: [UserEdge!]!
-  pageInfo: ConnectionPageInfo!
+  edges: [UsersConnectionEdge!]!
+  pageInfo: DefaultConnectionPageInfo!
 }
 
-input UsersConnectionInput {
-  cursor: String
-  direction: PaginationDirection!
-  limit: PositiveInt!
-}
-
-type UsersConnectionResult {
-  data: UsersConnection
-  errors: [ConnectionError!]!
+"""A default connection edge on the User type for UsersConnection."""
+type UsersConnectionEdge {
+  cursor: String!
+  node: User!
 }
 
 enum WeekDays {

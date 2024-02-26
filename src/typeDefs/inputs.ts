@@ -14,8 +14,6 @@ export const inputs = gql`
   input CheckInInput {
     userId: ID!
     eventId: ID!
-    allotedRoom: String
-    allotedSeat: String
   }
 
   input createChatInput {
@@ -45,6 +43,13 @@ export const inputs = gql`
     preCompletionNotes: String
     dueDate: Date
     eventId: ID
+  }
+
+  input ActionItemWhereInput {
+    actionItemCategory_id: ID
+    event_id: ID
+    is_active: Boolean
+    is_completed: Boolean
   }
 
   input CreateAgendaCategoryInput {
@@ -147,6 +152,30 @@ export const inputs = gql`
     userOtp: String!
     newPassword: String!
     otpToken: String!
+  }
+  input FundInput {
+    name: String!
+    organizationId: ID!
+    refrenceNumber: String
+    taxDeductible: Boolean!
+    isDefault: Boolean!
+    isArchived: Boolean!
+  }
+  input FundCampaignInput {
+    name: String!
+    fundId: ID!
+    startDate: Date!
+    endDate: Date!
+    fundingGoal: Float!
+    currency: Currency!
+  }
+  input FundCampaignPledgeInput {
+    campaignId: ID!
+    userIds: [ID!]!
+    startDate: Date
+    endDate: Date
+    amount: Float!
+    currency: Currency!
   }
 
   input LanguageInput {
@@ -298,19 +327,24 @@ export const inputs = gql`
     startTime: Time
     endTime: Time
   }
-
-  # Implements CursorPaginationInput
-  input UsersConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
+  input UpdateFundInput {
+    name: String
+    taxDeductible: Boolean
+    isDefault: Boolean
+    isArchived: Boolean
   }
-
-  # Implements CursorPaginationInput
-  input UserTagsConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
+  input UpdateFundCampaignInput {
+    name: String
+    startDate: Date
+    endDate: Date
+    fundingGoal: Float
+    currency: Currency
+  }
+  input UpdateFundCampaignPledgeInput {
+    startDate: Date
+    endDate: Date
+    amount: Float
+    currency: Currency
   }
 
   input UpdateAdvertisementInput {

@@ -54,8 +54,8 @@ describe("resolvers -> Mutation -> checkIn", () => {
       );
 
       await checkInResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -77,15 +77,15 @@ describe("resolvers -> Mutation -> checkIn", () => {
         },
       };
 
-      const context = { userId: randomTestUser!._id };
+      const context = { userId: randomTestUser?._id };
 
       const { checkIn: checkInResolver } = await import(
         "../../../src/resolvers/Mutation/checkIn"
       );
 
       await checkInResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
@@ -103,19 +103,19 @@ describe("resolvers -> Mutation -> checkIn", () => {
       const args: MutationCheckInArgs = {
         data: {
           userId: Types.ObjectId().toString(),
-          eventId: testEvent!._id,
+          eventId: testEvent?._id,
         },
       };
 
-      const context = { userId: randomTestUser!._id };
+      const context = { userId: randomTestUser?._id };
 
       const { checkIn: checkInResolver } = await import(
         "../../../src/resolvers/Mutation/checkIn"
       );
 
       await checkInResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
@@ -133,19 +133,19 @@ describe("resolvers -> Mutation -> checkIn", () => {
       const args: MutationCheckInArgs = {
         data: {
           userId: Types.ObjectId().toString(),
-          eventId: testEvent!._id,
+          eventId: testEvent?._id,
         },
       };
 
-      const context = { userId: testUser!._id };
+      const context = { userId: testUser?._id };
 
       const { checkIn: checkInResolver } = await import(
         "../../../src/resolvers/Mutation/checkIn"
       );
 
       await checkInResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -162,20 +162,20 @@ describe("resolvers -> Mutation -> checkIn", () => {
     try {
       const args: MutationCheckInArgs = {
         data: {
-          userId: randomTestUser!._id,
-          eventId: testEvent!._id,
+          userId: randomTestUser?._id,
+          eventId: testEvent?._id,
         },
       };
 
-      const context = { userId: testUser!._id };
+      const context = { userId: testUser?._id };
 
       const { checkIn: checkInResolver } = await import(
         "../../../src/resolvers/Mutation/checkIn"
       );
 
       await checkInResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_REGISTERED_FOR_EVENT.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
@@ -187,14 +187,12 @@ describe("resolvers -> Mutation -> checkIn", () => {
   it(`Checks the user in successfully`, async () => {
     const args: MutationCheckInArgs = {
       data: {
-        userId: testUser!._id,
-        eventId: testEvent!._id,
-        allotedRoom: "test room",
-        allotedSeat: "test seat",
+        userId: testUser?._id,
+        eventId: testEvent?._id,
       },
     };
 
-    const context = { userId: testUser!._id };
+    const context = { userId: testUser?._id };
 
     const { checkIn: checkInResolver } = await import(
       "../../../src/resolvers/Mutation/checkIn"
@@ -203,15 +201,13 @@ describe("resolvers -> Mutation -> checkIn", () => {
     const payload = await checkInResolver?.({}, args, context);
 
     const eventAttendee = await EventAttendee.findOne({
-      eventId: testEvent!._id,
-      userId: testUser!._id,
+      eventId: testEvent?._id,
+      userId: testUser?._id,
     }).lean();
 
-    expect(eventAttendee!.checkInId).not.toBeNull();
+    expect(eventAttendee?.isCheckedIn).toBeTruthy();
     expect(payload).toMatchObject({
-      eventAttendeeId: eventAttendee!._id,
-      allotedSeat: "test seat",
-      allotedRoom: "test room",
+      eventAttendeeId: eventAttendee?._id,
     });
   });
 
@@ -225,20 +221,20 @@ describe("resolvers -> Mutation -> checkIn", () => {
     try {
       const args: MutationCheckInArgs = {
         data: {
-          userId: testUser!._id,
-          eventId: testEvent!._id,
+          userId: testUser?._id,
+          eventId: testEvent?._id,
         },
       };
 
-      const context = { userId: testUser!._id };
+      const context = { userId: testUser?._id };
 
       const { checkIn: checkInResolver } = await import(
         "../../../src/resolvers/Mutation/checkIn"
       );
 
       await checkInResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_ALREADY_CHECKED_IN.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_ALREADY_CHECKED_IN.MESSAGE);
