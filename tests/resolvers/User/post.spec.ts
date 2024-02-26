@@ -74,11 +74,31 @@ describe("resolvers -> User -> post", () => {
 
     // Check individual properties
 
-    expect(connection?.pageInfo.endCursor).toEqual(testPost?._id);
-    expect(connection?.pageInfo.hasNextPage).toBe(false);
-    expect(connection?.pageInfo.hasPreviousPage).toBe(false);
-    expect(connection?.pageInfo.startCursor).toEqual(testPost2?._id);
-    expect(connection?.totalCount).toEqual(totalCount);
+    expect(connection).toEqual({
+      edges: [
+        {
+          cursor: testPost2?._id.toString(),
+          node: {
+            ...testPost2,
+            _id: testPost2?._id.toString(),
+          },
+        },
+        {
+          cursor: testPost?._id.toString(),
+          node: {
+            ...testPost,
+            _id: testPost?._id.toString(),
+          },
+        },
+      ],
+      pageInfo: {
+        endCursor: testPost?._id.toString(),
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: testPost2?._id.toString(),
+      },
+      totalCount,
+    });
   });
 });
 describe("parseCursor function", () => {
