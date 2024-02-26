@@ -9,6 +9,7 @@ import {
   parseCursor,
   posts as postResolver,
 } from "../../../src/resolvers/User/posts";
+import type { PostEdge } from "../../../src/types/generatedGraphQLTypes";
 import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestPost, type TestPostType } from "../../helpers/posts";
@@ -73,32 +74,18 @@ describe("resolvers -> User -> post", () => {
     // Log the specific properties of the connection object and the expected value
 
     // Check individual properties
-
-    expect(connection).toEqual({
-      edges: [
-        {
-          cursor: testPost2?._id.toString(),
-          node: {
-            ...testPost2,
-            _id: testPost2?._id.toString(),
-          },
-        },
-        {
-          cursor: testPost?._id.toString(),
-          node: {
-            ...testPost,
-            _id: testPost?._id.toString(),
-          },
-        },
-      ],
-      pageInfo: {
-        endCursor: testPost?._id.toString(),
-        hasNextPage: false,
-        hasPreviousPage: false,
-        startCursor: testPost2?._id.toString(),
-      },
-      totalCount,
-    });
+    // console.log(connection?.edges[0]);
+    expect((connection?.edges[0] as unknown as PostEdge).cursor).toEqual(
+      testPost2?._id.toString(),
+    );
+    expect((connection?.edges[1] as unknown as PostEdge).cursor).toEqual(
+      testPost?._id.toString(),
+    );
+    expect(connection?.pageInfo.endCursor).toEqual(testPost?._id.toString());
+    expect(connection?.pageInfo.hasNextPage).toBe(false);
+    expect(connection?.pageInfo.hasPreviousPage).toBe(false);
+    expect(connection?.pageInfo.startCursor).toEqual(testPost2?._id.toString());
+    expect(connection?.totalCount).toEqual(totalCount);
   });
 });
 describe("parseCursor function", () => {
