@@ -59,7 +59,7 @@ export const advertisements: OrganizationResolvers["advertisements"] = async (
   const [objectList, totalCount] = await Promise.all([
     Advertisement.find({
       ...filter,
-      creatorId: parent._id,
+      organizationId: parent._id,
     })
       .sort(sort)
       .limit(parsedArgs.limit)
@@ -67,7 +67,7 @@ export const advertisements: OrganizationResolvers["advertisements"] = async (
       .exec(),
 
     Advertisement.find({
-      creatorId: parent._id,
+      organizationId: parent._id,
     })
       .countDocuments()
       .exec(),

@@ -1,31 +1,59 @@
 import { GraphQLError } from "graphql";
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type { InterfaceOrganization } from "../../../src/models";
-import { advertisements as AdvertisementResolvers } from "../../../src/resolvers/Organization/advertisements";
-import type { ConnectionPageInfo } from "../../../src/types/generatedGraphQLTypes";
-import type { RelayConnectionArguments } from "../../../src/utilities/parseRelayConnectionArguments";
-import { parseRelayConnectionArguments } from "../../../src/utilities/parseRelayConnectionArguments";
+import { Advertisement, type InterfaceOrganization } from "../../../src/models";
+import {
+  advertisements as AdvertisementResolvers,
+  parseCursor,
+} from "../../../src/resolvers/Organization/advertisements";
 import { connect, disconnect } from "../../helpers/db";
+import { type TestAdvertisementType } from "../../helpers/advertisement";
 import {
-  type TestAdvertisementType,
-  createTestAdvertisement,
-} from "../../helpers/advertisement";
-import {
-  type TestOrganizationType,
-  createTestUserAndOrganization,
+  createTestUserAndOrganization
 } from "../../helpers/userAndOrg";
+import type {
+  TestUserType,
+  type TestOrganizationType
+} from "../../helpers/userAndOrg";
+import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
+import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testAdvertisement: TestAdvertisementType;
+let testAdvertisement1: TestAdvertisementType;
+let testAdvertisement2: TestAdvertisementType;
 let testOrganization: TestOrganizationType;
 let testUserAndOrganization;
+let testUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  testAdvertisement = await createTestAdvertisement();
   testUserAndOrganization = await createTestUserAndOrganization();
   testOrganization = testUserAndOrganization[1];
+  testUser = testUserAndOrganization[0];
+  const advertisement1 = await Advertisement.create({
+    name: "Test Advertisement",
+    mediaUrl: "data:image/png;base64,bWVkaWEgY29udG",
+    type: "POPUP",
+    startDate: "2023-01-01",
+    endDate: "2023-01-31",
+    organizationId: testOrganization?._id,
+    createdAt: "2024-01-13T18:23:00.316Z",
+    updatedAt: "2024-01-13T20:28:21.292Z",
+    creatorId: testUser?._id,
+  });
+  const advertisement2 = await Advertisement.create({
+    name: "Test Advertisement2",
+    mediaUrl: "data:image/png;base64,bWVkaWEgY29udG",
+    type: "POPUP",
+    startDate: "2023-01-01",
+    endDate: "2023-01-31",
+    organizationId: testOrganization?._id,
+    createdAt: "2024-01-13T18:23:00.316Z",
+    updatedAt: "2024-01-13T20:28:21.292Z",
+    creatorId: testUser?._id,
+  });
+  testAdvertisement1 = advertisement1.toObject();
+  testAdvertisement2 = advertisement2.toObject();
 });
 
 afterAll(async () => {
@@ -33,145 +61,81 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Organization -> advertisements", () => {
-  it("returns advertisements craeted in the organization", async () => {
+describe("resolvers -> Organization -> Advertisement", () => {
+  it(`throws GraphQLError if invalid arguments are provided to the resolver`, async () => {
+    try {
+      const parent = testOrganization?.toObject() as InterfaceOrganization;
+      await AdvertisementResolvers?.(parent, {}, {});
+    } catch (error) {
+      if (error instanceof GraphQLError) {
+        expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
+        expect(
+          (error.extensions.errors as DefaultGraphQLArgumentError[]).length,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+  it(`returns the expected connection object`, async () => {
     const parent = testOrganization?.toObject() as InterfaceOrganization;
-    const args: RelayConnectionArguments = {
-      first: 1,
-      after: testAdvertisement?._id,
-    };
-    const advertisementConnection = await AdvertisementResolvers?.(
+    const totalCount = await Advertisement.find({
+      organizationId: testOrganization?._id,
+    }).countDocuments();
+
+    const connection = await AdvertisementResolvers?.(
       parent,
-      args,
+      {
+        first: 2,
+      },
       {},
     );
 
-    if (advertisementConnection) {
-      console.log(advertisementConnection);
-
-      expect(advertisementConnection.edges).toHaveLength(0);
-    }
-  });
-
-  it("constructs query correctly with $gt operator when direction is BACKWARD", () => {
-    const args: RelayConnectionArguments = {
-      last: 1,
-      before: testAdvertisement?._id,
-    };
-    const result = parseRelayConnectionArguments(args, 10);
-    const query: Record<string, unknown> = {};
-    if (result.direction == "BACKWARD") {
-      query._id = { $gt: result.cursor };
-    }
-    expect(query).toEqual({ _id: { $gt: result.cursor } });
-  });
-  it("handle advertisement beyond the limit correctly", () => {
-    const args: RelayConnectionArguments = {
-      first: 3,
-      after: "cursor",
-    };
-    const paginationArgs = parseRelayConnectionArguments(args, 3);
-    const advertisements: unknown[] = Array.from({ length: 4 }).map(
-      (_, index) => ({
-        _id: `advertisement_${index}`,
-      }),
-    );
-    const pageInfo: ConnectionPageInfo = {
-      hasNextPage: false,
-      hasPreviousPage: false,
-      startCursor: null,
-      endCursor: null,
-    };
-    if (advertisements.length > paginationArgs.limit) {
-      if (paginationArgs.direction === "FORWARD") {
-        pageInfo.hasNextPage = true;
-      } else {
-        pageInfo.hasPreviousPage = true;
-      }
-      advertisements.pop();
-    }
-
-    expect(pageInfo.hasNextPage).toBe(true);
-    expect(advertisements.length).toBe(paginationArgs.limit);
-  });
-  it("reverses advertisements array when fetching in backward direction", () => {
-    const args: RelayConnectionArguments = {
-      last: 5,
-      before: "cursor", // Example cursor
-    };
-    const paginationArgs = parseRelayConnectionArguments(args, 10);
-    const advertisements: unknown[] = [
-      { _id: "advertisement_1" },
-      { _id: "advertisement_2" },
-      { _id: "advertisement_3" },
-    ];
-    if (paginationArgs.direction === "BACKWARD") {
-      advertisements.reverse();
-    }
-    expect(advertisements).toEqual([
-      { _id: "advertisement_3" },
-      { _id: "advertisement_2" },
-      { _id: "advertisement_1" },
-    ]);
+    expect(connection).toEqual({
+      edges: [
+        {
+          cursor: testAdvertisement2?._id,
+          node: testAdvertisement2,
+        },
+        {
+          cursor: testAdvertisement1?._id,
+          node: testAdvertisement1,
+        },
+      ],
+      pageInfo: {
+        endCursor: testAdvertisement1?._id,
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: testAdvertisement2?._id,
+      },
+      totalCount,
+    });
   });
 });
-describe("parseConnectionArguments", () => {
-  it("should parse connection arguments correctly with 'first'", () => {
-    const args: RelayConnectionArguments = {
-      first: 5,
-      after: "cursor",
-    };
-    const result = parseRelayConnectionArguments(args, 10);
-    expect(result.direction).toBe("FORWARD");
-    expect(result.limit).toBe(5);
-    expect(result.cursor).toBe("cursor");
+describe("parseCursor function", () => {
+  it("returns failure state if argument cursorValue is an invalid cursor", async () => {
+    const result = await parseCursor({
+      cursorName: "after",
+      cursorPath: ["after"],
+      cursorValue: Types.ObjectId().toString(),
+      organizationId: testOrganization?._id.toString() as string,
+    });
+
+    expect(result.isSuccessful).toEqual(false);
+    if (result.isSuccessful === false) {
+      expect(result.errors.length).toBeGreaterThan(0);
+    }
   });
 
-  it("should parse connection arguments correctly with 'last'", () => {
-    const args: RelayConnectionArguments = {
-      last: 5,
-      before: "cursor",
-    };
-    const result = parseRelayConnectionArguments(args, 10);
-    expect(result.direction).toBe("BACKWARD");
-    expect(result.limit).toBe(5);
-    expect(result.cursor).toBe("cursor");
-  });
+  it("returns success state if argument cursorValue is a valid cursor", async () => {
+    const result = await parseCursor({
+      cursorName: "after",
+      cursorPath: ["after"],
+      cursorValue: testAdvertisement1?._id.toString() as string,
+      organizationId: testOrganization?._id.toString() as string,
+    });
 
-  it("should throw an error when 'first' and 'last' are provided", () => {
-    const args: RelayConnectionArguments = {
-      first: 5,
-      last: 5,
-    };
-    expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError,
-    );
-  });
-
-  it("should throw an error when 'first' and 'before' are provided", () => {
-    const args: RelayConnectionArguments = {
-      first: 5,
-      before: "cursor",
-    };
-    expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError,
-    );
-  });
-
-  it("should throw an error when 'last' and 'after' are provided", () => {
-    const args: RelayConnectionArguments = {
-      last: 5,
-      after: "cursor",
-    };
-    expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError,
-    );
-  });
-
-  it("should throw an error when neither 'first' nor 'last' are provided", () => {
-    const args: RelayConnectionArguments = {};
-    expect(() => parseRelayConnectionArguments(args, 10)).toThrowError(
-      GraphQLError,
-    );
+    expect(result.isSuccessful).toEqual(true);
+    if (result.isSuccessful === true) {
+      expect(result.parsedCursor).toEqual(testAdvertisement1?._id.toString());
+    }
   });
 });
