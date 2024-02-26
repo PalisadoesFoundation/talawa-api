@@ -36,8 +36,8 @@ export const createTestUserFamilyWithAdmin = async (
   if (testUser) {
     const testUserFamily = await UserFamily.create({
       title: `name${nanoid().toLocaleLowerCase()}`,
-      users: isMember ? [testUser._id] : [],
-      admins: isAdmin ? [testUser._id] : [],
+      users: isMember ? [userID] : [],
+      admins: isAdmin ? [userID] : [],
       creator: [testUser._id],
     });
 
