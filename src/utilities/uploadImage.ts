@@ -9,13 +9,18 @@ import { imageExtensionCheck } from "./imageExtensionCheck";
  * This function uploads the new image and deletes the previously uploaded image if exists.
  * @remarks
  * This is a utility method.
- * @param newImageFile - File of a new Image with `any` type.
+ * @param newImageFile - File of a new Image with `TypeNewImageFile` type.
  * @param oldImagePath - File of a current Image. It can be `null`.
  * @returns Path of an uploaded image.
  */
+
+type TypeNewImageFile = {
+  createReadStream: () => NodeJS.ReadStream;
+  filename: string;
+};
+
 export const uploadImage = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  newImageFile: any,
+  newImageFile: TypeNewImageFile,
   oldImagePath: string | null,
 ): Promise<{ newImagePath: string; imageAlreadyInDbPath: string }> => {
   const id = nanoid();
