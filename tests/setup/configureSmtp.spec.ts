@@ -1,6 +1,6 @@
 import { it, expect, vi, describe } from "vitest";
 import inquirer from "inquirer";
-import * as verifySmtpConnection from "../../setup";
+import * as verifySmtpConnection from "../../src/setup/verifySmtpConnection";
 import { configureSmtp } from "../../setup";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -102,8 +102,6 @@ describe("Setup -> configureSmtp", () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       "SMTP configuration verification failed. Please check your SMTP settings.",
     );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      "getaddrinfo ENOTFOUND smtp.example.com",
-    );
+    expect(consoleLogSpy).toHaveBeenCalledWith("Connection failed");
   });
 });
