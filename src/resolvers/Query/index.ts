@@ -2,6 +2,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { isSampleOrganization } from "../Query/organizationIsSample";
 import { actionItem } from "./actionItem";
 import { actionItemCategoriesByOrganization } from "./actionItemCategoriesByOrganization";
+import { advertisementsConnection } from "./advertisementsConnection";
 import { actionItemCategory } from "./actionItemCategory";
 import { actionItemsByEvent } from "./actionItemsByEvent";
 import { actionItemsByOrganization } from "./actionItemsByOrganization";
@@ -14,7 +15,6 @@ import { directChatsMessagesByChatID } from "./directChatsMessagesByChatID";
 import { event } from "./event";
 import { eventsByOrganization } from "./eventsByOrganization";
 import { eventsByOrganizationConnection } from "./eventsByOrganizationConnection";
-import { getAdvertisements } from "./getAdvertisements";
 import { getDonationById } from "./getDonationById";
 import { getDonationByOrgId } from "./getDonationByOrgId";
 import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
@@ -49,7 +49,7 @@ export const Query: QueryResolvers = {
   eventsByOrganization,
   eventsByOrganizationConnection,
   getDonationById,
-  getAdvertisements,
+  advertisementsConnection,
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getlanguage,
