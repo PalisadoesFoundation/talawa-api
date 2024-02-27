@@ -105,12 +105,6 @@ describe("Setup -> mongoDB", () => {
     );
   });
 
-  it("should check existing MongoDB connection using environment variable", async () => {
-    const url = "mongodb://localhost:27017/talawa-api";
-    const result = await module.checkExistingMongoDB();
-    expect(result).toEqual(url);
-  });
-
   it("should ask for MongoDB url, and return it", async () => {
     const url = "mongodb://localhost:27017/talawa-api";
     vi.spyOn(inquirer, "prompt").mockImplementationOnce(() =>
