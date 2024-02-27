@@ -37,7 +37,6 @@ import { UserFamily } from "./UserFamily";
 import { UserTag } from "./UserTag";
 
 import { Advertisement } from "./Advertisement";
-import { composeResolvers } from "@graphql-tools/resolvers-composition";
 
 import { currentUserExists } from "./middleware/currentUserExists";
 
