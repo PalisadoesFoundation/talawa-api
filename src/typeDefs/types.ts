@@ -353,6 +353,12 @@ export const types = gql`
       first: PositiveInt
       last: PositiveInt
     ): UserTagsConnection
+    posts(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): PostsConnection
     customFields: [OrganizationCustomField!]!
   }
 

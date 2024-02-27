@@ -980,6 +980,7 @@ type Organization {
   membershipRequests: [MembershipRequest]
   name: String!
   pinnedPosts: [Post]
+  posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostsConnection
   updatedAt: DateTime!
   userRegistrationRequired: Boolean!
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
