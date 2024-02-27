@@ -1,6 +1,6 @@
 import { createWriteStream } from "fs";
 import path from "path";
-import shortid from "shortid";
+import { nanoid } from "nanoid";
 import { logger } from "../libraries";
 import { imageAlreadyInDbCheck } from "./imageAlreadyInDbCheck";
 import { deleteImage } from "./deleteImage";
@@ -14,10 +14,11 @@ import { imageExtensionCheck } from "./imageExtensionCheck";
  * @returns Path of an uploaded image.
  */
 export const uploadImage = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   newImageFile: any,
   oldImagePath: string | null,
 ): Promise<{ newImagePath: string; imageAlreadyInDbPath: string }> => {
-  const id = shortid.generate();
+  const id = nanoid();
 
   const { createReadStream, filename } = await newImageFile;
 
@@ -33,6 +34,7 @@ export const uploadImage = async (
         ),
       )
       .on("close", resolve)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .on("error", (error: any) => reject(error))
       .on("finish", () =>
         resolve({
