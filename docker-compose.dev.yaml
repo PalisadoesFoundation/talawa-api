@@ -18,7 +18,7 @@ services:
   talawa-api-dev-container:
     build:
       context: .
-      dockerfile: docker/Dockerfile.dev
+      dockerfile: Dockerfile.dev
     ports:
       - 4000:4000
     volumes:

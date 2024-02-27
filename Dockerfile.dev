@@ -16,8 +16,6 @@ COPY --from=dependencies /usr/src/app/node_modules ./node_modules
 
 COPY . .
 
-RUN npm run build
-
 # Stage 3: Final image
 FROM node:alpine
 
@@ -27,4 +25,4 @@ COPY --from=builder /usr/src/app .
 
 EXPOSE 4000
 
-CMD ["npm","start"]
+CMD ["npm", "run", "dev"]

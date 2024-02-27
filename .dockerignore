@@ -1,5 +1,8 @@
 node_modules
 videos
+.env
 .git
-
-
+.gitignore
+.dockerignore
+Dockerfile.dev
+Dockerfile.prod
