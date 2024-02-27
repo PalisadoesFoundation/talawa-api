@@ -147,9 +147,15 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       context,
     );
 
-    expect(createdAdvertisementPayload).toHaveProperty("name", "myad");
+    expect(createdAdvertisementPayload?.advertisement).toHaveProperty(
+      "name",
+      "myad",
+    );
 
-    expect(createdAdvertisementPayload).toHaveProperty("type", "POPUP");
+    expect(createdAdvertisementPayload?.advertisement).toHaveProperty(
+      "type",
+      "POPUP",
+    );
   });
 
   it(`creates the post and throws an error for unsupported file type`, async () => {
@@ -188,7 +194,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     );
     const args: MutationCreateAdvertisementArgs = {
       input: {
-        name: "myad",
+        name: "myadvertisement",
         organizationId: testOrganization?._id,
         type: "POPUP",
         mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
@@ -210,9 +216,14 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       args,
       context,
     );
+    expect(createdAdvertisementPayload?.advertisement).toHaveProperty(
+      "name",
+      "myadvertisement",
+    );
 
-    expect(createdAdvertisementPayload).toHaveProperty("name", "myad");
-
-    expect(createdAdvertisementPayload).toHaveProperty("type", "POPUP");
+    expect(createdAdvertisementPayload?.advertisement).toHaveProperty(
+      "type",
+      "POPUP",
+    );
   });
 });

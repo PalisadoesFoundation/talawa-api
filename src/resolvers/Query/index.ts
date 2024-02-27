@@ -2,7 +2,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { isSampleOrganization } from "../Query/organizationIsSample";
 import { actionItem } from "./actionItem";
 import { actionItemCategoriesByOrganization } from "./actionItemCategoriesByOrganization";
-import { advertisements } from "./advertisements";
+import { advertisementsConnection } from "./advertisementsConnection";
 import { actionItemCategory } from "./actionItemCategory";
 import { actionItemsByEvent } from "./actionItemsByEvent";
 import { actionItemsByOrganization } from "./actionItemsByOrganization";
@@ -51,7 +51,7 @@ export const Query: QueryResolvers = {
   eventsByOrganization,
   eventsByOrganizationConnection,
   getDonationById,
-  advertisements,
+  advertisementsConnection,
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getlanguage,

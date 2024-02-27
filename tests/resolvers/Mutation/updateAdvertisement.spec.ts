@@ -188,7 +188,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         creatorId: updatedTestAdvertisement.creatorId,
       };
     }
-    expect(advertisement).toEqual(expectedAdvertisement);
+    expect(advertisement).toEqual({ advertisement: expectedAdvertisement });
   });
 
   it(`updates the advertisement media and returns it`, async () => {
@@ -237,7 +237,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         creatorId: updatedTestAdvertisement.creatorId,
       };
     }
-    expect(advertisement).toEqual(expectedAdvertisement);
+    expect(advertisement).toEqual({ advertisement: expectedAdvertisement });
   });
 
   it(`updates the advertisement media with unsupported file type`, async () => {

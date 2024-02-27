@@ -107,6 +107,10 @@ export const types = gql`
     success: Boolean!
   }
 
+  type DeleteAdvertisementPayload {
+    advertisement: Advertisement
+  }
+
   type DirectChat {
     _id: ID!
     users: [User!]!
@@ -160,15 +164,6 @@ export const types = gql`
     edges: [AdvertisementEdge]
     pageInfo: ConnectionPageInfo
     totalCount: Int
-  }
-
-  extend type Organization {
-    advertisements(
-      after: String
-      before: String
-      first: Int
-      last: Int
-    ): AdvertisementsConnection
   }
 
   type UpdateAdvertisementPayload {

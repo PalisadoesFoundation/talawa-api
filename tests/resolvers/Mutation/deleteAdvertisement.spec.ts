@@ -32,6 +32,7 @@ import {
 } from "../../../src/constants";
 import { requestContext } from "../../../src/libraries";
 import { ApplicationError } from "../../../src/libraries/errors";
+import type { InterfaceAdvertisement } from "../../../src/models";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -163,7 +164,8 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       args,
       context,
     );
-    const createdAdvertisementId = createdAdvertisementPayload?._id || "";
+    const createdAdvertisement =
+      createdAdvertisementPayload?.advertisement as InterfaceAdvertisement;
 
     // deleting the ad
     const { deleteAdvertisement } = await import(
@@ -172,13 +174,10 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
 
     const deleteAdvertisementPayload = await deleteAdvertisement?.(
       {},
-      { id: createdAdvertisementId },
+      { id: createdAdvertisement?._id },
       context,
     );
-
-    expect(deleteAdvertisementPayload).toEqual({
-      success: true,
-    });
+    expect(deleteAdvertisementPayload).toEqual(createdAdvertisementPayload);
   });
   it("should throw NOT_FOUND_ERROR on wrong advertisement", async () => {
     // deleting

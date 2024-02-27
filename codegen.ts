@@ -32,12 +32,6 @@ const config: CodegenConfig = {
 
           Advertisement: "../models/Advertisement#InterfaceAdvertisement",
 
-          CreateAdvertisementPayload:
-            "../models/Advertisement#InterfaceAdvertisement",
-
-          UpdateAdvertisementPayload:
-            "../models/Advertisement#InterfaceAdvertisement",
-
           AgendaCategory: "../models/AgendaCategory#InterfaceAgendaCategory",
 
           CheckIn: "../models/CheckIn#InterfaceCheckIn",

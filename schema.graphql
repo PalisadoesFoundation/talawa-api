@@ -204,7 +204,7 @@ input CreateAdvertisementInput {
   name: String!
   organizationId: ID!
   startDate: Date!
-  type: String!
+  type: AdvertisementType!
 }
 
 type CreateAdvertisementPayload {
@@ -408,6 +408,10 @@ type DefaultConnectionPageInfo implements ConnectionPageInfo {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
   startCursor: String
+}
+
+type DeleteAdvertisementPayload {
+  advertisement: Advertisement
 }
 
 type DeletePayload {
@@ -887,7 +891,7 @@ type Mutation {
   createSampleOrganization: Boolean!
   createUserFamily(data: createUserFamilyInput!): UserFamily!
   createUserTag(input: CreateUserTagInput!): UserTag
-  deleteAdvertisement(id: ID!): DeletePayload!
+  deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
   deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
@@ -1202,7 +1206,7 @@ type Query {
   actionItemsByEvent(eventId: ID!): [ActionItem]
   actionItemsByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
-  advertisements: [Advertisement]
+  advertisementsConnection: [Advertisement]
   agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!

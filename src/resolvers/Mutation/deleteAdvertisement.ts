@@ -8,7 +8,6 @@ import {
 } from "../../constants";
 
 export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (_parent, args, context) => {
     const currentUser = await User.findOne({
       _id: context.userId,
@@ -42,10 +41,16 @@ export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
       );
     }
 
+    const advertisement = {
+      ...existingAdvertisement,
+      mediaUrl: `${context.apiRootUrl}${existingAdvertisement.mediaUrl}`,
+      _id: existingAdvertisement._id.toString(),
+    };
+    console.log(advertisement);
     // Deletes the ad.
-    const deleteAdvertisement = await Advertisement.deleteOne({
+    await Advertisement.deleteOne({
       _id: args.id,
     });
     // Returns deleted ad.
-    return { success: deleteAdvertisement.deletedCount ? true : false };
+    return { advertisement };
   };

@@ -4,7 +4,7 @@ import type mongoose from "mongoose";
 import { Advertisement } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestAdvertisement } from "../../helpers/advertisement";
-import { advertisements } from "../../../src/resolvers/Query/advertisements";
+import { advertisementsConnection } from "../../../src/resolvers/Query/advertisementsConnection";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -23,7 +23,7 @@ describe("resolvers -> Query -> advertisments", () => {
   };
 
   it(`returns list of all existing advertisement`, async () => {
-    const adsPayload = await advertisements?.({}, {}, context);
+    const adsPayload = await advertisementsConnection?.({}, {}, context);
 
     let ads = await Advertisement.find().lean();
     ads = ads.map((advertisement) => ({

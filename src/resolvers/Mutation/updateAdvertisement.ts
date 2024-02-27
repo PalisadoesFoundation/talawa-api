@@ -132,6 +132,6 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       creatorId: updatedAdvertisement.creatorId,
     };
     return {
-      ...updatedAdvertisementPayload,
+      advertisement: { ...updatedAdvertisementPayload },
     };
   };

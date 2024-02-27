@@ -465,7 +465,7 @@ export const inputs = gql`
     name: String!
     organizationId: ID!
     startDate: Date!
-    type: String!
+    type: AdvertisementType!
     mediaFile: String!
   }
 `;

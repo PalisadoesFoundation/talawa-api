@@ -126,7 +126,7 @@ export const mutations = gql`
 
     createSampleOrganization: Boolean! @auth
 
-    deleteAdvertisement(id: ID!): DeletePayload!
+    deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
 
     deleteAgendaCategory(id: ID!): ID!
 

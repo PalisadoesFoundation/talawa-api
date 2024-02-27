@@ -90,19 +90,25 @@ describe("resolvers -> Organization -> Advertisement", () => {
     expect(connection).toEqual({
       edges: [
         {
-          cursor: testAdvertisement2?._id,
-          node: testAdvertisement2,
+          cursor: testAdvertisement2?._id.toString(),
+          node: {
+            ...testAdvertisement2,
+            _id: testAdvertisement2?._id.toString(),
+          },
         },
         {
-          cursor: testAdvertisement1?._id,
-          node: testAdvertisement1,
+          cursor: testAdvertisement1?._id.toString(),
+          node: {
+            ...testAdvertisement1,
+            _id: testAdvertisement1?._id.toString(),
+          },
         },
       ],
       pageInfo: {
-        endCursor: testAdvertisement1?._id,
+        endCursor: testAdvertisement1?._id.toString(),
         hasNextPage: false,
         hasPreviousPage: false,
-        startCursor: testAdvertisement2?._id,
+        startCursor: testAdvertisement2?._id.toString(),
       },
       totalCount,
     });
