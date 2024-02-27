@@ -378,6 +378,7 @@ export const types = gql`
       first: PositiveInt
       last: PositiveInt
     ): UserTagsConnection
+    funds: [Fund]
     customFields: [OrganizationCustomField!]!
   }
 
