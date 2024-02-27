@@ -1,6 +1,5 @@
 import "dotenv/config";
-import mongoose from "mongoose";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { UserFamily } from "../../../src/models/userFamily";
 import type { MutationRemoveUserFromUserFamilyArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -60,10 +59,12 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       }
       const args: MutationRemoveUserFromUserFamilyArgs = {
         familyId: testUserFamily.id,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: new mongoose.Types.ObjectId()._id!.toString(),
       };
 
       const context = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[1]?.id,
       };
 
@@ -90,10 +91,12 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
         familyId: Types.ObjectId().toString(),
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[4]?._id,
       };
 
       const context = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[0]?._id,
       };
 
@@ -120,11 +123,14 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         familyId: testUserFamily?.id,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[3]?._id,
       };
 
       const context = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?.id,
       };
 
@@ -150,11 +156,14 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         familyId: testUserFamily?.id,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[3]?._id,
       };
 
       const context = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?.id,
       };
 
@@ -180,11 +189,14 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         familyId: testUserFamily?.id,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?._id,
       };
 
       const context = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?.id,
       };
 
@@ -210,11 +222,14 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         familyId: testUserFamily?.id,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[1]?._id,
       };
 
       const context = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?.id,
       };
 
@@ -240,11 +255,14 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         familyId: testUserFamily?.id,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?._id,
       };
 
       const context = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[1]?.id,
       };
 
@@ -269,11 +287,14 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       (message) => `Translated ${message}`,
     );
     const args: MutationRemoveUserFromUserFamilyArgs = {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       familyId: testUserFamily?.id,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       userId: testUsers[4]?._id,
     };
 
     const context = {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       userId: testUsers[2]?.id,
     };
 
