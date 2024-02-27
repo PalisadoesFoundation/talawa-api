@@ -943,7 +943,7 @@ type Mutation {
   updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
-  updateEvent(data: UpdateEventInput, id: ID!): Event!
+  updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventUpdateType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
   updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
@@ -1263,6 +1263,12 @@ input RecurrenceRuleInput {
   weekDays: [WeekDays]
 }
 
+enum RecurringEventUpdateType {
+  AllInstances
+  ThisAndFollowingInstances
+  ThisInstance
+}
+
 """
 Possible variants of ordering in which sorting on a field should be
 applied for a connection or other list type data structures.
@@ -1361,6 +1367,7 @@ input UpdateEventInput {
   endDate: Date
   endTime: Time
   isPublic: Boolean
+  isRecurringEventException: Boolean
   isRegisterable: Boolean
   latitude: Latitude
   location: String

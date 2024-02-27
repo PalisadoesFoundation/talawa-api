@@ -1555,6 +1555,8 @@ export type MutationUpdateAgendaCategoryArgs = {
 export type MutationUpdateEventArgs = {
   data?: InputMaybe<UpdateEventInput>;
   id: Scalars['ID']['input'];
+  recurrenceRuleData?: InputMaybe<RecurrenceRuleInput>;
+  recurringEventUpdateType?: InputMaybe<RecurringEventUpdateType>;
 };
 
 
@@ -2181,6 +2183,11 @@ export type RecurrenceRuleInput = {
   weekDays?: InputMaybe<Array<InputMaybe<WeekDays>>>;
 };
 
+export type RecurringEventUpdateType =
+  | 'AllInstances'
+  | 'ThisAndFollowingInstances'
+  | 'ThisInstance';
+
 /**
  * Possible variants of ordering in which sorting on a field should be
  * applied for a connection or other list type data structures.
@@ -2276,6 +2283,7 @@ export type UpdateEventInput = {
   endDate?: InputMaybe<Scalars['Date']['input']>;
   endTime?: InputMaybe<Scalars['Time']['input']>;
   isPublic?: InputMaybe<Scalars['Boolean']['input']>;
+  isRecurringEventException?: InputMaybe<Scalars['Boolean']['input']>;
   isRegisterable?: InputMaybe<Scalars['Boolean']['input']>;
   latitude?: InputMaybe<Scalars['Latitude']['input']>;
   location?: InputMaybe<Scalars['String']['input']>;
@@ -2777,6 +2785,7 @@ export type ResolversTypes = {
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
   RecurrenceRuleInput: RecurrenceRuleInput;
+  RecurringEventUpdateType: RecurringEventUpdateType;
   SortedByOrder: SortedByOrder;
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
