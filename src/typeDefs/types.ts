@@ -384,6 +384,7 @@ export const types = gql`
       first: PositiveInt
       last: PositiveInt
     ): PostsConnection
+    funds: [Fund]
     customFields: [OrganizationCustomField!]!
   }
 
