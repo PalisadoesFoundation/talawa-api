@@ -1693,19 +1693,19 @@ export type OrganizationAdminsArgs = {
 };
 
 
+export type OrganizationAdvertisementsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
 
 export type OrganizationPostsArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
   last?: InputMaybe<Scalars['PositiveInt']['input']>;
-}
-export type OrganizationAdvertisementsArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-
 };
 
 
