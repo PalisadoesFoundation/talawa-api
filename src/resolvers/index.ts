@@ -1,28 +1,4 @@
-import type { Resolvers } from "../types/generatedGraphQLTypes";
-import { ActionItem } from "./ActionItem";
-import { ActionItemCategory } from "./ActionItemCategory";
-import { CheckIn } from "./CheckIn";
-import { Comment } from "./Comment";
-import { DirectChat } from "./DirectChat";
-import { DirectChatMessage } from "./DirectChatMessage";
-import { Event } from "./Event";
-import { EventVolunteer } from "./EventVolunteer";
-import { Feedback } from "./Feedback";
-import { GroupChat } from "./GroupChat";
-import { GroupChatMessage } from "./GroupChatMessage";
-import { MembershipRequest } from "./MembershipRequest";
-import { Mutation } from "./Mutation";
-import { UserFamily } from "./UserFamily";
-import { Organization } from "./Organization";
-import { Post } from "./Post";
-import { Query } from "./Query";
-import { Subscription } from "./Subscription";
-import { User } from "./User";
-import { UserTag } from "./UserTag";
-import { Advertisement } from "./Advertisement";
 import { composeResolvers } from "@graphql-tools/resolvers-composition";
-import { currentUserExists } from "./middleware/currentUserExists";
-import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
 import {
   DateResolver,
   DateTimeResolver,
@@ -34,6 +10,35 @@ import {
   TimeResolver,
   URLResolver,
 } from "graphql-scalars";
+import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
+import type { Resolvers } from "../types/generatedGraphQLTypes";
+import { ActionItem } from "./ActionItem";
+import { ActionItemCategory } from "./ActionItemCategory";
+import { CheckIn } from "./CheckIn";
+import { Comment } from "./Comment";
+import { DirectChat } from "./DirectChat";
+import { DirectChatMessage } from "./DirectChatMessage";
+import { Event } from "./Event";
+import { EventVolunteer } from "./EventVolunteer";
+import { Feedback } from "./Feedback";
+import { Fund } from "./Fund";
+import { FundraisingCampaign } from "./FundraisingCampagin";
+import { GroupChat } from "./GroupChat";
+import { GroupChatMessage } from "./GroupChatMessage";
+import { MembershipRequest } from "./MembershipRequest";
+import { Mutation } from "./Mutation";
+import { Organization } from "./Organization";
+import { Post } from "./Post";
+
+import { Query } from "./Query";
+import { Subscription } from "./Subscription";
+import { User } from "./User";
+import { UserFamily } from "./UserFamily";
+import { UserTag } from "./UserTag";
+
+import { Advertisement } from "./Advertisement";
+
+import { currentUserExists } from "./middleware/currentUserExists";
 
 const resolvers: Resolvers = {
   ActionItem,
@@ -46,6 +51,8 @@ const resolvers: Resolvers = {
   Event,
   EventVolunteer,
   Feedback,
+  Fund,
+  FundraisingCampaign,
   GroupChat,
   UserFamily,
   GroupChatMessage,
