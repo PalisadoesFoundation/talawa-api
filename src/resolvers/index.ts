@@ -21,7 +21,7 @@ import { User } from "./User";
 import { UserTag } from "./UserTag";
 import { composeResolvers } from "@graphql-tools/resolvers-composition";
 import { currentUserExists } from "./middleware/currentUserExists";
-import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
+import GraphQLUpload from "graphql-upload/GraphQLUpload.js";
 import {
   DateResolver,
   DateTimeResolver,

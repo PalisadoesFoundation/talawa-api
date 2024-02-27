@@ -14,16 +14,17 @@ services:
       - 6379:6379
     volumes:
       - redis-data:/data/redis
-    talawa-api-prod-container:
-      build:
+
+  talawa-api-prod-container:
+    build:
       context: .
       dockerfile: Dockerfile.prod
-      ports:
+    ports:
       - 4000:4000
-      depends_on:
+    depends_on:
       - mongodb
       - redis-stack-server
-      environment:
+    environment:
       - MONGO_DB_URL=mongodb://mongodb:27017
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379

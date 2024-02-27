@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json .
 
-RUN npm install
+RUN npm install 
 
 # Stage 2: Build
 FROM node:lts AS builder
@@ -23,7 +23,7 @@ FROM node:alpine
 
 WORKDIR /usr/src/app
 
-COPY --from=builder /usr/src/app .
+COPY --from=builder /usr/src/app/build ./build
 
 EXPOSE 4000
 
