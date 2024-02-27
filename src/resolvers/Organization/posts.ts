@@ -118,12 +118,12 @@ export const parseCursor = async ({
       message: `Argument ${cursorName} is an invalid cursor.`,
       path: cursorPath,
     });
-    if (errors.length !== 0) {
-      return {
-        errors,
-        isSuccessful: false,
-      };
-    }
+  }
+  if (errors.length !== 0) {
+    return {
+      errors,
+      isSuccessful: false,
+    };
   }
 
   return {

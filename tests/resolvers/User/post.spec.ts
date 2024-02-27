@@ -11,7 +11,11 @@ import {
 } from "../../../src/resolvers/User/posts";
 import type { PostEdge } from "../../../src/types/generatedGraphQLTypes";
 import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import { createTestPost, type TestPostType } from "../../helpers/posts";
 import type {
   TestOrganizationType,
@@ -26,6 +30,7 @@ let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
   const userOrgAndPost = await createTestPost();
   testUser = userOrgAndPost[0];
   testOrganization = userOrgAndPost[1];
@@ -66,7 +71,7 @@ describe("resolvers -> User -> post", () => {
       },
       {},
     );
-
+    console.log(connection, testPost2?._id, testPost?._id);
     const totalCount = await Post.find({
       creatorId: testUser?._id,
     }).countDocuments();
@@ -75,6 +80,7 @@ describe("resolvers -> User -> post", () => {
 
     // Check individual properties
     // console.log(connection?.edges[0]);
+
     expect((connection?.edges[0] as unknown as PostEdge).cursor).toEqual(
       testPost2?._id.toString(),
     );
