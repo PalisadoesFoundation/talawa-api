@@ -10,39 +10,39 @@ import mongodb from "mongodb";
  * @returns The function returns a Promise<boolean>.
  */
 export async function shouldWipeExistingData(url: string): Promise<boolean> {
-    let shouldImport = false;
-    const client = new mongodb.MongoClient(url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    try {
-      await client.connect();
-      const db = client.db();
-      const collections = await db.listCollections().toArray();
-  
-      if (collections.length > 0) {
-        const { confirmDelete } = await inquirer.prompt({
-          type: "confirm",
-          name: "confirmDelete",
-          message:
-            "We found data in the database. Do you want to delete the existing data before importing?",
-        });
-  
-        if (confirmDelete) {
-          for (const collection of collections) {
-            await db.collection(collection.name).deleteMany({});
-          }
-          console.log("All existing data has been deleted.");
-          shouldImport = true;
-        } else {
-          console.log("Deletion & import operation cancelled.");
+  let shouldImport = false;
+  const client = new mongodb.MongoClient(url, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  try {
+    await client.connect();
+    const db = client.db();
+    const collections = await db.listCollections().toArray();
+
+    if (collections.length > 0) {
+      const { confirmDelete } = await inquirer.prompt({
+        type: "confirm",
+        name: "confirmDelete",
+        message:
+          "We found data in the database. Do you want to delete the existing data before importing?",
+      });
+
+      if (confirmDelete) {
+        for (const collection of collections) {
+          await db.collection(collection.name).deleteMany({});
         }
-      } else {
+        console.log("All existing data has been deleted.");
         shouldImport = true;
+      } else {
+        console.log("Deletion & import operation cancelled.");
       }
-    } catch (error) {
-      console.error("Could not connect to database to check for data");
+    } else {
+      shouldImport = true;
     }
-    client.close();
-    return shouldImport;
+  } catch (error) {
+    console.error("Could not connect to database to check for data");
   }
+  client.close();
+  return shouldImport;
+}
