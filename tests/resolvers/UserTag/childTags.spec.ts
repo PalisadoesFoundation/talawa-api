@@ -63,19 +63,25 @@ describe("childTags resolver", () => {
     expect(connection).toEqual({
       edges: [
         {
-          cursor: testChildTag2?._id,
-          node: testChildTag2,
+          cursor: testChildTag2?._id.toString(),
+          node: {
+            ...testChildTag2,
+            _id: testChildTag2?._id.toString(),
+          },
         },
         {
-          cursor: testChildTag1?._id,
-          node: testChildTag1,
+          cursor: testChildTag1?._id.toString(),
+          node: {
+            ...testChildTag1,
+            _id: testChildTag1?._id.toString(),
+          },
         },
       ],
       pageInfo: {
-        endCursor: testChildTag1?._id,
+        endCursor: testChildTag1?._id.toString(),
         hasNextPage: false,
         hasPreviousPage: false,
-        startCursor: testChildTag2?._id,
+        startCursor: testChildTag2?._id.toString(),
       },
       totalCount,
     });

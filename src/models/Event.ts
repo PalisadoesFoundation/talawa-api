@@ -4,6 +4,7 @@ import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
+import type { InterfaceRecurrenceRule } from "./RecurrenceRule";
 
 /**
  * This is an interface representing a document for an event in the database(MongoDB).
@@ -13,18 +14,22 @@ export interface InterfaceEvent {
   admins: PopulatedDoc<InterfaceUser & Document>[];
   allDay: boolean;
   attendees: string | undefined;
+  baseRecurringEventId: PopulatedDoc<InterfaceEvent & Document>;
   createdAt: Date;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
   description: string;
   endDate: string | undefined;
   endTime: string | undefined;
+  isBaseRecurringEvent: boolean;
   isPublic: boolean;
+  isRecurringEventException: boolean;
   isRegisterable: boolean;
   latitude: number | undefined;
   location: string | undefined;
   longitude: number;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   recurrance: string;
+  recurrenceRuleId: PopulatedDoc<InterfaceRecurrenceRule & Document>;
   recurring: boolean;
   startDate: string;
   startTime: string | undefined;
@@ -120,9 +125,7 @@ const eventSchema = new Schema(
     },
     endDate: {
       type: Date,
-      required: function (this: InterfaceEvent): boolean {
-        return !this.allDay;
-      },
+      required: false,
     },
     startTime: {
       type: Date,

@@ -666,7 +666,7 @@ enum Frequency {
 
 type Fund {
   _id: ID!
-  campaign: [FundraisingCampaign]!
+  campaigns: [FundraisingCampaign!]
   createdAt: DateTime!
   isArchived: Boolean!
   isDefault: Boolean!
@@ -686,6 +686,15 @@ input FundCampaignInput {
   startDate: Date!
 }
 
+input FundCampaignPledgeInput {
+  amount: Float!
+  campaignId: ID!
+  currency: Currency!
+  endDate: Date
+  startDate: Date
+  userIds: [ID!]!
+}
+
 input FundInput {
   isArchived: Boolean!
   isDefault: Boolean!
@@ -700,11 +709,22 @@ type FundraisingCampaign {
   createdAt: DateTime!
   currency: Currency!
   endDate: Date!
-  fund: Fund!
+  fundId: Fund!
   fundingGoal: Float!
   name: String!
+  pledges: [FundraisingCampaignPledge]
   startDate: Date!
   updatedAt: DateTime!
+}
+
+type FundraisingCampaignPledge {
+  _id: ID!
+  amount: Float!
+  campaigns: [FundraisingCampaign]!
+  currency: Currency!
+  endDate: Date
+  startDate: Date
+  users: [User]!
 }
 
 enum Gender {
@@ -849,6 +869,7 @@ type Mutation {
   addLanguageTranslation(data: LanguageInput!): Language!
   addOrganizationCustomField(name: String!, organizationId: ID!, type: String!): OrganizationCustomField!
   addOrganizationImage(file: String!, organizationId: String!): Organization!
+  addPledgeToFundraisingCampaign(campaignId: ID!, pledgeId: ID!): FundraisingCampaignPledge!
   addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
   addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
@@ -875,6 +896,7 @@ type Mutation {
   createEventVolunteerGroup(data: EventVolunteerGroupInput!): EventVolunteerGroup!
   createFund(data: FundInput!): Fund!
   createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
+  createFundraisingCampaignPledge(data: FundCampaignPledgeInput!): FundraisingCampaignPledge!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
@@ -912,6 +934,8 @@ type Mutation {
   removeEventVolunteer(id: ID!): EventVolunteer!
   removeEventVolunteerGroup(id: ID!): EventVolunteerGroup!
   removeFund(id: ID!): Fund!
+  removeFundraisingCampaign(id: ID!): FundraisingCampaign!
+  removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -941,10 +965,12 @@ type Mutation {
   updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
-  updateEvent(data: UpdateEventInput, id: ID!): Event!
+  updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventUpdateType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateEventVolunteerGroup(data: UpdateEventVolunteerGroupInput, id: ID!): EventVolunteerGroup!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
+  updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
+  updateFundraisingCampaignPledge(data: UpdateFundCampaignPledgeInput!, id: ID!): FundraisingCampaignPledge!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
@@ -1218,6 +1244,8 @@ type Query {
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getFundById(id: ID!): Fund!
+  getFundraisingCampaignById(id: ID!): FundraisingCampaign!
+  getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
@@ -1256,6 +1284,12 @@ input RecurrenceRuleInput {
   count: Int
   frequency: Frequency
   weekDays: [WeekDays]
+}
+
+enum RecurringEventUpdateType {
+  AllInstances
+  ThisAndFollowingInstances
+  ThisInstance
 }
 
 """
@@ -1356,6 +1390,7 @@ input UpdateEventInput {
   endDate: Date
   endTime: Time
   isPublic: Boolean
+  isRecurringEventException: Boolean
   isRegisterable: Boolean
   latitude: Latitude
   location: String
@@ -1378,6 +1413,21 @@ input UpdateEventVolunteerInput {
   isAssigned: Boolean
   isInvited: Boolean
   response: EventVolunteerResponse
+}
+
+input UpdateFundCampaignInput {
+  currency: Currency
+  endDate: Date
+  fundingGoal: Float
+  name: String
+  startDate: Date
+}
+
+input UpdateFundCampaignPledgeInput {
+  amount: Float
+  currency: Currency
+  endDate: Date
+  startDate: Date
 }
 
 input UpdateFundInput {
