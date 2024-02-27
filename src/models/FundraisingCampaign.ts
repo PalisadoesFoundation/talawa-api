@@ -2,6 +2,7 @@ import type { Model, PopulatedDoc, Types } from "mongoose";
 
 import { Schema, model, models } from "mongoose";
 import type { InterfaceFund } from "./Fund";
+import type { InterfaceFundraisingCampaignPledges } from "./FundraisingCampaignPledge";
 export enum CurrencyType {
   AED = "AED", // United Arab Emirates Dirham
   AFN = "AFN", // Afghan Afghani
@@ -188,6 +189,7 @@ export interface InterfaceFundraisingCampaign {
   endDate: Date;
   fundingGoal: number;
   currency: CurrencyType;
+  pledges: PopulatedDoc<InterfaceFundraisingCampaignPledges & Document>[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -208,6 +210,7 @@ const fundraisingCampaignSchema = new Schema(
     },
     endDate: {
       type: Date,
+      required: true,
     },
     fundingGoal: {
       type: Number,
@@ -218,6 +221,12 @@ const fundraisingCampaignSchema = new Schema(
       required: true,
       enum: Object.values(CurrencyType),
     },
+    pledges: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "FundraisingCampaignPledge",
+      },
+    ],
   },
   {
     timestamps: true,
