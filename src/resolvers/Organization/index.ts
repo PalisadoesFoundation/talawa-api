@@ -8,11 +8,18 @@ import { funds } from "./funds";
 import { image } from "./image";
 import { members } from "./members";
 import { membershipRequests } from "./membershipRequests";
+
 import { pinnedPosts } from "./pinnedPosts";
+
+
+import { advertisements } from "./advertisements";
+
+
 // import { userTags } from "./userTags";
 
 export const Organization: OrganizationResolvers = {
   admins,
+  advertisements,
   actionItemCategories,
   agendaCategories,
   blockedUsers,

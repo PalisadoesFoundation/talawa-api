@@ -35,11 +35,16 @@ import { Subscription } from "./Subscription";
 import { User } from "./User";
 import { UserFamily } from "./UserFamily";
 import { UserTag } from "./UserTag";
+
+import { Advertisement } from "./Advertisement";
+import { composeResolvers } from "@graphql-tools/resolvers-composition";
+
 import { currentUserExists } from "./middleware/currentUserExists";
 
 const resolvers: Resolvers = {
   ActionItem,
   ActionItemCategory,
+  Advertisement,
   CheckIn,
   Comment,
   DirectChat,
@@ -96,6 +101,7 @@ const resolversComposition = {
   "Mutation.unregisterForEventByUser": [currentUserExists()],
   "Mutation.updateLanguage": [currentUserExists()],
   "Mutation.updatePost": [currentUserExists()],
+  "Mutation.createAdvertisement": [currentUserExists()],
 };
 
 export const composedResolvers: Resolvers = composeResolvers(
