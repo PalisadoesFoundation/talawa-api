@@ -1,11 +1,11 @@
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { InterfaceFundraisingCampaign } from "../../../src/models";
+import { FundraisingCampaignPledge } from "../../../src/models/FundraisingCampaignPledge";
 import { pledges as pledgesResolver } from "../../../src/resolvers/FundraisingCampagin/campaignPledges";
 import { createTestFund, type TestFundType } from "../../helpers/Fund";
 import { createTestFundraisingCampaign } from "../../helpers/FundraisingCampaign";
 import { connect, disconnect } from "../../helpers/db";
-import { FundraisingCampaignPledge } from "../../../src/models/FundraisingCampaignPledge";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testFund: TestFundType;
 let testFundCampaigns: InterfaceFundraisingCampaign;
@@ -21,7 +21,7 @@ afterAll(async () => {
 });
 describe("resolvers->FundrasingCampaign->pledge", () => {
   it("returns all pledges for parent campaign", async () => {
-    const parent = testFundCampaigns
+    const parent = testFundCampaigns;
     if (parent) {
       const pledgesPayload = await pledgesResolver?.(parent, {}, {});
       const pledges = await FundraisingCampaignPledge.find({
