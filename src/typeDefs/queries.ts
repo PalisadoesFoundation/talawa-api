@@ -101,16 +101,6 @@ export const queries = gql`
 
     post(id: ID!): Post
 
-    postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
-
-    postsByOrganizationConnection(
-      id: ID!
-      where: PostWhereInput
-      first: Int
-      skip: Int
-      orderBy: PostOrderByInput
-    ): PostsConnection
-
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
 
     registrantsByEvent(id: ID!): [User]
