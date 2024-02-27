@@ -1,11 +1,12 @@
 import type { Document, Model, PopulatedDoc, Types } from "mongoose";
 import { Schema, model, models } from "mongoose";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
+import type { InterfaceFund } from "./Fund";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceMessage } from "./Message";
 import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
-import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
@@ -38,6 +39,7 @@ export interface InterfaceOrganization {
   createdAt: Date;
   updatedAt: Date;
   userRegistrationRequired: boolean;
+  funds: PopulatedDoc<InterfaceFund & Document>[];
   visibleInSearch: boolean;
 }
 /**
@@ -170,6 +172,12 @@ const organizationSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "CustomField",
+      },
+    ],
+    funds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Fund",
       },
     ],
   },

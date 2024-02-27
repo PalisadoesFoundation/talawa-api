@@ -975,6 +975,7 @@ type Organization {
   creator: User
   customFields: [OrganizationCustomField!]!
   description: String!
+  funds: [Fund]
   image: String
   members: [User]
   membershipRequests: [MembershipRequest]
