@@ -68,18 +68,29 @@ type Advertisement {
   createdAt: DateTime!
   creator: User
   endDate: Date!
-  link: String!
+  mediaUrl: URL!
   name: String!
-  orgId: ID!
+  organization: Organization
   startDate: Date!
   type: AdvertisementType!
   updatedAt: DateTime!
+}
+
+type AdvertisementEdge {
+  cursor: String
+  node: Advertisement
 }
 
 enum AdvertisementType {
   BANNER
   MENU
   POPUP
+}
+
+type AdvertisementsConnection {
+  edges: [AdvertisementEdge]
+  pageInfo: ConnectionPageInfo
+  totalCount: Int
 }
 
 type AgendaCategory {
@@ -185,6 +196,19 @@ input CreateActionItemInput {
   dueDate: Date
   eventId: ID
   preCompletionNotes: String
+}
+
+input CreateAdvertisementInput {
+  endDate: Date!
+  mediaFile: String!
+  name: String!
+  organizationId: ID!
+  startDate: Date!
+  type: AdvertisementType!
+}
+
+type CreateAdvertisementPayload {
+  advertisement: Advertisement
 }
 
 input CreateAgendaCategoryInput {
@@ -384,6 +408,10 @@ type DefaultConnectionPageInfo implements ConnectionPageInfo {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
   startCursor: String
+}
+
+type DeleteAdvertisementPayload {
+  advertisement: Advertisement
 }
 
 type DeletePayload {
@@ -866,7 +894,7 @@ type Mutation {
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): User!
-  createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
+  createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
@@ -885,7 +913,7 @@ type Mutation {
   createSampleOrganization: Boolean!
   createUserFamily(data: createUserFamilyInput!): UserFamily!
   createUserTag(input: CreateUserTagInput!): UserTag
-  deleteAdvertisementById(id: ID!): DeletePayload!
+  deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
   deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
@@ -905,7 +933,6 @@ type Mutation {
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): User!
-  removeAdvertisement(id: ID!): Advertisement
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!
@@ -968,6 +995,7 @@ type Organization {
   actionItemCategories: [ActionItemCategory]
   address: Address
   admins(adminId: ID): [User!]
+  advertisements(after: String, before: String, first: Int, last: Int): AdvertisementsConnection
   agendaCategories: [AgendaCategory]
   apiUrl: URL!
   blockedUsers: [User]
@@ -1204,6 +1232,7 @@ type Query {
   actionItemsByEvent(eventId: ID!): [ActionItem]
   actionItemsByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
+  advertisementsConnection: [Advertisement]
   agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
@@ -1214,7 +1243,6 @@ type Query {
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
-  getAdvertisements: [Advertisement]
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
@@ -1346,7 +1374,7 @@ input UpdateActionItemInput {
 input UpdateAdvertisementInput {
   _id: ID!
   endDate: Date
-  link: String
+  mediaFile: String
   name: String
   startDate: Date
   type: AdvertisementType
