@@ -704,7 +704,7 @@ type FundraisingCampaignPledge {
   currency: Currency!
   endDate: Date
   startDate: Date
-  users: [User!]!
+  users: [User]!
 }
 
 enum Gender {
