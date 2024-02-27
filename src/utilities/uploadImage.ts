@@ -34,8 +34,7 @@ export const uploadImage = async (
         ),
       )
       .on("close", resolve)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .on("error", (error: any) => reject(error))
+      .on("error", (error: Error) => reject(error))
       .on("finish", () =>
         resolve({
           path,
