@@ -17,7 +17,7 @@ COPY --from=dependencies /usr/src/app/node_modules ./node_modules
 COPY . .
 
 # Stage 3: Final image
-FROM node:lts 
+FROM node:alpine
 
 WORKDIR /usr/src/app
 
