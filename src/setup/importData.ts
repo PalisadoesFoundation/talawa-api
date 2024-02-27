@@ -19,19 +19,21 @@ export async function importData(): Promise<void> {
 
   if (shouldImport) {
     console.log("Importing sample data...");
-    await exec(
-      "npm run import:sample-data",
-      (error: ExecException | null, stdout: string, stderr: string) => {
-        if (error) {
-          console.error(`Error: ${error.message}`);
-          abort();
-        }
-        if (stderr) {
-          console.error(`Error: ${stderr}`);
-          abort();
-        }
-        console.log(`Output: ${stdout}`);
-      },
-    );
+    if (process.env.NODE_ENV !== "test") {
+      await exec(
+        "npm run import:sample-data",
+        (error: ExecException | null, stdout: string, stderr: string) => {
+          if (error) {
+            console.error(`Error: ${error.message}`);
+            abort();
+          }
+          if (stderr) {
+            console.error(`Error: ${stderr}`);
+            abort();
+          }
+          console.log(`Output: ${stdout}`);
+        },
+      );
+    }
   }
 }
