@@ -1,3 +1,4 @@
+import { logger } from "../../libraries";
 import type { InterfaceFund } from "../../models";
 import { Fund } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
@@ -15,6 +16,7 @@ export const getFundById: QueryResolvers["getFundById"] = async (
   const fund = await Fund.findOne({
     _id: args.id,
   }).lean();
+  logger.info(fund);
 
   return fund ?? ({} as InterfaceFund);
 };
