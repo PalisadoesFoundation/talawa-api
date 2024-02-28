@@ -1,3 +1,11 @@
+// import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+// import { errors, requestContext } from "../../libraries";
+// import { User, AgendaItemModel } from "../../models";
+// import {
+//   USER_NOT_FOUND_ERROR,
+//   AGENDA_ITEM_NOT_FOUND_ERROR,
+//   UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR,
+// } from "../../constants";
 // /**
 //  * This function removes an agenda item.
 //  * @param _parent - parent of the current request
@@ -7,18 +15,10 @@
 //  * @throws NotFoundError if the user or agenda item is not found
 //  * @throws UnauthorizedError if the user is not the creator of the agenda item
 //  */
-// import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-// import { errors, requestContext } from "../../libraries";
-// import { User, AgendaItemModel } from "../../models";
-// import {
-//   USER_NOT_FOUND_ERROR,
-//   AGENDA_ITEM_NOT_FOUND_ERROR,
-//   UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR,
-// } from "../../constants";
 // export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
-//   _parent,
-//   args,
-//   context
+//   _parent: any,
+//   args: { id: any; },
+//   context: { userId: any; }
 // ): Promise<string> => {
 //   const currentUser = await User.findOne({
 //     _id: context.userId,

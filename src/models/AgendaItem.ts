@@ -63,10 +63,9 @@ export const AgendaItemSchema = new Schema({
   description: {
     type: String,
   },
-  relatedEvent: {
+  relatedEventId: {
     type: Schema.Types.ObjectId,
     ref: "Event",
-    required: true,
   },
   duration: {
     type: String,

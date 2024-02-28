@@ -976,6 +976,7 @@ type Mutation {
   removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): User!
   removeAdvertisement(id: ID!): Advertisement
+  removeAgendaItem(id: ID!): AgendaItem!
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!

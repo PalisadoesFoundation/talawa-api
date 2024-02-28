@@ -1053,6 +1053,7 @@ export type Mutation = {
   removeActionItem: ActionItem;
   removeAdmin: User;
   removeAdvertisement?: Maybe<Advertisement>;
+  removeAgendaItem: AgendaItem;
   removeComment?: Maybe<Comment>;
   removeDirectChat: DirectChat;
   removeEvent: Event;
@@ -1443,6 +1444,11 @@ export type MutationRemoveAdminArgs = {
 
 
 export type MutationRemoveAdvertisementArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationRemoveAgendaItemArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -3675,6 +3681,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationRemoveActionItemArgs, 'id'>>;
   removeAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveAdminArgs, 'data'>>;
   removeAdvertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType, RequireFields<MutationRemoveAdvertisementArgs, 'id'>>;
+  removeAgendaItem?: Resolver<ResolversTypes['AgendaItem'], ParentType, ContextType, RequireFields<MutationRemoveAgendaItemArgs, 'id'>>;
   removeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationRemoveCommentArgs, 'id'>>;
   removeDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationRemoveDirectChatArgs, 'chatId' | 'organizationId'>>;
   removeEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRemoveEventArgs, 'id'>>;

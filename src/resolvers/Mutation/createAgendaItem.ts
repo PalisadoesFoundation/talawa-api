@@ -1,13 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceEvent} from "../../models";
-import {
-  User,
-  Organization,
-  AgendaItemModel,
-  Event
-} from "../../models";
+import type { InterfaceEvent } from "../../models";
+import { User, Organization, AgendaItemModel, Event } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -124,11 +118,11 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
       USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
-  
+
   const createdAgendaItem = await AgendaItemModel.create({
     ...args.input,
     createdBy: currentUser._id,
-    relatedEventId : args.input.relatedEventId,
+    relatedEventId: args.input.relatedEventId,
     updatedAt: new Date(),
     createdAt: new Date(),
   });
@@ -139,7 +133,7 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
     },
     {
       $push: {
-        agendaItems: createAgendaItem,
+        agendaItems: createdAgendaItem,
       },
     },
     { new: true },

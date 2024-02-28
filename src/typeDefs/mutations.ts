@@ -191,6 +191,8 @@ export const mutations = gql`
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
 
+    removeAgendaItem(id: ID!): AgendaItem!
+
     removeEventVolunteer(id: ID!): EventVolunteer! @auth
     removeFund(id: ID!): Fund! @auth
     removeFundraisingCampaign(id: ID!): FundraisingCampaign! @auth
