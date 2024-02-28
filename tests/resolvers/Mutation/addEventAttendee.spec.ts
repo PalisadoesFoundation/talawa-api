@@ -173,12 +173,6 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
     const { addEventAttendee: addEventAttendeeResolver } = await import(
       "../../../src/resolvers/Mutation/addEventAttendee"
     );
-    const { requestContext } = await import("../../../src/libraries");
-
-    vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`,
-    );
-
     process.env.SKIP_ORG_MEMBER_CHECK_TEST = "true";
     const payload = await addEventAttendeeResolver?.({}, args, context);
 
