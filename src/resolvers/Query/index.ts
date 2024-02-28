@@ -27,8 +27,6 @@ import { organizations } from "./organizations";
 import { organizationsConnection } from "./organizationsConnection";
 import { organizationsMemberConnection } from "./organizationsMemberConnection";
 import { post } from "./post";
-import { postsByOrganization } from "./postsByOrganization";
-import { postsByOrganizationConnection } from "./postsByOrganizationConnection";
 import { registeredEventsByUser } from "./registeredEventsByUser";
 import { user } from "./user";
 import { userLanguage } from "./userLanguage";
@@ -63,8 +61,6 @@ export const Query: QueryResolvers = {
   organizationsConnection,
   organizationsMemberConnection,
   post,
-  postsByOrganization,
-  postsByOrganizationConnection,
   registeredEventsByUser,
   user,
   userLanguage,

@@ -1009,6 +1009,7 @@ type Organization {
   membershipRequests: [MembershipRequest]
   name: String!
   pinnedPosts: [Post]
+  posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostsConnection
   updatedAt: DateTime!
   userRegistrationRequired: Boolean!
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
@@ -1158,15 +1159,9 @@ type Post {
   videoUrl: URL
 }
 
-"""A connection to a list of items."""
-type PostConnection {
-  aggregate: AggregatePost!
-
-  """A list of edges."""
-  edges: [Post]!
-
-  """Information to aid in pagination."""
-  pageInfo: PageInfo!
+type PostEdge {
+  cursor: String!
+  node: Post!
 }
 
 input PostInput {
@@ -1226,6 +1221,12 @@ input PostWhereInput {
   title_starts_with: String
 }
 
+type PostsConnection {
+  edges: [PostEdge!]!
+  pageInfo: ConnectionPageInfo!
+  totalCount: PositiveInt
+}
+
 type Query {
   actionItem(id: ID!): ActionItem
   actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
@@ -1264,8 +1265,6 @@ type Query {
   organizationsMemberConnection(first: Int, orderBy: UserOrderByInput, orgId: ID!, skip: Int, where: UserWhereInput): UserConnection!
   plugin(orgId: ID!): [Plugin]
   post(id: ID!): Post
-  postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
-  postsByOrganizationConnection(first: Int, id: ID!, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): PostConnection
   registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
   registrantsByEvent(id: ID!): [User]
   user(id: ID!): User!
@@ -1500,6 +1499,7 @@ type User {
   organizationsBlockedBy: [Organization]
   phone: UserPhone
   pluginCreationAllowed: Boolean!
+  posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostsConnection
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!
