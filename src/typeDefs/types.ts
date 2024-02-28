@@ -127,6 +127,10 @@ export const types = gql`
     success: Boolean!
   }
 
+  type DeleteAdvertisementPayload {
+    advertisement: Advertisement
+  }
+
   type DirectChat {
     _id: ID!
     users: [User!]!
@@ -161,8 +165,8 @@ export const types = gql`
   type Advertisement {
     _id: ID!
     name: String!
-    orgId: ID!
-    link: String!
+    organization: Organization
+    mediaUrl: URL!
     type: AdvertisementType!
     startDate: Date!
     endDate: Date!
@@ -171,7 +175,22 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
+  type AdvertisementEdge {
+    cursor: String
+    node: Advertisement
+  }
+
+  type AdvertisementsConnection {
+    edges: [AdvertisementEdge]
+    pageInfo: ConnectionPageInfo
+    totalCount: Int
+  }
+
   type UpdateAdvertisementPayload {
+    advertisement: Advertisement
+  }
+
+  type CreateAdvertisementPayload {
     advertisement: Advertisement
   }
 
@@ -253,20 +272,30 @@ export const types = gql`
     taxDeductible: Boolean!
     isDefault: Boolean!
     isArchived: Boolean!
-    campaign: [FundraisingCampaign]!
+    campaigns: [FundraisingCampaign!]
     createdAt: DateTime!
     updatedAt: DateTime!
   }
   type FundraisingCampaign {
     _id: ID!
-    fund: Fund!
+    fundId: Fund!
     name: String!
     startDate: Date!
     endDate: Date!
     fundingGoal: Float!
     currency: Currency!
+    pledges: [FundraisingCampaignPledge]
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+  type FundraisingCampaignPledge {
+    _id: ID!
+    campaigns: [FundraisingCampaign]!
+    users: [User]!
+    startDate: Date
+    endDate: Date
+    amount: Float!
+    currency: Currency!
   }
 
   type Group {
@@ -345,6 +374,12 @@ export const types = gql`
     name: String!
     description: String!
     address: Address
+    advertisements(
+      after: String
+      before: String
+      first: Int
+      last: Int
+    ): AdvertisementsConnection
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -364,6 +399,13 @@ export const types = gql`
       first: PositiveInt
       last: PositiveInt
     ): UserTagsConnection
+    posts(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): PostsConnection
+    funds: [Fund]
     customFields: [OrganizationCustomField!]!
   }
 
@@ -442,23 +484,6 @@ export const types = gql`
     pinned: Boolean
   }
 
-  """
-  A connection to a list of items.
-  """
-  type PostConnection {
-    """
-    Information to aid in pagination.
-    """
-    pageInfo: PageInfo!
-
-    """
-    A list of edges.
-    """
-    edges: [Post]!
-
-    aggregate: AggregatePost!
-  }
-
   type Translation {
     lang_code: String
     en_value: String
@@ -496,6 +521,12 @@ export const types = gql`
     educationGrade: EducationGrade
     email: EmailAddress!
     employmentStatus: EmploymentStatus
+    posts(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): PostsConnection
     eventAdmin: [Event]
     firstName: String!
     gender: Gender
@@ -518,6 +549,15 @@ export const types = gql`
     tokenVersion: Int!
     updatedAt: DateTime!
     userType: UserType!
+  }
+  type PostsConnection {
+    edges: [PostEdge!]!
+    pageInfo: ConnectionPageInfo!
+    totalCount: PositiveInt
+  }
+  type PostEdge {
+    node: Post!
+    cursor: String!
   }
 
   type UserCustomData {
