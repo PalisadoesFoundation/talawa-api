@@ -1,4 +1,4 @@
-import shortid from "shortid";
+import { nanoid } from "nanoid";
 import * as fs from "fs";
 import { writeFile } from "fs/promises";
 import { encodedImageExtentionCheck } from "./encodedImageExtensionCheck";
@@ -82,7 +82,7 @@ export const uploadEncodedImage = async (
     await deletePreviousImage(previousImagePath);
   }
 
-  let id = shortid.generate();
+  let id = nanoid();
 
   id = "images/" + id + "image.png";
 

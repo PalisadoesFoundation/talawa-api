@@ -9,7 +9,7 @@ import requestLogger from "morgan";
 import path from "path";
 import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
-//@ts-ignore
+
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 const app = express();
 
@@ -21,6 +21,7 @@ const apiLimiter = rateLimit({
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const corsOptions: cors.CorsOptions = {
   origin: (origin, next) => {
     if (process.env.NODE_ENV === "development") {
