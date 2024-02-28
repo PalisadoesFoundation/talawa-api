@@ -165,7 +165,7 @@ export type AgendaItem = {
   isNote: Scalars['Boolean']['output'];
   itemType: ItemType;
   organization: Organization;
-  relatedEvent: Event;
+  relatedEvent?: Maybe<Event>;
   sequence: Scalars['Int']['output'];
   title: Scalars['String']['output'];
   updatedAt: Scalars['Date']['output'];
@@ -281,7 +281,7 @@ export type CreateAgendaItemInput = {
   isNote: Scalars['Boolean']['input'];
   itemType: ItemType;
   organizationId: Scalars['ID']['input'];
-  relatedEventId: Scalars['ID']['input'];
+  relatedEventId?: InputMaybe<Scalars['ID']['input']>;
   sequence: Scalars['Int']['input'];
   title: Scalars['String']['input'];
   urls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -3050,7 +3050,7 @@ export type AgendaItemResolvers<ContextType = any, ParentType extends ResolversP
   isNote?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   itemType?: Resolver<ResolversTypes['ItemType'], ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
-  relatedEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
+  relatedEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   sequence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;

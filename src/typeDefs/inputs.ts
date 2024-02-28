@@ -50,7 +50,7 @@ export const inputs = gql`
     description: String
     duration: String!
     attachments: [String]
-    relatedEventId: ID!
+    relatedEventId: ID
     urls: [String]
     user: String
     categories: [ID]

@@ -43,7 +43,7 @@ export const types = gql`
     updatedAt: Date!
     isNote: Boolean!
     organization: Organization!
-    relatedEvent: Event!
+    relatedEvent: Event
   }
 
   type AgendaCategory {
