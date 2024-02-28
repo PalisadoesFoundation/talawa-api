@@ -1,16 +1,17 @@
-import type { Types, Model, PopulatedDoc } from "mongoose";
+import type { PopulatedDoc, Model, Document } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+import type { InterfaceOrganization } from "./Organization";
 /**
  * This is an interface, that represents database - (MongoDB) document for Advertisement.
  */
 export interface InterfaceAdvertisement {
-  _id: Types.ObjectId;
-  orgId: string;
+  _id: string;
+  organizationId: PopulatedDoc<InterfaceOrganization & Document>;
   name: string;
+  mediaUrl: string;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
-  link: string;
   type: "POPUP" | "MENU" | "BANNER";
   startDate: string;
   endDate: string;
@@ -21,6 +22,10 @@ export interface InterfaceAdvertisement {
 /**
  * @param  name - Name of the advertisement (type: String)
  * Description: Name of the advertisement.
+ */
+
+/**
+ * @param  organizationId - Organization ID associated with the advertisement (type: Schema.Types.ObjectId)
  */
 
 /**
@@ -39,13 +44,8 @@ export interface InterfaceAdvertisement {
  */
 
 /**
- * @param  orgId - Organization ID associated with the advertisement (type: Schema.Types.ObjectId)
- * Description: Organization ID associated with the advertisement.
- */
-
-/**
- * @param  link - Link associated with the advertisement (type: String)
- * Description: Link associated with the advertisement.
+ * @param  mediaUrl - media associated with the advertisement (type: String)
+ * Description: media associated with the advertisement.
  */
 
 /**
@@ -68,8 +68,9 @@ const advertisementSchema = new Schema(
       type: String,
       required: true,
     },
-    orgId: {
-      type: String,
+    organizationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
       required: true,
     },
     creatorId: {
@@ -77,7 +78,7 @@ const advertisementSchema = new Schema(
       ref: "User",
       required: true,
     },
-    link: {
+    mediaUrl: {
       type: String,
       required: true,
     },
@@ -99,6 +100,8 @@ const advertisementSchema = new Schema(
     timestamps: true,
   },
 );
+
+advertisementSchema.index({ organizationId: 1, name: 1 }, { unique: true });
 
 createLoggingMiddleware(advertisementSchema, "Advertisement");
 
