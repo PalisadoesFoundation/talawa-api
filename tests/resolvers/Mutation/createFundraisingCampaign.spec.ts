@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   END_DATE_VALIDATION_ERROR,
+  FUNDRAISING_CAMPAIGN_ALREADY_EXISTS,
   FUND_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -12,7 +13,11 @@ import { Fund } from "../../../src/models";
 import { createFundraisingCampaign } from "../../../src/resolvers/Mutation/createFundraisingCampaign";
 import type { MutationCreateFundraisingCampaignArgs } from "../../../src/types/generatedGraphQLTypes";
 import { createTestFund, type TestFundType } from "../../helpers/Fund";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUser } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
@@ -21,6 +26,7 @@ let testfund: TestFundType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
   const { requestContext } = await import("../../../src/libraries");
 
   vi.spyOn(requestContext, "translate").mockImplementation(
@@ -103,6 +109,7 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
       );
     }
   });
+
   it("throws error if startDate is invalid", async () => {
     try {
       const args: MutationCreateFundraisingCampaignArgs = {
@@ -171,5 +178,28 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
     console.log(fund);
     expect(fund?.campaigns?.includes(result?._id)).toBeTruthy();
     expect(result).toBeTruthy();
+  });
+  it("throws error if the campaign already exists with the same name", async () => {
+    try {
+      const args: MutationCreateFundraisingCampaignArgs = {
+        data: {
+          name: "testFundraisingCampaign",
+          fundId: testfund?._id,
+          startDate: new Date(new Date().toDateString()),
+          endDate: new Date(new Date().toDateString()),
+          currency: "USD",
+          fundingGoal: 1000,
+        },
+      };
+      const context = {
+        userId: testUser?._id,
+      };
+      await createFundraisingCampaign?.({}, args, context);
+    } catch (error: unknown) {
+      console.log(error);
+      expect((error as Error).message).toEqual(
+        FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE,
+      );
+    }
   });
 });

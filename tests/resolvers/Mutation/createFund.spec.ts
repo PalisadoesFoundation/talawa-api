@@ -7,7 +7,7 @@ import {
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { Fund } from "../../../src/models";
+import { Fund, Organization } from "../../../src/models";
 import { createFund } from "../../../src/resolvers/Mutation/createFund";
 import type { MutationCreateFundArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -128,6 +128,8 @@ describe("resolvers-> Mutation-> createFund", () => {
         isArchived: false,
       }),
     );
+    const org = await Organization.findOne({ _id: testOrganization?._id });
+    expect(org?.funds).toContainEqual(createdFund?._id);
   });
   it("throw error if the fund already exists", async () => {
     try {
