@@ -51,5 +51,3 @@ Core features include:
 [Follow this guide](./INSTALLATION.md)
 
 ## Image Upload
-
-To enable image upload functionalities create an images folder in the root of the project
