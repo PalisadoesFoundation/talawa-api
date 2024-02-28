@@ -1,5 +1,5 @@
 import { expect, it, describe, vi } from "vitest";
-import { verifySmtpConnection } from "../../src/setup/verifySmtpConnection"; // Replace with actual path
+import { verifySmtpConnection } from "../../src/setup/verifySmtpConnection";
 import type { Transporter } from "nodemailer";
 import nodemailer from "nodemailer";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
@@ -20,7 +20,7 @@ import type SMTPTransport from "nodemailer/lib/smtp-transport";
 
   Note: Each test case involves mocking the nodemailer createTransport method to simulate successful or failed connection verification, executing the verifySmtpConnection function, and asserting the expected behavior by checking the returned success flag and error message.
 */
-describe("verifySmtpConnection", () => {
+describe("Setup -> verifySmtpConnection", () => {
   it("should return success and log message on successful connection", async () => {
     const mockConfig = {
       SMTP_HOST: "smtp.example.com",
