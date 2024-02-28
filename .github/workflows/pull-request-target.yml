@@ -38,7 +38,7 @@ jobs:
             The process helps maintain the overall reliability of the code base and is a prerequisite for getting your PR approved. Assigned reviewers regularly review the PR queue and tend to focus on PRs that are passing.
 
             ### Reviewers
- 
+
             When your PR has been assigned reviewers contact them to get your code reviewed and approved via:
 
             1. comments in this PR or
