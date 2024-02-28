@@ -8,8 +8,8 @@ import { funds } from "./funds";
 import { image } from "./image";
 import { members } from "./members";
 import { membershipRequests } from "./membershipRequests";
+
 import { pinnedPosts } from "./pinnedPosts";
-import { posts } from "./posts";
 
 import { advertisements } from "./advertisements";
 
@@ -27,6 +27,5 @@ export const Organization: OrganizationResolvers = {
   membershipRequests,
   pinnedPosts,
   funds,
-  posts,
   // userTags,
 };
