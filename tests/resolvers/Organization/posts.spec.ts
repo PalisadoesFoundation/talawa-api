@@ -62,13 +62,13 @@ describe("resolvers -> Organization -> post", () => {
     const connection = await postResolver?.(
       parent,
       {
-        first: 2,
+        first: 6,
       },
       {},
     );
 
     const totalCount = await Post.find({
-      creatorId: testUser?._id,
+      organization: testOrganization?._id,
     }).countDocuments();
 
     expect((connection?.edges[0] as unknown as PostEdge).cursor).toEqual(
