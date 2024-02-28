@@ -1,4 +1,4 @@
-import { expect, it, describe, vi } from "vitest";
+import { expect, it, describe } from "vitest";
 import { checkExistingMongoDB } from "../../src/setup/MongoDB";
 
 describe("Setup -> checkExistingMongoDB", () => {
