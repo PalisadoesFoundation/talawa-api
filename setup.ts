@@ -11,6 +11,8 @@ import {
   checkConnection,
   checkExistingMongoDB,
 } from "./src/setup/MongoDB";
+import type { ExecException } from "child_process";
+import { exec } from "child_process";
 import {
   askForRedisUrl,
   checkExistingRedis,
@@ -25,11 +27,10 @@ import {
   setImageUploadSize,
   validateImageFileSize,
 } from "./src/setup/setImageUploadSize";
-import { importData } from "./src/setup/importData";
 import { updateEnvVariable } from "./src/setup/updateEnvVariable";
 import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
 import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
-import { shouldWipeExistingData } from "./src/setup/shouldWipeExistingData";
+import mongodb from "mongodb";
 /* eslint-enable */
 
 dotenv.config();
@@ -197,6 +198,86 @@ async function askForTransactionLogPath(): Promise<string> {
     }
   }
   return logPath;
+}
+
+//Checks if the data exists and ask for deletion
+/**
+ * The function `shouldWipeExistingData` checks if there is existing data in a MongoDB database and prompts the user to delete
+ * it before importing new data.
+ * @param url - The `url` parameter is a string that represents the connection URL for the
+ * MongoDB database. It is used to establish a connection to the database using the `MongoClient` class
+ * from the `mongodb` package.
+ * @returns The function returns a Promise<boolean>.
+ */
+export async function shouldWipeExistingData(url: string): Promise<boolean> {
+  let shouldImport = false;
+  const client = new mongodb.MongoClient(url, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  try {
+    await client.connect();
+    const db = client.db();
+    const collections = await db.listCollections().toArray();
+
+    if (collections.length > 0) {
+      const { confirmDelete } = await inquirer.prompt({
+        type: "confirm",
+        name: "confirmDelete",
+        message:
+          "We found data in the database. Do you want to delete the existing data before importing?",
+      });
+
+      if (confirmDelete) {
+        for (const collection of collections) {
+          await db.collection(collection.name).deleteMany({});
+        }
+        console.log("All existing data has been deleted.");
+        shouldImport = true;
+      } else {
+        console.log("Deletion & import operation cancelled.");
+      }
+    } else {
+      shouldImport = true;
+    }
+  } catch (error) {
+    console.error("Could not connect to database to check for data");
+  }
+  client.close();
+  return shouldImport;
+}
+//Import sample data
+/**
+ * The function `importData` imports sample data into a MongoDB database if the database URL is provided and if it
+ * is determined that existing data should be wiped.
+ * @returns The function returns a Promise that resolves to `void`.
+ */
+export async function importData(): Promise<void> {
+  if (!process.env.MONGO_DB_URL) {
+    console.log("Couldn't find mongodb url");
+    return;
+  }
+  const shouldImport = await shouldWipeExistingData(process.env.MONGO_DB_URL);
+
+  if (shouldImport) {
+    console.log("Importing sample data...");
+    if (process.env.NODE_ENV !== "test") {
+      await exec(
+        "npm run import:sample-data",
+        (error: ExecException | null, stdout: string, stderr: string) => {
+          if (error) {
+            console.error(`Error: ${error.message}`);
+            abort();
+          }
+          if (stderr) {
+            console.error(`Error: ${stderr}`);
+            abort();
+          }
+          console.log(`Output: ${stdout}`);
+        },
+      );
+    }
+  }
 }
 
 // get the redis url
