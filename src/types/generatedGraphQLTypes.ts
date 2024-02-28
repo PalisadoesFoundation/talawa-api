@@ -1681,6 +1681,7 @@ export type Organization = {
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String']['output'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
+  posts?: Maybe<PostsConnection>;
   updatedAt: Scalars['DateTime']['output'];
   userRegistrationRequired: Scalars['Boolean']['output'];
   userTags?: Maybe<UserTagsConnection>;
@@ -1698,6 +1699,14 @@ export type OrganizationAdvertisementsArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type OrganizationPostsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['PositiveInt']['input']>;
+  last?: InputMaybe<Scalars['PositiveInt']['input']>;
 };
 
 
@@ -1850,14 +1859,10 @@ export type Post = {
   videoUrl?: Maybe<Scalars['URL']['output']>;
 };
 
-/** A connection to a list of items. */
-export type PostConnection = {
-  __typename?: 'PostConnection';
-  aggregate: AggregatePost;
-  /** A list of edges. */
-  edges: Array<Maybe<Post>>;
-  /** Information to aid in pagination. */
-  pageInfo: PageInfo;
+export type PostEdge = {
+  __typename?: 'PostEdge';
+  cursor: Scalars['String']['output'];
+  node: Post;
 };
 
 export type PostInput = {
@@ -1916,6 +1921,13 @@ export type PostWhereInput = {
   title_starts_with?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type PostsConnection = {
+  __typename?: 'PostsConnection';
+  edges: Array<PostEdge>;
+  pageInfo: ConnectionPageInfo;
+  totalCount?: Maybe<Scalars['PositiveInt']['output']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   actionItem?: Maybe<ActionItem>;
@@ -1955,8 +1967,6 @@ export type Query = {
   organizationsMemberConnection: UserConnection;
   plugin?: Maybe<Array<Maybe<Plugin>>>;
   post?: Maybe<Post>;
-  postsByOrganization?: Maybe<Array<Maybe<Post>>>;
-  postsByOrganizationConnection?: Maybe<PostConnection>;
   registeredEventsByUser?: Maybe<Array<Maybe<Event>>>;
   registrantsByEvent?: Maybe<Array<Maybe<User>>>;
   user: User;
@@ -2142,21 +2152,6 @@ export type QueryPluginArgs = {
 
 export type QueryPostArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type QueryPostsByOrganizationArgs = {
-  id: Scalars['ID']['input'];
-  orderBy?: InputMaybe<PostOrderByInput>;
-};
-
-
-export type QueryPostsByOrganizationConnectionArgs = {
-  first?: InputMaybe<Scalars['Int']['input']>;
-  id: Scalars['ID']['input'];
-  orderBy?: InputMaybe<PostOrderByInput>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  where?: InputMaybe<PostWhereInput>;
 };
 
 
@@ -2418,11 +2413,20 @@ export type User = {
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
   phone?: Maybe<UserPhone>;
   pluginCreationAllowed: Scalars['Boolean']['output'];
+  posts?: Maybe<PostsConnection>;
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
   tagsAssignedWith?: Maybe<UserTagsConnection>;
   tokenVersion: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
   userType: UserType;
+};
+
+
+export type UserPostsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['PositiveInt']['input']>;
+  last?: InputMaybe<Scalars['PositiveInt']['input']>;
 };
 
 
@@ -2813,11 +2817,12 @@ export type ResolversTypes = {
   PluginInput: PluginInput;
   PositiveInt: ResolverTypeWrapper<Scalars['PositiveInt']['output']>;
   Post: ResolverTypeWrapper<InterfacePostModel>;
-  PostConnection: ResolverTypeWrapper<Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['Post']>> }>;
+  PostEdge: ResolverTypeWrapper<Omit<PostEdge, 'node'> & { node: ResolversTypes['Post'] }>;
   PostInput: PostInput;
   PostOrderByInput: PostOrderByInput;
   PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
+  PostsConnection: ResolverTypeWrapper<Omit<PostsConnection, 'edges'> & { edges: Array<ResolversTypes['PostEdge']> }>;
   Query: ResolverTypeWrapper<{}>;
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
@@ -2969,10 +2974,11 @@ export type ResolversParentTypes = {
   PluginInput: PluginInput;
   PositiveInt: Scalars['PositiveInt']['output'];
   Post: InterfacePostModel;
-  PostConnection: Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['Post']>> };
+  PostEdge: Omit<PostEdge, 'node'> & { node: ResolversParentTypes['Post'] };
   PostInput: PostInput;
   PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
+  PostsConnection: Omit<PostsConnection, 'edges'> & { edges: Array<ResolversParentTypes['PostEdge']> };
   Query: {};
   RecaptchaVerification: RecaptchaVerification;
   RecurrenceRuleInput: RecurrenceRuleInput;
@@ -3627,6 +3633,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
+  posts?: Resolver<Maybe<ResolversTypes['PostsConnection']>, ParentType, ContextType, Partial<OrganizationPostsArgs>>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   userRegistrationRequired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   userTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<OrganizationUserTagsArgs>>;
@@ -3712,10 +3719,16 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type PostConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostConnection'] = ResolversParentTypes['PostConnection']> = {
-  aggregate?: Resolver<ResolversTypes['AggregatePost'], ParentType, ContextType>;
-  edges?: Resolver<Array<Maybe<ResolversTypes['Post']>>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+export type PostEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostEdge'] = ResolversParentTypes['PostEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type PostsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostsConnection'] = ResolversParentTypes['PostsConnection']> = {
+  edges?: Resolver<Array<ResolversTypes['PostEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3757,8 +3770,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   organizationsMemberConnection?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType, RequireFields<QueryOrganizationsMemberConnectionArgs, 'orgId'>>;
   plugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryPluginArgs, 'orgId'>>;
   post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'id'>>;
-  postsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, RequireFields<QueryPostsByOrganizationArgs, 'id'>>;
-  postsByOrganizationConnection?: Resolver<Maybe<ResolversTypes['PostConnection']>, ParentType, ContextType, RequireFields<QueryPostsByOrganizationConnectionArgs, 'id'>>;
   registeredEventsByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryRegisteredEventsByUserArgs>>;
   registrantsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryRegistrantsByEventArgs, 'id'>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
@@ -3833,6 +3844,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['UserPhone']>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  posts?: Resolver<Maybe<ResolversTypes['PostsConnection']>, ParentType, ContextType, Partial<UserPostsArgs>>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -3971,7 +3983,8 @@ export type Resolvers<ContextType = any> = {
   PluginField?: PluginFieldResolvers<ContextType>;
   PositiveInt?: GraphQLScalarType;
   Post?: PostResolvers<ContextType>;
-  PostConnection?: PostConnectionResolvers<ContextType>;
+  PostEdge?: PostEdgeResolvers<ContextType>;
+  PostsConnection?: PostsConnectionResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Time?: GraphQLScalarType;
