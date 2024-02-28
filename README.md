@@ -28,7 +28,6 @@ Core features include:
 - [Talawa Components](#talawa-components)
 - [Documentation](#documentation)
 - [Installation](#installation)
-- [Image Upload](#image-upload)
 
 <!-- tocstop -->
 
@@ -49,5 +48,3 @@ Core features include:
 ## Installation
 
 [Follow this guide](./INSTALLATION.md)
-
-## Image Upload
