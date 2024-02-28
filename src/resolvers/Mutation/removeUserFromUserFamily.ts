@@ -81,12 +81,12 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     }
 
     /*
-          Administrators cannot remove creator of userFamily from the members list.
-          Following if block matches userFamily's creator's id to
-          user's id. Match being true implies that current user is the creator
-          of userFamily. If match is true assigns error message to errors list
-          and breaks out of loop.
-        */
+    Administrators cannot remove creator of userFamily from the members list.
+    Following if block matches userFamily's creator's id to
+    user's id. Match being true implies that current user is the creator
+    of userFamily. If match is true assigns error message to errors list
+    and breaks out of loop.
+    */
     if (Types.ObjectId(userFamily.creator.toString()).equals(user._id)) {
       throw new errors.UnauthorizedError(
         requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
@@ -96,9 +96,9 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     }
 
     /*
-          userIsUserFamilyAdmin being true implies that the current user is an admin of userFamily.
-          If userIsUserFamilyAdmin is true pushes error message to errors list and breaks out of loop.
-        */
+    userIsUserFamilyAdmin being true implies that the current user is an admin of userFamily.
+    If userIsUserFamilyAdmin is true pushes error message to errors list and breaks out of loop.
+    */
     if (userIdUserFamilyAdmin) {
       throw new errors.ConflictError(
         requestContext.translate(ADMIN_REMOVING_ADMIN.MESSAGE),

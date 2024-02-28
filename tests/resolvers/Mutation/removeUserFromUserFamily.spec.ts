@@ -54,11 +54,9 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .spyOn(requestContext, "translate")
       .mockImplementation((message) => `Translated ${message}`);
     try {
-      if (testUserFamily == null) {
-        throw Error("Error in test");
-      }
       const args: MutationRemoveUserFromUserFamilyArgs = {
-        familyId: testUserFamily.id,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        familyId: testUserFamily!.id,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: new mongoose.Types.ObjectId()._id!.toString(),
       };
