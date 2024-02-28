@@ -3,6 +3,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_ALREADY_REGISTERED_FOR_EVENT,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -30,7 +31,6 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   }
 
   let event: InterfaceEvent | null;
-
   const eventFoundInCache = await findEventsInCache([args.data.eventId]);
 
   event = eventFoundInCache[0];
@@ -75,6 +75,17 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  const currentUserIsOrganizationMember =
+    currentUser.joinedOrganizations.includes(requestUser.joinedOrganizations);
+
+  if (!currentUserIsOrganizationMember) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
+      USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
+      USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
     );
   }
 
