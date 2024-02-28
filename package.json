@@ -134,7 +134,7 @@
     "rimraf": "^5.0.5",
     "tsx": "^4.7.0",
     "typescript": "^5.3.2",
-    "vitest": "^0.24.5"
+    "vitest": "^0.24.3"
   },
   "overrides": {
     "graphql-voyager": {
