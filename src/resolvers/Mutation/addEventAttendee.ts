@@ -78,17 +78,6 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     );
   }
 
-  const currentUserIsOrganizationMember =
-    currentUser.joinedOrganizations.includes(requestUser.joinedOrganizations);
-
-  if (!currentUserIsOrganizationMember) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
-      USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
-      USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
-    );
-  }
-
   const userAlreadyAttendee = await EventAttendee.exists({
     ...args.data,
   });
@@ -98,6 +87,17 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
       requestContext.translate(USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE),
       USER_ALREADY_REGISTERED_FOR_EVENT.CODE,
       USER_ALREADY_REGISTERED_FOR_EVENT.PARAM,
+    );
+  }
+
+  const currentUserIsOrganizationMember =
+    currentUser.joinedOrganizations.includes(requestUser.joinedOrganizations);
+
+  if (!currentUserIsOrganizationMember) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
+      USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
+      USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
     );
   }
 
