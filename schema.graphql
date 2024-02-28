@@ -115,7 +115,7 @@ type AgendaItem {
   isNote: Boolean!
   itemType: ItemType!
   organization: Organization!
-  relatedEvent: Event!
+  relatedEvent: Event
   sequence: Int!
   title: String!
   updatedAt: Date!
@@ -245,7 +245,7 @@ input CreateAgendaItemInput {
   isNote: Boolean!
   itemType: ItemType!
   organizationId: ID!
-  relatedEventId: ID!
+  relatedEventId: ID
   sequence: Int!
   title: String!
   urls: [String]
@@ -1013,7 +1013,8 @@ type Mutation {
   updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
-  updateEvent(data: UpdateEventInput, id: ID!): Event!
+  updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem!
+  updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventUpdateType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
   updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
@@ -1288,7 +1289,8 @@ type Query {
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
-  getAdvertisements: [Advertisement]
+  getAgendaItem(id: ID!): AgendaItem
+  getAllAgendaItems: [AgendaItem]
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
