@@ -1,5 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { Advertisement, User } from "../../models";
+import { Advertisement, Organization, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
@@ -14,7 +14,7 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
-  async (_parent, args, _context) => {
+  async (_parent, args, context) => {
     const { _id, ...otherFields } = args.input;
 
     //If there is no input
@@ -41,7 +41,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
     }
 
     const currentUser = await User.findOne({
-      _id: _context.userId,
+      _id: context.userId,
     });
 
     if (currentUser === null) {
@@ -52,7 +52,12 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       );
     }
 
-    if (currentUser.userType === "USER") {
+    if (
+      !(
+        currentUser?.userType === "ADMIN" ||
+        currentUser?.userType === "SUPERADMIN"
+      )
+    ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -83,6 +88,35 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       );
     }
 
+    const existingAdvertisement = await Advertisement.findOne({
+      _id: _id,
+    });
+
+    if (!existingAdvertisement) {
+      throw new errors.NotFoundError(
+        requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
+        ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
+        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    const organization = await Organization.findOne({
+      _id: existingAdvertisement?.organizationId,
+    }).lean();
+
+    if (
+      currentUser?.userType !== "SUPERADMIN" &&
+      !organization?.admins.find((admin: { _id: string }) => {
+        admin._id === context.userId;
+      })
+    ) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+
     let uploadMediaFile = null;
 
     if (args.input.mediaFile) {
@@ -96,40 +130,33 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       }
     }
 
-    const updatedAdvertisement = await Advertisement.findOneAndUpdate(
+    const fieldsToUpdate = args.input.mediaFile
+      ? { ...args.input, mediaUrl: uploadMediaFile }
+      : { ...args.input };
+
+    await Advertisement.updateOne(
       {
         _id: _id,
       },
       {
-        $set: {
-          ...args.input,
-          mediaUrl: uploadMediaFile,
-        },
+        $set: fieldsToUpdate,
       },
       {
         new: true,
       },
     ).lean();
 
-    if (!updatedAdvertisement) {
-      throw new errors.NotFoundError(
-        requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
-        ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
-        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM,
-      );
-    }
-
     const updatedAdvertisementPayload = {
-      _id: updatedAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
-      name: updatedAdvertisement.name,
-      organizationId: updatedAdvertisement.organizationId,
-      mediaUrl: updatedAdvertisement.mediaUrl,
-      type: updatedAdvertisement.type,
-      startDate: updatedAdvertisement.startDate,
-      endDate: updatedAdvertisement.endDate,
-      createdAt: updatedAdvertisement.createdAt,
-      updatedAt: updatedAdvertisement.updatedAt,
-      creatorId: updatedAdvertisement.creatorId,
+      _id: existingAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
+      name: existingAdvertisement.name,
+      organizationId: existingAdvertisement.organizationId,
+      mediaUrl: existingAdvertisement.mediaUrl,
+      type: existingAdvertisement.type,
+      startDate: existingAdvertisement.startDate,
+      endDate: existingAdvertisement.endDate,
+      createdAt: existingAdvertisement.createdAt,
+      updatedAt: existingAdvertisement.updatedAt,
+      creatorId: existingAdvertisement.creatorId,
     };
     return {
       advertisement: { ...updatedAdvertisementPayload },
