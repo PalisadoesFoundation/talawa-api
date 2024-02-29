@@ -1,17 +1,8 @@
 import type mongoose from "mongoose";
-import type {
-  InterfaceRecurrenceRule} from "../../../models/RecurrenceRule";
-import {
-  RecurrenceRule,
-} from "../../../models/RecurrenceRule";
-import type {
-  InterfaceEvent} from "../../../models";
-import {
-  ActionItem,
-  Event,
-  EventAttendee,
-  User,
-} from "../../../models";
+import type { InterfaceRecurrenceRule } from "../../../models/RecurrenceRule";
+import { RecurrenceRule } from "../../../models/RecurrenceRule";
+import type { InterfaceEvent } from "../../../models";
+import { ActionItem, Event, EventAttendee, User } from "../../../models";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 import { shouldUpdateBaseRecurringEvent } from "../updateEventHelpers";
 import type { Types } from "mongoose";
@@ -155,7 +146,9 @@ export const deleteRecurringEventInstances = async (
       },
       null,
       { session },
-    ).sort({ endDate: -1 });
+    )
+      .sort({ endDate: -1 })
+      .lean();
 
     const previousRecurrenceRulesExist =
       previousRecurrenceRules && previousRecurrenceRules.length;
@@ -170,7 +163,7 @@ export const deleteRecurringEventInstances = async (
           {
             _id: baseRecurringEvent._id,
           },
-          { endDate: previousRecurrenceRules[0]._id },
+          { endDate: previousRecurrenceRules[0].endDate.toISOString() },
           { session },
         );
       }

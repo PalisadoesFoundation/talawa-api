@@ -101,7 +101,6 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   }
 
   /* c8 ignore stop */
-
   try {
     if (event.recurring) {
       // if the event is recurring
@@ -126,6 +125,5 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   }
 
   /* c8 ignore stop */
-
   return event;
 };
