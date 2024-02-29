@@ -92,14 +92,6 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       _id: _id,
     });
 
-    if (!existingAdvertisement) {
-      throw new errors.NotFoundError(
-        requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
-        ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
-        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM,
-      );
-    }
-
     const organization = await Organization.findOne({
       _id: existingAdvertisement?.organizationId,
     }).lean();
