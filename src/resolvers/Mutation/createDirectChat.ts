@@ -7,6 +7,7 @@ import {
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import type { InterfaceOrganization } from "../../models";
 /**
  * This function enables to create direct chat.
  * @param _parent - parent of current request
@@ -35,7 +36,7 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    await cacheOrganizations([organization as InterfaceOrganization]);
   }
 
   // Checks whether organization with _id === args.data.organizationId exists.
