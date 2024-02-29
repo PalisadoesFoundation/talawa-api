@@ -1,7 +1,6 @@
 import {
-  END_DATE_VALIDATION_ERROR,
+  FUNDRAISING_CAMPAIGN_ALREADY_EXISTS,
   FUND_NOT_FOUND_ERROR,
-  START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
@@ -9,6 +8,7 @@ import { errors, requestContext } from "../../libraries";
 import { Fund, FundraisingCampaign, User } from "../../models";
 import { type InterfaceFundraisingCampaign } from "../../models/";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { validateDate } from "../../utilities/dateValidator";
 /**
  * This function enables to create a fundraisingCampaigin .
  * @param _parent - parent of current request
@@ -37,25 +37,23 @@ export const createFundraisingCampaign: MutationResolvers["createFundraisingCamp
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+    // Checks whether fundraisingCampaign already exists.
+    const existigngCampaign = await FundraisingCampaign.findOne({
+      name: args.data.name,
+    }).lean();
+    if (existigngCampaign) {
+      throw new errors.ConflictError(
+        requestContext.translate(FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE),
+        FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.CODE,
+        FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.PARAM,
+      );
+    }
     const startDate = args.data.startDate;
     const endDate = args.data.endDate;
 
-    // Checks whether startDate is valid.
-    if (new Date(startDate) < new Date(new Date().toDateString())) {
-      throw new errors.InputValidationError(
-        requestContext.translate(START_DATE_VALIDATION_ERROR.MESSAGE),
-        START_DATE_VALIDATION_ERROR.CODE,
-        START_DATE_VALIDATION_ERROR.PARAM,
-      );
-    }
-    // Checks whether endDate is valid.
-    if (new Date(endDate) < new Date(startDate)) {
-      throw new errors.InputValidationError(
-        requestContext.translate(END_DATE_VALIDATION_ERROR.MESSAGE),
-        END_DATE_VALIDATION_ERROR.CODE,
-        END_DATE_VALIDATION_ERROR.PARAM,
-      );
-    }
+    //validates StartDate and endDate
+    validateDate(startDate, endDate);
+
     const fund = await Fund.findOne({
       _id: args.data.fundId,
     }).lean();
@@ -88,7 +86,7 @@ export const createFundraisingCampaign: MutationResolvers["createFundraisingCamp
     });
 
     //add campaigin to the parent fund
-    await Fund.findByIdAndUpdate(
+    await Fund.findOneAndUpdate(
       {
         _id: args.data.fundId,
       },
