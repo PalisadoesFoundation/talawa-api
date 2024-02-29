@@ -3,9 +3,22 @@ import type { InterfaceRecurrenceRule } from "../../../models/RecurrenceRule";
 import { RecurrenceRule } from "../../../models/RecurrenceRule";
 import type { InterfaceEvent } from "../../../models";
 import { ActionItem, Event, EventAttendee, User } from "../../../models";
-import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 import { shouldUpdateBaseRecurringEvent } from "../updateEventHelpers";
 import type { Types } from "mongoose";
+
+/**
+ * This function deletes allInstances / thisAndFollowingInstances of a recurring event.
+ * @param event - the event to be deleted:
+ *              - in case of deleting thisAndFollowingInstances, it would represent this instance.
+ *              - in case of deleting allInstances, it would be null.
+ * @param recurrenceRule - the recurrence rule followed by the instances.
+ * @param baseRecurringEvent - the base recurring event.
+ * @remarks The following steps are followed:
+ * 1. get the instances to be deleted.
+ * 2. remove the associations of the instances.
+ * 3. delete the instances.
+ * 4. update the recurrenceRule and baseRecurringEvent accordingly.
+ */
 
 export const deleteRecurringEventInstances = async (
   event: InterfaceEvent | null,
@@ -13,6 +26,9 @@ export const deleteRecurringEventInstances = async (
   baseRecurringEvent: InterfaceEvent,
   session: mongoose.ClientSession,
 ): Promise<void> => {
+  // get the query object:
+  // if we're deleting thisAndFollowingInstance, it would find all the instances after(and including) this one
+  // if we're deleting allInstances, it would find all the instances
   const query: {
     recurrenceRuleId: Types.ObjectId;
     isRecurringEventException: boolean;
@@ -26,12 +42,15 @@ export const deleteRecurringEventInstances = async (
     query.startDate = { $gte: event.startDate };
   }
 
+  // get all the instances to be deleted
   const recurringEventInstances = await Event.find(query);
 
+  // get the ids of those instances
   const recurringEventInstancesIds = recurringEventInstances.map(
     (recurringEventInstance) => recurringEventInstance._id,
   );
 
+  // remove all the associations for the instances that are deleted
   await Promise.all([
     EventAttendee.deleteMany(
       { eventId: { $in: recurringEventInstancesIds } },
@@ -60,43 +79,27 @@ export const deleteRecurringEventInstances = async (
     ),
   ]);
 
-  await Event.updateMany(
+  // delete the instances
+  await Event.deleteMany(
     {
       _id: { $in: recurringEventInstancesIds },
-    },
-    {
-      status: "DELETED",
     },
     {
       session,
     },
   );
 
-  const updatedRecurringEventInstances = await Event.find(
-    {
-      _id: { $in: recurringEventInstancesIds },
-    },
-    null,
-    { session },
-  );
-
-  await Promise.all(
-    updatedRecurringEventInstances.map((updatedEvent) =>
-      cacheEvents([updatedEvent]),
-    ),
-  );
-
-  // get the instances following the current recurrence rule
+  // get the instances following the current recurrence rule (if any)
   const instancesFollowingCurrentRecurrence = await Event.find(
     {
       recurrenceRuleId: recurrenceRule._id,
       isRecurringEventException: false,
-      status: "ACTIVE",
     },
     null,
     { session },
   ).sort({ startDate: -1 });
 
+  // check if more instances following this recurrence rule still exist
   const moreInstancesExist =
     instancesFollowingCurrentRecurrence &&
     instancesFollowingCurrentRecurrence.length;
@@ -119,7 +122,7 @@ export const deleteRecurringEventInstances = async (
       { session },
     ).lean();
 
-    // update the baseRecurringEvent if it is the latest recurrence rule that the instances are following
+    // update the baseRecurringEvent if it is the latest recurrence rule that the instances were following
     if (
       shouldUpdateBaseRecurringEvent(
         recurrenceRule.endDate?.toString(),
@@ -139,6 +142,8 @@ export const deleteRecurringEventInstances = async (
       );
     }
   } else {
+    // if no instances conforming to the current recurrence rule exist
+    // find any previous recurrence rules that were associated with this baseRecurringEvent
     const previousRecurrenceRules = await RecurrenceRule.find(
       {
         baseRecurringEventId: baseRecurringEvent._id,
@@ -153,6 +158,7 @@ export const deleteRecurringEventInstances = async (
     const previousRecurrenceRulesExist =
       previousRecurrenceRules && previousRecurrenceRules.length;
     if (previousRecurrenceRulesExist) {
+      // update the baseRecurringEvent if it is the latest recurrence rule that the instances were following
       if (
         shouldUpdateBaseRecurringEvent(
           recurrenceRule.endDate?.toString(),

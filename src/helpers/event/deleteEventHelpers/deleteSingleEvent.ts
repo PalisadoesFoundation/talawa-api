@@ -1,11 +1,19 @@
 import type mongoose from "mongoose";
 import { ActionItem, Event, EventAttendee, User } from "../../../models";
-import { cacheEvents } from "../../../services/EventCache/cacheEvents";
+
+/**
+ * This function deletes a single event.
+ * @param event - the event to be deleted:
+ * @remarks The following steps are followed:
+ * 1. remove the associations of the event.
+ * 2. delete the event.
+ */
 
 export const deleteSingleEvent = async (
   eventId: string,
   session: mongoose.ClientSession,
 ): Promise<void> => {
+  // remove the associations of the current event
   await Promise.all([
     EventAttendee.deleteMany(
       {
@@ -33,20 +41,13 @@ export const deleteSingleEvent = async (
     ActionItem.deleteMany({ eventId }, { session }),
   ]);
 
-  const updatedEvent = await Event.findOneAndUpdate(
+  // delete the event
+  await Event.deleteOne(
     {
       _id: eventId,
     },
     {
-      status: "DELETED",
-    },
-    {
-      new: true,
       session,
     },
   );
-
-  if (updatedEvent !== null) {
-    await cacheEvents([updatedEvent]);
-  }
 };

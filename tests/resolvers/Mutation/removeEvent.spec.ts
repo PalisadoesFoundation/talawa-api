@@ -1,14 +1,8 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type {
-  InterfaceEvent} from "../../../src/models";
-import {
-  User,
-  Event,
-  ActionItem,
-  EventAttendee,
-} from "../../../src/models";
+import type { InterfaceEvent } from "../../../src/models";
+import { User, Event, ActionItem, EventAttendee } from "../../../src/models";
 import type {
   MutationCreateEventArgs,
   MutationRemoveEventArgs,
@@ -229,13 +223,11 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     expect(updatedTestUser?.createdEvents).toEqual([]);
     expect(updatedTestUser?.eventAdmin).toEqual([]);
 
-    const updatedTestEvent = await Event.findOne({
+    const testEventExists = await Event.exists({
       _id: testEvent?._id,
-    })
-      .select(["status"])
-      .lean();
+    });
 
-    expect(updatedTestEvent?.status).toEqual("DELETED");
+    expect(testEventExists).toBeFalsy();
   });
 
   it(`removes the events and all action items assiciated with it`, async () => {

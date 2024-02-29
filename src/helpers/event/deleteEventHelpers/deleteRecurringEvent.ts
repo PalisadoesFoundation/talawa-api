@@ -5,6 +5,16 @@ import type { InterfaceEvent } from "../../../models";
 import { Event } from "../../../models";
 import { deleteSingleEvent, deleteRecurringEventInstances } from "./index";
 
+/**
+ * This function deletes thisInstance / allInstances / thisAndFollowingInstances of a recurring event.
+ * @param args - removeEventArgs
+ * @param event - an instance of the recurring event to be deleted.
+ * @remarks The following steps are followed:
+ * 1. get the recurrence rule and the base recurring event.
+ * 2. if the instance is an exception instance or if we're deleting thisInstance only, just delete that single instance.
+ * 3. if it's a bulk delete operation, handle it accordingly.
+ */
+
 export const deleteRecurringEvent = async (
   args: MutationRemoveEventArgs,
   event: InterfaceEvent,
@@ -31,7 +41,7 @@ export const deleteRecurringEvent = async (
     // delete all the instances
     // and update the recurrenceRule and baseRecurringEvent accordingly
     await deleteRecurringEventInstances(
-      null,
+      null, // because we're going to delete all the instances, which we could get from the recurrence rule
       recurrenceRule[0],
       baseRecurringEvent[0],
       session,
@@ -40,7 +50,7 @@ export const deleteRecurringEvent = async (
     // delete this and following the instances
     // and update the recurrenceRule and baseRecurringEvent accordingly
     await deleteRecurringEventInstances(
-      event,
+      event, // we'll find all the instances after(and including) this one and delete them
       recurrenceRule[0],
       baseRecurringEvent[0],
       session,
