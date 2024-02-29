@@ -68,7 +68,6 @@ export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
       mediaUrl: `${context.apiRootUrl}${existingAdvertisement.mediaUrl}`,
       _id: existingAdvertisement._id.toString(),
     };
-    console.log(advertisement);
     // Deletes the ad.
     await Advertisement.deleteOne({
       _id: args.id,
