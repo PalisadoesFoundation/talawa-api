@@ -68,7 +68,7 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
-    createComment(postId: ID!, data: CommentInput!): CreateCommentPayload! @auth
+    #createComment(postId: ID!, data: CommentInput!): CreateCommentPayload! @auth
     createActionItem(
       data: CreateActionItemInput!
       actionItemCategoryId: ID!

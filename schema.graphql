@@ -194,6 +194,12 @@ type CreateAdminPayload {
   userErrors: [CreateAdminError!]!
 }
 
+input CreateAgendaCategoryInput {
+  description: String
+  name: String!
+  organizationId: ID!
+}
+
 union CreateCommentError = PostNotFoundError
 
 type CreateCommentPayload {
@@ -208,12 +214,6 @@ union CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoun
 type CreateMemberPayload {
   organization: Organization
   userErrors: [CreateMemberError!]!
-}
-
-input CreateAgendaCategoryInput {
-  description: String
-  name: String!
-  organizationId: ID!
 }
 
 input CreateUserTagInput {
@@ -874,8 +874,8 @@ type Mutation {
   createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
-  createComment(data: CommentInput!, postId: ID!): CreateCommentPayload!
-  createDirectChat(data: createChatInput!): createDirectChatPayload!
+  createComment(data: CommentInput!, postId: ID!): Comment
+  createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!

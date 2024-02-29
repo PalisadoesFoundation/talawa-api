@@ -96,10 +96,6 @@ export const createMember: MutationResolvers["createMember"] = async (
   const userIsOrganizationMember = organization?.members.some((member) =>
     member.equals(user._id),
   );
-  console.log(userIsOrganizationMember);
-  console.log(organization?.members);
-  console.log(user._id);
-
   // Checks whether user with _id === args.input.userId is already an member of organization.
   if (userIsOrganizationMember) {
     return {
@@ -131,7 +127,6 @@ export const createMember: MutationResolvers["createMember"] = async (
     {
       new: true,
     },
-
   );
 
   // add user's id to members list on organization and return it.
@@ -147,7 +142,6 @@ export const createMember: MutationResolvers["createMember"] = async (
     {
       new: true,
     },
-
   ).lean();
 
   if (updatedOrganization !== null) {
