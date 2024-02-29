@@ -1,7 +1,8 @@
 import type mongoose from "mongoose";
-import { MutationRemoveEventArgs } from "../../../types/generatedGraphQLTypes";
+import type { MutationRemoveEventArgs } from "../../../types/generatedGraphQLTypes";
 import { RecurrenceRule } from "../../../models/RecurrenceRule";
-import { Event, InterfaceEvent } from "../../../models";
+import type { InterfaceEvent } from "../../../models";
+import { Event } from "../../../models";
 import { deleteSingleEvent, deleteRecurringEventInstances } from "./index";
 
 export const deleteRecurringEvent = async (
@@ -27,7 +28,8 @@ export const deleteRecurringEvent = async (
     // just delete this single instance
     await deleteSingleEvent(event._id.toString(), session);
   } else if (args.recurringEventDeleteType === "AllInstances") {
-    // perform a regular bulk delete on all the instances
+    // delete all the instances
+    // and update the recurrenceRule and baseRecurringEvent accordingly
     await deleteRecurringEventInstances(
       null,
       recurrenceRule[0],
@@ -35,7 +37,8 @@ export const deleteRecurringEvent = async (
       session,
     );
   } else {
-    // update current and following events
+    // delete this and following the instances
+    // and update the recurrenceRule and baseRecurringEvent accordingly
     await deleteRecurringEventInstances(
       event,
       recurrenceRule[0],

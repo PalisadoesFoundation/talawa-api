@@ -1,17 +1,20 @@
 import type mongoose from "mongoose";
+import type {
+  InterfaceRecurrenceRule} from "../../../models/RecurrenceRule";
 import {
-  InterfaceRecurrenceRule,
   RecurrenceRule,
 } from "../../../models/RecurrenceRule";
+import type {
+  InterfaceEvent} from "../../../models";
 import {
   ActionItem,
   Event,
   EventAttendee,
-  InterfaceEvent,
   User,
 } from "../../../models";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 import { shouldUpdateBaseRecurringEvent } from "../updateEventHelpers";
+import type { Types } from "mongoose";
 
 export const deleteRecurringEventInstances = async (
   event: InterfaceEvent | null,
@@ -19,10 +22,20 @@ export const deleteRecurringEventInstances = async (
   baseRecurringEvent: InterfaceEvent,
   session: mongoose.ClientSession,
 ): Promise<void> => {
-  const recurringEventInstances = await Event.find({
+  const query: {
+    recurrenceRuleId: Types.ObjectId;
+    isRecurringEventException: boolean;
+    startDate?: { $gte: string };
+  } = {
     recurrenceRuleId: recurrenceRule._id,
-    startDate: { $gte: event?.startDate },
-  });
+    isRecurringEventException: false,
+  };
+
+  if (event) {
+    query.startDate = { $gte: event.startDate };
+  }
+
+  const recurringEventInstances = await Event.find(query);
 
   const recurringEventInstancesIds = recurringEventInstances.map(
     (recurringEventInstance) => recurringEventInstance._id,
@@ -83,21 +96,24 @@ export const deleteRecurringEventInstances = async (
   );
 
   // get the instances following the current recurrence rule
-  const eventsFollowingCurrentRecurrence = await Event.find(
+  const instancesFollowingCurrentRecurrence = await Event.find(
     {
       recurrenceRuleId: recurrenceRule._id,
       isRecurringEventException: false,
+      status: "ACTIVE",
     },
     null,
     { session },
   ).sort({ startDate: -1 });
 
   const moreInstancesExist =
-    eventsFollowingCurrentRecurrence && eventsFollowingCurrentRecurrence.length;
+    instancesFollowingCurrentRecurrence &&
+    instancesFollowingCurrentRecurrence.length;
 
   if (moreInstancesExist) {
     // get the latest instance following the old recurrence rule
-    const updatedEndDateString = eventsFollowingCurrentRecurrence[0].startDate;
+    const updatedEndDateString =
+      instancesFollowingCurrentRecurrence[0].startDate;
     const updatedEndDate = new Date(updatedEndDateString);
 
     // update the latestInstanceDate and endDate of the current recurrenceRule
@@ -133,7 +149,10 @@ export const deleteRecurringEventInstances = async (
     }
   } else {
     const previousRecurrenceRules = await RecurrenceRule.find(
-      { baseRecurringEventId: baseRecurringEvent._id },
+      {
+        baseRecurringEventId: baseRecurringEvent._id,
+        endDate: { $lt: recurrenceRule.startDate },
+      },
       null,
       { session },
     ).sort({ endDate: -1 });
@@ -143,8 +162,8 @@ export const deleteRecurringEventInstances = async (
     if (previousRecurrenceRulesExist) {
       if (
         shouldUpdateBaseRecurringEvent(
-          recurrenceRule.endDate.toISOString(),
-          baseRecurringEvent.endDate,
+          recurrenceRule.endDate?.toString(),
+          baseRecurringEvent.endDate?.toString(),
         )
       ) {
         await Event.updateOne(

@@ -104,12 +104,18 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
 
   try {
     if (event.recurring) {
+      // if the event is recurring
       await deleteRecurringEvent(args, event, session);
     } else {
+      // if the event is non-recurring
       await deleteSingleEvent(event._id.toString(), session);
     }
 
     /* c8 ignore start */
+    if (session) {
+      // commit transaction if everything's successful
+      await session.commitTransaction();
+    }
   } catch (error) {
     if (session) {
       // abort transaction if something fails
@@ -120,46 +126,6 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   }
 
   /* c8 ignore stop */
-
-  // await User.updateMany(
-  //   {
-  //     createdEvents: event._id,
-  //   },
-  //   {
-  //     $pull: {
-  //       createdEvents: event._id,
-  //     },
-  //   },
-  // );
-
-  // await User.updateMany(
-  //   {
-  //     eventAdmin: event._id,
-  //   },
-  //   {
-  //     $pull: {
-  //       eventAdmin: event._id,
-  //     },
-  //   },
-  // );
-
-  // const updatedEvent = await Event.findOneAndUpdate(
-  //   {
-  //     _id: event._id,
-  //   },
-  //   {
-  //     status: "DELETED",
-  //   },
-  //   {
-  //     new: true,
-  //   },
-  // );
-
-  // if (updatedEvent !== null) {
-  //   await cacheEvents([updatedEvent]);
-  // }
-
-  // await ActionItem.deleteMany({ eventId: event?._id });
 
   return event;
 };
