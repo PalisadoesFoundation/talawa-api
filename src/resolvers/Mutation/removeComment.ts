@@ -46,11 +46,11 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   const commentsFoundInCache = await findCommentsInCache([args.id]);
 
   if (commentsFoundInCache[0] == null) {
-    comment = await Comment.findOne({
+    comment = (await Comment.findOne({
       _id: args.id,
     })
       .populate("postId")
-      .lean();
+      .lean()) as InterfaceComment;
   } else {
     comment = commentsFoundInCache[0];
   }

@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removeUserFamily: removeUserFamilyResolver } = await import(

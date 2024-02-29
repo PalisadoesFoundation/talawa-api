@@ -13,7 +13,7 @@ import {
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
   async (_parent, args, _context) => {
-    const { _id, ...otherFields } = args.input;
+    const { ...otherFields } = args.input;
 
     //If there is no input
     if (Object.keys(otherFields).length === 0) {

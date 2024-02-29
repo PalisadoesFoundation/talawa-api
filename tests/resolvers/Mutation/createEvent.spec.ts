@@ -94,7 +94,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createEvent: createEventResolverError } = await import(
@@ -115,7 +115,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     try {
       const args: MutationCreateEventArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           allDay: false,
           description: "",
           endDate: "",

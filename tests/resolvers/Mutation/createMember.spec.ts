@@ -47,7 +47,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         },
         {
           $set: {
-            creatorId: Types.ObjectId().toString(),
+            creatorId: new Types.ObjectId().toString(),
           },
         },
       );
@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await createMemberResolver?.({}, args, context);
@@ -96,7 +96,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       const args: MutationCreateMemberArgs = {
         input: {
           organizationId: testOrganization?.id,
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
         },
       };
 
@@ -114,7 +114,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     try {
       const args: MutationCreateMemberArgs = {
         input: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           userId: "",
         },
       };

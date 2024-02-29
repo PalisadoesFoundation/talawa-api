@@ -51,12 +51,12 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     try {
       const args: MutationUpdateUserTypeArgs = {
         data: {
-          id: Types.ObjectId().toString(),
+          id: new Types.ObjectId().toString(),
         },
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { updateUserType: updateUserTypeResolver } = await import(
@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     try {
       const args: MutationUpdateUserTypeArgs = {
         data: {
-          id: Types.ObjectId().toString(),
+          id: new Types.ObjectId().toString(),
         },
       };
 
@@ -123,7 +123,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
 
       const args: MutationUpdateUserTypeArgs = {
         data: {
-          id: Types.ObjectId().toString(),
+          id: new Types.ObjectId().toString(),
         },
       };
 

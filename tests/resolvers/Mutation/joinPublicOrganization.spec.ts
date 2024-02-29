@@ -55,7 +55,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -122,7 +122,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { joinPublicOrganization: joinPublicOrganizationResolver } =

@@ -1,5 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
+import type { InterfaceUser } from "../../models";
 /**
  * This function enables to update language.
  * @param _parent - parent of current request
@@ -13,8 +14,8 @@ export const updateLanguage: MutationResolvers["updateLanguage"] = async (
   _parent,
   args,
   context,
-) => {
-  return await User.findOneAndUpdate(
+): Promise<InterfaceUser> => {
+  return (await User.findOneAndUpdate(
     {
       _id: context.userId,
     },
@@ -26,5 +27,5 @@ export const updateLanguage: MutationResolvers["updateLanguage"] = async (
     {
       new: true,
     },
-  ).lean();
+  ).lean()) as InterfaceUser;
 };

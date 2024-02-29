@@ -47,7 +47,7 @@ describe("resolvers -> Mutation -> likePost", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationLikePostArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

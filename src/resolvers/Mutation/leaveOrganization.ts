@@ -64,8 +64,12 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     );
   }
 
-  const currentUserIsOrganizationMember = organization.members.some((member) =>
-    Types.ObjectId(member).equals(currentUser?._id),
+  const currentUserIsOrganizationMember = organization.members.some(
+    (member) =>
+      member.toString() === currentUser?._id.toString() ||
+      Types.ObjectId.createFromHexString(member.toString()).equals(
+        Types.ObjectId.createFromHexString(currentUser?._id.toString()),
+      ),
   );
 
   // Checks whether currentUser is not a member of organzation.
@@ -100,7 +104,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   Removes organization._id from joinedOrganizations list of currentUser's document
   and returns the updated currentUser.
   */
-  return await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: currentUser._id,
     },
@@ -116,4 +120,14 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   )
     .select(["-password"])
     .lean();
+
+  if (updatedUser) {
+    return updatedUser;
+  } else {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
 };

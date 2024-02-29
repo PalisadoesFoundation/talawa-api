@@ -41,7 +41,7 @@ describe("resolvers -> Query -> addFeedback", () => {
     try {
       const args: MutationAddFeedbackArgs = {
         data: {
-          eventId: Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
           rating: 4,
           review: "Test Review",
         },
@@ -104,7 +104,7 @@ describe("resolvers -> Query -> addFeedback", () => {
       eventId: testEvent!._id,
       userId: testUser!._id,
     });
-    eventAttendeeId = eventAttendee._id;
+    eventAttendeeId = eventAttendee._id.toString();
 
     const { requestContext } = await import("../../../src/libraries");
 

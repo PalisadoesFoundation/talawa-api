@@ -72,7 +72,7 @@ export function createLoggingMiddleware<T extends Document>(
     }
   });
 
-  const updateOperations = ["findOneAndUpdate", "updateOne", "updateMany"];
+  const updateOperations = [/findOneAndUpdate/, /updateOne/, /updateMany/];
   updateOperations.forEach((operation) => {
     schema.pre(operation, function (this: InterfaceLoggableQuery<T>, next) {
       this.logInfo = logAction(TransactionLogTypes.UPDATE, this);
@@ -86,7 +86,7 @@ export function createLoggingMiddleware<T extends Document>(
     });
   });
 
-  const deleteOperations = ["deleteOne", "deleteMany"];
+  const deleteOperations = [/deleteOne/, /deleteMany/];
   deleteOperations.forEach((operation) => {
     schema.pre(operation, function (this: InterfaceLoggableQuery<T>, next) {
       this.logInfo = logAction(TransactionLogTypes.DELETE, this);

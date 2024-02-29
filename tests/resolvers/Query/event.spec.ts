@@ -8,18 +8,18 @@ import { Event } from "../../../src/models";
 
 import type { QueryEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
+// import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
-let testUser: TestUserType;
+// let testUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const resultArray = await createTestEvent();
-  testUser = resultArray[0];
+  // testUser = resultArray[0];
   testEvent = resultArray[2];
 });
 
@@ -31,7 +31,7 @@ describe("resolvers -> Query -> event", () => {
   it(`throws NotFoundError if no event exists with _id === args.id and event.status === 'ACTIVE'`, async () => {
     try {
       const args: QueryEventArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       await eventResolver?.({}, args, {});

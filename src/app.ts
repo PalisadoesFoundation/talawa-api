@@ -37,7 +37,7 @@ const corsOptions: cors.CorsOptions = {
     next(new Error("Unauthorized"));
   },
 };
-
+app.use(cors(corsOptions));
 i18n.configure({
   directory: `${__dirname}/../locales`,
   staticCatalog: {

@@ -38,13 +38,15 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
       );
     } else {
       //not already present then uninstall plugin on that org by adding it to the list
-      uninstalledOrgsList.push(mongoose.Types.ObjectId(currOrgID));
+      uninstalledOrgsList.push(
+        mongoose.Types.ObjectId.createFromHexString(currOrgID.toString()),
+      );
     }
     plugin.uninstalledOrgs = uninstalledOrgsList;
 
     const res = await Plugin.findOneAndUpdate(
       {
-        _id: mongoose.Types.ObjectId(uid),
+        _id: mongoose.Types.ObjectId.createFromHexString(uid.toString()),
       },
       {
         ...plugin,

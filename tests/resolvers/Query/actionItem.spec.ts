@@ -26,7 +26,7 @@ describe("resolvers -> Query -> actionItem", () => {
   it(`throws NotFoundError if no actionItem exists with _id === args.id`, async () => {
     try {
       const args: QueryActionItemArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       await actionItemResolver?.({}, args, {});

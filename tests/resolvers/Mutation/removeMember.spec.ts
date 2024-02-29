@@ -127,7 +127,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           userId: "",
         },
       };
@@ -156,7 +156,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
       const args: MutationRemoveMemberArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
         },
       };
 
@@ -186,7 +186,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
       const args: MutationRemoveMemberArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
         },
       };
 

@@ -41,7 +41,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
     try {
       const args: MutationCreateGroupChatArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           title: "",
           userIds: [],
         },
@@ -63,7 +63,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
         data: {
           organizationId: testOrganization?.id,
           title: "",
-          userIds: [Types.ObjectId().toString()],
+          userIds: [new Types.ObjectId().toString()],
         },
       };
 

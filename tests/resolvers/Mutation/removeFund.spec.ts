@@ -43,7 +43,7 @@ describe("resolvers->Mutation->removeFund", () => {
         id: testFund?._id,
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await removeFund?.({}, args, context);
     } catch (error: unknown) {
@@ -53,7 +53,7 @@ describe("resolvers->Mutation->removeFund", () => {
   it("throw error if no fund exists with _id===args.id", async () => {
     try {
       const args = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
       const context = {
         userId: testUser?._id,

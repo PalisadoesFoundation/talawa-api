@@ -59,7 +59,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
   testUser = await User.create({
-    userId: Types.ObjectId().toString(),
+    userId: new Types.ObjectId().toString(),
     email: `email${nanoid().toLowerCase()}@gmail.com`,
     password: "password",
     firstName: "firstName",
@@ -70,7 +70,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await testUser.remove();
+  await testUser.deleteOne();
   await disconnect(MONGOOSE_INSTANCE);
 });
 
@@ -81,7 +81,7 @@ it("throws NotFoundError if no user exists with _id === context.userId", async (
     }
   `;
   const authenticatedContext = {
-    userId: Types.ObjectId().toString(),
+    userId: new Types.ObjectId().toString(),
     userType: testUser.userType,
   };
   let schema = makeExecutableSchema({

@@ -68,7 +68,7 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationUpdateAgendaCategoryArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         input: {
           name: "Updated Name",
           description: "Updated Description",
@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await updateAgendaCategoryResolver?.({}, args, context);
@@ -88,7 +88,7 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
   it(`throws NotFoundError if no agenda category exists with _id === args.id`, async () => {
     try {
       const args: MutationUpdateAgendaCategoryArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         input: {
           name: "Updated Name",
           description: "Updated Description",

@@ -46,7 +46,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationUpdateActionItemCategoryArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         data: {
           name: "updatedDefault",
           isDisabled: true,
@@ -54,7 +54,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await updateActionItemCategoryResolver?.({}, args, context);
@@ -66,7 +66,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
   it(`throws NotFoundError if no actionItemCategory exists with _id === args.id`, async () => {
     try {
       const args: MutationUpdateActionItemCategoryArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         data: {
           name: "updatedDefault",
           isDisabled: true,

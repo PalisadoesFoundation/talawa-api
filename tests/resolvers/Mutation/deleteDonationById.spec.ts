@@ -38,7 +38,7 @@ afterAll(async () => {
 describe("resolvers -> Mutation -> deleteDonationById", () => {
   it(`returns false if deletion of donation was unsuccessful`, async () => {
     const args: MutationDeleteDonationByIdArgs = {
-      id: Types.ObjectId().toString(),
+      id: new Types.ObjectId().toString(),
     };
 
     const deleteDonationByIdPayload = await deleteDonationByIdResolver?.(

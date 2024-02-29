@@ -20,7 +20,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 
-import { Organization, User } from "../../../src/models";
+import { User } from "../../../src/models";
 
 let randomUser: TestUserType;
 let testUser: TestUserType;
@@ -52,7 +52,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await createActionItemCategoryResolver?.({}, args, context);
@@ -64,7 +64,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
     try {
       const args: MutationCreateActionItemCategoryArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
         name: "Default",
       };
 

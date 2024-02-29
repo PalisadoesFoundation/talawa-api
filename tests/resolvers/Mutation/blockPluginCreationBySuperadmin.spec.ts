@@ -52,7 +52,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await blockPluginCreationBySuperadminResolver?.({}, args, context);

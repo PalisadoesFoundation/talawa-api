@@ -10,9 +10,9 @@ import { User } from "../../models";
  * @returns An object that contains user data. If the user is not found then it throws a `NotFoundError` error.
  */
 export const user: QueryResolvers["user"] = async (_parent, args, context) => {
-  const currentUserExists = await User.exists({
+  const currentUserExists = !!(await User.exists({
     _id: context.userId,
-  });
+  }));
 
   if (currentUserExists === false) {
     throw new errors.NotFoundError(

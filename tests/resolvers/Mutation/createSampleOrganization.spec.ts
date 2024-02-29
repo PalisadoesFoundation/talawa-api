@@ -141,7 +141,7 @@ describe("createSampleOrganization resolver", async () => {
     );
 
     const args = {};
-    const adminContext = { userId: Types.ObjectId().toString() };
+    const adminContext = { userId: new Types.ObjectId().toString() };
     const parent = {};
 
     try {

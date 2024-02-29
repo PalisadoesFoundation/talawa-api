@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
   it(`throws NotFoundError if no organization exists with with _id === args.organizationId`, async () => {
     try {
       const args: MutationBlockUserArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
         userId: "",
       };
 
@@ -99,7 +99,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
     try {
       const args: MutationBlockUserArgs = {
         organizationId: testOrganization?.id,
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const context = {

@@ -63,7 +63,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       const args: MutationCreateMessageChatArgs = {
         data: {
           message: "",
-          receiver: Types.ObjectId().toString(),
+          receiver: new Types.ObjectId().toString(),
         },
       };
 

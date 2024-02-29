@@ -76,8 +76,13 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   let asigneeIsOrganizationMember = false;
   asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
     (organizationId) =>
-      organizationId === actionItemCategory.organizationId ||
-      Types.ObjectId(organizationId).equals(actionItemCategory.organizationId),
+      organizationId.toString() ===
+        actionItemCategory.organizationId.toString() ||
+      Types.ObjectId.createFromHexString(organizationId.toString()).equals(
+        Types.ObjectId.createFromHexString(
+          actionItemCategory.organizationId.toString(),
+        ),
+      ),
   );
 
   // Checks if the asignee is a member of the organization
@@ -120,16 +125,23 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     // Checks if the currUser is an admin of the event
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
-        admin === context.userID ||
-        Types.ObjectId(admin).equals(context.userId),
+        admin.toString() === context.userId.toString() ||
+        Types.ObjectId.createFromHexString(admin.toString()).equals(
+          Types.ObjectId.createFromHexString(context.userId.toString()),
+        ),
     );
   }
 
   // Checks if the currUser is an admin of the organization
   const currentUserIsOrgAdmin = currentUser.adminFor.some(
     (ogranizationId) =>
-      ogranizationId === actionItemCategory.organizationId ||
-      Types.ObjectId(ogranizationId).equals(actionItemCategory.organizationId),
+      ogranizationId.toString() ===
+        actionItemCategory.organizationId.toString() ||
+      Types.ObjectId.createFromHexString(ogranizationId.toString()).equals(
+        Types.ObjectId.createFromHexString(
+          actionItemCategory.organizationId.toString(),
+        ),
+      ),
   );
 
   // Checks whether currentUser with _id === context.userId is authorized for the operation.

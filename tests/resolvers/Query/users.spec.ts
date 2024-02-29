@@ -82,7 +82,7 @@ describe("resolvers -> Query -> users", () => {
 
   describe("", () => {
     beforeAll(async () => {
-      testUsers = await User.insertMany([
+      testUsers = (await User.insertMany([
         {
           email: `email${nanoid().toLowerCase()}@gmail.com`,
           password: "password",
@@ -120,7 +120,7 @@ describe("resolvers -> Query -> users", () => {
           appLanguageCode: `en${nanoid()}`,
           userType: "ADMIN",
         },
-      ]);
+      ])) as (InterfaceUser & Document<any, any, InterfaceUser>)[];
 
       const testOrganization = await Organization.create({
         name: "name1",
@@ -199,10 +199,6 @@ describe("resolvers -> Query -> users", () => {
         },
       };
 
-      const sort = {
-        _id: 1,
-      };
-
       const usersPayload = await usersResolver?.({}, args, {
         userId: testUsers[1]._id,
       });
@@ -210,7 +206,9 @@ describe("resolvers -> Query -> users", () => {
       let users = await User.find({
         _id: testUsers[1].id,
       })
-        .sort(sort)
+        .sort({
+          _id: 1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -236,10 +234,6 @@ describe("resolvers -> Query -> users", () => {
         },
       };
 
-      const sort = {
-        _id: 1,
-      };
-
       const usersPayload = await usersResolver?.({}, args, {
         userId: testUsers[3]._id,
       });
@@ -247,7 +241,9 @@ describe("resolvers -> Query -> users", () => {
       let users = await User.find({
         _id: testUsers[1].id,
       })
-        .sort(sort)
+        .sort({
+          _id: 1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -273,10 +269,6 @@ describe("resolvers -> Query -> users", () => {
         },
       };
 
-      const sort = {
-        _id: 1,
-      };
-
       const usersPayload = await usersResolver?.({}, args, {
         userId: testUsers[4]._id,
       });
@@ -284,7 +276,9 @@ describe("resolvers -> Query -> users", () => {
       let users = await User.find({
         _id: testUsers[1].id,
       })
-        .sort(sort)
+        .sort({
+          _id: 1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -317,10 +311,6 @@ describe("resolvers -> Query -> users", () => {
         appLanguageCode: testUsers[1].appLanguageCode,
       };
 
-      const sort = {
-        _id: 1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           id: testUsers[1].id,
@@ -345,7 +335,9 @@ describe("resolvers -> Query -> users", () => {
       });
 
       let users = await User.find(filterCriteria)
-        .sort(sort)
+        .sort({
+          _id: 1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -377,10 +369,6 @@ describe("resolvers -> Query -> users", () => {
         appLanguageCode: testUsers[1].appLanguageCode,
       };
 
-      const sort = {
-        _id: 1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           id: testUsers[1].id,
@@ -405,7 +393,9 @@ describe("resolvers -> Query -> users", () => {
       });
 
       let users = await User.find(filterCriteria)
-        .sort(sort)
+        .sort({
+          _id: 1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -436,10 +426,6 @@ describe("resolvers -> Query -> users", () => {
         appLanguageCode: testUsers[1].appLanguageCode,
       };
 
-      const sort = {
-        _id: 1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           id: testUsers[1].id,
@@ -458,7 +444,9 @@ describe("resolvers -> Query -> users", () => {
       });
 
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          _id: 1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -500,10 +488,6 @@ describe("resolvers -> Query -> users", () => {
         },
       };
 
-      const sort = {
-        _id: -1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           id_not: testUsers[2]._id,
@@ -523,7 +507,9 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          _id: -1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -565,10 +551,6 @@ describe("resolvers -> Query -> users", () => {
         },
       };
 
-      const sort = {
-        firstName: 1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           id_in: [testUsers[1].id],
@@ -585,7 +567,9 @@ describe("resolvers -> Query -> users", () => {
       });
 
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          firstName: 1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -627,10 +611,6 @@ describe("resolvers -> Query -> users", () => {
         },
       };
 
-      const sort = {
-        firstName: -1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           id_not_in: [testUsers[2]._id],
@@ -650,7 +630,9 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          firstName: -1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -693,10 +675,6 @@ describe("resolvers -> Query -> users", () => {
         },
       };
 
-      const sort = {
-        lastName: 1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           firstName_contains: testUsers[1].firstName,
@@ -715,7 +693,9 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          lastName: 1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -746,10 +726,6 @@ describe("resolvers -> Query -> users", () => {
         appLanguageCode: new RegExp("^" + testUsers[1].appLanguageCode),
       };
 
-      const sort = {
-        lastName: -1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           firstName_starts_with: testUsers[1].firstName,
@@ -767,7 +743,9 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          lastName: -1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -790,10 +768,6 @@ describe("resolvers -> Query -> users", () => {
   args.orderBy === 'appLanguageCode_ASC'`, async () => {
       const where = {};
 
-      const sort = {
-        appLanguageCode: 1,
-      };
-
       const args: QueryUsersArgs = {
         where: null,
         orderBy: "appLanguageCode_ASC",
@@ -807,7 +781,9 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          appLanguageCode: 1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -830,10 +806,6 @@ describe("resolvers -> Query -> users", () => {
      args.orderBy === 'appLanguageCode_DESC'`, async () => {
       const where = {};
 
-      const sort = {
-        appLanguageCode: -1,
-      };
-
       const args: QueryUsersArgs = {
         where: null,
         orderBy: "appLanguageCode_DESC",
@@ -847,7 +819,9 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          appLanguageCode: -1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -870,10 +844,6 @@ describe("resolvers -> Query -> users", () => {
     sorted by args.orderBy === 'email_ASC'`, async () => {
       const where = {};
 
-      const sort = {
-        email: 1,
-      };
-
       const args: QueryUsersArgs = {
         where: null,
         orderBy: "email_ASC",
@@ -887,7 +857,9 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          email: 1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -910,10 +882,6 @@ describe("resolvers -> Query -> users", () => {
     sorted by args.orderBy === 'email_DESC'`, async () => {
       const where = {};
 
-      const sort = {
-        email: -1,
-      };
-
       const args: QueryUsersArgs = {
         where: null,
         orderBy: "email_DESC",
@@ -927,7 +895,9 @@ describe("resolvers -> Query -> users", () => {
       const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          email: -1,
+        })
         .select(["-password"])
         .populate("createdOrganizations")
         .populate("createdEvents")
@@ -949,10 +919,6 @@ describe("resolvers -> Query -> users", () => {
   it(`returns list of all existing users
   sorted by args.orderBy === 'email_DESC' and when images exist`, async () => {
     const where = {};
-
-    const sort = {
-      email: -1,
-    };
 
     await User.updateMany(
       {},
@@ -976,7 +942,9 @@ describe("resolvers -> Query -> users", () => {
     const usersPayload = await usersResolver?.({}, args, context);
 
     let users = await User.find(where)
-      .sort(sort)
+      .sort({
+        email: -1,
+      })
       .select(["-password"])
       .populate("createdOrganizations")
       .populate("createdEvents")

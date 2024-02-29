@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
     try {
       refreshToken = await createRefreshToken({
         ...testUser!.toObject(),
-        _id: Types.ObjectId(),
+        _id: new Types.ObjectId(),
       });
 
       const args: MutationRefreshTokenArgs = {

@@ -92,7 +92,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     await cacheOrganizations([organization!]);
   }
   const currentPostIsPinned = organization?.pinnedPosts.some((postID) =>
-    Types.ObjectId(postID).equals(args.id),
+    Types.ObjectId.createFromHexString(postID.toString()).equals(args.id),
   );
 
   if (currentPostIsPinned) {

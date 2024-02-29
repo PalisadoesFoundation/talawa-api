@@ -43,7 +43,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMembershipRequestArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
       };
 
       const context = {

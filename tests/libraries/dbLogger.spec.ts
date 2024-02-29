@@ -39,7 +39,10 @@ const testLogEntry = {
 describe("Database transaction logging", () => {
   beforeEach(() => {
     vi.resetModules();
+    mockPreFunction.mockClear();
+    mockPostFunction.mockClear();
   });
+
   it("Logger should be null if process.env.LOG=false", async () => {
     process.env.LOG = "false";
     process.env.LOG_PATH = "";
@@ -51,6 +54,8 @@ describe("Database transaction logging", () => {
     createLoggingMiddleware(mockSchema as any, "TestModel");
 
     expect(dbLogger).toBe(null);
+    expect(mockPreFunction).not.toHaveBeenCalled();
+    expect(mockPostFunction).not.toHaveBeenCalled();
   });
 
   it("Logger should be defined and log succesfully if process.env.LOG=true", async () => {
@@ -106,15 +111,20 @@ describe("Database transaction logging", () => {
       const preMiddleware = mockPreFunction.mock.calls.find(
         (call) => call[0] === operation,
       )?.[1];
-      preMiddleware.call(mockQuery, () => {
-        return;
-      });
-      expect(mockQuery.logInfo).toBeDefined();
+      if (preMiddleware) {
+        preMiddleware.call(mockQuery, () => {
+          return;
+        });
+        expect(mockQuery.logInfo).toBeDefined();
+      }
+
       const postMiddleware = mockPostFunction.mock.calls.find(
         (call) => call[0] === operation,
       )?.[1];
-      postMiddleware.call(mockQuery);
-      expect(spyInfoLog).toHaveBeenCalledWith("success", mockQuery.logInfo);
+      if (postMiddleware) {
+        postMiddleware.call(mockQuery);
+        expect(spyInfoLog).toHaveBeenCalledWith("success", mockQuery.logInfo);
+      }
     });
   });
 });

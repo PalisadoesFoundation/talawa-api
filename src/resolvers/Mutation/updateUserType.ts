@@ -43,9 +43,9 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
     );
   }
 
-  const userExists = await User.exists({
+  const userExists = !!(await User.exists({
     _id: args.data.id!,
-  });
+  }));
 
   if (userExists === false) {
     throw new errors.NotFoundError(

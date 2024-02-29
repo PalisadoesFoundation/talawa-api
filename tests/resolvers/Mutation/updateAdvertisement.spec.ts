@@ -54,7 +54,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         },
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const { updateAdvertisement: updateAdvertisementResolverNotFoundError } =
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
@@ -107,7 +107,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     try {
       const args: MutationUpdateAdvertisementArgs = {
         input: {
-          _id: Types.ObjectId().toString(),
+          _id: new Types.ObjectId().toString(),
           name: "Sample",
         },
       };
@@ -133,9 +133,9 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
   it(`updates the advertisement with _id === args.id and returns it`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`,
+    );
     const args: MutationUpdateAdvertisementArgs = {
       input: {
         _id: testAdvertisement!._id,

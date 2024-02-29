@@ -84,7 +84,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     try {
       const args: MutationRemoveDirectChatArgs = {
         chatId: "",
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -111,7 +111,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
 
     try {
       const args: MutationRemoveDirectChatArgs = {
-        chatId: Types.ObjectId().toString(),
+        chatId: new Types.ObjectId().toString(),
         organizationId: testOrganization?.id,
       };
 

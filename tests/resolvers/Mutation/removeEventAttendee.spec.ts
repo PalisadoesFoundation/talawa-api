@@ -40,12 +40,12 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
     try {
       const args: MutationRemoveEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const { removeEventAttendee: removeEventAttendeeResolver } = await import(
         "../../../src/resolvers/Mutation/removeEventAttendee"
@@ -70,8 +70,8 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
     try {
       const args: MutationRemoveEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
@@ -100,7 +100,7 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
     try {
       const args: MutationRemoveEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           eventId: testEvent!._id,
         },
       };
@@ -130,7 +130,7 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
     try {
       const args: MutationRemoveEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           eventId: testEvent!._id,
         },
       };

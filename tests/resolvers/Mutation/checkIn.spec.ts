@@ -42,12 +42,12 @@ describe("resolvers -> Mutation -> checkIn", () => {
     try {
       const args: MutationCheckInArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const { checkIn: checkInResolver } = await import(
         "../../../src/resolvers/Mutation/checkIn"
@@ -72,8 +72,8 @@ describe("resolvers -> Mutation -> checkIn", () => {
     try {
       const args: MutationCheckInArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
@@ -102,7 +102,7 @@ describe("resolvers -> Mutation -> checkIn", () => {
     try {
       const args: MutationCheckInArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           eventId: testEvent?._id,
         },
       };
@@ -132,7 +132,7 @@ describe("resolvers -> Mutation -> checkIn", () => {
     try {
       const args: MutationCheckInArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           eventId: testEvent?._id,
         },
       };

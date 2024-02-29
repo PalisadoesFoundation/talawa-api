@@ -16,7 +16,9 @@ export const adminCheck = async (
   organization: InterfaceOrganization,
 ): Promise<void> => {
   const userIsOrganizationAdmin = organization.admins.some(
-    (admin) => admin === userId || Types.ObjectId(admin).equals(userId),
+    (admin) =>
+      admin === userId ||
+      Types.ObjectId.createFromHexString(admin.toString()).equals(userId),
   );
 
   const user = await User.findOne({

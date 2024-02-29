@@ -75,11 +75,11 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationRemoveActionItemArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await removeActionItemResolver?.({}, args, context);
@@ -91,7 +91,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
   it(`throws NotFoundError if no action item exists with _id === args.id`, async () => {
     try {
       const args: MutationRemoveActionItemArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -195,7 +195,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
         _id: newTestActionItem?._id,
       },
       {
-        eventId: Types.ObjectId().toString(),
+        eventId: new Types.ObjectId().toString(),
       },
       {
         new: true,
@@ -204,7 +204,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
 
     try {
       const args: MutationRemoveActionItemArgs = {
-        id: updatedTestActionItem?._id,
+        id: updatedTestActionItem?._id?.toString() || "",
       };
 
       const context = {
@@ -237,7 +237,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     );
 
     const args: MutationRemoveActionItemArgs = {
-      id: updatedTestActionItem?._id,
+      id: updatedTestActionItem?._id.toString() || "",
     };
 
     const context = {

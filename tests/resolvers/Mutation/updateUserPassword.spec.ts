@@ -73,7 +73,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { updateUserPassword: updateUserPasswordResolver } = await import(

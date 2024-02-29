@@ -26,7 +26,7 @@ describe("resolvers -> Query -> me", () => {
   it("throws NotFoundError if no user exists with _id === context.userId", async () => {
     try {
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await meResolver?.({}, {}, context);

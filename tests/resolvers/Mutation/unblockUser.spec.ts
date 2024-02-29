@@ -42,7 +42,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnblockUserArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
         userId: "",
       };
 
@@ -69,7 +69,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
     try {
       const args: MutationUnblockUserArgs = {
         organizationId: testOrganization?.id,
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const context = {

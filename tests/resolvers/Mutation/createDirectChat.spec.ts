@@ -53,7 +53,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     try {
       const args: MutationCreateDirectChatArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           userIds: [],
         },
       };
@@ -80,7 +80,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       const args: MutationCreateDirectChatArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userIds: [Types.ObjectId().toString()],
+          userIds: [new Types.ObjectId().toString()],
         },
       };
 

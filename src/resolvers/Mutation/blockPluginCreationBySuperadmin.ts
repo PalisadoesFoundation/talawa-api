@@ -35,7 +35,7 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
     Sets pluginCreationAllowed field on document of user with _id === args.userId
     to !args.blockUser and returns the updated user.
     */
-    return await User.findOneAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       {
         _id: args.userId,
       },
@@ -48,4 +48,13 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
         new: true,
       },
     ).lean();
+
+    if (updatedUser) return updatedUser;
+    else {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM,
+      );
+    }
   };

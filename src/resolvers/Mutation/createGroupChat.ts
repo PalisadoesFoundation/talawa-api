@@ -52,9 +52,9 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
 
   // Loops over each item in args.data.userIds list.
   for await (const userId of args.data.userIds) {
-    const userExists = await User.exists({
+    const userExists = !!(await User.exists({
       _id: userId,
-    });
+    }));
 
     // Checks whether user with _id === userId exists.
     if (userExists === false) {

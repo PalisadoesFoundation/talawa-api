@@ -45,7 +45,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveUserFromGroupChatArgs = {
-        chatId: Types.ObjectId().toString(),
+        chatId: new Types.ObjectId().toString(),
         userId: "",
       };
 
@@ -193,7 +193,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
 
-    const deletedOrgaization = await Organization.findOneAndRemove({
+    const deletedOrgaization = await Organization.findOneAndDelete({
       _id: testOrganization?._id,
     });
 

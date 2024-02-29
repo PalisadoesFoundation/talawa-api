@@ -18,13 +18,13 @@ let testOrganization: TestOrganizationType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
-  const testEvent1 = await createEventWithRegistrant(
+  await createEventWithRegistrant(
     testUser?._id,
     testOrganization?._id,
     true,
     "ONCE",
   );
-  const testEvent2 = await createEventWithRegistrant(
+  await createEventWithRegistrant(
     testUser?._id,
     testOrganization?._id,
     true,
@@ -39,10 +39,6 @@ afterAll(async () => {
 describe("resolvers -> Query -> eventsByOrganization", () => {
   it(`returns list of all existing events sorted by ascending order of event._id
   if args.orderBy === 'id_ASC'`, async () => {
-    const sort = {
-      _id: 1,
-    };
-
     const args: QueryEventsByOrganizationArgs = {
       id: testOrganization?._id,
       orderBy: "id_ASC",
@@ -60,7 +56,9 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
       organization: testOrganization?._id,
       status: "ACTIVE",
     })
-      .sort(sort)
+      .sort({
+        _id: 1,
+      })
       .populate("creator", "-password")
       .populate("admins", "-password")
       .lean();

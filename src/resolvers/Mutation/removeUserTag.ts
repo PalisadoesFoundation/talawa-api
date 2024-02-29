@@ -63,7 +63,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
 
   while (currentParents.length) {
     allTagIds = allTagIds.concat(currentParents);
-    currentParents = await OrganizationTagUser.find(
+    const foundTags = await OrganizationTagUser.find(
       {
         organizationId: tag.organizationId,
         parentTagId: {
@@ -74,8 +74,8 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
         _id: 1,
       },
     );
-    currentParents = currentParents
-      .map((tag) => tag._id)
+    currentParents = foundTags
+      .map((tag) => tag._id.toString())
       .filter((id: string | null) => id);
   }
 

@@ -26,7 +26,7 @@ describe("resolvers -> Query -> post", () => {
   it("throws NotFoundError if no post exists with _id === args.id", async () => {
     try {
       const args: QueryPostArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       await postResolver?.({}, args, {});

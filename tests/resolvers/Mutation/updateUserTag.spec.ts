@@ -64,7 +64,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
         },
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const { updateUserTag: updateUserTagResolver } = await import(
         "../../../src/resolvers/Mutation/updateUserTag"
@@ -89,7 +89,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: Types.ObjectId().toString(),
+          _id: new Types.ObjectId().toString(),
           name: "NewName",
         },
       };

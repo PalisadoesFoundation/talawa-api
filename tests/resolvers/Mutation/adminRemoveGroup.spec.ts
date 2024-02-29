@@ -47,7 +47,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
   it(`throws NotFoundError if no groupChat exists with _id === args.groupId`, async () => {
     try {
       const args: MutationAdminRemoveGroupArgs = {
-        groupId: Types.ObjectId().toString(),
+        groupId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -69,7 +69,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
         },
       );
@@ -106,7 +106,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await adminRemoveGroupResolver?.({}, args, context);

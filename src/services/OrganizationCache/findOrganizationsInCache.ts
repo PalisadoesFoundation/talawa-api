@@ -35,41 +35,45 @@ export async function findOrganizationsInCache(
 
         createdAt: new Date(organization.createdAt),
 
-        _id: Types.ObjectId(organization._id),
+        _id: Types.ObjectId.createFromHexString(organization._id),
 
         admins: organization?.admins?.map((admin: string) => {
-          return Types.ObjectId(admin);
+          return Types.ObjectId.createFromHexString(admin.toString());
         }),
 
         members:
           organization.members.length !== 0
             ? organization.members?.map((member: string) => {
-                return Types.ObjectId(member);
+                return Types.ObjectId.createFromHexString(member.toString());
               })
             : [],
 
-        creatorId: Types.ObjectId(organization.creatorId),
+        creatorId: Types.ObjectId.createFromHexString(
+          organization.creatorId.toString(),
+        ),
 
         updatedAt: new Date(organization.updatedAt),
 
         groupChats:
           organization.groupChats.length !== 0
             ? organization.groupChat.map((groupChat: string) => {
-                return Types.ObjectId(groupChat);
+                return Types.ObjectId.createFromHexString(groupChat.toString());
               })
             : [],
 
         posts:
           organization.posts.length !== 0
             ? organization.posts?.map((post: string) => {
-                return Types.ObjectId(post);
+                return Types.ObjectId.createFromHexString(post.toString());
               })
             : [],
 
         pinnedPosts:
           organization.pinnedPosts.length !== 0
             ? organization.pinnedPosts?.map((pinnedPost: string) => {
-                return Types.ObjectId(pinnedPost);
+                return Types.ObjectId.createFromHexString(
+                  pinnedPost.toString(),
+                );
               })
             : [],
 
@@ -77,7 +81,9 @@ export async function findOrganizationsInCache(
           organization.membershipRequests.length !== 0
             ? organization.membershipRequests.map(
                 (membershipRequest: string) => {
-                  return Types.ObjectId(membershipRequest);
+                  return Types.ObjectId.createFromHexString(
+                    membershipRequest.toString(),
+                  );
                 },
               )
             : [],
@@ -85,7 +91,9 @@ export async function findOrganizationsInCache(
         blockedUsers:
           organization.blockedUsers.length !== 0
             ? organization.blockedUsers.map((blockedUser: string) => {
-                return Types.ObjectId(blockedUser);
+                return Types.ObjectId.createFromHexString(
+                  blockedUser.toString(),
+                );
               })
             : [],
       };

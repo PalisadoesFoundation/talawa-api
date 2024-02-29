@@ -50,7 +50,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMessageToGroupChatArgs = {
-        chatId: Types.ObjectId().toString(),
+        chatId: new Types.ObjectId().toString(),
         messageContent: "",
       };
 
@@ -78,7 +78,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =

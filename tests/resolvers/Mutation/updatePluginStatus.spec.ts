@@ -54,8 +54,8 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
 
     try {
       const args: MutationUpdatePluginStatusArgs = {
-        id: Types.ObjectId().toString(),
-        orgId: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
+        orgId: new Types.ObjectId().toString(),
       };
 
       const context = async (): Promise<void> => {

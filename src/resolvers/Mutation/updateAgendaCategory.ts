@@ -4,6 +4,7 @@ import type {
 } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { AgendaCategoryModel, User } from "../../models";
+import type { InterfaceAgendaCategory } from "../../models";
 import {
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -19,14 +20,14 @@ import { Types } from "mongoose";
  * @param _parent - The parent object, not used in this resolver.
  * @param args  - The input arguments for the mutation.
  * @param context - The context object containing user information.
- * @returns A promise that resolves to the updated agenda category.
+ * @returns A promise that resolves to the updated agenda category or null.
  * @throws `NotFoundError` If the agenda category or user is not found.
  * @throws `UnauthorizedError` If the user does not have the required permissions.
  * @throws `InternalServerError` For other potential issues during agenda category update.
  */
 
 export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
-  async (_parent, args, context) => {
+  async (_parent, args, context): Promise<InterfaceAgendaCategory | null> => {
     // Check if the AgendaCategory exists
     // Fetch the user to get the organization ID
 
@@ -63,7 +64,9 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
     const currentUserIsOrgAdmin = currentUser.adminFor.some(
       (organizationId) =>
         organizationId === currentOrg?._id ||
-        Types.ObjectId(organizationId).equals(organizationId),
+        Types.ObjectId.createFromHexString(organizationId.toString()).equals(
+          organizationId,
+        ),
     );
     // If the user is a normal user, throw an error
     if (
@@ -92,5 +95,5 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
       },
     ).lean();
 
-    return updatedAgendaCategory;
+    return updatedAgendaCategory as InterfaceAgendaCategory;
   };

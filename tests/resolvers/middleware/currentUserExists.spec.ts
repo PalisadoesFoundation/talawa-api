@@ -46,7 +46,7 @@ describe("resolvers -> Middleware -> currentUserExists", () => {
 
     try {
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await composedResolver({}, {}, context, {});

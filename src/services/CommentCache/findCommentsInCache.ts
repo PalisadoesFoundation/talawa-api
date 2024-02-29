@@ -33,20 +33,24 @@ export async function findCommentsInCache(
       return {
         ...commentObj,
 
-        _id: Types.ObjectId(commentObj._id),
+        _id: Types.ObjectId.createFromHexString(commentObj._id.toString()),
 
         createdAt: new Date(commentObj.createdAt),
 
-        creatorId: Types.ObjectId(commentObj.creatorId),
+        creatorId: Types.ObjectId.createFromHexString(
+          commentObj.creatorId.toString(),
+        ),
 
         updatedAt: new Date(commentObj.updatedAt),
 
-        postId: Types.ObjectId(commentObj.postId),
+        postId: Types.ObjectId.createFromHexString(
+          commentObj.postId.toString(),
+        ),
 
         likedBy:
           commentObj?.likedBy.length !== 0
             ? commentObj?.likedBy?.map((user: string) => {
-                return Types.ObjectId(user);
+                return Types.ObjectId.createFromHexString(user.toString());
               })
             : [],
       };

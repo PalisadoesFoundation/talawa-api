@@ -76,5 +76,5 @@ export const removeFund: MutationResolvers["removeFund"] = async (
   });
 
   //returns the deleted fund
-  return fund;
+  return fund as InterfaceFund;
 };

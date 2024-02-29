@@ -89,9 +89,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
   it(`returns list of all existing events filtered by args.where ===
   { id: testEvent[1]._id, title: testEvents[1].title, description:testEvents[1].description, organization: testEvents[1].organization._id, location: testEvents[1].location}
   and sorted by ascending order of event._id if args.orderBy === 'id_ASC'`, async () => {
-    const sort = {
-      _id: 1,
-    };
     const where = {
       _id: testEvents[1]?._id,
       title: testEvents[1]?.title,
@@ -113,7 +110,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       orderBy: "id_ASC",
     };
 
-    const events = await Event.find(where).sort(sort).lean();
+    const events = await Event.find(where)
+
+      .lean();
 
     let eventsByOrganizationConnectionPayload =
       (await eventsByOrganizationConnectionResolver?.(
@@ -140,9 +139,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
   it(`returns list of all existing events filtered by args.where ===
   { id_not: testEvent[0]._id, title_not: testEvents[0].title, description_not:testEvents[0].description, location_not:testEvents[0].location }
   and sorted by descending order of event._id if args.orderBy === 'id_DESC'`, async () => {
-    const sort = {
-      _id: -1,
-    };
     const where = {
       _id: {
         $ne: testEvents[0]?._id,
@@ -170,7 +166,13 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       orderBy: "id_DESC",
     };
 
-    const events = await Event.find(where).limit(2).skip(1).sort(sort).lean();
+    const events = await Event.find(where)
+      .limit(2)
+      .skip(1)
+      .sort({
+        _id: -1,
+      })
+      .lean();
 
     let eventsByOrganizationConnectionPayload =
       (await eventsByOrganizationConnectionResolver?.(
@@ -196,9 +198,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
   it(`returns list of all existing events filtered by args.where ===
   { id_not_in: testEvent[0]._id, title_not_in: testEvents[0].title, description_not_in:testEvents[0].description, location_not_in:testEvents[0].location}
   and sorted by descending order of event.title if args.orderBy === 'title_DESC'`, async () => {
-    const sort = {
-      title: -1,
-    };
     const where = {
       _id: {
         $nin: [testEvents[0]?._id],
@@ -224,7 +223,11 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       orderBy: "title_DESC",
     };
 
-    const events = await Event.find(where).sort(sort).lean();
+    const events = await Event.find(where)
+      .sort({
+        title: -1,
+      })
+      .lean();
 
     let eventsByOrganizationConnectionPayload =
       (await eventsByOrganizationConnectionResolver?.(
@@ -252,9 +255,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
   it(`returns list of all existing events filtered by args.where ===
   { id_in: testEvent[0]._id, title_in: testEvents[0].title, description_in:testEvents[0].description, location_in: testEvents[0].location}
   and sorted by ascending order of event.title if args.orderBy === 'title_ASC'`, async () => {
-    const sort = {
-      title: 1,
-    };
     const where = {
       _id: {
         $in: [testEvents[0]?._id],
@@ -282,7 +282,13 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       orderBy: "title_ASC",
     };
 
-    const events = await Event.find(where).limit(2).skip(1).sort(sort).lean();
+    const events = await Event.find(where)
+      .limit(2)
+      .skip(1)
+      .sort({
+        title: 1,
+      })
+      .lean();
 
     let eventsByOrganizationConnectionPayload =
       (await eventsByOrganizationConnectionResolver?.(
@@ -308,9 +314,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
   it(`returns list of all existing events filtered by args.where ===
   { title_contains: testEvents[1].title, description_contains:testEvents[1].description, location: testEvents[1].location}
   and sorted by ascending order of event.description if args.orderBy === 'description_ASC'`, async () => {
-    const sort = {
-      description: 1,
-    };
     const where = {
       title: {
         $regex: testEvents[1]?.title,
@@ -337,7 +340,13 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       orderBy: "title_ASC",
     };
 
-    const events = await Event.find(where).limit(2).skip(1).sort(sort).lean();
+    const events = await Event.find(where)
+      .limit(2)
+      .skip(1)
+      .sort({
+        description: 1,
+      })
+      .lean();
 
     let eventsByOrganizationConnectionPayload =
       (await eventsByOrganizationConnectionResolver?.(
@@ -363,9 +372,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
   it(`returns list of all existing events filtered by args.where ===
   { title_starts_with: testEvents[1].title, description_starts_with:testEvents[1].description }
   and sorted by descending order of event.description if args.orderBy === 'description_DESC'`, async () => {
-    const sort = {
-      description: -1,
-    };
     const where = {
       title: new RegExp("^" + testEvents[1]?.title),
       description: new RegExp("^" + testEvents[1]?.description),
@@ -381,7 +387,13 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       orderBy: "title_DESC",
     };
 
-    const events = await Event.find(where).limit(2).skip(1).sort(sort).lean();
+    const events = await Event.find(where)
+      .limit(2)
+      .skip(1)
+      .sort({
+        description: -1,
+      })
+      .lean();
 
     let eventsByOrganizationConnectionPayload =
       (await eventsByOrganizationConnectionResolver?.(

@@ -50,7 +50,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
 
     try {
       const args: MutationRegisterForEventArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

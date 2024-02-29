@@ -48,7 +48,7 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createUserFamily: createUserFamilyResolver } = await import(

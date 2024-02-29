@@ -58,7 +58,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationAcceptMembershipRequestArgs = {
-        membershipRequestId: Types.ObjectId().toString(),
+        membershipRequestId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -92,7 +92,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
         },
       );
@@ -131,7 +131,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         {
           $set: {
             organization: testOrganization?._id,
-            user: Types.ObjectId().toString(),
+            user: new Types.ObjectId().toString(),
           },
         },
       );

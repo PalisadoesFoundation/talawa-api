@@ -67,8 +67,10 @@ export const registerEventAttendee: MutationResolvers["registerEventAttendee"] =
 
     const isUserEventAdmin = event.admins.some(
       (admin) =>
-        admin === context.userID ||
-        Types.ObjectId(admin).equals(context.userId),
+        admin.toString() === context.userId.toString() ||
+        Types.ObjectId.createFromHexString(admin.toString()).equals(
+          Types.ObjectId.createFromHexString(context.userId.toString()),
+        ),
     );
 
     if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {

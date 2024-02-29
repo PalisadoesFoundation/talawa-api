@@ -68,7 +68,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
         id: sampleAgendaCategory?._id,
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await deleteAgendaCategory?.({}, args, context);
@@ -79,7 +79,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
   it("throws NotFoundError if no agenda category exists with the given ID", async () => {
     try {
       const args = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
       const context = {
         userId: testAdminUser?._id,
@@ -126,7 +126,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
       createdAt: Date.now(),
     });
     const args: MutationDeleteAgendaCategoryArgs = {
-      id: newTestAgendaCategory?._id,
+      id: newTestAgendaCategory?._id.toString(),
     };
 
     const context = {

@@ -38,9 +38,9 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   ]);
 
   if (organizationFoundInCache[0] == null) {
-    organization = await Organization.findOne({
+    organization = (await Organization.findOne({
       _id: args.data.organizationId,
-    }).lean();
+    }).lean()) as InterfaceOrganization;
 
     await cacheOrganizations([organization!]);
   } else {
@@ -77,7 +77,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   }
 
   const userIsOrganizationMember = organization?.members.some((member) =>
-    Types.ObjectId(member).equals(user._id),
+    Types.ObjectId.createFromHexString(member).equals(user._id),
   );
 
   if (!userIsOrganizationMember) {
@@ -98,7 +98,9 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   }
 
   const userIsOrganizationAdmin = organization?.admins.some((admin) =>
-    Types.ObjectId(admin).equals(user._id),
+    Types.ObjectId.createFromHexString(admin.toString()).equals(
+      Types.ObjectId.createFromHexString(user._id.toString()),
+    ),
   );
 
   /*
@@ -120,7 +122,11 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     of organization. If match is true assigns error message to errors list
     and breaks out of loop.
     */
-  if (Types.ObjectId(organization?.creatorId).equals(user._id)) {
+  if (
+    Types.ObjectId.createFromHexString(
+      organization?.creatorId.toString(),
+    ).equals(Types.ObjectId.createFromHexString(user._id.toString()))
+  ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
       ADMIN_REMOVING_CREATOR.CODE,
@@ -129,7 +135,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   }
 
   // Removes user's id from members list on organization.
-  organization = await Organization.findOneAndUpdate(
+  organization = (await Organization.findOneAndUpdate(
     {
       _id: organization?._id,
     },
@@ -143,7 +149,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     {
       new: true,
     },
-  ).lean();
+  ).lean()) as InterfaceOrganization;
 
   await cacheOrganizations([organization!]);
 

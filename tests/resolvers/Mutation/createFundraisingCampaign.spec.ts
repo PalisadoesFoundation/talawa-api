@@ -50,7 +50,7 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
         },
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await createFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
@@ -63,7 +63,7 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
       const args: MutationCreateFundraisingCampaignArgs = {
         data: {
           name: "testFundraisingCampaign",
-          fundId: Types.ObjectId().toString(),
+          fundId: new Types.ObjectId().toString(),
           startDate: new Date(new Date().toDateString()),
           endDate: new Date(new Date().toDateString()),
           currency: "USD",

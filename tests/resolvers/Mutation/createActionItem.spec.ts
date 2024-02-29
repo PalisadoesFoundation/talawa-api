@@ -86,7 +86,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await createActionItemResolver?.({}, args, context);
@@ -101,7 +101,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
         data: {
           assigneeId: randomUser?._id,
         },
-        actionItemCategoryId: Types.ObjectId().toString(),
+        actionItemCategoryId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -120,7 +120,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     try {
       const args: MutationCreateActionItemArgs = {
         data: {
-          assigneeId: Types.ObjectId().toString(),
+          assigneeId: new Types.ObjectId().toString(),
         },
         actionItemCategoryId: testCategory?._id,
       };
@@ -168,7 +168,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       const args: MutationCreateActionItemArgs = {
         data: {
           assigneeId: randomUser?._id,
-          eventId: Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
         actionItemCategoryId: testCategory?._id,
       };

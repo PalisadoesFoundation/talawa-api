@@ -39,7 +39,7 @@ afterAll(async () => {
 describe("resolvers -> Mutation -> deleteAdvertiementById", () => {
   it(`returns false if deletion of advertisement was unsuccessful`, async () => {
     const args: MutationDeleteDonationByIdArgs = {
-      id: Types.ObjectId().toString(),
+      id: new Types.ObjectId().toString(),
     };
 
     const deleteDonationByIdPayload = await deleteAdvertisementById?.(

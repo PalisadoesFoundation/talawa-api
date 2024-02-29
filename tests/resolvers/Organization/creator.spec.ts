@@ -54,7 +54,7 @@ describe("resolvers -> Organization -> creatorId", () => {
         },
         {
           $set: {
-            creatorId: Types.ObjectId().toString(),
+            creatorId: new Types.ObjectId().toString(),
           },
         },
         {

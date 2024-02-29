@@ -146,7 +146,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     );
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
-        organizationId: Types.ObjectId().toHexString(),
+        organizationId: new Types.ObjectId().toHexString(),
         userId: testUserSuperAdmin?._id,
         role: "ADMIN",
       };
@@ -172,7 +172,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: Types.ObjectId().toHexString(),
+        userId: new Types.ObjectId().toHexString(),
         role: "ADMIN",
       };
       const context = {
@@ -226,7 +226,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         role: "ADMIN",
       };
       const context = {
-        userId: Types.ObjectId().toHexString(),
+        userId: new Types.ObjectId().toHexString(),
       };
 
       const {

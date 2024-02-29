@@ -54,7 +54,7 @@ describe("resolvers -> Query -> directChatsMessagesByChatID", () => {
   it(`throws NotFoundError if no directChat exists with _id === args.id`, async () => {
     try {
       const args: QueryDirectChatsMessagesByChatIdArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       await directChatsMessagesByChatIDResolver?.({}, args, {});

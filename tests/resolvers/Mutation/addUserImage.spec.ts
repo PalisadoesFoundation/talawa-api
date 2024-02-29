@@ -54,7 +54,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { addUserImage: addUserImageResolverUserError } = await import(

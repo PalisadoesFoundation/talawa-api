@@ -58,7 +58,7 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnlikeCommentArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

@@ -73,14 +73,14 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationUpdateActionItemArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         data: {
           assigneeId: randomUser?._id,
         },
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await updateActionItemResolver?.({}, args, context);
@@ -92,7 +92,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
   it(`throws NotFoundError if no action item exists with _id === args.id`, async () => {
     try {
       const args: MutationUpdateActionItemArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         data: {
           assigneeId: randomUser?._id,
         },
@@ -113,7 +113,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       const args: MutationUpdateActionItemArgs = {
         id: testActionItem?._id,
         data: {
-          assigneeId: Types.ObjectId().toString(),
+          assigneeId: new Types.ObjectId().toString(),
         },
       };
 
@@ -235,7 +235,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
         _id: testActionItem?._id,
       },
       {
-        eventId: Types.ObjectId().toString(),
+        eventId: new Types.ObjectId().toString(),
       },
       {
         new: true,
@@ -253,7 +253,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
 
     try {
       const args: MutationUpdateActionItemArgs = {
-        id: updatedTestActionItem?._id,
+        id: updatedTestActionItem?._id.toString()!,
         data: {
           assigneeId: randomUser?._id,
         },
@@ -286,7 +286,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       data: {
         assigneeId: testUser?._id,
       },
-      id: updatedTestActionItem?._id,
+      id: updatedTestActionItem?._id.toString()!,
     };
 
     const context = {

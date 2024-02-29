@@ -16,5 +16,5 @@ export const getFundById: QueryResolvers["getFundById"] = async (
     _id: args.id,
   }).lean();
 
-  return fund ?? ({} as InterfaceFund);
+  return fund as InterfaceFund;
 };

@@ -39,9 +39,9 @@ afterAll(async () => {
 describe("resolvers => Mutation => removeOrganizationCustomField", () => {
   it("should remove field added by the organization", async () => {
     const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`,
+    );
 
     const customField = await addOrganizationCustomField?.(
       {},
@@ -102,7 +102,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       },
     );
 
-    const initialCustomFields = await OrganizationCustomField.find({
+    await OrganizationCustomField.find({
       organizationId: testOrganization?._id,
     });
 
@@ -132,7 +132,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
-    const nonExistentCustomFieldId = Types.ObjectId().toString();
+    const nonExistentCustomFieldId = new Types.ObjectId().toString();
 
     const context = { userId: testUser?._id };
     const args = {
@@ -173,7 +173,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       testOrganization?._id.toString(),
     );
 
-    const context = { userId: Types.ObjectId().toString() };
+    const context = { userId: new Types.ObjectId().toString() };
     const args = {
       organizationId: testOrganization?._id as string,
       customFieldId: customField?._id.toString() as string,
@@ -209,7 +209,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
 
     const context = { userId: testUser?._id };
     const args = {
-      organizationId: Types.ObjectId().toString() as string,
+      organizationId: new Types.ObjectId().toString() as string,
       customFieldId: customField?._id.toString() as string,
     };
 

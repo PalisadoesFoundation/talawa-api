@@ -1,5 +1,9 @@
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type {
+  QueryResolvers,
+  ResolverTypeWrapper,
+} from "../../types/generatedGraphQLTypes";
 import { AgendaCategoryModel } from "../../models";
+import type { InterfaceAgendaCategory } from "../../models";
 import { errors } from "../../libraries";
 import { AGENDA_CATEGORY_NOT_FOUND_ERROR } from "../../constants";
 
@@ -33,5 +37,5 @@ export const agendaCategory: QueryResolvers["agendaCategory"] = async (
       AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM,
     );
   }
-  return foundAgendaCategory;
+  return foundAgendaCategory as ResolverTypeWrapper<InterfaceAgendaCategory>;
 };

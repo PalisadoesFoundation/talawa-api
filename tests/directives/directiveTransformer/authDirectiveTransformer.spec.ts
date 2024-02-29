@@ -57,7 +57,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await testUser!.remove();
+  await testUser!.deleteOne();
   await disconnect(MONGOOSE_INSTANCE);
 });
 

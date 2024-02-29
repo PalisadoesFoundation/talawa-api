@@ -5,7 +5,7 @@ import { Types } from "mongoose";
 import type { InterfaceUser } from "../../../src/models";
 import { User } from "../../../src/models";
 import type { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import { disconnect } from "../../helpers/db";
 
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
@@ -39,9 +39,7 @@ const email = `email${nanoid().toLowerCase()}@gmail.com`;
 const date = new Date("2002-03-04T18:30:00.000Z");
 
 beforeAll(async () => {
-  MONGOOSE_INSTANCE = await connect();
-
-  testUser = await User.create({
+  testUser = (await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
     password: "password",
     firstName: "firstName",
@@ -68,15 +66,15 @@ beforeAll(async () => {
       mobile: null,
       work: null,
     },
-  });
+  })) as UserDocument;
 
-  testUser2 = await User.create({
+  testUser2 = (await User.create({
     email: email,
     password: "password",
     firstName: "firstName",
     lastName: "lastName",
     appLanguageCode: "en",
-  });
+  })) as UserDocument;
   testUser2.save();
   testUser.save();
 });
@@ -105,7 +103,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { updateUserProfile: updateUserProfileResolver } = await import(
@@ -136,7 +134,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { updateUserProfile: updateUserProfileResolverUserError } =

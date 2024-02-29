@@ -74,7 +74,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
     } else {
       users = usersModel.docs.map((user) => {
         return {
-          ...user._doc,
+          ...user,
           image: user.image ? `${context.apiRootUrl}${user.image}` : null,
           password: null,
         };

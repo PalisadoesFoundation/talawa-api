@@ -51,11 +51,11 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
 
     try {
       const args: MutationAcceptAdminArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { acceptAdmin } = await import(
@@ -78,7 +78,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
 
     try {
       const args: MutationAcceptAdminArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -139,7 +139,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
 
     try {
       const args: MutationAcceptAdminArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

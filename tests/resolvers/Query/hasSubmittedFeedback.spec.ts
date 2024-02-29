@@ -40,8 +40,8 @@ describe("resolvers -> Query -> hasSubmittedFeedback", () => {
 
     try {
       const args: QueryHasSubmittedFeedbackArgs = {
-        userId: Types.ObjectId().toString(),
-        eventId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
+        eventId: new Types.ObjectId().toString(),
       };
 
       const context = {};
@@ -68,7 +68,7 @@ describe("resolvers -> Query -> hasSubmittedFeedback", () => {
     try {
       const args: QueryHasSubmittedFeedbackArgs = {
         userId: randomTestUser!._id,
-        eventId: Types.ObjectId().toString(),
+        eventId: new Types.ObjectId().toString(),
       };
 
       const context = {};
@@ -119,7 +119,7 @@ describe("resolvers -> Query -> hasSubmittedFeedback", () => {
       eventId: testEvent!._id,
       userId: testUser!._id,
     });
-    eventAttendeeId = eventAttendee._id;
+    eventAttendeeId = eventAttendee._id.toString();
 
     const { requestContext } = await import("../../../src/libraries");
 

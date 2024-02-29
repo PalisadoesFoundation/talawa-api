@@ -1,10 +1,10 @@
-import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
+// import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import * as cryptolib from "crypto";
 import inquirer from "inquirer";
-import mongodb from "mongodb";
+import { MongoClient } from "mongodb";
 import * as redis from "redis";
 import { exec } from "child_process";
 import nodemailer from "nodemailer";
@@ -17,6 +17,8 @@ dotenv.config();
  * The function `checkEnvFile` checks if any fields are missing in the .env file compared to the .env.sample file, and
  * if so, it copies the missing fields from .env.sampale to .env.
  */
+const MAXIMUM_IMAGE_SIZE_LIMIT_KB = 20000;
+
 function checkEnvFile(): void {
   const env = dotenv.parse(fs.readFileSync(".env"));
   const envSample = dotenv.parse(fs.readFileSync(".env.sample"));
@@ -29,7 +31,7 @@ function checkEnvFile(): void {
   }
 }
 
-// Update the value of an environment variable in .env file
+// Update the value of an environment variable in .env file .
 /**
  * The function `updateEnvVariable` updates the values of environment variables in a .env file based on the provided
  * configuration object.
@@ -424,12 +426,9 @@ async function checkConnection(url: string): Promise<boolean> {
   console.log("\nChecking MongoDB connection....");
 
   try {
-    const connection = await mongodb.connect(url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 1000,
-    });
-    await connection.close();
+    const client = new MongoClient(url);
+    await client.connect();
+    await client.close();
     return true;
   } catch (error) {
     console.log(`\nConnection to MongoDB failed. Please try again.\n`);
@@ -678,10 +677,8 @@ async function twoFactorAuth(): Promise<void> {
  */
 async function shouldWipeExistingData(url: string): Promise<boolean> {
   let shouldImport = false;
-  const client = new mongodb.MongoClient(url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  const client = new MongoClient(url);
+
   try {
     await client.connect();
     const db = client.db();

@@ -1,5 +1,5 @@
 import type { InterfaceActionItemCategory } from "../../src/models";
-import { ActionItemCategory, Organization } from "../../src/models";
+import { ActionItemCategory } from "../../src/models";
 import type { Document } from "mongoose";
 import {
   createTestUserAndOrganization,

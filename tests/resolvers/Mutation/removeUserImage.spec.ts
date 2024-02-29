@@ -47,7 +47,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
 
     try {
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removeUserImage: removeUserImageResolver } = await import(

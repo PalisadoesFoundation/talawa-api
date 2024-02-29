@@ -157,9 +157,19 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     }
 
     // Returns updated currentUser.
-    return await User.findOne({
+    const updatedUser = await User.findOne({
       _id: currentUser._id,
     })
       .select(["-password"])
       .lean();
+
+    if (updatedUser) {
+      return updatedUser;
+    } else {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM,
+      );
+    }
   };

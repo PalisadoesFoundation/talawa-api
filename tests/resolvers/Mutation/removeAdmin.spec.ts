@@ -62,7 +62,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     try {
       const args: MutationRemoveAdminArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           userId: "",
         },
       };
@@ -91,7 +91,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       const args: MutationRemoveAdminArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
         },
       };
 
@@ -176,7 +176,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
             admins: testUserRemoved?._id,
           },
           $set: {
-            creatorId: Types.ObjectId().toString(),
+            creatorId: new Types.ObjectId().toString(),
           },
         },
         {
