@@ -146,7 +146,6 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       input: {
         _id: testAdvertisement._id,
         name: "New Advertisement Name",
-        mediaFile: "data:image/png;base64,bWaWEgY29udGVudA==",
         type: "POPUP",
         startDate: new Date(new Date().getFullYear() + 0, 11, 31)
           .toISOString()

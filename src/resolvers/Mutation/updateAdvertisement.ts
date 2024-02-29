@@ -134,7 +134,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       ? { ...args.input, mediaUrl: uploadMediaFile }
       : { ...args.input };
 
-    await Advertisement.updateOne(
+    const updatedAdvertisement = await Advertisement.findByIdAndUpdate(
       {
         _id: _id,
       },
@@ -146,17 +146,25 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       },
     ).lean();
 
+    if (!updatedAdvertisement) {
+      throw new errors.NotFoundError(
+        requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
+        ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
+        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
     const updatedAdvertisementPayload = {
-      _id: existingAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
-      name: existingAdvertisement.name,
-      organizationId: existingAdvertisement.organizationId,
-      mediaUrl: existingAdvertisement.mediaUrl,
-      type: existingAdvertisement.type,
-      startDate: existingAdvertisement.startDate,
-      endDate: existingAdvertisement.endDate,
-      createdAt: existingAdvertisement.createdAt,
-      updatedAt: existingAdvertisement.updatedAt,
-      creatorId: existingAdvertisement.creatorId,
+      _id: updatedAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
+      name: updatedAdvertisement.name,
+      organizationId: updatedAdvertisement.organizationId,
+      mediaUrl: updatedAdvertisement.mediaUrl,
+      type: updatedAdvertisement.type,
+      startDate: updatedAdvertisement.startDate,
+      endDate: updatedAdvertisement.endDate,
+      createdAt: updatedAdvertisement.createdAt,
+      updatedAt: updatedAdvertisement.updatedAt,
+      creatorId: updatedAdvertisement.creatorId,
     };
     return {
       advertisement: { ...updatedAdvertisementPayload },
