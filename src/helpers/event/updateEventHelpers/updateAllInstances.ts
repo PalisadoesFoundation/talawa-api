@@ -3,6 +3,7 @@ import type { InterfaceEvent } from "../../../models";
 import { Event } from "../../../models";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import type { InterfaceRecurrenceRule } from "../../../models/RecurrenceRule";
+import { shouldUpdateBaseRecurringEvent } from "./index";
 
 /**
  * This function updates all instances of the recurring event following the given recurrenceRule.
@@ -24,11 +25,10 @@ export const updateAllInstances = async (
   session: mongoose.ClientSession,
 ): Promise<InterfaceEvent> => {
   if (
-    (!recurrenceRule.endDate && !baseRecurringEvent.endDate) ||
-    (recurrenceRule.endDate &&
-      baseRecurringEvent.endDate &&
-      recurrenceRule.endDate.toString() ===
-        baseRecurringEvent.endDate.toString())
+    shouldUpdateBaseRecurringEvent(
+      recurrenceRule?.endDate?.toString(),
+      baseRecurringEvent?.endDate?.toString(),
+    )
   ) {
     // if this was the latest recurrence rule, then update the baseRecurringEvent
     // because new instances following this recurrence rule would be generated based on baseRecurringEvent
