@@ -53,5 +53,7 @@ describe("resolvers -> Query -> post", () => {
     }
 
     expect(postPayload).toEqual(post);
+    expect(postPayload?.imageUrl).toEqual(null);
+    expect(postPayload?.videoUrl).toEqual(null);
   });
 });

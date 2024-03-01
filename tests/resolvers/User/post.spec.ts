@@ -80,7 +80,18 @@ describe("resolvers -> User -> post", () => {
 
     // Check individual properties
     // console.log(connection?.edges[0]);
-
+    expect(
+      (connection?.edges[0] as unknown as PostEdge).node?.imageUrl,
+    ).toEqual(null);
+    expect(
+      (connection?.edges[0] as unknown as PostEdge).node?.videoUrl,
+    ).toEqual(null);
+    expect(
+      (connection?.edges[0] as unknown as PostEdge).node?.imageUrl,
+    ).toEqual(null);
+    expect(
+      (connection?.edges[0] as unknown as PostEdge).node?.videoUrl,
+    ).toEqual(null);
     expect((connection?.edges[0] as unknown as PostEdge).cursor).toEqual(
       testPost2?._id.toString(),
     );
