@@ -2,7 +2,7 @@ import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
+import { BASE_URL, POST_NOT_FOUND_ERROR } from "../../../src/constants";
 import { Post } from "../../../src/models";
 import { post as postResolver } from "../../../src/resolvers/Query/post";
 import type { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -39,8 +39,11 @@ describe("resolvers -> Query -> post", () => {
     const args: QueryPostArgs = {
       id: testPost?._id,
     };
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
 
-    const postPayload = await postResolver?.({}, args, {});
+    const postPayload = await postResolver?.({}, args, context);
 
     const post = await Post.findOne({ _id: testPost?._id })
       .populate("organization")
@@ -53,7 +56,11 @@ describe("resolvers -> Query -> post", () => {
     }
 
     expect(postPayload).toEqual(post);
-    expect(postPayload?.imageUrl).toEqual(null);
-    expect(postPayload?.videoUrl).toEqual(null);
+    expect(postPayload?.imageUrl).toEqual(
+      post?.imageUrl ? `${context.apiRootUrl}${post?.imageUrl}` : null,
+    );
+    expect(postPayload?.videoUrl).toEqual(
+      post?.videoUrl ? `${context.apiRootUrl}${post?.videoUrl}` : null,
+    );
   });
 });

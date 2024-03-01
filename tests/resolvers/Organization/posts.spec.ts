@@ -4,6 +4,7 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { nanoid } from "nanoid";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { BASE_URL } from "../../../src/constants";
 import { Post, type InterfaceOrganization } from "../../../src/models";
 import {
   parseCursor,
@@ -93,6 +94,34 @@ describe("resolvers -> Organization -> post", () => {
     expect(connection?.pageInfo.hasPreviousPage).toBe(false);
     expect(connection?.pageInfo.startCursor).toEqual(testPost2?._id.toString());
     expect(connection?.totalCount).toEqual(totalCount);
+  });
+  it("returns the connection object with imageUrl", async () => {
+    const parent = testOrganization as InterfaceOrganization;
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
+    const connection = await postResolver?.(
+      parent,
+      {
+        first: 2,
+      },
+      context,
+    );
+    expect(
+      (connection?.edges[0] as unknown as PostEdge).node?.imageUrl,
+    ).toEqual(
+      testPost2?.imageUrl
+        ? `${context.apiRootUrl}${testPost2?.imageUrl}`
+        : null,
+    );
+    expect(
+      (connection?.edges[0] as unknown as PostEdge).node?.videoUrl,
+    ).toEqual(
+      testPost2?.videoUrl
+        ? `${context.apiRootUrl}${testPost2?.videoUrl}`
+        : null,
+    );
   });
 });
 describe("parseCursor function", () => {
