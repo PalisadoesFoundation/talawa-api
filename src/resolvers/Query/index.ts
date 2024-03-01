@@ -32,12 +32,16 @@ import { user } from "./user";
 import { userLanguage } from "./userLanguage";
 import { users } from "./users";
 import { usersConnection } from "./usersConnection";
+import { getAgendaItem } from "./agendaItemById";
+import { getAllAgendaItems } from "./getAllAgendaItems";
 
 export const Query: QueryResolvers = {
   actionItem,
   actionItemsByEvent,
   actionItemCategory,
   agendaCategory,
+  getAgendaItem,
+  getAllAgendaItems,
   actionItemsByOrganization,
   actionItemCategoriesByOrganization,
   checkAuth,

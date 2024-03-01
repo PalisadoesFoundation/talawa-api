@@ -1091,7 +1091,7 @@ export type Mutation = {
   updateActionItemCategory?: Maybe<ActionItemCategory>;
   updateAdvertisement?: Maybe<UpdateAdvertisementPayload>;
   updateAgendaCategory?: Maybe<AgendaCategory>;
-  updateAgendaItem: AgendaItem;
+  updateAgendaItem?: Maybe<AgendaItem>;
   updateEvent: Event;
   updateEventVolunteer: EventVolunteer;
   updateFund: Fund;
@@ -3719,7 +3719,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateActionItemCategory?: Resolver<Maybe<ResolversTypes['ActionItemCategory']>, ParentType, ContextType, RequireFields<MutationUpdateActionItemCategoryArgs, 'data' | 'id'>>;
   updateAdvertisement?: Resolver<Maybe<ResolversTypes['UpdateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationUpdateAdvertisementArgs, 'input'>>;
   updateAgendaCategory?: Resolver<Maybe<ResolversTypes['AgendaCategory']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaCategoryArgs, 'id' | 'input'>>;
-  updateAgendaItem?: Resolver<ResolversTypes['AgendaItem'], ParentType, ContextType, RequireFields<MutationUpdateAgendaItemArgs, 'id' | 'input'>>;
+  updateAgendaItem?: Resolver<Maybe<ResolversTypes['AgendaItem']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaItemArgs, 'id' | 'input'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerArgs, 'id'>>;
   updateFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationUpdateFundArgs, 'data' | 'id'>>;

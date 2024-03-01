@@ -257,7 +257,7 @@ export const mutations = gql`
       data: UpdateActionItemCategoryInput!
     ): ActionItemCategory @auth
 
-    updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem!
+    updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
 
     updateAgendaCategory(
       id: ID!
