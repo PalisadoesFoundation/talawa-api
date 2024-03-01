@@ -10,7 +10,7 @@ import {
   generateRecurringEventInstances,
   getRecurringInstanceDates,
 } from "../recurringEventHelpers";
-import { getEventData } from "./getEventData";
+import { getEventData, shouldUpdateBaseRecurringEvent } from "./index";
 
 /**
  * This function updates this and the following instances of a recurring event.
@@ -198,12 +198,10 @@ export const updateThisAndFollowingInstances = async (
 
   // update the baseRecurringEvent if it is the latest recurrence rule that the instances are following
   if (
-    recurrenceRule &&
-    ((!recurrenceRule.endDate && !baseRecurringEvent.endDate) ||
-      (recurrenceRule.endDate &&
-        baseRecurringEvent.endDate &&
-        recurrenceRule.endDate.toString() ===
-          baseRecurringEvent.endDate.toString()))
+    shouldUpdateBaseRecurringEvent(
+      recurrenceRule?.endDate?.toString(),
+      baseRecurringEvent?.endDate?.toString(),
+    )
   ) {
     await Event.updateOne(
       {
