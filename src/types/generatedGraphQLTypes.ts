@@ -1925,7 +1925,7 @@ export type PostsConnection = {
   __typename?: 'PostsConnection';
   edges: Array<PostEdge>;
   pageInfo: DefaultConnectionPageInfo;
-  totalCount?: Maybe<Scalars['PositiveInt']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
 export type Query = {
@@ -3728,7 +3728,7 @@ export type PostEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 export type PostsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostsConnection'] = ResolversParentTypes['PostsConnection']> = {
   edges?: Resolver<Array<ResolversTypes['PostEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
-  totalCount?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
