@@ -30,7 +30,7 @@ export const enums = gql`
     location_DESC
   }
 
-  enum RecurringEventUpdateType {
+  enum RecurringEventMutationType {
     AllInstances
     ThisInstance
     ThisAndFollowingInstances

@@ -187,7 +187,10 @@ export const mutations = gql`
 
     removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
 
-    removeEvent(id: ID!): Event! @auth
+    removeEvent(
+      id: ID!
+      recurringEventDeleteType: RecurringEventMutationType
+    ): Event! @auth
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
 
@@ -272,7 +275,7 @@ export const mutations = gql`
       id: ID!
       data: UpdateEventInput
       recurrenceRuleData: RecurrenceRuleInput
-      recurringEventUpdateType: RecurringEventUpdateType
+      recurringEventUpdateType: RecurringEventMutationType
     ): Event! @auth
 
     updateEventVolunteer(
