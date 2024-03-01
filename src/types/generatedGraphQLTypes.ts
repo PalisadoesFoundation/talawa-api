@@ -1405,6 +1405,7 @@ export type MutationRemoveDirectChatArgs = {
 
 export type MutationRemoveEventArgs = {
   id: Scalars['ID']['input'];
+  recurringEventDeleteType?: InputMaybe<RecurringEventMutationType>;
 };
 
 
@@ -1578,7 +1579,7 @@ export type MutationUpdateEventArgs = {
   data?: InputMaybe<UpdateEventInput>;
   id: Scalars['ID']['input'];
   recurrenceRuleData?: InputMaybe<RecurrenceRuleInput>;
-  recurringEventUpdateType?: InputMaybe<RecurringEventUpdateType>;
+  recurringEventUpdateType?: InputMaybe<RecurringEventMutationType>;
 };
 
 
@@ -2210,7 +2211,7 @@ export type RecurrenceRuleInput = {
   weekDays?: InputMaybe<Array<InputMaybe<WeekDays>>>;
 };
 
-export type RecurringEventUpdateType =
+export type RecurringEventMutationType =
   | 'AllInstances'
   | 'ThisAndFollowingInstances'
   | 'ThisInstance';
@@ -2827,7 +2828,7 @@ export type ResolversTypes = {
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
   RecurrenceRuleInput: RecurrenceRuleInput;
-  RecurringEventUpdateType: RecurringEventUpdateType;
+  RecurringEventMutationType: RecurringEventMutationType;
   SortedByOrder: SortedByOrder;
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']['output']>;

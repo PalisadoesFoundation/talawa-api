@@ -935,7 +935,7 @@ type Mutation {
   removeAdmin(data: UserAndOrganizationInput!): User!
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
-  removeEvent(id: ID!): Event!
+  removeEvent(id: ID!, recurringEventDeleteType: RecurringEventMutationType): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
   removeFund(id: ID!): Fund!
@@ -970,7 +970,7 @@ type Mutation {
   updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
-  updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventUpdateType): Event!
+  updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
   updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
@@ -1291,7 +1291,7 @@ input RecurrenceRuleInput {
   weekDays: [WeekDays]
 }
 
-enum RecurringEventUpdateType {
+enum RecurringEventMutationType {
   AllInstances
   ThisAndFollowingInstances
   ThisInstance
