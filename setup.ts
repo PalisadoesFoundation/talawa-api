@@ -387,29 +387,6 @@ export async function setEncryptionKey(): Promise<void> {
   }
 }
 
-//LAST_RESORT_SUPERADMIN_EMAIL prompt
-/**
- * The function `askForSuperAdminEmail` asks the user to enter an email address and returns it as a promise.
- * @returns The email entered by the user is being returned.
- */
-async function askForSuperAdminEmail(): Promise<string> {
-  console.log(
-    "\nPlease make sure to register with this email before logging in.\n",
-  );
-  const { email } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "email",
-      message:
-        "Enter the email which you wish to assign as the Super Admin of last resort :",
-      validate: (input: string) =>
-        isValidEmail(input) || "Invalid email. Please try again.",
-    },
-  ]);
-
-  return email;
-}
-
 // Get the super admin email
 /**
  * The function `superAdmin` prompts the user for a super admin email, updates a configuration file
