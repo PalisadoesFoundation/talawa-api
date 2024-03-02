@@ -67,7 +67,7 @@ const server = new ApolloServer({
       data,
     };
   },
-  validationRules: [depthLimit(5)],
+  validationRules: [depthLimit(6)],
   csrfPrevention: true,
   cache: "bounded",
   plugins: [

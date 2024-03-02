@@ -532,7 +532,7 @@ export const types = gql`
   type PostsConnection {
     edges: [PostEdge!]!
     pageInfo: DefaultConnectionPageInfo!
-    totalCount: PositiveInt
+    totalCount: Int
   }
   type PostEdge {
     node: Post!
