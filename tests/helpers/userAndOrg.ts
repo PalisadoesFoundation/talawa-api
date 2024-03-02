@@ -6,6 +6,7 @@ import type { Document } from "mongoose";
 export type TestOrganizationType =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (InterfaceOrganization & Document<any, any, InterfaceOrganization>) | null;
+
 export type TestUserType =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (InterfaceUser & Document<any, any, InterfaceUser>) | null;

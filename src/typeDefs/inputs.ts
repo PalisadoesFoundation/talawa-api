@@ -169,6 +169,14 @@ export const inputs = gql`
     fundingGoal: Float!
     currency: Currency!
   }
+  input FundCampaignPledgeInput {
+    campaignId: ID!
+    userIds: [ID!]!
+    startDate: Date
+    endDate: Date
+    amount: Float!
+    currency: Currency!
+  }
 
   input LanguageInput {
     en_value: String!
@@ -307,6 +315,7 @@ export const inputs = gql`
     title: String
     description: String
     recurring: Boolean
+    isRecurringEventException: Boolean
     recurrance: Recurrance
     isPublic: Boolean
     isRegisterable: Boolean
@@ -325,11 +334,24 @@ export const inputs = gql`
     isDefault: Boolean
     isArchived: Boolean
   }
+  input UpdateFundCampaignInput {
+    name: String
+    startDate: Date
+    endDate: Date
+    fundingGoal: Float
+    currency: Currency
+  }
+  input UpdateFundCampaignPledgeInput {
+    startDate: Date
+    endDate: Date
+    amount: Float
+    currency: Currency
+  }
 
   input UpdateAdvertisementInput {
     _id: ID!
     name: String
-    link: String
+    mediaFile: String
     type: AdvertisementType
     startDate: Date
     endDate: Date
@@ -458,5 +480,14 @@ export const inputs = gql`
     title: String
     imageUrl: String
     videoUrl: String
+  }
+
+  input CreateAdvertisementInput {
+    endDate: Date!
+    name: String!
+    organizationId: ID!
+    startDate: Date!
+    type: AdvertisementType!
+    mediaFile: String!
   }
 `;

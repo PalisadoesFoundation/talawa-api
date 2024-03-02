@@ -15,6 +15,7 @@ node_modules/**
 
 # Don't upload configuration files
 .env
+.env_test
 
 # Ignore uploads
 image/**
