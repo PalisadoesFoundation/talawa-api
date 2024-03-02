@@ -233,7 +233,6 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
       eventId: testEvent?._id,
       isCompleted: true,
     }).lean();
-
     expect(actionItemsByOrganizationPayload).toEqual(
       actionItemsByOrganizationInfo,
     );
