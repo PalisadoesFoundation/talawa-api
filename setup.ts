@@ -542,7 +542,7 @@ export async function twoFactorAuth(): Promise<void> {
     "\nClick on Select app section and choose Other(Custom name), enter talawa as the custom name and press Generate button.",
   );
 
-  await inquirer.prompt([
+  const { email, password } = await inquirer.prompt([
     {
       type: "input",
       name: "email",
@@ -557,7 +557,17 @@ export async function twoFactorAuth(): Promise<void> {
     },
   ]);
   if (process.env.NODE_ENV === "test") {
-    dotenv.parse(fs.readFileSync(".env_test"));
+    const config = dotenv.parse(fs.readFileSync(".env_test"));
+
+    config.MAIL_USERNAME = email;
+    config.MAIL_PASSWORD = password;
+    updateEnvVariable(config);
+  } else {
+    const config = dotenv.parse(fs.readFileSync(".env"));
+
+    config.MAIL_USERNAME = email;
+    config.MAIL_PASSWORD = password;
+    updateEnvVariable(config);
   }
 }
 //Import sample data
