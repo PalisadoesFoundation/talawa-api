@@ -196,7 +196,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
 
     const actionItemsByOrganizationInfo = await ActionItem.find({
       actionItemCategoryId: { $in: actionItemCategoriesIds },
-      eventId: testEvent?._id,
+      ...where,
     }).lean();
 
     expect(actionItemsByOrganizationPayload).toEqual(
