@@ -1175,7 +1175,7 @@ describe("Check for validation conditions", () => {
       }
     }
   });
-  it(`throws Date Validation error if start time is greater than end time`, async () => {
+  it(`throws Time Validation error if start time is greater than end time`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
       (message) => message,
