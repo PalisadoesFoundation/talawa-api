@@ -56,20 +56,22 @@ export const advertisementsConnection: QueryResolvers["advertisementsConnection"
       Advertisement.find().countDocuments().exec(),
     ]);
 
-    objectList.map((advertisement: InterfaceAdvertisement) => ({
-      ...advertisement,
-      mediaUrl: `${context.apiRootUrl}${advertisement.mediaUrl}`,
-      organization: {
-        _id: advertisement.organizationId,
-      },
-    }));
+    const advertisements = objectList.map(
+      (advertisement: InterfaceAdvertisement) => ({
+        ...advertisement,
+        mediaUrl: `${context.apiRootUrl}${advertisement.mediaUrl}`,
+        organization: {
+          _id: advertisement.organizationId,
+        },
+      }),
+    );
 
     return transformToDefaultGraphQLConnection<
       ParsedCursor,
       InterfaceAdvertisement,
       InterfaceAdvertisement
     >({
-      objectList,
+      objectList: advertisements,
       parsedArgs,
       totalCount,
     });
