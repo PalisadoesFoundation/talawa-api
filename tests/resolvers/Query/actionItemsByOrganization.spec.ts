@@ -19,7 +19,7 @@ let testEvent: TestEventType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [, , testOrganization] = await createTestActionItems();
+  [, testEvent, testOrganization] = await createTestActionItems();
 });
 
 afterAll(async () => {
@@ -196,7 +196,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
 
     const actionItemsByOrganizationInfo = await ActionItem.find({
       actionItemCategoryId: { $in: actionItemCategoriesIds },
-      ...where,
+      eventId: testEvent?._id,
     }).lean();
 
     expect(actionItemsByOrganizationPayload).toEqual(
