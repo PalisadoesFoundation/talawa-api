@@ -60,9 +60,6 @@ export const advertisementsConnection: QueryResolvers["advertisementsConnection"
       (advertisement: InterfaceAdvertisement) => ({
         ...advertisement,
         mediaUrl: `${context.apiRootUrl}${advertisement.mediaUrl}`,
-        organization: {
-          _id: advertisement.organizationId,
-        },
       }),
     );
 
