@@ -15,6 +15,7 @@ import {
   createSingleEvent,
   createRecurringEvent,
 } from "../../helpers/event/createEventHelpers";
+import { compareTime } from "../../libraries/validators/compareTime";
 
 /**
  * This function enables to create an event.
@@ -115,6 +116,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       LENGTH_VALIDATION_ERROR.CODE,
     );
   }
+  console.log(args);
   const compareDatesResult = compareDates(
     args.data?.startDate,
     args.data?.endDate,
@@ -123,6 +125,16 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     throw new errors.InputValidationError(
       requestContext.translate(compareDatesResult),
       compareDatesResult,
+    );
+  }
+  const compareTimeResult = compareTime(
+    args.data?.startTime,
+    args.data?.endTime,
+  );
+  if (compareTimeResult !== "") {
+    throw new errors.InputValidationError(
+      requestContext.translate(compareTimeResult),
+      compareTimeResult,
     );
   }
 
