@@ -542,7 +542,7 @@ export async function twoFactorAuth(): Promise<void> {
     "\nClick on Select app section and choose Other(Custom name), enter talawa as the custom name and press Generate button.",
   );
 
-  const { email, password } = await inquirer.prompt([
+  await inquirer.prompt([
     {
       type: "input",
       name: "email",
@@ -557,8 +557,9 @@ export async function twoFactorAuth(): Promise<void> {
     },
   ]);
   if (process.env.NODE_ENV === "test") {
-    const config = dotenv.parse(fs.readFileSync(".env_test"));
-
+    dotenv.parse(fs.readFileSync(".env_test"));
+  }
+}
 //Import sample data
 /**
  * The function `importDefaultOrganization` will import the default organization
@@ -600,11 +601,6 @@ async function importDefaultOrganization(): Promise<void> {
     await client.close();
   }
 }
-
-type VerifySmtpConnectionReturnType = {
-  success: boolean;
-  error: unknown;
-};
 
 /**
  * The function `configureSmtp` prompts the user to configure SMTP settings for sending emails through
