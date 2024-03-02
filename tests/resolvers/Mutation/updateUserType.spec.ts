@@ -64,9 +64,9 @@ describe("resolvers -> Mutation -> updateUserType", () => {
       );
 
       await updateUserTypeResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -94,9 +94,9 @@ describe("resolvers -> Mutation -> updateUserType", () => {
       );
 
       await updateUserTypeResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
     }
@@ -136,9 +136,9 @@ describe("resolvers -> Mutation -> updateUserType", () => {
       );
 
       await updateUserTypeResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -165,9 +165,9 @@ describe("resolvers -> Mutation -> updateUserType", () => {
         "../../../src/resolvers/Mutation/updateUserType"
       );
       await updateUserTypeResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error) {
       expect(spy).toHaveBeenCalledWith(SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE}`,
       );
     }

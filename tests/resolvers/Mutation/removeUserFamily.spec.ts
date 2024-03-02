@@ -18,8 +18,6 @@ import {
   USER_FAMILY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile } from "../../../src/models";
-import { createTestUser } from "../../helpers/userAndOrg";
 import type {
   TestUserFamilyType,
   TestUserType,

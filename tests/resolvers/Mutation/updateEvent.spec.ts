@@ -1,8 +1,13 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { AppUserProfile, Event, User } from "../../../src/models";
-import { EventAttendee } from "../../../src/models";
+import {
+  AppUserProfile,
+  Event,
+  User,
+  EventAttendee,
+} from "../../../src/models";
+
 import type { MutationUpdateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
   connect,
@@ -27,12 +32,14 @@ import {
 } from "../../../src/constants";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
 import type { TestEventType } from "../../helpers/events";
-import type { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import { addWeeks } from "date-fns";
 import { RecurrenceRule } from "../../../src/models/RecurrenceRule";
-import { fail } from "assert";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

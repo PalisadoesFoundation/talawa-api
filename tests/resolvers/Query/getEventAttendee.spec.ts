@@ -37,6 +37,7 @@ describe(`resolvers -> Query -> getEventAttendeeByEventId `, () => {
 
     const args: QueryGetEventAttendeeArgs = {
       eventId: testEvent?._id,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       userId: testUser!._id.toString(),
     };
 

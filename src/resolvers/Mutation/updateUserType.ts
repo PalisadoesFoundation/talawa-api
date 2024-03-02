@@ -57,6 +57,7 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
   }
 
   const userExists = await User.exists({
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     _id: args.data.id!,
   });
 
@@ -70,9 +71,11 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
 
   await User.updateOne(
     {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       _id: args.data.id!,
     },
     {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       userType: args.data.userType!,
       adminApproved: true,
     },

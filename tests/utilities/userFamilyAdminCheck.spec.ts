@@ -10,12 +10,12 @@ import {
   vi,
 } from "vitest";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../../src/constants";
-import { AppUserProfile } from "../../src/models";
+import { AppUserProfile, User } from "../../src/models";
 import type { InterfaceUserFamily } from "../../src/models/userFamily";
 import { UserFamily } from "../../src/models/userFamily";
 import { connect, disconnect } from "../helpers/db";
 import { createTestUserFunc } from "../helpers/user";
-import { User } from "../../src/models";
+
 import type {
   TestUserFamilyType,
   TestUserType,

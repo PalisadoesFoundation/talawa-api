@@ -14,8 +14,9 @@ import {
   Organization,
   Post,
   User,
+  Fund,
 } from "../../models";
-import { Fund } from "../../models";
+
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { deleteOrganizationFromCache } from "../../services/OrganizationCache/deleteOrganizationFromCache";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";

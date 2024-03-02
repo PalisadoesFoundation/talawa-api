@@ -214,7 +214,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
 
     const userData = await generateUserData(
       ORGANIZATION_ID.toString(),
-      "ADMIN"
+      "ADMIN",
     );
     const admin = userData.user;
 

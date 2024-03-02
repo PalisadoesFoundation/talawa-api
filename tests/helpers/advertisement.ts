@@ -1,6 +1,6 @@
-import type { InterfaceUser } from "../../src/models";
+import type { InterfaceUser, InterfaceAdvertisement } from "../../src/models";
 import { Advertisement, AppUserProfile, User } from "../../src/models";
-import type { InterfaceAdvertisement } from "../../src/models";
+
 import type { Document, PopulatedDoc } from "mongoose";
 import { createTestUserAndOrganization } from "./userAndOrg";
 import { nanoid } from "nanoid";

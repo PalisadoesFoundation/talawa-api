@@ -19,10 +19,11 @@ import {
   Organization,
   Post,
   User,
+  AppUserProfile,
 } from "../../../src/models";
 import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import { AppUserProfile } from "../../../src/models";
+
 import { nanoid } from "nanoid";
 import {
   afterAll,

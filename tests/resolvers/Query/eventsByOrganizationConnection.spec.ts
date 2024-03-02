@@ -40,18 +40,21 @@ beforeAll(async () => {
   await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
   [testUser, testOrganization] = await createTestUserAndOrganization();
   const testEvent1 = await createEventWithRegistrant(
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     testUser!._id.toString(),
     testOrganization?._id,
     true,
     "ONCE",
   );
   const testEvent2 = await createEventWithRegistrant(
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     testUser!._id.toString(),
     testOrganization?._id,
     false,
     "DAILY",
   );
   const testEvent3 = await createEventWithRegistrant(
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     testUser!._id.toString(),
     testOrganization?._id,
     false,

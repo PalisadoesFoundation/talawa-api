@@ -213,6 +213,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
   });
   it(`creates the organization without image and returns it`, async () => {
     vi.spyOn(uploadImage, "uploadImage").mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async (newImagePath: any, imageAlreadyInDbPath: any) => ({
         newImagePath,
         imageAlreadyInDbPath,

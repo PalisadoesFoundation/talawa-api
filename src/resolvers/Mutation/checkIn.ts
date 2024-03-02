@@ -4,7 +4,6 @@ import {
   USER_ALREADY_CHECKED_IN,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
-  USER_NOT_REGISTERED_FOR_EVENT,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";

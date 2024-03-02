@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Event, EventAttendee, User } from "../../../src/models";
+import { EventAttendee, User } from "../../../src/models";
 import type { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -97,6 +97,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       );
 
       const args: MutationRegisterForEventArgs = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         id: testEvent!._id.toString(),
       };
 
@@ -175,6 +176,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
 
     try {
       const args: MutationRegisterForEventArgs = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         id: testEvent!._id.toString(),
       };
 
