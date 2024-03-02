@@ -1,4 +1,4 @@
-import shortid from "shortid";
+import { nanoid } from "nanoid";
 import * as fs from "fs";
 import { writeFile } from "fs/promises";
 import { encodedVideoExtentionCheck } from "./encodedVideoExtensionCheck";
@@ -11,7 +11,7 @@ import { deletePreviousVideo } from "./deletePreviousVideo";
 export const uploadEncodedVideo = async (
   encodedVideoURL: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  previousVideoPath?: string | null
+  previousVideoPath?: string | null,
 ): Promise<string> => {
   const isURLValidVideo = encodedVideoExtentionCheck(encodedVideoURL);
 
@@ -19,7 +19,7 @@ export const uploadEncodedVideo = async (
     throw new errors.InvalidFileTypeError(
       requestContext.translate(INVALID_FILE_TYPE.MESSAGE),
       INVALID_FILE_TYPE.CODE,
-      INVALID_FILE_TYPE.PARAM
+      INVALID_FILE_TYPE.PARAM,
     );
   }
 
@@ -40,7 +40,7 @@ export const uploadEncodedVideo = async (
         $inc: {
           numberOfUses: 1,
         },
-      }
+      },
     );
 
     if (previousVideoPath) {
@@ -54,7 +54,7 @@ export const uploadEncodedVideo = async (
     await deletePreviousVideo(previousVideoPath);
   }
 
-  let id = shortid.generate();
+  let id = nanoid();
 
   id = "videos/" + id + "video.mp4";
 

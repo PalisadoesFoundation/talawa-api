@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/models/OrganizationCustomField.ts:29](https://github.com/PalisadoesFoundation/talawa-api/blob/00da99c/src/models/OrganizationCustomField.ts#L29)
+[src/models/OrganizationCustomField.ts:29](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/OrganizationCustomField.ts#L29)

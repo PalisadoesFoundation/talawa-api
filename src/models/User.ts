@@ -6,7 +6,6 @@ import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
-import { LOG } from "../constants";
 
 /**
  * This is an interface that represents a database(MongoDB) document for User.
@@ -278,7 +277,7 @@ const userSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 userSchema.plugin(mongoosePaginate);

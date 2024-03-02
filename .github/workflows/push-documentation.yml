@@ -48,7 +48,7 @@ jobs:
     # This is done as we will use the Talawa-Docs repository later too
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.TALAWA_DOCS_SYNC }}
           path: api
@@ -60,7 +60,7 @@ jobs:
         run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
 
       - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
 
       # Move into the api folder before installing the dependencies
       - name: Install dependencies
@@ -103,7 +103,7 @@ jobs:
       # We will clone the Talawa Docs in the folder called docs so that we can copy the generated
       # schema.json into the same later
       - name: Checkout the Talawa-Docs repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: PalisadoesFoundation/talawa-docs
           token: ${{ secrets.TALAWA_DOCS_SYNC }}

@@ -1,0 +1,20 @@
+[
+  {
+    "_id": "60f18f31b7e5c4a2a4c3f905",
+    "title": "Smith Family",
+    "users": [
+      "64378abd85008f171cf2990d",
+      "65378abd85008f171cf2990d",
+      "66378abd85008f171cf2990d"
+    ]
+  },
+  {
+    "_id": "60f18f31b7e5c4a2a4c3f906",
+    "title": "Johnson Family",
+    "users": [
+      "66378abd85008f171cf2990d",
+      "65378abd85008f171cf2990d",
+      "64378abd85008f171cf2990d"
+    ]
+  }
+]

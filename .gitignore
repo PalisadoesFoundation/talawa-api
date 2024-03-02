@@ -15,6 +15,7 @@ node_modules/**
 
 # Don't upload configuration files
 .env
+.env_test
 
 # Ignore uploads
 image/**
@@ -43,8 +44,6 @@ serviceAccountKey.json
 cert.pem
 key.pem
 csr.pem
-# Added FNM configuration files
-.node-version
 
 # MacOS
 

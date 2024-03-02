@@ -28,7 +28,7 @@ beforeAll(async () => {
   testOrganization = resultsArray[1];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -93,7 +93,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
     const createGroupChatPayload = await createGroupChatResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createGroupChatPayload).toEqual(
@@ -102,7 +102,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
         creatorId: testUser?._id,
         users: [testUser?._id],
         organization: testOrganization?._id,
-      })
+      }),
     );
   });
 });

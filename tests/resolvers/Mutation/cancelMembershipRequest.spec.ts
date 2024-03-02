@@ -34,7 +34,7 @@ beforeAll(async () => {
   testMembershipRequest = resultsArray[2];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -70,7 +70,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
           $set: {
             organization: Types.ObjectId().toString(),
           },
-        }
+        },
       );
 
       const args: MutationCancelMembershipRequestArgs = {
@@ -97,7 +97,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        }
+        },
       );
 
       const args: MutationCancelMembershipRequestArgs = {
@@ -125,7 +125,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
           $set: {
             user: Types.ObjectId().toString(),
           },
-        }
+        },
       );
 
       const args: MutationCancelMembershipRequestArgs = {
@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
         $set: {
           user: testUser?._id,
         },
-      }
+      },
     );
 
     const args: MutationCancelMembershipRequestArgs = {
@@ -166,7 +166,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
       await cancelMembershipRequestResolver?.({}, args, context);
 
     expect(cancelMembershipRequestPayload).toEqual(
-      testMembershipRequest?.toObject()
+      testMembershipRequest?.toObject(),
     );
 
     const testUpdatedUser = await User.findOne({

@@ -12,6 +12,11 @@ import { isValidString } from "../../libraries/validators/validateString";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
+import { session } from "../../db";
+import {
+  updateRecurringEvent,
+  updateSingleEvent,
+} from "../../helpers/event/updateEventHelpers";
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -26,7 +31,7 @@ import { Types } from "mongoose";
 export const updateEvent: MutationResolvers["updateEvent"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -37,7 +42,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -62,13 +67,13 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM
+      EVENT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const currentUserIsEventAdmin = event.admins.some(
     (admin) =>
-      admin === context.userID || Types.ObjectId(admin).equals(context.userId)
+      admin === context.userID || Types.ObjectId(admin).equals(context.userId),
   );
 
   // checks if current user is an admin of the event with _id === args.id
@@ -79,7 +84,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -87,49 +92,69 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   const validationResultTitle = isValidString(args.data?.title ?? "", 256);
   const validationResultDescription = isValidString(
     args.data?.description ?? "",
-    500
+    500,
   );
   const validationResultLocation = isValidString(args.data?.location ?? "", 50);
   if (!validationResultTitle.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   if (!validationResultDescription.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   if (!validationResultLocation.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
 
-  const updatedEvent = await Event.findOneAndUpdate(
-    {
-      _id: args.id,
-    },
-    {
-      ...(args.data as any),
-    },
-    {
-      new: true,
-    }
-  ).lean();
-
-  if (updatedEvent !== null) {
-    await cacheEvents([updatedEvent]);
+  /* c8 ignore start */
+  if (session) {
+    // start a transaction
+    session.startTransaction();
   }
 
-  return updatedEvent!;
+  /* c8 ignore stop */
+  try {
+    let updatedEvent: InterfaceEvent = event;
+
+    if (event.recurring) {
+      // update recurring event
+      updatedEvent = await updateRecurringEvent(args, event, session);
+    } else {
+      // update single event
+      updatedEvent = await updateSingleEvent(args, event, session);
+    }
+
+    /* c8 ignore start */
+    if (session) {
+      // commit transaction if everything's successful
+      await session.commitTransaction();
+    }
+
+    /* c8 ignore stop */
+    return updatedEvent;
+    /* c8 ignore start */
+  } catch (error) {
+    if (session) {
+      // abort transaction if something fails
+      await session.abortTransaction();
+    }
+
+    throw error;
+  }
+
+  /* c8 ignore stop */
 };

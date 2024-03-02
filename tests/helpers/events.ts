@@ -1,12 +1,15 @@
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
-import { createTestUserAndOrganization } from "./userAndOrg";
-import type { InterfaceEvent } from "../../src/models";
-import { Event, EventAttendee, User } from "../../src/models";
+import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
+import type { InterfaceEvent, InterfaceEventVolunteer } from "../../src/models";
+import { EventVolunteer, Event, EventAttendee, User } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
+import { EventVolunteerResponse } from "../../src/constants";
 
-export type TestEventType =
-  | (InterfaceEvent & Document<any, any, InterfaceEvent>)
+export type TestEventType = (InterfaceEvent & Document) | null;
+
+export type TestEventVolunteerType =
+  | (InterfaceEventVolunteer & Document)
   | null;
 
 export const createTestEvent = async (): Promise<
@@ -22,7 +25,7 @@ export const createTestEvent = async (): Promise<
       description: `description${nanoid().toLowerCase()}`,
       allDay: true,
       startDate: new Date(),
-      recurring: true,
+      recurring: false,
       isPublic: true,
       isRegisterable: true,
       creatorId: testUser._id,
@@ -40,7 +43,7 @@ export const createTestEvent = async (): Promise<
           createdEvents: testEvent._id,
           registeredEvents: testEvent._id,
         },
-      }
+      },
     );
 
     return [testUser, testOrganization, testEvent];
@@ -53,7 +56,7 @@ export const createEventWithRegistrant = async (
   userId: string,
   organizationId: string,
   allDay: boolean,
-  recurrance: string
+  recurrance: string,
 ): Promise<TestEventType> => {
   const testEvent = await Event.create({
     creatorId: userId,
@@ -74,7 +77,7 @@ export const createEventWithRegistrant = async (
 
   await EventAttendee.create({
     userId,
-    eventId: testEvent!._id,
+    eventId: testEvent?._id,
   });
 
   await User.updateOne(
@@ -87,7 +90,24 @@ export const createEventWithRegistrant = async (
         createdEvents: testEvent._id,
         registeredEvents: testEvent._id,
       },
-    }
+    },
   );
   return testEvent;
+};
+
+export const createTestEventAndVolunteer = async (): Promise<
+  [TestUserType, TestUserType, TestEventType, TestEventVolunteerType]
+> => {
+  const [creatorUser, , testEvent] = await createTestEvent();
+  const volunteerUser = await createTestUser();
+  const testEventVolunteer = await EventVolunteer.create({
+    userId: volunteerUser?._id,
+    eventId: testEvent?._id,
+    isInvited: true,
+    isAssigned: false,
+    creatorId: creatorUser?._id,
+    response: EventVolunteerResponse.NO,
+  });
+
+  return [volunteerUser, creatorUser, testEvent, testEventVolunteer];
 };

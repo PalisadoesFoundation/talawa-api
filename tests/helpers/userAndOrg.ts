@@ -4,12 +4,12 @@ import { nanoid } from "nanoid";
 import type { Document } from "mongoose";
 
 export type TestOrganizationType =
-  | (InterfaceOrganization & Document<any, any, InterfaceOrganization>)
-  | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (InterfaceOrganization & Document<any, any, InterfaceOrganization>) | null;
 
 export type TestUserType =
-  | (InterfaceUser & Document<any, any, InterfaceUser>)
-  | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
 export const createTestUser = async (): Promise<TestUserType> => {
   const testUser = await User.create({
@@ -28,7 +28,7 @@ export const createTestOrganizationWithAdmin = async (
   userID: string,
   isMember = true,
   isAdmin = true,
-  userRegistrationRequired = false
+  userRegistrationRequired = false,
 ): Promise<TestOrganizationType> => {
   const testOrganization = await Organization.create({
     name: `orgName${nanoid().toLowerCase()}`,
@@ -50,7 +50,7 @@ export const createTestOrganizationWithAdmin = async (
         adminFor: testOrganization._id,
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
 
   return testOrganization;
@@ -59,21 +59,21 @@ export const createTestOrganizationWithAdmin = async (
 export const createTestUserAndOrganization = async (
   isMember = true,
   isAdmin = true,
-  userRegistrationRequired = false
+  userRegistrationRequired = false,
 ): Promise<[TestUserType, TestOrganizationType]> => {
   const testUser = await createTestUser();
   const testOrganization = await createTestOrganizationWithAdmin(
     testUser?._id,
     isMember,
     isAdmin,
-    userRegistrationRequired
+    userRegistrationRequired,
   );
   return [testUser, testOrganization];
 };
 
 export const createOrganizationwithVisibility = async (
   userID: string,
-  visibleInSearch: boolean
+  visibleInSearch: boolean,
 ): Promise<TestOrganizationType> => {
   const testOrganization = await Organization.create({
     name: `orgName${nanoid().toLowerCase()}`,
@@ -96,7 +96,7 @@ export const createOrganizationwithVisibility = async (
         adminFor: testOrganization._id,
         joinedOrganizations: testOrganization._id,
       },
-    }
+    },
   );
 
   return testOrganization;

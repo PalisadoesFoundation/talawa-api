@@ -1,14 +1,14 @@
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Post } from "../../models";
-import { errors } from "../../libraries";
 import { POST_NOT_FOUND_ERROR } from "../../constants";
+import { errors } from "../../libraries";
+import { Post } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This query will fetch the specified Post from the database.
  * @param _parent-
  * @param args - An object that contains `id` of the Post.
  * @returns An object `post`. If the `appLanguageCode` field not found then it throws a `NotFoundError` error.
  */
-export const post: QueryResolvers["post"] = async (_parent, args) => {
+export const post: QueryResolvers["post"] = async (_parent, args, context) => {
   const post = await Post.findOne({ _id: args.id })
     .populate("organization")
     .populate("likedBy")
@@ -18,9 +18,15 @@ export const post: QueryResolvers["post"] = async (_parent, args) => {
     throw new errors.NotFoundError(
       POST_NOT_FOUND_ERROR.DESC,
       POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM
+      POST_NOT_FOUND_ERROR.PARAM,
     );
   }
+  post.imageUrl = post.imageUrl
+    ? `${context.apiRootUrl}${post.imageUrl}`
+    : null;
+  post.videoUrl = post.videoUrl
+    ? `${context.apiRootUrl}${post.videoUrl}`
+    : null;
 
   return post;
 };

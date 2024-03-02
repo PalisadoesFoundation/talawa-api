@@ -1,7 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event, ActionItem } from "../../models";
+import { User, Event } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -9,6 +9,11 @@ import {
 } from "../../constants";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import {
+  deleteRecurringEvent,
+  deleteSingleEvent,
+} from "../../helpers/event/deleteEventHelpers";
+import { session } from "../../db";
 /**
  * This function enables to remove an event.
  * @param _parent - parent of current request
@@ -24,7 +29,7 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
 export const removeEvent: MutationResolvers["removeEvent"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -35,7 +40,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -60,18 +65,18 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM
+      EVENT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   // Boolean to determine whether user is an admin of organization.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.equals(event?.organization)
+    (organization) => organization.equals(event?.organization),
   );
 
   // Boolean to determine whether user is an admin of event.
   const currentUserIsEventAdmin = event.admins.some((admin) =>
-    admin.equals(currentUser._id)
+    admin.equals(currentUser._id),
   );
 
   // Checks whether currentUser cannot delete event.
@@ -85,49 +90,40 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
-  await User.updateMany(
-    {
-      createdEvents: event._id,
-    },
-    {
-      $pull: {
-        createdEvents: event._id,
-      },
-    }
-  );
-
-  await User.updateMany(
-    {
-      eventAdmin: event._id,
-    },
-    {
-      $pull: {
-        eventAdmin: event._id,
-      },
-    }
-  );
-
-  const updatedEvent = await Event.findOneAndUpdate(
-    {
-      _id: event._id,
-    },
-    {
-      status: "DELETED",
-    },
-    {
-      new: true,
-    }
-  );
-
-  if (updatedEvent !== null) {
-    await cacheEvents([updatedEvent]);
+  /* c8 ignore start */
+  if (session) {
+    // start a transaction
+    session.startTransaction();
   }
 
-  await ActionItem.deleteMany({ eventId: event?._id });
+  /* c8 ignore stop */
+  try {
+    if (event.recurring) {
+      // if the event is recurring
+      await deleteRecurringEvent(args, event, session);
+    } else {
+      // if the event is non-recurring
+      await deleteSingleEvent(event._id.toString(), session);
+    }
 
+    /* c8 ignore start */
+    if (session) {
+      // commit transaction if everything's successful
+      await session.commitTransaction();
+    }
+  } catch (error) {
+    if (session) {
+      // abort transaction if something fails
+      await session.abortTransaction();
+    }
+
+    throw error;
+  }
+
+  /* c8 ignore stop */
   return event;
 };

@@ -59,7 +59,7 @@ describe("resolvers -> Organization -> creatorId", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       const parent = testOrganization?.toObject();
@@ -70,10 +70,11 @@ describe("resolvers -> Organization -> creatorId", () => {
       if (parent) {
         await creatorResolver?.(parent, {}, {});
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -90,7 +91,7 @@ describe("resolvers -> Organization -> creatorId", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     const parent = testOrganization?.toObject();

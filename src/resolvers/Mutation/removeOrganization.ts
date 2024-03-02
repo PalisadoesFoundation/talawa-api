@@ -1,22 +1,23 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import {
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import {
-  User,
+  ActionItem,
+  ActionItemCategory,
+  Comment,
+  Fund,
+  MembershipRequest,
   Organization,
   Post,
-  Comment,
-  MembershipRequest,
-  ActionItemCategory,
-  ActionItem,
+  User,
 } from "../../models";
-import { superAdminCheck } from "../../utilities";
-import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
-} from "../../constants";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { deleteOrganizationFromCache } from "../../services/OrganizationCache/deleteOrganizationFromCache";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { superAdminCheck } from "../../utilities";
 import { deletePreviousImage as deleteImage } from "../../utilities/encodedImageStorage/deletePreviousImage";
 /**
  * This function enables to remove an organization.
@@ -40,7 +41,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -54,8 +55,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       organization = await Organization.findOne({
         _id: args.id,
       }).lean();
-
-      await cacheOrganizations([organization!]);
+      if (organization) await cacheOrganizations([organization]);
     }
 
     // Checks whether organization exists.
@@ -63,7 +63,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
     // Checks whether currentUser is a SUPERADMIN
@@ -82,19 +82,19 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
         $pull: {
           createdOrganizations: organization._id,
         },
-      }
+      },
     );
 
     // Remove organization._id from each member's joinedOrganizations field for organization.members list.
     await User.updateMany(
       { _id: { $in: organization.members } },
-      { $pull: { joinedOrganizations: organization._id } }
+      { $pull: { joinedOrganizations: organization._id } },
     );
 
     // Remove organization._id from each admin's joinedOrganizations field for organization.admins list.
     await User.updateMany(
       { _id: { $in: organization.admins } },
-      { $pull: { joinedOrganizations: organization._id } }
+      { $pull: { joinedOrganizations: organization._id } },
     );
 
     /*
@@ -115,7 +115,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
         $pull: {
           membershipRequests: { $in: organization.membershipRequests },
         },
-      }
+      },
     );
 
     /* 
@@ -124,7 +124,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     */
     await User.updateMany(
       { _id: { $in: organization.blockedUsers } },
-      { $pull: { organizationsBlockedBy: organization._id } }
+      { $pull: { organizationsBlockedBy: organization._id } },
     );
 
     // Get the ids of all ActionItemCategories associated with the organization
@@ -132,7 +132,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       organizationId: organization?._id,
     });
     const actionItemCategoriesIds = actionItemCategories.map(
-      (category) => category._id
+      (category) => category._id,
     );
 
     // Remove all ActionItemCategory documents whose id is in the actionItemCategories array
@@ -144,7 +144,10 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     await ActionItem.deleteMany({
       actionItemCategoryId: { $in: actionItemCategoriesIds },
     });
-
+    //Remove all the funds specific to organization
+    await Fund.deleteMany({
+      _id: { $in: organization.funds },
+    });
     // Deletes the organzation.
     await Organization.deleteOne({
       _id: organization._id,

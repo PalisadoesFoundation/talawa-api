@@ -1,6 +1,6 @@
 import { createWriteStream } from "fs";
 import path from "path";
-import shortid from "shortid";
+import { nanoid } from "nanoid";
 import { logger } from "../libraries";
 import { imageAlreadyInDbCheck } from "./imageAlreadyInDbCheck";
 import { deleteImage } from "./deleteImage";
@@ -9,15 +9,21 @@ import { imageExtensionCheck } from "./imageExtensionCheck";
  * This function uploads the new image and deletes the previously uploaded image if exists.
  * @remarks
  * This is a utility method.
- * @param newImageFile - File of a new Image with `any` type.
+ * @param newImageFile - File of a new Image with `TypeNewImageFile` type.
  * @param oldImagePath - File of a current Image. It can be `null`.
  * @returns Path of an uploaded image.
  */
+
+type TypeNewImageFile = {
+  createReadStream: () => NodeJS.ReadStream;
+  filename: string;
+};
+
 export const uploadImage = async (
-  newImageFile: any,
-  oldImagePath: string | null
+  newImageFile: TypeNewImageFile,
+  oldImagePath: string | null,
 ): Promise<{ newImagePath: string; imageAlreadyInDbPath: string }> => {
-  const id = shortid.generate();
+  const id = nanoid();
 
   const { createReadStream, filename } = await newImageFile;
 
@@ -29,16 +35,16 @@ export const uploadImage = async (
     createReadStream()
       .pipe(
         createWriteStream(
-          path.join(__dirname, "../../images", `/${id}-${filename}`)
-        )
+          path.join(__dirname, "../../images", `/${id}-${filename}`),
+        ),
       )
       .on("close", resolve)
-      .on("error", (error: any) => reject(error))
+      .on("error", (error: Error) => reject(error))
       .on("finish", () =>
         resolve({
           path,
-        })
-      )
+        }),
+      ),
   );
 
   const newImagePath = `images/${id}-${filename}`;
@@ -54,7 +60,7 @@ export const uploadImage = async (
 
   const imageAlreadyInDbPath = await imageAlreadyInDbCheck(
     oldImagePath,
-    newImagePath
+    newImagePath,
   );
 
   return {

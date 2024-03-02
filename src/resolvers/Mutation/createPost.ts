@@ -1,21 +1,21 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Post, Organization } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import {
   LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
+  USER_NOT_FOUND_ERROR,
   POST_NEEDS_TO_BE_PINNED,
   PLEASE_PROVIDE_TITLE,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
 import { isValidString } from "../../libraries/validators/validateString";
+import { Organization, Post, User } from "../../models";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cachePosts } from "../../services/PostCache/cachePosts";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { validateImage } from "../../utilities/imageCheck";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
-import { cachePosts } from "../../services/PostCache/cachePosts";
 /**
  * This function enables to create a post.
  * @param _parent - parent of current request
@@ -29,7 +29,7 @@ import { cachePosts } from "../../services/PostCache/cachePosts";
 export const createPost: MutationResolvers["createPost"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Get the current user
   const currentUser = await User.findOne({
@@ -41,7 +41,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -58,7 +58,9 @@ export const createPost: MutationResolvers["createPost"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    if (organization) {
+      await cacheOrganizations([organization]);
+    }
   }
 
   // Checks whether organization with _id == args.data.organizationId exists.
@@ -66,7 +68,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -92,12 +94,12 @@ export const createPost: MutationResolvers["createPost"] = async (
   if (args.data?.title && !args.data.pinned) {
     throw new errors.InputValidationError(
       requestContext.translate(POST_NEEDS_TO_BE_PINNED.MESSAGE),
-      POST_NEEDS_TO_BE_PINNED.CODE
+      POST_NEEDS_TO_BE_PINNED.CODE,
     );
   } else if (!args.data?.title && args.data.pinned) {
     throw new errors.InputValidationError(
       requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
-      PLEASE_PROVIDE_TITLE.CODE
+      PLEASE_PROVIDE_TITLE.CODE,
     );
   }
 
@@ -108,17 +110,17 @@ export const createPost: MutationResolvers["createPost"] = async (
     if (!validationResultTitle.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
     if (!validationResultText.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
   }
@@ -126,7 +128,7 @@ export const createPost: MutationResolvers["createPost"] = async (
   if (args.data.pinned) {
     // Check if the user has privileges to pin the post
     const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-      (organizationId) => organizationId.equals(args.data.organizationId)
+      (organizationId) => organizationId.equals(args.data.organizationId),
     );
     if (currentUser?.userType) {
       if (
@@ -136,7 +138,7 @@ export const createPost: MutationResolvers["createPost"] = async (
         throw new errors.UnauthorizedError(
           requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
           USER_NOT_AUTHORIZED_TO_PIN.CODE,
-          USER_NOT_AUTHORIZED_TO_PIN.PARAM
+          USER_NOT_AUTHORIZED_TO_PIN.PARAM,
         );
       }
     }
@@ -167,10 +169,12 @@ export const createPost: MutationResolvers["createPost"] = async (
       },
       {
         new: true,
-      }
+      },
     );
 
-    await cacheOrganizations([updatedOrganizaiton!]);
+    if (updatedOrganizaiton) {
+      await cacheOrganizations([updatedOrganizaiton]);
+    }
   }
 
   // Returns createdPost.

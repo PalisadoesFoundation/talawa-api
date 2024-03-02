@@ -1,4 +1,4 @@
-import shortid from "shortid";
+import { nanoid } from "nanoid";
 import * as fs from "fs";
 import { writeFile } from "fs/promises";
 import { encodedImageExtentionCheck } from "./encodedImageExtensionCheck";
@@ -25,7 +25,7 @@ const base64SizeInKb = (base64String: string): number => {
 
 export const uploadEncodedImage = async (
   encodedImageURL: string,
-  previousImagePath?: string | null
+  previousImagePath?: string | null,
 ): Promise<string> => {
   const isURLValidImage = encodedImageExtentionCheck(encodedImageURL);
 
@@ -39,7 +39,7 @@ export const uploadEncodedImage = async (
     throw new errors.ImageSizeLimitExceeded(
       IMAGE_SIZE_LIMIT_KB.MESSAGE,
       IMAGE_SIZE_LIMIT_KB.CODE,
-      IMAGE_SIZE_LIMIT_KB.PARAM
+      IMAGE_SIZE_LIMIT_KB.PARAM,
     );
   }
 
@@ -47,7 +47,7 @@ export const uploadEncodedImage = async (
     throw new errors.InvalidFileTypeError(
       requestContext.translate(INVALID_FILE_TYPE.MESSAGE),
       INVALID_FILE_TYPE.CODE,
-      INVALID_FILE_TYPE.PARAM
+      INVALID_FILE_TYPE.PARAM,
     );
   }
 
@@ -68,7 +68,7 @@ export const uploadEncodedImage = async (
         $inc: {
           numberOfUses: 1,
         },
-      }
+      },
     );
 
     if (previousImagePath) {
@@ -82,7 +82,7 @@ export const uploadEncodedImage = async (
     await deletePreviousImage(previousImagePath);
   }
 
-  let id = shortid.generate();
+  let id = nanoid();
 
   id = "images/" + id + "image.png";
 

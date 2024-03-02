@@ -16,7 +16,7 @@ import { validateImage } from "../../utilities/imageCheck";
 export const addUserImage: MutationResolvers["addUserImage"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
@@ -27,7 +27,7 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -49,6 +49,6 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
     },
     {
       new: true,
-    }
+    },
   ).lean();
 };

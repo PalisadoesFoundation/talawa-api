@@ -1,44 +1,47 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
+import type { Document } from "mongoose";
 import { Types } from "mongoose";
 import type {
-  InterfaceOrganization,
-  InterfaceComment,
-  InterfacePost,
-  InterfaceActionItemCategory,
   InterfaceActionItem,
+  InterfaceActionItemCategory,
+  InterfaceComment,
+  InterfaceFund,
+  InterfaceOrganization,
+  InterfacePost,
 } from "../../../src/models";
 import {
-  User,
+  ActionItem,
+  ActionItemCategory,
+  Comment,
+  Fund,
+  MembershipRequest,
   Organization,
   Post,
-  Comment,
-  MembershipRequest,
-  ActionItemCategory,
-  ActionItem,
+  User,
 } from "../../../src/models";
 import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
+import { nanoid } from "nanoid";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
+import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import { createTestUserFunc } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 /* eslint-disable */
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -48,7 +51,7 @@ let testPost: InterfacePost & Document<any, any, InterfacePost>;
 let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
 let testCategory: InterfaceActionItemCategory & Document;
 let testActionItem: InterfaceActionItem & Document;
-
+let testFund: InterfaceFund & Document;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const tempUser1 = await createTestUserFunc();
@@ -86,7 +89,7 @@ beforeAll(async () => {
         joinedOrganizations: [testOrganization._id],
         organizationsBlockedBy: [testOrganization._id],
       },
-    }
+    },
   );
 
   await User.updateOne(
@@ -97,7 +100,7 @@ beforeAll(async () => {
       $set: {
         joinedOrganizations: [testOrganization._id],
       },
-    }
+    },
   );
 
   const testMembershipRequest = await MembershipRequest.create({
@@ -113,7 +116,7 @@ beforeAll(async () => {
       $push: {
         membershipRequests: testMembershipRequest._id,
       },
-    }
+    },
   );
 
   testPost = await Post.create({
@@ -144,7 +147,7 @@ beforeAll(async () => {
         membershipRequests: testMembershipRequest._id,
         posts: testPost._id,
       },
-    }
+    },
   );
 
   testComment = await Comment.create({
@@ -152,6 +155,25 @@ beforeAll(async () => {
     creatorId: testUsers[0]?._id,
     postId: testPost._id,
   });
+  testFund = await Fund.create({
+    organizationId: testOrganization._id,
+    name: `name${nanoid().toLowerCase()}`,
+    refrenceNumber: `refrenceNumber${nanoid().toLowerCase()}`,
+    taxDeductible: true,
+    isDefault: true,
+    isArchived: false,
+    campaigns: [],
+  });
+  await Organization.updateOne(
+    {
+      _id: testOrganization._id,
+    },
+    {
+      $push: {
+        funds: testFund._id,
+      },
+    },
+  );
 
   await Post.updateOne(
     {
@@ -161,7 +183,7 @@ beforeAll(async () => {
       $inc: {
         commentCount: 1,
       },
-    }
+    },
   );
 });
 
@@ -198,7 +220,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -226,7 +248,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -250,7 +272,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -272,7 +294,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
     }
   });
@@ -289,7 +311,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -305,7 +327,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
           adminApproved: true,
           userType: "SUPERADMIN",
         },
-      }
+      },
     );
 
     const args: MutationRemoveOrganizationArgs = {
@@ -319,7 +341,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     const removeOrganizationPayload = await removeOrganizationResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const updatedTestUser = await User.findOne({
@@ -357,6 +379,9 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     const deteledTestActionItems = await ActionItem.find({
       _id: testActionItem?._id,
     });
+    const deletedTestFunds = await Fund.find({
+      _id: testFund._id,
+    });
 
     expect(deletedMembershipRequests).toEqual([]);
 
@@ -367,6 +392,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     expect(deletedTestCategories).toEqual([]);
 
     expect(deteledTestActionItems).toEqual([]);
+    expect(deletedTestFunds).toEqual([]);
   });
 
   it(`removes the organization with image and returns the updated user's object with _id === context.userId`, async () => {
@@ -421,7 +447,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     const removeOrganizationPayload = await removeOrganizationResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removeOrganizationPayload).toEqual({

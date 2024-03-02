@@ -10,6 +10,8 @@ import {
   FIELD_NON_EMPTY_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
   async (_parent, args, _context) => {
@@ -20,13 +22,12 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       throw new errors.InputValidationError(
         requestContext.translate(INPUT_NOT_FOUND_ERROR.MESSAGE),
         INPUT_NOT_FOUND_ERROR.CODE,
-        INPUT_NOT_FOUND_ERROR.PARAM
+        INPUT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     // Check for unintended null values in permitted fields, if all fields are permitted
-    for (const field of Object.keys(args.input)) {
-      const fieldValue = (args.input as Record<string, any>)[field];
+    for (const fieldValue of Object.values(args.input)) {
       if (
         fieldValue === null ||
         (typeof fieldValue === "string" && fieldValue.trim() === "")
@@ -34,7 +35,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
         throw new errors.InputValidationError(
           requestContext.translate(FIELD_NON_EMPTY_ERROR.MESSAGE),
           FIELD_NON_EMPTY_ERROR.CODE,
-          FIELD_NON_EMPTY_ERROR.PARAM
+          FIELD_NON_EMPTY_ERROR.PARAM,
         );
       }
     }
@@ -47,7 +48,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -55,7 +56,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -69,7 +70,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       throw new errors.InputValidationError(
         requestContext.translate(START_DATE_VALIDATION_ERROR.MESSAGE),
         START_DATE_VALIDATION_ERROR.CODE,
-        START_DATE_VALIDATION_ERROR.PARAM
+        START_DATE_VALIDATION_ERROR.PARAM,
       );
     }
 
@@ -78,42 +79,59 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       throw new errors.InputValidationError(
         requestContext.translate(END_DATE_VALIDATION_ERROR.MESSAGE),
         END_DATE_VALIDATION_ERROR.CODE,
-        END_DATE_VALIDATION_ERROR.PARAM
+        END_DATE_VALIDATION_ERROR.PARAM,
       );
+    }
+
+    let uploadMediaFile = null;
+
+    if (args.input.mediaFile) {
+      const dataUrlPrefix = "data:";
+      if (args.input.mediaFile.startsWith(dataUrlPrefix + "image/")) {
+        uploadMediaFile = await uploadEncodedImage(args.input.mediaFile, null);
+      } else if (args.input.mediaFile.startsWith(dataUrlPrefix + "video/")) {
+        uploadMediaFile = await uploadEncodedVideo(args.input.mediaFile, null);
+      } else {
+        throw new Error("Unsupported file type.");
+      }
     }
 
     const updatedAdvertisement = await Advertisement.findOneAndUpdate(
       {
-        _id: args.input._id,
+        _id: _id,
       },
       {
-        ...(args.input as any),
+        $set: {
+          ...args.input,
+          mediaUrl: uploadMediaFile,
+        },
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     if (!updatedAdvertisement) {
       throw new errors.NotFoundError(
         requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
         ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
-        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM
+        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     const updatedAdvertisementPayload = {
       _id: updatedAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
       name: updatedAdvertisement.name,
-      orgId: updatedAdvertisement.orgId.toString(),
-      link: updatedAdvertisement.link,
+      organizationId: updatedAdvertisement.organizationId,
+      mediaUrl: updatedAdvertisement.mediaUrl,
       type: updatedAdvertisement.type,
       startDate: updatedAdvertisement.startDate,
       endDate: updatedAdvertisement.endDate,
       createdAt: updatedAdvertisement.createdAt,
       updatedAt: updatedAdvertisement.updatedAt,
+      creatorId: updatedAdvertisement.creatorId,
     };
     return {
-      advertisement: updatedAdvertisementPayload,
+      advertisement: { ...updatedAdvertisementPayload },
     };
   };
