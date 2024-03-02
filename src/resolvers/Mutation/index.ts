@@ -9,34 +9,38 @@ import { addOrganizationImage } from "./addOrganizationImage";
 import { addUserCustomData } from "./addUserCustomData";
 import { addUserImage } from "./addUserImage";
 import { addUserToGroupChat } from "./addUserToGroupChat";
+import { addUserToUserFamily } from "./addUserToUserFamily";
 import { adminRemoveEvent } from "./adminRemoveEvent";
 import { adminRemoveGroup } from "./adminRemoveGroup";
 import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
-import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { checkIn } from "./checkIn";
-import { createMember } from "./createMember";
 import { createActionItem } from "./createActionItem";
-import { createAgendaCategory } from "./createAgendaCategory";
+import { createActionItemCategory } from "./createActionItemCategory";
 import { createAdmin } from "./createAdmin";
+import { createAdvertisement } from "./createAdvertisement";
+import { createAgendaCategory } from "./createAgendaCategory";
 import { createComment } from "./createComment";
 import { createDirectChat } from "./createDirectChat";
 import { createDonation } from "./createDonation";
 import { createEvent } from "./createEvent";
+import { createFund } from "./createFund";
+import { createFundraisingCampaign } from "./createFundraisingCampaign";
 import { createGroupChat } from "./createGroupChat";
+import { createMember } from "./createMember";
 import { createMessageChat } from "./createMessageChat";
 import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
-import { createAdvertisement } from "./createAdvertisement";
 import { createPost } from "./createPost";
 import { createSampleOrganization } from "./createSampleOrganization";
-import { createActionItemCategory } from "./createActionItemCategory";
+import { createUserFamily } from "./createUserFamily";
 import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
 import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { forgotPassword } from "./forgotPassword";
+import { inviteEventAttendee } from "./inviteEventAttendee";
 import { joinPublicOrganization } from "./joinPublicOrganization";
 import { createEventVolunteer } from "./createEventVolunteer";
 import { leaveOrganization } from "./leaveOrganization";
@@ -47,22 +51,19 @@ import { logout } from "./logout";
 import { otp } from "./otp";
 import { recaptcha } from "./recaptcha";
 import { refreshToken } from "./refreshToken";
+import { registerEventAttendee } from "./registerEventAttendee";
 import { registerForEvent } from "./registerForEvent";
 import { rejectAdmin } from "./rejectAdmin";
 import { rejectMembershipRequest } from "./rejectMembershipRequest";
-import { removeAdmin } from "./removeAdmin";
 import { removeActionItem } from "./removeActionItem";
+import { removeAdmin } from "./removeAdmin";
 import { removeComment } from "./removeComment";
 import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
-import { addUserToUserFamily } from "./addUserToUserFamily";
-import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
-import { removeUserFamily } from "./removeUserFamily";
-import { createUserFamily } from "./createUserFamily";
 import { removeEventVolunteer } from "./removeEventVolunteer";
+import { removeFund } from "./removeFund";
 import { removeGroupChat } from "./removeGroupChat";
-import { removeAdvertisement } from "./removeAdvertisement";
 import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
 import { removeOrganizationCustomField } from "./removeOrganizationCustomField";
@@ -70,7 +71,9 @@ import { removeOrganizationImage } from "./removeOrganizationImage";
 import { removePost } from "./removePost";
 import { removeSampleOrganization } from "./removeSampleOrganization";
 import { removeUserCustomData } from "./removeUserCustomData";
+import { removeUserFamily } from "./removeUserFamily";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
+import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
 import { removeUserImage } from "./removeUserImage";
 import { removeUserTag } from "./removeUserTag";
 import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
@@ -87,19 +90,21 @@ import { unlikePost } from "./unlikePost";
 import { unregisterForEventByUser } from "./unregisterForEventByUser";
 import { updateActionItem } from "./updateActionItem";
 import { updateActionItemCategory } from "./updateActionItemCategory";
+import { updateAdvertisement } from "./updateAdvertisement";
+import { updateAgendaCategory } from "./updateAgendaCategory";
 import { updateEvent } from "./updateEvent";
 import { updateEventVolunteer } from "./updateEventVolunteer";
+import { updateFund } from "./updateFund";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
 import { updatePluginStatus } from "./updatePluginStatus";
 import { updatePost } from "./updatePost";
-import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
+import { updateUserProfile } from "./updateUserProfile";
+import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
-
-import { deleteAdvertisementById } from "./deleteAdvertisementById";
-import { updateAdvertisement } from "./updateAdvertisement";
-import { updateAgendaCategory } from "./updateAgendaCategory";
+import { updateUserType } from "./updateUserType";
+import { deleteAdvertisement } from "./deleteAdvertisement";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -133,6 +138,8 @@ export const Mutation: MutationResolvers = {
   createDirectChat,
   createDonation,
   createEvent,
+  createFund,
+  createFundraisingCampaign,
   createGroupChat,
   createMessageChat,
   createOrganization,
@@ -142,9 +149,10 @@ export const Mutation: MutationResolvers = {
   createActionItemCategory,
   createUserTag,
   deleteDonationById,
-  deleteAdvertisementById,
+  deleteAdvertisement,
   deleteAgendaCategory,
   forgotPassword,
+  inviteEventAttendee,
   joinPublicOrganization,
   createEventVolunteer,
   leaveOrganization,
@@ -156,6 +164,7 @@ export const Mutation: MutationResolvers = {
   recaptcha,
   refreshToken,
   registerForEvent,
+  registerEventAttendee,
   rejectAdmin,
   rejectMembershipRequest,
   removeAdmin,
@@ -165,7 +174,7 @@ export const Mutation: MutationResolvers = {
   removeEvent,
   removeEventAttendee,
   removeEventVolunteer,
-  removeAdvertisement,
+  removeFund,
   removeGroupChat,
   removeMember,
   removeOrganization,
@@ -194,12 +203,13 @@ export const Mutation: MutationResolvers = {
   updateAgendaCategory,
   updateEvent,
   updateEventVolunteer,
+  updateFund,
   updateLanguage,
   updateOrganization,
   updatePluginStatus,
   updateUserProfile,
   updateUserPassword,
-
+  updateUserType,
   updateUserTag,
   updatePost,
   updateAdvertisement,

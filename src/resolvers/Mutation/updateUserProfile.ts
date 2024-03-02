@@ -57,7 +57,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   }
 
   // Update User
-  const updatedUser = await User.findOneAndUpdate(
+  let updatedUser = await User.findOneAndUpdate(
     {
       _id: context.userId,
     },

@@ -7,7 +7,7 @@ export class UnauthenticatedError extends ApplicationError {
     message = "UnauthenticatedError",
     code: string | null = null,
     param: string | null = null,
-    metadata: Record<string, string> = {},
+    metadata: Record<any, any> = {},
   ) {
     const errorJson = [
       {

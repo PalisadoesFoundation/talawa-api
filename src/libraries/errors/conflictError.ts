@@ -7,7 +7,7 @@ export class ConflictError extends ApplicationError {
     message = "Conflicting entry found",
     code: string | null = null,
     param: string | null = null,
-    metadata: Record<string, string> = {},
+    metadata: Record<any, any> = {},
   ) {
     const errorJson = [
       {

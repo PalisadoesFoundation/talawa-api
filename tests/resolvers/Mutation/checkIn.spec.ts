@@ -189,8 +189,6 @@ describe("resolvers -> Mutation -> checkIn", () => {
       data: {
         userId: testUser?._id,
         eventId: testEvent?._id.toString() ?? "",
-        allotedRoom: "test room",
-        allotedSeat: "test seat",
       },
     };
 

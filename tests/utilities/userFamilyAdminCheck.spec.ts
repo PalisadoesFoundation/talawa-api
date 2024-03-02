@@ -15,6 +15,7 @@ import type { InterfaceUserFamily } from "../../src/models/userFamily";
 import { UserFamily } from "../../src/models/userFamily";
 import { connect, disconnect } from "../helpers/db";
 import { createTestUserFunc } from "../helpers/user";
+import { User } from "../../src/models";
 import type {
   TestUserFamilyType,
   TestUserType,
@@ -84,13 +85,26 @@ describe("utilities -> userFamilyAdminCheck", () => {
 
     await expect(
       adminCheck(
-        updatedUser?.userId?.toString() ?? "",
+        updatedUser?._id,
         testUserFamily ?? ({} as InterfaceUserFamily),
       ),
     ).resolves.not.toThrowError();
   });
 
   it("throws no error if user is an admin in that user family but not super admin", async () => {
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: testUser?._id,
+      },
+      {
+        userType: "USER",
+      },
+      {
+        new: true,
+        upsert: true,
+      },
+    );
+
     const updatedUserFamily = await UserFamily.findOneAndUpdate(
       {
         _id: testUserFamily?._id,
@@ -112,7 +126,7 @@ describe("utilities -> userFamilyAdminCheck", () => {
 
     await expect(
       adminCheck(
-        testUser?._id,
+        updatedUser?._id,
         updatedUserFamily ?? ({} as InterfaceUserFamily),
       ),
     ).resolves.not.toThrowError();

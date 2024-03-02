@@ -25,14 +25,15 @@ export interface InterfaceUser {
     state: string;
   };
   adminApproved: boolean;
-
+  adminFor: PopulatedDoc<InterfaceOrganization & Document>[];
   birthDate: Date;
   createdAt: Date;
-
+  createdEvents: PopulatedDoc<InterfaceEvent & Document>[];
+  createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
   educationGrade: string;
   email: string;
   employmentStatus: string;
-
+  eventAdmin: PopulatedDoc<InterfaceEvent & Document>[];
   firstName: string;
   gender: string;
   image: string | undefined | null;
@@ -47,10 +48,10 @@ export interface InterfaceUser {
     mobile: string;
     work: string;
   };
-
+  pluginCreationAllowed: boolean;
   registeredEvents: PopulatedDoc<InterfaceEvent & Document>[];
   status: string;
-
+  token: string | undefined;
   updatedAt: Date;
   userType: string;
 }
@@ -121,7 +122,12 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-
+    adminFor: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Organization",
+      },
+    ],
     birthDate: {
       type: Date,
     },

@@ -21,22 +21,29 @@ import { DirectChatMessage } from "./DirectChatMessage";
 import { Event } from "./Event";
 import { EventVolunteer } from "./EventVolunteer";
 import { Feedback } from "./Feedback";
+import { Fund } from "./Fund";
+import { FundraisingCampaign } from "./FundraisingCampagin";
 import { GroupChat } from "./GroupChat";
 import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
 import { Mutation } from "./Mutation";
 import { Organization } from "./Organization";
 import { Post } from "./Post";
+
 import { Query } from "./Query";
 import { Subscription } from "./Subscription";
 import { User } from "./User";
 import { UserFamily } from "./UserFamily";
 import { UserTag } from "./UserTag";
+
+import { Advertisement } from "./Advertisement";
+
 import { currentUserExists } from "./middleware/currentUserExists";
 
 const resolvers: Resolvers = {
   ActionItem,
   ActionItemCategory,
+  Advertisement,
   CheckIn,
   Comment,
   DirectChat,
@@ -44,6 +51,8 @@ const resolvers: Resolvers = {
   Event,
   EventVolunteer,
   Feedback,
+  Fund,
+  FundraisingCampaign,
   GroupChat,
   UserFamily,
   GroupChatMessage,
@@ -91,6 +100,7 @@ const resolversComposition = {
   "Mutation.unregisterForEventByUser": [currentUserExists()],
   "Mutation.updateLanguage": [currentUserExists()],
   "Mutation.updatePost": [currentUserExists()],
+  "Mutation.createAdvertisement": [currentUserExists()],
 };
 
 export const composedResolvers: Resolvers = composeResolvers(

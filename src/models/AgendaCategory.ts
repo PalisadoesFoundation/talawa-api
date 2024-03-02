@@ -1,4 +1,4 @@
-import type { Model, PopulatedDoc, Types } from "mongoose";
+import type { PopulatedDoc, Model, Types } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
@@ -9,13 +9,13 @@ export interface InterfaceAgendaCategory {
   _id: Types.ObjectId; // Unique identifier for the agenda category.
   name: string; // Name of the agenda category.
   description?: string; // Optional description of the agenda category.
-  organizationId: PopulatedDoc<InterfaceOrganization & Document>; // Reference to the organization associated with the agenda category.
+  organization: PopulatedDoc<InterfaceOrganization & Document>; // Reference to the organization associated with the agenda category.
   createdBy: PopulatedDoc<InterfaceUser & Document>; // Reference to the user who created the agenda category.
   updatedBy: PopulatedDoc<InterfaceUser & Document>; // Reference to the user who last updated the agenda category.
 }
 
 /**
- * This is the Mongoose schema for an agenda category.
+ * This is the Mongoose schema for an agenda category (test-change).
  * @param name - Name of the agenda category.
  * @param description - Optional description of the agenda category.
  * @param organization - Reference to the organization associated with the agenda category.
