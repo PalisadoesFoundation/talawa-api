@@ -1256,4 +1256,55 @@ describe("Check for validation conditions", () => {
       }
     }
   });
+  it(`throws Image Validation error if greater then 5 images are uploaded`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message,
+    );
+    try {
+      const args: MutationCreateEventArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          allDay: false,
+          description: "newDescription",
+          endDate: new Date().toUTCString(),
+          endTime: new Date().toUTCString(),
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "newLocation",
+          recurring: false,
+          startDate: new Date().toUTCString(),
+          startTime: new Date().toUTCString(),
+          title: "newTitle",
+          recurrance: "DAILY",
+          images: [
+            "image_url_1.jpg",
+            "image_url_2.jpg",
+            "image_url_3.jpg",
+            "image_url_4.jpg",
+            "image_url_5.jpg",
+            "image_url_6.jpg",
+          ],
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { createEvent: createEventResolverError } = await import(
+        "../../../src/resolvers/Mutation/createEvent"
+      );
+
+      await createEventResolverError?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(
+          `Event validation failed: images: Up to 5 images are allowed.`,
+        );
+      }
+    }
+  });
 });
