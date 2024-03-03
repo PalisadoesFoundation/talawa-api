@@ -74,7 +74,6 @@ import { removeUserCustomData } from "./removeUserCustomData";
 import { removeUserFamily } from "./removeUserFamily";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
-import { removeUserImage } from "./removeUserImage";
 import { removeUserTag } from "./removeUserTag";
 import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
 import { saveFcmToken } from "./saveFcmToken";
@@ -184,7 +183,6 @@ export const Mutation: MutationResolvers = {
   removePost,
   removeUserCustomData,
   removeUserFromGroupChat,
-  removeUserImage,
   removeUserTag,
   revokeRefreshTokenForUser,
   saveFcmToken,

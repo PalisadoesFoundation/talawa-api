@@ -5,13 +5,12 @@ import {
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Organization } from "../../models";
-import { adminCheck, deleteImage } from "../../utilities";
+import { adminCheck } from "../../utilities";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function enables to remove an organization's image.
  * @param _parent - parent of current request
- * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists.
@@ -34,7 +33,9 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
         _id: args.organizationId,
       }).lean();
 
-      await cacheOrganizations([organization!]);
+      if (organization) {
+        await cacheOrganizations([organization]);
+      }
     }
 
     // Checks whether organization exists.
@@ -58,8 +59,6 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
       );
     }
 
-    await deleteImage(organization.image);
-
     // Sets image field of organization to null and returns the updated organization.
     const updatedOrganization = await Organization.findOneAndUpdate(
       {
@@ -79,5 +78,8 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
       await cacheOrganizations([updatedOrganization]);
     }
 
-    return updatedOrganization!;
+    if (!updatedOrganization) {
+      throw new Error("Organization could not be updated");
+    }
+    return updatedOrganization;
   };

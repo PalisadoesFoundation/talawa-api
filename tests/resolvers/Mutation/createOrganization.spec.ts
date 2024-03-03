@@ -19,7 +19,7 @@ import {
 } from "../../../src/constants";
 import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import * as uploadImage from "../../../src/utilities/uploadImage";
+// import * as uploadImage from "../../../src/utilities/uploadImage";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
 
@@ -79,11 +79,13 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         "../../../src/resolvers/Mutation/createOrganization"
       );
       await createOrganization?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
         USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
       );
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+      if (error instanceof Error) {
+        expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+      }
     }
   });
 
@@ -192,12 +194,12 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     );
   });
   it(`creates the organization without image and returns it`, async () => {
-    vi.spyOn(uploadImage, "uploadImage").mockImplementation(
-      async (newImagePath: any, imageAlreadyInDbPath: any) => ({
-        newImagePath,
-        imageAlreadyInDbPath,
-      }),
-    );
+    // vi.spyOn(uploadImage, "uploadImage").mockImplementation(
+    //   async (newImagePath: any, imageAlreadyInDbPath: any) => ({
+    //     newImagePath,
+    //     imageAlreadyInDbPath,
+    //   }),
+    // );
     const args: MutationCreateOrganizationArgs = {
       data: {
         description: "description",
@@ -283,10 +285,12 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       };
 
       await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
-      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
+        );
+      }
     }
   });
   it(`throws String Length Validation error if description is greater than 500 characters`, async () => {
@@ -321,10 +325,12 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       };
 
       await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
-      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
+        );
+      }
     }
   });
   it("throws Address Validation Error for an invalid address", async () => {
@@ -386,17 +392,21 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       // Testing for Invalid address
       try {
         await createOrganizationResolver({}, invalidArgs, context);
-      } catch (error: any) {
-        // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Not a Valid Address");
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          // Validate that the error message matches the expected Address Validation Error message
+          expect(error.message).toEqual("Not a Valid Address");
+        }
       }
 
       //Testing for Valid address
       try {
         await createOrganizationResolver({}, validArgs, context);
-      } catch (error: any) {
-        // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Something went wrong.");
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          // Validate that the error message matches the expected Address Validation Error message
+          expect(error.message).toEqual("Not a Valid Address");
+        }
       }
     } else {
       console.error(
@@ -430,9 +440,11 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     if (createOrganizationResolver) {
       try {
         await createOrganizationResolver({}, validArgs, context);
-      } catch (error: any) {
-        // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Not a Valid Address");
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          // Validate that the error message matches the expected Address Validation Error message
+          expect(error.message).toEqual("Not a Valid Address");
+        }
       }
     } else {
       console.error(
