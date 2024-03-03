@@ -1,12 +1,12 @@
 import "dotenv/config";
-import { post as postResolver } from "../../../src/resolvers/Query/post";
-import { connect, disconnect } from "../../helpers/db";
-import { Post } from "../../../src/models";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { BASE_URL, POST_NOT_FOUND_ERROR } from "../../../src/constants";
+import { Post } from "../../../src/models";
+import { post as postResolver } from "../../../src/resolvers/Query/post";
 import type { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestPostType } from "../../helpers/posts";
 import { createPostwithComment } from "../../helpers/posts";
 
@@ -30,8 +30,8 @@ describe("resolvers -> Query -> post", () => {
       };
 
       await postResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(POST_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -39,14 +39,28 @@ describe("resolvers -> Query -> post", () => {
     const args: QueryPostArgs = {
       id: testPost?._id,
     };
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
 
-    const postPayload = await postResolver?.({}, args, {});
+    const postPayload = await postResolver?.({}, args, context);
 
     const post = await Post.findOne({ _id: testPost?._id })
       .populate("organization")
       .populate("likedBy")
       .lean();
 
+    if (post) {
+      post.imageUrl = null;
+      post.videoUrl = null;
+    }
+
     expect(postPayload).toEqual(post);
+    expect(postPayload?.imageUrl).toEqual(
+      post?.imageUrl ? `${context.apiRootUrl}${post?.imageUrl}` : null,
+    );
+    expect(postPayload?.videoUrl).toEqual(
+      post?.videoUrl ? `${context.apiRootUrl}${post?.videoUrl}` : null,
+    );
   });
 });

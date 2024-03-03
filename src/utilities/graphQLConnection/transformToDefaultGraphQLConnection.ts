@@ -1,3 +1,4 @@
+import type { Types } from "mongoose";
 import {
   type DefaultGraphQLConnection,
   generateDefaultGraphQLConnection,
@@ -5,13 +6,13 @@ import {
 import type { ParsedGraphQLConnectionArguments } from "./parseGraphQLConnectionArguments";
 
 /**
-This is typescript type of the callback function `createCursor`.
-*/
+ * This is typescript type of the callback function `createCursor`.
+ */
 export type CreateCursor<T0> = (object: T0) => string;
 
 /**
-This is typescript type of the callback function `createNode`.
-*/
+ * This is typescript type of the callback function `createNode`.
+ */
 export type CreateNode<T0, T1> = (object: T0) => T1;
 
 export type TransformToDefaultGraphQLConnectionArguments<T0, T1, T2> = {
@@ -23,34 +24,54 @@ export type TransformToDefaultGraphQLConnectionArguments<T0, T1, T2> = {
 };
 
 /**
-This function is used to transform a list of objects to a standard graphQL connection object.
-The logic used in this function is common to almost all graphQL connection creation flows,
-abstracting that away into this function lets developers use a declarative way to create the
-graphQL connection object they want and prevents code duplication.
-*/
+ * This function is used to transform a list of objects to a standard graphQL connection object.
+ * @remarks
+ * The logic used in this function is common to almost all graphQL connection creation flows,
+ * abstracting that away into this function lets developers use a declarative way to create the
+ * graphQL connection object they want and prevents code duplication.
+ * @example
+ * const [objectList, totalCount] = await Promise.all([
+ *   User.find(filter)
+ *     .sort(sort)
+ *     .limit(limit)
+ *     .exec(),
+ *   User.find(filter)
+ *     .countDocuments()
+ *     .exec(),
+ * ]);
+ *
+ * return transformToDefaultGraphQLConnection\<
+ *  String,
+ *  DatabaseUser,
+ *  DatabaseUser
+ * \>(\{
+ *  objectList,
+ *  parsedArgs,
+ *  totalCount,
+ * \});
+ */
 export function transformToDefaultGraphQLConnection<
   T0,
   T1 extends {
-    /* eslint-disable  @typescript-eslint/no-explicit-any */
-    _id: any;
+    _id: string | Types.ObjectId;
   },
   T2,
 >({
   /**
-  If no custom callback function `createCursor` is provided by the function caller, the default
-  function defined below will execute, the assumption is that `_id` is to be used as the
-  cursor for the graphQL connection edges list.
-  */
-  createCursor = (object): string => object._id,
+   * If no custom callback function `createCursor` is provided by the function caller, the default
+   * function defined below will execute, the assumption is that `_id` is to be used as the
+   * cursor for the graphQL connection edges list.
+   */
+  createCursor = (object): string => object._id.toString(),
   /**
-  If no custom callback function `createNode` is provided by the function caller, the default
-  function defined below will execute, the assumption is that the type of objects within
-  the `objectList` is the same as type of nodes with connection edges. 
-  */
+   * If no custom callback function `createNode` is provided by the function caller, the default
+   * function defined below will execute, the assumption is that the type of objects within
+   * the `objectList` is the same as type of nodes with connection edges.
+   */
   createNode = (object): T2 =>
     ({
       ...object,
-      _id: object._id,
+      _id: object._id.toString(),
     }) as unknown as T2,
   objectList,
   parsedArgs: { cursor, direction, limit },

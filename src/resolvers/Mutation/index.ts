@@ -39,7 +39,6 @@ import { createSampleOrganization } from "./createSampleOrganization";
 import { createUserFamily } from "./createUserFamily";
 import { createUserTag } from "./createUserTag";
 import { createVenue } from "./createVenue";
-import { deleteAdvertisementById } from "./deleteAdvertisementById";
 import { deleteVenue } from "./deleteVenue";
 import { editVenue } from "./editVenue";
 import { deleteAgendaCategory } from "./deleteAgendaCategory";
@@ -61,7 +60,6 @@ import { rejectAdmin } from "./rejectAdmin";
 import { rejectMembershipRequest } from "./rejectMembershipRequest";
 import { removeActionItem } from "./removeActionItem";
 import { removeAdmin } from "./removeAdmin";
-import { removeAdvertisement } from "./removeAdvertisement";
 import { removeComment } from "./removeComment";
 import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
@@ -109,6 +107,7 @@ import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
+import { deleteAdvertisement } from "./deleteAdvertisement";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -154,7 +153,7 @@ export const Mutation: MutationResolvers = {
   createUserTag,
   createVenue,
   deleteDonationById,
-  deleteAdvertisementById,
+  deleteAdvertisement,
   deleteVenue,
   editVenue,
   deleteAgendaCategory,
@@ -182,7 +181,6 @@ export const Mutation: MutationResolvers = {
   removeEventAttendee,
   removeEventVolunteer,
   removeFund,
-  removeAdvertisement,
   removeGroupChat,
   removeMember,
   removeOrganization,

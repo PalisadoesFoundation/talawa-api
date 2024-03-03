@@ -30,6 +30,12 @@ export const enums = gql`
     location_DESC
   }
 
+  enum RecurringEventMutationType {
+    AllInstances
+    ThisInstance
+    ThisAndFollowingInstances
+  }
+
   enum Frequency {
     YEARLY
     MONTHLY
