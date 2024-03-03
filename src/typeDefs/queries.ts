@@ -69,7 +69,12 @@ export const queries = gql`
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]
-    advertisementsConnection: [Advertisement]
+    advertisementsConnection(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): AdvertisementsConnection
 
     isSampleOrganization(id: ID!): Boolean!
     hasSubmittedFeedback(userId: ID!, eventId: ID!): Boolean
@@ -124,5 +129,7 @@ export const queries = gql`
       skip: Int
       orderBy: UserOrderByInput
     ): [User]! @auth
+
+    venue(id: ID!): Venue
   }
 `;
