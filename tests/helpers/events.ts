@@ -6,7 +6,9 @@ import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 import { EventVolunteerResponse } from "../../src/constants";
 
-export type TestEventType = (InterfaceEvent & Document) | null;
+export type TestEventType =
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  (InterfaceEvent & Document<any, any, InterfaceEvent>) | null;
 
 export type TestEventVolunteerType =
   | (InterfaceEventVolunteer & Document)
@@ -25,12 +27,13 @@ export const createTestEvent = async (): Promise<
       description: `description${nanoid().toLowerCase()}`,
       allDay: true,
       startDate: new Date(),
-      recurring: true,
+      recurring: false,
       isPublic: true,
       isRegisterable: true,
       creatorId: testUser._id,
       admins: [testUser._id],
       organization: testOrganization._id,
+      images: ["image.png", "image2.png", "image3.png", "image4.png"],
     });
 
     await User.updateOne(
@@ -39,9 +42,9 @@ export const createTestEvent = async (): Promise<
       },
       {
         $push: {
-          eventAdmin: testEvent._id,
-          createdEvents: testEvent._id,
-          registeredEvents: testEvent._id,
+          eventAdmin: testEvent?._id,
+          createdEvents: testEvent?._id,
+          registeredEvents: testEvent?._id,
         },
       },
     );
@@ -86,9 +89,9 @@ export const createEventWithRegistrant = async (
     },
     {
       $push: {
-        eventAdmin: testEvent._id,
-        createdEvents: testEvent._id,
-        registeredEvents: testEvent._id,
+        eventAdmin: testEvent?._id,
+        createdEvents: testEvent?._id,
+        registeredEvents: testEvent?._id,
       },
     },
   );
