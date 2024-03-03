@@ -116,7 +116,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       LENGTH_VALIDATION_ERROR.CODE,
     );
   }
-  console.log(args);
   const compareDatesResult = compareDates(
     args.data?.startDate,
     args.data?.endDate,
