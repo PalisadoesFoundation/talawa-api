@@ -10,9 +10,9 @@ import { members } from "./members";
 import { membershipRequests } from "./membershipRequests";
 import { pinnedPosts } from "./pinnedPosts";
 import { posts } from "./posts";
-
 import { advertisements } from "./advertisements";
 
+import { venues } from "./venues";
 // import { userTags } from "./userTags";
 
 export const Organization: OrganizationResolvers = {
@@ -28,5 +28,6 @@ export const Organization: OrganizationResolvers = {
   pinnedPosts,
   funds,
   posts,
+  venues,
   // userTags,
 };
