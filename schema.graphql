@@ -510,6 +510,7 @@ type Event {
   endDate: Date
   endTime: Time
   feedback: [Feedback!]!
+  images: [String]
   isPublic: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
@@ -548,6 +549,7 @@ input EventInput {
   description: String!
   endDate: Date
   endTime: Time
+  images: [String]
   isPublic: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
@@ -1394,6 +1396,7 @@ input UpdateEventInput {
   description: String
   endDate: Date
   endTime: Time
+  images: [String]
   isPublic: Boolean
   isRecurringEventException: Boolean
   isRegisterable: Boolean
