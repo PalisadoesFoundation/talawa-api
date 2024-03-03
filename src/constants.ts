@@ -41,6 +41,21 @@ export const CHAT_NOT_FOUND_ERROR = {
   MESSAGE: "chat.notFound",
   PARAM: "chat",
 };
+
+export const VENUE_ALREADY_EXISTS_ERROR = {
+  DESC: "Venue already exists",
+  CODE: "venue.alreadyExists",
+  MESSAGE: "venue.alreadyExists",
+  PARAM: "venue",
+};
+
+export const VENUE_NOT_FOUND_ERROR = {
+  DESC: "Venue does not exist",
+  CODE: "venue.NotFound",
+  MESSAGE: "venue.NotFound",
+  PARAM: "venue",
+};
+
 export const COMMENT_NOT_FOUND_ERROR = {
   DESC: "Comment not found",
   CODE: "comment.notFound",
@@ -65,6 +80,36 @@ export const FUND_ALREADY_EXISTS = {
   CODE: "fund.alreadyExists",
   MESSAGE: "fund.alreadyExists",
   PARAM: "fund",
+};
+export const FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR = {
+  DESC: "FundraisingCampaign not found",
+  CODE: "fundraisingCampaign.notFound",
+  MESSAGE: "fundraisingCampaign.notFound",
+  PARAM: "fundraisingCampaign",
+};
+export const FUNDRAISING_CAMPAIGN_ALREADY_EXISTS = {
+  DESC: "Fundraising Campaign already exists",
+  CODE: "fundraisingCampaign.alreadyExists",
+  MESSAGE: "fundraisingCampaign.alreadyExists",
+  PARAM: "fundraisingCampaign",
+};
+export const FUNDRAISING_CAMPAIGN_ALREADY_ADDED = {
+  DESC: "Fundraising Campaign already added",
+  CODE: "fundraisingCampaign.alreadyAdded",
+  MESSAGE: "fundraisingCampaign.alreadyAdded",
+  PARAM: "fundraisingCampaign",
+};
+export const FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR = {
+  DESC: "FundraisingCampaignPledge not found",
+  CODE: "fundraisingCampaignPledge.notFound",
+  MESSAGE: "fundraisingCampaignPledge.notFound",
+  PARAM: "fundraisingCampaignPledge",
+};
+export const FUNDRAISING_CAMPAIGN_PLEDGE_ALREADY_EXISTS = {
+  DESC: "Fundraising Campaign Pledge already exists",
+  CODE: "fundraisingCampaignPledge.alreadyExists",
+  MESSAGE: "fundraisingCampaignPledge.alreadyExists",
+  PARAM: "fundraisingCampaignPledge",
 };
 export const FUND_NOT_FOUND_ERROR = {
   DESC: "Fund not found",
@@ -108,6 +153,20 @@ export const ORGANIZATION_NOT_FOUND_ERROR = {
   MESSAGE: "organization.notFound",
   PARAM: "organization",
 };
+export const VENUE_NAME_MISSING_ERROR = {
+  DESC: "Venue name not found",
+  CODE: "venueName.notFound",
+  MESSAGE: "venueName.notFound",
+  PARAM: "venueName",
+};
+
+export const VENUE_ALREADY_SCHEDULED = {
+  DESC: "Venue is already scheduled",
+  CODE: "venue.alreadySchduled",
+  MESSAGE: "venue.alreadySchduled",
+  PARAM: "venue",
+};
+
 export const ORGANIZATION_IMAGE_NOT_FOUND_ERROR = {
   DESC: "OrganizationImage not found",
   CODE: "organizationImage.notFound",
@@ -413,6 +472,12 @@ export const USER_NOT_FOUND_ERROR = {
   DESC: "User not found",
   CODE: "user.notFound",
   MESSAGE: "user.notFound",
+  PARAM: "user",
+};
+export const USER_NOT_MADE_PLEDGE_ERROR = {
+  DESC: "User has not made a pledge",
+  CODE: "user.notPledged",
+  MESSAGE: "user.notPledged",
   PARAM: "user",
 };
 export const USER_NOT_MEMBER_FOR_ORGANIZATION = {
