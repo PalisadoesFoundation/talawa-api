@@ -31,4 +31,5 @@ export * from "./PluginField";
 export * from "./Post";
 export * from "./SampleData";
 export * from "./TagUser";
+export * from "./Venue";
 export * from "./User";

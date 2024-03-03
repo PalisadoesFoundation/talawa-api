@@ -33,6 +33,7 @@ import { user } from "./user";
 import { userLanguage } from "./userLanguage";
 import { users } from "./users";
 import { usersConnection } from "./usersConnection";
+import { venue } from "./venue";
 
 export const Query: QueryResolvers = {
   actionItem,
@@ -69,4 +70,5 @@ export const Query: QueryResolvers = {
   users,
   usersConnection,
   getFundById,
+  venue,
 };
