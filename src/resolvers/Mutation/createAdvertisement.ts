@@ -3,6 +3,7 @@ import { Advertisement, Organization, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
@@ -24,6 +25,20 @@ export const createAdvertisement: MutationResolvers["createAdvertisement"] =
       );
     }
 
+    // Checks whether current user is an ADMIN or SUPERADMIN.
+    if (
+      !(
+        currentUser?.userType === "ADMIN" ||
+        currentUser?.userType === "SUPERADMIN"
+      )
+    ) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+
     const organization = await Organization.findOne({
       _id: args.input.organizationId,
     }).lean();
@@ -34,6 +49,20 @@ export const createAdvertisement: MutationResolvers["createAdvertisement"] =
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
         ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    // Checks whether the admins belongs to the organization.
+    if (
+      currentUser?.userType !== "SUPERADMIN" &&
+      !organization.admins.find((admin: { _id: string }) => {
+        admin._id === context.userId;
+      })
+    ) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
