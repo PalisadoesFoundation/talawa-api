@@ -1,6 +1,7 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 import type { InterfaceActionItem as InterfaceActionItemModel } from '../models/ActionItem';
 import type { InterfaceActionItemCategory as InterfaceActionItemCategoryModel } from '../models/ActionItemCategory';
+import type { InterfaceAdvertisement as InterfaceAdvertisementModel } from '../models/Advertisement';
 import type { InterfaceAgendaCategory as InterfaceAgendaCategoryModel } from '../models/AgendaCategory';
 import type { InterfaceCheckIn as InterfaceCheckInModel } from '../models/CheckIn';
 import type { InterfaceMessageChat as InterfaceMessageChatModel } from '../models/MessageChat';
@@ -129,18 +130,31 @@ export type Advertisement = {
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   endDate: Scalars['Date']['output'];
-  link: Scalars['String']['output'];
+  mediaUrl: Scalars['URL']['output'];
   name: Scalars['String']['output'];
-  orgId: Scalars['ID']['output'];
+  organization?: Maybe<Organization>;
   startDate: Scalars['Date']['output'];
   type: AdvertisementType;
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type AdvertisementEdge = {
+  __typename?: 'AdvertisementEdge';
+  cursor?: Maybe<Scalars['String']['output']>;
+  node?: Maybe<Advertisement>;
 };
 
 export type AdvertisementType =
   | 'BANNER'
   | 'MENU'
   | 'POPUP';
+
+export type AdvertisementsConnection = {
+  __typename?: 'AdvertisementsConnection';
+  edges?: Maybe<Array<Maybe<AdvertisementEdge>>>;
+  pageInfo?: Maybe<ConnectionPageInfo>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
 
 export type AgendaCategory = {
   __typename?: 'AgendaCategory';
@@ -245,6 +259,20 @@ export type CreateActionItemInput = {
   dueDate?: InputMaybe<Scalars['Date']['input']>;
   eventId?: InputMaybe<Scalars['ID']['input']>;
   preCompletionNotes?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type CreateAdvertisementInput = {
+  endDate: Scalars['Date']['input'];
+  mediaFile: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  organizationId: Scalars['ID']['input'];
+  startDate: Scalars['Date']['input'];
+  type: AdvertisementType;
+};
+
+export type CreateAdvertisementPayload = {
+  __typename?: 'CreateAdvertisementPayload';
+  advertisement?: Maybe<Advertisement>;
 };
 
 export type CreateAgendaCategoryInput = {
@@ -442,6 +470,11 @@ export type DefaultConnectionPageInfo = ConnectionPageInfo & {
   startCursor?: Maybe<Scalars['String']['output']>;
 };
 
+export type DeleteAdvertisementPayload = {
+  __typename?: 'DeleteAdvertisementPayload';
+  advertisement?: Maybe<Advertisement>;
+};
+
 export type DeletePayload = {
   __typename?: 'DeletePayload';
   success: Scalars['Boolean']['output'];
@@ -539,6 +572,7 @@ export type Event = {
   endDate?: Maybe<Scalars['Date']['output']>;
   endTime?: Maybe<Scalars['Time']['output']>;
   feedback: Array<Feedback>;
+  images?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   isPublic: Scalars['Boolean']['output'];
   isRegisterable: Scalars['Boolean']['output'];
   latitude?: Maybe<Scalars['Latitude']['output']>;
@@ -583,6 +617,7 @@ export type EventInput = {
   description: Scalars['String']['input'];
   endDate?: InputMaybe<Scalars['Date']['input']>;
   endTime?: InputMaybe<Scalars['Time']['input']>;
+  images?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   isPublic: Scalars['Boolean']['input'];
   isRegisterable: Scalars['Boolean']['input'];
   latitude?: InputMaybe<Scalars['Latitude']['input']>;
@@ -959,7 +994,7 @@ export type Mutation = {
   createActionItem: ActionItem;
   createActionItemCategory: ActionItemCategory;
   createAdmin: User;
-  createAdvertisement: Advertisement;
+  createAdvertisement?: Maybe<CreateAdvertisementPayload>;
   createAgendaCategory: AgendaCategory;
   createComment?: Maybe<Comment>;
   createDirectChat: DirectChat;
@@ -979,7 +1014,7 @@ export type Mutation = {
   createSampleOrganization: Scalars['Boolean']['output'];
   createUserFamily: UserFamily;
   createUserTag?: Maybe<UserTag>;
-  deleteAdvertisementById: DeletePayload;
+  deleteAdvertisement?: Maybe<DeleteAdvertisementPayload>;
   deleteAgendaCategory: Scalars['ID']['output'];
   deleteDonationById: DeletePayload;
   forgotPassword: Scalars['Boolean']['output'];
@@ -999,7 +1034,6 @@ export type Mutation = {
   rejectMembershipRequest: MembershipRequest;
   removeActionItem: ActionItem;
   removeAdmin: User;
-  removeAdvertisement?: Maybe<Advertisement>;
   removeComment?: Maybe<Comment>;
   removeDirectChat: DirectChat;
   removeEvent: Event;
@@ -1189,12 +1223,7 @@ export type MutationCreateAdminArgs = {
 
 
 export type MutationCreateAdvertisementArgs = {
-  endDate: Scalars['Date']['input'];
-  link: Scalars['String']['input'];
-  name: Scalars['String']['input'];
-  orgId: Scalars['ID']['input'];
-  startDate: Scalars['Date']['input'];
-  type: Scalars['String']['input'];
+  input: CreateAdvertisementInput;
 };
 
 
@@ -1300,7 +1329,7 @@ export type MutationCreateUserTagArgs = {
 };
 
 
-export type MutationDeleteAdvertisementByIdArgs = {
+export type MutationDeleteAdvertisementArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -1395,11 +1424,6 @@ export type MutationRemoveAdminArgs = {
 };
 
 
-export type MutationRemoveAdvertisementArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
 export type MutationRemoveCommentArgs = {
   id: Scalars['ID']['input'];
 };
@@ -1413,6 +1437,7 @@ export type MutationRemoveDirectChatArgs = {
 
 export type MutationRemoveEventArgs = {
   id: Scalars['ID']['input'];
+  recurringEventDeleteType?: InputMaybe<RecurringEventMutationType>;
 };
 
 
@@ -1591,7 +1616,7 @@ export type MutationUpdateEventArgs = {
   data?: InputMaybe<UpdateEventInput>;
   id: Scalars['ID']['input'];
   recurrenceRuleData?: InputMaybe<RecurrenceRuleInput>;
-  recurringEventUpdateType?: InputMaybe<RecurringEventUpdateType>;
+  recurringEventUpdateType?: InputMaybe<RecurringEventMutationType>;
 };
 
 
@@ -1686,6 +1711,7 @@ export type Organization = {
   actionItemCategories?: Maybe<Array<Maybe<ActionItemCategory>>>;
   address?: Maybe<Address>;
   admins?: Maybe<Array<User>>;
+  advertisements?: Maybe<AdvertisementsConnection>;
   agendaCategories?: Maybe<Array<Maybe<AgendaCategory>>>;
   apiUrl: Scalars['URL']['output'];
   blockedUsers?: Maybe<Array<Maybe<User>>>;
@@ -1693,11 +1719,13 @@ export type Organization = {
   creator?: Maybe<User>;
   customFields: Array<OrganizationCustomField>;
   description: Scalars['String']['output'];
+  funds?: Maybe<Array<Maybe<Fund>>>;
   image?: Maybe<Scalars['String']['output']>;
   members?: Maybe<Array<Maybe<User>>>;
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String']['output'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
+  posts?: Maybe<PostsConnection>;
   updatedAt: Scalars['DateTime']['output'];
   userRegistrationRequired: Scalars['Boolean']['output'];
   userTags?: Maybe<UserTagsConnection>;
@@ -1707,6 +1735,22 @@ export type Organization = {
 
 export type OrganizationAdminsArgs = {
   adminId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type OrganizationAdvertisementsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type OrganizationPostsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['PositiveInt']['input']>;
+  last?: InputMaybe<Scalars['PositiveInt']['input']>;
 };
 
 
@@ -1859,14 +1903,10 @@ export type Post = {
   videoUrl?: Maybe<Scalars['URL']['output']>;
 };
 
-/** A connection to a list of items. */
-export type PostConnection = {
-  __typename?: 'PostConnection';
-  aggregate: AggregatePost;
-  /** A list of edges. */
-  edges: Array<Maybe<Post>>;
-  /** Information to aid in pagination. */
-  pageInfo: PageInfo;
+export type PostEdge = {
+  __typename?: 'PostEdge';
+  cursor: Scalars['String']['output'];
+  node: Post;
 };
 
 export type PostInput = {
@@ -1925,6 +1965,13 @@ export type PostWhereInput = {
   title_starts_with?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type PostsConnection = {
+  __typename?: 'PostsConnection';
+  edges: Array<PostEdge>;
+  pageInfo: DefaultConnectionPageInfo;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   actionItem?: Maybe<ActionItem>;
@@ -1933,6 +1980,7 @@ export type Query = {
   actionItemsByEvent?: Maybe<Array<Maybe<ActionItem>>>;
   actionItemsByOrganization?: Maybe<Array<Maybe<ActionItem>>>;
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
+  advertisementsConnection?: Maybe<Array<Maybe<Advertisement>>>;
   agendaCategory: AgendaCategory;
   checkAuth: User;
   customDataByOrganization: Array<UserCustomData>;
@@ -1943,7 +1991,6 @@ export type Query = {
   eventVolunteersByEvent?: Maybe<Array<Maybe<EventVolunteer>>>;
   eventsByOrganization?: Maybe<Array<Maybe<Event>>>;
   eventsByOrganizationConnection: Array<Event>;
-  getAdvertisements?: Maybe<Array<Maybe<Advertisement>>>;
   getDonationById: Donation;
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
   getDonationByOrgIdConnection: Array<Donation>;
@@ -1964,8 +2011,6 @@ export type Query = {
   organizationsMemberConnection: UserConnection;
   plugin?: Maybe<Array<Maybe<Plugin>>>;
   post?: Maybe<Post>;
-  postsByOrganization?: Maybe<Array<Maybe<Post>>>;
-  postsByOrganizationConnection?: Maybe<PostConnection>;
   registeredEventsByUser?: Maybe<Array<Maybe<Event>>>;
   registrantsByEvent?: Maybe<Array<Maybe<User>>>;
   user: User;
@@ -2154,21 +2199,6 @@ export type QueryPostArgs = {
 };
 
 
-export type QueryPostsByOrganizationArgs = {
-  id: Scalars['ID']['input'];
-  orderBy?: InputMaybe<PostOrderByInput>;
-};
-
-
-export type QueryPostsByOrganizationConnectionArgs = {
-  first?: InputMaybe<Scalars['Int']['input']>;
-  id: Scalars['ID']['input'];
-  orderBy?: InputMaybe<PostOrderByInput>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  where?: InputMaybe<PostWhereInput>;
-};
-
-
 export type QueryRegisteredEventsByUserArgs = {
   id?: InputMaybe<Scalars['ID']['input']>;
   orderBy?: InputMaybe<EventOrderByInput>;
@@ -2224,7 +2254,7 @@ export type RecurrenceRuleInput = {
   weekDays?: InputMaybe<Array<InputMaybe<WeekDays>>>;
 };
 
-export type RecurringEventUpdateType =
+export type RecurringEventMutationType =
   | 'AllInstances'
   | 'ThisAndFollowingInstances'
   | 'ThisInstance';
@@ -2302,7 +2332,7 @@ export type UpdateActionItemInput = {
 export type UpdateAdvertisementInput = {
   _id: Scalars['ID']['input'];
   endDate?: InputMaybe<Scalars['Date']['input']>;
-  link?: InputMaybe<Scalars['String']['input']>;
+  mediaFile?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['Date']['input']>;
   type?: InputMaybe<AdvertisementType>;
@@ -2323,6 +2353,7 @@ export type UpdateEventInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   endDate?: InputMaybe<Scalars['Date']['input']>;
   endTime?: InputMaybe<Scalars['Time']['input']>;
+  images?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   isPublic?: InputMaybe<Scalars['Boolean']['input']>;
   isRecurringEventException?: InputMaybe<Scalars['Boolean']['input']>;
   isRegisterable?: InputMaybe<Scalars['Boolean']['input']>;
@@ -2433,11 +2464,20 @@ export type User = {
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
   phone?: Maybe<UserPhone>;
   pluginCreationAllowed: Scalars['Boolean']['output'];
+  posts?: Maybe<PostsConnection>;
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
   tagsAssignedWith?: Maybe<UserTagsConnection>;
   tokenVersion: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
   userType: UserType;
+};
+
+
+export type UserPostsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['PositiveInt']['input']>;
+  last?: InputMaybe<Scalars['PositiveInt']['input']>;
 };
 
 
@@ -2727,8 +2767,10 @@ export type ResolversTypes = {
   ActionItemsOrderByInput: ActionItemsOrderByInput;
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
-  Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'creator'> & { creator?: Maybe<ResolversTypes['User']> }>;
+  Advertisement: ResolverTypeWrapper<InterfaceAdvertisementModel>;
+  AdvertisementEdge: ResolverTypeWrapper<Omit<AdvertisementEdge, 'node'> & { node?: Maybe<ResolversTypes['Advertisement']> }>;
   AdvertisementType: AdvertisementType;
+  AdvertisementsConnection: ResolverTypeWrapper<Omit<AdvertisementsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['AdvertisementEdge']>>> }>;
   AgendaCategory: ResolverTypeWrapper<InterfaceAgendaCategoryModel>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
@@ -2744,6 +2786,8 @@ export type ResolversTypes = {
   ConnectionPageInfo: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['ConnectionPageInfo']>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
   CreateActionItemInput: CreateActionItemInput;
+  CreateAdvertisementInput: CreateAdvertisementInput;
+  CreateAdvertisementPayload: ResolverTypeWrapper<Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   CreateAgendaCategoryInput: CreateAgendaCategoryInput;
   CreateUserTagInput: CreateUserTagInput;
   Currency: Currency;
@@ -2751,6 +2795,7 @@ export type ResolversTypes = {
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   DefaultConnectionPageInfo: ResolverTypeWrapper<DefaultConnectionPageInfo>;
+  DeleteAdvertisementPayload: ResolverTypeWrapper<Omit<DeleteAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   DeletePayload: ResolverTypeWrapper<DeletePayload>;
   DirectChat: ResolverTypeWrapper<InterfaceDirectChatModel>;
   DirectChatMessage: ResolverTypeWrapper<InterfaceDirectChatMessageModel>;
@@ -2825,16 +2870,17 @@ export type ResolversTypes = {
   PluginInput: PluginInput;
   PositiveInt: ResolverTypeWrapper<Scalars['PositiveInt']['output']>;
   Post: ResolverTypeWrapper<InterfacePostModel>;
-  PostConnection: ResolverTypeWrapper<Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['Post']>> }>;
+  PostEdge: ResolverTypeWrapper<Omit<PostEdge, 'node'> & { node: ResolversTypes['Post'] }>;
   PostInput: PostInput;
   PostOrderByInput: PostOrderByInput;
   PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
+  PostsConnection: ResolverTypeWrapper<Omit<PostsConnection, 'edges'> & { edges: Array<ResolversTypes['PostEdge']> }>;
   Query: ResolverTypeWrapper<{}>;
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
   RecurrenceRuleInput: RecurrenceRuleInput;
-  RecurringEventUpdateType: RecurringEventUpdateType;
+  RecurringEventMutationType: RecurringEventMutationType;
   SortedByOrder: SortedByOrder;
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
@@ -2892,7 +2938,9 @@ export type ResolversParentTypes = {
   ActionItemWhereInput: ActionItemWhereInput;
   Address: Address;
   AddressInput: AddressInput;
-  Advertisement: Omit<Advertisement, 'creator'> & { creator?: Maybe<ResolversParentTypes['User']> };
+  Advertisement: InterfaceAdvertisementModel;
+  AdvertisementEdge: Omit<AdvertisementEdge, 'node'> & { node?: Maybe<ResolversParentTypes['Advertisement']> };
+  AdvertisementsConnection: Omit<AdvertisementsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['AdvertisementEdge']>>> };
   AgendaCategory: InterfaceAgendaCategoryModel;
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
@@ -2908,12 +2956,15 @@ export type ResolversParentTypes = {
   ConnectionPageInfo: ResolversInterfaceTypes<ResolversParentTypes>['ConnectionPageInfo'];
   CountryCode: Scalars['CountryCode']['output'];
   CreateActionItemInput: CreateActionItemInput;
+  CreateAdvertisementInput: CreateAdvertisementInput;
+  CreateAdvertisementPayload: Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   CreateAgendaCategoryInput: CreateAgendaCategoryInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
   DateTime: Scalars['DateTime']['output'];
   DefaultConnectionPageInfo: DefaultConnectionPageInfo;
+  DeleteAdvertisementPayload: Omit<DeleteAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   DeletePayload: DeletePayload;
   DirectChat: InterfaceDirectChatModel;
   DirectChatMessage: InterfaceDirectChatMessageModel;
@@ -2979,10 +3030,11 @@ export type ResolversParentTypes = {
   PluginInput: PluginInput;
   PositiveInt: Scalars['PositiveInt']['output'];
   Post: InterfacePostModel;
-  PostConnection: Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['Post']>> };
+  PostEdge: Omit<PostEdge, 'node'> & { node: ResolversParentTypes['Post'] };
   PostInput: PostInput;
   PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
+  PostsConnection: Omit<PostsConnection, 'edges'> & { edges: Array<ResolversParentTypes['PostEdge']> };
   Query: {};
   RecaptchaVerification: RecaptchaVerification;
   RecurrenceRuleInput: RecurrenceRuleInput;
@@ -3086,12 +3138,25 @@ export type AdvertisementResolvers<ContextType = any, ParentType extends Resolve
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  mediaUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  orgId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['AdvertisementType'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type AdvertisementEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdvertisementEdge'] = ResolversParentTypes['AdvertisementEdge']> = {
+  cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  node?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type AdvertisementsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdvertisementsConnection'] = ResolversParentTypes['AdvertisementsConnection']> = {
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['AdvertisementEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<Maybe<ResolversTypes['ConnectionPageInfo']>, ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3174,6 +3239,11 @@ export interface CountryCodeScalarConfig extends GraphQLScalarTypeConfig<Resolve
   name: 'CountryCode';
 }
 
+export type CreateAdvertisementPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateAdvertisementPayload'] = ResolversParentTypes['CreateAdvertisementPayload']> = {
+  advertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
 }
@@ -3187,6 +3257,11 @@ export type DefaultConnectionPageInfoResolvers<ContextType = any, ParentType ext
   hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type DeleteAdvertisementPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeleteAdvertisementPayload'] = ResolversParentTypes['DeleteAdvertisementPayload']> = {
+  advertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3253,6 +3328,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   endDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   endTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   feedback?: Resolver<Array<ResolversTypes['Feedback']>, ParentType, ContextType>;
+  images?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isRegisterable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Latitude']>, ParentType, ContextType>;
@@ -3518,7 +3594,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationCreateActionItemArgs, 'actionItemCategoryId' | 'data'>>;
   createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'name' | 'organizationId'>>;
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
-  createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'endDate' | 'link' | 'name' | 'orgId' | 'startDate' | 'type'>>;
+  createAdvertisement?: Resolver<Maybe<ResolversTypes['CreateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'input'>>;
   createAgendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<MutationCreateAgendaCategoryArgs, 'input'>>;
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
@@ -3538,7 +3614,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   createUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationCreateUserFamilyArgs, 'data'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
-  deleteAdvertisementById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteAdvertisementByIdArgs, 'id'>>;
+  deleteAdvertisement?: Resolver<Maybe<ResolversTypes['DeleteAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationDeleteAdvertisementArgs, 'id'>>;
   deleteAgendaCategory?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteAgendaCategoryArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
@@ -3558,7 +3634,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   rejectMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationRejectMembershipRequestArgs, 'membershipRequestId'>>;
   removeActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationRemoveActionItemArgs, 'id'>>;
   removeAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveAdminArgs, 'data'>>;
-  removeAdvertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType, RequireFields<MutationRemoveAdvertisementArgs, 'id'>>;
   removeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationRemoveCommentArgs, 'id'>>;
   removeDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationRemoveDirectChatArgs, 'chatId' | 'organizationId'>>;
   removeEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRemoveEventArgs, 'id'>>;
@@ -3619,6 +3694,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   actionItemCategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItemCategory']>>>, ParentType, ContextType>;
   address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
+  advertisements?: Resolver<Maybe<ResolversTypes['AdvertisementsConnection']>, ParentType, ContextType, Partial<OrganizationAdvertisementsArgs>>;
   agendaCategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaCategory']>>>, ParentType, ContextType>;
   apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
@@ -3626,11 +3702,13 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   customFields?: Resolver<Array<ResolversTypes['OrganizationCustomField']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  funds?: Resolver<Maybe<Array<Maybe<ResolversTypes['Fund']>>>, ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   members?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
+  posts?: Resolver<Maybe<ResolversTypes['PostsConnection']>, ParentType, ContextType, Partial<OrganizationPostsArgs>>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   userRegistrationRequired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   userTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<OrganizationUserTagsArgs>>;
@@ -3716,10 +3794,16 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type PostConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostConnection'] = ResolversParentTypes['PostConnection']> = {
-  aggregate?: Resolver<ResolversTypes['AggregatePost'], ParentType, ContextType>;
-  edges?: Resolver<Array<Maybe<ResolversTypes['Post']>>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+export type PostEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostEdge'] = ResolversParentTypes['PostEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type PostsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostsConnection'] = ResolversParentTypes['PostsConnection']> = {
+  edges?: Resolver<Array<ResolversTypes['PostEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3730,6 +3814,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   actionItemsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByEventArgs, 'eventId'>>;
   actionItemsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByOrganizationArgs, 'organizationId'>>;
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
+  advertisementsConnection?: Resolver<Maybe<Array<Maybe<ResolversTypes['Advertisement']>>>, ParentType, ContextType>;
   agendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<QueryAgendaCategoryArgs, 'id'>>;
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
@@ -3740,7 +3825,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   eventVolunteersByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventVolunteer']>>>, ParentType, ContextType, RequireFields<QueryEventVolunteersByEventArgs, 'id'>>;
   eventsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsByOrganizationArgs>>;
   eventsByOrganizationConnection?: Resolver<Array<ResolversTypes['Event']>, ParentType, ContextType, Partial<QueryEventsByOrganizationConnectionArgs>>;
-  getAdvertisements?: Resolver<Maybe<Array<Maybe<ResolversTypes['Advertisement']>>>, ParentType, ContextType>;
   getDonationById?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<QueryGetDonationByIdArgs, 'id'>>;
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
@@ -3761,8 +3845,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   organizationsMemberConnection?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType, RequireFields<QueryOrganizationsMemberConnectionArgs, 'orgId'>>;
   plugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryPluginArgs, 'orgId'>>;
   post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'id'>>;
-  postsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, RequireFields<QueryPostsByOrganizationArgs, 'id'>>;
-  postsByOrganizationConnection?: Resolver<Maybe<ResolversTypes['PostConnection']>, ParentType, ContextType, RequireFields<QueryPostsByOrganizationConnectionArgs, 'id'>>;
   registeredEventsByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryRegisteredEventsByUserArgs>>;
   registrantsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryRegistrantsByEventArgs, 'id'>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
@@ -3837,6 +3919,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['UserPhone']>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  posts?: Resolver<Maybe<ResolversTypes['PostsConnection']>, ParentType, ContextType, Partial<UserPostsArgs>>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -3915,6 +3998,8 @@ export type Resolvers<ContextType = any> = {
   ActionItemCategory?: ActionItemCategoryResolvers<ContextType>;
   Address?: AddressResolvers<ContextType>;
   Advertisement?: AdvertisementResolvers<ContextType>;
+  AdvertisementEdge?: AdvertisementEdgeResolvers<ContextType>;
+  AdvertisementsConnection?: AdvertisementsConnectionResolvers<ContextType>;
   AgendaCategory?: AgendaCategoryResolvers<ContextType>;
   AggregatePost?: AggregatePostResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
@@ -3926,9 +4011,11 @@ export type Resolvers<ContextType = any> = {
   ConnectionError?: ConnectionErrorResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
   CountryCode?: GraphQLScalarType;
+  CreateAdvertisementPayload?: CreateAdvertisementPayloadResolvers<ContextType>;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
   DefaultConnectionPageInfo?: DefaultConnectionPageInfoResolvers<ContextType>;
+  DeleteAdvertisementPayload?: DeleteAdvertisementPayloadResolvers<ContextType>;
   DeletePayload?: DeletePayloadResolvers<ContextType>;
   DirectChat?: DirectChatResolvers<ContextType>;
   DirectChatMessage?: DirectChatMessageResolvers<ContextType>;
@@ -3972,7 +4059,8 @@ export type Resolvers<ContextType = any> = {
   PluginField?: PluginFieldResolvers<ContextType>;
   PositiveInt?: GraphQLScalarType;
   Post?: PostResolvers<ContextType>;
-  PostConnection?: PostConnectionResolvers<ContextType>;
+  PostEdge?: PostEdgeResolvers<ContextType>;
+  PostsConnection?: PostsConnectionResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Time?: GraphQLScalarType;

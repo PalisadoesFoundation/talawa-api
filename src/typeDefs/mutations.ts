@@ -123,13 +123,8 @@ export const mutations = gql`
     ): Plugin!
 
     createAdvertisement(
-      orgId: ID!
-      name: String!
-      link: String!
-      type: String!
-      startDate: Date!
-      endDate: Date!
-    ): Advertisement!
+      input: CreateAdvertisementInput!
+    ): CreateAdvertisementPayload @auth
 
     createPost(data: PostInput!, file: String): Post @auth
 
@@ -137,7 +132,7 @@ export const mutations = gql`
 
     createSampleOrganization: Boolean! @auth
 
-    deleteAdvertisementById(id: ID!): DeletePayload!
+    deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
 
     deleteAgendaCategory(id: ID!): ID!
 
@@ -194,7 +189,10 @@ export const mutations = gql`
 
     removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
 
-    removeEvent(id: ID!): Event! @auth
+    removeEvent(
+      id: ID!
+      recurringEventDeleteType: RecurringEventMutationType
+    ): Event! @auth
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
 
@@ -216,8 +214,6 @@ export const mutations = gql`
     removePost(id: ID!): Post @auth
 
     removeUserCustomData(organizationId: ID!): UserCustomData! @auth
-
-    removeAdvertisement(id: ID!): Advertisement
 
     removeUserTag(id: ID!): UserTag @auth
 
@@ -277,7 +273,7 @@ export const mutations = gql`
       id: ID!
       data: UpdateEventInput
       recurrenceRuleData: RecurrenceRuleInput
-      recurringEventUpdateType: RecurringEventUpdateType
+      recurringEventUpdateType: RecurringEventMutationType
     ): Event! @auth
 
     updateEventVolunteer(

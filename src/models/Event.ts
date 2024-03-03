@@ -20,6 +20,7 @@ export interface InterfaceEvent {
   description: string;
   endDate: string | undefined;
   endTime: string | undefined;
+  images: string[];
   isBaseRecurringEvent: boolean;
   isPublic: boolean;
   isRecurringEventException: boolean;
@@ -44,18 +45,23 @@ export interface InterfaceEvent {
  * @param admins - Admins
  * @param allDay - Is the event occuring all day
  * @param attendees - Attendees
+ * @param baseRecurringEventId - Id of the true recurring event used for generating this instance
  * @param createdAt - Timestamp of event creation
  * @param creatorId - Creator of the event
  * @param description - Description of the event
  * @param endDate - End date
  * @param endTime - End Time
+ * @param images -Event Flyer
+ * @param isBaseRecurringEvent - Is the event a true recurring event that is used for generating new instances
  * @param isPublic - Is the event public
+ * @param isRecurringEventException - Is the event an exception to the recurring pattern it was following
  * @param isRegisterable - Is the event Registrable
  * @param latitude - Latitude
  * @param location - Location of the event
  * @param longitude - Longitude
  * @param organization - Organization
  * @param recurrance - Periodicity of recurrance of the event
+ * @param recurrenceRuleId - Id of the recurrence rule document containing the recurrence pattern for the event
  * @param recurring - Is the event recurring
  * @param startDate - Start Date
  * @param startTime - Start Time
@@ -78,6 +84,16 @@ const eventSchema = new Schema(
     attendees: {
       type: String,
       required: false,
+    },
+    images: {
+      type: [String],
+      required: false,
+      validate: {
+        validator: function (images: string[]): boolean {
+          return images.length <= 5;
+        },
+        message: "Up to 5 images are allowed.",
+      },
     },
     location: {
       type: String,

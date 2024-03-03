@@ -6,12 +6,12 @@ import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestPostType =
-  | (InterfacePost & Document<any, any, InterfacePost>)
-  | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (InterfacePost & Document<any, any, InterfacePost>) | null;
 
 export type TestCommentType =
-  | (InterfaceComment & Document<any, any, InterfaceComment>)
-  | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (InterfaceComment & Document<any, any, InterfaceComment>) | null;
 
 export const createTestPost = async (
   pinned = false,

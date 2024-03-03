@@ -30,6 +30,8 @@ const config: CodegenConfig = {
           ActionItemCategory:
             "../models/ActionItemCategory#InterfaceActionItemCategory",
 
+          Advertisement: "../models/Advertisement#InterfaceAdvertisement",
+
           AgendaCategory: "../models/AgendaCategory#InterfaceAgendaCategory",
 
           CheckIn: "../models/CheckIn#InterfaceCheckIn",

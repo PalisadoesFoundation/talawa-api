@@ -92,6 +92,7 @@ export const inputs = gql`
     recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
+    images: [String]
     location: String
     latitude: Latitude
     longitude: Longitude
@@ -337,6 +338,7 @@ export const inputs = gql`
     location: String
     latitude: Latitude
     longitude: Longitude
+    images: [String]
     allDay: Boolean
     startTime: Time
     endTime: Time
@@ -364,7 +366,7 @@ export const inputs = gql`
   input UpdateAdvertisementInput {
     _id: ID!
     name: String
-    link: String
+    mediaFile: String
     type: AdvertisementType
     startDate: Date
     endDate: Date
@@ -493,5 +495,14 @@ export const inputs = gql`
     title: String
     imageUrl: String
     videoUrl: String
+  }
+
+  input CreateAdvertisementInput {
+    endDate: Date!
+    name: String!
+    organizationId: ID!
+    startDate: Date!
+    type: AdvertisementType!
+    mediaFile: String!
   }
 `;
