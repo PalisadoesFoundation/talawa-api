@@ -571,6 +571,7 @@ export type Event = {
   endDate?: Maybe<Scalars['Date']['output']>;
   endTime?: Maybe<Scalars['Time']['output']>;
   feedback: Array<Feedback>;
+  images?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   isPublic: Scalars['Boolean']['output'];
   isRegisterable: Scalars['Boolean']['output'];
   latitude?: Maybe<Scalars['Latitude']['output']>;
@@ -615,6 +616,7 @@ export type EventInput = {
   description: Scalars['String']['input'];
   endDate?: InputMaybe<Scalars['Date']['input']>;
   endTime?: InputMaybe<Scalars['Time']['input']>;
+  images?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   isPublic: Scalars['Boolean']['input'];
   isRegisterable: Scalars['Boolean']['input'];
   latitude?: InputMaybe<Scalars['Latitude']['input']>;
@@ -2310,6 +2312,7 @@ export type UpdateEventInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   endDate?: InputMaybe<Scalars['Date']['input']>;
   endTime?: InputMaybe<Scalars['Time']['input']>;
+  images?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   isPublic?: InputMaybe<Scalars['Boolean']['input']>;
   isRecurringEventException?: InputMaybe<Scalars['Boolean']['input']>;
   isRegisterable?: InputMaybe<Scalars['Boolean']['input']>;
@@ -3272,6 +3275,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   endDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   endTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   feedback?: Resolver<Array<ResolversTypes['Feedback']>, ParentType, ContextType>;
+  images?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isRegisterable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Latitude']>, ParentType, ContextType>;

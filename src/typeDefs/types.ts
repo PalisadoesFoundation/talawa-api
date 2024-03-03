@@ -185,6 +185,7 @@ export const types = gql`
     description: String!
     startDate: Date!
     endDate: Date
+    images: [String]
     startTime: Time
     endTime: Time
     allDay: Boolean!

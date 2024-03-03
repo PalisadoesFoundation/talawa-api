@@ -34,6 +34,10 @@ let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
+vi.mock("../../utilities/uploadEncodedImage", () => ({
+  uploadEncodedImage: vi.fn(),
+}));
+
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
@@ -130,6 +134,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startTime: "",
           title: "",
           recurrance: "DAILY",
+          images: null,
         },
       };
 
@@ -170,6 +175,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startDate: "",
           startTime: "",
           title: "",
+          images: ["image_url_1", "image_url_2", "image_url_3", "image_url_4"],
           recurrance: "ONCE",
         },
       };
@@ -318,6 +324,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate,
         startTime: startDate.toUTCString(),
         title: "newTitle",
+        images: ["image_url_1", "image_url_2", "image_url_3", "image_url_4"],
         recurrance: "WEEKLY",
       },
     };
@@ -421,6 +428,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         longitude: 1,
         location: "newLocation",
         recurring: true,
+        images: ["image_url_1", "image_url_2", "image_url_3", "image_url_4"],
         startDate,
         startTime: startDate.toUTCString(),
         endDate,
@@ -1014,6 +1022,13 @@ describe("Check for validation conditions", () => {
           recurring: false,
           startDate: "Tue Feb 14 2023",
           startTime: "",
+          images: [
+            "image_url_1",
+            "image_url_2",
+            "image_url_3",
+            "image_url_4",
+            "image_url_5",
+          ],
           title:
             "AfGtN9o7IJXH9Xr5P4CcKTWMVWKOOHTldleLrWfZcThgoX5scPE5o0jARvtVA8VhneyxXquyhWb5nluW2jtP0Ry1zIOUFYfJ6BUXvpo4vCw4GVleGBnoKwkFLp5oW9L8OsEIrjVtYBwaOtXZrkTEBySZ1prr0vFcmrSoCqrCTaChNOxL3tDoHK6h44ChFvgmoVYMSq3IzJohKtbBn68D9NfEVMEtoimkGarUnVBAOsGkKv0mIBJaCl2pnR8Xwq1cG1",
           recurrance: "DAILY",
@@ -1061,6 +1076,13 @@ describe("Check for validation conditions", () => {
           recurring: false,
           startDate: "Tue Feb 14 2023",
           startTime: "",
+          images: [
+            "image_url_1",
+            "image_url_2",
+            "image_url_3",
+            "image_url_4",
+            "image_url_5",
+          ],
           title: "Random",
           recurrance: "DAILY",
         },
@@ -1106,6 +1128,13 @@ describe("Check for validation conditions", () => {
           recurring: false,
           startDate: "Tue Feb 14 2023",
           startTime: "",
+          images: [
+            "image_url_1",
+            "image_url_2",
+            "image_url_3",
+            "image_url_4",
+            "image_url_5",
+          ],
           title: "Random",
           recurrance: "DAILY",
         },
@@ -1152,6 +1181,13 @@ describe("Check for validation conditions", () => {
           startDate: "Tue Feb 14 2023",
           startTime: "",
           title: "Random",
+          images: [
+            "image_url_1.jpg",
+            "image_url_2.jpg",
+            "image_url_3.jpg",
+            "image_url_4.jpg",
+            "image_url_5.jpg",
+          ],
           recurrance: "DAILY",
         },
       };
