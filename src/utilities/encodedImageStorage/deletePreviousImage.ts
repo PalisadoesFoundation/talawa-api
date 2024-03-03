@@ -5,8 +5,11 @@ import { EncodedImage } from "../../models/EncodedImage";
 export const deletePreviousImage = async (
   imageToBeDeletedPath: string,
 ): Promise<void> => {
+  if (!imageToBeDeletedPath) {
+    throw new Error("imageToBeDeletedPath is null or undefined");
+  }
   const imageToBeDeleted = await EncodedImage.findOne({
-    fileName: imageToBeDeletedPath!,
+    fileName: imageToBeDeletedPath,
   });
 
   if (imageToBeDeleted?.numberOfUses === 1) {

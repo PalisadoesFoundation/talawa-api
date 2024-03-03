@@ -5,7 +5,7 @@ import {
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Organization } from "../../models";
-import { adminCheck } from "../../utilities";
+import { adminCheck, deletePreviousImage } from "../../utilities";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
@@ -60,6 +60,9 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
     }
 
     // Sets image field of organization to null and returns the updated organization.
+    if (organization?.image) {
+      await deletePreviousImage(organization?.image);
+    }
     const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: organization._id,

@@ -173,7 +173,9 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
   });
 
   it("should delete the Organizatin Image and return the updated Organization object", async () => {
-    const utilities = await import("../../../src/utilities");
+    const utilities = await import(
+      "../../../src/utilities/encodedImageStorage/deletePreviousImage"
+    );
 
     const deleteImageSpy = vi
       .spyOn(utilities, "deletePreviousImage")
