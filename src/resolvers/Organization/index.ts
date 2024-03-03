@@ -10,7 +10,6 @@ import { members } from "./members";
 import { membershipRequests } from "./membershipRequests";
 import { pinnedPosts } from "./pinnedPosts";
 import { posts } from "./posts";
-
 import { advertisements } from "./advertisements";
 
 import { venues } from "./venues";
