@@ -47,6 +47,18 @@ export const COMMENT_NOT_FOUND_ERROR = {
   MESSAGE: "comment.notFound",
   PARAM: "comment",
 };
+export const COMMUNITY_NOT_FOUND_ERROR = {
+  DESC: "Community not found",
+  CODE: "community.notFound",
+  MESSAGE: "community.notFound",
+  PARAM: "community",
+};
+export const COMMUNITY_LOGO_NOT_MISSING_IN_ARGS = {
+  DESC: "Community logo was not provided",
+  CODE: "community.logoMissing",
+  MESSAGE: "community.logoMissing",
+  PARAM: "community",
+};
 export const ERROR_IN_SENDING_MAIL = "Error in sending mail";
 export const EVENT_NOT_FOUND_ERROR = {
   DESC: "Event not found",
@@ -631,3 +643,8 @@ export enum EventVolunteerResponse {
   YES = "YES",
   NO = "NO",
 }
+
+export const DEFAULT_COMMUNITY = {
+  name: "Palisadoes Foundation",
+  description: "An open source application by Palisadoes Foundation volunteers",
+};

@@ -217,6 +217,8 @@ export const mutations = gql`
 
     removeUserImage: User! @auth
 
+    resetCommunity(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
+
     revokeRefreshTokenForUser: Boolean! @auth
 
     saveFcmToken(token: String): Boolean! @auth
@@ -262,6 +264,12 @@ export const mutations = gql`
     updateAdvertisement(
       input: UpdateAdvertisementInput!
     ): UpdateAdvertisementPayload @auth
+
+    updateCommunity(
+      id: ID!
+      data: UpdateCommunityInput
+      file: String
+    ): Community! @auth @role(requires: SUPERADMIN)
 
     updateEvent(
       id: ID!

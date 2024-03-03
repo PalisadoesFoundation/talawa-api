@@ -18,6 +18,8 @@
   "chat.notFound": "Chat no encontrado",
   "email.alreadyExists": "La dirección de correo electrónico ya existe",
   "comment.notFound": "Comentario no encontrado",
+  "community.logoMissing": "El logo de la comunidad no ha sido proporcionado",
+  "community.notFound": "Comunidad no encontrada",
   "post.notFound": "Publicación no encontrada",
   "group.notFound": "Grupo no encontrado",
   "invalid.fileType": "Tipo de archivo no válido",

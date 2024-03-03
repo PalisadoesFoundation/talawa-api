@@ -4,6 +4,7 @@ export * from "./Advertisement";
 export * from "./AgendaCategory";
 export * from "./CheckIn";
 export * from "./Comment";
+export * from "./Community";
 export * from "./DirectChat";
 export * from "./DirectChatMessage";
 export * from "./Donation";
