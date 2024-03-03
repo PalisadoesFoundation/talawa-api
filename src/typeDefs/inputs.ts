@@ -80,6 +80,14 @@ export const inputs = gql`
     name_of_user_starts_with: String
   }
 
+  input EditVenueInput {
+    id: ID!
+    capacity: Int
+    name: String
+    description: String
+    file: String
+  }
+
   input EventInput {
     title: String!
     description: String!
@@ -491,5 +499,13 @@ export const inputs = gql`
     startDate: Date!
     type: AdvertisementType!
     mediaFile: String!
+  }
+
+  input VenueInput {
+    organizationId: ID!
+    name: String!
+    capacity: Int!
+    description: String
+    file: String
   }
 `;
