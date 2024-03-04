@@ -488,6 +488,14 @@ input DonationWhereInput {
   name_of_user_starts_with: String
 }
 
+input EditVenueInput {
+  capacity: Int
+  description: String
+  file: String
+  id: ID!
+  name: String
+}
+
 enum EducationGrade {
   GRADE_1
   GRADE_2
@@ -533,6 +541,7 @@ type Event {
   endDate: Date
   endTime: Time
   feedback: [Feedback!]!
+  images: [String]
   isPublic: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
@@ -571,6 +580,7 @@ input EventInput {
   description: String!
   endDate: Date
   endTime: Time
+  images: [String]
   isPublic: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
@@ -940,9 +950,12 @@ type Mutation {
   createSampleOrganization: Boolean!
   createUserFamily(data: createUserFamilyInput!): UserFamily!
   createUserTag(input: CreateUserTagInput!): UserTag
+  createVenue(data: VenueInput!): Venue
   deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
   deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
+  deleteVenue(id: ID!): Venue
+  editVenue(data: EditVenueInput!): Venue
   forgotPassword(data: ForgotPasswordData!): Boolean!
   inviteEventAttendee(data: EventAttendeeInput!): EventAttendee!
   joinPublicOrganization(organizationId: ID!): User!
@@ -962,7 +975,7 @@ type Mutation {
   removeAdmin(data: UserAndOrganizationInput!): User!
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
-  removeEvent(id: ID!): Event!
+  removeEvent(id: ID!, recurringEventDeleteType: RecurringEventMutationType): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
   removeFund(id: ID!): Fund!
@@ -997,7 +1010,7 @@ type Mutation {
   updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
-  updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventUpdateType): Event!
+  updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
   updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
@@ -1040,6 +1053,7 @@ type Organization {
   updatedAt: DateTime!
   userRegistrationRequired: Boolean!
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
+  venues: [Venue]
   visibleInSearch: Boolean!
 }
 
@@ -1263,7 +1277,7 @@ input PostWhereInput {
 type PostsConnection {
   edges: [PostEdge!]!
   pageInfo: DefaultConnectionPageInfo!
-  totalCount: PositiveInt
+  totalCount: Int
 }
 
 type Query {
@@ -1273,7 +1287,7 @@ type Query {
   actionItemsByEvent(eventId: ID!): [ActionItem]
   actionItemsByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
-  advertisementsConnection: [Advertisement]
+  advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
@@ -1310,6 +1324,7 @@ type Query {
   userLanguage(userId: ID!): String
   users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, userType: String, where: UserWhereInput): [User]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]!
+  venue(id: ID!): Venue
 }
 
 input RecaptchaVerification {
@@ -1330,7 +1345,7 @@ input RecurrenceRuleInput {
   weekDays: [WeekDays]
 }
 
-enum RecurringEventUpdateType {
+enum RecurringEventMutationType {
   AllInstances
   ThisAndFollowingInstances
   ThisInstance
@@ -1433,6 +1448,7 @@ input UpdateEventInput {
   description: String
   endDate: Date
   endTime: Time
+  images: [String]
   isPublic: Boolean
   isRecurringEventException: Boolean
   isRegisterable: Boolean
@@ -1704,6 +1720,23 @@ type UsersConnection {
 type UsersConnectionEdge {
   cursor: String!
   node: User!
+}
+
+type Venue {
+  _id: ID!
+  capacity: Int!
+  description: String
+  imageUrl: URL
+  name: String!
+  organization: Organization!
+}
+
+input VenueInput {
+  capacity: Int!
+  description: String
+  file: String
+  name: String!
+  organizationId: ID!
 }
 
 enum WeekDays {
