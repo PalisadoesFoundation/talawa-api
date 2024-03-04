@@ -5,7 +5,7 @@ import type { Document } from "mongoose";
 import { encryptEmail } from "../../src/utilities/encryptionModule";
 
 export type TestUserType =
-  // eslint-disable-next-line
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
 export const createTestUser = async (): Promise<TestUserType> => {
@@ -15,6 +15,7 @@ export const createTestUser = async (): Promise<TestUserType> => {
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
     appLanguageCode: "en",
+    userType: "ADMIN",
   });
 
   return testUser;

@@ -132,11 +132,17 @@ export const mutations = gql`
 
     createSampleOrganization: Boolean! @auth
 
+    createVenue(data: VenueInput!): Venue @auth
+
     deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
 
     deleteAgendaCategory(id: ID!): ID!
 
     deleteDonationById(id: ID!): DeletePayload!
+
+    deleteVenue(id: ID!): Venue @auth
+
+    editVenue(data: EditVenueInput!): Venue @auth
 
     forgotPassword(data: ForgotPasswordData!): Boolean!
 
@@ -185,7 +191,10 @@ export const mutations = gql`
 
     removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
 
-    removeEvent(id: ID!): Event! @auth
+    removeEvent(
+      id: ID!
+      recurringEventDeleteType: RecurringEventMutationType
+    ): Event! @auth
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
 
@@ -264,7 +273,7 @@ export const mutations = gql`
       id: ID!
       data: UpdateEventInput
       recurrenceRuleData: RecurrenceRuleInput
-      recurringEventUpdateType: RecurringEventUpdateType
+      recurringEventUpdateType: RecurringEventMutationType
     ): Event! @auth
 
     updateEventVolunteer(
