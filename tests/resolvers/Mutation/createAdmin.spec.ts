@@ -220,7 +220,6 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       {
         new: true,
       },
-
     );
 
     if (updatedOrganization !== null) {
