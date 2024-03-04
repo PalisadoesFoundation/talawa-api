@@ -7,7 +7,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![GitHub stars](https://img.shields.io/github/stars/PalisadoesFoundation/talawa-api.svg?style=social&label=Star&maxAge=2592000)](https://github.com/PalisadoesFoundation/talawa-api)
 [![GitHub forks](https://img.shields.io/github/forks/PalisadoesFoundation/talawa-api.svg?style=social&label=Fork&maxAge=2592000)](https://github.com/PalisadoesFoundation/talawa-api)
-[![codecov](https://codecov.io/gh/PalisadoesFoundation/talawa-api/branch/develop/graph/badge.svg?token=CECBQTAOKM)](https://codecov.io/gh/PalisadoesFoundation/talawa-api)
+[![codecov](https://codecov.io/gh/PalisadoesFoundation/talawa-api/graph/badge.svg?token=CECBQTAOKM)](https://codecov.io/gh/PalisadoesFoundation/talawa-api)
 
 Talawa is a modular open source project to manage group activities of both non-profit organizations and businesses.
 
@@ -48,7 +48,7 @@ Core features include:
 
 ## Installation
 
-[Follow this guide](./INSTALLATION.md)
+[Follow this guide](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/INSTALLATION.md)
 
 ## Image Upload
 
