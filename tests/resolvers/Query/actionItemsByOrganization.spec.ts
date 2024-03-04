@@ -76,7 +76,9 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
 
     const actionItemsByOrganizationInfo = await ActionItem.find({
       actionItemCategoryId: { $in: actionItemCategoriesIds },
-    }).lean();
+    })
+      .sort({ created: -1 })
+      .lean();
 
     expect(actionItemsByOrganizationPayload).toEqual(
       actionItemsByOrganizationInfo,

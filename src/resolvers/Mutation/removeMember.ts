@@ -77,7 +77,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   }
 
   const userIsOrganizationMember = organization?.members.some((member) =>
-    Types.ObjectId.createFromHexString(member).equals(user._id),
+    new Types.ObjectId(member).equals(user._id),
   );
 
   if (!userIsOrganizationMember) {

@@ -78,7 +78,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     })
       .limit(1)
       .skip(1)
-      .populate("creator", "-password")
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 

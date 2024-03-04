@@ -139,6 +139,7 @@ describe("generatePostData function", () => {
       await Promise.all(pluginPromises!);
 
       const plugins = await Plugin.find();
+      console.log("Number of plugins created:", plugins.length); // add this line
       expect(plugins.length).toBe(numberOfPlugins);
 
       plugins.forEach((plugin) => {

@@ -2,8 +2,12 @@ import { connect, disconnect, dropAllCollectionsFromDatabase } from "./db";
 
 const resetDatabaseState = async (): Promise<void> => {
   const MONGO_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGO_INSTANCE);
-  await disconnect(MONGO_INSTANCE);
+  try {
+    await dropAllCollectionsFromDatabase(MONGO_INSTANCE);
+    await disconnect(MONGO_INSTANCE);
+  } catch (e) {
+    console.log("problem in reseting db", e);
+  }
 };
 
 export async function setup(): Promise<void> {

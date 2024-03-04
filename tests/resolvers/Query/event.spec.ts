@@ -8,18 +8,15 @@ import { Event } from "../../../src/models";
 
 import type { QueryEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-// import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
-// let testUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const resultArray = await createTestEvent();
-  // testUser = resultArray[0];
   testEvent = resultArray[2];
 });
 
@@ -49,10 +46,7 @@ describe("resolvers -> Query -> event", () => {
 
     const event = await Event.findOne({
       _id: testEvent?._id,
-    })
-      .populate("creator", "-password")
-      .populate("admins", "-password")
-      .lean();
+    }).lean();
 
     expect(eventPayload).toEqual(event);
   });

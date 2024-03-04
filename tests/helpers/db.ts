@@ -5,9 +5,12 @@ import mongoose from "mongoose";
 export async function connect(
   dbName = "TALAWA_API_TEST_DATABASE",
 ): Promise<typeof mongoose> {
-  return await mongoose.connect(process.env.MONGO_DB_URL as string, {
+  console.log("before tests...");
+  const client = await mongoose.connect(process.env.MONGO_DB_URL as string, {
     dbName,
   });
+  console.log("after connect");
+  return client;
 }
 
 export async function dropAllCollectionsFromDatabase(

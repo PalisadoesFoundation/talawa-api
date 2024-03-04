@@ -70,7 +70,9 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
 
   const userIsBlockedFromOrganization = organization.blockedUsers.some(
     (blockedUser) =>
-      Types.ObjectId.createFromHexString(blockedUser.toString).equals(user._id),
+      Types.ObjectId.createFromHexString(blockedUser.toString()).equals(
+        user._id,
+      ),
   );
 
   // checks if user with _id === args.userId is blocked by organzation with _id == args.organizationId

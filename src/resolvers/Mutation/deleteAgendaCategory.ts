@@ -47,8 +47,8 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
     }
 
     const currentOrg = await AgendaCategoryModel.findById(agendaCategory._id)
-      .populate("organization")
-      .select("organization")
+      .populate("organizationId")
+      .select("organizationId")
       .lean();
 
     const currentUserIsOrgAdmin = currentUser.adminFor.some(

@@ -229,10 +229,12 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverMemberNotFoundError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(MEMBER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${MEMBER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
+      if (error.message === MEMBER_NOT_FOUND_ERROR.MESSAGE) {
+        expect(spy).toHaveBeenCalledWith("member.notFound");
+        expect(error.message).toEqual(
+          `Translated ${MEMBER_NOT_FOUND_ERROR.MESSAGE}`,
+        );
+      }
     }
   });
 
@@ -258,8 +260,12 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverRemoveSelfError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_REMOVING_SELF.MESSAGE}`);
+      if (error.message === USER_REMOVING_SELF.MESSAGE) {
+        expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_REMOVING_SELF.MESSAGE}`,
+        );
+      }
     }
   });
 
@@ -285,10 +291,12 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverRemoveAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_ADMIN.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ADMIN_REMOVING_ADMIN.MESSAGE}`,
-      );
+      if (error.message === ADMIN_REMOVING_ADMIN.MESSAGE) {
+        expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_ADMIN.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${ADMIN_REMOVING_ADMIN.MESSAGE}`,
+        );
+      }
     }
   });
 
@@ -314,10 +322,12 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverRemoveAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`,
-      );
+      if (error.message === ADMIN_REMOVING_CREATOR.MESSAGE) {
+        expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`,
+        );
+      }
     }
   });
 

@@ -65,7 +65,7 @@ afterAll(async () => {
 describe("resolvers -> Query -> postsByOrganizationConnection", () => {
   it(`when no organization exists with _id === args.id`, async () => {
     const args: QueryPostsByOrganizationConnectionArgs = {
-      id: Types.ObjectId().toString(),
+      id: new Types.ObjectId().toString(),
       first: 1,
       skip: 1,
       where: null,

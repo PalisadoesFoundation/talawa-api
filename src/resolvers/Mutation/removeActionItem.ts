@@ -98,7 +98,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     // Checks if the currUser is an admin of the event
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
-        admin.toString() === context.userID.toString() ||
+        admin.toString() === context.userId.toString() ||
         Types.ObjectId.createFromHexString(admin.toString()).equals(
           Types.ObjectId.createFromHexString(context.userId.toString()),
         ),

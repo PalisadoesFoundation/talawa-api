@@ -119,7 +119,7 @@ describe("resolvers -> Query -> posts", () => {
       organization: testOrganization?._id,
     })
       .sort({
-        _id: 1,
+        _id: -1,
       })
       .populate("organization")
       .populate("likedBy")

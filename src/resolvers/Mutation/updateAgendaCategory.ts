@@ -57,8 +57,8 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
     const currentOrg = await AgendaCategoryModel.findById(
       existingAgendaCategory._id,
     )
-      .populate("organization")
-      .select("organization")
+      .populate("organizationId")
+      .select("organizationId")
       .lean();
 
     const currentUserIsOrgAdmin = currentUser.adminFor.some(

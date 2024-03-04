@@ -59,7 +59,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
       .sort({
         _id: 1,
       })
-      .populate("creator", "-password")
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
