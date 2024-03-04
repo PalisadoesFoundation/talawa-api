@@ -33,12 +33,14 @@ import {
 import { requestContext } from "../../../src/libraries";
 import { ApplicationError } from "../../../src/libraries/errors";
 import type { InterfaceAdvertisement } from "../../../src/models";
+import { createTestUser } from "../../helpers/user";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testSuperAdmin: TestSuperAdminType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testAdvertisement: TestAdvertisementType;
+let testAdmin: TestUserType;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
@@ -51,6 +53,7 @@ beforeAll(async () => {
   testOrganization = temp[1];
   testSuperAdmin = await createTestSuperAdmin();
   testAdvertisement = await createTestAdvertisement();
+  testAdmin = await createTestUser();
 });
 
 afterAll(async () => {
@@ -84,6 +87,30 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
+  });
+
+  it(`throws NotAuthorizedError if ADDMIN does not belongs to the organization`, async () => {
+    // deleting
+    const { deleteAdvertisement } = await import(
+      "../../../src/resolvers/Mutation/deleteAdvertisement"
+    );
+    const context = {
+      userId: testAdmin?._id,
+    };
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message: string) => `Translated ${message}`);
+
+    try {
+      await deleteAdvertisement?.({}, { id: testAdvertisement._id }, context);
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
