@@ -53,6 +53,9 @@ export const queries = gql`
     getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
 
     getEventAttendee(userId: ID!, eventId: ID!): EventAttendee
+    getFundById(id: ID!): Fund!
+    getFundraisingCampaignById(id: ID!): FundraisingCampaign!
+    getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
 
     getDonationByOrgId(orgId: ID!): [Donation]
 
@@ -66,7 +69,12 @@ export const queries = gql`
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]
-    getAdvertisements: [Advertisement]
+    advertisementsConnection(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): AdvertisementsConnection
 
     isSampleOrganization(id: ID!): Boolean!
     hasSubmittedFeedback(userId: ID!, eventId: ID!): Boolean
@@ -98,16 +106,6 @@ export const queries = gql`
 
     post(id: ID!): Post
 
-    postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
-
-    postsByOrganizationConnection(
-      id: ID!
-      where: PostWhereInput
-      first: Int
-      skip: Int
-      orderBy: PostOrderByInput
-    ): PostConnection
-
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
 
     registrantsByEvent(id: ID!): [User]
@@ -131,5 +129,7 @@ export const queries = gql`
       skip: Int
       orderBy: UserOrderByInput
     ): [User]! @auth
+
+    venue(id: ID!): Venue
   }
 `;

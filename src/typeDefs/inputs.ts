@@ -80,6 +80,14 @@ export const inputs = gql`
     name_of_user_starts_with: String
   }
 
+  input EditVenueInput {
+    id: ID!
+    capacity: Int
+    name: String
+    description: String
+    file: String
+  }
+
   input EventInput {
     title: String!
     description: String!
@@ -92,6 +100,7 @@ export const inputs = gql`
     recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
+    images: [String]
     location: String
     latitude: Latitude
     longitude: Longitude
@@ -160,6 +169,22 @@ export const inputs = gql`
     taxDeductible: Boolean!
     isDefault: Boolean!
     isArchived: Boolean!
+  }
+  input FundCampaignInput {
+    name: String!
+    fundId: ID!
+    startDate: Date!
+    endDate: Date!
+    fundingGoal: Float!
+    currency: Currency!
+  }
+  input FundCampaignPledgeInput {
+    campaignId: ID!
+    userIds: [ID!]!
+    startDate: Date
+    endDate: Date
+    amount: Float!
+    currency: Currency!
   }
 
   input LanguageInput {
@@ -299,6 +324,7 @@ export const inputs = gql`
     title: String
     description: String
     recurring: Boolean
+    isRecurringEventException: Boolean
     recurrance: Recurrance
     isPublic: Boolean
     isRegisterable: Boolean
@@ -307,6 +333,7 @@ export const inputs = gql`
     location: String
     latitude: Latitude
     longitude: Longitude
+    images: [String]
     allDay: Boolean
     startTime: Time
     endTime: Time
@@ -317,25 +344,24 @@ export const inputs = gql`
     isDefault: Boolean
     isArchived: Boolean
   }
-
-  # Implements CursorPaginationInput
-  input UsersConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
+  input UpdateFundCampaignInput {
+    name: String
+    startDate: Date
+    endDate: Date
+    fundingGoal: Float
+    currency: Currency
   }
-
-  # Implements CursorPaginationInput
-  input UserTagsConnectionInput {
-    cursor: String
-    direction: PaginationDirection!
-    limit: PositiveInt!
+  input UpdateFundCampaignPledgeInput {
+    startDate: Date
+    endDate: Date
+    amount: Float
+    currency: Currency
   }
 
   input UpdateAdvertisementInput {
     _id: ID!
     name: String
-    link: String
+    mediaFile: String
     type: AdvertisementType
     startDate: Date
     endDate: Date
@@ -464,5 +490,22 @@ export const inputs = gql`
     title: String
     imageUrl: String
     videoUrl: String
+  }
+
+  input CreateAdvertisementInput {
+    endDate: Date!
+    name: String!
+    organizationId: ID!
+    startDate: Date!
+    type: AdvertisementType!
+    mediaFile: String!
+  }
+
+  input VenueInput {
+    organizationId: ID!
+    name: String!
+    capacity: Int!
+    description: String
+    file: String
   }
 `;

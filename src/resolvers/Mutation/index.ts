@@ -28,6 +28,7 @@ import { createDonation } from "./createDonation";
 import { createEvent } from "./createEvent";
 import { createEventVolunteer } from "./createEventVolunteer";
 import { createFund } from "./createFund";
+import { createFundraisingCampaign } from "./createFundraisingCampaign";
 import { createGroupChat } from "./createGroupChat";
 import { createMember } from "./createMember";
 import { createMessageChat } from "./createMessageChat";
@@ -37,7 +38,9 @@ import { createPost } from "./createPost";
 import { createSampleOrganization } from "./createSampleOrganization";
 import { createUserFamily } from "./createUserFamily";
 import { createUserTag } from "./createUserTag";
-import { deleteAdvertisementById } from "./deleteAdvertisementById";
+import { createVenue } from "./createVenue";
+import { deleteVenue } from "./deleteVenue";
+import { editVenue } from "./editVenue";
 import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
@@ -57,12 +60,12 @@ import { rejectAdmin } from "./rejectAdmin";
 import { rejectMembershipRequest } from "./rejectMembershipRequest";
 import { removeActionItem } from "./removeActionItem";
 import { removeAdmin } from "./removeAdmin";
-import { removeAdvertisement } from "./removeAdvertisement";
 import { removeComment } from "./removeComment";
 import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
 import { removeEventVolunteer } from "./removeEventVolunteer";
+import { removeFund } from "./removeFund";
 import { removeGroupChat } from "./removeGroupChat";
 import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
@@ -104,6 +107,7 @@ import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
+import { deleteAdvertisement } from "./deleteAdvertisement";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -138,6 +142,7 @@ export const Mutation: MutationResolvers = {
   createDonation,
   createEvent,
   createFund,
+  createFundraisingCampaign,
   createGroupChat,
   createMessageChat,
   createOrganization,
@@ -146,8 +151,11 @@ export const Mutation: MutationResolvers = {
   createSampleOrganization,
   createActionItemCategory,
   createUserTag,
+  createVenue,
   deleteDonationById,
-  deleteAdvertisementById,
+  deleteAdvertisement,
+  deleteVenue,
+  editVenue,
   deleteAgendaCategory,
   forgotPassword,
   inviteEventAttendee,
@@ -172,7 +180,7 @@ export const Mutation: MutationResolvers = {
   removeEvent,
   removeEventAttendee,
   removeEventVolunteer,
-  removeAdvertisement,
+  removeFund,
   removeGroupChat,
   removeMember,
   removeOrganization,
