@@ -1,8 +1,9 @@
 import {
-  MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
+  MEMBERSHIP_REQUEST_ALREADY_EXISTS,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_ALREADY_MEMBER_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -16,8 +17,8 @@ import { Types } from "mongoose";
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
- * 1. If the user exists.
- * 2. If the organization exists
+ * 1. If the organization exists
+ * 2. If the user exists.
  * 3. If the membership request already exists.
  * @returns Membership request.
  */
@@ -62,6 +63,19 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       );
     }
 
+    // Checks if the user is already a member of the organization
+    const isMember = organization.members.some((member) =>
+      Types.ObjectId(member).equals(context.userId),
+    );
+
+    if (isMember === true) {
+      throw new errors.ConflictError(
+        requestContext.translate(USER_ALREADY_MEMBER_ERROR.MESSAGE),
+        USER_ALREADY_MEMBER_ERROR.CODE,
+        USER_ALREADY_MEMBER_ERROR.PARAM,
+      );
+    }
+
     // Checks if the user is blocked
     const user = await User.findById(context.userId).lean();
     if (
@@ -77,6 +91,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       );
     }
 
+    // Checks if the membership request already exists
     const membershipRequestExists = await MembershipRequest.exists({
       user: context.userId,
       organization: organization._id,
@@ -84,9 +99,9 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
 
     if (membershipRequestExists === true) {
       throw new errors.ConflictError(
-        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
-        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
-        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM,
+        requestContext.translate(MEMBERSHIP_REQUEST_ALREADY_EXISTS.MESSAGE),
+        MEMBERSHIP_REQUEST_ALREADY_EXISTS.CODE,
+        MEMBERSHIP_REQUEST_ALREADY_EXISTS.PARAM,
       );
     }
 
