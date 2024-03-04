@@ -15,7 +15,7 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let testPost: TestPostType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-
+type ErrorType = { message: string };
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const resultsArray = await createTestPost();
@@ -46,8 +46,10 @@ describe("resolvers -> Mutation -> createComment", () => {
       };
 
       await createCommentResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as ErrorType).message).toEqual(
+        POST_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 

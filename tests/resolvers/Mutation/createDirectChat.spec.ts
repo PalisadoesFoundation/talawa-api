@@ -26,7 +26,7 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-
+type ErrorType = { message: string };
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const resultsArray = await createTestUserAndOrganization();
@@ -65,9 +65,11 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         "../../../src/resolvers/Mutation/createDirectChat"
       );
       await createDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as ErrorType).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -92,9 +94,11 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         "../../../src/resolvers/Mutation/createDirectChat"
       );
       await createDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as ErrorType).message).toEqual(
+        USER_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
   it(`creates the directChat and returns it`, async () => {
