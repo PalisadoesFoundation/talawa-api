@@ -67,6 +67,8 @@ export const createTestOrganizationWithAdmin = async (
     },
     {
       $push: {
+        createdOrganizations: testOrganization._id,
+        adminFor: testOrganization._id,
         joinedOrganizations: testOrganization._id,
       },
     },

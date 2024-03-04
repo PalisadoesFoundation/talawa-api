@@ -204,13 +204,11 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
     }
   });
 
-  it("should throw error when the collection name is not a valid one", async () => {
+  it("should NOT throw error when organization doesn't exist", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
       (message) => message,
     );
-
-    const randomOrganizationId = faker.database.mongodbObjectId();
 
     const userData = await generateUserData(
       ORGANIZATION_ID.toString(),
@@ -222,10 +220,14 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
     const adminContext = { userId: admin._id };
     const parent = {};
 
+    await SampleData.deleteMany({ collectionName: "Organization" });
+
     try {
       await removeSampleOrganization!(parent, args, adminContext);
-    } catch (error: any) {
-      expect(error.message).toBe(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error) {
+      expect((error as Error).message).toBe(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 

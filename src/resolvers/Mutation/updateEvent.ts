@@ -45,6 +45,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+
   const currentUserAppProfile = await AppUserProfile.findOne({
     userId: currentUser._id,
   }).lean();
@@ -155,7 +156,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     }
 
     /* c8 ignore stop */
-    return updatedEvent;
+    return updatedEvent as InterfaceEvent;
     /* c8 ignore start */
   } catch (error) {
     if (session) {

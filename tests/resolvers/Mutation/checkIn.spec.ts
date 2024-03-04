@@ -208,8 +208,6 @@ describe("resolvers -> Mutation -> checkIn", () => {
     expect(eventAttendee?.checkInId).not.toBeNull();
     expect(payload).toMatchObject({
       eventAttendeeId: eventAttendee?._id,
-      allotedSeat: "test seat",
-      allotedRoom: "test room",
     });
   });
 

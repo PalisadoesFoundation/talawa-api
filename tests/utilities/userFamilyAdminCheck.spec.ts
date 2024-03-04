@@ -10,12 +10,11 @@ import {
   vi,
 } from "vitest";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../../src/constants";
-import { AppUserProfile, User } from "../../src/models";
+import { AppUserProfile } from "../../src/models";
 import type { InterfaceUserFamily } from "../../src/models/userFamily";
 import { UserFamily } from "../../src/models/userFamily";
 import { connect, disconnect } from "../helpers/db";
 import { createTestUserFunc } from "../helpers/user";
-
 import type {
   TestUserFamilyType,
   TestUserType,
@@ -85,26 +84,13 @@ describe("utilities -> userFamilyAdminCheck", () => {
 
     await expect(
       adminCheck(
-        updatedUser?._id,
+        updatedUser?.userId?.toString() ?? "",
         testUserFamily ?? ({} as InterfaceUserFamily),
       ),
     ).resolves.not.toThrowError();
   });
 
   it("throws no error if user is an admin in that user family but not super admin", async () => {
-    const updatedUser = await User.findOneAndUpdate(
-      {
-        _id: testUser?._id,
-      },
-      {
-        userType: "USER",
-      },
-      {
-        new: true,
-        upsert: true,
-      },
-    );
-
     const updatedUserFamily = await UserFamily.findOneAndUpdate(
       {
         _id: testUserFamily?._id,
@@ -126,7 +112,7 @@ describe("utilities -> userFamilyAdminCheck", () => {
 
     await expect(
       adminCheck(
-        updatedUser?._id,
+        testUser?._id,
         updatedUserFamily ?? ({} as InterfaceUserFamily),
       ),
     ).resolves.not.toThrowError();
