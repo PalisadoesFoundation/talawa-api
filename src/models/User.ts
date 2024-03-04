@@ -25,14 +25,15 @@ export interface InterfaceUser {
     state: string;
   };
   adminApproved: boolean;
-
+  adminFor: PopulatedDoc<InterfaceOrganization & Document>[];
   birthDate: Date;
   createdAt: Date;
-
+  createdEvents: PopulatedDoc<InterfaceEvent & Document>[];
+  createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
   educationGrade: string;
   email: string;
   employmentStatus: string;
-
+  eventAdmin: PopulatedDoc<InterfaceEvent & Document>[];
   firstName: string;
   gender: string;
   image: string | undefined | null;
@@ -47,10 +48,11 @@ export interface InterfaceUser {
     mobile: string;
     work: string;
   };
-
+  pluginCreationAllowed: boolean;
   registeredEvents: PopulatedDoc<InterfaceEvent & Document>[];
   status: string;
-
+  token: string | undefined;
+  tokenVersion: number;
   updatedAt: Date;
   userType: string;
 }
@@ -121,11 +123,27 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-
+    adminFor: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Organization",
+      },
+    ],
     birthDate: {
       type: Date,
     },
-
+    createdOrganizations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Organization",
+      },
+    ],
+    createdEvents: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Event",
+      },
+    ],
     educationGrade: {
       type: String,
       enum: [
@@ -157,7 +175,12 @@ const userSchema = new Schema(
       type: String,
       enum: ["FULL_TIME", "PART_TIME", "UNEMPLOYED", null],
     },
-
+    eventAdmin: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Event",
+      },
+    ],
     firstName: {
       type: String,
       required: true,
@@ -218,7 +241,11 @@ const userSchema = new Schema(
         type: String,
       },
     },
-
+    pluginCreationAllowed: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
     registeredEvents: [
       {
         type: Schema.Types.ObjectId,
@@ -230,6 +257,21 @@ const userSchema = new Schema(
       required: true,
       enum: ["ACTIVE", "BLOCKED", "DELETED"],
       default: "ACTIVE",
+    },
+    token: {
+      type: String,
+      required: false,
+    },
+    tokenVersion: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    userType: {
+      type: String,
+      required: true,
+      enum: ["USER", "ADMIN", "SUPERADMIN", "NON_USER"],
+      default: "USER",
     },
   },
   {

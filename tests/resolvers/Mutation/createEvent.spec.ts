@@ -384,11 +384,13 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["registeredEvents"])
+      .select(["eventAdmin", "createdEvents", "registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -599,11 +601,13 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["registeredEvents"])
+      .select(["eventAdmin", "createdEvents", "registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -706,11 +710,13 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["registeredEvents"])
+      .select(["eventAdmin", "createdEvents", "registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -918,11 +924,13 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["registeredEvents"])
+      .select(["eventAdmin", "createdEvents", "registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );

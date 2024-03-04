@@ -152,10 +152,10 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   try {
     let createdEvent: InterfaceEvent;
 
-    if (args.data?.recurring) {
+    if (args.data.recurring) {
       // create recurring event instances
       createdEvent = await createRecurringEvent(
-        args, //
+        args,
         currentUser?._id.toString(),
         organization?._id.toString(),
         session,

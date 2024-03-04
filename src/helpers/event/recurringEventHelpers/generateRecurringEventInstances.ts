@@ -1,8 +1,8 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
-import { AppUserProfile, Event, EventAttendee, User } from "../../../models";
-import { cacheEvents } from "../../../services/EventCache/cacheEvents";
+import { Event, EventAttendee, User } from "../../../models";
 import type { EventInput } from "../../../types/generatedGraphQLTypes";
+import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 
 /**
  * This function generates the recurring event instances.
@@ -21,22 +21,24 @@ import type { EventInput } from "../../../types/generatedGraphQLTypes";
  */
 
 interface InterfaceGenerateRecurringInstances {
-  data: EventInput;
+  data: InterfaceRecurringEvent;
   baseRecurringEventId: string;
   recurrenceRuleId: string;
   recurringInstanceDates: Date[];
   creatorId: string;
   organizationId: string;
+  status?: string;
   session: mongoose.ClientSession;
 }
 
-interface InterfaceRecurringEvent extends EventInput {
-  isBaseRecurringEvent: boolean;
-  recurrenceRuleId: string;
-  baseRecurringEventId: string;
-  creatorId: string;
-  admins: string[];
-  organization: string;
+export interface InterfaceRecurringEvent extends EventInput {
+  isBaseRecurringEvent?: boolean;
+  recurrenceRuleId?: string;
+  baseRecurringEventId?: string;
+  creatorId?: string;
+  admins?: string[];
+  organization?: string;
+  status?: string;
 }
 
 export const generateRecurringEventInstances = async ({
@@ -49,7 +51,7 @@ export const generateRecurringEventInstances = async ({
   session,
 }: InterfaceGenerateRecurringInstances): Promise<InterfaceEvent> => {
   const recurringInstances: InterfaceRecurringEvent[] = [];
-  recurringInstanceDates.map((date) => {
+  recurringInstanceDates.map((date): void => {
     const createdEventInstance = {
       ...data,
       startDate: date,
@@ -59,8 +61,9 @@ export const generateRecurringEventInstances = async ({
       recurrenceRuleId,
       baseRecurringEventId,
       creatorId,
-      admins: [creatorId],
+      admins: data.admins && data.admins.length ? data.admins : [creatorId],
       organization: organizationId,
+      status: data.status,
     };
 
     recurringInstances.push(createdEventInstance);
@@ -91,21 +94,12 @@ export const generateRecurringEventInstances = async ({
       { _id: creatorId },
       {
         $push: {
+          eventAdmin: { $each: eventInstanceIds },
+          createdEvents: { $each: eventInstanceIds },
           registeredEvents: { $each: eventInstanceIds },
         },
       },
       { session },
-    ),
-    AppUserProfile.updateOne(
-      {
-        userId: creatorId,
-      },
-      {
-        $push: {
-          eventAdmin: { $each: eventInstanceIds },
-          createdEvents: { $each: eventInstanceIds },
-        },
-      },
     ),
   ]);
 

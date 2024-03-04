@@ -164,5 +164,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     {
       new: true,
     },
-  ).lean();
+  )
+    .select(["-password"])
+    .lean();
 };
