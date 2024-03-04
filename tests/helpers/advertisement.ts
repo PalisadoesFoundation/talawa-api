@@ -1,9 +1,8 @@
-import type { InterfaceUser, InterfaceAdvertisement } from "../../src/models";
-import { Advertisement, AppUserProfile, User } from "../../src/models";
-
-import type { Document, PopulatedDoc } from "mongoose";
-import { createTestUserAndOrganization } from "./userAndOrg";
+import { Advertisement, User } from "../../src/models";
+import type { InterfaceAdvertisement, InterfaceUser } from "../../src/models";
 import { nanoid } from "nanoid";
+import { createTestUserAndOrganization } from "./userAndOrg";
+import type { Document, PopulatedDoc } from "mongoose";
 
 export type TestAdvertisementType = {
   _id: string;
@@ -39,8 +38,8 @@ export const createTestAdvertisement =
     return createdAdvertisement.toObject();
   };
 export type TestSuperAdminType =
-  | (InterfaceUser & Document<unknown, unknown, InterfaceUser>)
-  | null;
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
 export const createTestSuperAdmin = async (): Promise<TestSuperAdminType> => {
   const testSuperAdmin = await User.create({
@@ -49,22 +48,9 @@ export const createTestSuperAdmin = async (): Promise<TestSuperAdminType> => {
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
     image: null,
-  });
-  const testSuperAdminAppProfile = await AppUserProfile.create({
-    userId: testSuperAdmin._id,
     appLanguageCode: "en",
-    isSuperAdmin: true,
+    userType: "SUPERADMIN", // Set userType to "SUPERADMIN"
   });
-  await User.updateOne(
-    {
-      _id: testSuperAdmin._id,
-    },
-    {
-      $set: {
-        appUserProfileId: testSuperAdminAppProfile._id,
-      },
-    },
-  );
 
   return testSuperAdmin;
 };
