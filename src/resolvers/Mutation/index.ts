@@ -38,6 +38,9 @@ import { createPost } from "./createPost";
 import { createSampleOrganization } from "./createSampleOrganization";
 import { createUserFamily } from "./createUserFamily";
 import { createUserTag } from "./createUserTag";
+import { createVenue } from "./createVenue";
+import { deleteVenue } from "./deleteVenue";
+import { editVenue } from "./editVenue";
 import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
@@ -152,8 +155,11 @@ export const Mutation: MutationResolvers = {
   createSampleOrganization,
   createActionItemCategory,
   createUserTag,
+  createVenue,
   deleteDonationById,
   deleteAdvertisement,
+  deleteVenue,
+  editVenue,
   deleteAgendaCategory,
   forgotPassword,
   inviteEventAttendee,

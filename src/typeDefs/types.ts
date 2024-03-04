@@ -205,6 +205,7 @@ export const types = gql`
     description: String!
     startDate: Date!
     endDate: Date
+    images: [String]
     startTime: Time
     endTime: Time
     allDay: Boolean!
@@ -407,6 +408,7 @@ export const types = gql`
     ): PostsConnection
     funds: [Fund]
     customFields: [OrganizationCustomField!]!
+    venues: [Venue]
   }
 
   type OrganizationCustomField {
@@ -429,6 +431,15 @@ export const types = gql`
 
   type OtpData {
     otpToken: String!
+  }
+
+  type Venue {
+    _id: ID!
+    capacity: Int!
+    description: String
+    imageUrl: URL
+    name: String!
+    organization: Organization!
   }
 
   """

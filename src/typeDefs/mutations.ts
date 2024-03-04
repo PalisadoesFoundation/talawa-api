@@ -134,11 +134,17 @@ export const mutations = gql`
 
     createSampleOrganization: Boolean! @auth
 
+    createVenue(data: VenueInput!): Venue @auth
+
     deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
 
     deleteAgendaCategory(id: ID!): ID!
 
     deleteDonationById(id: ID!): DeletePayload!
+
+    deleteVenue(id: ID!): Venue @auth
+
+    editVenue(data: EditVenueInput!): Venue @auth
 
     forgotPassword(data: ForgotPasswordData!): Boolean!
 
