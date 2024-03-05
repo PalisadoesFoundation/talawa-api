@@ -17,6 +17,7 @@ import {
   updateRecurringEvent,
   updateSingleEvent,
 } from "../../helpers/event/updateEventHelpers";
+import { compareTime } from "../../libraries/validators/compareTime";
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -117,6 +118,17 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`,
       ),
       LENGTH_VALIDATION_ERROR.CODE,
+    );
+  }
+
+  const compareTimeResult = compareTime(
+    args.data?.startTime,
+    args.data?.endTime,
+  );
+  if (compareTimeResult !== "") {
+    throw new errors.InputValidationError(
+      requestContext.translate(compareTimeResult),
+      compareTimeResult,
     );
   }
 

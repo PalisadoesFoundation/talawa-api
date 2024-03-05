@@ -6,6 +6,14 @@ describe("src -> resolvers -> Subscription -> directMessageChat", () => {
     const { directMessageChat: directMessageChatPayload } = await import(
       "../../../src/resolvers/Subscription/directMessageChat"
     );
+
+    // **Type assertion (if necessary):**
+    const typedDirectMessageChatPayload = directMessageChatPayload as (
+      parent: unknown,
+      args: Record<string, unknown>,
+      context: { pubsub: { asyncIterator: (channel: string) => AsyncIterableIterator<string>; } }
+    ) => AsyncIterableIterator<unknown>; // Adjust type based on actual return type
+
     const _args: Record<string, unknown> = {};
     const _parent: unknown = {};
     const context = {
@@ -15,8 +23,8 @@ describe("src -> resolvers -> Subscription -> directMessageChat", () => {
         },
       },
     };
-    // @ts-ignore (if necessary)
-    const x = directMessageChatPayload?.subscribe(_parent, _args, context);
+
+    const x = typedDirectMessageChatPayload?.subscribe(_parent, _args, context);
     expect(x).not.toBe(null);
   });
 });
