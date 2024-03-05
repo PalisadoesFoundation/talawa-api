@@ -429,7 +429,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
 
     if (createOrganizationResolver) {
       try {
-        await createOrganizationResolver({}, validArgs, context);
+        const result = await createOrganizationResolver({}, validArgs, context);
+        expect(result).toEqual({ isAddressValid: false });
       } catch (error: any) {
         // Validate that the error message matches the expected Address Validation Error message
         expect(error.message).toEqual("Not a Valid Address");
