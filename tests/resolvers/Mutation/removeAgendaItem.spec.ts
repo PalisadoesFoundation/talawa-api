@@ -113,7 +113,7 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        expect(error.message).toEqual(USER_NOT_FOUND_ERROR);
+        expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
       } else {
         throw new Error("An unknown error occurred.");
       }
@@ -137,7 +137,7 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        expect(error.message).toEqual(AGENDA_ITEM_NOT_FOUND_ERROR);
+        expect(error.message).toEqual(AGENDA_ITEM_NOT_FOUND_ERROR.MESSAGE);
       } else {
         throw new Error("An unknown error occurred.");
       }
@@ -161,7 +161,9 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        expect(error.message).toEqual(UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR);
+        expect(error.message).toEqual(
+          UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.MESSAGE,
+        );
       } else {
         throw new Error("An unknown error occurred.");
       }
@@ -180,7 +182,7 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
     if (removeAgendaItem) {
       try {
         const result = await removeAgendaItem({}, args, context);
-        expect(result._id).toEqual(testAgendaItem?._id.toString());
+        expect(result._id.toString()).toEqual(testAgendaItem?._id.toString());
 
         // Check if the agenda item is removed from the database
         const deletedAgendaItem = await AgendaItemModel.findOne({
