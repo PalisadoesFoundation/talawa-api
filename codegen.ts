@@ -32,8 +32,6 @@ const config: CodegenConfig = {
           AppUserProfile: "../models/AppUserProfile#InterfaceAppUserProfile",
           AgendaCategory: "../models/AgendaCategory#InterfaceAgendaCategory",
 
-          Advertisement: "../models/Advertisement#InterfaceAdvertisement",
-
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
           MessageChat: "../models/MessageChat#InterfaceMessageChat",
@@ -55,11 +53,6 @@ const config: CodegenConfig = {
           EventVolunteer: "../models/EventVolunteer#InterfaceEventVolunteer",
 
           Feedback: "../models/Feedback#InterfaceFeedback",
-          Fund: "../models/Fund#InterfaceFund",
-          FundraisingCampaign:
-            "../models/FundraisingCampaign#InterfaceFundraisingCampaign",
-          FundraisingCampaignPledge:
-            "../models/FundraisingCampaignPledge#InterfaceFundraisingCampaignPledges",
 
           // File: '../models/File#InterfaceFile',
 

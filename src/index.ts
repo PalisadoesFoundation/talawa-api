@@ -1,28 +1,27 @@
-import { ApolloServer } from "@apollo/server";
-import { expressMiddleware } from "@apollo/server/express4";
-import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
-import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
-import { makeExecutableSchema } from "@graphql-tools/schema";
 import "dotenv/config"; // Pull all the environment variables from .env file
-import fs from "fs";
-import type { GraphQLFormattedError } from "graphql";
-import depthLimit from "graphql-depth-limit";
-import { PubSub } from "graphql-subscriptions";
+import { typeDefs } from "./typeDefs";
+import { composedResolvers } from "./resolvers";
+import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
+import { isAuth } from "./middleware";
+import * as database from "./db";
 import http from "http";
 import https from "https";
-import path from "path";
-import { WebSocketServer } from "ws";
+import fs from "fs";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import { PubSub } from "graphql-subscriptions";
 import app from "./app";
 import { logIssues } from "./checks";
-import loadPlugins from "./config/plugins/loadPlugins";
-import * as database from "./db";
+import depthLimit from "graphql-depth-limit";
 import authDirectiveTransformer from "./directives/directiveTransformer/authDirectiveTransformer";
 import roleDirectiveTransformer from "./directives/directiveTransformer/roleDirectiveTransformer";
 import { logger } from "./libraries";
-import { isAuth } from "./middleware";
-import { composedResolvers } from "./resolvers";
-import { typeDefs } from "./typeDefs";
+import { ApolloServer } from "@apollo/server";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
+import { expressMiddleware } from "@apollo/server/express4";
+import loadPlugins from "./config/plugins/loadPlugins";
+import path from "path";
 export const pubsub = new PubSub();
 
 // defines schema
@@ -53,13 +52,15 @@ const httpServer =
 const server = new ApolloServer({
   schema,
   formatError: (
-    error: GraphQLFormattedError,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error: any,
   ): { message: string; status: number; data: string[] } => {
+    if (!error.originalError) {
+      return error;
+    }
     const message = error.message ?? "Something went wrong !";
-
-    const data: string[] = (error.extensions?.errors as string[]) ?? [];
-    const code: number = (error.extensions?.code as number) ?? 422;
-
+    const data = error.originalError.errors ?? [];
+    const code = error.originalError.code ?? 422;
     logger.error(message, error);
     return {
       message,

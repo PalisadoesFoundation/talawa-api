@@ -1,20 +1,24 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { MutationUpdateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
-  USER_NOT_FOUND_ERROR,
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import {
+  AgendaCategoryModel,
+  AppUserProfile,
+  Organization,
+} from "../../../src/models";
 import { updateAgendaCategory as updateAgendaCategoryResolver } from "../../../src/resolvers/Mutation/updateAgendaCategory";
-import { AgendaCategoryModel, Organization, User } from "../../../src/models";
+import type { MutationUpdateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUser } from "../../helpers/user";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
-import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
 
 let testAgendaCategory: TestAgendaCategoryType;
 let randomUser: TestUserType;
@@ -42,9 +46,9 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-  await User.updateOne(
+  await AppUserProfile.updateOne(
     {
-      _id: testUser?._id,
+      userId: testUser?._id,
     },
     {
       $push: {
@@ -54,7 +58,7 @@ beforeAll(async () => {
   );
   testAgendaCategory = await AgendaCategoryModel.create({
     name: "Sample Agenda Category",
-    organization: testOrganization?._id,
+    organizationId: testOrganization?._id,
     createdBy: testAdminUser?._id,
     createdAt: new Date(),
   });
@@ -137,6 +141,7 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
         description: "Updated Description",
       },
     };
+    // console.log(testAgendaCategory);
 
     const context = {
       userId: testUser?._id,
@@ -182,19 +187,19 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
   //   );
   // });
   it(`updates the agenda category and returns it as superadmin`, async () => {
-    const superAdminTestUser = await User.findOneAndUpdate(
+    const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
       {
-        _id: randomUser?._id,
+        userId: randomUser?._id,
       },
       {
-        userType: "SUPERADMIN",
+        isSuperAdmin: true,
       },
       {
         new: true,
       },
     );
     const context = {
-      userId: superAdminTestUser?._id,
+      userId: superAdminTestUser?.userId,
     };
     const args: MutationUpdateAgendaCategoryArgs = {
       id: testAgendaCategory?._id,
@@ -216,5 +221,29 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
         description: "Updated Description",
       }),
     );
+  });
+  it("throws error if the user does not have appUserProfile", async () => {
+    try {
+      const args: MutationUpdateAgendaCategoryArgs = {
+        id: testAgendaCategory?._id,
+        input: {
+          name: "Updated Name",
+          description: "Updated Description",
+        },
+      };
+      await AppUserProfile.deleteOne({
+        userId: testUser?._id,
+      });
+
+      const context = {
+        userId: randomUser?._id,
+      };
+
+      await updateAgendaCategoryResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

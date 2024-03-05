@@ -1,6 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const fs = require("fs");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { execSync } = require("child_process");
 
 const markdownFiles = fs

@@ -1,4 +1,4 @@
-import { nanoid } from "nanoid";
+import shortid from "shortid";
 import * as fs from "fs";
 import { writeFile } from "fs/promises";
 import { encodedVideoExtentionCheck } from "./encodedVideoExtensionCheck";
@@ -54,7 +54,7 @@ export const uploadEncodedVideo = async (
     await deletePreviousVideo(previousVideoPath);
   }
 
-  let id = nanoid();
+  let id = shortid.generate();
 
   id = "videos/" + id + "video.mp4";
 

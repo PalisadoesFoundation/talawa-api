@@ -18,6 +18,8 @@ import {
   USER_FAMILY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { AppUserProfile } from "../../../src/models";
+import { createTestUser } from "../../helpers/userAndOrg";
 import type {
   TestUserFamilyType,
   TestUserType,
@@ -133,6 +135,38 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
       expect(spy).toHaveBeenCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
         `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
+  });
+  it("throws error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => message);
+
+    try {
+      const args: MutationRemoveUserFamilyArgs = {
+        familyId: testUserFamily?.id,
+      };
+      const newUser = await createTestUser();
+      await AppUserProfile.deleteOne({
+        userId: newUser?.id,
+      });
+
+      const context = {
+        userId: newUser?.id,
+      };
+
+      const { removeUserFamily: removeUserFamilyResolver } = await import(
+        "../../../src/resolvers/Mutation/removeUserFamily"
+      );
+
+      await removeUserFamilyResolver?.({}, args, context);
+    } catch (error) {
+      // console.log(error);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });

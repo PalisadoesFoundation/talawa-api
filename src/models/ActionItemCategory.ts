@@ -4,7 +4,7 @@ import type { InterfaceUser } from "./User";
 import type { InterfaceOrganization } from "./Organization";
 
 /**
- * This is an interface that represents a database(MongoDB) document for ActionItemCategory (~Test Check).
+ * This is an interface that represents a database(MongoDB) document for ActionItemCategory.
  */
 
 export interface InterfaceActionItemCategory {

@@ -2,7 +2,7 @@ import { directives } from "./directives";
 import { enums } from "./enums";
 import { errors } from "./errors";
 import { inputs } from "./inputs";
-import { interfaces } from "./interfaces";
+// import { interfaces } from "./interfaces";
 import { mutations } from "./mutations";
 import { queries } from "./queries";
 import { scalars } from "./scalars";
@@ -21,7 +21,7 @@ export const typeDefs = [
   enums,
   ...errors,
   inputs,
-  interfaces,
+  // interfaces,
   mutations,
   queries,
   scalars,

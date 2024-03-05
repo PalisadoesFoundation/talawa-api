@@ -1,45 +1,44 @@
-import { Advertisement, User } from "../../src/models";
-import type { InterfaceAdvertisement, InterfaceUser } from "../../src/models";
+import type { InterfaceUser } from "../../src/models";
+import { Advertisement, AppUserProfile, User } from "../../src/models";
+
+import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
-import { createTestUserAndOrganization } from "./userAndOrg";
-import type { Document, PopulatedDoc } from "mongoose";
 
 export type TestAdvertisementType = {
   _id: string;
-  organizationId: PopulatedDoc<InterfaceAdvertisement & Document>;
   name: string;
-  mediaUrl: string;
-  creatorId: PopulatedDoc<InterfaceUser & Document>;
-  type: "POPUP" | "MENU" | "BANNER";
+  link: string;
+  type: string;
   startDate: string;
   endDate: string;
-  createdAt: Date;
-  updatedAt: Date;
 };
 
 // Function to create test advertisement
 export const createTestAdvertisement =
   async (): Promise<TestAdvertisementType> => {
-    const [testUser, testOrganization] = await createTestUserAndOrganization();
-
-    // Create test advertisement in the database
-    const createdAdvertisement = await Advertisement.create({
+    const testAdvertisementData = {
       name: "Test Advertisement",
-      mediaUrl: "data:image/png;base64,bWVkaWEgY29udG",
+      link: "https://example.com",
       type: "POPUP",
       startDate: "2023-01-01",
       endDate: "2023-01-31",
-      organizationId: testOrganization?._id,
+      orgId: "1",
       createdAt: "2024-01-13T18:23:00.316Z",
       updatedAt: "2024-01-13T20:28:21.292Z",
-      creatorId: testUser?._id,
-    });
+      creatorId: "656f1bc5dd9d1d4c5849234a",
+    };
+
+    // Create test advertisement in the database
+    const createdAdvertisement = await Advertisement.create(
+      testAdvertisementData,
+    );
 
     return createdAdvertisement.toObject();
   };
+
 export type TestSuperAdminType =
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  (InterfaceUser & Document<any, any, InterfaceUser>) | null;
+  | (InterfaceUser & Document<unknown, unknown, InterfaceUser>)
+  | null;
 
 export const createTestSuperAdmin = async (): Promise<TestSuperAdminType> => {
   const testSuperAdmin = await User.create({
@@ -48,9 +47,22 @@ export const createTestSuperAdmin = async (): Promise<TestSuperAdminType> => {
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
     image: null,
-    appLanguageCode: "en",
-    userType: "SUPERADMIN", // Set userType to "SUPERADMIN"
   });
+  const testSuperAdminAppProfile = await AppUserProfile.create({
+    userId: testSuperAdmin._id,
+    appLanguageCode: "en",
+    isSuperAdmin: true,
+  });
+  await User.updateOne(
+    {
+      _id: testSuperAdmin._id,
+    },
+    {
+      $set: {
+        appUserProfileId: testSuperAdminAppProfile._id,
+      },
+    },
+  );
 
   return testSuperAdmin;
 };

@@ -61,7 +61,7 @@ jobs:
     # This is done as we will use the Talawa-Docs repository later too
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         
       - name: Generate Access Token Secret
         run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
@@ -70,7 +70,7 @@ jobs:
         run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
 
       - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
 
       - name: Install dependencies
         run: npm ci
@@ -86,13 +86,12 @@ jobs:
     
       # Upload Coverage
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
           fail_ci_if_error: false
           name: '${{env.CODECOV_UNIQUE_NAME}}'  
-            
             
   Generate-Documentation:
     name: Generate Documentation
@@ -101,9 +100,8 @@ jobs:
     needs: Push-Workflow
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        # with:
-        #   persist-credentials: false
+        uses: actions/checkout@v3
+        
       - name: Generate Documentation of HTML pages
         run: |
           npm install --global typedoc
@@ -144,7 +142,7 @@ jobs:
           git push -f https://$GH_TOKEN@github.com/PalisadoesFoundation/talawa-api.git HEAD:automated-docs
           echo -e "🚀${Green} Hurrah! doc updated${NoColor}"
         env:
-          ACCESS_TOKEN: ${{secrets.GH_TOKEN}}
+          ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
       
       - name: Create Documentation Artifact
         uses: actions/upload-artifact@v2
@@ -212,11 +210,11 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Restore node_modules from cache
         id: cache-npm
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:

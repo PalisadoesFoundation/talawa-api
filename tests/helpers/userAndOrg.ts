@@ -9,8 +9,8 @@ import type {
 import { AppUserProfile, Organization, User } from "../../src/models";
 
 export type TestOrganizationType =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (InterfaceOrganization & Document<any, any, InterfaceOrganization>) | null;
+  | (InterfaceOrganization & Document<any, any, InterfaceOrganization>)
+  | null;
 
 export type TestUserType =
   | (InterfaceUser & Document<any, any, InterfaceUser>)
@@ -67,8 +67,6 @@ export const createTestOrganizationWithAdmin = async (
     },
     {
       $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
         joinedOrganizations: testOrganization._id,
       },
     },

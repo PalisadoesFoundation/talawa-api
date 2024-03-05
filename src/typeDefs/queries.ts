@@ -11,11 +11,7 @@ export const queries = gql`
 
     actionItemsByEvent(eventId: ID!): [ActionItem]
 
-    actionItemsByOrganization(
-      organizationId: ID!
-      where: ActionItemWhereInput
-      orderBy: ActionItemsOrderByInput
-    ): [ActionItem]
+    actionItemsByOrganization(organizationId: ID!): [ActionItem]
 
     actionItemCategory(id: ID!): ActionItemCategory
 
@@ -50,13 +46,6 @@ export const queries = gql`
 
     getDonationById(id: ID!): Donation!
 
-    getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
-
-    getEventAttendee(userId: ID!, eventId: ID!): EventAttendee
-    getFundById(id: ID!): Fund!
-    getFundraisingCampaignById(id: ID!): FundraisingCampaign!
-    getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
-
     getDonationByOrgId(orgId: ID!): [Donation]
 
     getDonationByOrgIdConnection(
@@ -69,7 +58,7 @@ export const queries = gql`
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]
-    advertisementsConnection: [Advertisement]
+    getAdvertisements: [Advertisement]
 
     isSampleOrganization(id: ID!): Boolean!
     hasSubmittedFeedback(userId: ID!, eventId: ID!): Boolean
@@ -100,6 +89,16 @@ export const queries = gql`
     plugin(orgId: ID!): [Plugin]
 
     post(id: ID!): Post
+
+    postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
+
+    postsByOrganizationConnection(
+      id: ID!
+      where: PostWhereInput
+      first: Int
+      skip: Int
+      orderBy: PostOrderByInput
+    ): PostConnection
 
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
 
