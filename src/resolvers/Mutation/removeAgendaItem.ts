@@ -1,6 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, AgendaItemModel, InterfaceAgendaItem } from "../../models";
+import type { InterfaceAgendaItem } from "../../models";
+import { User, AgendaItemModel } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   AGENDA_ITEM_NOT_FOUND_ERROR,
@@ -19,7 +20,7 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
   _parent,
   args,
   context,
-): Promise<InterfaceAgendaItem>  => {
+): Promise<InterfaceAgendaItem> => {
   const currentUser = await User.findOne({
     _id: context.userId,
   }).lean();
@@ -27,7 +28,7 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
   const agendaItem = await AgendaItemModel.findOne({
@@ -37,7 +38,7 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(AGENDA_ITEM_NOT_FOUND_ERROR.MESSAGE),
       AGENDA_ITEM_NOT_FOUND_ERROR.CODE,
-      AGENDA_ITEM_NOT_FOUND_ERROR.PARAM
+      AGENDA_ITEM_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -45,7 +46,7 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.MESSAGE),
       UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.CODE,
-      UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.PARAM
+      UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.PARAM,
     );
   }
 
@@ -65,7 +66,7 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
         // Add relevant lists here based on your schema
         createdAgendaItems: agendaItem._id,
       },
-    }
+    },
   );
 
   return agendaItem;

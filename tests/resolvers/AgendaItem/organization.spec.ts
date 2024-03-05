@@ -3,30 +3,39 @@ import { connect, disconnect } from "../../helpers/db";
 import { organization as organizationResolver } from "../../../src/resolvers/AgendaItem/organization";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { User , Event, Organization, AgendaItemModel} from "../../../src/models";
-import { createTestUser, type TestOrganizationType, type TestUserType } from "../../helpers/userAndOrg";
-import { TestEventType } from "../../helpers/events";
-import { TestAgendaItemType } from "../../helpers/agendaItem";
+import {
+  User,
+  Event,
+  Organization,
+  AgendaItemModel,
+} from "../../../src/models";
+import {
+  createTestUser,
+  type TestOrganizationType,
+  type TestUserType,
+} from "../../helpers/userAndOrg";
+import type { TestEventType } from "../../helpers/events";
+import type { TestAgendaItemType } from "../../helpers/agendaItem";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testEvent : TestEventType;
-let testUser : TestUserType;
-let testOrganization : TestOrganizationType;
-let testSuperAdmin : TestUserType;
-let testAdminUser : TestUserType;
-let testAgendaItem : TestAgendaItemType;
+let testEvent: TestEventType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
+let testSuperAdmin: TestUserType;
+let testAdminUser: TestUserType;
+let testAgendaItem: TestAgendaItemType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
-  testSuperAdmin= await createTestUser();
+  testSuperAdmin = await createTestUser();
   testAdminUser = await createTestUser();
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
     isPublic: true,
     creator: testUser?._id,
-    admins: [testAdminUser?._id, testUser?._id],  
+    admins: [testAdminUser?._id, testUser?._id],
     members: [testUser?._id, testAdminUser?._id],
     creatorId: testUser?._id,
   });
@@ -67,27 +76,23 @@ beforeAll(async () => {
     itemType: "Regular",
     organizationId: testOrganization?._id,
     isNote: false,
-    createdBy : testAdminUser?._id,
-    createdAt : Date.now(),
-    updatedBy : testAdminUser?._id,
-    updatedAt : Date.now(),
-  })
+    createdBy: testAdminUser?._id,
+    createdAt: Date.now(),
+    updatedBy: testAdminUser?._id,
+    updatedAt: Date.now(),
+  });
 });
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
- 
 describe("resolvers -> AgendaItem -> organization", () => {
-    it(`returns the organization object for parent agendaItem`, async () => {
-      const parent = testAgendaItem?.toObject();
-  
-      const orgPayload = await organizationResolver?.(parent, {}, {});
-  
-      expect(orgPayload);
-    });
+  it(`returns the organization object for parent agendaItem`, async () => {
+    const parent = testAgendaItem?.toObject();
+
+    const orgPayload = await organizationResolver?.(parent, {}, {});
+
+    expect(orgPayload);
   });
-
-
- 
+});

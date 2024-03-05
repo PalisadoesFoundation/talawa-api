@@ -27,7 +27,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/eventsWithRegistrants";
 import { createTestEvent } from "../../helpers/events";
-import { TestAgendaItemType } from "../../helpers/agendaItem";
+import type { TestAgendaItemType } from "../../helpers/agendaItem";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -38,7 +38,7 @@ beforeAll(async () => {
     description: "description",
     isPublic: true,
     creator: testUser?._id,
-    creatorId : testUser?._id,
+    creatorId: testUser?._id,
     admins: [testAdminUser?._id],
     members: [testUser?._id, testAdminUser?._id],
   });
@@ -52,7 +52,7 @@ beforeAll(async () => {
       $push: {
         adminFor: testOrganization?._id,
       },
-    }
+    },
   );
   testAgendaItem = await AgendaItemModel.create({
     createdBy: testAdminUser?._id,
@@ -84,11 +84,11 @@ beforeAll(async () => {
       $push: {
         createdAgendaItems: [testAgendaItem, testAgendaItem2],
       },
-    }
+    },
   );
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message: unknown) => message
+    (message: unknown) => message,
   );
 });
 
@@ -129,7 +129,9 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
       };
       await updateAgendaItem?.({}, args, context);
     } catch (error: unknown) {
-      expect((error as Error).message).toEqual(AGENDA_ITEM_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        AGENDA_ITEM_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -148,7 +150,7 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
       await updateAgendaItem?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        UNAUTHORIZED_UPDATE_AGENDA_ITEM_ERROR.MESSAGE
+        UNAUTHORIZED_UPDATE_AGENDA_ITEM_ERROR.MESSAGE,
       );
     }
   });
@@ -174,7 +176,7 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
     const updateAgendaItemPayload = await updateAgendaItemResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const testUpdateAgendaItemPayload = await AgendaItemModel.findOne({

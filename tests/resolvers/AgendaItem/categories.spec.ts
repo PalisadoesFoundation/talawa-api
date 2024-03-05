@@ -1,13 +1,23 @@
 import "dotenv/config";
 import { connect, disconnect } from "../../helpers/db";
-import {  categories as relatedCategoriesResolver } from "../../../src/resolvers/AgendaItem/categories";  
+import { categories as relatedCategoriesResolver } from "../../../src/resolvers/AgendaItem/categories";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { User, Event, Organization, AgendaItemModel, AgendaCategoryModel } from "../../../src/models";  
-import { createTestUser, type TestOrganizationType, type TestUserType } from "../../helpers/userAndOrg";
-import { TestEventType } from "../../helpers/events";
-import { TestAgendaItemType } from "../../helpers/agendaItem";
-import { TestAgendaCategoryType } from "../../helpers/agendaCategory";
+import {
+  User,
+  Event,
+  Organization,
+  AgendaItemModel,
+  AgendaCategoryModel,
+} from "../../../src/models";
+import {
+  createTestUser,
+  type TestOrganizationType,
+  type TestUserType,
+} from "../../helpers/userAndOrg";
+import type { TestEventType } from "../../helpers/events";
+import type { TestAgendaItemType } from "../../helpers/agendaItem";
+import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
@@ -60,18 +70,16 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-
   testAgendaCategory = await AgendaCategoryModel.create({
     description: "Description for the test agenda category",
-    createdBy : testAdminUser?._id,
+    createdBy: testAdminUser?._id,
     createdAt: Date.now(),
     updatedBy: testAdminUser?._id,
     updatedAt: Date.now(),
-    name : "Test Agenda Category",
+    name: "Test Agenda Category",
     organizationId: testOrganization?._id,
- 
   });
-  
+
   testAgendaItem = await AgendaItemModel.create({
     title: "Regular Agenda Item",
     description: "Description for the regular agenda item",
@@ -86,7 +94,7 @@ beforeAll(async () => {
     updatedBy: testAdminUser?._id,
     updatedAt: Date.now(),
   });
-  
+
   await testAgendaItem?.updateOne({
     $push: {
       categories: testAgendaCategory?._id,
@@ -102,7 +110,11 @@ describe("resolvers -> AgendaItem -> relatedCategories", () => {
   it(`returns the related categories for parent agendaItem`, async () => {
     const parent = testAgendaItem?.toObject();
 
-    const relatedCategoriesPayload = await relatedCategoriesResolver?.(parent, {}, {});
+    const relatedCategoriesPayload = await relatedCategoriesResolver?.(
+      parent,
+      {},
+      {},
+    );
 
     expect(relatedCategoriesPayload);
     // You may also want to add assertions to check specific properties of the related categories if needed

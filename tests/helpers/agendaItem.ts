@@ -1,6 +1,11 @@
-import { AgendaItemModel, AgendaCategoryModel, Organization, InterfaceAgendaItem } from "../../src/models";
+import type { InterfaceAgendaItem } from "../../src/models";
+import {
+  AgendaItemModel,
+  AgendaCategoryModel,
+  Organization,
+} from "../../src/models";
 import type { Document } from "mongoose";
-import { TestOrganizationType, TestUserType } from "./userAndOrg";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUser } from "./user";
 import { Types } from "mongoose";
 // import { TestEventType, createTestEvent } from "./events";
@@ -8,11 +13,11 @@ import { Types } from "mongoose";
 export type TestAgendaItemType = InterfaceAgendaItem & Document;
 
 export const createTestAgendaItem = async (): Promise<
-  [TestUserType, TestUserType,  TestOrganizationType, TestAgendaItemType]
+  [TestUserType, TestUserType, TestOrganizationType, TestAgendaItemType]
 > => {
   const testUser: TestUserType = await createTestUser();
   const testAdminUser: TestUserType = await createTestUser();
- 
+
   const testOrganization: TestOrganizationType = await Organization.create({
     name: "name",
     description: "description",
@@ -35,7 +40,7 @@ export const createTestAgendaItem = async (): Promise<
     creatorId: testUser?._id,
   });
 
-  return [testUser, testAdminUser,  testOrganization, testAgendaItem];
+  return [testUser, testAdminUser, testOrganization, testAgendaItem];
 };
 
 export const createTestAgendaItems = async (): Promise<
@@ -43,7 +48,6 @@ export const createTestAgendaItems = async (): Promise<
 > => {
   const testUser: TestUserType = await createTestUser();
   const testAdminUser: TestUserType = await createTestUser();
-   
 
   const testOrganization: TestOrganizationType = await Organization.create({
     name: "name",
@@ -63,14 +67,14 @@ export const createTestAgendaItems = async (): Promise<
     createdAt: Date.now(),
     updatedAt: Date.now(),
   });
- 
+
   const testAgendaItem1 = await AgendaItemModel.create({
     title: "Test Agenda Item 1",
     description: "Description for the first test agenda item",
     startTime: new Date(),
-    endTime: new Date(Date.now() + 3600000), 
+    endTime: new Date(Date.now() + 3600000),
     location: "Test Location 1",
-    categoryId: testCategory?._id,  
+    categoryId: testCategory?._id,
     creator: testUser?._id,
     organization: testOrganization?._id,
     creatorId: testUser?._id,
@@ -80,9 +84,9 @@ export const createTestAgendaItems = async (): Promise<
     title: "Test Agenda Item 2",
     description: "Description for the second test agenda item",
     startTime: new Date(),
-    endTime: new Date(Date.now() + 7200000),  
+    endTime: new Date(Date.now() + 7200000),
     location: "Test Location 2",
-    categoryId:  testCategory?._id,
+    categoryId: testCategory?._id,
     creator: testAdminUser?._id,
     organization: testOrganization?._id,
     creatorId: testAdminUser?._id,

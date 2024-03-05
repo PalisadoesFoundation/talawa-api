@@ -2,14 +2,8 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 import { getAgendaItem } from "../../../src/resolvers/Query/agendaItemById";
-import {
-  AgendaItemModel,
-  Organization,
-  Event,
-} from "../../../src/models";
-import {
-  AGENDA_ITEM_NOT_FOUND_ERROR,
-} from "../../../src/constants";
+import { AgendaItemModel, Organization, Event } from "../../../src/models";
+import { AGENDA_ITEM_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type {
   TestOrganizationType,
@@ -17,7 +11,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
-import { TestAgendaItemType } from "../../helpers/agendaItem";
+import type { TestAgendaItemType } from "../../helpers/agendaItem";
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
@@ -34,7 +28,7 @@ beforeAll(async () => {
     description: "description",
     isPublic: true,
     creator: testUser?._id,
-    creatorId : testUser?._id,
+    creatorId: testUser?._id,
     admins: [testAdminUser?._id],
     members: [testUser?._id, testAdminUser?._id],
   });
@@ -47,7 +41,7 @@ beforeAll(async () => {
     isPublic: true,
     isRegisterable: true,
     creator: testUser?._id,
-    creatorId :  testUser?._id,
+    creatorId: testUser?._id,
     admins: [testAdminUser?._id],
     registrants: [],
     organization: testOrganization?._id,

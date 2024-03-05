@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, AgendaItemModel, Organization  } from "../../../src/models";
+import { User, AgendaItemModel, Organization } from "../../../src/models";
 import type { MutationRemoveAgendaItemArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -21,7 +21,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/eventsWithRegistrants";
 import { createTestEvent } from "../../helpers/events";
-import { TestAgendaItemType } from "../../helpers/agendaItem";
+import type { TestAgendaItemType } from "../../helpers/agendaItem";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -34,7 +34,7 @@ beforeAll(async () => {
     creator: testUser?._id,
     admins: [testAdminUser?._id],
     members: [testUser?._id, testAdminUser?._id],
-    creatorId : testUser?._id,
+    creatorId: testUser?._id,
   });
   const temp = await createTestEvent();
   testEvent = temp[2];
@@ -46,7 +46,7 @@ beforeAll(async () => {
       $push: {
         adminFor: testOrganization?._id,
       },
-    }
+    },
   );
   testAgendaItem = await AgendaItemModel.create({
     createdBy: testAdminUser?._id,
@@ -78,11 +78,11 @@ beforeAll(async () => {
       $push: {
         createdAgendaItems: [testAgendaItem, testAgendaItem2],
       },
-    }
+    },
   );
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message: unknown) => message
+    (message: unknown) => message,
   );
 });
 
@@ -90,112 +90,107 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-
 describe("resolvers -> Mutation -> removeAgendaItem", () => {
-    it("throws unknown error if no user exists with _id === userId", async () => {
-      try {
-        const args: MutationRemoveAgendaItemArgs = {
-          id: testAgendaItem?._id,
-        };
-  
-        const context = {
-          userId: Types.ObjectId().toString(),
-        };
-  
-        if (removeAgendaItem) {
-          await removeAgendaItem({}, args, context);
-        } else {
-          throw new Error("removeAgendaItem resolver is undefined");
-        }
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          expect(error.message).toEqual("An unknown error occurred.");
-        } else {
-          throw new Error("An unknown error occurred.");
-        }
-      }
-    });
-  
-    it("throws unknown error if no agenda item exists with _id === args.id", async () => {
-      try {
-        const args: MutationRemoveAgendaItemArgs = {
-          id: Types.ObjectId().toString(),
-        };
-  
-        const context = {
-          userId: testAdminUser?._id,
-        };
-  
-        if (removeAgendaItem) {
-          await removeAgendaItem({}, args, context);
-        } else {
-          throw new Error("removeAgendaItem resolver is undefined");
-        }
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          expect(error.message).toEqual("An unknown error occurred.");
-        } else {
-          throw new Error("An unknown error occurred.");
-        }
-      }
-    });
-  
-    it("throws unknown error if user is not the creator of the agenda item", async () => {
-      try {
-        const args: MutationRemoveAgendaItemArgs = {
-          id: testAgendaItem?._id,
-        };
-  
-        const context = {
-          userId: testUser?._id,
-        };
-  
-        if (removeAgendaItem) {
-          await removeAgendaItem({}, args, context);
-        } else {
-          throw new Error("removeAgendaItem resolver is undefined");
-        }
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          expect(error.message).toEqual("An unknown error occurred.");
-        } else {
-          throw new Error("An unknown error occurred.");
-        }
-      }
-    });
-  
-    it("removes the agenda item if user is the creator", async () => {
+  it("throws unknown error if no user exists with _id === userId", async () => {
+    try {
       const args: MutationRemoveAgendaItemArgs = {
         id: testAgendaItem?._id,
       };
-  
+
       const context = {
-        userId: testAdminUser?._id,
+        userId: Types.ObjectId().toString(),
       };
-  
+
       if (removeAgendaItem) {
-        try {
-          const result = await removeAgendaItem({}, args, context);
-          expect(result).toEqual(testAgendaItem?._id.toString());
-  
-          // Check if the agenda item is removed from the database
-          const deletedAgendaItem = await AgendaItemModel.findOne({
-            _id: args.id,
-          });
-          expect(deletedAgendaItem).toBeNull();
-  
-         
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            throw error;
-          } else {
-            throw new Error("An unknown error occurred.");
-          }
-        }
+        await removeAgendaItem({}, args, context);
       } else {
         throw new Error("removeAgendaItem resolver is undefined");
       }
-    });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual("An unknown error occurred.");
+      } else {
+        throw new Error("An unknown error occurred.");
+      }
+    }
   });
-  
- 
+
+  it("throws unknown error if no agenda item exists with _id === args.id", async () => {
+    try {
+      const args: MutationRemoveAgendaItemArgs = {
+        id: Types.ObjectId().toString(),
+      };
+
+      const context = {
+        userId: testAdminUser?._id,
+      };
+
+      if (removeAgendaItem) {
+        await removeAgendaItem({}, args, context);
+      } else {
+        throw new Error("removeAgendaItem resolver is undefined");
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual("An unknown error occurred.");
+      } else {
+        throw new Error("An unknown error occurred.");
+      }
+    }
+  });
+
+  it("throws unknown error if user is not the creator of the agenda item", async () => {
+    try {
+      const args: MutationRemoveAgendaItemArgs = {
+        id: testAgendaItem?._id,
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      if (removeAgendaItem) {
+        await removeAgendaItem({}, args, context);
+      } else {
+        throw new Error("removeAgendaItem resolver is undefined");
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual("An unknown error occurred.");
+      } else {
+        throw new Error("An unknown error occurred.");
+      }
+    }
+  });
+
+  it("removes the agenda item if user is the creator", async () => {
+    const args: MutationRemoveAgendaItemArgs = {
+      id: testAgendaItem?._id,
+    };
+
+    const context = {
+      userId: testAdminUser?._id,
+    };
+
+    if (removeAgendaItem) {
+      try {
+        const result = await removeAgendaItem({}, args, context);
+        expect(result).toEqual(testAgendaItem?._id.toString());
+
+        // Check if the agenda item is removed from the database
+        const deletedAgendaItem = await AgendaItemModel.findOne({
+          _id: args.id,
+        });
+        expect(deletedAgendaItem).toBeNull();
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          throw error;
+        } else {
+          throw new Error("An unknown error occurred.");
+        }
+      }
+    } else {
+      throw new Error("removeAgendaItem resolver is undefined");
+    }
+  });
+});
