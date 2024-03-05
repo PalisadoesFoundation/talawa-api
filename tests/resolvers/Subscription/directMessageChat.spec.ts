@@ -6,16 +6,16 @@ describe("src -> resolvers -> Subscription -> directMessageChat", () => {
     const { directMessageChat: directMessageChatPayload } = await import(
       "../../../src/resolvers/Subscription/directMessageChat"
     );
-    const _args = {};
-    const _parent = {};
+    const _args: Record<string, unknown> = {};
+    const _parent: unknown = {};
     const context = {
       pubsub: {
-        asyncIterator: (chatChannel: string): string => {
+        asyncIterator: (chatChannel: string): AsyncIterableIterator<string> => {
           return chatChannel;
         },
       },
     };
-    // @ts-ignore
+    // @ts-ignore (if necessary)
     const x = directMessageChatPayload?.subscribe(_parent, _args, context);
     expect(x).not.toBe(null);
   });
