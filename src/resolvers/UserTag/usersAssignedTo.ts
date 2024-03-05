@@ -2,124 +2,61 @@ import type { UserTagResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfaceTagUser, InterfaceUser } from "../../models";
 import { TagUser } from "../../models";
 import {
-  type DefaultGraphQLArgumentError,
-  type ParseGraphQLConnectionCursorArguments,
-  type ParseGraphQLConnectionCursorResult,
-  getCommonGraphQLConnectionFilter,
-  getCommonGraphQLConnectionSort,
-  parseGraphQLConnectionArguments,
-  transformToDefaultGraphQLConnection,
-} from "../../utilities/graphQLConnection";
-import { GraphQLError } from "graphql";
-import { MAXIMUM_FETCH_LIMIT } from "../../constants";
-import type { Types } from "mongoose";
+  getLimit,
+  getSortingObject,
+  getFilterObject,
+  generateConnectionObject,
+} from "../../utilities/graphqlConnectionFactory";
+import { validatePaginationArgs } from "../../libraries/validators/validatePaginationArgs";
 
 export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   parent,
   args,
 ) => {
-  const parseGraphQLConnectionArgumentsResult =
-    await parseGraphQLConnectionArguments({
-      args,
-      parseCursor: (args) =>
-        parseCursor({
-          ...args,
-          tagId: parent._id,
-        }),
-      maximumLimit: MAXIMUM_FETCH_LIMIT,
-    });
-
-  if (!parseGraphQLConnectionArgumentsResult.isSuccessful) {
-    throw new GraphQLError("Invalid arguments provided.", {
-      extensions: {
-        code: "INVALID_ARGUMENTS",
-        errors: parseGraphQLConnectionArgumentsResult.errors,
-      },
-    });
-  }
-
-  const { parsedArgs } = parseGraphQLConnectionArgumentsResult;
-
-  const filter = getCommonGraphQLConnectionFilter({
-    cursor: parsedArgs.cursor,
-    direction: parsedArgs.direction,
-  });
-
-  const sort = getCommonGraphQLConnectionSort({
-    direction: parsedArgs.direction,
-  });
-
-  const [objectList, totalCount] = await Promise.all([
-    TagUser.find({
-      ...filter,
-      tagId: parent._id,
-    })
-      .sort(sort)
-      .limit(parsedArgs.limit)
-      .populate("userId")
-      .lean()
-      .exec(),
-
-    TagUser.find({
-      tagId: parent._id,
-    })
-      .countDocuments()
-      .exec(),
-  ]);
-
-  return transformToDefaultGraphQLConnection<
-    ParsedCursor,
-    InterfaceTagUser,
-    InterfaceUser
-  >({
-    createNode: (object) => {
-      return object.userId as InterfaceUser;
-    },
-    objectList,
-    parsedArgs,
-    totalCount,
-  });
-};
-
-/*
-This is typescript type of the parsed cursor for this connection resolver.
-*/
-type ParsedCursor = string;
-
-/*
-This function is used to validate and transform the cursor passed to this connnection
-resolver.
-*/
-export const parseCursor = async ({
-  cursorValue,
-  cursorName,
-  cursorPath,
-  tagId,
-}: ParseGraphQLConnectionCursorArguments & {
-  tagId: string | Types.ObjectId;
-}): ParseGraphQLConnectionCursorResult<ParsedCursor> => {
-  const errors: DefaultGraphQLArgumentError[] = [];
-  const tagUser = await TagUser.findOne({
-    _id: cursorValue,
-    tagId,
-  });
-
-  if (!tagUser) {
-    errors.push({
-      message: `Argument ${cursorName} is an invalid cursor.`,
-      path: cursorPath,
-    });
-  }
+  const errors = validatePaginationArgs(args.input);
 
   if (errors.length !== 0) {
     return {
+      data: null,
       errors,
-      isSuccessful: false,
     };
   }
 
-  return {
-    isSuccessful: true,
-    parsedCursor: cursorValue,
-  };
+  if (args.input.cursor) {
+    const cursorExists = await TagUser.exists({
+      _id: args.input.cursor,
+    });
+
+    if (!cursorExists)
+      return {
+        data: null,
+        errors: [
+          {
+            __typename: "InvalidCursor",
+            message: "The provided cursor does not exist in the database.",
+            path: ["input", "cursor"],
+          },
+        ],
+      };
+  }
+
+  const allUserObjects = await TagUser.find({
+    ...getFilterObject(args.input),
+    tagId: parent._id,
+  })
+    .sort(
+      getSortingObject(args.input.direction, {
+        // The default sorting logic of ascending order by MongoID should always be provided
+        _id: 1,
+      }),
+    )
+    .limit(getLimit(args.input.limit))
+    .populate("userId")
+    .lean();
+
+  return generateConnectionObject<InterfaceUser, InterfaceTagUser>(
+    args.input,
+    allUserObjects,
+    (userTag) => userTag.userId,
+  );
 };

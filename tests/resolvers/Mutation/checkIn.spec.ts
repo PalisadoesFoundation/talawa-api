@@ -189,6 +189,8 @@ describe("resolvers -> Mutation -> checkIn", () => {
       data: {
         userId: testUser?._id,
         eventId: testEvent?._id.toString() ?? "",
+        allotedRoom: "test room",
+        allotedSeat: "test seat",
       },
     };
 
@@ -208,6 +210,8 @@ describe("resolvers -> Mutation -> checkIn", () => {
     expect(eventAttendee?.checkInId).not.toBeNull();
     expect(payload).toMatchObject({
       eventAttendeeId: eventAttendee?._id,
+      allotedSeat: "test seat",
+      allotedRoom: "test room",
     });
   });
 

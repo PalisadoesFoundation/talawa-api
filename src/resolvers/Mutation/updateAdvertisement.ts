@@ -1,21 +1,19 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { Advertisement, User } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-  INPUT_NOT_FOUND_ERROR,
   END_DATE_VALIDATION_ERROR,
-  START_DATE_VALIDATION_ERROR,
   FIELD_NON_EMPTY_ERROR,
+  INPUT_NOT_FOUND_ERROR,
+  START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
+import { errors, requestContext } from "../../libraries";
+import { Advertisement, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
   async (_parent, args, _context) => {
-    const { _id, ...otherFields } = args.input;
+    const { ...otherFields } = args.input;
 
     //If there is no input
     if (Object.keys(otherFields).length === 0) {
@@ -27,7 +25,8 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
     }
 
     // Check for unintended null values in permitted fields, if all fields are permitted
-    for (const fieldValue of Object.values(args.input)) {
+    for (const field of Object.keys(args.input)) {
+      const fieldValue = (args.input as Record<string, unknown>)[field];
       if (
         fieldValue === null ||
         (typeof fieldValue === "string" && fieldValue.trim() === "")
@@ -83,28 +82,12 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       );
     }
 
-    let uploadMediaFile = null;
-
-    if (args.input.mediaFile) {
-      const dataUrlPrefix = "data:";
-      if (args.input.mediaFile.startsWith(dataUrlPrefix + "image/")) {
-        uploadMediaFile = await uploadEncodedImage(args.input.mediaFile, null);
-      } else if (args.input.mediaFile.startsWith(dataUrlPrefix + "video/")) {
-        uploadMediaFile = await uploadEncodedVideo(args.input.mediaFile, null);
-      } else {
-        throw new Error("Unsupported file type.");
-      }
-    }
-
     const updatedAdvertisement = await Advertisement.findOneAndUpdate(
       {
-        _id: _id,
+        _id: args.input._id,
       },
       {
-        $set: {
-          ...args.input,
-          mediaUrl: uploadMediaFile,
-        },
+        ...(args.input as Record<string, unknown>),
       },
       {
         new: true,
@@ -122,16 +105,15 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
     const updatedAdvertisementPayload = {
       _id: updatedAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
       name: updatedAdvertisement.name,
-      organizationId: updatedAdvertisement.organizationId,
-      mediaUrl: updatedAdvertisement.mediaUrl,
+      orgId: updatedAdvertisement.orgId.toString(),
+      link: updatedAdvertisement.link,
       type: updatedAdvertisement.type,
       startDate: updatedAdvertisement.startDate,
       endDate: updatedAdvertisement.endDate,
       createdAt: updatedAdvertisement.createdAt,
       updatedAt: updatedAdvertisement.updatedAt,
-      creatorId: updatedAdvertisement.creatorId,
     };
     return {
-      advertisement: { ...updatedAdvertisementPayload },
+      advertisement: updatedAdvertisementPayload,
     };
   };

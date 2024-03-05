@@ -14,9 +14,7 @@ import {
   Organization,
   Post,
   User,
-  Fund,
 } from "../../models";
-
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { deleteOrganizationFromCache } from "../../services/OrganizationCache/deleteOrganizationFromCache";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
@@ -163,10 +161,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     await ActionItem.deleteMany({
       actionItemCategoryId: { $in: actionItemCategoriesIds },
     });
-    //Remove all the funds specific to organization
-    await Fund.deleteMany({
-      _id: { $in: organization.funds },
-    });
+
     // Deletes the organzation.
     await Organization.deleteOne({
       _id: organization._id,

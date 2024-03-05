@@ -7,8 +7,7 @@ export class InvalidFileTypeError extends ApplicationError {
     message = "Invalid File Type",
     code: string | null = null,
     param: string | null = null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    metadata: Record<any, any> = {},
+    metadata: Record<string, string> = {},
   ) {
     const errorJson = [
       {

@@ -12,11 +12,6 @@ import { isValidString } from "../../libraries/validators/validateString";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
-import { session } from "../../db";
-import {
-  updateRecurringEvent,
-  updateSingleEvent,
-} from "../../helpers/event/updateEventHelpers";
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -45,7 +40,6 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-
   const currentUserAppProfile = await AppUserProfile.findOne({
     userId: currentUser._id,
   }).lean();
@@ -131,41 +125,22 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  /* c8 ignore start */
-  if (session) {
-    // start a transaction
-    session.startTransaction();
+  const updatedEvent = await Event.findOneAndUpdate(
+    {
+      _id: args.id,
+    },
+    {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...(args.data as any),
+    },
+    {
+      new: true,
+    },
+  ).lean();
+
+  if (updatedEvent !== null) {
+    await cacheEvents([updatedEvent]);
   }
 
-  /* c8 ignore stop */
-  try {
-    let updatedEvent: InterfaceEvent = event;
-
-    if (event.recurring) {
-      // update recurring event
-      updatedEvent = await updateRecurringEvent(args, event, session);
-    } else {
-      // update single event
-      updatedEvent = await updateSingleEvent(args, event, session);
-    }
-
-    /* c8 ignore start */
-    if (session) {
-      // commit transaction if everything's successful
-      await session.commitTransaction();
-    }
-
-    /* c8 ignore stop */
-    return updatedEvent as InterfaceEvent;
-    /* c8 ignore start */
-  } catch (error) {
-    if (session) {
-      // abort transaction if something fails
-      await session.abortTransaction();
-    }
-
-    throw error;
-  }
-
-  /* c8 ignore stop */
+  return updatedEvent as InterfaceEvent;
 };

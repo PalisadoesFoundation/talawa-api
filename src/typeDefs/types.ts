@@ -60,6 +60,8 @@ export const types = gql`
   type CheckIn {
     _id: ID!
     time: DateTime!
+    allotedRoom: String
+    allotedSeat: String
     user: User!
     event: Event!
     feedbackSubmitted: Boolean!
@@ -93,23 +95,16 @@ export const types = gql`
     creator: User!
   }
 
-  """
-  Default connection page info for containing the metadata for a connection
-  instance.
-  """
-  type DefaultConnectionPageInfo implements ConnectionPageInfo {
-    endCursor: String
+  # A page info type adhering to Relay Specification for both cursor based pagination
+  type ConnectionPageInfo {
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
     startCursor: String
+    endCursor: String
   }
 
   type DeletePayload {
     success: Boolean!
-  }
-
-  type DeleteAdvertisementPayload {
-    advertisement: Advertisement
   }
 
   type DirectChat {
@@ -146,8 +141,8 @@ export const types = gql`
   type Advertisement {
     _id: ID!
     name: String!
-    organization: Organization
-    mediaUrl: URL!
+    orgId: ID!
+    link: String!
     type: AdvertisementType!
     startDate: Date!
     endDate: Date!
@@ -156,22 +151,7 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
-  type AdvertisementEdge {
-    cursor: String
-    node: Advertisement
-  }
-
-  type AdvertisementsConnection {
-    edges: [AdvertisementEdge]
-    pageInfo: ConnectionPageInfo
-    totalCount: Int
-  }
-
   type UpdateAdvertisementPayload {
-    advertisement: Advertisement
-  }
-
-  type CreateAdvertisementPayload {
     advertisement: Advertisement
   }
 
@@ -222,19 +202,6 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
-  type EventAttendee {
-    _id: ID!
-    userId: ID!
-    eventId: ID!
-    checkInId: ID
-    isInvited: Boolean!
-    isRegistered: Boolean!
-    isCheckedIn: Boolean!
-    isCheckedOut: Boolean!
-    createdAt: DateTime!
-    updatedAt: DateTime!
-  }
-
   type Feedback {
     _id: ID!
     event: Event!
@@ -242,40 +209,6 @@ export const types = gql`
     review: String
     createdAt: DateTime!
     updatedAt: DateTime!
-  }
-
-  type Fund {
-    _id: ID!
-    organizationId: ID!
-    name: String!
-    refrenceNumber: String
-    taxDeductible: Boolean!
-    isDefault: Boolean!
-    isArchived: Boolean!
-    campaigns: [FundraisingCampaign!]
-    createdAt: DateTime!
-    updatedAt: DateTime!
-  }
-  type FundraisingCampaign {
-    _id: ID!
-    fundId: Fund!
-    name: String!
-    startDate: Date!
-    endDate: Date!
-    fundingGoal: Float!
-    currency: Currency!
-    pledges: [FundraisingCampaignPledge]
-    createdAt: DateTime!
-    updatedAt: DateTime!
-  }
-  type FundraisingCampaignPledge {
-    _id: ID!
-    campaigns: [FundraisingCampaign]!
-    users: [User]!
-    startDate: Date
-    endDate: Date
-    amount: Float!
-    currency: Currency!
   }
 
   type Group {
@@ -354,12 +287,6 @@ export const types = gql`
     name: String!
     description: String!
     address: Address
-    advertisements(
-      after: String
-      before: String
-      first: Int
-      last: Int
-    ): AdvertisementsConnection
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -379,13 +306,6 @@ export const types = gql`
       first: PositiveInt
       last: PositiveInt
     ): UserTagsConnection
-    posts(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-    ): PostsConnection
-    funds: [Fund]
     customFields: [OrganizationCustomField!]!
   }
 
@@ -464,6 +384,23 @@ export const types = gql`
     pinned: Boolean
   }
 
+  """
+  A connection to a list of items.
+  """
+  type PostConnection {
+    """
+    Information to aid in pagination.
+    """
+    pageInfo: PageInfo!
+
+    """
+    A list of edges.
+    """
+    edges: [Post]!
+
+    aggregate: AggregatePost!
+  }
+
   type Translation {
     lang_code: String
     en_value: String
@@ -499,13 +436,6 @@ export const types = gql`
     educationGrade: EducationGrade
     email: EmailAddress!
     employmentStatus: EmploymentStatus
-    posts(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-    ): PostsConnection
-    eventAdmin: [Event]
     firstName: String!
     gender: Gender
     image: String
@@ -537,16 +467,6 @@ export const types = gql`
     isSuperAdmin: Boolean!
     appLanguageCode: String!
   }
-  type PostsConnection {
-    edges: [PostEdge!]!
-    pageInfo: ConnectionPageInfo!
-    totalCount: PositiveInt
-  }
-  type PostEdge {
-    node: Post!
-    cursor: String!
-  }
-
   type UserCustomData {
     _id: ID!
     organizationId: ID!
@@ -563,74 +483,42 @@ export const types = gql`
     aggregate: AggregateUser!
   }
 
-  type UserTag {
-    """
-    A field to get the mongodb object id identifier for this UserTag.
-    """
-    _id: ID!
-    """
-    A field to get the name of this UserTag.
-    """
-    name: String!
-    """
-    A field to traverse the Organization that created this UserTag.
-    """
-    organization: Organization
-    """
-    A field to traverse the parent UserTag of this UserTag.
-    """
-    parentTag: UserTag
-    """
-    A connection field to traverse a list of UserTag this UserTag is a
-    parent to.
-    """
-    childTags(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-    ): UserTagsConnection
-    """
-    A connection field to traverse a list of User this UserTag is assigned
-    to.
-    """
-    usersAssignedTo(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-    ): UsersConnection
-  }
-
-  """
-  A default connection on the UserTag type.
-  """
-  type UserTagsConnection {
-    edges: [UserTagsConnectionEdge!]!
-    pageInfo: DefaultConnectionPageInfo!
-  }
-
-  """
-  A default connection edge on the UserTag type for UserTagsConnection.
-  """
-  type UserTagsConnectionEdge {
-    cursor: String!
-    node: UserTag!
-  }
-
-  """
-  A default connection on the User type.
-  """
-  type UsersConnection {
-    edges: [UsersConnectionEdge!]!
-    pageInfo: DefaultConnectionPageInfo!
-  }
-
-  """
-  A default connection edge on the User type for UsersConnection.
-  """
-  type UsersConnectionEdge {
-    cursor: String!
+  type UserEdge {
     node: User!
+    cursor: String!
+  }
+
+  type UserTag {
+    _id: ID!
+    name: String!
+    organization: Organization
+    parentTag: UserTag
+    childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
+    usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!
+  }
+
+  type UsersConnectionResult {
+    data: UsersConnection
+    errors: [ConnectionError!]!
+  }
+
+  type UserTagsConnectionResult {
+    data: UserTagsConnection
+    errors: [ConnectionError!]!
+  }
+
+  type UserTagsConnection {
+    edges: [UserTagEdge!]!
+    pageInfo: ConnectionPageInfo!
+  }
+
+  type UserTagEdge {
+    node: UserTag!
+    cursor: String!
+  }
+
+  type UsersConnection {
+    edges: [UserEdge!]!
+    pageInfo: ConnectionPageInfo!
   }
 `;

@@ -1,15 +1,11 @@
 import type { Document, Model, PopulatedDoc, Types } from "mongoose";
 import { Schema, model, models } from "mongoose";
-import { createLoggingMiddleware } from "../libraries/dbLogger";
-import type { InterfaceFund } from "./Fund";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceMessage } from "./Message";
 import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
-
-import type { InterfaceAdvertisement } from "./Advertisement";
-
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
@@ -29,7 +25,6 @@ export interface InterfaceOrganization {
     sortingCode: string;
     state: string;
   };
-  advertisements: PopulatedDoc<InterfaceAdvertisement & Document>;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
   status: string;
   members: PopulatedDoc<InterfaceUser & Document>[];
@@ -43,7 +38,6 @@ export interface InterfaceOrganization {
   createdAt: Date;
   updatedAt: Date;
   userRegistrationRequired: boolean;
-  funds: PopulatedDoc<InterfaceFund & Document>[];
   visibleInSearch: boolean;
 }
 /**
@@ -141,13 +135,6 @@ const organizationSchema = new Schema(
         required: true,
       },
     ],
-    adverisements: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Advertisement",
-        required: true,
-      },
-    ],
     groupChats: [
       {
         type: Schema.Types.ObjectId,
@@ -183,12 +170,6 @@ const organizationSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "CustomField",
-      },
-    ],
-    funds: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Fund",
       },
     ],
   },

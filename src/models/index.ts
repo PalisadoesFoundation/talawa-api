@@ -12,8 +12,6 @@ export * from "./EventAttendee";
 export * from "./EventVolunteer";
 export * from "./Feedback";
 export * from "./File";
-export * from "./Fund";
-export * from "./FundraisingCampaign";
 export * from "./Group";
 export * from "./GroupChat";
 export * from "./GroupChatMessage";

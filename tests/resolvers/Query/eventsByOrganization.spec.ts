@@ -1,39 +1,21 @@
 import "dotenv/config";
-import { Event } from "../../../src/models";
-import { connect, disconnect } from "../../helpers/db";
-import type { QueryEventsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { createEventWithRegistrant } from "../../helpers/events";
 import type mongoose from "mongoose";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { Event } from "../../../src/models";
+import type { QueryEventsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
+import type { TestOrganizationType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUser: TestUserType;
+
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [testUser, testOrganization] = await createTestUserAndOrganization();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const testEvent1 = await createEventWithRegistrant(
-    testUser?._id,
-    testOrganization?._id,
-    true,
-    "ONCE",
-  );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const testEvent2 = await createEventWithRegistrant(
-    testUser?._id,
-    testOrganization?._id,
-    true,
-    "ONCE",
-  );
+  const temp = await createTestUserAndOrganization();
+  testOrganization = temp[1];
 });
-
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });

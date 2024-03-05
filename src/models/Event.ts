@@ -126,7 +126,9 @@ const eventSchema = new Schema(
     },
     endDate: {
       type: Date,
-      required: false,
+      required: function (this: InterfaceEvent): boolean {
+        return !this.allDay;
+      },
     },
     startTime: {
       type: Date,
