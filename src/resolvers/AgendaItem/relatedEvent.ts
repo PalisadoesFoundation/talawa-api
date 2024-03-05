@@ -1,5 +1,5 @@
 import type { AgendaItemResolvers } from "../../types/generatedGraphQLTypes";
-import {  Event } from "../../models";
+import { Event } from "../../models";
 
 export const relatedEvent: AgendaItemResolvers["relatedEvent"] = async (
   parent,

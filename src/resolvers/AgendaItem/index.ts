@@ -5,11 +5,10 @@ import { updatedBy } from "./updatedBy";
 import { relatedEvent } from "./relatedEvent";
 import { categories } from "./categories";
 
-
 export const AgendaItem: AgendaItemResolvers = {
   organization,
   createdBy,
   updatedBy,
   relatedEvent,
-  categories
+  categories,
 };

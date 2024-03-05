@@ -5,21 +5,15 @@ import { getAllAgendaItems } from "../../../src/resolvers/Query/getAllAgendaItem
 // } from "../../helpers/userAndOrg";
 import type mongoose from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
-import {
-  beforeAll,
-  afterAll,
-  it,
-  expect,
-} from "vitest";
- 
-let MONGOOSE_INSTANCE: typeof mongoose;
+import { beforeAll, afterAll, it, expect } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   // testUser = await createTestUser();
   // testAdminUser = await createTestUser();
- 
+
   // testEvent = await Event.create({
   //   title: "title",
   //   description: "description",
