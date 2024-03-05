@@ -21,7 +21,6 @@ import {
 import { askToKeepValues } from "./src/setup/askToKeepValues";
 import { validateRecaptcha } from "./src/setup/reCaptcha";
 import { isValidEmail } from "./src/setup/isValidEmail";
-import e from "cors";
 import { askForSuperAdminEmail } from "./src/setup/superAdmin";
 import {
   setImageUploadSize,
@@ -31,6 +30,7 @@ import { updateEnvVariable } from "./src/setup/updateEnvVariable";
 import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
 import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
 import mongodb from "mongodb";
+import { importDefaultOrganization } from "./src/setup/importDefaultOrganization";
 /* eslint-enable */
 
 dotenv.config();
@@ -570,48 +570,6 @@ export async function twoFactorAuth(): Promise<void> {
     updateEnvVariable(config);
   }
 }
-//Import sample data
-/**
- * The function `importDefaultOrganization` will import the default organization
- * with wiping of existing data.
- * @returns The function returns a Promise that resolves to `void`.
- */
-
-async function importDefaultOrganization(): Promise<void> {
-  if (!process.env.MONGO_DB_URL) {
-    console.log("Couldn't find mongodb url");
-    return;
-  }
-
-  const client = new mongodb.MongoClient(process.env.MONGO_DB_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-
-  try {
-    await client.connect();
-    const db = client.db();
-
-    const collections = await db.listCollections().toArray();
-    if (collections.length > 0) {
-      console.log("Collections exist, skipping import.");
-    } else {
-      const { stdout, stderr } = await exec(
-        "npm run import:sample-data-defaultOrg",
-      );
-      if (stderr) {
-        console.error(`Error: ${stderr}`);
-        abort();
-      }
-      console.log(`Output: ${stdout}`);
-    }
-  } catch (error) {
-    console.error("Error importing default Organization:", error);
-  } finally {
-    await client.close();
-  }
-}
-
 /**
  * The function `configureSmtp` prompts the user to configure SMTP settings for sending emails through
  * Talawa and saves the configuration in a .env file.

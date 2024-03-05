@@ -3,7 +3,7 @@ import path from "path";
 import { Organization, Post, User, Event } from "../models";
 import fs from "fs";
 import dotenv from "dotenv";
-import yargs from "yargs";
+import * as yargs from "yargs";
 
 interface InterfaceArgs {
   items?: string;
@@ -27,8 +27,9 @@ dotenv.config();
  * @returns a Promise that resolves to void
  */
 
-export async function loadDefaultOrganization(): Promise<void> {
-  const url = process.env.MONGO_DB_URL;
+export async function loadDefaultOrganization(
+  url: string | undefined,
+): Promise<void> {
   if (url == null) {
     console.log("Couldn't find mongodb url");
     return;
@@ -39,7 +40,7 @@ export async function loadDefaultOrganization(): Promise<void> {
     useFindAndModify: false,
     useNewUrlParser: true,
   });
-  const { format } = yargs
+  const args = yargs
     .options({
       items: {
         alias: "i",
@@ -55,9 +56,7 @@ export async function loadDefaultOrganization(): Promise<void> {
       },
     })
     .parseSync() as InterfaceArgs;
-
-  // Check if specific collections need to be inserted
-  if (format) {
+  if (args.format) {
     await formatDatabase();
   }
   const session = await mongoose.startSession();
@@ -77,5 +76,3 @@ export async function loadDefaultOrganization(): Promise<void> {
   session?.endSession();
   await mongoose.connection.close();
 }
-
-loadDefaultOrganization();
