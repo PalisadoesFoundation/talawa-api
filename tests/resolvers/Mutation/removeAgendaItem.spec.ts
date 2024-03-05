@@ -22,6 +22,11 @@ import type {
 import type { TestEventType } from "../../helpers/eventsWithRegistrants";
 import { createTestEvent } from "../../helpers/events";
 import type { TestAgendaItemType } from "../../helpers/agendaItem";
+import {
+  AGENDA_ITEM_NOT_FOUND_ERROR,
+  UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -108,7 +113,7 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        expect(error.message).toEqual("An unknown error occurred.");
+        expect(error.message).toEqual(USER_NOT_FOUND_ERROR);
       } else {
         throw new Error("An unknown error occurred.");
       }
@@ -132,7 +137,7 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        expect(error.message).toEqual("An unknown error occurred.");
+        expect(error.message).toEqual(AGENDA_ITEM_NOT_FOUND_ERROR);
       } else {
         throw new Error("An unknown error occurred.");
       }
@@ -156,7 +161,7 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        expect(error.message).toEqual("An unknown error occurred.");
+        expect(error.message).toEqual(UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR);
       } else {
         throw new Error("An unknown error occurred.");
       }
@@ -175,7 +180,7 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
     if (removeAgendaItem) {
       try {
         const result = await removeAgendaItem({}, args, context);
-        expect(result).toEqual(testAgendaItem?._id.toString());
+        expect(result._id).toEqual(testAgendaItem?._id.toString());
 
         // Check if the agenda item is removed from the database
         const deletedAgendaItem = await AgendaItemModel.findOne({
