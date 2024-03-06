@@ -1211,6 +1211,51 @@ describe("Check for validation conditions", () => {
       }
     }
   });
+  it(`throws Time Validation error if start time is greater than end time`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message,
+    );
+    try {
+      const args: MutationCreateEventArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          allDay: false,
+          description: "Random",
+          endDate: "",
+          endTime: "2024-03-02T06:00:00.000Z",
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "Random",
+          recurring: false,
+          startDate: "",
+          startTime: "2024-03-02T08:00:00.000Z",
+          title: "Random",
+          recurrance: "DAILY",
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { createEvent: createEventResolverError } = await import(
+        "../../../src/resolvers/Mutation/createEvent"
+      );
+
+      await createEventResolverError?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(
+          `start time must be earlier than end time`,
+        );
+      } else {
+        fail(`Expected TimeValidationError, but got ${error}`);
+      }
+    }
+  });
   it(`throws Image Validation error if greater then 5 images are uploaded`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
