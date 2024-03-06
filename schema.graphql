@@ -104,6 +104,26 @@ type AgendaCategory {
   updatedBy: User
 }
 
+type AgendaItem {
+  _id: ID!
+  attachments: [String]
+  categories: [AgendaCategory]
+  createdAt: Date!
+  createdBy: User!
+  description: String
+  duration: String!
+  isNote: Boolean!
+  itemType: ItemType!
+  organization: Organization!
+  relatedEvent: Event
+  sequence: Int!
+  title: String!
+  updatedAt: Date!
+  updatedBy: User!
+  urls: [String]
+  user: String!
+}
+
 type AggregatePost {
   count: Int!
 }
@@ -215,6 +235,21 @@ input CreateAgendaCategoryInput {
   description: String
   name: String!
   organizationId: ID!
+}
+
+input CreateAgendaItemInput {
+  attachments: [String]
+  categories: [ID]
+  description: String
+  duration: String!
+  isNote: Boolean!
+  itemType: ItemType!
+  organizationId: ID!
+  relatedEventId: ID
+  sequence: Int!
+  title: String!
+  urls: [String]
+  user: String
 }
 
 input CreateUserTagInput {
@@ -508,6 +543,7 @@ type Event {
   _id: ID!
   actionItems: [ActionItem]
   admins(adminId: ID): [User!]
+  agendaItems: [AgendaItem]
   allDay: Boolean!
   attendees: [User]
   attendeesCheckInStatus: [CheckInStatus!]!
@@ -785,6 +821,11 @@ type InvalidCursor implements FieldError {
   path: [String!]!
 }
 
+enum ItemType {
+  Note
+  Regular
+}
+
 scalar JSON
 
 type Language {
@@ -906,6 +947,7 @@ type Mutation {
   createAdmin(data: UserAndOrganizationInput!): User!
   createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
+  createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
@@ -946,6 +988,8 @@ type Mutation {
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): User!
+  removeAdvertisement(id: ID!): Advertisement
+  removeAgendaItem(id: ID!): AgendaItem!
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!, recurringEventDeleteType: RecurringEventMutationType): Event!
@@ -983,6 +1027,7 @@ type Mutation {
   updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
+  updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
   updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
@@ -1259,6 +1304,8 @@ type Query {
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
+  getAgendaItem(id: ID!): AgendaItem
+  getAllAgendaItems: [AgendaItem]
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
@@ -1402,6 +1449,21 @@ type UpdateAdvertisementPayload {
 input UpdateAgendaCategoryInput {
   description: String
   name: String
+}
+
+input UpdateAgendaItemInput {
+  attachments: [String]
+  categories: [ID]
+  description: String
+  duration: String
+  isNote: Boolean
+  itemType: ItemType
+  relatedEvent: ID
+  sequence: Int
+  title: String
+  updatedBy: ID!
+  urls: [String]
+  user: String
 }
 
 input UpdateEventInput {
