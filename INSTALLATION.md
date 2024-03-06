@@ -12,14 +12,9 @@ This document provides instructions on how to set up and start a running instanc
   - [Install TypeScript](#install-typescript)
   - [Install git](#install-git)
   - [Setting up this repository](#setting-up-this-repository)
-- [Installation Using Docker](#installation-using-docker)
-  - [Prerequisites](#prerequisites-1)
-  - [Docker Compose Setup](#docker-compose-setup)
-    - [For Development](#for-development)
-    - [For Production](#for-production)
-    - [Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!](#congratulations-%F0%9F%8E%89-your-talawa-api-is-now-successfully-set-up-and-running-using-docker)
-- [Installation without Docker](#installation-without-docker)
   - [Install the Required Packages](#install-the-required-packages)
+- [Installation Using Docker](#installation-using-docker)
+- [Installation without Docker](#installation-without-docker)
   - [Install MongoDB](#install-mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
   - [Install Redis](#install-redis)
@@ -134,56 +129,6 @@ This will setup the repository and the code files locally for you. For more deta
 
 `NOTE: All the commands we're going to execute in the following instructions will assume you are in the root directory of the project. If you fail to do so, the commands will not work.`
 
-# Installation Using Docker
-
-This guide provides step-by-step instructions on deploying a talawa-api using Docker. Docker allows you to package your application and its dependencies into a container, providing a consistent environment across different systems.
-
-## Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop) installed on your machine.
-
-## Docker Compose Setup
-
-### For Development
-
-1. **Build and Start Development Containers:**
-    ```
-    docker-compose -f docker-compose.dev.yaml up --build
-    ```
-   This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
-
-2. **Access the Development Application:**
-   Open your web browser and navigate to [http://localhost:4000](http://localhost:4000).
-
-3. **Stopping Development Containers:**
-    ```
-    docker-compose -f docker-compose.dev.yml down
-    ```
-
-### For Production
-
-1. **Build and Start Production Containers:**
-    ```
-    docker-compose -f docker-compose.prod.yml up --build -d
-    ```
-   This command starts the production environment in detached mode, suitable for production deployment.
-
-2. **Access the Production Application:**
-   Open your web browser and navigate to [http://localhost:4001](http://localhost:4001).
-
-3. **Stopping Production Containers:**
-    ```
-    docker-compose -f docker-compose.prod.yml down
-    ```
-
-### Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!
-
-
-**Note: If you're using Docker, you'll need to manually import the sample data after the Docker Compose has started the MongoDB container. For instructions on how to do this, refer to [Importing Sample Database](#importing-sample-database)**
-
-# Installation without Docker
-
-There are more steps, but the outcome is the same. A working Talawa-API instance.
-
 ## Install the Required Packages
 
 Install the packages required by `talawa-api` using this command:
@@ -191,6 +136,29 @@ Install the packages required by `talawa-api` using this command:
 ```
 npm install
 ```
+
+# Installation Using Docker
+
+> - **Requires Docker and Docker Compose to be installed**
+> - Will start a local mongodb and redis instances
+
+Now use the following command to run docker containers -
+
+```sh
+docker compose up
+```
+
+OR
+
+```sh
+docker-compose up
+```
+
+**Note: If you're using Docker, you'll need to manually import the sample data after the Docker Compose has started the MongoDB container. For instructions on how to do this, refer to [Importing Sample Database](#importing-sample-database)**
+
+# Installation without Docker
+
+There are more steps, but the outcome is the same. A working Talawa-API instance.
 
 ## Install MongoDB
 
