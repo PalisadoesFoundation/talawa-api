@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2016" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    "module": "CommonJS", // Change this line
+    "target": "esnext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "module": "nodenext" /* Emmits modules  in ESNext format, which is compatible with Node*/,
+    "moduleResolution": "nodenext",
     "rootDir": "./src" /* Specify the root folder within your source files. */,
     "outDir": "./build" /* Specify an output folder for all emitted files. */,
     "removeComments": true /* Disable emitting comments. */,
