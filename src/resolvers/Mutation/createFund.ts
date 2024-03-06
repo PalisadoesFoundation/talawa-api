@@ -74,5 +74,17 @@ export const createFund: MutationResolvers["createFund"] = async (
     isArchived: args.data.isArchived,
   });
 
+  //push the created fund to the organization funds array
+  await Organization.updateOne(
+    {
+      _id: organization._id,
+    },
+    {
+      $push: {
+        funds: createdFund._id,
+      },
+    },
+  );
+
   return createdFund.toObject();
 };

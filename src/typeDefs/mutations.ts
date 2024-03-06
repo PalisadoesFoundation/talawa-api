@@ -23,7 +23,10 @@ export const mutations = gql`
 
     addOrganizationImage(file: String!, organizationId: String!): Organization!
       @auth
-
+    addPledgeToFundraisingCampaign(
+      pledgeId: ID!
+      campaignId: ID!
+    ): FundraisingCampaignPledge! @auth
     addUserCustomData(
       organizationId: ID!
       dataName: String!
@@ -100,6 +103,9 @@ export const mutations = gql`
     createFund(data: FundInput!): Fund! @auth
     createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
       @auth
+    createFundraisingCampaignPledge(
+      data: FundCampaignPledgeInput!
+    ): FundraisingCampaignPledge! @auth
 
     createGroupChat(data: createGroupChatInput!): GroupChat! @auth
 
@@ -117,13 +123,8 @@ export const mutations = gql`
     ): Plugin!
 
     createAdvertisement(
-      orgId: ID!
-      name: String!
-      link: String!
-      type: String!
-      startDate: Date!
-      endDate: Date!
-    ): Advertisement!
+      input: CreateAdvertisementInput!
+    ): CreateAdvertisementPayload @auth
 
     createPost(data: PostInput!, file: String): Post @auth
 
@@ -131,11 +132,17 @@ export const mutations = gql`
 
     createSampleOrganization: Boolean! @auth
 
-    deleteAdvertisementById(id: ID!): DeletePayload!
+    createVenue(data: VenueInput!): Venue @auth
+
+    deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
 
     deleteAgendaCategory(id: ID!): ID!
 
     deleteDonationById(id: ID!): DeletePayload!
+
+    deleteVenue(id: ID!): Venue @auth
+
+    editVenue(data: EditVenueInput!): Venue @auth
 
     forgotPassword(data: ForgotPasswordData!): Boolean!
 
@@ -184,12 +191,17 @@ export const mutations = gql`
 
     removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
 
-    removeEvent(id: ID!): Event! @auth
-    removeFund(id: ID!): Fund! @auth
+    removeEvent(
+      id: ID!
+      recurringEventDeleteType: RecurringEventMutationType
+    ): Event! @auth
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
 
     removeEventVolunteer(id: ID!): EventVolunteer! @auth
+    removeFund(id: ID!): Fund! @auth
+    removeFundraisingCampaign(id: ID!): FundraisingCampaign! @auth
+    removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge! @auth
 
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
@@ -202,8 +214,6 @@ export const mutations = gql`
     removePost(id: ID!): Post @auth
 
     removeUserCustomData(organizationId: ID!): UserCustomData! @auth
-
-    removeAdvertisement(id: ID!): Advertisement
 
     removeUserTag(id: ID!): UserTag @auth
 
@@ -259,13 +269,26 @@ export const mutations = gql`
       input: UpdateAdvertisementInput!
     ): UpdateAdvertisementPayload @auth
 
-    updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
+    updateEvent(
+      id: ID!
+      data: UpdateEventInput
+      recurrenceRuleData: RecurrenceRuleInput
+      recurringEventUpdateType: RecurringEventMutationType
+    ): Event! @auth
 
     updateEventVolunteer(
       id: ID!
       data: UpdateEventVolunteerInput
     ): EventVolunteer! @auth
     updateFund(id: ID!, data: UpdateFundInput!): Fund! @auth
+    updateFundraisingCampaign(
+      id: ID!
+      data: UpdateFundCampaignInput!
+    ): FundraisingCampaign! @auth
+    updateFundraisingCampaignPledge(
+      id: ID!
+      data: UpdateFundCampaignPledgeInput!
+    ): FundraisingCampaignPledge! @auth
     updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 
     updateLanguage(languageCode: String!): User! @auth
