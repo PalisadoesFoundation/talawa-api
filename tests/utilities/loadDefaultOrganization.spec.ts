@@ -19,11 +19,10 @@ describe("loadDefaultOrganization tests", () => {
   beforeAll(async () => {
     mongooseInstance = await connect();
   });
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
   afterAll(async () => {
     await disconnect(mongooseInstance);
+    vi.resetAllMocks();
+    vi.doUnmock('mongoose');
   });
   it("Data importation with formatting", async () => {
     vi.spyOn(mongoose, "connect").mockResolvedValue(mongooseInstance);
