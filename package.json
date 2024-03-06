@@ -2,7 +2,7 @@
   "name": "talawa-api",
   "version": "1.0.0",
   "description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
-  "main": "./build/.js",
+  "main": "./build/server.js",
   "scripts": {
     "build": "tsc --pretty --project tsconfig.build.json",
     "dev": "concurrently  \"tsx watch ./src/index.ts\" \"graphql-codegen --watch\"",
