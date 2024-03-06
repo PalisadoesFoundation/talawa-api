@@ -1517,4 +1517,49 @@ describe("Check for validation conditions", () => {
       }
     }
   });
+  it(`throws Time Validation error if start time is greater than end time`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message,
+    );
+    try {
+      const args: MutationUpdateEventArgs = {
+        id: testEvent?._id,
+        data: {
+          allDay: false,
+          description: "Random",
+          endDate: "",
+          endTime: "2024-03-02T06:00:00.000Z",
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "Random",
+          recurring: false,
+          startDate: "",
+          startTime: "2024-03-02T08:00:00.000Z",
+          title: "Random",
+          recurrance: "DAILY",
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { updateEvent: updateEventResolverError } = await import(
+        "../../../src/resolvers/Mutation/updateEvent"
+      );
+
+      await updateEventResolverError?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `start time must be earlier than end time`,
+        );
+      } else {
+        fail(`Expected InputValidationError, but got ${error}`);
+      }
+    }
+  });
 });
