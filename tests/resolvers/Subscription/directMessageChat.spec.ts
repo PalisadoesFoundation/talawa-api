@@ -6,25 +6,17 @@ describe("src -> resolvers -> Subscription -> directMessageChat", () => {
     const { directMessageChat: directMessageChatPayload } = await import(
       "../../../src/resolvers/Subscription/directMessageChat"
     );
-
-    // **Type assertion (if necessary):**
-    const typedDirectMessageChatPayload = directMessageChatPayload as (
-      parent: unknown,
-      args: Record<string, unknown>,
-      context: { pubsub: { asyncIterator: (channel: string) => AsyncIterableIterator<string>; } }
-    ) => AsyncIterableIterator<unknown>; // Adjust type based on actual return type
-
-    const _args: Record<string, unknown> = {};
-    const _parent: unknown = {};
+    const _args = {};
+    const _parent = {};
     const context = {
       pubsub: {
-        asyncIterator: (chatChannel: string): AsyncIterableIterator<string> => {
+        asyncIterator: (chatChannel: string): string => {
           return chatChannel;
         },
       },
     };
-
-    const x = typedDirectMessageChatPayload?.subscribe(_parent, _args, context);
+    //@ts-expect-error : This is directly calling the function
+    const x = directMessageChatPayload?.subscribe(_parent, _args, context);
     expect(x).not.toBe(null);
   });
 });
