@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import {
   afterAll,
-  afterEach,
   beforeAll,
   describe,
   expect,
