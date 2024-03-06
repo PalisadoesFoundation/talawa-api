@@ -4,8 +4,8 @@ import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { forgotPassword as forgotPasswordResolver } from "../../../src/resolvers/Mutation/forgotPassword";
 import {
-  ACCESS_TOKEN_SECRET,
   INVALID_OTP,
+  ACCESS_TOKEN_SECRET,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import jwt from "jsonwebtoken";
@@ -35,7 +35,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
           email: testUser?.email ?? "",
           otp: "otp",
         },
-        process.env.NODE_ENV!,
+        ACCESS_TOKEN_SECRET as string,
         {
           expiresIn: 99999999,
         },
@@ -50,8 +50,10 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       };
 
       await forgotPasswordResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(INVALID_OTP);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(INVALID_OTP);
+      }
     }
   });
 
@@ -148,8 +150,10 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     try {
       await forgotPasswordResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      }
     }
   });
   it(`changes the password if args.otp is correct`, async () => {
@@ -162,7 +166,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
         email: testUser?.email ?? "",
         otp: hashedOtp,
       },
-      process.env.NODE_ENV ?? "",
+      ACCESS_TOKEN_SECRET as string,
       {
         expiresIn: 99999999,
       },
@@ -180,6 +184,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     expect(forgotPasswordPayload).toEqual(true);
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const updatedTestUser = await User!
       .findOne({
         _id: testUser?._id ?? "",
@@ -187,6 +192,6 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       .select(["password"])
       .lean();
 
-    expect(updatedTestUser?.password).not.toEqual(testUser!.password);
+    expect(updatedTestUser?.password).not.toEqual(testUser?.password);
   });
 });
