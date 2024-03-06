@@ -1,12 +1,5 @@
 import mongoose from "mongoose";
-import {
-  afterAll,
-  beforeAll,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { connect, disconnect } from "../helpers/db";
 import { Organization, User, Event, Post } from "../../src/models";
 import { loadDefaultOrganization } from "../../src/utilities/loadDefaultOrganization";
