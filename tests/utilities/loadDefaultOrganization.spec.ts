@@ -1,18 +1,30 @@
 import mongoose from "mongoose";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { connect } from "../helpers/db";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import { connect, disconnect } from "../helpers/db";
 import { Organization, User, Event, Post } from "../../src/models";
 import { loadDefaultOrganization } from "../../src/utilities/loadDefaultOrganization";
 import dotenv from "dotenv";
 
 dotenv.config();
 describe("loadDefaultOrganization tests", () => {
+  let mongooseInstance: typeof mongoose;
   beforeAll(async () => {
-    const mongooseInstance = await connect();
+    mongooseInstance = await connect();
     vi.spyOn(mongoose, "connect").mockResolvedValue(mongooseInstance);
   });
   afterEach(() => {
     vi.clearAllMocks();
+  });
+  afterAll(async () => {
+    await disconnect(mongooseInstance);
   });
   it("Data importation with formatting", async () => {
     vi.mock("yargs", () => ({
