@@ -79,11 +79,12 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         "../../../src/resolvers/Mutation/createOrganization"
       );
       await createOrganization?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(
-        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
-      );
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+    } catch (error) {
+      if(error instanceof Error) {
+        expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
+          );
+        expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+      }
     }
   });
 
@@ -434,11 +435,16 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       } catch (error: any) {
         // Validate that the error message matches the expected Address Validation Error message
         expect(error.message).toEqual("Not a Valid Address");
+
+        expect(error).toBeInstanceOf(Error);
+
+        expect.fail("The error message does not match the expected message");
       }
     } else {
       console.error(
         "Error: createOrganizationResolver is undefined in the test suite",
       );
+      expect.fail("createOrganizationResolver is undefined");
     }
   });
 });
