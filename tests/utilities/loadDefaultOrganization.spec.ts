@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { connect } from "../helpers/db";
 import { Organization, User, Event, Post } from "../../src/models";
 import { loadDefaultOrganization } from "../../src/utilities/loadDefaultOrganization";
@@ -10,6 +10,9 @@ describe("loadDefaultOrganization tests", () => {
   beforeAll(async () => {
     const mongooseInstance = await connect();
     vi.spyOn(mongoose, "connect").mockResolvedValue(mongooseInstance);
+  });
+  afterEach(() => {
+    vi.clearAllMocks();
   });
   it("Data importation with formatting", async () => {
     vi.mock("yargs", () => ({
