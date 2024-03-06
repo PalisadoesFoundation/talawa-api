@@ -66,10 +66,8 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
 
   const currentUserIsOrganizationMember = organization.members.some(
     (member) =>
-      member.toString() === currentUser?._id.toString() ||
-      Types.ObjectId.createFromHexString(member.toString()).equals(
-        Types.ObjectId.createFromHexString(currentUser?._id.toString()),
-      ),
+      member === currentUser?._id ||
+      new Types.ObjectId(member).equals(currentUser?._id),
   );
 
   // Checks whether currentUser is not a member of organzation.

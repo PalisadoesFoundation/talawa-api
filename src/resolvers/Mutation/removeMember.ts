@@ -98,9 +98,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   }
 
   const userIsOrganizationAdmin = organization?.admins.some((admin) =>
-    Types.ObjectId.createFromHexString(admin.toString()).equals(
-      Types.ObjectId.createFromHexString(user._id.toString()),
-    ),
+    new Types.ObjectId(admin).equals(user._id),
   );
 
   /*
@@ -122,11 +120,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     of organization. If match is true assigns error message to errors list
     and breaks out of loop.
     */
-  if (
-    Types.ObjectId.createFromHexString(
-      organization?.creatorId.toString(),
-    ).equals(Types.ObjectId.createFromHexString(user._id.toString()))
-  ) {
+  if (new Types.ObjectId(organization?.creatorId).equals(user._id.toString())) {
     throw new errors.UnauthorizedError(
       requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
       ADMIN_REMOVING_CREATOR.CODE,

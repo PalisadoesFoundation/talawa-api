@@ -69,10 +69,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlockedFromOrganization = organization.blockedUsers.some(
-    (blockedUser) =>
-      Types.ObjectId.createFromHexString(blockedUser.toString()).equals(
-        user._id,
-      ),
+    (blockedUser) => new Types.ObjectId(blockedUser).equals(user._id),
   );
 
   // checks if user with _id === args.userId is blocked by organzation with _id == args.organizationId
@@ -113,9 +110,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
       $set: {
         organizationsBlockedBy: user.organizationsBlockedBy.filter(
           (organizationBlockedBy) =>
-            !Types.ObjectId.createFromHexString(
-              organization._id.toString(),
-            ).equals(organizationBlockedBy),
+            !new Types.ObjectId(organization._id).equals(organizationBlockedBy),
         ),
       },
     },

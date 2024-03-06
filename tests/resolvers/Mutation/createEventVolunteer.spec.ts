@@ -150,7 +150,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
 
     expect(createdVolunteer).toEqual(
       expect.objectContaining({
-        eventId: Types.ObjectId.createFromHexString(testEvent?.id.toString()),
+        eventId: new Types.ObjectId(testEvent?.id),
         userId: testUser2?._id,
         creatorId: testUser1?._id,
         isInvited: true,

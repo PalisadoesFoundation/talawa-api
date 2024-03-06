@@ -46,7 +46,10 @@ describe("resolvers -> Query -> event", () => {
 
     const event = await Event.findOne({
       _id: testEvent?._id,
-    }).lean();
+    })
+      .populate("creatorId", "-password")
+      .populate("admins", "-password")
+      .lean();
 
     expect(eventPayload).toEqual(event);
   });

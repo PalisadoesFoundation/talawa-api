@@ -54,9 +54,7 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
     const currentUserIsOrgAdmin = currentUser.adminFor.some(
       (organizationId) =>
         organizationId === currentOrg?._id ||
-        Types.ObjectId.createFromHexString(organizationId.toString()).equals(
-          Types.ObjectId.createFromHexString(organizationId.toString()),
-        ),
+        new Types.ObjectId(organizationId).equals(organizationId),
     );
 
     // If the user is a normal user, throw an error

@@ -78,9 +78,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
   const isUserEventAdmin = currentEvent.admins.some(
     (admin) =>
       admin.toString() === context.userId.toString() ||
-      Types.ObjectId.createFromHexString(admin.toString()).equals(
-        Types.ObjectId.createFromHexString(context.userId.toString()),
-      ),
+      new Types.ObjectId(admin).equals(context.userId),
   );
 
   if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {

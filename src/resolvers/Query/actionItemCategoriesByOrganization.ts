@@ -10,9 +10,7 @@ export const actionItemCategoriesByOrganization: QueryResolvers["actionItemCateg
   async (_parent, args) => {
     const categories = await ActionItemCategory.find({
       organizationId: args.organizationId,
-    })
-      .sort({ createdAt: -1 })
-      .lean();
+    }).lean();
 
     return categories;
   };

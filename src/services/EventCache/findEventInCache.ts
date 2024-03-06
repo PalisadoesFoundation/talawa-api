@@ -33,18 +33,16 @@ export async function findEventsInCache(
       return {
         ...eventObj,
 
-        _id: Types.ObjectId.createFromHexString(eventObj._id.toString()),
+        _id: new Types.ObjectId(eventObj._id),
 
         admins:
           eventObj?.admins?.length !== 0
             ? eventObj?.admins?.map((admin: string) => {
-                return Types.ObjectId.createFromHexString(admin.toString());
+                return new Types.ObjectId(admin);
               })
             : [],
 
-        organization: Types.ObjectId.createFromHexString(
-          eventObj.organization.toString(),
-        ),
+        organization: new Types.ObjectId(eventObj.organization),
 
         startDate: new Date(eventObj.startDate),
 
@@ -56,9 +54,7 @@ export async function findEventsInCache(
 
         ...(eventObj?.endTime ? { endTime: new Date(eventObj.endTime) } : {}), // Conditional removal of endTime field
 
-        creatorId: Types.ObjectId.createFromHexString(
-          eventObj.creatorId.toString(),
-        ),
+        creatorId: new Types.ObjectId(eventObj.creatorId),
 
         createdAt: new Date(eventObj.createdAt),
 

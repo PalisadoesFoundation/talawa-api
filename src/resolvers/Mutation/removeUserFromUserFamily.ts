@@ -47,15 +47,11 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     }
 
     const userIsMemberOfUserFamily = userFamily?.users.some((member) => {
-      return Types.ObjectId.createFromHexString(member.toString()).equals(
-        Types.ObjectId.createFromHexString(user?._id.toString()),
-      );
+      return new Types.ObjectId(member).equals(user?._id);
     });
 
     const userIdUserFamilyAdmin = userFamily?.admins.some((admin) => {
-      Types.ObjectId.createFromHexString(admin.toString()).equals(
-        Types.ObjectId.createFromHexString(user?._id.toString()),
-      );
+      new Types.ObjectId(admin).equals(user?._id);
     });
 
     //Check whether user family exists.
@@ -113,11 +109,7 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
           of userFamily. If match is true assigns error message to errors list
           and breaks out of loop.
         */
-    if (
-      Types.ObjectId.createFromHexString(userFamily.creator.toString()).equals(
-        Types.ObjectId.createFromHexString(user._id.toString()),
-      )
-    ) {
+    if (new Types.ObjectId(userFamily.creator.toString()).equals(user._id)) {
       throw new errors.UnauthorizedError(
         requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
         ADMIN_REMOVING_CREATOR.CODE,

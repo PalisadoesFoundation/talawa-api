@@ -33,13 +33,11 @@ export async function findPostsInCache(
       return {
         ...postObj,
 
-        _id: Types.ObjectId.createFromHexString(postObj._id.toString()),
+        _id: new Types.ObjectId(postObj._id),
 
         createdAt: new Date(postObj.createdAt),
 
-        organization: Types.ObjectId.createFromHexString(
-          postObj.organization.toString(),
-        ),
+        organization: new Types.ObjectId(postObj.organization),
 
         likeCount: Number(postObj.likeCount),
 
@@ -48,13 +46,11 @@ export async function findPostsInCache(
         likedBy:
           postObj?.likedBy.length !== 0
             ? postObj?.likedBy?.map((user: string) => {
-                return Types.ObjectId.createFromHexString(user.toString());
+                return new Types.ObjectId(user);
               })
             : [],
 
-        creatorId: Types.ObjectId.createFromHexString(
-          postObj.creatorId.toString(),
-        ),
+        creatorId: new Types.ObjectId(postObj.creatorId),
 
         updatedAt: new Date(postObj.updatedAt),
       };

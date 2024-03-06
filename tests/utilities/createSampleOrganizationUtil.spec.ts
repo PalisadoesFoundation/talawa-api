@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import type mongoose from "mongoose";
-import { Plugin } from "../../src/models";
+// import { Plugin } from "../../src/models";
 import { faker } from "@faker-js/faker";
 import {
-  generateRandomPlugins,
+  // generateRandomPlugins,
   generateUserData,
   generatePostData,
   generateEventData as generateEventDataFn,
@@ -121,32 +121,31 @@ describe("generatePostData function", () => {
     expect(post.createdAt).toEqual(expect.any(Date));
   });
 
-  describe("generateRandomPlugins function", () => {
-    it("should generate and save the specified number of plugins with correct properties", async () => {
-      const numberOfPlugins = 5;
-      const users = [
-        await generateUserData(faker.database.mongodbObjectId(), "USER"),
-      ];
+  // describe("generateRandomPlugins function", () => {
+  //   it("should generate and save the specified number of plugins with correct properties", async () => {
+  //     const numberOfPlugins = 5;
+  //     const users = [
+  //       await generateUserData(faker.database.mongodbObjectId(), "USER"),
+  //     ];
 
-      const pluginPromises = await generateRandomPlugins(
-        numberOfPlugins,
-        users.map((user) => user._id.toString()),
-      );
+  //     const pluginPromises = await generateRandomPlugins(
+  //       numberOfPlugins,
+  //       users.map((user) => user._id.toString()),
+  //     );
 
-      expect(Array.isArray(pluginPromises)).toBe(true);
-      expect(pluginPromises!.length).toBe(numberOfPlugins);
+  //     expect(Array.isArray(pluginPromises)).toBe(true);
+  //     expect(pluginPromises!.length).toBe(numberOfPlugins);
 
-      await Promise.all(pluginPromises!);
+  //     await Promise.all(pluginPromises!);
 
-      const plugins = await Plugin.find();
-      console.log("Number of plugins created:", plugins.length); // add this line
-      expect(plugins.length).toBe(numberOfPlugins);
+  //     const plugins = await Plugin.find();
+  //     expect(plugins.length).toBe(numberOfPlugins);
 
-      plugins.forEach((plugin) => {
-        expect(plugin.pluginName).toEqual(expect.any(String));
-        expect(plugin.pluginCreatedBy).toEqual(expect.any(String));
-        expect(plugin.pluginDesc).toEqual(expect.any(String));
-      });
-    });
-  });
+  //     plugins.forEach((plugin) => {
+  //       expect(plugin.pluginName).toEqual(expect.any(String));
+  //       expect(plugin.pluginCreatedBy).toEqual(expect.any(String));
+  //       expect(plugin.pluginDesc).toEqual(expect.any(String));
+  //     });
+  //   });
+  // });
 });

@@ -71,9 +71,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   const userIsOrganizationMember = organization?.members.some(
     (member) =>
       member.toString() === args.userId.toString() ||
-      Types.ObjectId.createFromHexString(member.toString()).equals(
-        Types.ObjectId.createFromHexString(args.userId.toString()),
-      ),
+      new Types.ObjectId(member).equals(args.userId),
   );
 
   if (!userIsOrganizationMember) {
@@ -98,9 +96,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   const userIsBlocked = organization.blockedUsers.some(
     (blockedUser) =>
       blockedUser.toString() === args.userId.toString() ||
-      Types.ObjectId.createFromHexString(blockedUser.toString()).equals(
-        Types.ObjectId.createFromHexString(args.userId.toString()),
-      ),
+      new Types.ObjectId(blockedUser.to).equals(args.userId),
   );
 
   // Checks whether user with _id === args.userId is already blocked from organization.

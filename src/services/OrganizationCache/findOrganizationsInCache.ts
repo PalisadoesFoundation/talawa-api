@@ -35,45 +35,41 @@ export async function findOrganizationsInCache(
 
         createdAt: new Date(organization.createdAt),
 
-        _id: Types.ObjectId.createFromHexString(organization._id),
+        _id: new Types.ObjectId(organization._id),
 
         admins: organization?.admins?.map((admin: string) => {
-          return Types.ObjectId.createFromHexString(admin.toString());
+          return new Types.ObjectId(admin);
         }),
 
         members:
           organization.members.length !== 0
             ? organization.members?.map((member: string) => {
-                return Types.ObjectId.createFromHexString(member.toString());
+                return new Types.ObjectId(member);
               })
             : [],
 
-        creatorId: Types.ObjectId.createFromHexString(
-          organization.creatorId.toString(),
-        ),
+        creatorId: new Types.ObjectId(organization.creatorId),
 
         updatedAt: new Date(organization.updatedAt),
 
         groupChats:
           organization.groupChats.length !== 0
             ? organization.groupChat.map((groupChat: string) => {
-                return Types.ObjectId.createFromHexString(groupChat.toString());
+                return new Types.ObjectId(groupChat);
               })
             : [],
 
         posts:
           organization.posts.length !== 0
             ? organization.posts?.map((post: string) => {
-                return Types.ObjectId.createFromHexString(post.toString());
+                return new Types.ObjectId(post);
               })
             : [],
 
         pinnedPosts:
           organization.pinnedPosts.length !== 0
             ? organization.pinnedPosts?.map((pinnedPost: string) => {
-                return Types.ObjectId.createFromHexString(
-                  pinnedPost.toString(),
-                );
+                return new Types.ObjectId(pinnedPost);
               })
             : [],
 
@@ -81,9 +77,7 @@ export async function findOrganizationsInCache(
           organization.membershipRequests.length !== 0
             ? organization.membershipRequests.map(
                 (membershipRequest: string) => {
-                  return Types.ObjectId.createFromHexString(
-                    membershipRequest.toString(),
-                  );
+                  return new Types.ObjectId(membershipRequest);
                 },
               )
             : [],
@@ -91,9 +85,7 @@ export async function findOrganizationsInCache(
         blockedUsers:
           organization.blockedUsers.length !== 0
             ? organization.blockedUsers.map((blockedUser: string) => {
-                return Types.ObjectId.createFromHexString(
-                  blockedUser.toString(),
-                );
+                return new Types.ObjectId(blockedUser);
               })
             : [],
       };

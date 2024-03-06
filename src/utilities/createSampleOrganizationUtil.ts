@@ -1,5 +1,5 @@
 import type { InterfaceEvent, InterfacePost, InterfaceUser } from "../models";
-import { Organization, User, Event, Post, Plugin } from "../models";
+import { Organization, User, Event, Post } from "../models";
 
 import { faker } from "@faker-js/faker";
 import type mongoose from "mongoose";
@@ -182,35 +182,35 @@ const createEvents = async (
   return events;
 };
 
-export const generateRandomPlugins = async (
-  numberOfPlugins: number,
-  users: string[],
-): Promise<Promise<any>[]> => {
-  const pluginPromises = [];
-  for (let i = 0; i < numberOfPlugins; i++) {
-    const selectedUserId: string = faker.helpers.arrayElement(users);
-    const selectedUser = await User.findById(selectedUserId);
+// export const generateRandomPlugins = async (
+//   numberOfPlugins: number,
+//   users: string[],
+// ): Promise<Promise<any>[]> => {
+//   const pluginPromises = [];
+//   for (let i = 0; i < numberOfPlugins; i++) {
+//     const selectedUserId: string = faker.helpers.arrayElement(users);
+//     const selectedUser = await User.findById(selectedUserId);
 
-    const plugin = new Plugin({
-      pluginName: faker.company.name(),
-      pluginCreatedBy: `${selectedUser?.firstName} ${selectedUser?.lastName}`,
-      pluginDesc: faker.lorem.sentence(),
-    });
+//     const plugin = new Plugin({
+//       pluginName: faker.company.name(),
+//       pluginCreatedBy: `${selectedUser?.firstName} ${selectedUser?.lastName}`,
+//       pluginDesc: faker.lorem.sentence(),
+//     });
 
-    const pluginPromise = plugin.save();
+//     const pluginPromise = plugin.save();
 
-    const sampleModel = new SampleData({
-      documentId: plugin._id,
-      collectionName: "Plugin",
-    });
+//     const sampleModel = new SampleData({
+//       documentId: plugin._id,
+//       collectionName: "Plugin",
+//     });
 
-    await sampleModel.save();
-    pluginPromises.push(pluginPromise);
-  }
+//     await sampleModel.save();
+//     pluginPromises.push(pluginPromise);
+//   }
 
-  await Promise.all(pluginPromises);
-  return pluginPromises;
-};
+//   await Promise.all(pluginPromises);
+//   return pluginPromises;
+// };
 
 export const createSampleOrganization = async (): Promise<void> => {
   const _id = faker.database.mongodbObjectId();
@@ -286,5 +286,5 @@ export const createSampleOrganization = async (): Promise<void> => {
   await createEvents(5, organization.members, organization._id.toString());
   await createPosts(5, organization.members, organization._id.toString());
 
-  await generateRandomPlugins(10, organization.members);
+  // await generateRandomPlugins(10, organization.members);
 };

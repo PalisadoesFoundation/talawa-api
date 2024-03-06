@@ -40,24 +40,20 @@ export async function findCommentsByPostIdInCache(
       return {
         ...commentObj,
 
-        _id: Types.ObjectId.createFromHexString(commentObj._id.toString()),
+        _id: new Types.ObjectId(commentObj._id),
 
         createdAt: new Date(commentObj.createdAt),
 
-        creatorId: Types.ObjectId.createFromHexString(
-          commentObj.creatorId.toString(),
-        ),
+        creatorId: new Types.ObjectId(commentObj.creatorId),
 
         updatedAt: new Date(commentObj.updatedAt),
 
-        postId: Types.ObjectId.createFromHexString(
-          commentObj.postId.toString(),
-        ),
+        postId: new Types.ObjectId(commentObj.postId),
 
         likedBy:
           commentObj?.likedBy.length !== 0
             ? commentObj?.likedBy?.map((user: string) => {
-                return Types.ObjectId.createFromHexString(user.toString());
+                return new Types.ObjectId(user);
               })
             : [],
       };

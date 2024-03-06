@@ -72,11 +72,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
 
   // Checks whether user is an admin of the organization.
   const userIsOrganizationAdmin = organization.admins.some(
-    (admin) =>
-      admin.toString() === user._id.toString() ||
-      Types.ObjectId.createFromHexString(admin.toString()).equals(
-        Types.ObjectId.createFromHexString(user._id.toString()),
-      ),
+    (admin) => admin === user._id || new Types.ObjectId(admin).equals(user._id),
   );
 
   if (!userIsOrganizationAdmin) {

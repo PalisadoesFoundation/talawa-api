@@ -48,7 +48,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
 
     // Checks whether user to be removed is a member of the organization.
     const userIsOrganizationMember = organization?.members.some((member) =>
-      Types.ObjectId.createFromHexString(member.toString()).equals(user._id),
+      new Types.ObjectId(member).equals(user._id),
     );
 
     if (!userIsOrganizationMember) {
@@ -71,9 +71,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
 
     // Check whether loggedIn user is admin of the organization.
     const loggedInUserIsOrganizationAdmin = organization?.admins.some((admin) =>
-      Types.ObjectId.createFromHexString(admin.toString()).equals(
-        loggedInUser._id,
-      ),
+      new Types.ObjectId(admin).equals(loggedInUser._id),
     );
 
     if (
@@ -100,9 +98,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
     }
     // ADMIN cannot change the role of itself
     if (
-      Types.ObjectId.createFromHexString(context?.userId.toString()).equals(
-        user._id,
-      ) &&
+      new Types.ObjectId(context?.userId).equals(user._id) &&
       loggedInUserIsOrganizationAdmin
     ) {
       throw new errors.ConflictError(
@@ -113,11 +109,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
     }
 
     // ADMIN cannot change the role of the creator of the organization.
-    if (
-      Types.ObjectId.createFromHexString(
-        organization?.creatorId.toString(),
-      ).equals(user._id)
-    ) {
+    if (new Types.ObjectId(organization?.creatorId).equals(user._id)) {
       throw new errors.UnauthorizedError(
         requestContext.translate(ADMIN_CHANGING_ROLE_OF_CREATOR.MESSAGE),
         ADMIN_CHANGING_ROLE_OF_CREATOR.CODE,
