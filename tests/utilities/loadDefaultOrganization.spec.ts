@@ -22,7 +22,7 @@ describe("loadDefaultOrganization tests", () => {
   afterAll(async () => {
     await disconnect(mongooseInstance);
     vi.resetAllMocks();
-    vi.doUnmock('mongoose');
+    vi.doUnmock("mongoose");
   });
   it("Data importation with formatting", async () => {
     vi.spyOn(mongoose, "connect").mockResolvedValue(mongooseInstance);
