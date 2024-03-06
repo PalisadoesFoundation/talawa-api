@@ -4,7 +4,7 @@ import type { InterfaceUser } from "./User";
 import type { InterfacePost } from "./Post";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
- * This is an interface representing a document for a comment in the database(MongoDB).
+ * This is an interface representing a document for a comment in the database - (MongoDB).
  */
 export interface InterfaceComment {
   _id: Types.ObjectId;

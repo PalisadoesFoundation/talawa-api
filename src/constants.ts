@@ -1,5 +1,5 @@
-import { getEnvIssues, envSchema } from "./env";
 import crypto from "crypto";
+import { envSchema, getEnvIssues } from "./env";
 
 const issues = getEnvIssues();
 let ENV = process.env;
@@ -41,6 +41,21 @@ export const CHAT_NOT_FOUND_ERROR = {
   MESSAGE: "chat.notFound",
   PARAM: "chat",
 };
+
+export const VENUE_ALREADY_EXISTS_ERROR = {
+  DESC: "Venue already exists",
+  CODE: "venue.alreadyExists",
+  MESSAGE: "venue.alreadyExists",
+  PARAM: "venue",
+};
+
+export const VENUE_NOT_FOUND_ERROR = {
+  DESC: "Venue does not exist",
+  CODE: "venue.NotFound",
+  MESSAGE: "venue.NotFound",
+  PARAM: "venue",
+};
+
 export const COMMENT_NOT_FOUND_ERROR = {
   DESC: "Comment not found",
   CODE: "comment.notFound",
@@ -60,7 +75,48 @@ export const FEEDBACK_ALREADY_SUBMITTED = {
   CODE: "feedback.alreadySubmitted",
   PARAM: "feedback.alreadySubmitted",
 };
-
+export const FUND_ALREADY_EXISTS = {
+  DESC: "Fund already exists",
+  CODE: "fund.alreadyExists",
+  MESSAGE: "fund.alreadyExists",
+  PARAM: "fund",
+};
+export const FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR = {
+  DESC: "FundraisingCampaign not found",
+  CODE: "fundraisingCampaign.notFound",
+  MESSAGE: "fundraisingCampaign.notFound",
+  PARAM: "fundraisingCampaign",
+};
+export const FUNDRAISING_CAMPAIGN_ALREADY_EXISTS = {
+  DESC: "Fundraising Campaign already exists",
+  CODE: "fundraisingCampaign.alreadyExists",
+  MESSAGE: "fundraisingCampaign.alreadyExists",
+  PARAM: "fundraisingCampaign",
+};
+export const FUNDRAISING_CAMPAIGN_ALREADY_ADDED = {
+  DESC: "Fundraising Campaign already added",
+  CODE: "fundraisingCampaign.alreadyAdded",
+  MESSAGE: "fundraisingCampaign.alreadyAdded",
+  PARAM: "fundraisingCampaign",
+};
+export const FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR = {
+  DESC: "FundraisingCampaignPledge not found",
+  CODE: "fundraisingCampaignPledge.notFound",
+  MESSAGE: "fundraisingCampaignPledge.notFound",
+  PARAM: "fundraisingCampaignPledge",
+};
+export const FUNDRAISING_CAMPAIGN_PLEDGE_ALREADY_EXISTS = {
+  DESC: "Fundraising Campaign Pledge already exists",
+  CODE: "fundraisingCampaignPledge.alreadyExists",
+  MESSAGE: "fundraisingCampaignPledge.alreadyExists",
+  PARAM: "fundraisingCampaignPledge",
+};
+export const FUND_NOT_FOUND_ERROR = {
+  DESC: "Fund not found",
+  CODE: "fund.notFound",
+  MESSAGE: "fund.notFound",
+  PARAM: "fund",
+};
 export const INVALID_OTP = "Invalid OTP";
 
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";
@@ -97,6 +153,20 @@ export const ORGANIZATION_NOT_FOUND_ERROR = {
   MESSAGE: "organization.notFound",
   PARAM: "organization",
 };
+export const VENUE_NAME_MISSING_ERROR = {
+  DESC: "Venue name not found",
+  CODE: "venueName.notFound",
+  MESSAGE: "venueName.notFound",
+  PARAM: "venueName",
+};
+
+export const VENUE_ALREADY_SCHEDULED = {
+  DESC: "Venue is already scheduled",
+  CODE: "venue.alreadySchduled",
+  MESSAGE: "venue.alreadySchduled",
+  PARAM: "venue",
+};
+
 export const ORGANIZATION_IMAGE_NOT_FOUND_ERROR = {
   DESC: "OrganizationImage not found",
   CODE: "organizationImage.notFound",
@@ -218,6 +288,12 @@ export const USER_ALREADY_REGISTERED_FOR_EVENT = {
   MESSAGE: "The user has already been registered for the event",
   CODE: "user.alreadyRegistered",
   PARAM: "user.alreadyRegistered",
+};
+
+export const USER_ALREADY_INVITED_FOR_EVENT = {
+  MESSAGE: "The user has already been invited for the event",
+  CODE: "user.alreadyInvited",
+  PARAM: "user.alreadyInvited",
 };
 
 export const USER_NOT_REGISTERED_FOR_EVENT = {
@@ -398,6 +474,12 @@ export const USER_NOT_FOUND_ERROR = {
   MESSAGE: "user.notFound",
   PARAM: "user",
 };
+export const USER_NOT_MADE_PLEDGE_ERROR = {
+  DESC: "User has not made a pledge",
+  CODE: "user.notPledged",
+  MESSAGE: "user.notPledged",
+  PARAM: "user",
+};
 export const USER_NOT_MEMBER_FOR_ORGANIZATION = {
   DESC: "User is not a member of the organization",
   CODE: "user.notMember",
@@ -544,6 +626,11 @@ export const RECURRING_EVENT_INSTANCES_DAILY_LIMIT = 1;
 export const RECURRING_EVENT_INSTANCES_WEEKLY_LIMIT = 2;
 export const RECURRING_EVENT_INSTANCES_MONTHLY_LIMIT = 5;
 export const RECURRING_EVENT_INSTANCES_YEARLY_LIMIT = 10;
+
+// recurrence rules query date limit in years
+// i.e. query limit date to find the pending recurrence patterns
+// and then generate new instances ahead of this date
+export const RECURRING_EVENT_INSTANCES_QUERY_LIMIT = 1;
 
 // recurring event days
 export const RECURRENCE_WEEKDAYS = [

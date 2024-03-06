@@ -27,7 +27,6 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     const userFamily = await UserFamily.findById({
       _id: args.familyId,
     }).lean();
-
     const currentUser = await User.findById({
       _id: context.userId,
     });
@@ -35,7 +34,6 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     const user = await User.findById({
       _id: args.userId,
     });
-
     // Check whether the user exists.
     if (!user) {
       throw new errors.NotFoundError(
@@ -50,9 +48,8 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     });
 
     const userIdUserFamilyAdmin = userFamily?.admins.some((admin) => {
-      Types.ObjectId(admin).equals(user?._id);
+      return Types.ObjectId(admin).equals(user?._id);
     });
-
     //Check whether user family exists.
     if (!userFamily) {
       throw new errors.NotFoundError(
@@ -84,29 +81,29 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     }
 
     /*
-          userIsUserFamilyAdmin being true implies that the current user is an admin of userFamily.
-          If userIsUserFamilyAdmin is true pushes error message to errors list and breaks out of loop.
-        */
-    if (userIdUserFamilyAdmin) {
-      throw new errors.ConflictError(
-        requestContext.translate(ADMIN_REMOVING_ADMIN.MESSAGE),
-        ADMIN_REMOVING_ADMIN.CODE,
-        ADMIN_REMOVING_ADMIN.PARAM,
-      );
-    }
-
-    /*
-          Administrators cannot remove creator of userFamily from the members list.
-          Following if block matches userFamily's creator's id to
-          user's id. Match being true implies that current user is the creator
-          of userFamily. If match is true assigns error message to errors list
-          and breaks out of loop.
-        */
+    Administrators cannot remove creator of userFamily from the members list.
+    Following if block matches userFamily's creator's id to
+    user's id. Match being true implies that current user is the creator
+    of userFamily. If match is true assigns error message to errors list
+    and breaks out of loop.
+    */
     if (Types.ObjectId(userFamily.creator.toString()).equals(user._id)) {
       throw new errors.UnauthorizedError(
         requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
         ADMIN_REMOVING_CREATOR.CODE,
         ADMIN_REMOVING_CREATOR.PARAM,
+      );
+    }
+
+    /*
+    userIsUserFamilyAdmin being true implies that the current user is an admin of userFamily.
+    If userIsUserFamilyAdmin is true pushes error message to errors list and breaks out of loop.
+    */
+    if (userIdUserFamilyAdmin) {
+      throw new errors.ConflictError(
+        requestContext.translate(ADMIN_REMOVING_ADMIN.MESSAGE),
+        ADMIN_REMOVING_ADMIN.CODE,
+        ADMIN_REMOVING_ADMIN.PARAM,
       );
     }
 
