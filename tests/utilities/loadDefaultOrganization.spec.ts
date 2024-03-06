@@ -18,7 +18,6 @@ describe("loadDefaultOrganization tests", () => {
   let mongooseInstance: typeof mongoose;
   beforeAll(async () => {
     mongooseInstance = await connect();
-    vi.spyOn(mongoose, "connect").mockResolvedValue(mongooseInstance);
   });
   afterEach(() => {
     vi.clearAllMocks();
@@ -27,6 +26,7 @@ describe("loadDefaultOrganization tests", () => {
     await disconnect(mongooseInstance);
   });
   it("Data importation with formatting", async () => {
+    vi.spyOn(mongoose, "connect").mockResolvedValue(mongooseInstance);
     vi.mock("yargs", () => ({
       options: vi.fn().mockReturnThis(),
       parseSync: vi.fn().mockReturnValue({ items: "", format: true }),
