@@ -496,7 +496,7 @@ We use `reCAPTCHA` for two factor authentication (2FA). Follow these steps:
 The MAIL_USERNAME and MAIL_PASSWORD parameters are required to enable an app to access 2FA features. This is how to know what they should be.
 
 1. Go to your [google account page](https://myaccount.google.com/).
-1. Search for `App Passwords` in the `Search Google Account` search bar.
+1. Search for `App Passwords` in the `Search Google Account` search bar and select it.
 1. Click on `create a new app-specific password` and enter `talawa` as the custom name and press the `Create` button.
 1. Copy the 16 character generated app password to the variable named `MAIL_PASSWORD` in `.env` file.
 1. Copy your usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
