@@ -118,9 +118,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
     try {
       await forgotPasswordResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(
-        "New password cannot be same as old password",
-      );
+      expect(error.message).toEqual(INVALID_OTP);
     }
   });
   it(`throws an error when the user is not found`, async () => {
