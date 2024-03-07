@@ -25,6 +25,7 @@ export const types = gql`
     createdAt: Date!
     updatedAt: Date!
   }
+
   type AgendaItem {
     _id: ID!
     title: String!
@@ -44,6 +45,7 @@ export const types = gql`
     organization: Organization!
     relatedEvent: Event
   }
+
   type AgendaCategory {
     _id: ID!
     name: String!
@@ -54,12 +56,15 @@ export const types = gql`
     createdAt: Date!
     updatedAt: Date
   }
+
   type AgendaSection {
     _id: ID!
     relatedEvent: Event
     description: String!
     items: [AgendaItem]
     sequence: Int!
+    createdAt: Date!
+    updatedAt: Date
     createdBy: User!
     updatedBy: User
   }

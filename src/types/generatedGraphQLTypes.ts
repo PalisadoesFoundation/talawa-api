@@ -193,11 +193,13 @@ export type AgendaItem = {
 export type AgendaSection = {
   __typename?: 'AgendaSection';
   _id: Scalars['ID']['output'];
+  createdAt: Scalars['Date']['output'];
   createdBy: User;
   description: Scalars['String']['output'];
   items?: Maybe<Array<Maybe<AgendaItem>>>;
   relatedEvent?: Maybe<Event>;
   sequence: Scalars['Int']['output'];
+  updatedAt?: Maybe<Scalars['Date']['output']>;
   updatedBy?: Maybe<User>;
 };
 
@@ -3359,11 +3361,13 @@ export type AgendaItemResolvers<ContextType = any, ParentType extends ResolversP
 
 export type AgendaSectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AgendaSection'] = ResolversParentTypes['AgendaSection']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   items?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType>;
   relatedEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   sequence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
