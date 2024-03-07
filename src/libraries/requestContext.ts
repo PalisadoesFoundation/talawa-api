@@ -1,5 +1,6 @@
 import cls from "cls-hooked";
 // No type defintions available for package 'cls-bluebird'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import clsBluebird from "cls-bluebird";
 import i18n from "i18n";
@@ -12,6 +13,7 @@ export const requestContextNamespace = cls.createNamespace(
 clsBluebird(requestContextNamespace);
 
 export const setRequestContextValue = <T>(key: string, value: T): T => {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   return requestContextNamespace.set<T>(key, value);
 };
@@ -44,15 +46,28 @@ interface InterfaceInitOptions<T> extends Record<any, any> {
 // Invalid code. Currently ignored by typescript. Needs fix.
 export const init = <T>(options: InterfaceInitOptions<T> = {}): T => {
   const obj: any = {};
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   i18n.init(obj);
-  obj.setLocale(options.lang);
+
+  if (
+    !options.locale ||
+    !["en", "fr", "hi", "zh", "sp", "fr"].includes(options.locale)
+  ) {
+    throw new Error("Invalid locale. Please provide a valid 'lang' option.");
+  }
+  obj.setLocale(options.locale);
+
+  if (options.requestHandler == null) {
+    throw new Error("Missing request handler during initialization");
+  }
+
   return requestContextNamespace.runAndReturn<T>(() => {
     setRequestContext({
       __: obj.__,
       __n: obj.__n,
     });
-    // return options.requestHandler?.()!;
+
     return options.requestHandler != null
       ? options.requestHandler()
       : ({} as T);
