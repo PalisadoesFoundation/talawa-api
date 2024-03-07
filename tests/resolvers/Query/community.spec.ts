@@ -58,6 +58,20 @@ describe("resolvers -> Query -> community", () => {
     );
   });
 
+  test("should return null if community logoUrl does not exist", async () => {
+    await Community.findByIdAndUpdate(testCommunity?._id, {
+      $unset: { logoUrl: "" },
+    });
+    const context = {
+      userId: testUser?._id.toString(),
+      apiRootUrl: "http://localhost:4000",
+    };
+    const args = {};
+
+    const result = await community?.({}, args, context);
+    expect(result?.logoUrl).toBeNull();
+  });
+
   test("should return community data if community exists", async () => {
     const context = { userId: testUser?._id.toString(), apiRootUrl: BASE_URL };
     const args = {};
@@ -71,20 +85,6 @@ describe("resolvers -> Query -> community", () => {
         ? `${context.apiRootUrl}${testCommunity?.logoUrl}`
         : null,
     });
-  });
-
-  test("should return null if community logoUrl does not exist", async () => {
-    await Community.findByIdAndUpdate(testCommunity?._id, {
-      $unset: { logoUrl: "" },
-    });
-    const context = {
-      userId: testUser?._id.toString(),
-      apiRootUrl: "http://localhost:4000",
-    };
-    const args = {};
-
-    const result = await community?.({}, args, context);
-    expect(result?.logoUrl).toBeNull();
   });
 
   test("should throw NotFoundError if community does not exist", async () => {
