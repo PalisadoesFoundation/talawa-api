@@ -501,11 +501,7 @@ export const AGENDA_SECTION_NOT_FOUND_ERROR = {
   MESSAGE: "agendaSection.notFound",
   PARAM: "agendaSection",
 };
-export const AGENDA_SECTION_CREATION_ERROR = {
-  CODE: "AGENDA_SECTION_CREATION_ERROR",
-  MESSAGE: "An error occurred during agenda section creation",
-  PARAM: "AgendaSection creation error",
-};
+
 export const USER_NOT_FOUND_ERROR = {
   DESC: "User not found",
   CODE: "user.notFound",
