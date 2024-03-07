@@ -1068,6 +1068,7 @@ export type Mutation = {
   updateOrganization: Organization;
   updatePluginStatus: Plugin;
   updatePost: Post;
+  updateSessionTimeout: Scalars['Boolean']['output'];
   updateUserPassword: User;
   updateUserProfile: User;
   updateUserRoleInOrganization: Organization;
@@ -1656,6 +1657,11 @@ export type MutationUpdatePluginStatusArgs = {
 export type MutationUpdatePostArgs = {
   data?: InputMaybe<PostUpdateInput>;
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdateSessionTimeoutArgs = {
+  timeout: Scalars['Int']['input'];
 };
 
 
@@ -3680,6 +3686,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'orgId'>>;
   updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
+  updateSessionTimeout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateSessionTimeoutArgs, 'timeout'>>;
   updateUserPassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserPasswordArgs, 'data'>>;
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
   updateUserRoleInOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateUserRoleInOrganizationArgs, 'organizationId' | 'role' | 'userId'>>;

@@ -992,6 +992,7 @@ type Mutation {
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
+  updateSessionTimeout(timeout: Int!): Boolean!
   updateUserPassword(data: UpdateUserPasswordInput!): User!
   updateUserProfile(data: UpdateUserInput, file: String): User!
   updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!

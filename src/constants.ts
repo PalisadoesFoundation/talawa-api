@@ -35,6 +35,13 @@ export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
   PARAM: "agendaCategory",
 };
 
+export const COMMUNITY_NOT_FOUND_ERROR = {
+  DESC: "Community not found",
+  CODE: "community.notFound",
+  MESSAGE: "community.notFound",
+  PARAM: "community",
+};
+
 export const CHAT_NOT_FOUND_ERROR = {
   DESC: "Chat not found",
   CODE: "chat.notFound",
@@ -118,6 +125,13 @@ export const FUND_NOT_FOUND_ERROR = {
   PARAM: "fund",
 };
 export const INVALID_OTP = "Invalid OTP";
+
+export const INVALID_TIMEOUT_RANGE = {
+  DESC: "Timeout should be in the range of 15 to 60 minutes.",
+  CODE: "invalid.timeoutRange",
+  MESSAGE: "invalid.timeoutRange",
+  PARAM: "timeout",
+};
 
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";
 export const MEMBER_NOT_FOUND_ERROR = {
@@ -660,3 +674,6 @@ export enum EventVolunteerResponse {
   YES = "YES",
   NO = "NO",
 }
+
+export const MINIMUM_TIMEOUT_MINUTES = 15;
+export const MAXIMUM_TIMEOUT_MINUTES = 60;

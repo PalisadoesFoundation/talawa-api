@@ -147,11 +147,11 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: Types.ObjectId().toHexString(),
-        userId: testUserSuperAdmin?._id,
+        userId: testUserSuperAdmin?._id.toString() as string,
         role: "ADMIN",
       };
       const context = {
-        userId: testUserSuperAdmin?._id,
+        userId: testUserSuperAdmin?._id.toString() as string,
       };
 
       const {
@@ -160,8 +160,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         "../../../src/resolvers/Mutation/updateUserRoleInOrganization"
       );
       await updateUserRoleInOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error)
+        expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
   it(`Check when user whose role to be changed does not exists`, async () => {
@@ -176,7 +177,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         role: "ADMIN",
       };
       const context = {
-        userId: testUserSuperAdmin?._id,
+        userId: testUserSuperAdmin?._id.toString() as string,
       };
 
       const {
@@ -185,8 +186,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         "../../../src/resolvers/Mutation/updateUserRoleInOrganization"
       );
       await updateUserRoleInOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error)
+        expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
   it(`Check when user whose role to be changed is not a member of the organization`, async () => {
@@ -197,11 +199,11 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testNonMemberAdmin?._id,
+        userId: testNonMemberAdmin?._id.toString() as string,
         role: "USER",
       };
       const context = {
-        userId: testUserSuperAdmin?._id,
+        userId: testUserSuperAdmin?._id.toString() as string,
       };
 
       const {
@@ -210,8 +212,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         "../../../src/resolvers/Mutation/updateUserRoleInOrganization"
       );
       await updateUserRoleInOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error)
+        expect(error.message).toEqual(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE);
     }
   });
   it(`Check when logged in user does not exists`, async () => {
@@ -222,7 +225,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testMemberUser?._id,
+        userId: testMemberUser?._id.toString() as string,
         role: "ADMIN",
       };
       const context = {
@@ -235,8 +238,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         "../../../src/resolvers/Mutation/updateUserRoleInOrganization"
       );
       await updateUserRoleInOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error)
+        expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
   it(`Check when USER is trying to change role of an admin`, async () => {
@@ -247,11 +251,11 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testAdminUser?._id,
+        userId: testAdminUser?._id.toString() as string,
         role: "USER",
       };
       const context = {
-        userId: testMemberUser?._id,
+        userId: testMemberUser?._id.toString() as string,
       };
 
       const {
@@ -260,8 +264,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         "../../../src/resolvers/Mutation/updateUserRoleInOrganization"
       );
       await updateUserRoleInOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error)
+        expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
   it(`Check when ADMIN of another org is not allowed to change role`, async () => {
@@ -272,7 +277,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testMemberUser?._id,
+        userId: testMemberUser?._id.toString() as string,
         role: "ADMIN",
       };
       const context = {
@@ -285,8 +290,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         "../../../src/resolvers/Mutation/updateUserRoleInOrganization"
       );
       await updateUserRoleInOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error)
+        expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
   it(`Check when logged in ADMIN member user is not allowed to change the user type to SUPERADMIN`, async () => {
@@ -297,7 +303,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testMemberUser?._id,
+        userId: testMemberUser?._id.toString() as string,
         role: "SUPERADMIN",
       };
       const context = {
@@ -310,8 +316,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         "../../../src/resolvers/Mutation/updateUserRoleInOrganization"
       );
       await updateUserRoleInOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error)
+        expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
   it(`Check when logged in ADMIN member user is trying to change the role of the itself`, async () => {
@@ -322,7 +329,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testAdminUser?._id,
+        userId: testAdminUser?._id.toString() as string,
         role: "USER",
       };
       const context = {
@@ -335,8 +342,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         "../../../src/resolvers/Mutation/updateUserRoleInOrganization"
       );
       await updateUserRoleInOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ADMIN_CANNOT_CHANGE_ITS_ROLE.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error)
+        expect(error.message).toEqual(ADMIN_CANNOT_CHANGE_ITS_ROLE.MESSAGE);
     }
   });
   it(`Check when logged in ADMIN member user is trying to change the role of the org creator`, async () => {
@@ -347,7 +355,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testUserSuperAdmin?._id,
+        userId: testUserSuperAdmin?._id.toString() as string,
         role: "USER",
       };
       const context = {
@@ -360,8 +368,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         "../../../src/resolvers/Mutation/updateUserRoleInOrganization"
       );
       await updateUserRoleInOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ADMIN_CHANGING_ROLE_OF_CREATOR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error)
+        expect(error.message).toEqual(ADMIN_CHANGING_ROLE_OF_CREATOR.MESSAGE);
     }
   });
   it(`Check when SUPERUSER is changing the role of a USER member to ADMIN`, async () => {
@@ -371,11 +380,11 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     );
     const args: MutationUpdateUserRoleInOrganizationArgs = {
       organizationId: testOrganization?._id,
-      userId: testMemberUser?._id,
+      userId: testMemberUser?._id.toString() as string,
       role: "ADMIN",
     };
     const context = {
-      userId: testUserSuperAdmin?._id,
+      userId: testUserSuperAdmin?._id.toString() as string,
     };
 
     const {
@@ -407,11 +416,11 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     );
     const args: MutationUpdateUserRoleInOrganizationArgs = {
       organizationId: testOrganization?._id,
-      userId: testAdminUser?._id,
+      userId: testAdminUser?._id.toString() as string,
       role: "USER",
     };
     const context = {
-      userId: testUserSuperAdmin?._id,
+      userId: testUserSuperAdmin?._id.toString() as string,
     };
 
     const {
