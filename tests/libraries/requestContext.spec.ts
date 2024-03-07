@@ -15,12 +15,13 @@ import { EventEmitter } from "stream";
 
 describe("middleware -> requestContext", () => {
   const value = uuidv4();
-  let context: any;
+  let context: unknown;
   const mockRequest = new EventEmitter();
   const mockResponse = new EventEmitter();
   const nextFunction = vi.fn();
 
-  interface InterfaceInitOptions<T> extends Record<any, any> {
+  interface InterfaceInitOptions<T>
+    extends Record<string | number | symbol, unknown> {
     requestHandler?: () => T;
   }
 
@@ -60,7 +61,7 @@ describe("middleware -> requestContext", () => {
   });
 
   it("testing i18n api with translate and translatePlural", () => {
-    const options: InterfaceInitOptions<any> = {
+    const options: InterfaceInitOptions<unknown> = {
       defaultLocale: "fr",
       locale: "fr",
       fallbacks: true,
@@ -77,7 +78,7 @@ describe("middleware -> requestContext", () => {
     expect(translatePlural(locales)).toBe(locales);
 
     // Testing for empty options with no requestHandler for init
-    const incorrectOptions: InterfaceInitOptions<any> = {
+    const incorrectOptions: InterfaceInitOptions<unknown> = {
       defaultLocale: "fr",
       locale: "fr",
       fallbacks: true,
@@ -89,6 +90,7 @@ describe("middleware -> requestContext", () => {
   it("testing error thrown for translate i18n not initialized", () => {
     try {
       translate({});
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(error.message).toEqual(
         "i18n is not initialized, try app.use(i18n.init);",
@@ -99,11 +101,47 @@ describe("middleware -> requestContext", () => {
   it("testing error thrown for translatePlural i18n not initialized", () => {
     try {
       translatePlural({});
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(error.message).toEqual(
         "i18n is not initialized, try app.use(i18n.init);",
       );
     }
+  });
+
+  it("test for handling missing locale during initialization", () => {
+    const options = {
+      defaultLocale: "fr",
+      fallbacks: true,
+      lang: "fr",
+      requestHandler: vi.fn(),
+    };
+    expect(() => init(options)).toThrowError();
+  });
+
+  it("test for handling incorrect locale during initialization", () => {
+    const options = {
+      defaultLocale: "fr",
+      locale: "invalid-locale",
+      fallbacks: true,
+      lang: "fr",
+      requestHandler: vi.fn(),
+    };
+    expect(() => init(options)).toThrowError();
+  });
+
+  it("test for handling missing request handler during initialization", () => {
+    const options = {
+      defaultLocale: "fr",
+      lang: "fr",
+      fallbacks: true,
+    };
+    expect(() => init(options)).toThrowError();
+  });
+
+  it("test for handling empty options for init", () => {
+    const options = {};
+    expect(() => init(options)).toThrowError();
   });
   afterEach(() => {
     requestContextNamespace.exit(context);
