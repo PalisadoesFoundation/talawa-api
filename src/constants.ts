@@ -468,6 +468,33 @@ export const USER_NOT_AUTHORIZED_ERROR = {
   MESSAGE: "user.notAuthorized",
   PARAM: "user",
 };
+
+export const UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR = {
+  DESC: "Unauthorized to remove the agenda item",
+  CODE: "unauthorized.removeAgendaItem",
+  MESSAGE: "Unauthorized to remove the agenda item",
+  PARAM: "agendaItem",
+};
+
+export const UNAUTHORIZED_UPDATE_AGENDA_ITEM_ERROR = {
+  DESC: "Unauthorized to update the agenda item",
+  CODE: "unauthorized.updateAgendaItem",
+  MESSAGE: "Unauthorized to update the agenda item",
+  PARAM: "agendaItem",
+};
+
+export const AGENDA_ITEM_NOT_FOUND_ERROR = {
+  DESC: "Agenda item not found",
+  CODE: "agendaItem.notFound",
+  MESSAGE: "agendaItem.notFound",
+  PARAM: "agendaItem",
+};
+export const AGENDA_ITEM_CREATION_ERROR = {
+  DESC: "Agenda item not created",
+  CODE: "agendaItem.notCreated",
+  MESSAGE: "agendaItem.notCreated",
+  PARAM: "agendaItem",
+};
 export const USER_NOT_FOUND_ERROR = {
   DESC: "User not found",
   CODE: "user.notFound",
