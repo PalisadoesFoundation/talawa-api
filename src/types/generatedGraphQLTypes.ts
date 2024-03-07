@@ -189,6 +189,19 @@ export type AgendaItem = {
   user: Scalars['String']['output'];
 };
 
+export type AgendaSection = {
+  __typename?: 'AgendaSection';
+  _id: Scalars['ID']['output'];
+  createdAt: Scalars['Date']['output'];
+  createdBy: User;
+  description: Scalars['String']['output'];
+  items?: Maybe<Array<Maybe<AgendaItem>>>;
+  relatedEvent?: Maybe<Event>;
+  sequence: Scalars['Int']['output'];
+  updatedAt?: Maybe<Scalars['Date']['output']>;
+  updatedBy?: Maybe<User>;
+};
+
 export type AggregatePost = {
   __typename?: 'AggregatePost';
   count: Scalars['Int']['output'];
@@ -315,6 +328,13 @@ export type CreateAgendaItemInput = {
   title: Scalars['String']['input'];
   urls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   user?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type CreateAgendaSectionInput = {
+  description: Scalars['String']['input'];
+  items?: InputMaybe<Array<InputMaybe<CreateAgendaItemInput>>>;
+  relatedEvent?: InputMaybe<Scalars['ID']['input']>;
+  sequence: Scalars['Int']['input'];
 };
 
 export type CreateUserTagInput = {
@@ -1025,6 +1045,7 @@ export type Mutation = {
   createAdvertisement?: Maybe<CreateAdvertisementPayload>;
   createAgendaCategory: AgendaCategory;
   createAgendaItem: AgendaItem;
+  createAgendaSection: AgendaSection;
   createComment?: Maybe<Comment>;
   createDirectChat: DirectChat;
   createDonation: Donation;
@@ -1067,6 +1088,7 @@ export type Mutation = {
   removeAdmin: User;
   removeAdvertisement?: Maybe<Advertisement>;
   removeAgendaItem: AgendaItem;
+  removeAgendaSection?: Maybe<AgendaSection>;
   removeComment?: Maybe<Comment>;
   removeDirectChat: DirectChat;
   removeEvent: Event;
@@ -1105,6 +1127,7 @@ export type Mutation = {
   updateAdvertisement?: Maybe<UpdateAdvertisementPayload>;
   updateAgendaCategory?: Maybe<AgendaCategory>;
   updateAgendaItem?: Maybe<AgendaItem>;
+  updateAgendaSection?: Maybe<AgendaSection>;
   updateEvent: Event;
   updateEventVolunteer: EventVolunteer;
   updateFund: Fund;
@@ -1266,6 +1289,11 @@ export type MutationCreateAgendaCategoryArgs = {
 
 export type MutationCreateAgendaItemArgs = {
   input: CreateAgendaItemInput;
+};
+
+
+export type MutationCreateAgendaSectionArgs = {
+  input: CreateAgendaSectionInput;
 };
 
 
@@ -1481,6 +1509,11 @@ export type MutationRemoveAgendaItemArgs = {
 };
 
 
+export type MutationRemoveAgendaSectionArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationRemoveCommentArgs = {
   id: Scalars['ID']['input'];
 };
@@ -1667,6 +1700,12 @@ export type MutationUpdateAgendaCategoryArgs = {
 export type MutationUpdateAgendaItemArgs = {
   id: Scalars['ID']['input'];
   input: UpdateAgendaItemInput;
+};
+
+
+export type MutationUpdateAgendaSectionArgs = {
+  id: Scalars['ID']['input'];
+  input: UpdateAgendaSectionInput;
 };
 
 
@@ -2437,6 +2476,12 @@ export type UpdateAgendaItemInput = {
   user?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type UpdateAgendaSectionInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  relatedEvent?: InputMaybe<Scalars['ID']['input']>;
+  sequence?: InputMaybe<Scalars['Int']['input']>;
+};
+
 export type UpdateEventInput = {
   allDay?: InputMaybe<Scalars['Boolean']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
@@ -2874,6 +2919,7 @@ export type ResolversTypes = {
   AdvertisementsConnection: ResolverTypeWrapper<Omit<AdvertisementsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['AdvertisementEdge']>>> }>;
   AgendaCategory: ResolverTypeWrapper<InterfaceAgendaCategoryModel>;
   AgendaItem: ResolverTypeWrapper<InterfaceAgendaItemModel>;
+  AgendaSection: ResolverTypeWrapper<Omit<AgendaSection, 'createdBy' | 'items' | 'relatedEvent' | 'updatedBy'> & { createdBy: ResolversTypes['User'], items?: Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, relatedEvent?: Maybe<ResolversTypes['Event']>, updatedBy?: Maybe<ResolversTypes['User']> }>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   Any: ResolverTypeWrapper<Scalars['Any']['output']>;
@@ -2892,6 +2938,7 @@ export type ResolversTypes = {
   CreateAdvertisementPayload: ResolverTypeWrapper<Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   CreateAgendaCategoryInput: CreateAgendaCategoryInput;
   CreateAgendaItemInput: CreateAgendaItemInput;
+  CreateAgendaSectionInput: CreateAgendaSectionInput;
   CreateUserTagInput: CreateUserTagInput;
   Currency: Currency;
   CursorPaginationInput: CursorPaginationInput;
@@ -3001,6 +3048,7 @@ export type ResolversTypes = {
   UpdateAdvertisementPayload: ResolverTypeWrapper<Omit<UpdateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   UpdateAgendaCategoryInput: UpdateAgendaCategoryInput;
   UpdateAgendaItemInput: UpdateAgendaItemInput;
+  UpdateAgendaSectionInput: UpdateAgendaSectionInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventVolunteerInput: UpdateEventVolunteerInput;
   UpdateFundCampaignInput: UpdateFundCampaignInput;
@@ -3048,6 +3096,7 @@ export type ResolversParentTypes = {
   AdvertisementsConnection: Omit<AdvertisementsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['AdvertisementEdge']>>> };
   AgendaCategory: InterfaceAgendaCategoryModel;
   AgendaItem: InterfaceAgendaItemModel;
+  AgendaSection: Omit<AgendaSection, 'createdBy' | 'items' | 'relatedEvent' | 'updatedBy'> & { createdBy: ResolversParentTypes['User'], items?: Maybe<Array<Maybe<ResolversParentTypes['AgendaItem']>>>, relatedEvent?: Maybe<ResolversParentTypes['Event']>, updatedBy?: Maybe<ResolversParentTypes['User']> };
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any']['output'];
@@ -3066,6 +3115,7 @@ export type ResolversParentTypes = {
   CreateAdvertisementPayload: Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   CreateAgendaCategoryInput: CreateAgendaCategoryInput;
   CreateAgendaItemInput: CreateAgendaItemInput;
+  CreateAgendaSectionInput: CreateAgendaSectionInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
@@ -3158,6 +3208,7 @@ export type ResolversParentTypes = {
   UpdateAdvertisementPayload: Omit<UpdateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   UpdateAgendaCategoryInput: UpdateAgendaCategoryInput;
   UpdateAgendaItemInput: UpdateAgendaItemInput;
+  UpdateAgendaSectionInput: UpdateAgendaSectionInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventVolunteerInput: UpdateEventVolunteerInput;
   UpdateFundCampaignInput: UpdateFundCampaignInput;
@@ -3298,6 +3349,19 @@ export type AgendaItemResolvers<ContextType = any, ParentType extends ResolversP
   updatedBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   urls?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   user?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type AgendaSectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AgendaSection'] = ResolversParentTypes['AgendaSection']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  items?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType>;
+  relatedEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
+  sequence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3713,6 +3777,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createAdvertisement?: Resolver<Maybe<ResolversTypes['CreateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'input'>>;
   createAgendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<MutationCreateAgendaCategoryArgs, 'input'>>;
   createAgendaItem?: Resolver<ResolversTypes['AgendaItem'], ParentType, ContextType, RequireFields<MutationCreateAgendaItemArgs, 'input'>>;
+  createAgendaSection?: Resolver<ResolversTypes['AgendaSection'], ParentType, ContextType, RequireFields<MutationCreateAgendaSectionArgs, 'input'>>;
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
@@ -3755,6 +3820,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveAdminArgs, 'data'>>;
   removeAdvertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType, RequireFields<MutationRemoveAdvertisementArgs, 'id'>>;
   removeAgendaItem?: Resolver<ResolversTypes['AgendaItem'], ParentType, ContextType, RequireFields<MutationRemoveAgendaItemArgs, 'id'>>;
+  removeAgendaSection?: Resolver<Maybe<ResolversTypes['AgendaSection']>, ParentType, ContextType, RequireFields<MutationRemoveAgendaSectionArgs, 'id'>>;
   removeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationRemoveCommentArgs, 'id'>>;
   removeDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationRemoveDirectChatArgs, 'chatId' | 'organizationId'>>;
   removeEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRemoveEventArgs, 'id'>>;
@@ -3793,6 +3859,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateAdvertisement?: Resolver<Maybe<ResolversTypes['UpdateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationUpdateAdvertisementArgs, 'input'>>;
   updateAgendaCategory?: Resolver<Maybe<ResolversTypes['AgendaCategory']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaCategoryArgs, 'id' | 'input'>>;
   updateAgendaItem?: Resolver<Maybe<ResolversTypes['AgendaItem']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaItemArgs, 'id' | 'input'>>;
+  updateAgendaSection?: Resolver<Maybe<ResolversTypes['AgendaSection']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaSectionArgs, 'id' | 'input'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerArgs, 'id'>>;
   updateFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationUpdateFundArgs, 'data' | 'id'>>;
@@ -4136,6 +4203,7 @@ export type Resolvers<ContextType = any> = {
   AdvertisementsConnection?: AdvertisementsConnectionResolvers<ContextType>;
   AgendaCategory?: AgendaCategoryResolvers<ContextType>;
   AgendaItem?: AgendaItemResolvers<ContextType>;
+  AgendaSection?: AgendaSectionResolvers<ContextType>;
   AggregatePost?: AggregatePostResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
   Any?: GraphQLScalarType;
