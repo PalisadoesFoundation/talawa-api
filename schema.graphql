@@ -1010,7 +1010,7 @@ type Mutation {
   removeAdmin(data: UserAndOrganizationInput!): User!
   removeAdvertisement(id: ID!): Advertisement
   removeAgendaItem(id: ID!): AgendaItem!
-  removeAgendaSection(id: ID!): AgendaSection
+  removeAgendaSection(id: ID!): ID!
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!, recurringEventDeleteType: RecurringEventMutationType): Event!
@@ -1327,6 +1327,7 @@ type Query {
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
   getAgendaItem(id: ID!): AgendaItem
+  getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
