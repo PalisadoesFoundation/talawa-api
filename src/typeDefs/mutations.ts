@@ -223,7 +223,7 @@ export const mutations = gql`
 
     removeAdvertisement(id: ID!): Advertisement
 
-    removeAgendaSection(id: ID!): AgendaSection
+    removeAgendaSection(id: ID!): ID!
 
     removeUserTag(id: ID!): UserTag @auth
 

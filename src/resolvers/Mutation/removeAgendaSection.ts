@@ -17,7 +17,7 @@ import {
  * @returns A promise that resolves to the ID of the removed agenda section.
  */
 export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
-  async (_parent, args, context) => {
+  async (_parent, args, context)  => {
     // Fetch the current user
     const currentUser = await User.findOne({
       _id: context.userId,
@@ -77,7 +77,7 @@ export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
       }
     );
 
-    return args.id; // Return the ID of the removed agenda section
+    return args?.id;
   };
 
 export default removeAgendaSection;

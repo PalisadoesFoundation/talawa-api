@@ -36,6 +36,9 @@ const config: CodegenConfig = {
 
           AgendaItem: "../models/AgendaItem#InterfaceAgendaItem",
 
+          AgendaSection: "../models/AgendaSection#InterfaceAgendaSection",
+
+
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
           MessageChat: "../models/MessageChat#InterfaceMessageChat",
