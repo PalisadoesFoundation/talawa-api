@@ -11,8 +11,11 @@ import jwt from "jsonwebtoken";
 import type { TestUserType } from "../helpers/user";
 import { createTestUserFunc } from "../helpers/user";
 import { connect, disconnect } from "../helpers/db";
+import { createTestCommunityFunc } from "../helpers/community";
+import type { TestCommunityType } from "../helpers/community";
 
 let user: TestUserType;
+let community: TestCommunityType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 export interface InterfaceJwtTokenPayload {
   tokenVersion: number;
@@ -20,11 +23,14 @@ export interface InterfaceJwtTokenPayload {
   firstName: string;
   lastName: string;
   email: string;
+  exp: number;
+  iat: number;
 }
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   user = await createTestUserFunc();
+  community = await createTestCommunityFunc();
 });
 
 afterAll(async () => {
@@ -33,13 +39,13 @@ afterAll(async () => {
 
 describe("createAccessToken", () => {
   it("should create a JWT token with the correct payload", async () => {
-    const token = await createAccessToken(
+    const token = createAccessToken(
       user ? user.toObject() : ({} as InterfaceUser),
     );
 
     expect(token).toBeDefined();
 
-    const decodedToken = jwt.decode(token);
+    const decodedToken = jwt.decode(await token) as unknown;
 
     expect(decodedToken).not.toBeNull();
     expect((decodedToken as InterfaceJwtTokenPayload).tokenVersion).toBe(
@@ -55,6 +61,13 @@ describe("createAccessToken", () => {
       user?.lastName,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).email).toBe(user?.email);
+
+    if (community) {
+      const expiresInMinutes =
+        ((decodedToken as InterfaceJwtTokenPayload).exp * 1000 - Date.now()) /
+        (60 * 1000);
+      expect(expiresInMinutes).toBeCloseTo(community.timeout, 1);
+    }
   });
 });
 
