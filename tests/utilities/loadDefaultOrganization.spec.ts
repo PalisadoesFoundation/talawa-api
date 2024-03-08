@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { connect, disconnect } from "../helpers/db";
 import { Organization, User, Event, Post } from "../../src/models";
@@ -14,9 +14,9 @@ describe("loadDefaultOrganization tests", () => {
   afterAll(async () => {
     await disconnect(mongooseInstance);
     vi.resetAllMocks();
+    vi.doUnmock("mongoose");
   });
   it("Data importation with formatting", async () => {
-    vi.spyOn(mongoose, "connect").mockResolvedValueOnce(mongooseInstance);
     vi.mock("yargs", () => ({
       options: vi.fn().mockReturnThis(),
       parseSync: vi.fn().mockReturnValue({ items: "", format: true }),
@@ -37,7 +37,7 @@ describe("loadDefaultOrganization tests", () => {
         expect(docs.length).toBe(1);
         expect(docs[0]._id).toBe("6637904485008f171cf29924");
       });
-    await loadDefaultOrganization(process.env.MONGO_DB_URL);
+    await loadDefaultOrganization(process.env.MONGO_DB_URL, true);
     expect(userDeleteSpy).toBeCalled();
     expect(organizationDeleteSpy).toBeCalled();
     expect(eventDeleteSpy).toBeCalled();
