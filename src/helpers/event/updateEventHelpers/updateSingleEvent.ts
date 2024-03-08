@@ -1,6 +1,6 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
-import { Event, EventAttendee, User } from "../../../models";
+import { AppUserProfile, Event, EventAttendee, User } from "../../../models";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import { getEventData } from "./getEventData";
@@ -123,12 +123,21 @@ export const updateSingleEvent = async (
         },
         {
           $pull: {
-            eventAdmin: event._id,
-            createdEvents: event._id,
             registeredEvents: event._id,
           },
         },
         { session },
+      ),
+      AppUserProfile.updateOne(
+        {
+          userId: event.creatorId,
+        },
+        {
+          $push: {
+            eventAdmin: event._id,
+            createdEvents: event._id,
+          },
+        },
       ),
     ]);
   } else {

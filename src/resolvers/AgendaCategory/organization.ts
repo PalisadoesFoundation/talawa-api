@@ -4,5 +4,5 @@ import { Organization } from "../../models";
 export const organization: AgendaCategoryResolvers["organization"] = async (
   parent,
 ) => {
-  return Organization.findOne(parent.organization).lean();
+  return Organization.findOne(parent.organizationId).lean();
 };

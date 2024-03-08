@@ -3,7 +3,7 @@ import type {
   UpdateAgendaCategoryInput,
 } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { AgendaCategoryModel, User } from "../../models";
+import { AgendaCategoryModel, AppUserProfile, User } from "../../models";
 import {
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -41,6 +41,17 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
     const existingAgendaCategory = await AgendaCategoryModel.findById(
       args.id,
     ).lean();
@@ -55,23 +66,21 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
     }
     const currentOrg = await AgendaCategoryModel.findById(
       existingAgendaCategory._id,
-    )
-      .populate("organization")
-      .select("organization")
-      .lean();
+    ).lean();
 
-    const currentUserIsOrgAdmin = currentUser.adminFor.some(
+    const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
-        organizationId === currentOrg?._id ||
-        Types.ObjectId(organizationId).equals(organizationId),
+        Types.ObjectId(organizationId?.toString()).equals(
+          currentOrg?.organizationId?.toString() || "",
+        ),
     );
     // If the user is a normal user, throw an error
     if (
       currentUserIsOrgAdmin === false &&
-      currentUser.userType !== "SUPERADMIN"
+      currentUserAppProfile.isSuperAdmin === false
     ) {
       throw new errors.UnauthorizedError(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
         USER_NOT_AUTHORIZED_ERROR.PARAM,
       );

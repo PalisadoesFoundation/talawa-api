@@ -9,7 +9,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { Fund } from "../../../src/models";
+import { AppUserProfile, Fund } from "../../../src/models";
 import { createFundraisingCampaign } from "../../../src/resolvers/Mutation/createFundraisingCampaign";
 import type { MutationCreateFundraisingCampaignArgs } from "../../../src/types/generatedGraphQLTypes";
 import { createTestFund, type TestFundType } from "../../helpers/Fund";
@@ -199,6 +199,37 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
       console.log(error);
       expect((error as Error).message).toEqual(
         FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE,
+      );
+    }
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    const args: MutationCreateFundraisingCampaignArgs = {
+      data: {
+        name: "testFundraisingCampaign",
+        fundId: testfund?._id,
+        startDate: new Date(new Date().toDateString()),
+        endDate: new Date(new Date().toDateString()),
+        currency: "USD",
+        fundingGoal: 1000,
+      },
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await createFundraisingCampaign?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

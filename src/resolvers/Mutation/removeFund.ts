@@ -1,10 +1,11 @@
+import { Types } from "mongoose";
 import {
   FUND_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { Fund, User, type InterfaceFund } from "../../models";
+import { Fund, User, type InterfaceFund, AppUserProfile } from "../../models";
 import { FundraisingCampaign } from "../../models/FundraisingCampaign";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
@@ -39,6 +40,17 @@ export const removeFund: MutationResolvers["removeFund"] = async (
     );
   }
 
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
+
   const fund = await Fund.findOne({
     _id: args.id,
   }).lean();
@@ -51,11 +63,19 @@ export const removeFund: MutationResolvers["removeFund"] = async (
       FUND_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const isUserOrganizationAdmin = currentUser.adminFor.some((organization) =>
-    organization.equals(fund.organizationId),
+  const currentOrg = await Fund.findById(fund._id)
+    .select("organizationId")
+    .lean();
+
+  const currentOrgId = currentOrg?.organizationId?.toString() || "";
+
+  const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
+    (organizationId) =>
+      Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
   );
+
   //checks whether the user is admin of organization or not
-  if (!(isUserOrganizationAdmin || currentUser.userType === "SUPERADMIN")) {
+  if (!currentUserIsOrgAdmin || currentUserAppProfile.isSuperAdmin === false) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
