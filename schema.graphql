@@ -127,10 +127,13 @@ type AgendaItem {
 type AgendaSection {
   _id: ID!
   createdAt: Date!
+  createdBy: User
   description: String!
   items: [AgendaItem]
   relatedEvent: Event
   sequence: Int!
+  updatedAt: Date
+  updatedBy: User
 }
 
 type AggregatePost {
