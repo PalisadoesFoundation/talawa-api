@@ -30,7 +30,7 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
       throw new errors.NotFoundError(
         USER_NOT_FOUND_ERROR.MESSAGE,
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
     const event = await Event.findOne({
@@ -40,18 +40,17 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
       throw new errors.NotFoundError(
         EVENT_NOT_FOUND_ERROR.MESSAGE,
         EVENT_NOT_FOUND_ERROR.CODE,
-        EVENT_NOT_FOUND_ERROR.PARAM
+        EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     if (event) {
-
       const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-        (organization) => organization.equals(event?.organization)
+        (organization) => organization.equals(event?.organization),
       );
 
       const currentUserIsEventAdmin = event.admins.some((admin) =>
-        admin.equals(currentUser._id)
+        admin.equals(currentUser._id),
       );
       if (
         !(
@@ -63,7 +62,7 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
         throw new errors.UnauthorizedError(
           USER_NOT_AUTHORIZED_ERROR.MESSAGE,
           USER_NOT_AUTHORIZED_ERROR.CODE,
-          USER_NOT_AUTHORIZED_ERROR.PARAM
+          USER_NOT_AUTHORIZED_ERROR.PARAM,
         );
       }
     }
@@ -75,9 +74,8 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
       updatedAt: now,
     };
 
-    const createdAgendaSection = await AgendaSectionModel.create(
-      agendaSectionData
-    );
+    const createdAgendaSection =
+      await AgendaSectionModel.create(agendaSectionData);
 
     return createdAgendaSection;
   };

@@ -17,7 +17,7 @@ import {
  * @returns A promise that resolves to the ID of the removed agenda section.
  */
 export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
-  async (_parent, args, context)  => {
+  async (_parent, args, context) => {
     // Fetch the current user
     const currentUser = await User.findOne({
       _id: context.userId,
@@ -28,7 +28,7 @@ export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -42,7 +42,7 @@ export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
       throw new errors.NotFoundError(
         requestContext.translate(AGENDA_SECTION_NOT_FOUND_ERROR.MESSAGE),
         AGENDA_SECTION_NOT_FOUND_ERROR.CODE,
-        AGENDA_SECTION_NOT_FOUND_ERROR.PARAM
+        AGENDA_SECTION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -54,7 +54,7 @@ export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -74,7 +74,7 @@ export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
           // Add relevant lists here based on your schema
           createdAgendaSections: agendaSection._id,
         },
-      }
+      },
     );
 
     return args?.id;

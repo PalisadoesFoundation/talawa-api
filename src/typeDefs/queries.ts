@@ -30,7 +30,6 @@ export const queries = gql`
 
     getAgendaSection(id: ID!): AgendaSection
 
-
     checkAuth: User! @auth
 
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]

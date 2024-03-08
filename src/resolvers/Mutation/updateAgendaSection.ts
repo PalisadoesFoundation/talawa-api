@@ -20,7 +20,6 @@ import { errors, requestContext } from "../../libraries";
 
 export const updateAgendaSection: MutationResolvers["updateAgendaSection"] =
   async (_parent, args, context) => {
-
     // Fetch the current user
     const currentUser = await User.findOne({
       _id: context.userId,
@@ -64,7 +63,8 @@ export const updateAgendaSection: MutationResolvers["updateAgendaSection"] =
       );
     }
 
-    agendaSection.description = args.input.description || agendaSection.description;
+    agendaSection.description =
+      args.input.description || agendaSection.description;
     agendaSection.sequence = args.input.sequence || agendaSection.sequence;
     agendaSection.updatedAt = new Date();
 
