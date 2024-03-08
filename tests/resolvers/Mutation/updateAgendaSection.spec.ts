@@ -1,8 +1,6 @@
 import { Types } from "mongoose";
 import type mongoose from "mongoose";
-import type {
-  MutationUpdateAgendaSectionArgs,
-} from "../../../src/types/generatedGraphQLTypes";
+import type { MutationUpdateAgendaSectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
   AGENDA_SECTION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -19,10 +17,8 @@ let testAdminUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testAgendaSection: TestAgendaSectionType;
 
-import type {
-  TestUserType,
-} from "../../helpers/userAndOrg";
-import { TestAgendaSectionType } from "../../helpers/agendaSection";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import type { TestAgendaSectionType } from "../../helpers/agendaSection";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -31,8 +27,6 @@ beforeAll(async () => {
 
   testAgendaSection = await AgendaSectionModel.create({
     createdBy: testAdminUser?._id,
-    updatedAt: Date.now(),
-    createdAt: Date.now(),
     title: "Test Section",
     description: "Sample Section",
     sequence: 1,
@@ -46,12 +40,12 @@ beforeAll(async () => {
       $push: {
         createdAgendaSections: [testAgendaSection],
       },
-    }
+    },
   );
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message: unknown) => message
+    (message: unknown) => message,
   );
 });
 
@@ -64,28 +58,22 @@ describe("resolvers -> Mutation -> updateAgendaSection", () => {
     try {
       const args: MutationUpdateAgendaSectionArgs = {
         id: "",
-        input: {
-          
-        },
+        input: {},
       };
 
       const context = {
         userId: Types.ObjectId().toString(),
       };
       await updateAgendaSection?.({}, args, context);
-    }  catch (error: unknown) {
-        expect((error as Error).message).toEqual(
-          USER_NOT_FOUND_ERROR.MESSAGE,
-        );
-      }
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
   });
   it("throws NotFoundError if no agenda section exists with _id === args.id", async () => {
     try {
       const args: MutationUpdateAgendaSectionArgs = {
         id: Types.ObjectId().toString(),
-        input: {
-          
-        },
+        input: {},
       };
 
       const context = {
@@ -93,30 +81,28 @@ describe("resolvers -> Mutation -> updateAgendaSection", () => {
       };
       await updateAgendaSection?.({}, args, context);
     } catch (error: unknown) {
-        expect((error as Error).message).toEqual(
-          AGENDA_SECTION_NOT_FOUND_ERROR.MESSAGE,
-        );
-      }
+      expect((error as Error).message).toEqual(
+        AGENDA_SECTION_NOT_FOUND_ERROR.MESSAGE,
+      );
+    }
   });
 
   it("throws UnauthorizedError if user is not the creator of the agenda section", async () => {
     try {
       const args: MutationUpdateAgendaSectionArgs = {
         id: testAgendaSection._id.toString(),
-        input: {
-           
-        },
+        input: {},
       };
 
       const context = {
         userId: testUser?._id,
       };
       await updateAgendaSection?.({}, args, context);
-    }  catch (error: unknown) {
-        expect((error as Error).message).toEqual(
-             USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-        );
-      }
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 
   it("updates the agenda section successfully", async () => {
@@ -139,7 +125,7 @@ describe("resolvers -> Mutation -> updateAgendaSection", () => {
     const updateAgendaSectionPayload = await updateAgendaSectionResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     // const testUpdateAgendaSectionPayload = await AgendaSectionModel.findOne({

@@ -64,9 +64,6 @@ export const types = gql`
     items: [AgendaItem]
     sequence: Int!
     createdAt: Date!
-    updatedAt: Date
-    createdBy: User!
-    updatedBy: User
   }
   # Action Item for a ActionItemCategory
   type ActionItem {

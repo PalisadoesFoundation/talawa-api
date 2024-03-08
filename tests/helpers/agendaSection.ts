@@ -1,10 +1,14 @@
-import type {  InterfaceAgendaSection } from "../../src/models";
-import { AgendaSectionModel, AgendaItemModel, Organization, AgendaCategoryModel } from "../../src/models";
+import type { InterfaceAgendaSection } from "../../src/models";
+import {
+  AgendaSectionModel,
+  AgendaItemModel,
+  Organization,
+  AgendaCategoryModel,
+} from "../../src/models";
 import type { Document } from "mongoose";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUser } from "./user";
-import { TestAgendaItemType } from "./agendaItem";
- 
+import type { TestAgendaItemType } from "./agendaItem";
 
 export type TestAgendaSectionType = InterfaceAgendaSection & Document;
 
@@ -24,13 +28,17 @@ export const createTestAgendaSection = async (): Promise<
     creatorId: testAdminUser?._id,
   });
 
-  const [testAgendaItem1, testAgendaItem2] = await createTestAgendaItems(testUser, testAdminUser, testOrganization);
+  const [testAgendaItem1, testAgendaItem2] = await createTestAgendaItems(
+    testUser,
+    testAdminUser,
+    testOrganization,
+  );
 
   const testAgendaSection = await AgendaSectionModel.create({
     relatedEvent: "65915090c06a8200409b77d6",
     description: "Test Agenda Section Description",
     items: [testAgendaItem1, testAgendaItem2],
-    sequence: 1, 
+    sequence: 1,
     createdAt: new Date(),
     createdBy: testUser,
   });
@@ -53,7 +61,11 @@ export const createTestAgendaSections = async (): Promise<
     creatorId: testAdminUser?._id,
   });
 
-  const [testAgendaItem1, testAgendaItem2] = await createTestAgendaItems(testUser, testAdminUser, testOrganization);
+  const [testAgendaItem1, testAgendaItem2] = await createTestAgendaItems(
+    testUser,
+    testAdminUser,
+    testOrganization,
+  );
 
   const testAgendaSection1 = await AgendaSectionModel.create({
     relatedEvent: "65915090c06a8200409b77d6",
@@ -61,7 +73,7 @@ export const createTestAgendaSections = async (): Promise<
     items: [testAgendaItem1],
     sequence: 1, // Example sequence number
     createdAt: new Date(),
-    createdBy: testUser,
+    // createdBy: testUser,
   });
 
   const testAgendaSection2 = await AgendaSectionModel.create({
@@ -69,7 +81,7 @@ export const createTestAgendaSections = async (): Promise<
     description: "Test Agenda Section 2 Description",
     items: [testAgendaItem2],
     sequence: 2, // Example sequence number
-    createdAt: new Date(),
+    // createdAt: new Date(),
     createdBy: testAdminUser,
   });
 
@@ -79,7 +91,7 @@ export const createTestAgendaSections = async (): Promise<
 const createTestAgendaItems = async (
   testUser: TestUserType,
   testAdminUser: TestUserType,
-  testOrganization: TestOrganizationType
+  testOrganization: TestOrganizationType,
 ): Promise<[TestAgendaItemType, TestAgendaItemType]> => {
   const testCategory = await AgendaCategoryModel.create({
     name: "Test Category",
