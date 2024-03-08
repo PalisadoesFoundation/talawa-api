@@ -99,6 +99,8 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
         createdBy: testUser?._id,
         sequence: 1,
         description: "Sample description...",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
       });
 
       const args: MutationRemoveAgendaSectionArgs = {
@@ -129,6 +131,8 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
         createdBy: testRandomUser2?._id,
         sequence: 1,
         description: "Sample description...",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
       });
 
       const args: MutationRemoveAgendaSectionArgs = {
@@ -158,6 +162,8 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
       createdBy: testUser?._id,
       sequence: 3,
       description: "Sample description....!",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     });
 
     const args: MutationRemoveAgendaSectionArgs = {
