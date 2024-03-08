@@ -75,9 +75,9 @@ beforeAll(async () => {
     description: "Test Agenda Section Description",
     items: [testAgendaItem?._id],
     sequence: 1,
-    // createdAt: new Date(),
-    // createdBy: testUser?._id,
-    // updatedAt: Date.now(),
+    createdAt: new Date(),
+    createdBy: testUser?._id,
+    updatedAt: Date.now(),
   });
 
   await testAgendaSection?.updateOne({

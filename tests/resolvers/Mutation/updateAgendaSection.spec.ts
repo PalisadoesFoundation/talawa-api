@@ -30,6 +30,9 @@ beforeAll(async () => {
     title: "Test Section",
     description: "Sample Section",
     sequence: 1,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    updatedBy: testAdminUser?._id,
   });
 
   await User.updateOne(

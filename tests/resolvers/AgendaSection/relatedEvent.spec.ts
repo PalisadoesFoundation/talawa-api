@@ -87,9 +87,9 @@ beforeAll(async () => {
 
   testAgendaSection = await AgendaSectionModel.create({
     createdBy: testAdminUser?._id,
-    // createdAt: Date.now(),
-    // updatedAt: Date.now(),
-    // updatedBy: testAdminUser?._id,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    updatedBy: testAdminUser?._id,
     items: [testAgendaItem?._id],
     sequence: 1,
     description: "Sample description...",
