@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, EventAttendee } from "../../../src/models";
+import { User, EventAttendee, AppUserProfile } from "../../../src/models";
 import type { MutationRegisterEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -304,6 +304,33 @@ describe(`resolvers -> Mutation - > registerForEvent`, () => {
 
       expect(spy).toHaveBeenCalledWith(
         USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE,
+      );
+    }
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationRegisterEventAttendeeArgs = {
+      data: {
+        userId: testUser?._id,
+        eventId: testEvent?._id,
+      },
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    const { registerEventAttendee: registerForEventResolver } = await import(
+      "../../../src/resolvers/Mutation/registerEventAttendee"
+    );
+
+    try {
+      await registerForEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

@@ -2,7 +2,12 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 import { deleteAgendaCategory } from "../../../src/resolvers/Mutation/deleteAgendaCategory";
-import { User, AgendaCategoryModel, Organization } from "../../../src/models";
+import {
+  User,
+  AgendaCategoryModel,
+  Organization,
+  AppUserProfile,
+} from "../../../src/models";
 import {
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -158,6 +163,25 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
     expect(removedAgendaCategoryPayload).toEqual(args.id);
     const deletedAgendaCategory = await AgendaCategoryModel.findById(args.id);
     expect(deletedAgendaCategory).toBeNull();
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationDeleteAgendaCategoryArgs = {
+      id: sampleAgendaCategory?._id,
+    };
+    const context = {
+      userId: testAdminUser?._id,
+    };
+
+    try {
+      await deleteAgendaCategory?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
   // it("deletes an agenda category successfully", async () => {
   //   const args = {

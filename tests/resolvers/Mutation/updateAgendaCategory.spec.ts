@@ -10,7 +10,12 @@ import {
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { updateAgendaCategory as updateAgendaCategoryResolver } from "../../../src/resolvers/Mutation/updateAgendaCategory";
-import { AgendaCategoryModel, Organization, User } from "../../../src/models";
+import {
+  AgendaCategoryModel,
+  AppUserProfile,
+  Organization,
+  User,
+} from "../../../src/models";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUser } from "../../helpers/user";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
@@ -216,5 +221,29 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
         description: "Updated Description",
       }),
     );
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationUpdateAgendaCategoryArgs = {
+      id: testAgendaCategory?._id,
+      input: {
+        name: "Updated Name",
+        description: "Updated Description",
+      },
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await updateAgendaCategoryResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

@@ -10,7 +10,10 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { type InterfaceFundraisingCampaign } from "../../../src/models";
+import {
+  AppUserProfile,
+  type InterfaceFundraisingCampaign,
+} from "../../../src/models";
 import { updateFundraisingCampaign } from "../../../src/resolvers/Mutation/updateFundraisingCampaign";
 import type { MutationUpdateFundraisingCampaignArgs } from "../../../src/types/generatedGraphQLTypes";
 import { createTestFund, type TestFundType } from "../../helpers/Fund";
@@ -217,5 +220,32 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
     const result = await updateFundraisingCampaign?.({}, args, context);
 
     expect(result).toBeTruthy();
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationUpdateFundraisingCampaignArgs = {
+      id: testFundraisingCampaign?._id.toString() || "",
+      data: {
+        name: "testFundraisingCampaign",
+
+        startDate: new Date(new Date().toDateString()),
+        endDate: new Date(new Date().toDateString()),
+        currency: "USD",
+        fundingGoal: 1000,
+      },
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await updateFundraisingCampaign?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

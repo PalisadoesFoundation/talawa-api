@@ -7,9 +7,10 @@ import {
   FUND_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { Fund } from "../../../src/models";
+import { AppUserProfile, Fund } from "../../../src/models";
 import { updateFund } from "../../../src/resolvers/Mutation/updateFund";
 import type { TestFundType } from "../../helpers/Fund";
 import { createTestFund } from "../../helpers/Fund";
@@ -172,6 +173,31 @@ describe("resolvers-> Mutation-> updateFund", () => {
       await updateFund?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(FUND_ALREADY_EXISTS.MESSAGE);
+    }
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args = {
+      id: testFund?._id,
+      data: {
+        name: "testFund",
+        taxDeductible: true,
+        isDefault: true,
+        isArchived: false,
+      },
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await updateFund?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 });

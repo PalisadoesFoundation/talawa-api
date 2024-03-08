@@ -2,7 +2,7 @@ import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import type { MutationInviteEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
-import { EventAttendee } from "../../../src/models";
+import { AppUserProfile, EventAttendee } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -210,6 +210,32 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
       );
       expect(spy).toHaveBeenLastCalledWith(
         USER_ALREADY_INVITED_FOR_EVENT.MESSAGE,
+      );
+    }
+  });
+
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationInviteEventAttendeeArgs = {
+      data: {
+        userId: testUser?.id,
+        eventId: testEvent?._id,
+      },
+    };
+
+    const context = { userId: testUser?._id };
+
+    const { inviteEventAttendee: inviteEventAttendeeResolver } = await import(
+      "../../../src/resolvers/Mutation/inviteEventAttendee"
+    );
+
+    try {
+      await inviteEventAttendeeResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

@@ -8,6 +8,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
+  AppUserProfile,
   Fund,
   FundraisingCampaign,
   type InterfaceFundraisingCampaign,
@@ -41,7 +42,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers->Mutation->removeFund", () => {
+describe("resolvers->Mutation->removeFundraisingCampaign", () => {
   it("throw error if no user exists with _id===context.userId", async () => {
     try {
       const args = {
@@ -124,5 +125,25 @@ describe("resolvers->Mutation->removeFund", () => {
     await removeFundraisingCampaign?.({}, args, context);
     const fund = await Fund.findOne({ _id: testFund?._id });
     expect(fund?.campaigns).not.toContainEqual(testCampaign?._id);
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    testCampaign = await createTestFundraisingCampaign(testFund?._id);
+    const args = {
+      id: testCampaign?._id.toString() || "",
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await removeFundraisingCampaign?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

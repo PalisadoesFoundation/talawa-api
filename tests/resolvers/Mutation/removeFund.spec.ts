@@ -6,7 +6,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { Fund, FundraisingCampaign } from "../../../src/models";
+import { AppUserProfile, Fund, FundraisingCampaign } from "../../../src/models";
 import { removeFund } from "../../../src/resolvers/Mutation/removeFund";
 import type { TestFundType } from "../../helpers/Fund";
 import { createTestFund } from "../../helpers/Fund";
@@ -110,5 +110,26 @@ describe("resolvers->Mutation->removeFund", () => {
     });
 
     expect(campaignFound).toBeNull();
+  });
+
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args = {
+      id: testFund?._id,
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await removeFund?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });
