@@ -21,7 +21,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
- * 1. If the user exists
+ * 1. If the user exists.
  * 2. If the fundraising campaign  exists.
  * 3. If the user is authorized.
  * 4. If the user is admin of the organization.
@@ -90,10 +90,7 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
     );
 
     // Checks whether the user is admin of the organization or not.
-    if (
-      !currentUserIsOrgAdmin ||
-      currentUserAppProfile.isSuperAdmin === false
-    ) {
+    if (!currentUserIsOrgAdmin || !currentUserAppProfile.isSuperAdmin) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,

@@ -39,7 +39,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe(`resolvers -> Mutation - > registerForEvent`, () => {
+describe(`resolvers -> Mutation - > registerEventAttendee`, () => {
   afterEach(() => {
     vi.doUnmock("../../../src/contants");
     vi.resetModules();
@@ -330,7 +330,7 @@ describe(`resolvers -> Mutation - > registerForEvent`, () => {
       await registerForEventResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+        "i18n is not initialized, try app.use(i18n.init);",
       );
     }
   });

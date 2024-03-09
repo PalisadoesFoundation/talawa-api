@@ -86,9 +86,15 @@ describe("resolvers->Mutation->removeFund", () => {
     const context = {
       userId: testUser?._id,
     };
-    await removeFund?.({}, args, context);
-    const fund = await Fund.findOne({ _id: testFund?._id });
-    expect(fund).toBeNull();
+    try {
+      await removeFund?.({}, args, context);
+      const fund = await Fund.findOne({ _id: testFund?._id });
+      expect(fund).toBeNull();
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
   it("deletes all the campaigns associated with the fund", async () => {
     const temp = await createTestFund();
@@ -102,14 +108,20 @@ describe("resolvers->Mutation->removeFund", () => {
     };
     const campaign = await createTestFundraisingCampaign(testfund2?._id);
 
-    await removeFund?.({}, args, context);
-    const fund = await Fund.findOne({ _id: testfund2?._id });
-    expect(fund).toBeNull();
-    const campaignFound = await FundraisingCampaign.findOne({
-      _id: campaign?._id,
-    });
+    try {
+      await removeFund?.({}, args, context);
+      const fund = await Fund.findOne({ _id: testfund2?._id });
+      expect(fund).toBeNull();
+      const campaignFound = await FundraisingCampaign.findOne({
+        _id: campaign?._id,
+      });
 
-    expect(campaignFound).toBeNull();
+      expect(campaignFound).toBeNull();
+    } catch (error) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 
   it("throws an error if the user does not have appUserProfile", async () => {

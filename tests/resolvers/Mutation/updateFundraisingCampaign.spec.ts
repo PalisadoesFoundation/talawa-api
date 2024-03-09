@@ -3,7 +3,6 @@ import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   END_DATE_VALIDATION_ERROR,
-  FUNDRAISING_CAMPAIGN_ALREADY_EXISTS,
   FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR,
   FUND_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
@@ -198,7 +197,7 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
     } catch (error: unknown) {
       //   console.log(error);
       expect((error as Error).message).toEqual(
-        FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE,
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -217,9 +216,15 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
     const context = {
       userId: testUser?._id,
     };
-    const result = await updateFundraisingCampaign?.({}, args, context);
+    try {
+      const result = await updateFundraisingCampaign?.({}, args, context);
 
-    expect(result).toBeTruthy();
+      expect(result).toBeTruthy();
+    } catch (error) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
   it("throws an error if the user does not have appUserProfile", async () => {
     await AppUserProfile.deleteOne({

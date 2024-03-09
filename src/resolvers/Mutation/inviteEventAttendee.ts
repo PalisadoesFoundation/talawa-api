@@ -43,10 +43,10 @@ export const inviteEventAttendee: MutationResolvers["inviteEventAttendee"] =
       );
     }
 
-    const currentAppUserProfile = await AppUserProfile.findOne({
+    const currentUserAppProfile = await AppUserProfile.findOne({
       userId: currentUser._id,
     }).lean();
-    if (!currentAppUserProfile) {
+    if (!currentUserAppProfile) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -84,7 +84,7 @@ export const inviteEventAttendee: MutationResolvers["inviteEventAttendee"] =
         Types.ObjectId(admin).equals(context.userId),
     );
 
-    if (!isUserEventAdmin && currentAppUserProfile.isSuperAdmin === false) {
+    if (!isUserEventAdmin && !currentUserAppProfile.isSuperAdmin) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,

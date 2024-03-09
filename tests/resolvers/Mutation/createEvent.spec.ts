@@ -208,8 +208,18 @@ describe("resolvers -> Mutation -> createEvent", () => {
       },
       {
         $push: {
-          createdOrganizations: testOrganization?._id,
           joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+          adminFor: testOrganization?._id,
         },
       },
     );
@@ -296,8 +306,18 @@ describe("resolvers -> Mutation -> createEvent", () => {
       },
       {
         $push: {
-          createdOrganizations: testOrganization?._id,
           joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+          adminFor: testOrganization?._id,
         },
       },
     );
@@ -384,13 +404,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -404,7 +422,16 @@ describe("resolvers -> Mutation -> createEvent", () => {
       {
         $push: {
           createdOrganizations: testOrganization?._id,
-          joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
         },
       },
     );
@@ -513,7 +540,16 @@ describe("resolvers -> Mutation -> createEvent", () => {
       {
         $push: {
           createdOrganizations: testOrganization?._id,
-          joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
         },
       },
     );
@@ -601,13 +637,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -621,11 +655,19 @@ describe("resolvers -> Mutation -> createEvent", () => {
       {
         $push: {
           createdOrganizations: testOrganization?._id,
-          joinedOrganizations: testOrganization?._id,
         },
       },
     );
-
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+        },
+      },
+    );
     let startDate = new Date();
     startDate = addMonths(startDate, 3);
 
@@ -710,13 +752,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -924,13 +964,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );

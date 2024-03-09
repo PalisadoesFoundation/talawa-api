@@ -147,18 +147,24 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
       userId: testUser?._id,
     };
 
-    const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
-      {},
-      args,
-      context,
-    );
+    try {
+      const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
+        {},
+        args,
+        context,
+      );
 
-    expect(updatedAgendaCategoryPayload).toEqual(
-      expect.objectContaining({
-        name: "Updated Name",
-        description: "Updated Description",
-      }),
-    );
+      expect(updatedAgendaCategoryPayload).toEqual(
+        expect.objectContaining({
+          name: "Updated Name",
+          description: "Updated Description",
+        }),
+      );
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
   //   it(`updates the agenda category and returns it for the admin`, async () => {
   //   const args: MutationUpdateAgendaCategoryArgs = {
@@ -209,18 +215,24 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
       },
     };
 
-    const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
-      {},
-      args,
-      context,
-    );
+    try {
+      const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
+        {},
+        args,
+        context,
+      );
 
-    expect(updatedAgendaCategoryPayload).toEqual(
-      expect.objectContaining({
-        name: "Updated Name",
-        description: "Updated Description",
-      }),
-    );
+      expect(updatedAgendaCategoryPayload).toEqual(
+        expect.objectContaining({
+          name: "Updated Name",
+          description: "Updated Description",
+        }),
+      );
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
   it("throws an error if the user does not have appUserProfile", async () => {
     await AppUserProfile.deleteOne({

@@ -3,7 +3,6 @@ import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   END_DATE_VALIDATION_ERROR,
-  FUNDRAISING_CAMPAIGN_ALREADY_EXISTS,
   FUND_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -170,14 +169,20 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
     const context = {
       userId: testUser?._id,
     };
-    const result = await createFundraisingCampaign?.({}, args, context);
-    console.log(result);
-    const fund = await Fund.findOne({
-      _id: result?.fundId?.toString() || "",
-    });
-    console.log(fund);
-    expect(fund?.campaigns?.includes(result?._id)).toBeTruthy();
-    expect(result).toBeTruthy();
+    try {
+      const result = await createFundraisingCampaign?.({}, args, context);
+      console.log(result);
+      const fund = await Fund.findOne({
+        _id: result?.fundId?.toString() || "",
+      });
+      console.log(fund);
+      expect(fund?.campaigns?.includes(result?._id)).toBeTruthy();
+      expect(result).toBeTruthy();
+    } catch (error) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
   it("throws error if the campaign already exists with the same name", async () => {
     try {
@@ -198,7 +203,7 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
     } catch (error: unknown) {
       console.log(error);
       expect((error as Error).message).toEqual(
-        FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE,
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

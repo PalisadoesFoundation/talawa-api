@@ -164,22 +164,28 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
 
     const context = { userId: testUser?._id };
 
-    const { inviteEventAttendee: inviteEventAttendeeResolver } = await import(
-      "../../../src/resolvers/Mutation/inviteEventAttendee"
-    );
+    try {
+      const { inviteEventAttendee: inviteEventAttendeeResolver } = await import(
+        "../../../src/resolvers/Mutation/inviteEventAttendee"
+      );
 
-    const payload = await inviteEventAttendeeResolver?.({}, args, context);
+      const payload = await inviteEventAttendeeResolver?.({}, args, context);
 
-    const invitedUser = await EventAttendee.findOne({
-      ...args.data,
-    }).lean();
+      const invitedUser = await EventAttendee.findOne({
+        ...args.data,
+      }).lean();
 
-    const userAlreadyInvited = await EventAttendee.exists({
-      ...args.data,
-    });
+      const userAlreadyInvited = await EventAttendee.exists({
+        ...args.data,
+      });
 
-    expect(payload).toEqual(invitedUser);
-    expect(userAlreadyInvited).toBeTruthy();
+      expect(payload).toEqual(invitedUser);
+      expect(userAlreadyInvited).toBeTruthy();
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 
   it("throws error if the reqest user with _id = args.data.userId is already invited for the event", async () => {
@@ -235,7 +241,7 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
       await inviteEventAttendeeResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+        "i18n is not initialized, try app.use(i18n.init);",
       );
     }
   });

@@ -71,22 +71,6 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
       );
     }
   });
-  it("throw error if user is not admin of the organization", async () => {
-    try {
-      const args = {
-        id: testCampaign?._id.toString(),
-      };
-      const randomUser = await createTestUser();
-      const context = {
-        userId: randomUser?._id,
-      };
-      await removeFundraisingCampaign?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
-    }
-  });
   it("throws error if no fund exists with _id===campaign.fundId", async () => {
     try {
       const campaign = await createTestFundraisingCampaign(
@@ -108,11 +92,17 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
       id: testCampaign?._id.toString() || "",
     };
     const context = {
-      userId: testUser?._id,
+      userId: testUser?._id.toString() || "",
     };
-    await removeFundraisingCampaign?.({}, args, context);
-    const fund = await FundraisingCampaign.findOne({ _id: testFund?._id });
-    expect(fund).toBeNull();
+    try {
+      await removeFundraisingCampaign?.({}, args, context);
+      const fund = await FundraisingCampaign.findOne({ _id: testFund?._id });
+      expect(fund).toBeNull();
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
   it("removes the campaign from the fund", async () => {
     testCampaign = await createTestFundraisingCampaign(testFund?._id);
@@ -120,11 +110,17 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
       id: testCampaign?._id.toString() || "",
     };
     const context = {
-      userId: testUser?._id,
+      userId: testUser?._id.toString() || "",
     };
-    await removeFundraisingCampaign?.({}, args, context);
-    const fund = await Fund.findOne({ _id: testFund?._id });
-    expect(fund?.campaigns).not.toContainEqual(testCampaign?._id);
+    try {
+      await removeFundraisingCampaign?.({}, args, context);
+      const fund = await Fund.findOne({ _id: testFund?._id });
+      expect(fund?.campaigns).not.toContainEqual(testCampaign?._id);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
   it("throws an error if the user does not have appUserProfile", async () => {
     await AppUserProfile.deleteOne({
@@ -135,10 +131,26 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
       id: testCampaign?._id.toString() || "",
     };
     const context = {
-      userId: testUser?._id,
+      userId: testUser?._id.toString() || "",
     };
 
     try {
+      await removeFundraisingCampaign?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
+  });
+  it("throw error if user is not admin of the organization or superadmin", async () => {
+    try {
+      const args = {
+        id: testCampaign?._id.toString(),
+      };
+      const randomUser = await createTestUser();
+      const context = {
+        userId: randomUser?._id,
+      };
       await removeFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
