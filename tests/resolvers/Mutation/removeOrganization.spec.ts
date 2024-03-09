@@ -6,22 +6,25 @@ import type {
   InterfaceActionItem,
   InterfaceActionItemCategory,
   InterfaceComment,
+  InterfaceFund,
   InterfaceOrganization,
   InterfacePost,
 } from "../../../src/models";
 import {
   ActionItem,
   ActionItemCategory,
-  AppUserProfile,
   Comment,
+  Fund,
   MembershipRequest,
   Organization,
   Post,
   User,
+  AppUserProfile,
 } from "../../../src/models";
 import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import { nanoid } from "nanoid";
 import {
   afterAll,
   afterEach,
@@ -50,7 +53,7 @@ let testPost: InterfacePost & Document<any, any, InterfacePost>;
 let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
 let testCategory: InterfaceActionItemCategory & Document;
 let testActionItem: InterfaceActionItem & Document;
-
+let testFund: InterfaceFund & Document;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const tempUser1 = await createTestUserFunc();
@@ -163,6 +166,25 @@ beforeAll(async () => {
     creatorId: testUsers[0]?._id,
     postId: testPost._id,
   });
+  testFund = await Fund.create({
+    organizationId: testOrganization._id,
+    name: `name${nanoid().toLowerCase()}`,
+    refrenceNumber: `refrenceNumber${nanoid().toLowerCase()}`,
+    taxDeductible: true,
+    isDefault: true,
+    isArchived: false,
+    campaigns: [],
+  });
+  await Organization.updateOne(
+    {
+      _id: testOrganization._id,
+    },
+    {
+      $push: {
+        funds: testFund._id,
+      },
+    },
+  );
 
   await Post.updateOne(
     {
@@ -375,6 +397,9 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     const deteledTestActionItems = await ActionItem.find({
       _id: testActionItem?._id,
     });
+    const deletedTestFunds = await Fund.find({
+      _id: testFund._id,
+    });
 
     expect(deletedMembershipRequests).toEqual([]);
 
@@ -385,6 +410,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     expect(deletedTestCategories).toEqual([]);
 
     expect(deteledTestActionItems).toEqual([]);
+    expect(deletedTestFunds).toEqual([]);
   });
 
   it(`removes the organization with image and returns the updated user's object with _id === context.userId`, async () => {

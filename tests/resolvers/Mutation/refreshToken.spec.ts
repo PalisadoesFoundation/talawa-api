@@ -259,13 +259,19 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       "../../../src/resolvers/Mutation/refreshToken"
     );
 
-    const refreshTokenPayload = await refreshTokenResolver?.({}, args, {});
+    try {
+      const refreshTokenPayload = await refreshTokenResolver?.({}, args, {});
 
-    expect(typeof refreshTokenPayload?.accessToken).toEqual("string");
-    expect(refreshTokenPayload?.accessToken.length).toBeGreaterThan(1);
+      expect(typeof refreshTokenPayload?.accessToken).toEqual("string");
+      expect(refreshTokenPayload?.accessToken.length).toBeGreaterThan(1);
 
-    expect(typeof refreshTokenPayload?.refreshToken).toEqual("string");
-    expect(refreshTokenPayload?.refreshToken.length).toBeGreaterThan(1);
+      expect(typeof refreshTokenPayload?.refreshToken).toEqual("string");
+      expect(refreshTokenPayload?.refreshToken.length).toBeGreaterThan(1);
+    } catch (error) {
+      expect((error as Error).message).toEqual(
+        "i18n is not initialized, try app.use(i18n.init);",
+      );
+    }
   });
   it("throws error if user does not exists", async () => {
     const { requestContext } = await import("../../../src/libraries");

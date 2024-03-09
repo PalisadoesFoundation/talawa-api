@@ -208,8 +208,18 @@ describe("resolvers -> Mutation -> createEvent", () => {
       },
       {
         $push: {
-          createdOrganizations: testOrganization?._id,
           joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+          adminFor: testOrganization?._id,
         },
       },
     );
@@ -296,8 +306,18 @@ describe("resolvers -> Mutation -> createEvent", () => {
       },
       {
         $push: {
-          createdOrganizations: testOrganization?._id,
           joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+          adminFor: testOrganization?._id,
         },
       },
     );
@@ -402,7 +422,16 @@ describe("resolvers -> Mutation -> createEvent", () => {
       {
         $push: {
           createdOrganizations: testOrganization?._id,
-          joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
         },
       },
     );
@@ -511,7 +540,16 @@ describe("resolvers -> Mutation -> createEvent", () => {
       {
         $push: {
           createdOrganizations: testOrganization?._id,
-          joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
         },
       },
     );
@@ -617,11 +655,19 @@ describe("resolvers -> Mutation -> createEvent", () => {
       {
         $push: {
           createdOrganizations: testOrganization?._id,
-          joinedOrganizations: testOrganization?._id,
         },
       },
     );
-
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+        },
+      },
+    );
     let startDate = new Date();
     startDate = addMonths(startDate, 3);
 

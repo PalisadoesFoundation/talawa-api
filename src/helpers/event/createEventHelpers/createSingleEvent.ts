@@ -1,8 +1,8 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
 import { AppUserProfile, Event, EventAttendee, User } from "../../../models";
-import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 import type { MutationCreateEventArgs } from "../../../types/generatedGraphQLTypes";
+import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 
 /**
  * This function generates a single non-recurring event.
@@ -51,7 +51,7 @@ export const createSingleEvent = async (
     },
     {
       $push: {
-        registeredEvents: createdEvent[0]?._id,
+        registeredEvents: createdEvent[0]?.id,
       },
     },
     { session },

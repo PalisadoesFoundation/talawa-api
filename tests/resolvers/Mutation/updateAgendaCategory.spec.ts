@@ -1,24 +1,25 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import type { MutationUpdateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import {
+  USER_NOT_FOUND_ERROR,
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { updateAgendaCategory as updateAgendaCategoryResolver } from "../../../src/resolvers/Mutation/updateAgendaCategory";
 import {
   AgendaCategoryModel,
   AppUserProfile,
   Organization,
+  User,
 } from "../../../src/models";
-import { updateAgendaCategory as updateAgendaCategoryResolver } from "../../../src/resolvers/Mutation/updateAgendaCategory";
-import type { MutationUpdateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
-import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
-import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUser } from "../../helpers/user";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
+import type { TestAgendaCategoryType } from "../../helpers/agendaCategory";
 
 let testAgendaCategory: TestAgendaCategoryType;
 let randomUser: TestUserType;
@@ -46,9 +47,9 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-  await AppUserProfile.updateOne(
+  await User.updateOne(
     {
-      userId: testUser?._id,
+      _id: testUser?._id,
     },
     {
       $push: {
@@ -58,7 +59,7 @@ beforeAll(async () => {
   );
   testAgendaCategory = await AgendaCategoryModel.create({
     name: "Sample Agenda Category",
-    organizationId: testOrganization?._id,
+    organization: testOrganization?._id,
     createdBy: testAdminUser?._id,
     createdAt: new Date(),
   });
@@ -141,24 +142,29 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
         description: "Updated Description",
       },
     };
-    // console.log(testAgendaCategory);
 
     const context = {
       userId: testUser?._id,
     };
 
-    const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
-      {},
-      args,
-      context,
-    );
+    try {
+      const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
+        {},
+        args,
+        context,
+      );
 
-    expect(updatedAgendaCategoryPayload).toEqual(
-      expect.objectContaining({
-        name: "Updated Name",
-        description: "Updated Description",
-      }),
-    );
+      expect(updatedAgendaCategoryPayload).toEqual(
+        expect.objectContaining({
+          name: "Updated Name",
+          description: "Updated Description",
+        }),
+      );
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
   //   it(`updates the agenda category and returns it for the admin`, async () => {
   //   const args: MutationUpdateAgendaCategoryArgs = {
@@ -187,19 +193,19 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
   //   );
   // });
   it(`updates the agenda category and returns it as superadmin`, async () => {
-    const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
+    const superAdminTestUser = await User.findOneAndUpdate(
       {
-        userId: randomUser?._id,
+        _id: randomUser?._id,
       },
       {
-        isSuperAdmin: true,
+        userType: "SUPERADMIN",
       },
       {
         new: true,
       },
     );
     const context = {
-      userId: superAdminTestUser?.userId,
+      userId: superAdminTestUser?._id,
     };
     const args: MutationUpdateAgendaCategoryArgs = {
       id: testAgendaCategory?._id,
@@ -209,36 +215,42 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
       },
     };
 
-    const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    expect(updatedAgendaCategoryPayload).toEqual(
-      expect.objectContaining({
-        name: "Updated Name",
-        description: "Updated Description",
-      }),
-    );
-  });
-  it("throws error if the user does not have appUserProfile", async () => {
     try {
-      const args: MutationUpdateAgendaCategoryArgs = {
-        id: testAgendaCategory?._id,
-        input: {
+      const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
+        {},
+        args,
+        context,
+      );
+
+      expect(updatedAgendaCategoryPayload).toEqual(
+        expect.objectContaining({
           name: "Updated Name",
           description: "Updated Description",
-        },
-      };
-      await AppUserProfile.deleteOne({
-        userId: testUser?._id,
-      });
+        }),
+      );
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationUpdateAgendaCategoryArgs = {
+      id: testAgendaCategory?._id,
+      input: {
+        name: "Updated Name",
+        description: "Updated Description",
+      },
+    };
 
-      const context = {
-        userId: randomUser?._id,
-      };
+    const context = {
+      userId: testUser?._id,
+    };
 
+    try {
       await updateAgendaCategoryResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(

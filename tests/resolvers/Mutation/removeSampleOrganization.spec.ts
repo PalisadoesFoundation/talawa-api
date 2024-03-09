@@ -224,6 +224,33 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
 
     try {
       await removeSampleOrganization!(parent, args, adminContext);
+    } catch (error) {
+      expect((error as Error).message).toBe(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
+    }
+  });
+
+  it("should NOT throw error when organization doesn't exist", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message,
+    );
+
+    const userData = await generateUserData(
+      ORGANIZATION_ID.toString(),
+      "ADMIN",
+    );
+    const admin = userData.user;
+
+    const args = {};
+    const adminContext = { userId: admin._id };
+    const parent = {};
+
+    await SampleData.deleteMany({ collectionName: "Organization" });
+
+    try {
+      await removeSampleOrganization!(parent, args, adminContext);
     } catch (error: any) {
       expect(error.message).toBe(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }

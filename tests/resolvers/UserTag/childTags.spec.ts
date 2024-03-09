@@ -1,17 +1,21 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "dotenv/config";
-import { childTags as childTagsResolver } from "../../../src/resolvers/UserTag/childTags";
-import type {
-  UserTagsConnectionResult,
-  UserTagChildTagsArgs,
-} from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import { GraphQLError } from "graphql";
 import type mongoose from "mongoose";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import {
+  OrganizationTagUser,
+  type InterfaceOrganizationTagUser,
+} from "../../../src/models";
+import {
+  childTags as childTagsResolver,
+  parseCursor,
+} from "../../../src/resolvers/UserTag/childTags";
+import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
-import { MAXIMUM_FETCH_LIMIT } from "../../../src/constants";
-import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testChildTag1: TestUserTagType,
@@ -28,70 +32,89 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Tag -> childTags", () => {
-  it(`returns error object when the maximum fetch limit is exceeded`, async () => {
-    const parent = testParentTag!;
-
-    const args: UserTagChildTagsArgs = {
-      input: {
-        limit: MAXIMUM_FETCH_LIMIT + 1,
-        direction: "FORWARD",
-      },
-    };
-
-    const payload = await childTagsResolver?.(parent, args, {});
-
-    expect(payload!.errors.length).toEqual(1);
-    expect(payload!.errors[0]).toMatchObject({
-      __typename: "MaximumValueError",
-    });
-    expect(payload!.data).toBeNull();
+describe("childTags resolver", () => {
+  const parent = testParentTag as InterfaceOrganizationTagUser;
+  it(`throws GraphQLError if invalid arguments are provided to the resolver`, async () => {
+    try {
+      await childTagsResolver?.(parent, {}, {});
+    } catch (error) {
+      if (error instanceof GraphQLError) {
+        expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
+        expect(
+          (error.extensions.errors as DefaultGraphQLArgumentError[]).length,
+        ).toBeGreaterThan(0);
+      }
+    }
   });
 
-  it(`returns error object when the cursor provided is incorrect`, async () => {
-    const parent = testParentTag!;
-
-    const args: UserTagChildTagsArgs = {
-      input: {
-        limit: MAXIMUM_FETCH_LIMIT,
-        direction: "FORWARD",
-        cursor: Types.ObjectId().toString(),
-      },
-    };
-
-    const payload = await childTagsResolver?.(parent, args, {});
-
-    expect(payload!.errors.length).toEqual(1);
-    expect(payload!.errors[0]).toMatchObject({
-      __typename: "InvalidCursor",
-    });
-    expect(payload!.data).toBeNull();
-  });
-
-  it(`returns correct connection object when the arguments are correct`, async () => {
-    const parent = testParentTag!;
-
-    const args: UserTagChildTagsArgs = {
-      input: {
-        limit: MAXIMUM_FETCH_LIMIT,
-        direction: "FORWARD",
-      },
-    };
-
-    const payload = (await childTagsResolver?.(
+  it(`returns the expected connection object`, async () => {
+    const parent = testParentTag as InterfaceOrganizationTagUser;
+    const connection = await childTagsResolver?.(
       parent,
-      args,
+      {
+        first: 2,
+      },
       {},
-    )) as UserTagsConnectionResult;
+    );
 
-    expect(payload.errors.length).toEqual(0);
-    expect(payload.data).not.toBeNull();
-    expect(payload.data!.pageInfo.startCursor).toEqual(
-      testChildTag1!._id.toString(),
-    );
-    expect(payload.data!.pageInfo.endCursor).toEqual(
-      testChildTag2!._id.toString(),
-    );
-    expect(payload.data!.edges[0].node).toEqual(testChildTag1);
+    const totalCount = await OrganizationTagUser.find({
+      parentTagId: testParentTag?._id,
+    }).countDocuments();
+
+    expect(connection).toEqual({
+      edges: [
+        {
+          cursor: testChildTag2?._id.toString(),
+          node: {
+            ...testChildTag2,
+            _id: testChildTag2?._id.toString(),
+          },
+        },
+        {
+          cursor: testChildTag1?._id.toString(),
+          node: {
+            ...testChildTag1,
+            _id: testChildTag1?._id.toString(),
+          },
+        },
+      ],
+      pageInfo: {
+        endCursor: testChildTag1?._id.toString(),
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: testChildTag2?._id.toString(),
+      },
+      totalCount,
+    });
+  });
+});
+
+describe("parseCursor function", () => {
+  it("returns failure state if argument cursorValue is an invalid cursor", async () => {
+    const result = await parseCursor({
+      cursorName: "after",
+      cursorPath: ["after"],
+      cursorValue: Types.ObjectId().toString(),
+      parentTagId: testParentTag?._id.toString() as string,
+    });
+
+    expect(result.isSuccessful).toEqual(false);
+    if (result.isSuccessful === false) {
+      expect(result.errors.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("returns success state if argument cursorValue is a valid cursor", async () => {
+    const result = await parseCursor({
+      cursorName: "after",
+      cursorPath: ["after"],
+      cursorValue: testChildTag1?._id.toString() as string,
+      parentTagId: testParentTag?._id.toString() as string,
+    });
+
+    expect(result.isSuccessful).toEqual(true);
+    if (result.isSuccessful === true) {
+      expect(result.parsedCursor).toEqual(testChildTag1?._id.toString());
+    }
   });
 });
