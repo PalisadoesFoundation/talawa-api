@@ -29,28 +29,18 @@ dotenv.config();
 
 export async function loadDefaultOrganization(
   url: string | undefined,
-  isTesting?: boolean,
 ): Promise<void> {
   if (url == null) {
     console.log("Couldn't find mongodb url");
     return;
   }
-  if (isTesting) {
-    mongoose.connect(process.env.MONGO_DB_URL as string, {
-      dbName: "TALAWA_API_TEST_DATABASE",
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-      useNewUrlParser: true,
-    });
-  } else {
-    await mongoose.connect(url, {
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-      useNewUrlParser: true,
-    });
-  }
+  await mongoose.connect(url, {
+    useCreateIndex: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    useNewUrlParser: true,
+  });
+
   const args = yargs
     .options({
       items: {
@@ -87,3 +77,5 @@ export async function loadDefaultOrganization(
   session?.endSession();
   await mongoose.connection.close();
 }
+
+loadDefaultOrganization(process.env.MONGO_DB_URL);
