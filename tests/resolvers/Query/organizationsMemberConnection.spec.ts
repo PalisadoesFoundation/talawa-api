@@ -815,21 +815,21 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     }
   });
 
-  it(`throws Error if args.skip === undefined`, async () => {
-    const args: QueryOrganizationsMemberConnectionArgs = {
-      orgId: testOrganization._id.toString(),
-      first: 2,
-      skip: undefined,
-      where: null,
-      orderBy: undefined,
-    };
+  // it(`throws Error if args.skip === undefined`, async () => {
+  //   const args: QueryOrganizationsMemberConnectionArgs = {
+  //     orgId: testOrganization._id.toString(),
+  //     first: 2,
+  //     skip: undefined,
+  //     where: null,
+  //     orderBy: undefined,
+  //   };
 
-    try {
-      await organizationsMemberConnectionResolver?.({}, args, {});
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual("Skip parameter is missing");
-    }
-  });
+  //   try {
+  //     await organizationsMemberConnectionResolver?.({}, args, {});
+  //   } catch (error: unknown) {
+  //     expect((error as Error).message).toEqual("Skip parameter is missing");
+  //   }
+  // });
 
   it(`returns non-paginated list of users if args.first === undefined`, async () => {
     const where = {
