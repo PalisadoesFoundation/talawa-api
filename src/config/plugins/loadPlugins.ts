@@ -3,7 +3,7 @@ import _ from "lodash";
 import pluginData from "./pluginData.json";
 import { logger } from "../../libraries";
 import mongoose from "mongoose";
-// Only loads plugin data for the time if it's not currently present in the database
+// Only loads plugin data for the time if it's not currently present in the database.
 const loadPlugins = async (): Promise<void> => {
   try {
     await mongoose.connect(process.env.MONGO_URI as string);
