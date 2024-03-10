@@ -38,7 +38,7 @@ describe("resolvers -> Query -> organizations", () => {
       };
 
       await organizationsResolver?.({}, args, {});
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
     }

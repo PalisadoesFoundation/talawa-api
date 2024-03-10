@@ -71,7 +71,7 @@ describe("resolvers -> Mutation -> likeComment", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationLikeCommentArgs = {
-        id:  new Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

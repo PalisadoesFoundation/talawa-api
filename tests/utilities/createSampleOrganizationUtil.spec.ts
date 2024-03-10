@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type mongoose from "mongoose";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Plugin } from "../../src/models";
 import {
   generateEventData as generateEventDataFn,
@@ -123,6 +123,10 @@ describe("generatePostData function", () => {
   });
 
   describe("generateRandomPlugins function", () => {
+    beforeEach(async () => {
+      // Clear the plugins collection before each test
+      await Plugin.deleteMany({});
+    });
     it("should generate and save the specified number of plugins with correct properties", async () => {
       const numberOfPlugins = 5;
       const usersData = [

@@ -94,7 +94,9 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
     (organizationId) =>
       organizationId === actionItemCategory.organizationId ||
-      new Types.ObjectId(organizationId).equals(actionItemCategory.organizationId),
+      new Types.ObjectId(organizationId).equals(
+        actionItemCategory.organizationId,
+      ),
   );
 
   // Checks if the asignee is a member of the organization

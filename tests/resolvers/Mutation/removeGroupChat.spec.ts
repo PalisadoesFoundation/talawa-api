@@ -73,7 +73,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
 
     try {
       const args: MutationRemoveGroupChatArgs = {
-        chatId:  new Types.ObjectId().toString(),
+        chatId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -106,7 +106,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
         },
         {
           $set: {
-            organization:  new Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
         },
       );

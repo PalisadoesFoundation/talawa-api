@@ -42,12 +42,12 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
     try {
       const args: MutationInviteEventAttendeeArgs = {
         data: {
-          userId:  new Types.ObjectId().toString(),
-          eventId:  new Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
-      const context = { userId:  new Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const { inviteEventAttendee: inviteEventAttendeeResolver } = await import(
         "../../../src/resolvers/Mutation/inviteEventAttendee"
@@ -73,8 +73,8 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
     try {
       const args: MutationInviteEventAttendeeArgs = {
         data: {
-          userId:  new Types.ObjectId().toString(),
-          eventId:  new Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
@@ -104,7 +104,7 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
     try {
       const args: MutationInviteEventAttendeeArgs = {
         data: {
-          userId:  new Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           eventId: testEvent?._id,
         },
       };
@@ -134,7 +134,7 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
     try {
       const args: MutationInviteEventAttendeeArgs = {
         data: {
-          userId:  new Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           eventId: testEvent?._id,
         },
       };
