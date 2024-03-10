@@ -21,7 +21,7 @@ export const registeredEventsByUser: QueryResolvers["registeredEventsByUser"] =
           status: "ACTIVE",
         },
       },
-    }) //@ts-ignore
+    }) //@ts-expect-error - type error
       .sort(sort)
       .populate("creatorId", "-password")
       .populate("admins", "-password")

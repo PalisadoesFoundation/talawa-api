@@ -54,7 +54,7 @@ export const users: QueryResolvers["users"] = async (
     filterCriteria.adminApproved = false;
   }
 
-  const users = await User.find(filterCriteria) //@ts-ignore
+  const users = await User.find(filterCriteria) //@ts-expect-error - type error
     .sort(sort)
     .limit(args.first ?? 0)
     .skip(args.skip ?? 0)

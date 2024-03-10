@@ -1,6 +1,6 @@
 import type { AgendaCategoryResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
-//@ts-ignore
+//@ts-expect-error - type error
 export const organization: AgendaCategoryResolvers["organization"] = async (
   parent,
 ) => {

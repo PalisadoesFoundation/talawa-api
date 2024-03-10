@@ -22,7 +22,7 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
 
     // find all the events according to the requirements
     const events = await Event.find(where)
-      //@ts-ignore
+      //@ts-expect-error - type error
       .sort(sort)
       .limit(args.first ?? 0)
       .skip(args.skip ?? 0)

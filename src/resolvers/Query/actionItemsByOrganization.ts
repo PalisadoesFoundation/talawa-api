@@ -25,7 +25,7 @@ export const actionItemsByOrganization: QueryResolvers["actionItemsByOrganizatio
     const actionItems = await ActionItem.find({
       actionItemCategoryId: { $in: actionItemCategoriesIds },
       ...where,
-    }) //@ts-ignore
+    }) //@ts-expect-error - type error
       .sort(sort)
       .lean();
 

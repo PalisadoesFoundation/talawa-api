@@ -12,6 +12,7 @@ const loadPlugins = async (): Promise<void> => {
     const databaseTitle = mongoose.connection.db.databaseName;
     if (_.isEmpty(res)) {
       //no previous data then update with our new data. (Only happens once)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       pluginData.forEach(async (plugin: any) => {
         await Plugin.create(plugin);
       });

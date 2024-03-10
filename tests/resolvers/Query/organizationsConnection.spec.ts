@@ -13,6 +13,7 @@ import { nanoid } from "nanoid";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganizations: (InterfaceOrganization &
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Document<any, any, InterfaceOrganization>)[];
 
 beforeAll(async () => {

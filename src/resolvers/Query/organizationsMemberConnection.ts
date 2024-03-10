@@ -69,7 +69,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       if (args.skip === undefined) {
         throw new Error("Skip parameter is missing");
       }
-      //@ts-ignore
+      //@ts-expect-error - type error
       users = usersModel.docs.map((user) => {
         return {
           ...user,
@@ -78,7 +78,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         };
       });
     } else {
-      //@ts-ignore
+      //@ts-expect-error - type error
       users = usersModel.docs.map((user) => {
         return {
           ...user,

@@ -6,5 +6,6 @@ export const event: FeedbackResolvers["event"] = async (parent) => {
     _id: parent.eventId,
   }).lean();
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return result!;
 };
