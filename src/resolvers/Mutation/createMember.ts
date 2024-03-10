@@ -5,7 +5,10 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceOrganization } from "../../models";
+import type {
+  InterfaceOrganization,
+  InterfaceAppUserProfile,
+} from "../../models";
 import { AppUserProfile, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
@@ -52,7 +55,7 @@ export const createMember: MutationResolvers["createMember"] = async (
       USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
-  superAdminCheck(currentUserAppProfile);
+  superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
   // Checks if organization exists.
   let organization;

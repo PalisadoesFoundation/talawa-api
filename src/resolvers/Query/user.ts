@@ -11,9 +11,9 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
  * @returns An object that contains user data. If the user is not found then it throws a `NotFoundError` error.
  */
 export const user: QueryResolvers["user"] = async (_parent, args, context) => {
-  const currentUserExists = await User.exists({
+  const currentUserExists = !!(await User.exists({
     _id: context.userId,
-  });
+  }));
 
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
@@ -23,17 +23,19 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     );
   }
 
-  const user: InterfaceUser = await User.findOne({
+  const user: InterfaceUser = (await User.findOne({
     _id: args.id,
-  }).lean();
-  const userAppProfile: InterfaceAppUserProfile = await AppUserProfile.findOne({
-    userId: user._id,
-  })
+  }).lean()) as InterfaceUser;
+  const userAppProfile: InterfaceAppUserProfile = (await AppUserProfile.findOne(
+    {
+      userId: user._id,
+    },
+  )
     .populate("createdOrganizations")
     .populate("createdEvents")
     .populate("eventAdmin")
     .populate("adminFor")
-    .lean();
+    .lean()) as InterfaceAppUserProfile;
 
   // This Query field doesn't allow client to see organizations they are blocked by
   return {

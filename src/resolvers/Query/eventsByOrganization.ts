@@ -14,9 +14,9 @@ export const eventsByOrganization: QueryResolvers["eventsByOrganization"] =
     const events = await Event.find({
       organization: args.id,
       status: "ACTIVE",
-    })
+    }) //@ts-ignore
       .sort(sort)
-      .populate("creator", "-password")
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 

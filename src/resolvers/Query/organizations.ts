@@ -29,7 +29,7 @@ export const organizations: QueryResolvers["organizations"] = async (
 
     organizationFound = await Organization.find({
       _id: args.id,
-    })
+    }) //@ts-ignore
       .sort(sort)
       .lean();
 
@@ -45,6 +45,7 @@ export const organizations: QueryResolvers["organizations"] = async (
 
     return organizationFound;
   } else {
+    //@ts-ignore
     organizationFound = await Organization.find().sort(sort).limit(100).lean();
     await cacheOrganizations(organizationFound);
   }

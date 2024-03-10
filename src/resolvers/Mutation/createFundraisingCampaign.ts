@@ -85,7 +85,7 @@ export const createFundraisingCampaign: MutationResolvers["createFundraisingCamp
 
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
-        Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
+        new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
     );
     if (
       !currentUserIsOrgAdmin ||

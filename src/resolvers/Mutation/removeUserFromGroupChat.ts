@@ -77,7 +77,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     }
 
     // Removes args.userId from users list of groupChat and returns the updated groupChat.
-    return await GroupChat.findOneAndUpdate(
+    const updatedGroupChat = await GroupChat.findOneAndUpdate(
       {
         _id: args.chatId,
       },
@@ -92,4 +92,13 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
         new: true,
       },
     ).lean();
+
+    if (updatedGroupChat) return updatedGroupChat;
+    else {
+      throw new errors.NotFoundError(
+        requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+        CHAT_NOT_FOUND_ERROR.CODE,
+        CHAT_NOT_FOUND_ERROR.PARAM,
+      );
+    }
   };

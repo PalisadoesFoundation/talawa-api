@@ -129,7 +129,7 @@ afterAll(async () => {
 describe("resolvers -> Query -> organizationsMemberConnection", () => {
   it(`when no organization exists with _id === args.orgId`, async () => {
     const args: QueryOrganizationsMemberConnectionArgs = {
-      orgId: Types.ObjectId().toString(),
+      orgId: new Types.ObjectId().toString(),
       first: 1,
       skip: 1,
       where: null,
@@ -168,10 +168,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       // appLanguageCode: testUsers[1].appLanguageCode,
     };
 
-    const sort = {
-      _id: 1,
-    };
-
     const args: QueryOrganizationsMemberConnectionArgs = {
       orgId: testOrganization.id,
       first: 1,
@@ -190,7 +186,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await organizationsMemberConnectionResolver?.({}, args, {});
 
     const users = await User.find(where)
-      .sort(sort)
+      .sort({
+        _id: 1,
+      })
       .select(["-password"])
       .populate(["registeredEvents"])
       .lean();
@@ -243,10 +241,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       // },
     };
 
-    const sort = {
-      _id: -1,
-    };
-
     const args: QueryOrganizationsMemberConnectionArgs = {
       orgId: testOrganization.id,
       first: 2,
@@ -266,7 +260,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const users = await User.find(where)
       .limit(2)
-      .sort(sort)
+      .sort({
+        _id: -1,
+      })
       .select(["-password"])
       .populate(["registeredEvents"])
       .lean();
@@ -319,10 +315,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       // },
     };
 
-    const sort = {
-      firstName: 1,
-    };
-
     const args: QueryOrganizationsMemberConnectionArgs = {
       orgId: testOrganization._id.toString(),
       first: 2,
@@ -341,7 +333,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await organizationsMemberConnectionResolver?.({}, args, {});
 
     const users = await User.find(where)
-      .sort(sort)
+      .sort({
+        firstName: 1,
+      })
       .select(["-password"])
       .populate(["registeredEvents"])
       .lean();
@@ -397,10 +391,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       },
     };
 
-    const sort = {
-      firstName: -1,
-    };
-
     const args: QueryOrganizationsMemberConnectionArgs = {
       orgId: testOrganization._id.toString(),
       first: 2,
@@ -419,7 +409,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await organizationsMemberConnectionResolver?.({}, args, {});
 
     const users = await User.find(where)
-      .sort(sort)
+      .sort({
+        firstName: -1,
+      })
       .select(["-password"])
       .populate(["registeredEvents"])
       .lean();
@@ -476,10 +468,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       },
     };
 
-    const sort = {
-      lastName: 1,
-    };
-
     const args: QueryOrganizationsMemberConnectionArgs = {
       orgId: testOrganization._id.toString(),
       first: 2,
@@ -497,7 +485,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await organizationsMemberConnectionResolver?.({}, args, {});
 
     const users = await User.find(where)
-      .sort(sort)
+      .sort({
+        lastName: 1,
+      })
       .select(["-password"])
       .populate(["registeredEvents"])
       .lean();
@@ -542,10 +532,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       },
     };
 
-    const sort = {
-      lastName: -1,
-    };
-
     const args: QueryOrganizationsMemberConnectionArgs = {
       orgId: testOrganization._id.toString(),
       first: 2,
@@ -563,7 +549,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await organizationsMemberConnectionResolver?.({}, args, {});
 
     const users = await User.find(where)
-      .sort(sort)
+      .sort({
+        lastName: -1,
+      })
       .select(["-password"])
       .populate(["registeredEvents"])
       .lean();
@@ -711,10 +699,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       },
     };
 
-    const sort = {
-      email: 1,
-    };
-
     const args: QueryOrganizationsMemberConnectionArgs = {
       orgId: testOrganization._id.toString(),
       first: 2,
@@ -727,7 +711,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await organizationsMemberConnectionResolver?.({}, args, {});
 
     const users = await User.find(where)
-      .sort(sort)
+      .sort({
+        email: 1,
+      })
       .limit(2)
       .select(["-password"])
       .populate(["registeredEvents"])
@@ -766,10 +752,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       },
     };
 
-    const sort = {
-      email: -1,
-    };
-
     const args: QueryOrganizationsMemberConnectionArgs = {
       orgId: testOrganization._id.toString(),
       first: 2,
@@ -782,7 +764,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await organizationsMemberConnectionResolver?.({}, args, {});
 
     const users = await User.find(where)
-      .sort(sort)
+      .sort({
+        email: -1,
+      })
       .limit(2)
       .select(["-password"])
       .populate(["registeredEvents"])
@@ -873,7 +857,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const users = usersTestModel.docs.map((user) => {
       return {
-        ...user._doc,
+        ...user,
         password: null,
         image: null,
       };
@@ -910,10 +894,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       },
     };
 
-    const sort = {
-      email: -1,
-    };
-
     const args: QueryOrganizationsMemberConnectionArgs = {
       orgId: testOrganization._id.toString(),
       first: 2,
@@ -929,7 +909,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const organizationsMemberConnectionPayload =
       await organizationsMemberConnectionResolver?.({}, args, context);
     const users = await User.find(where)
-      .sort(sort)
+      .sort({
+        email: -1,
+      })
       .limit(2)
       .select(["-password"])
       .populate(["registeredEvents"])

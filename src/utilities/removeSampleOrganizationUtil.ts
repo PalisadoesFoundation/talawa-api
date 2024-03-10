@@ -22,7 +22,9 @@ export async function removeSampleOrganization(): Promise<void> {
       AppUserProfile,
     };
 
-    const collectionModel = collectionModels[collectionName];
+    const collectionModel = collectionModels[
+      collectionName
+    ] as typeof Organization;
     await collectionModel.findByIdAndDelete(documentId);
   }
 

@@ -7,7 +7,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
  * @param _parent-
  * @param args - An object that contains `id` of the fund.
  * @returns A `fund` object.
- */
+ */ //@ts-ignore
 export const getFundById: QueryResolvers["getFundById"] = async (
   _parent,
   args,

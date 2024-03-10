@@ -93,7 +93,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
     try {
       const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
       };
 
       const context = {

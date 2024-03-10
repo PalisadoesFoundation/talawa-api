@@ -126,7 +126,7 @@ describe("removeUserCustomData mutation", () => {
       organizationId: testOrganization?._id,
     };
     const context = {
-      userId: mongoose.Types.ObjectId().toString(),
+      userId: new mongoose.Types.ObjectId().toString(),
     };
 
     try {
@@ -158,7 +158,7 @@ describe("removeUserCustomData mutation", () => {
     );
 
     const args = {
-      organizationId: mongoose.Types.ObjectId().toString(),
+      organizationId: new mongoose.Types.ObjectId().toString(),
     };
     const context = {
       userId: testUser?._id,

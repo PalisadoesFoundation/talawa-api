@@ -13,7 +13,7 @@ import { nanoid } from "nanoid";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganizations: (InterfaceOrganization &
-  Document<unknown, unknown, InterfaceOrganization>)[];
+  Document<any, any, InterfaceOrganization>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -117,10 +117,6 @@ describe("resolvers -> Query -> organizationsConnection", () => {
   description: testOrganizations[1].description, apiUrl: testOrganizations[1].apiUrl,
   visibleInSearch: testOrganizations[1].visibleInSearch, userRegistrationRequired: testOrganizations[1].userRegistrationRequired }
   and sorted by ascending order of organization._id if args.orderBy === 'id_ASC'`, async () => {
-    const sort = {
-      _id: 1,
-    };
-
     const where = {
       _id: testOrganizations[1]._id,
       name: testOrganizations[1].name,
@@ -147,7 +143,9 @@ describe("resolvers -> Query -> organizationsConnection", () => {
     const organizations = await Organization.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        _id: 1,
+      })
       .lean();
 
     const organizationsConnectionPayload =
@@ -160,10 +158,6 @@ describe("resolvers -> Query -> organizationsConnection", () => {
   { id_not: testOrganizations[0]._id, name_not: testOrganizations[0].name, 
   description_not: testOrganizations[0].description, apiUrl_not: testOrganizations[0].apiUrl } and
   sorted by descending order of organization._id if args.orderBy === 'id_DESC'`, async () => {
-    const sort = {
-      _id: -1,
-    };
-
     const where = {
       _id: {
         $ne: testOrganizations[0]._id,
@@ -194,7 +188,9 @@ describe("resolvers -> Query -> organizationsConnection", () => {
     const organizations = await Organization.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        _id: -1,
+      })
       .lean();
 
     const organizationsConnectionPayload =
@@ -207,10 +203,6 @@ describe("resolvers -> Query -> organizationsConnection", () => {
   { id_in: [testOrganizations[1]._id], name_in: [testOrganizations[1].name], 
   description_in: [testOrganizations[1].description], apiUrl_in: [testOrganizations[1].apiUrl] } and
   sorted by ascending order of organization.name if args.orderBy === 'name_ASC'`, async () => {
-    const sort = {
-      name: 1,
-    };
-
     const where = {
       _id: {
         $in: [testOrganizations[1]._id],
@@ -230,7 +222,7 @@ describe("resolvers -> Query -> organizationsConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        id_in: [testOrganizations[1]._id.toString()],
+        id_in: [testOrganizations[1]._id],
         name_in: [testOrganizations[1].name],
         description_in: [testOrganizations[1].description],
         apiUrl_in: [testOrganizations[1].apiUrl ?? ""],
@@ -241,7 +233,9 @@ describe("resolvers -> Query -> organizationsConnection", () => {
     const organizations = await Organization.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        name: 1,
+      })
       .lean();
 
     const organizationsConnectionPayload =
@@ -254,10 +248,6 @@ describe("resolvers -> Query -> organizationsConnection", () => {
   { id_not_in: [testOrganizations[0]._id], name_not_in: [testOrganizations[0].name], 
   description_not_in: [testOrganizations[0].description], apiUrl_not_in: [testOrganizations[0].apiUrl] } and
   sorted by descending order of organization.name if args.orderBy === 'name_DESC'`, async () => {
-    const sort = {
-      name: -1,
-    };
-
     const where = {
       _id: {
         $nin: [testOrganizations[0]._id],
@@ -277,7 +267,7 @@ describe("resolvers -> Query -> organizationsConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        id_not_in: [testOrganizations[0]._id.toString()],
+        id_not_in: [testOrganizations[0]._id],
         name_not_in: [testOrganizations[0].name],
         description_not_in: [testOrganizations[0].description],
         apiUrl_not_in: [testOrganizations[0].apiUrl ?? ""],
@@ -288,7 +278,9 @@ describe("resolvers -> Query -> organizationsConnection", () => {
     const organizations = await Organization.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        name: -1,
+      })
       .lean();
 
     const organizationsConnectionPayload =
@@ -301,10 +293,6 @@ describe("resolvers -> Query -> organizationsConnection", () => {
   { name_contains: testOrganizations[1].name, description_contains: testOrganizations[1].description,
   apiUrl_contains: testOrganizations[1].apiUrl } and sorted by ascending order of
   organization.description if args.orderBy === 'description_ASC'`, async () => {
-    const sort = {
-      description: 1,
-    };
-
     const where = {
       name: {
         $regex: testOrganizations[1].name,
@@ -334,7 +322,9 @@ describe("resolvers -> Query -> organizationsConnection", () => {
     const organizations = await Organization.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        description: 1,
+      })
       .lean();
 
     const organizationsConnectionPayload =
@@ -347,10 +337,6 @@ describe("resolvers -> Query -> organizationsConnection", () => {
   { name_starts_with: testOrganizations[1].name, description_starts_with: testOrganizations[1].description,
   apiUrl_starts_with: testOrganizations[1].apiUrl } and sorted by descending order of
   organization.description if args.orderBy === 'description_DESC'`, async () => {
-    const sort = {
-      description: -1,
-    };
-
     const where = {
       name: new RegExp("^" + testOrganizations[1].name),
       description: new RegExp("^" + testOrganizations[1].description),
@@ -371,7 +357,9 @@ describe("resolvers -> Query -> organizationsConnection", () => {
     const organizations = await Organization.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        description: -1,
+      })
       .lean();
 
     const organizationsConnectionPayload =
@@ -382,10 +370,6 @@ describe("resolvers -> Query -> organizationsConnection", () => {
 
   it(`returns paginated list of all existing organizations sorted by ascending order of
    organization.apiUrl if args.orderBy === 'apiUrl_ASC'`, async () => {
-    const sort = {
-      apiUrl: 1,
-    };
-
     const args: QueryOrganizationsConnectionArgs = {
       where: null,
       first: 2,
@@ -396,7 +380,9 @@ describe("resolvers -> Query -> organizationsConnection", () => {
     const organizations = await Organization.find()
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        apiUrl: 1,
+      })
       .lean();
 
     const organizationsConnectionPayload =
@@ -407,10 +393,6 @@ describe("resolvers -> Query -> organizationsConnection", () => {
 
   it(`returns paginated list of all existing organizations sorted by descending order of
    organization.apiUrl if args.orderBy === 'apiUrl_DESC'`, async () => {
-    const sort = {
-      apiUrl: -1,
-    };
-
     const args: QueryOrganizationsConnectionArgs = {
       where: null,
       first: 2,
@@ -421,7 +403,9 @@ describe("resolvers -> Query -> organizationsConnection", () => {
     const organizations = await Organization.find()
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        apiUrl: -1,
+      })
       .lean();
 
     const organizationsConnectionPayload =

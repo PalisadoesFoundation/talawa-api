@@ -69,7 +69,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       if (args.skip === undefined) {
         throw new Error("Skip parameter is missing");
       }
-
+      //@ts-ignore
       users = usersModel.docs.map((user) => {
         return {
           ...user,
@@ -78,9 +78,10 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         };
       });
     } else {
+      //@ts-ignore
       users = usersModel.docs.map((user) => {
         return {
-          ...user._doc,
+          ...user,
           image: user.image ? `${context.apiRootUrl}${user.image}` : null,
           password: null,
         };

@@ -57,7 +57,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationAddOrganizationImageArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
         file: "",
       };
       const context = {

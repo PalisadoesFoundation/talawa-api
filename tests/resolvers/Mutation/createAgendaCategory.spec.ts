@@ -119,7 +119,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(), // A random ID that does not exist in the database
+        userId: new Types.ObjectId().toString(), // A random ID that does not exist in the database
       };
 
       const { createAgendaCategory: createAgendaCategoryResolver } =
@@ -147,7 +147,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
         input: {
           name: "Agenda Category",
           description: "Description for the agenda category",
-          organizationId: Types.ObjectId().toString(), // A random ID that does not exist in the database
+          organizationId: new Types.ObjectId().toString(), // A random ID that does not exist in the database
         },
       };
 

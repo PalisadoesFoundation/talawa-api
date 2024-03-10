@@ -1,15 +1,17 @@
+import { Types } from "mongoose";
+import {
+  AGENDA_CATEGORY_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import { AgendaCategoryModel, AppUserProfile, User } from "../../models";
+import type { InterfaceAgendaCategory } from "../../models";
 import type {
   MutationResolvers,
   UpdateAgendaCategoryInput,
 } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { AgendaCategoryModel, AppUserProfile, User } from "../../models";
-import {
-  AGENDA_CATEGORY_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-} from "../../constants";
-import { Types } from "mongoose";
+
 /**
  * This is a resolver function for the GraphQL mutation 'updateAgendaCategory'.
  *
@@ -41,7 +43,6 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
-
     const currentUserAppProfile = await AppUserProfile.findOne({
       userId: currentUser._id,
     }).lean();
@@ -66,18 +67,22 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
     }
     const currentOrg = await AgendaCategoryModel.findById(
       existingAgendaCategory._id,
-    ).lean();
+    )
+      .select("organizationId")
+      .lean();
+    // console.log(currentOrg);
 
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
-        Types.ObjectId(organizationId?.toString()).equals(
+        new Types.ObjectId(organizationId?.toString()).equals(
           currentOrg?.organizationId?.toString() || "",
         ),
     );
+    // console.log(currentUserIsOrgAdmin, currentUserAppProfile.isSuperAdmin);
     // If the user is a normal user, throw an error
     if (
       currentUserIsOrgAdmin === false &&
-      currentUserAppProfile.isSuperAdmin === false
+      !currentUserAppProfile.isSuperAdmin
     ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -101,5 +106,5 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
       },
     ).lean();
 
-    return updatedAgendaCategory;
+    return updatedAgendaCategory as InterfaceAgendaCategory;
   };

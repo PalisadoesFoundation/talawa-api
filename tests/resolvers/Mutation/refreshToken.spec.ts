@@ -284,7 +284,9 @@ describe("resolvers -> Mutation -> refreshToken", () => {
     }).lean();
     const newRefreshToken = await createRefreshToken(
       newUser ? newUser.toObject() : ({} as InterfaceUser),
-      newUserAppProfile ? newUserAppProfile : ({} as InterfaceAppUserProfile),
+      newUserAppProfile
+        ? (newUserAppProfile as InterfaceAppUserProfile)
+        : ({} as InterfaceAppUserProfile),
     );
     await User.deleteOne({
       _id: newUser?._id,
@@ -320,7 +322,9 @@ describe("resolvers -> Mutation -> refreshToken", () => {
     }).lean();
     const newRefreshToken = await createRefreshToken(
       newUser ? newUser.toObject() : ({} as InterfaceUser),
-      newUserAppProfile ? newUserAppProfile : ({} as InterfaceAppUserProfile),
+      newUserAppProfile
+        ? (newUserAppProfile as InterfaceAppUserProfile)
+        : ({} as InterfaceAppUserProfile),
     );
     // await User.deleteOne({
     //   _id: newUser?._id,

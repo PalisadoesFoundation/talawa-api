@@ -46,7 +46,7 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
   await deleteImage(currentUser.image);
 
   // Sets image field to null for currentUser and returns the updated currentUser.
-  return await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: currentUser._id,
     },
@@ -59,4 +59,13 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
       new: true,
     },
   ).lean();
+  if (updatedUser) {
+    return updatedUser;
+  } else {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
 };

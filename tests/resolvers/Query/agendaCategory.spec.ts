@@ -65,7 +65,7 @@ describe("resolvers -> Query -> agendaCategory", () => {
   it("throws a NotFoundError when the agenda category does not exist", async () => {
     try {
       const args = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
       await agendaCategory?.({}, args, {});
       // If the resolver does not throw an error, the test fails

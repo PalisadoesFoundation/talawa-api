@@ -33,5 +33,5 @@ export const agendaCategory: QueryResolvers["agendaCategory"] = async (
       AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM,
     );
   }
-  return foundAgendaCategory;
+  return foundAgendaCategory as any;
 };
