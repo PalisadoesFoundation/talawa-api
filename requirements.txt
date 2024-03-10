@@ -1,6 +1,0 @@
-black==22.12.0
-pydocstyle==6.3.0
-pylint==2.15.10
-pymongo==4.3.3
-getpass4==0.0.14.1
-python-dotenv==0.21.1
