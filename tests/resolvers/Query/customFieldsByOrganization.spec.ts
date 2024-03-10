@@ -69,7 +69,7 @@ describe("resolvers => Query => customFieldsByOrganization", () => {
     );
 
     const args = {
-      id: Types.ObjectId().toString(),
+      id: new Types.ObjectId().toString(),
     };
     const context = {
       userId: testUser?._id,

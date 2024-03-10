@@ -86,7 +86,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMessageToDirectChatArgs = {
-        chatId: Types.ObjectId().toString(),
+        chatId: new Types.ObjectId().toString(),
         messageContent: "",
       };
 
@@ -114,7 +114,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { sendMessageToDirectChat: sendMessageToDirectChatResolver } =

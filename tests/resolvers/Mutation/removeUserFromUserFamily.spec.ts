@@ -84,7 +84,7 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
-        familyId: Types.ObjectId().toString(),
+        familyId: new Types.ObjectId().toString(),
         userId: testUsers[4]?._id,
       };
 

@@ -50,7 +50,7 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
         },
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await createFundraisingCampaignPledge?.({}, args, context);
     } catch (error: unknown) {
@@ -62,7 +62,7 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
     try {
       const args: MutationCreateFundraisingCampaignPledgeArgs = {
         data: {
-          campaignId: Types.ObjectId().toString(),
+          campaignId: new Types.ObjectId().toString(),
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           userIds: [testUser!._id.toString()],
           startDate: new Date(new Date().toDateString()),

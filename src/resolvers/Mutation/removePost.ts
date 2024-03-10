@@ -85,7 +85,7 @@ export const removePost: MutationResolvers["removePost"] = async (
   const isSuperAdmin = currentUserAppProfile.isSuperAdmin;
   const isAdminOfPostOrganization = currentUserAppProfile?.adminFor.some(
     (orgID) =>
-      orgID && Types.ObjectId(orgID?.toString()).equals(post?.organization),
+      orgID && new Types.ObjectId(orgID?.toString()).equals(post?.organization),
   );
 
   if (!isCreator && !isSuperAdmin && !isAdminOfPostOrganization) {

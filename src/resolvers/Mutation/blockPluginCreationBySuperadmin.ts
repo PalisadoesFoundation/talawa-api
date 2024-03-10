@@ -4,6 +4,7 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { AppUserProfile, User } from "../../models";
+import type { InterfaceAppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
 /**
@@ -44,7 +45,7 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
     }
 
     // Checks whether currentUser is a SUPERADMIN.
-    superAdminCheck(currentUserAppProfile);
+    superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
     const userAppProfile = await AppUserProfile.findOne({
       userId: args.userId,
     }).lean();
@@ -59,9 +60,9 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
     Sets pluginCreationAllowed field on document of appUserProfile with _id === args.userId
     to !args.blockUser and returns the updated user.
     */
-    return await AppUserProfile.findOneAndUpdate(
+    const updatedUser = (await AppUserProfile.findOneAndUpdate(
       {
-        _id: userAppProfile._id,
+        userId: args.userId,
       },
       {
         $set: {
@@ -71,5 +72,14 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
       {
         new: true,
       },
-    ).lean();
+    ).lean()) as InterfaceAppUserProfile;
+
+    if (updatedUser) return updatedUser;
+    else {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM,
+      );
+    }
   };

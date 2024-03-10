@@ -49,7 +49,7 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
         id: testFund?._id,
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId:  new Types.ObjectId().toString(),
       };
       await removeFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
@@ -59,7 +59,7 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
   it("throw error if no fund campaign exists with _id===args.id", async () => {
     try {
       const args = {
-        id: Types.ObjectId().toString(),
+        id:  new Types.ObjectId().toString(),
       };
       const context = {
         userId: testUser?._id,
@@ -74,7 +74,7 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
   it("throws error if no fund exists with _id===campaign.fundId", async () => {
     try {
       const campaign = await createTestFundraisingCampaign(
-        Types.ObjectId().toString(),
+         new Types.ObjectId().toString(),
       );
       const args = {
         id: campaign?._id.toString() || "",

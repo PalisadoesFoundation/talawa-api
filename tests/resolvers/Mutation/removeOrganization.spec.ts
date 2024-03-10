@@ -220,7 +220,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removeOrganization: removeOrganizationResolver } = await import(
@@ -244,7 +244,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
 
     try {
       const args: MutationRemoveOrganizationArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -278,7 +278,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         },
         {
           $set: {
-            creatorId: Types.ObjectId().toString(),
+            creatorId: new Types.ObjectId().toString(),
           },
         },
         {
@@ -436,7 +436,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     });
 
     const args: MutationRemoveOrganizationArgs = {
-      id: newTestOrganization._id,
+      id: newTestOrganization._id.toString(),
     };
 
     const context = {

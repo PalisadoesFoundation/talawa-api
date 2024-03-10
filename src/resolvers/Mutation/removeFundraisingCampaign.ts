@@ -86,7 +86,7 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
 
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
-        Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
+        new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
     );
 
     // Checks whether the user is admin of the organization or not.

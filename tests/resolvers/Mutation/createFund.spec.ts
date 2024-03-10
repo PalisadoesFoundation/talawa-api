@@ -54,7 +54,7 @@ describe("resolvers-> Mutation-> createFund", () => {
         },
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await createFund?.({}, args, context);
     } catch (error: unknown) {
@@ -65,7 +65,7 @@ describe("resolvers-> Mutation-> createFund", () => {
     try {
       const args: MutationCreateFundArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           name: "testFund",
           taxDeductible: true,
           isDefault: true,

@@ -9,6 +9,7 @@ import { errors, requestContext } from "../../libraries";
 import { isValidString } from "../../libraries/validators/validateString";
 import { AppUserProfile, User } from "../../models";
 import { UserFamily } from "../../models/userFamily";
+import type { InterfaceAppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 import { superAdminCheck } from "../../utilities";
@@ -52,7 +53,7 @@ export const createUserFamily: MutationResolvers["createUserFamily"] = async (
     );
   }
   // Check whether the user is super admin.
-  superAdminCheck(currentUserAppProfile);
+  superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
   let validationResultName = {
     isLessThanMaxLength: false,

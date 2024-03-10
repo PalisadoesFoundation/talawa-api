@@ -6,8 +6,12 @@ import {
   USER_NOT_ORGANIZATION_ADMIN,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceOrganization } from "../../models";
+import type {
+  InterfaceOrganization,
+  InterfaceAppUserProfile,
+} from "../../models";
 import { AppUserProfile, Organization, User } from "../../models";
+
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -37,9 +41,9 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   ]);
 
   if (organizationFoundInCache[0] === null) {
-    organization = await Organization.findOne({
+    organization = (await Organization.findOne({
       _id: args.data.organizationId,
-    }).lean();
+    }).lean()) as InterfaceOrganization;
     if (organization != null) {
       await cacheOrganizations([organization]);
     }
@@ -102,7 +106,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   }
   // Checks whether user is an admin of the organization.
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
-    Types.ObjectId(admin).equals(user._id),
+    new Types.ObjectId(admin).equals(user._id),
   );
 
   if (!userIsOrganizationAdmin) {
@@ -114,7 +118,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   }
 
   // Checks whether the current user is a superadmin.
-  superAdminCheck(currentUserAppProfile);
+  superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
   // Removes user._id from admins list of the organization.
   const updatedOrganization = await Organization.findOneAndUpdate(
@@ -138,7 +142,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   }
 
   // Removes organization._id from adminFor list of the appUserProfile and returns the updated userProfile.
-  return await AppUserProfile.findOneAndUpdate(
+  const updatedUser = (await AppUserProfile.findOneAndUpdate(
     {
       _id: userAppProfile._id,
     },
@@ -154,5 +158,15 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     {
       new: true,
     },
-  ).lean();
+  ).lean()) as InterfaceAppUserProfile;
+
+  if (updatedUser) {
+    return updatedUser;
+  } else {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
 };

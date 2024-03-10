@@ -105,7 +105,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { updateEvent: updateEventResolver } = await import(
@@ -133,7 +133,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     try {
       const args: MutationUpdateEventArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -297,7 +297,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     );
 
     const args: MutationUpdateEventArgs = {
-      id: testSingleEvent1?._id,
+      id: testSingleEvent1?._id.toString(),
       data: {
         recurring: true,
         title: "made recurring",

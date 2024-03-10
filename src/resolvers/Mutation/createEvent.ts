@@ -78,7 +78,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
 
   const userCreatedOrganization =
     currentUserAppProfile.createdOrganizations.some((createdOrganization) =>
-      Types.ObjectId(createdOrganization?.toString()).equals(organization._id),
+      new Types.ObjectId(createdOrganization?.toString()).equals(organization._id),
     );
 
   const userJoinedOrganization = currentUser.joinedOrganizations.some(

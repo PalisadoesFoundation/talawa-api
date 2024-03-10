@@ -4,6 +4,7 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { AppUserProfile, User } from "../../models";
+import type { InterfaceAppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
 /**
@@ -47,11 +48,11 @@ export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
       USER_NOT_AUTHORIZED_SUPERADMIN.PARAM,
     );
   }
-  superAdminCheck(currentUserAppProfile);
+  superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
-  const userExists = await User.exists({
+  const userExists = !!(await User.exists({
     _id: args.id,
-  });
+  }));
 
   // Checks whether user with _id === args.id exists.
   if (userExists === false) {

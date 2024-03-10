@@ -49,7 +49,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
 
     try {
       const args: MutationUnregisterForEventByUserArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

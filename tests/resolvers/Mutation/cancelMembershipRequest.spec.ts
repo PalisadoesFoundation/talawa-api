@@ -46,7 +46,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
   it(`throws NotFoundError if no membershipRequest exists with _id === args.membershipRequestId`, async () => {
     try {
       const args: MutationCancelMembershipRequestArgs = {
-        membershipRequestId: Types.ObjectId().toString(),
+        membershipRequestId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -70,7 +70,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
         },
       );
@@ -109,7 +109,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await cancelMembershipRequestResolver?.({}, args, context);
@@ -127,7 +127,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
         },
         {
           $set: {
-            user: Types.ObjectId().toString(),
+            user: new Types.ObjectId().toString(),
           },
         },
       );

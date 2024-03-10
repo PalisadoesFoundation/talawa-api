@@ -56,9 +56,9 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
         USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
-    const currentUserExists = await User.exists({
+    const currentUserExists = !!(await User.exists({
       _id: context.userId,
-    });
+    }));
     // Checks whether currentUser with _id === context.userId exists.
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
@@ -69,7 +69,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     }
 
     const currentUserIsOrganizationMember = organization.members.some(
-      (member) => Types.ObjectId(member).equals(context.userId),
+      (member) => new Types.ObjectId(member).equals(context.userId),
     );
 
     // Checks whether currentUser with _id === context.userId is already a member of organzation.
@@ -104,7 +104,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     Adds organization._id to joinedOrganizations list of currentUser's document
     with _id === context.userId and returns the updated currentUser.
     */
-    return await User.findOneAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       {
         _id: context.userId,
       },
@@ -120,4 +120,13 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       .select(["-password"])
       .populate("joinedOrganizations")
       .lean();
+
+    if (updatedUser) return updatedUser;
+    else {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM,
+      );
+    }
   };

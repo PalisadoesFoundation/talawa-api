@@ -83,7 +83,7 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
       },
     );
     const updatedAppUserProfile: InterfaceAppUserProfile =
-      await AppUserProfile.findOneAndUpdate(
+      (await AppUserProfile.findOneAndUpdate(
         {
           userId: context.userId,
         },
@@ -100,7 +100,7 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
         .populate("createdEvents")
         .populate("eventAdmin")
         .populate("adminFor")
-        .lean();
+        .lean()) as InterfaceAppUserProfile;
 
     return {
       user: updatedUser as InterfaceUser,

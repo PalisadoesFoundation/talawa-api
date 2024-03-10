@@ -63,7 +63,7 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
         },
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const { unassignUserTag: unassignUserTagResolver } = await import(
         "../../../src/resolvers/Mutation/unassignUserTag"
@@ -88,7 +88,7 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     try {
       const args: MutationUnassignUserTagArgs = {
         input: {
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           tagId: testTag ? testTag._id.toString() : "",
         },
       };
@@ -119,7 +119,7 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
       const args: MutationUnassignUserTagArgs = {
         input: {
           userId: adminUser?._id,
-          tagId: Types.ObjectId().toString(),
+          tagId: new Types.ObjectId().toString(),
         },
       };
 

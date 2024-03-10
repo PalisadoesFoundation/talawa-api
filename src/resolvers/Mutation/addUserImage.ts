@@ -36,7 +36,7 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
   );
 
   // Updates the user with new image and returns the updated user.
-  return await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: currentUser._id,
     },
@@ -49,4 +49,14 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
       new: true,
     },
   ).lean();
+
+  if (updatedUser) {
+    return updatedUser;
+  } else {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
 };

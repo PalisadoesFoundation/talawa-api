@@ -23,7 +23,7 @@ describe("resolvers -> Query -> checkAuth", () => {
   it("throws NotFoundError if no user exists with _id === context.userId", async () => {
     try {
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await checkAuthResolver?.({}, {}, context);

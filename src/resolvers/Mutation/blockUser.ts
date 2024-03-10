@@ -55,9 +55,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     );
   }
 
-  const userExists = await User.exists({
+  const userExists = !!(await User.exists({
     _id: args.userId,
-  });
+  }));
 
   // Checks whether user with _id === args.userId exists.
   if (userExists === false) {
@@ -71,7 +71,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   // Check whether the user - args.userId is a member of the organization before blocking
   const userIsOrganizationMember = organization?.members.some(
     (member) =>
-      member === args.userId || Types.ObjectId(member).equals(args.userId),
+      member === args.userId || new Types.ObjectId(member).equals(args.userId),
   );
 
   if (!userIsOrganizationMember) {
@@ -94,7 +94,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlocked = organization.blockedUsers.some((blockedUser) =>
-    Types.ObjectId(blockedUser).equals(args.userId),
+    new Types.ObjectId(blockedUser).equals(args.userId),
   );
 
   // Checks whether user with _id === args.userId is already blocked from organization.
@@ -129,7 +129,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   Adds organization._id to organizationsBlockedBy list on user's document
   with _id === args.userId and returns the updated user.
   */
-  return await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: args.userId,
     },
@@ -144,4 +144,13 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   )
     .select(["-password"])
     .lean();
+
+  if (updatedUser) return updatedUser;
+  else {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
 };

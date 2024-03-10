@@ -7,7 +7,7 @@ import { UserFamily } from "../../models/userFamily";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 import { AppUserProfile, User } from "../../models";
-
+import type { InterfaceAppUserProfile } from "../../models";
 import { superAdminCheck } from "../../utilities";
 /**
  * This function enables to remove a user family.
@@ -52,7 +52,7 @@ export const removeUserFamily: MutationResolvers["removeUserFamily"] = async (
     );
   }
   // Check whether the user is super admin.
-  superAdminCheck(currentUserAppProfile);
+  superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
   // Checks if a family with _id === args.familyId exists
   if (!userFamily) {
