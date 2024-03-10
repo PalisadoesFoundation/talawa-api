@@ -948,7 +948,8 @@ async function main(): Promise<void> {
   ]);
 
   await setImageUploadSize(imageSizeLimit * 1000);
-  setEncryptionKey();
+
+  await setEncryptionKey();
 
   if (!isDockerInstallation) {
     const { shouldRunDataImport } = await inquirer.prompt([
