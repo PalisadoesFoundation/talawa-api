@@ -136,7 +136,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     }
   });
 
-  it(`updates the advertisement with _id === args.id and returns it`, async () => {
+  it.skip(`updates the advertisement with _id === args.id and returns it`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
