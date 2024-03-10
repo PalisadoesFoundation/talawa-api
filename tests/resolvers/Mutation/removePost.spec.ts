@@ -58,7 +58,7 @@ describe("resolvers -> Mutation -> removePost", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removePost: removePostResolver } = await import(
@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> removePost", () => {
 
     try {
       const args: MutationRemovePostArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

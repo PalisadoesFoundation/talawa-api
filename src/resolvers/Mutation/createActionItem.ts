@@ -94,7 +94,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
     (organizationId) =>
       organizationId === actionItemCategory.organizationId ||
-      Types.ObjectId(organizationId).equals(actionItemCategory.organizationId),
+      new Types.ObjectId(organizationId).equals(actionItemCategory.organizationId),
   );
 
   // Checks if the asignee is a member of the organization
@@ -138,7 +138,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        Types.ObjectId(admin).equals(context.userId),
+        new Types.ObjectId(admin).equals(context.userId),
     );
   }
 
@@ -147,7 +147,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     (organizationId) =>
       (organizationId &&
         organizationId === actionItemCategory.organizationId) ||
-      Types.ObjectId(organizationId?.toString()).equals(
+      new Types.ObjectId(organizationId?.toString()).equals(
         actionItemCategory.organizationId,
       ),
   );

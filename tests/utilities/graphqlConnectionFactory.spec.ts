@@ -143,7 +143,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
 
   beforeAll(() => {
     fetchedObjects = Array.from({ length: 5 }, () => ({
-      _id: Types.ObjectId(),
+      _id: new Types.ObjectId(),
       a: nanoid(),
     }));
 
@@ -283,7 +283,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
 
   beforeAll(() => {
     fetchedObjects = Array.from({ length: 5 }, () => ({
-      _id: Types.ObjectId(),
+      _id: new Types.ObjectId(),
       a: nanoid(),
     }));
     reversedFetchedObjects = Array.from(fetchedObjects).reverse();

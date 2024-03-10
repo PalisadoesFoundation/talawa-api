@@ -89,7 +89,7 @@ describe("parseCursor function", () => {
     const result = await parseCursor({
       cursorName: "after",
       cursorPath: ["after"],
-      cursorValue: Types.ObjectId().toString(),
+      cursorValue: new Types.ObjectId().toString(),
       organization: testOrganization?._id.toString() as string,
     });
 

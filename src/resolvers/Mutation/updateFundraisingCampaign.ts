@@ -101,7 +101,7 @@ export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCamp
 
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
-        Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
+        new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
     );
 
     //Checks if the user is authorized to update the fundraising campaign

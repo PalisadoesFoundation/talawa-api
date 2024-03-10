@@ -64,7 +64,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { togglePostPin: togglePostPinResolver } = await import(
@@ -87,7 +87,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
 
     try {
       const args: MutationTogglePostPinArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

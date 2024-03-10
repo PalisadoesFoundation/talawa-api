@@ -67,7 +67,7 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
     );
   }
 
-  const currentUserExists = await User.exists({
+  const currentUserExists = !!await User.exists({
     _id: context.userId,
   });
 

@@ -78,7 +78,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { rejectAdmin: rejectAdminResolver } = await import(
@@ -110,7 +110,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       );
 
       const args: MutationRejectAdminArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

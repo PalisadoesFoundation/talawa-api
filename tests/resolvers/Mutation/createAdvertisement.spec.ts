@@ -104,7 +104,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createAdvertisement: createAdvertisementResolver } = await import(

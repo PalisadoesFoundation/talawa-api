@@ -60,7 +60,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       dataValue: "testDataValue",
     };
 
-    const context = { userId: Types.ObjectId().toString() };
+    const context = { userId: new Types.ObjectId().toString() };
 
     try {
       await addUserCustomData?.({}, args, context);
@@ -80,7 +80,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     const args = {
-      organizationId: Types.ObjectId().toString(),
+      organizationId: new Types.ObjectId().toString(),
       dataName: "testDataName",
       dataValue: "testDataValue",
     };

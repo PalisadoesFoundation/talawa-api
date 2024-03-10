@@ -12,6 +12,7 @@ import {
   Organization,
   User,
 } from "../../models";
+import type { InterfaceAppUserProfile } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import type {
   Address,
@@ -52,7 +53,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
         USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
-    superAdminCheck(currentUserAppProfile);
+    superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
     //Upload file
     let uploadImageFileName = null;

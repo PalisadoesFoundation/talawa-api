@@ -27,7 +27,7 @@ describe("resolvers -> Query -> userLanguage", () => {
   it("throws NotFoundError if no user exists with _id === args.userId", async () => {
     try {
       const args: QueryUserLanguageArgs = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await userLanguageResolver?.({}, args, {});

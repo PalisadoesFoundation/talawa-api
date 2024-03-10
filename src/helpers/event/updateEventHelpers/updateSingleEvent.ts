@@ -142,7 +142,7 @@ export const updateSingleEvent = async (
     ]);
   } else {
     // else (i.e. the event is still non-recurring), just perform a regular update
-    updatedEvent = await Event.findOneAndUpdate(
+    updatedEvent = (await Event.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -153,7 +153,7 @@ export const updateSingleEvent = async (
         new: true,
         session,
       },
-    ).lean();
+    ).lean()) as InterfaceEvent;
 
     if (updatedEvent !== null) {
       await cacheEvents([updatedEvent]);

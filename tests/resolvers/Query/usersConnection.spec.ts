@@ -74,10 +74,6 @@ describe("resolvers -> Query -> usersConnection", () => {
       email: testUsers[1]?.email,
     };
 
-    const sort = {
-      _id: 1,
-    };
-
     const args: QueryUsersConnectionArgs = {
       first: 2,
       skip: 1,
@@ -99,7 +95,9 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        _id: 1,
+      })
       .select(["-password"])
       .populate("joinedOrganizations")
       .populate("registeredEvents")
@@ -131,10 +129,6 @@ describe("resolvers -> Query -> usersConnection", () => {
       // },
     };
 
-    const sort = {
-      _id: -1,
-    };
-
     const args: QueryUsersConnectionArgs = {
       first: 2,
       skip: 1,
@@ -161,7 +155,9 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        _id: -1,
+      })
       .select(["-password"])
       .populate("joinedOrganizations")
       .populate("registeredEvents")
@@ -193,10 +189,6 @@ describe("resolvers -> Query -> usersConnection", () => {
       // },
     };
 
-    const sort = {
-      firstName: 1,
-    };
-
     const args: QueryUsersConnectionArgs = {
       first: 2,
       skip: 1,
@@ -219,7 +211,9 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        firstName: 1,
+      })
       .select(["-password"])
 
       .populate("joinedOrganizations")
@@ -252,10 +246,6 @@ describe("resolvers -> Query -> usersConnection", () => {
       // },
     };
 
-    const sort = {
-      firstName: -1,
-    };
-
     const args: QueryUsersConnectionArgs = {
       first: 2,
       skip: 1,
@@ -282,7 +272,9 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        firstName: -1,
+      })
       .select(["-password"])
       .populate("joinedOrganizations")
       .populate("registeredEvents")
@@ -315,10 +307,6 @@ describe("resolvers -> Query -> usersConnection", () => {
       // },
     };
 
-    const sort = {
-      lastName: 1,
-    };
-
     const args: QueryUsersConnectionArgs = {
       first: 2,
       skip: 1,
@@ -340,7 +328,9 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        lastName: 1,
+      })
       .select(["-password"])
 
       .populate("joinedOrganizations")
@@ -361,10 +351,6 @@ describe("resolvers -> Query -> usersConnection", () => {
       lastName: new RegExp("^" + testUsers[1]?.lastName),
       email: new RegExp("^" + testUsers[1]?.email),
       // appLanguageCode: new RegExp("^" + testUsers[1]?.appLanguageCode),
-    };
-
-    const sort = {
-      lastName: -1,
     };
 
     const args: QueryUsersConnectionArgs = {
@@ -388,7 +374,9 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        lastName: -1,
+      })
       .select(["-password"])
       .populate("joinedOrganizations")
       .populate("registeredEvents")
@@ -400,10 +388,6 @@ describe("resolvers -> Query -> usersConnection", () => {
   it(`returns paginated list of users
   sorted by args.orderBy === 'email_ASC'`, async () => {
     const where = {};
-
-    const sort = {
-      email: 1,
-    };
 
     const args: QueryUsersConnectionArgs = {
       first: 2,
@@ -425,7 +409,9 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        email: 1,
+      })
       .select(["-password"])
       .populate("joinedOrganizations")
       .populate("registeredEvents")
@@ -437,10 +423,6 @@ describe("resolvers -> Query -> usersConnection", () => {
   it(`returns paginated list of users
   sorted by args.orderBy === 'email_DESC'`, async () => {
     const where = {};
-
-    const sort = {
-      email: -1,
-    };
 
     const args: QueryUsersConnectionArgs = {
       first: 2,
@@ -462,7 +444,9 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        email: -1,
+      })
       .select(["-password"])
       .populate("joinedOrganizations")
       .populate("registeredEvents")

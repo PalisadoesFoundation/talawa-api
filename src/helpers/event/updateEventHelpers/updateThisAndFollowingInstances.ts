@@ -200,9 +200,9 @@ export const updateThisAndFollowingInstances = async (
       },
     );
 
-    updatedEvent = await Event.findOne({
+    updatedEvent = (await Event.findOne({
       _id: event._id,
-    }).lean();
+    }).lean()) as InterfaceEvent;
   }
 
   // update the baseRecurringEvent if it is the latest recurrence rule that the instances are following
