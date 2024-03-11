@@ -180,6 +180,11 @@ export const enums = gql`
     MENU
   }
 
+  enum ItemType {
+    Regular
+    Note
+  }
+
   enum Currency {
     AED # United Arab Emirates Dirham
     AFN # Afghan Afghani
