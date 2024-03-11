@@ -195,8 +195,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
   it(`creates the organization without image and returns it`, async () => {
     vi.spyOn(uploadImage, "uploadImage").mockImplementation(
       async (newImagePath: string, imageAlreadyInDbPath: string) => ({
-        newImagePath,
-        imageAlreadyInDbPath,
+        newImagePath: newImagePath || "",
+        imageAlreadyInDbPath: imageAlreadyInDbPath || "",
       }),
     );
     const args: MutationCreateOrganizationArgs = {
