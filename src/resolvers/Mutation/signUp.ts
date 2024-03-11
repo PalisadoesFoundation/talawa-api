@@ -33,7 +33,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     email: args.data.email.toLowerCase(),
   });
 
-  if (userWithEmailExists === true) {
+  if (userWithEmailExists) {
     throw new errors.ConflictError(
       requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
       EMAIL_ALREADY_EXISTS_ERROR.CODE,

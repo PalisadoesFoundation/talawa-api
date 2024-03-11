@@ -93,7 +93,8 @@ export const checkIn: MutationResolvers["checkIn"] = async (
 
   const isUserEventAdmin = currentEvent.admins.some(
     (admin) =>
-      admin === context.userID || Types.ObjectId(admin).equals(context.userId),
+      admin === context.userID ||
+      new Types.ObjectId(admin).equals(context.userId),
   );
 
   if (!isUserEventAdmin && currentUserAppProfile.isSuperAdmin === false) {

@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removeComment: removeCommentResolver } = await import(
@@ -102,7 +102,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveCommentArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -133,7 +133,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
         },
         {
           $set: {
-            creatorId: Types.ObjectId().toString(),
+            creatorId: new Types.ObjectId().toString(),
           },
         },
         {

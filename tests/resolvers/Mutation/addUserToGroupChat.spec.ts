@@ -59,7 +59,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: Types.ObjectId().toString(),
+        chatId: new Types.ObjectId().toString(),
         userId: testUser?.id,
       };
 
@@ -90,7 +90,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
         },
       );
@@ -195,7 +195,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
 
       const args: MutationAddUserToGroupChatArgs = {
         chatId: testGroupChat?.id,
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const context = {

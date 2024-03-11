@@ -55,7 +55,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removeEvent: removeEventResolver } = await import(
@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveEventArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

@@ -54,7 +54,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
     );
     try {
       const args: MutationAdminRemoveEventArgs = {
-        eventId: Types.ObjectId().toString(),
+        eventId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
         },
         {
@@ -89,7 +89,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await adminRemoveEventResolver?.({}, args, context);
@@ -124,7 +124,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await adminRemoveEventResolver?.({}, args, context);

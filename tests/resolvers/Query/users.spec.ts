@@ -54,7 +54,6 @@ describe("resolvers -> Query -> users", () => {
 
     vi.resetModules();
   });
-
   it("returns empty array if no user exists", async () => {
     const testObjectId = new mongoose.Types.ObjectId();
 
@@ -216,10 +215,6 @@ describe("resolvers -> Query -> users", () => {
         },
       };
 
-      const sort = {
-        _id: 1,
-      };
-
       const usersPayload = await usersResolver?.({}, args, {
         userId: testUsers[1]._id,
       });
@@ -231,7 +226,9 @@ describe("resolvers -> Query -> users", () => {
       let users = await User.find({
         _id: testUsers[1].id,
       })
-        .sort(sort)
+        .sort({
+          _id: 1,
+        })
         .select(["-password"])
         .populate("joinedOrganizations")
         .populate("registeredEvents")
@@ -253,10 +250,6 @@ describe("resolvers -> Query -> users", () => {
         },
       };
 
-      const sort = {
-        _id: 1,
-      };
-
       const usersPayload = await usersResolver?.({}, args, {
         userId: testUsers[3]._id,
       });
@@ -267,7 +260,9 @@ describe("resolvers -> Query -> users", () => {
       let users = await User.find({
         _id: testUsers[1].id,
       })
-        .sort(sort)
+        .sort({
+          _id: 1,
+        })
         .select(["-password"])
         .populate("joinedOrganizations")
         .populate("registeredEvents")
@@ -293,10 +288,6 @@ describe("resolvers -> Query -> users", () => {
         lastName: testUsers[1].lastName,
         email: testUsers[1].email,
         // appLanguageCode: testUsers[1].appLanguageCode,
-      };
-
-      const sort = {
-        _id: 1,
       };
 
       const args: QueryUsersArgs = {
@@ -327,7 +318,9 @@ describe("resolvers -> Query -> users", () => {
       );
 
       let users = await User.find(filterCriteria)
-        .sort(sort)
+        .sort({
+          _id: 1,
+        })
         .select(["-password"])
         .populate("joinedOrganizations")
         .populate("registeredEvents")
@@ -352,10 +345,6 @@ describe("resolvers -> Query -> users", () => {
         lastName: testUsers[1].lastName,
         email: testUsers[1].email,
         // appLanguageCode: testUsers[1].appLanguageCode,
-      };
-
-      const sort = {
-        _id: 1,
       };
 
       const args: QueryUsersArgs = {
@@ -386,7 +375,9 @@ describe("resolvers -> Query -> users", () => {
       );
 
       let users = await User.find(filterCriteria)
-        .sort(sort)
+        .sort({
+          _id: 1,
+        })
         .select(["-password"])
         .populate("joinedOrganizations")
         .populate("registeredEvents")
@@ -414,10 +405,6 @@ describe("resolvers -> Query -> users", () => {
         // appLanguageCode: testUsers[1].appLanguageCode,
       };
 
-      const sort = {
-        _id: 1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           id: testUsers[1].id,
@@ -439,7 +426,9 @@ describe("resolvers -> Query -> users", () => {
         (userConnection) => userConnection?.user,
       );
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          _id: 1,
+        })
         .select(["-password"])
         .populate("joinedOrganizations")
         .populate("registeredEvents")
@@ -473,10 +462,6 @@ describe("resolvers -> Query -> users", () => {
         },
       };
 
-      const sort = {
-        _id: -1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           id_not: testUsers[2]._id.toString(),
@@ -499,7 +484,9 @@ describe("resolvers -> Query -> users", () => {
       );
 
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          _id: -1,
+        })
         .select(["-password"])
 
         .populate("joinedOrganizations")
@@ -538,10 +525,6 @@ describe("resolvers -> Query -> users", () => {
         // },
       };
 
-      const sort = {
-        firstName: 1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           id_in: [testUsers[1].id],
@@ -561,7 +544,9 @@ describe("resolvers -> Query -> users", () => {
         (userConnection) => userConnection?.user,
       );
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          firstName: 1,
+        })
         .select(["-password"])
         .populate("joinedOrganizations")
         .populate("registeredEvents")
@@ -596,10 +581,6 @@ describe("resolvers -> Query -> users", () => {
         },
       };
 
-      const sort = {
-        firstName: -1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           id_not_in: [testUsers[2]._id.toString()],
@@ -622,12 +603,12 @@ describe("resolvers -> Query -> users", () => {
         (userConnection) => userConnection?.user,
       );
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          firstName: -1,
+        })
         .select(["-password"])
-
         .populate("joinedOrganizations")
         .populate("registeredEvents")
-
         .lean();
 
       users = users.map((user) => ({
@@ -663,10 +644,6 @@ describe("resolvers -> Query -> users", () => {
         // },
       };
 
-      const sort = {
-        lastName: 1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           firstName_contains: testUsers[1].firstName,
@@ -688,7 +665,9 @@ describe("resolvers -> Query -> users", () => {
         (userConnection) => userConnection?.user,
       );
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          lastName: 1,
+        })
         .select(["-password"])
 
         .populate("joinedOrganizations")
@@ -717,10 +696,6 @@ describe("resolvers -> Query -> users", () => {
         // appLanguageCode: new RegExp("^" + testUsers[1].appLanguageCode),
       };
 
-      const sort = {
-        lastName: -1,
-      };
-
       const args: QueryUsersArgs = {
         where: {
           firstName_starts_with: testUsers[1].firstName,
@@ -741,7 +716,9 @@ describe("resolvers -> Query -> users", () => {
         (userConnection) => userConnection?.user,
       );
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          lastName: -1,
+        })
         .select(["-password"])
 
         .populate("joinedOrganizations")
@@ -762,10 +739,6 @@ describe("resolvers -> Query -> users", () => {
     sorted by args.orderBy === 'email_ASC'`, async () => {
       const where = {};
 
-      const sort = {
-        email: 1,
-      };
-
       const args: QueryUsersArgs = {
         where: null,
         orderBy: "email_ASC",
@@ -782,7 +755,9 @@ describe("resolvers -> Query -> users", () => {
         (userConnection) => userConnection?.user,
       );
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          email: 1,
+        })
         .select(["-password"])
 
         .populate("joinedOrganizations")
@@ -803,10 +778,6 @@ describe("resolvers -> Query -> users", () => {
     sorted by args.orderBy === 'email_DESC'`, async () => {
       const where = {};
 
-      const sort = {
-        email: -1,
-      };
-
       const args: QueryUsersArgs = {
         where: null,
         orderBy: "email_DESC",
@@ -823,14 +794,12 @@ describe("resolvers -> Query -> users", () => {
         (userConnection) => userConnection?.user,
       );
       let users = await User.find(where)
-        .sort(sort)
+        .sort({
+          email: -1,
+        })
         .select(["-password"])
-        .populate("createdOrganizations")
-        .populate("createdEvents")
         .populate("joinedOrganizations")
         .populate("registeredEvents")
-        .populate("eventAdmin")
-        .populate("adminFor")
         .lean();
 
       users = users.map((user) => ({
@@ -845,10 +814,6 @@ describe("resolvers -> Query -> users", () => {
   it(`returns list of all existing users
   sorted by args.orderBy === 'email_DESC' and when images exist`, async () => {
     const where = {};
-
-    const sort = {
-      email: -1,
-    };
 
     await User.updateMany(
       {},
@@ -875,7 +840,9 @@ describe("resolvers -> Query -> users", () => {
       (userConnection) => userConnection?.user,
     );
     let users = await User.find(where)
-      .sort(sort)
+      .sort({
+        email: -1,
+      })
       .select(["-password"])
 
       .populate("joinedOrganizations")

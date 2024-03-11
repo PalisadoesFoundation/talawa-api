@@ -71,7 +71,7 @@ export const removeFund: MutationResolvers["removeFund"] = async (
 
   const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
     (organizationId) =>
-      Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
+      new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
   );
 
   //checks whether the user is admin of organization or not
@@ -96,5 +96,5 @@ export const removeFund: MutationResolvers["removeFund"] = async (
   });
 
   //returns the deleted fund
-  return fund;
+  return fund as InterfaceFund;
 };

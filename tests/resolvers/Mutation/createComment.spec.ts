@@ -38,7 +38,7 @@ describe("resolvers -> Mutation -> createComment", () => {
         data: {
           text: "",
         },
-        postId: Types.ObjectId().toString(),
+        postId: new Types.ObjectId().toString(),
       };
 
       const context = {
