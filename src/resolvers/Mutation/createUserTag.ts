@@ -58,7 +58,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
     );
   }
 
-  // Additonal checks if the parent folder is provided
+  // Additional checks if the parent folder is provided
   if (args.input.parentTagId) {
     const parentTag = await OrganizationTagUser.findOne({
       _id: args.input.parentTagId,
