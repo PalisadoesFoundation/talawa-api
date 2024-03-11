@@ -42,7 +42,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
       _id: args.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    if (organization) {
+      await cacheOrganizations([organization]);
+    }
   }
 
   // Checks whether organization exists.
@@ -105,7 +107,10 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     );
   }
 
-  // Adds args.userId to blockedUsers list on organization's document.
+  /*
+  Adds args.userId to blockedUsers list on organization's document.
+  Removes args.userId from the organization's members list
+  */
   const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization._id,
@@ -113,6 +118,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     {
       $push: {
         blockedUsers: args.userId,
+      },
+      $pull: {
+        members: args.userId,
       },
     },
     {
@@ -127,6 +135,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   /*
   Adds organization._id to organizationsBlockedBy list on user's document
   with _id === args.userId and returns the updated user.
+  Remove organization's id from joinedOrganizations list on args.userId.
   */
   return await User.findOneAndUpdate(
     {
@@ -135,6 +144,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     {
       $push: {
         organizationsBlockedBy: organization._id,
+      },
+      $pull: {
+        joinedOrganizations: organization._id,
       },
     },
     {
