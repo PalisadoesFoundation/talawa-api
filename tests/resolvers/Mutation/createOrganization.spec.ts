@@ -284,8 +284,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       };
 
       await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error) {
+      expect((error as Error).message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
       );
     }
@@ -322,8 +322,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       };
 
       await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error) {
+      expect((error as Error).message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
       );
     }
@@ -387,17 +387,17 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       // Testing for Invalid address
       try {
         await createOrganizationResolver({}, invalidArgs, context);
-      } catch (error: any) {
+      } catch (error) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Not a Valid Address");
+        expect((error as Error).message).toEqual("Not a Valid Address");
       }
 
       //Testing for Valid address
       try {
         await createOrganizationResolver({}, validArgs, context);
-      } catch (error: any) {
+      } catch (error) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Something went wrong.");
+        expect((error as Error).message).toEqual("Something went wrong.");
       }
     } else {
       console.error(
@@ -432,9 +432,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       try {
         const result = await createOrganizationResolver({}, validArgs, context);
         expect(result).toEqual({ isAddressValid: false });
-      } catch (error: any) {
+      } catch (error) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Not a Valid Address");
+        expect((error as Error).message).toEqual("Not a Valid Address");
 
         expect(error).toBeInstanceOf(Error);
 
