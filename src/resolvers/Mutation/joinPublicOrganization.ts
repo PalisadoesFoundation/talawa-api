@@ -7,6 +7,7 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { Organization, User } from "../../models";
+import type { InterfaceUser } from "../../models/User";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -104,7 +105,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     Adds organization._id to joinedOrganizations list of currentUser's document
     with _id === context.userId and returns the updated currentUser.
     */
-    const updatedUser = await User.findOneAndUpdate(
+    return (await User.findOneAndUpdate(
       {
         _id: context.userId,
       },
@@ -119,14 +120,5 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     )
       .select(["-password"])
       .populate("joinedOrganizations")
-      .lean();
-
-    if (updatedUser) return updatedUser;
-    else {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
-      );
-    }
+      .lean()) as InterfaceUser;
   };

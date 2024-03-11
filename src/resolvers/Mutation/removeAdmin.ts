@@ -142,7 +142,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   }
 
   // Removes organization._id from adminFor list of the appUserProfile and returns the updated userProfile.
-  const updatedUser = (await AppUserProfile.findOneAndUpdate(
+  return (await AppUserProfile.findOneAndUpdate(
     {
       _id: userAppProfile._id,
     },
@@ -159,14 +159,4 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
       new: true,
     },
   ).lean()) as InterfaceAppUserProfile;
-
-  if (updatedUser) {
-    return updatedUser;
-  } else {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
-    );
-  }
 };

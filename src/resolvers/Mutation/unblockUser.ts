@@ -6,7 +6,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { InterfaceOrganization } from "../../models";
+import type { InterfaceOrganization, InterfaceUser } from "../../models";
 import { Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
@@ -101,7 +101,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     await cacheOrganizations([updatedOrganization]);
   }
   // remove the organization from the organizationsBlockedBy array inside the user record
-  const updatedUser = await User.findOneAndUpdate(
+  return (await User.findOneAndUpdate(
     {
       _id: user._id,
     },
@@ -120,14 +120,5 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     },
   )
     .select(["-password"])
-    .lean();
-  if (updatedUser) {
-    return updatedUser;
-  } else {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
-    );
-  }
+    .lean()) as InterfaceUser;
 };

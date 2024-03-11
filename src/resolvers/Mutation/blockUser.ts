@@ -12,6 +12,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { adminCheck } from "../../utilities";
+import type { InterfaceUser } from "../../models";
 /**
  * This function enables blocking a user.
  * @param _parent - parent of current request
@@ -129,7 +130,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   Adds organization._id to organizationsBlockedBy list on user's document
   with _id === args.userId and returns the updated user.
   */
-  const updatedUser = await User.findOneAndUpdate(
+  return (await User.findOneAndUpdate(
     {
       _id: args.userId,
     },
@@ -143,14 +144,5 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     },
   )
     .select(["-password"])
-    .lean();
-
-  if (updatedUser) return updatedUser;
-  else {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
-    );
-  }
+    .lean()) as InterfaceUser;
 };

@@ -66,9 +66,6 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
     let users: InterfaceUser[] = []; // Change the type of users
 
     if (paginateOptions.pagination) {
-      if (args.skip === undefined) {
-        throw new Error("Skip parameter is missing");
-      }
       //@ts-expect-error - type error
       users = usersModel.docs.map((user) => {
         return {

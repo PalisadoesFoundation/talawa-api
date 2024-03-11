@@ -7,7 +7,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceOrganization } from "../../models";
+import type { InterfaceOrganization, InterfaceUser } from "../../models";
 import { AppUserProfile, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
@@ -136,7 +136,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   and returns the updated currentUser.
   */
 
-  const updatedUser = await User.findOneAndUpdate(
+  return (await User.findOneAndUpdate(
     {
       _id: currentUser._id,
     },
@@ -151,15 +151,5 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     },
   )
     .select(["-password"])
-    .lean();
-
-  if (updatedUser) {
-    return updatedUser;
-  } else {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
-    );
-  }
+    .lean()) as InterfaceUser;
 };

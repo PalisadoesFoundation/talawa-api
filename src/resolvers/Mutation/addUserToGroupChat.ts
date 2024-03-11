@@ -11,6 +11,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { adminCheck } from "../../utilities";
+import type { InterfaceGroupChat } from "../../models";
 /**
  * This function adds user to group chat.
  * @param _parent - parent of current request
@@ -94,7 +95,7 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     }
 
     // Adds args.userId to users list on groupChat's document and returns the updated groupChat.
-    const groupChatResult = await GroupChat.findOneAndUpdate(
+    return (await GroupChat.findOneAndUpdate(
       {
         _id: args.chatId,
       },
@@ -106,14 +107,5 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
       {
         new: true,
       },
-    ).lean();
-
-    if (groupChatResult) return groupChatResult;
-    else {
-      throw new errors.NotFoundError(
-        requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
-        CHAT_NOT_FOUND_ERROR.CODE,
-        CHAT_NOT_FOUND_ERROR.PARAM,
-      );
-    }
+    ).lean()) as InterfaceGroupChat;
   };

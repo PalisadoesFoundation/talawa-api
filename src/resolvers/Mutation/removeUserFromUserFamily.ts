@@ -33,18 +33,9 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       _id: context.userId,
     });
 
-    const user = await User.findById({
+    const user = (await User.findById({
       _id: args.userId,
-    });
-
-    // Check whether the user exists.
-    if (!user) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
-      );
-    }
+    })) as InterfaceUserFamily;
 
     const userIsMemberOfUserFamily = userFamily?.users.some((member) => {
       return new Types.ObjectId(member).equals(user?._id);
@@ -118,7 +109,7 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     }
 
     //Removes args.userId from users list of user family ans return the updated family.
-    const updatedFamily = await UserFamily.findOneAndUpdate(
+    return (await UserFamily.findOneAndUpdate(
       {
         _id: args.familyId,
       },
@@ -132,7 +123,5 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       {
         new: true,
       },
-    ).lean();
-
-    return updatedFamily as InterfaceUserFamily;
+    ).lean()) as InterfaceUserFamily;
   };
