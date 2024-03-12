@@ -45,6 +45,36 @@ export const inputs = gql`
     eventId: ID
   }
 
+  input CreateAgendaItemInput {
+    title: String!
+    description: String
+    duration: String!
+    attachments: [String]
+    relatedEventId: ID
+    urls: [String]
+    user: String
+    categories: [ID]
+    sequence: Int!
+    itemType: ItemType!
+    organizationId: ID!
+    isNote: Boolean!
+  }
+
+  input UpdateAgendaItemInput {
+    title: String
+    description: String
+    duration: String
+    attachments: [String]
+    relatedEvent: ID
+    updatedBy: ID!
+    urls: [String]
+    user: String
+    categories: [ID]
+    sequence: Int
+    itemType: ItemType
+    isNote: Boolean
+  }
+
   input ActionItemWhereInput {
     actionItemCategory_id: ID
     event_id: ID
@@ -78,6 +108,14 @@ export const inputs = gql`
     name_of_user_not_in: [String!]
     name_of_user_contains: String
     name_of_user_starts_with: String
+  }
+
+  input EditVenueInput {
+    id: ID!
+    capacity: Int
+    name: String
+    description: String
+    file: String
   }
 
   input EventInput {
@@ -504,5 +542,13 @@ export const inputs = gql`
     startDate: Date!
     type: AdvertisementType!
     mediaFile: String!
+  }
+
+  input VenueInput {
+    organizationId: ID!
+    name: String!
+    capacity: Int!
+    description: String
+    file: String
   }
 `;

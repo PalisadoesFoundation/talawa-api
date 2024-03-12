@@ -26,6 +26,26 @@ export const types = gql`
     updatedAt: Date!
   }
 
+  type AgendaItem {
+    _id: ID!
+    title: String!
+    description: String
+    duration: String!
+    attachments: [String]
+    createdBy: User!
+    updatedBy: User!
+    urls: [String]
+    user: String!
+    categories: [AgendaCategory]
+    sequence: Int!
+    itemType: ItemType!
+    createdAt: Date!
+    updatedAt: Date!
+    isNote: Boolean!
+    organization: Organization!
+    relatedEvent: Event
+  }
+
   type AgendaCategory {
     _id: ID!
     name: String!
@@ -208,6 +228,7 @@ export const types = gql`
     status: Status!
     feedback: [Feedback!]!
     averageFeedbackScore: Float
+    agendaItems: [AgendaItem]
   }
 
   type EventVolunteer {
@@ -400,6 +421,7 @@ export const types = gql`
     ): PostsConnection
     funds: [Fund]
     customFields: [OrganizationCustomField!]!
+    venues: [Venue]
   }
 
   type OrganizationCustomField {
@@ -422,6 +444,15 @@ export const types = gql`
 
   type OtpData {
     otpToken: String!
+  }
+
+  type Venue {
+    _id: ID!
+    capacity: Int!
+    description: String
+    imageUrl: URL
+    name: String!
+    organization: Organization!
   }
 
   """

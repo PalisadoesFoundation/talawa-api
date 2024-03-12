@@ -81,6 +81,8 @@ export const mutations = gql`
       organizationId: ID!
     ): ActionItemCategory! @auth
 
+    createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!
+
     createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
 
     createComment(postId: ID!, data: CommentInput!): Comment @auth
@@ -132,11 +134,17 @@ export const mutations = gql`
 
     createSampleOrganization: Boolean! @auth
 
+    createVenue(data: VenueInput!): Venue @auth
+
     deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
 
     deleteAgendaCategory(id: ID!): ID!
 
     deleteDonationById(id: ID!): DeletePayload!
+
+    deleteVenue(id: ID!): Venue @auth
+
+    editVenue(data: EditVenueInput!): Venue @auth
 
     forgotPassword(data: ForgotPasswordData!): Boolean!
 
@@ -196,6 +204,8 @@ export const mutations = gql`
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
 
+    removeAgendaItem(id: ID!): AgendaItem!
+
     removeEventVolunteer(id: ID!): EventVolunteer! @auth
     removeFund(id: ID!): Fund! @auth
     removeFundraisingCampaign(id: ID!): FundraisingCampaign! @auth
@@ -214,6 +224,8 @@ export const mutations = gql`
     removePost(id: ID!): Post @auth
 
     removeUserCustomData(organizationId: ID!): UserCustomData! @auth
+
+    removeAdvertisement(id: ID!): Advertisement
 
     removeUserTag(id: ID!): UserTag @auth
 
@@ -259,6 +271,8 @@ export const mutations = gql`
       id: ID!
       data: UpdateActionItemCategoryInput!
     ): ActionItemCategory @auth
+
+    updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
 
     updateAgendaCategory(
       id: ID!

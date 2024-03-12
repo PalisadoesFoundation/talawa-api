@@ -5,6 +5,7 @@ import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
 import type { InterfaceRecurrenceRule } from "./RecurrenceRule";
+import type { InterfaceAgendaItem } from "./AgendaItem";
 
 /**
  * This is an interface representing a document for an event in the database(MongoDB).
@@ -38,6 +39,7 @@ export interface InterfaceEvent {
   title: string;
   updatedAt: Date;
   volunteerGroups: PopulatedDoc<InterfaceEventVolunteerGroup & Document>[];
+  agendaItems: PopulatedDoc<InterfaceAgendaItem & Document>[];
 }
 
 /**

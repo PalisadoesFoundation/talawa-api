@@ -41,6 +41,21 @@ export const CHAT_NOT_FOUND_ERROR = {
   MESSAGE: "chat.notFound",
   PARAM: "chat",
 };
+
+export const VENUE_ALREADY_EXISTS_ERROR = {
+  DESC: "Venue already exists",
+  CODE: "venue.alreadyExists",
+  MESSAGE: "venue.alreadyExists",
+  PARAM: "venue",
+};
+
+export const VENUE_NOT_FOUND_ERROR = {
+  DESC: "Venue does not exist",
+  CODE: "venue.NotFound",
+  MESSAGE: "venue.NotFound",
+  PARAM: "venue",
+};
+
 export const COMMENT_NOT_FOUND_ERROR = {
   DESC: "Comment not found",
   CODE: "comment.notFound",
@@ -117,8 +132,13 @@ export const MEMBERSHIP_REQUEST_NOT_FOUND_ERROR = {
   MESSAGE: "membershipRequest.notFound",
   PARAM: "membershipRequest",
 };
-export const MEMBERSHIP_REQUEST_ALREADY_EXISTS =
-  "Membership Request already exists";
+
+export const MEMBERSHIP_REQUEST_ALREADY_EXISTS = {
+  DESC: "Membership Request already exists",
+  CODE: "membershipRequest.alreadyExists",
+  MESSAGE: "membershipRequest.alreadyExists",
+  PARAM: "membershipRequest",
+};
 
 export const ORGANIZATION_MEMBER_NOT_FOUND_ERROR = {
   DESC: "Organization's user is not a member",
@@ -138,6 +158,20 @@ export const ORGANIZATION_NOT_FOUND_ERROR = {
   MESSAGE: "organization.notFound",
   PARAM: "organization",
 };
+export const VENUE_NAME_MISSING_ERROR = {
+  DESC: "Venue name not found",
+  CODE: "venueName.notFound",
+  MESSAGE: "venueName.notFound",
+  PARAM: "venueName",
+};
+
+export const VENUE_ALREADY_SCHEDULED = {
+  DESC: "Venue is already scheduled",
+  CODE: "venue.alreadySchduled",
+  MESSAGE: "venue.alreadySchduled",
+  PARAM: "venue",
+};
+
 export const ORGANIZATION_IMAGE_NOT_FOUND_ERROR = {
   DESC: "OrganizationImage not found",
   CODE: "organizationImage.notFound",
@@ -438,6 +472,33 @@ export const USER_NOT_AUTHORIZED_ERROR = {
   CODE: "user.notAuthorized",
   MESSAGE: "user.notAuthorized",
   PARAM: "user",
+};
+
+export const UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR = {
+  DESC: "Unauthorized to remove the agenda item",
+  CODE: "unauthorized.removeAgendaItem",
+  MESSAGE: "Unauthorized to remove the agenda item",
+  PARAM: "agendaItem",
+};
+
+export const UNAUTHORIZED_UPDATE_AGENDA_ITEM_ERROR = {
+  DESC: "Unauthorized to update the agenda item",
+  CODE: "unauthorized.updateAgendaItem",
+  MESSAGE: "Unauthorized to update the agenda item",
+  PARAM: "agendaItem",
+};
+
+export const AGENDA_ITEM_NOT_FOUND_ERROR = {
+  DESC: "Agenda item not found",
+  CODE: "agendaItem.notFound",
+  MESSAGE: "agendaItem.notFound",
+  PARAM: "agendaItem",
+};
+export const AGENDA_ITEM_CREATION_ERROR = {
+  DESC: "Agenda item not created",
+  CODE: "agendaItem.notCreated",
+  MESSAGE: "agendaItem.notCreated",
+  PARAM: "agendaItem",
 };
 export const USER_NOT_FOUND_ERROR = {
   DESC: "User not found",

@@ -37,7 +37,9 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
         _id: args.organizationId,
       }).lean();
 
-      await cacheOrganizations([organization!]);
+      if (organization !== null) {
+        await cacheOrganizations([organization]);
+      }
     }
 
     // Checks whether organization exists.
@@ -79,6 +81,21 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
         requestContext.translate(USER_ALREADY_MEMBER_ERROR.MESSAGE),
         USER_ALREADY_MEMBER_ERROR.CODE,
         USER_ALREADY_MEMBER_ERROR.PARAM,
+      );
+    }
+
+    // Checks if the user is blocked
+    const user = await User.findById(context.userId).lean();
+    if (
+      user !== null &&
+      organization.blockedUsers.some((blockedUser) =>
+        Types.ObjectId(blockedUser).equals(user._id),
+      )
+    ) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 

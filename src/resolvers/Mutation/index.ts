@@ -39,6 +39,9 @@ import { createPost } from "./createPost";
 import { createSampleOrganization } from "./createSampleOrganization";
 import { createUserFamily } from "./createUserFamily";
 import { createUserTag } from "./createUserTag";
+import { createVenue } from "./createVenue";
+import { deleteVenue } from "./deleteVenue";
+import { editVenue } from "./editVenue";
 import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
@@ -107,6 +110,9 @@ import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
 import { deleteAdvertisement } from "./deleteAdvertisement";
+import { createAgendaItem } from "./createAgendaItem";
+import { removeAgendaItem } from "./removeAgendaItem";
+import { updateAgendaItem } from "./updateAgendaItem";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -137,6 +143,7 @@ export const Mutation: MutationResolvers = {
   createComment,
   createAdvertisement,
   createAgendaCategory,
+  createAgendaItem,
   createDirectChat,
   createDonation,
   createEvent,
@@ -150,8 +157,11 @@ export const Mutation: MutationResolvers = {
   createSampleOrganization,
   createActionItemCategory,
   createUserTag,
+  createVenue,
   deleteDonationById,
   deleteAdvertisement,
+  deleteVenue,
+  editVenue,
   deleteAgendaCategory,
   forgotPassword,
   joinPublicOrganization,
@@ -171,6 +181,7 @@ export const Mutation: MutationResolvers = {
   rejectMembershipRequest,
   removeAdmin,
   removeActionItem,
+  removeAgendaItem,
   removeComment,
   removeDirectChat,
   removeEvent,
@@ -204,6 +215,7 @@ export const Mutation: MutationResolvers = {
   updateActionItem,
   updateActionItemCategory,
   updateAgendaCategory,
+  updateAgendaItem,
   updateEvent,
   updateEventVolunteer,
   updateFund,
