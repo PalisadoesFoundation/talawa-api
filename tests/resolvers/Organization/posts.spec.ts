@@ -45,10 +45,30 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Organization -> post", () => {
-  it(`throws GraphQLError if invalid arguments are provided to the resolver`, async () => {
+  it(`throws GraphQLError if no arguments are provided to the resolver`, async () => {
     try {
       const parent = testOrganization?.toObject() as InterfaceOrganization;
       await postResolver?.(parent, {}, {});
+    } catch (error) {
+      if (error instanceof GraphQLError) {
+        expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
+        expect(
+          (error.extensions.errors as DefaultGraphQLArgumentError[]).length,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+  it(`throws GraphQLError if invalid arguments are provided to the resolver`, async () => {
+    try {
+      const parent = testOrganization?.toObject() as InterfaceOrganization;
+      await postResolver?.(
+        parent,
+        {
+          after: "invalidCursor",
+          first: 1,
+        },
+        {},
+      );
     } catch (error) {
       if (error instanceof GraphQLError) {
         expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
@@ -95,7 +115,19 @@ describe("resolvers -> Organization -> post", () => {
     expect(connection?.pageInfo.startCursor).toEqual(testPost2?._id.toString());
     expect(connection?.totalCount).toEqual(totalCount);
   });
-  it("returns the connection object with imageUrl", async () => {
+  it("returns the connection object with imageUrl and videoUrl", async () => {
+    const userOrgAndPost = await createTestPost();
+    const testUser = userOrgAndPost[0];
+    const testOrganization = userOrgAndPost[1];
+    const testPost = await Post.create({
+      text: `text${nanoid().toLowerCase()}`,
+      creatorId: testUser?._id,
+      organization: testOrganization?._id,
+      pinned: false,
+      imageUrl: "image.png",
+      videoUrl: "video.mp4",
+    });
+
     const parent = testOrganization as InterfaceOrganization;
     const context = {
       apiRootUrl: BASE_URL,
@@ -111,16 +143,12 @@ describe("resolvers -> Organization -> post", () => {
     expect(
       (connection?.edges[0] as unknown as PostEdge).node?.imageUrl,
     ).toEqual(
-      testPost2?.imageUrl
-        ? `${context.apiRootUrl}${testPost2?.imageUrl}`
-        : null,
+      testPost?.imageUrl ? `${context.apiRootUrl}${testPost?.imageUrl}` : null,
     );
     expect(
       (connection?.edges[0] as unknown as PostEdge).node?.videoUrl,
     ).toEqual(
-      testPost2?.videoUrl
-        ? `${context.apiRootUrl}${testPost2?.videoUrl}`
-        : null,
+      testPost?.videoUrl ? `${context.apiRootUrl}${testPost?.videoUrl}` : null,
     );
   });
 });
