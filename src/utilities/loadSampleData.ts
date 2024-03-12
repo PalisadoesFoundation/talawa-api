@@ -3,7 +3,7 @@ import yargs from "yargs";
 import fs from "fs/promises";
 import path from "path";
 import { connect } from "../db";
-import { User, Organization, Event, Post } from "../models";
+import { User, Organization, Event, Post, ActionItemCategory } from "../models";
 
 interface InterfaceArgs {
   items?: string;
@@ -15,6 +15,7 @@ async function formatDatabase(): Promise<void> {
   await Promise.all([
     User.deleteMany({}),
     Organization.deleteMany({}),
+    ActionItemCategory.deleteMany({}),
     Event.deleteMany({}),
     Post.deleteMany({}),
   ]);
@@ -62,6 +63,9 @@ async function insertCollections(collections: string[]): Promise<void> {
         case "organizations":
           await Organization.insertMany(docs);
           break;
+        case "actionItemCategories":
+          await ActionItemCategory.insertMany(docs);
+          break;
         case "events":
           await Event.insertMany(docs);
           break;
@@ -85,7 +89,13 @@ async function insertCollections(collections: string[]): Promise<void> {
 }
 
 // Default collections available to insert
-const collections = ["users", "organizations", "posts", "events"];
+const collections = [
+  "users",
+  "organizations",
+  "actionItemCategories",
+  "posts",
+  "events",
+];
 
 // Check if specific collections need to be inserted
 const { items: argvItems } = yargs
