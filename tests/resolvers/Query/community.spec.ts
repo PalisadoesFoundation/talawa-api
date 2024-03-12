@@ -76,15 +76,23 @@ describe("resolvers -> Query -> community", () => {
     const context = { userId: testUser?._id.toString(), apiRootUrl: BASE_URL };
     const args = {};
 
+    await Community.findByIdAndUpdate(testCommunity?._id, {
+      $set: { logoUrl: "test-image.jpg" },
+    });
+
     const result = await community?.({}, args, context);
-    console.log(result);
-    expect(result).toEqual({
+    delete result?.updatedAt;
+
+    const expected = {
       ...testCommunity?.toObject(),
       _id: testCommunity?._id.toString(),
       logoUrl: testCommunity?.logoUrl
         ? `${context.apiRootUrl}${testCommunity?.logoUrl}`
         : null,
-    });
+    };
+    delete expected.updatedAt;
+
+    expect(result).toEqual(expected);
   });
 
   test("should throw NotFoundError if community does not exist", async () => {
