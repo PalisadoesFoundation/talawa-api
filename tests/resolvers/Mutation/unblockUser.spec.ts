@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { User, Organization, MembershipRequest } from "../../../src/models";
 import type { MutationUnblockUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -55,9 +55,11 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       );
 
       await unblockUserResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -81,9 +83,9 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       );
 
       await unblockUserResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -108,9 +110,11 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       );
 
       await unblockUserResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -157,14 +161,17 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       );
 
       await unblockUserResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
   it(`removes the user with _id === args.userId from blockedUsers list of the
-  organization with _id === args.organizationId and returns the updated user`, async () => {
+  organization with _id === args.organizationId set with userRegistrationRequired to true
+  and returns the updated user`, async () => {
     const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
@@ -173,11 +180,134 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         $push: {
           blockedUsers: testUser?._id,
         },
+        $set: {
+          userRegistrationRequired: true,
+        },
       },
       {
         new: true,
       },
     ).lean();
+
+    if (
+      updatedOrganization !== null &&
+      updatedOrganization.userRegistrationRequired === true
+    ) {
+      const createdMembershipRequest = await MembershipRequest.create({
+        user: testUser?._id,
+        organization: testOrganization?._id,
+      });
+
+      const updatedOrganizaiton = await Organization.findOneAndUpdate(
+        {
+          _id: testOrganization?._id,
+        },
+        {
+          $push: {
+            membershipRequests: createdMembershipRequest._id,
+          },
+        },
+        {
+          new: true,
+        },
+      ).lean();
+
+      await User.updateOne(
+        {
+          _id: testUser?._id,
+        },
+        {
+          $push: {
+            membershipRequests: createdMembershipRequest._id,
+          },
+        },
+      );
+
+      if (updatedOrganizaiton !== null) {
+        await cacheOrganizations([updatedOrganizaiton]);
+      }
+    }
+
+    await User.updateOne(
+      {
+        _id: testUser?.id,
+      },
+      {
+        $push: {
+          organizationsBlockedBy: testOrganization?._id,
+        },
+      },
+    );
+
+    const args: MutationUnblockUserArgs = {
+      organizationId: testOrganization?.id,
+      userId: testUser?.id,
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const unblockUserPayload = await unblockUserResolver?.({}, args, context);
+
+    const testUnblockUserPayload = await User.findOne({
+      _id: testUser?.id,
+    })
+      .select(["-password"])
+      .lean();
+
+    expect(unblockUserPayload).toEqual(testUnblockUserPayload);
+  });
+
+  it(`removes the user with _id === args.userId from blockedUsers list of the
+  organization with _id === args.organizationId set with userRegistrationRequired to false
+  and returns the updated user`, async () => {
+    const updatedOrganization = await Organization.findOneAndUpdate(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $push: {
+          blockedUsers: testUser?._id,
+        },
+        $set: {
+          userRegistrationRequired: false,
+        },
+      },
+      {
+        new: true,
+      },
+    ).lean();
+
+    if (
+      updatedOrganization !== null &&
+      updatedOrganization.userRegistrationRequired === false
+    ) {
+      await Organization.findOneAndUpdate(
+        {
+          _id: testOrganization?._id,
+        },
+        {
+          $push: {
+            members: testUser?._id,
+          },
+        },
+        {
+          new: true,
+        },
+      ).lean();
+
+      await User.updateOne(
+        {
+          _id: testUser?._id,
+        },
+        {
+          $push: {
+            joinedOrganizations: testOrganization?._id,
+          },
+        },
+      ).lean();
+    }
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
