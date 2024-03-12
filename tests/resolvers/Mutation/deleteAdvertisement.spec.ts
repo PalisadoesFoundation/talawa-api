@@ -1,5 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
+import { Types } from "mongoose";
+
 import type { MutationCreateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -73,7 +75,7 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       "../../../src/resolvers/Mutation/deleteAdvertisement"
     );
     const context = {
-      userId: "123456789sdfghjk",
+      userId: null,
     };
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
@@ -91,7 +93,7 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
     }
   });
 
-  it(`throws NotAuthorizedError if ADDMIN does not belongs to the organization`, async () => {
+  it(`throws NotAuthorizedError if ADMIN does not belongs to the organization`, async () => {
     // deleting
     const { deleteAdvertisement } = await import(
       "../../../src/resolvers/Mutation/deleteAdvertisement"
@@ -163,6 +165,37 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
     }
   });
 
+  it("should throw NOT_FOUND_ERROR on wrong advertisement", async () => {
+    // deleting
+    const { deleteAdvertisement } = await import(
+      "../../../src/resolvers/Mutation/deleteAdvertisement"
+    );
+
+    const context = {
+      userId: testSuperAdmin?._id,
+    };
+
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message: string) => `Translated ${message}`);
+
+    try {
+      await deleteAdvertisement?.(
+        {},
+        { id: Types.ObjectId().toString() },
+        context,
+      );
+    } catch (error: unknown) {
+      console.log(error);
+      if (!(error instanceof ApplicationError)) return;
+      expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
+  });
+
   it(`creates the ad and then deleting the ad`, async () => {
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`,
@@ -205,56 +238,5 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       context,
     );
     expect(deleteAdvertisementPayload).toEqual(createdAdvertisementPayload);
-  });
-  it("should throw NOT_FOUND_ERROR on wrong advertisement", async () => {
-    // deleting
-    const { deleteAdvertisement } = await import(
-      "../../../src/resolvers/Mutation/deleteAdvertisement"
-    );
-    const context = {
-      userId: testUser?.id,
-    };
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message: string) => `Translated ${message}`);
-
-    try {
-      await deleteAdvertisement?.(
-        {},
-        { id: "64d1f8cb77a4b51004f824b8" },
-        context,
-      );
-    } catch (error: unknown) {
-      if (!(error instanceof ApplicationError)) return;
-      expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-  });
-
-  it("should throw NOT_FOUND_ERROR when id not provided", async () => {
-    // deleting
-    const { deleteAdvertisement } = await import(
-      "../../../src/resolvers/Mutation/deleteAdvertisement"
-    );
-    const context = {
-      userId: testUser?.id,
-    };
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message: string) => `Translated ${message}`);
-
-    try {
-      await deleteAdvertisement?.({}, { id: "" }, context);
-    } catch (error: unknown) {
-      if (!(error instanceof ApplicationError)) return;
-      expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
   });
 });

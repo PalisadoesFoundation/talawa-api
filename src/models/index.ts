@@ -3,6 +3,7 @@ export * from "./ActionItemCategory";
 export * from "./Advertisement";
 export * from "./AgendaCategory";
 export * from "./AgendaItem";
+export * from "./AgendaSection";
 export * from "./CheckIn";
 export * from "./Comment";
 export * from "./Community";
