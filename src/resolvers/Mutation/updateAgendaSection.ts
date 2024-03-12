@@ -4,6 +4,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import type { InterfaceAgendaSection} from "../../models";
 import { AgendaSectionModel, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 
@@ -62,13 +63,16 @@ export const updateAgendaSection: MutationResolvers["updateAgendaSection"] =
         USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
-
-    agendaSection.description =
-      args.input.description || agendaSection.description;
-    agendaSection.sequence = args.input.sequence || agendaSection.sequence;
-    agendaSection.updatedAt = new Date();
-
-    const updatedAgendaSection = await agendaSection.save();
-
+    const updatedAgendaSection = await AgendaSectionModel.findOneAndUpdate(
+      {
+        _id: args.id,
+      },
+      {
+        ...(args.input as InterfaceAgendaSection),
+      },
+      {
+        new: true, // Return the updated document
+      },
+    ).lean();
     return updatedAgendaSection;
   };
