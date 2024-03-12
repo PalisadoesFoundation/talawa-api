@@ -132,8 +132,13 @@ export const MEMBERSHIP_REQUEST_NOT_FOUND_ERROR = {
   MESSAGE: "membershipRequest.notFound",
   PARAM: "membershipRequest",
 };
-export const MEMBERSHIP_REQUEST_ALREADY_EXISTS =
-  "Membership Request already exists";
+
+export const MEMBERSHIP_REQUEST_ALREADY_EXISTS = {
+  DESC: "Membership Request already exists",
+  CODE: "membershipRequest.alreadyExists",
+  MESSAGE: "membershipRequest.alreadyExists",
+  PARAM: "membershipRequest",
+};
 
 export const ORGANIZATION_MEMBER_NOT_FOUND_ERROR = {
   DESC: "Organization's user is not a member",
