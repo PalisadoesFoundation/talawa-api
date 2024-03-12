@@ -28,6 +28,8 @@ export const queries = gql`
 
     agendaCategory(id: ID!): AgendaCategory!
 
+    getAgendaSection(id: ID!): AgendaSection
+
     checkAuth: User! @auth
 
     community: Community! @auth

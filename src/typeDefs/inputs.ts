@@ -88,6 +88,13 @@ export const inputs = gql`
     organizationId: ID!
   }
 
+  input CreateAgendaSectionInput {
+    description: String!
+    relatedEvent: ID
+    items: [CreateAgendaItemInput]
+    sequence: Int!
+  }
+
   input CursorPaginationInput {
     cursor: String
     direction: PaginationDirection!
@@ -438,6 +445,11 @@ export const inputs = gql`
     description: String
   }
 
+  input UpdateAgendaSectionInput {
+    relatedEvent: ID
+    description: String
+    sequence: Int
+  }
   input AddressInput {
     city: String
     countryCode: String
