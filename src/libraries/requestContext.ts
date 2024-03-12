@@ -21,7 +21,7 @@ export const setRequestContextValue = <T>(key: string, value: T): T => {
 export const getRequestContextValue = <T>(key: string): T => {
   return requestContextNamespace.get(key);
 };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const setRequestContext = (obj: any): void => {
   setRequestContextValue("translate", obj.__);
   setRequestContextValue("translatePlural", obj.__n);
@@ -38,13 +38,14 @@ export const middleware = () => {
     });
   };
 };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface InterfaceInitOptions<T> extends Record<any, any> {
   requestHandler?: () => T;
 }
 
 // Invalid code. Currently ignored by typescript. Needs fix.
 export const init = <T>(options: InterfaceInitOptions<T> = {}): T => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const obj: any = {};
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -73,7 +74,7 @@ export const init = <T>(options: InterfaceInitOptions<T> = {}): T => {
       : ({} as T);
   });
 };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const translate = (...args: any): any => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const __ = getRequestContextValue("translate");
@@ -82,7 +83,7 @@ export const translate = (...args: any): any => {
   }
   return __(...args);
 };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const translatePlural = (...args: any): any => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const __n = getRequestContextValue("translatePlural");
