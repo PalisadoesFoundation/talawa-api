@@ -41,7 +41,7 @@ describe("resolvers -> Query -> community", () => {
       .spyOn(requestContext, "translate")
       .mockImplementation((message) => `Translated ${message}`);
     const context = { userId: Types.ObjectId().toString() };
-    const args = {};
+    const args = { id: Types.ObjectId().toString() };
 
     await expect(community?.({}, args, context)).rejects.toThrow(
       errors.NotFoundError,
@@ -51,7 +51,7 @@ describe("resolvers -> Query -> community", () => {
 
   test("should throw AuthorizationError if user is not a super admin", async () => {
     const context = { userId: testUser2?._id.toString() };
-    const args = {};
+    const args = { id: Types.ObjectId().toString() };
 
     await expect(community?.({}, args, context)).rejects.toThrow(
       errors.UnauthorizedError,
@@ -66,7 +66,7 @@ describe("resolvers -> Query -> community", () => {
       userId: testUser?._id.toString(),
       apiRootUrl: "http://localhost:4000",
     };
-    const args = {};
+    const args = { id: testCommunity?._id.toString() as string };
 
     const result = await community?.({}, args, context);
     expect(result?.logoUrl).toBeNull();
@@ -74,7 +74,7 @@ describe("resolvers -> Query -> community", () => {
 
   test("should return community data if community exists", async () => {
     const context = { userId: testUser?._id.toString(), apiRootUrl: BASE_URL };
-    const args = {};
+    const args = { id: testCommunity?._id.toString() as string };
 
     await Community.findByIdAndUpdate(testCommunity?._id, {
       $set: { logoUrl: "test-image.jpg" },
@@ -106,7 +106,7 @@ describe("resolvers -> Query -> community", () => {
       .spyOn(requestContext, "translate")
       .mockImplementation((message) => `Translated ${message}`);
     const context = { userId: testUser?._id.toString() };
-    const args = {};
+    const args = { id: testCommunity?._id.toString() as string };
 
     await Community.deleteMany({});
 

@@ -34,7 +34,7 @@ export const community: QueryResolvers["community"] = async (
 
   superAdminCheck(user);
 
-  const community = await Community.findOne().lean();
+  const community = await Community.findById(args.id).lean();
 
   if (!community) {
     throw new errors.NotFoundError(
