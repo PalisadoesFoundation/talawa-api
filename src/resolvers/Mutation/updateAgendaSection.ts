@@ -4,7 +4,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { InterfaceAgendaSection} from "../../models";
+import type { InterfaceAgendaSection } from "../../models";
 import { AgendaSectionModel, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 
