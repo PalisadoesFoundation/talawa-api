@@ -284,6 +284,7 @@ export type CreateUserTagInput = {
   name: Scalars['String']['input'];
   organizationId: Scalars['ID']['input'];
   parentTagId?: InputMaybe<Scalars['ID']['input']>;
+  tagColor: Scalars['String']['input'];
 };
 
 export type Currency =
@@ -2382,6 +2383,7 @@ export type UpdateUserPasswordInput = {
 export type UpdateUserTagInput = {
   _id: Scalars['ID']['input'];
   name: Scalars['String']['input'];
+  tagColor: Scalars['String']['input'];
 };
 
 export type UpdateUserTypeInput = {

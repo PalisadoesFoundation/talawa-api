@@ -15,6 +15,7 @@ export const createRootTagWithOrg = async (): Promise<
     name: `TagTitle${nanoid()}`,
     parentTagId: null,
     organizationId: testOrganization?._id,
+    tagColor: `tagColor${nanoid()}`,
   });
 
   return [testUser, testOrganization, testTag?.toObject()];

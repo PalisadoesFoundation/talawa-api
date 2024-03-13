@@ -59,8 +59,9 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag!._id.toString(),
+          _id: testTag?._id.toString(),
           name: "NewName",
+          tagColor: "#000000",
         },
       };
 
@@ -71,6 +72,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
@@ -91,11 +93,12 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
         input: {
           _id: Types.ObjectId().toString(),
           name: "NewName",
+          tagColor: "#000000",
         },
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateUserTag: updateUserTagResolver } = await import(
@@ -103,6 +106,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(TAG_NOT_FOUND.MESSAGE);
       expect(error.message).toEqual(`Translated ${TAG_NOT_FOUND.MESSAGE}`);
@@ -119,13 +123,14 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag!._id.toString(),
+          _id: testTag?._id.toString(),
           name: "NewName",
+          tagColor: "#000000",
         },
       };
 
       const context = {
-        userId: randomUser!._id,
+        userId: randomUser?._id,
       };
 
       const { updateUserTag: updateUserTagResolver } = await import(
@@ -133,6 +138,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
@@ -153,13 +159,14 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag!._id.toString(),
-          name: testTag!.name,
+          _id: testTag?._id.toString(),
+          name: testTag?.name,
+          tagColor: "#000000",
         },
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateUserTag: updateUserTagResolver } = await import(
@@ -167,6 +174,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${NO_CHANGE_IN_TAG_NAME.MESSAGE}`,
@@ -185,13 +193,14 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag!._id.toString(),
-          name: testTag2!.name,
+          _id: testTag?._id.toString(),
+          name: testTag2?.name,
+          tagColor: testTag2?.tagColor,
         },
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateUserTag: updateUserTagResolver } = await import(
@@ -199,6 +208,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(error.message).toEqual(`Translated ${TAG_ALREADY_EXISTS.MESSAGE}`);
       expect(spy).toHaveBeenLastCalledWith(`${TAG_ALREADY_EXISTS.MESSAGE}`);
@@ -208,12 +218,13 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
   it(`updates the task with _id === args.id and returns it`, async () => {
     const args: MutationUpdateUserTagArgs = {
       input: {
-        _id: testTag!._id.toString(),
+        _id: testTag?._id.toString(),
         name: "NewName",
+        tagColor: "#000000",
       },
     };
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { updateUserTag: updateUserTagResolver } = await import(
@@ -223,9 +234,9 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     await updateUserTagResolver?.({}, args, context);
 
     const updatedTag = await OrganizationTagUser.findOne({
-      _id: testTag!._id,
+      _id: testTag?._id,
     }).lean();
 
-    expect(updatedTag!.name).toEqual("NewName");
+    expect(updatedTag?.name).toEqual("NewName");
   });
 });

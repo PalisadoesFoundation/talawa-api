@@ -221,6 +221,7 @@ input CreateUserTagInput {
   name: String!
   organizationId: ID!
   parentTagId: ID
+  tagColor: String!
 }
 
 enum Currency {
@@ -1466,6 +1467,7 @@ input UpdateUserPasswordInput {
 input UpdateUserTagInput {
   _id: ID!
   name: String!
+  tagColor: String!
 }
 
 input UpdateUserTypeInput {
