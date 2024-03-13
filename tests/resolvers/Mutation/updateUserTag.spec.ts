@@ -59,7 +59,8 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag?._id.toString(),
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          _id: testTag!._id.toString(),
           name: "NewName",
           tagColor: "#000000",
         },
@@ -123,7 +124,8 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag?._id.toString(),
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          _id: testTag!._id.toString(),
           name: "NewName",
           tagColor: "#000000",
         },
@@ -159,8 +161,10 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag?._id.toString(),
-          name: testTag?.name,
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          _id: testTag!._id.toString(),
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          name: testTag!.name,
           tagColor: "#000000",
         },
       };
@@ -193,9 +197,12 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag?._id.toString(),
-          name: testTag2?.name,
-          tagColor: testTag2?.tagColor,
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          _id: testTag!._id.toString(),
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          name: testTag2!.name,
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          tagColor: testTag2!.tagColor,
         },
       };
 
@@ -218,7 +225,8 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
   it(`updates the task with _id === args.id and returns it`, async () => {
     const args: MutationUpdateUserTagArgs = {
       input: {
-        _id: testTag?._id.toString(),
+        // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+        _id: testTag!._id.toString(),
         name: "NewName",
         tagColor: "#000000",
       },
@@ -234,7 +242,8 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     await updateUserTagResolver?.({}, args, context);
 
     const updatedTag = await OrganizationTagUser.findOne({
-      _id: testTag?._id,
+      // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+      _id: testTag!._id,
     }).lean();
 
     expect(updatedTag?.name).toEqual("NewName");
