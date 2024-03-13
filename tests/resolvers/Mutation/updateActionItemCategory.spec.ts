@@ -7,6 +7,7 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
+  ACTION_ITEM_CATEGORY_ALREADY_EXISTS,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser } from "../../helpers/userAndOrg";
@@ -18,12 +19,13 @@ import type {
 import { updateActionItemCategory as updateActionItemCategoryResolver } from "../../../src/resolvers/Mutation/updateActionItemCategory";
 import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { createTestCategory } from "../../helpers/actionItemCategory";
-import { User } from "../../../src/models";
+import { ActionItemCategory, User } from "../../../src/models";
 
 let randomUser: TestUserType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testCategory: TestActionItemCategoryType;
+let testCategory2: TestActionItemCategoryType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
@@ -36,6 +38,12 @@ beforeAll(async () => {
   randomUser = await createTestUser();
 
   [testUser, testOrganization, testCategory] = await createTestCategory();
+
+  testCategory2 = await ActionItemCategory.create({
+    name: "another action item category",
+    organizationId: testOrganization?._id,
+    creatorId: testUser?._id,
+  });
 });
 
 afterAll(async () => {
@@ -81,6 +89,27 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
     } catch (error: any) {
       expect(error.message).toEqual(
         ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
+      );
+    }
+  });
+
+  it(`throws ConflictError if an actionItemCategory already exists with name === args.data.name`, async () => {
+    try {
+      const args: MutationUpdateActionItemCategoryArgs = {
+        id: testCategory2._id,
+        data: {
+          name: "Default",
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      await updateActionItemCategoryResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        ACTION_ITEM_CATEGORY_ALREADY_EXISTS.MESSAGE,
       );
     }
   });
@@ -149,7 +178,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
     const args: MutationUpdateActionItemCategoryArgs = {
       id: testCategory?._id,
       data: {
-        name: "updatedDefault",
+        name: "updatedDefault2",
         isDisabled: false,
       },
     };
@@ -167,7 +196,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
     expect(updatedCategory).toEqual(
       expect.objectContaining({
         organizationId: testOrganization?._id,
-        name: "updatedDefault",
+        name: "updatedDefault2",
         isDisabled: false,
       }),
     );

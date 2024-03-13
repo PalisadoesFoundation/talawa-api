@@ -7,7 +7,6 @@ import type { InterfaceMessage } from "./Message";
 import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
-
 import type { InterfaceAdvertisement } from "./Advertisement";
 
 /**

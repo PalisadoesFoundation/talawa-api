@@ -15,6 +15,7 @@ import {
   createSingleEvent,
   createRecurringEvent,
 } from "../../helpers/event/createEventHelpers";
+import { compareTime } from "../../libraries/validators/compareTime";
 
 /**
  * This function enables to create an event.
@@ -84,7 +85,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
-  // Checks if the recieved arguments are valid according to standard input norms
+  // Checks if the received arguments are valid according to standard input norms
   const validationResultTitle = isValidString(args.data?.title ?? "", 256);
   const validationResultDescription = isValidString(
     args.data?.description ?? "",
@@ -125,6 +126,16 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       compareDatesResult,
     );
   }
+  const compareTimeResult = compareTime(
+    args.data?.startTime,
+    args.data?.endTime,
+  );
+  if (compareTimeResult !== "") {
+    throw new errors.InputValidationError(
+      requestContext.translate(compareTimeResult),
+      compareTimeResult,
+    );
+  }
 
   /* c8 ignore start */
   if (session) {
@@ -132,6 +143,27 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     session.startTransaction();
   }
 
+  const uploadImages = async (imageDataURLs: unknown): Promise<string[]> => {
+    const uploadImageFileNames: string[] = [];
+    /*istanbul ignore next*/
+    if (!imageDataURLs || !Array.isArray(imageDataURLs)) {
+      throw new Error("Invalid or missing image data.");
+    }
+
+    for (const imageDataURL of imageDataURLs) {
+      /*istanbul ignore next*/
+      if (typeof imageDataURL !== "string") {
+        throw new Error("Unsupported file type.");
+      }
+      const uploadedFileName: string = imageDataURL;
+      uploadImageFileNames.push(uploadedFileName);
+    }
+
+    return uploadImageFileNames;
+  };
+  if (args.data?.images) {
+    uploadImages(args.data?.images);
+  }
   /* c8 ignore stop */
   try {
     let createdEvent: InterfaceEvent;

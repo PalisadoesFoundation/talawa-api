@@ -46,6 +46,36 @@ export const inputs = gql`
     eventId: ID
   }
 
+  input CreateAgendaItemInput {
+    title: String!
+    description: String
+    duration: String!
+    attachments: [String]
+    relatedEventId: ID
+    urls: [String]
+    user: String
+    categories: [ID]
+    sequence: Int!
+    itemType: ItemType!
+    organizationId: ID!
+    isNote: Boolean!
+  }
+
+  input UpdateAgendaItemInput {
+    title: String
+    description: String
+    duration: String
+    attachments: [String]
+    relatedEvent: ID
+    updatedBy: ID!
+    urls: [String]
+    user: String
+    categories: [ID]
+    sequence: Int
+    itemType: ItemType
+    isNote: Boolean
+  }
+
   input ActionItemWhereInput {
     actionItemCategory_id: ID
     event_id: ID
@@ -57,6 +87,13 @@ export const inputs = gql`
     name: String!
     description: String
     organizationId: ID!
+  }
+
+  input CreateAgendaSectionInput {
+    description: String!
+    relatedEvent: ID
+    items: [CreateAgendaItemInput]
+    sequence: Int!
   }
 
   input CursorPaginationInput {
@@ -81,6 +118,14 @@ export const inputs = gql`
     name_of_user_starts_with: String
   }
 
+  input EditVenueInput {
+    id: ID!
+    capacity: Int
+    name: String
+    description: String
+    file: String
+  }
+
   input EventInput {
     title: String!
     description: String!
@@ -93,6 +138,7 @@ export const inputs = gql`
     recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
+    images: [String]
     location: String
     latitude: Latitude
     longitude: Longitude
@@ -325,6 +371,7 @@ export const inputs = gql`
     location: String
     latitude: Latitude
     longitude: Longitude
+    images: [String]
     allDay: Boolean
     startTime: Time
     endTime: Time
@@ -382,6 +429,11 @@ export const inputs = gql`
     description: String
   }
 
+  input UpdateAgendaSectionInput {
+    relatedEvent: ID
+    description: String
+    sequence: Int
+  }
   input AddressInput {
     city: String
     countryCode: String
@@ -491,5 +543,13 @@ export const inputs = gql`
     startDate: Date!
     type: AdvertisementType!
     mediaFile: String!
+  }
+
+  input VenueInput {
+    organizationId: ID!
+    name: String!
+    capacity: Int!
+    description: String
+    file: String
   }
 `;

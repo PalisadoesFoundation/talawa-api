@@ -104,6 +104,38 @@ type AgendaCategory {
   updatedBy: User
 }
 
+type AgendaItem {
+  _id: ID!
+  attachments: [String]
+  categories: [AgendaCategory]
+  createdAt: Date!
+  createdBy: User!
+  description: String
+  duration: String!
+  isNote: Boolean!
+  itemType: ItemType!
+  organization: Organization!
+  relatedEvent: Event
+  sequence: Int!
+  title: String!
+  updatedAt: Date!
+  updatedBy: User!
+  urls: [String]
+  user: String!
+}
+
+type AgendaSection {
+  _id: ID!
+  createdAt: Date!
+  createdBy: User
+  description: String!
+  items: [AgendaItem]
+  relatedEvent: Event
+  sequence: Int!
+  updatedAt: Date
+  updatedBy: User
+}
+
 type AggregatePost {
   count: Int!
 }
@@ -215,6 +247,28 @@ input CreateAgendaCategoryInput {
   description: String
   name: String!
   organizationId: ID!
+}
+
+input CreateAgendaItemInput {
+  attachments: [String]
+  categories: [ID]
+  description: String
+  duration: String!
+  isNote: Boolean!
+  itemType: ItemType!
+  organizationId: ID!
+  relatedEventId: ID
+  sequence: Int!
+  title: String!
+  urls: [String]
+  user: String
+}
+
+input CreateAgendaSectionInput {
+  description: String!
+  items: [CreateAgendaItemInput]
+  relatedEvent: ID
+  sequence: Int!
 }
 
 input CreateUserTagInput {
@@ -466,6 +520,14 @@ input DonationWhereInput {
   name_of_user_starts_with: String
 }
 
+input EditVenueInput {
+  capacity: Int
+  description: String
+  file: String
+  id: ID!
+  name: String
+}
+
 enum EducationGrade {
   GRADE_1
   GRADE_2
@@ -501,6 +563,7 @@ type Event {
   _id: ID!
   actionItems: [ActionItem]
   admins(adminId: ID): [User!]
+  agendaItems: [AgendaItem]
   allDay: Boolean!
   attendees: [User]
   attendeesCheckInStatus: [CheckInStatus!]!
@@ -511,6 +574,7 @@ type Event {
   endDate: Date
   endTime: Time
   feedback: [Feedback!]!
+  images: [String]
   isPublic: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
@@ -549,6 +613,7 @@ input EventInput {
   description: String!
   endDate: Date
   endTime: Time
+  images: [String]
   isPublic: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
@@ -776,6 +841,11 @@ type InvalidCursor implements FieldError {
   path: [String!]!
 }
 
+enum ItemType {
+  Note
+  Regular
+}
+
 scalar JSON
 
 type Language {
@@ -897,6 +967,8 @@ type Mutation {
   createAdmin(data: UserAndOrganizationInput!): User!
   createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
+  createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!
+  createAgendaSection(input: CreateAgendaSectionInput!): AgendaSection!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
@@ -914,9 +986,12 @@ type Mutation {
   createSampleOrganization: Boolean!
   createUserFamily(data: createUserFamilyInput!): UserFamily!
   createUserTag(input: CreateUserTagInput!): UserTag
+  createVenue(data: VenueInput!): Venue
   deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
   deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
+  deleteVenue(id: ID!): Venue
+  editVenue(data: EditVenueInput!): Venue
   forgotPassword(data: ForgotPasswordData!): Boolean!
   inviteEventAttendee(data: EventAttendeeInput!): EventAttendee!
   joinPublicOrganization(organizationId: ID!): User!
@@ -934,6 +1009,9 @@ type Mutation {
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): User!
+  removeAdvertisement(id: ID!): Advertisement
+  removeAgendaItem(id: ID!): AgendaItem!
+  removeAgendaSection(id: ID!): ID!
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!, recurringEventDeleteType: RecurringEventMutationType): Event!
@@ -971,6 +1049,8 @@ type Mutation {
   updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
+  updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
+  updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
   updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
@@ -1014,6 +1094,7 @@ type Organization {
   updatedAt: DateTime!
   userRegistrationRequired: Boolean!
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
+  venues: [Venue]
   visibleInSearch: Boolean!
 }
 
@@ -1229,13 +1310,11 @@ type PostsConnection {
 }
 
 type Query {
-  actionItem(id: ID!): ActionItem
   actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
-  actionItemCategory(id: ID!): ActionItemCategory
   actionItemsByEvent(eventId: ID!): [ActionItem]
   actionItemsByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
-  advertisementsConnection: [Advertisement]
+  advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
@@ -1246,6 +1325,9 @@ type Query {
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
+  getAgendaItem(id: ID!): AgendaItem
+  getAgendaSection(id: ID!): AgendaSection
+  getAllAgendaItems: [AgendaItem]
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
@@ -1272,6 +1354,7 @@ type Query {
   userLanguage(userId: ID!): String
   users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, userType: String, where: UserWhereInput): [User]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]!
+  venue(id: ID!): Venue
 }
 
 input RecaptchaVerification {
@@ -1390,11 +1473,33 @@ input UpdateAgendaCategoryInput {
   name: String
 }
 
+input UpdateAgendaItemInput {
+  attachments: [String]
+  categories: [ID]
+  description: String
+  duration: String
+  isNote: Boolean
+  itemType: ItemType
+  relatedEvent: ID
+  sequence: Int
+  title: String
+  updatedBy: ID!
+  urls: [String]
+  user: String
+}
+
+input UpdateAgendaSectionInput {
+  description: String
+  relatedEvent: ID
+  sequence: Int
+}
+
 input UpdateEventInput {
   allDay: Boolean
   description: String
   endDate: Date
   endTime: Time
+  images: [String]
   isPublic: Boolean
   isRecurringEventException: Boolean
   isRegisterable: Boolean
@@ -1659,6 +1764,23 @@ type UsersConnection {
 type UsersConnectionEdge {
   cursor: String!
   node: User!
+}
+
+type Venue {
+  _id: ID!
+  capacity: Int!
+  description: String
+  imageUrl: URL
+  name: String!
+  organization: Organization!
+}
+
+input VenueInput {
+  capacity: Int!
+  description: String
+  file: String
+  name: String!
+  organizationId: ID!
 }
 
 enum WeekDays {
