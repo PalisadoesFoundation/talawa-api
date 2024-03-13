@@ -4,3 +4,4 @@ export * from "./copyToClipboard";
 export * from "./mailer";
 export * from "./superAdminCheck";
 export * from "./encodedImageStorage/deletePreviousImage";
+export * from "./isAuthCheck";

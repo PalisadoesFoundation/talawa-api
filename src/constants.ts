@@ -27,6 +27,12 @@ export const ACTION_ITEM_CATEGORY_ALREADY_EXISTS = {
   MESSAGE: "actionItemCategory.alreadyExists",
   PARAM: "actionItemCategory",
 };
+export const ACTION_ITEM_CATEGORY_IS_DISABLED = {
+  DESC: "Action Item Category is disabled",
+  CODE: "actionItemCategory.isDisabled",
+  MESSAGE: "actionItemCategory.isDisabled",
+  PARAM: "actionItemCategory",
+};
 
 export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
   DESC: "Agenda category not found",
@@ -500,6 +506,13 @@ export const AGENDA_ITEM_CREATION_ERROR = {
   MESSAGE: "agendaItem.notCreated",
   PARAM: "agendaItem",
 };
+export const AGENDA_SECTION_NOT_FOUND_ERROR = {
+  DESC: "Agenda section not found",
+  CODE: "agendaSection.notFound",
+  MESSAGE: "agendaSection.notFound",
+  PARAM: "agendaSection",
+};
+
 export const USER_NOT_FOUND_ERROR = {
   DESC: "User not found",
   CODE: "user.notFound",
