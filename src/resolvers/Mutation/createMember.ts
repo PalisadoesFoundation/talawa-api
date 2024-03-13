@@ -1,7 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Organization } from "../../models";
-import { superAdminCheck } from "../../utilities";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -9,6 +8,7 @@ import {
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { isAuthCheck } from "../../utilities/isAuthCheck";
 /**
  * This function enables to add a member.
  * @param _parent - parent of current request
@@ -38,7 +38,7 @@ export const createMember: MutationResolvers["createMember"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  superAdminCheck(currentUser);
+  isAuthCheck(currentUser);
 
   // Checks if organization exists.
   let organization;
@@ -54,7 +54,9 @@ export const createMember: MutationResolvers["createMember"] = async (
       _id: args.input.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    if (organization) {
+      await cacheOrganizations([organization]);
+    }
   }
 
   if (!organization) {
@@ -125,5 +127,9 @@ export const createMember: MutationResolvers["createMember"] = async (
     await cacheOrganizations([updatedOrganization]);
   }
 
-  return updatedOrganization!;
+  if (updatedOrganization) {
+    return updatedOrganization;
+  } else {
+    throw new Error("Failed to update organization");
+  }
 };
