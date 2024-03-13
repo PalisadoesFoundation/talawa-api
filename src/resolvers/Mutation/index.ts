@@ -78,6 +78,7 @@ import { removeUserFamily } from "./removeUserFamily";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
 import { removeUserTag } from "./removeUserTag";
+import { resetCommunity } from "./resetCommunity";
 import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
 import { saveFcmToken } from "./saveFcmToken";
 import { sendMembershipRequest } from "./sendMembershipRequest";
@@ -94,6 +95,7 @@ import { updateActionItem } from "./updateActionItem";
 import { updateActionItemCategory } from "./updateActionItemCategory";
 import { updateAdvertisement } from "./updateAdvertisement";
 import { updateAgendaCategory } from "./updateAgendaCategory";
+import { updateCommunity } from "./updateCommunity";
 import { updateEvent } from "./updateEvent";
 import { updateEventVolunteer } from "./updateEventVolunteer";
 import { updateFund } from "./updateFund";
@@ -200,6 +202,7 @@ export const Mutation: MutationResolvers = {
   removeUserCustomData,
   removeUserFromGroupChat,
   removeUserTag,
+  resetCommunity,
   revokeRefreshTokenForUser,
   saveFcmToken,
   sendMembershipRequest,
@@ -217,6 +220,7 @@ export const Mutation: MutationResolvers = {
   updateAgendaCategory,
   updateAgendaItem,
   updateAgendaSection,
+  updateCommunity,
   updateEvent,
   updateEventVolunteer,
   updateFund,

@@ -115,6 +115,18 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
+  type Community {
+    _id: ID!
+    name: String!
+    logoUrl: String
+    description: String!
+    websiteLink: String
+    socialMediaUrls: SocialMediaUrls
+    timeout: Int
+    createdAt: DateTime
+    updatedAt: DateTime
+  }
+
   type UserFamily {
     _id: ID!
     title: String
@@ -504,6 +516,17 @@ export const types = gql`
     likeCount: Int
     commentCount: Int
     pinned: Boolean
+  }
+
+  type SocialMediaUrls {
+    facebook: String
+    instagram: String
+    twitter: String
+    linkedIn: String
+    gitHub: String
+    youTube: String
+    slack: String
+    reddit: String
   }
 
   type Translation {

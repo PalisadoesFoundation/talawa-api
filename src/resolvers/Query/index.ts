@@ -6,6 +6,7 @@ import { actionItemsByEvent } from "./actionItemsByEvent";
 import { actionItemsByOrganization } from "./actionItemsByOrganization";
 import { agendaCategory } from "./agendaCategory";
 import { checkAuth } from "./checkAuth";
+import { community } from "./community";
 import { customDataByOrganization } from "./customDataByOrganization";
 import { customFieldsByOrganization } from "./customFieldsByOrganization";
 import { directChatsByUserID } from "./directChatsByUserID";
@@ -42,6 +43,7 @@ export const Query: QueryResolvers = {
   actionItemsByOrganization,
   actionItemCategoriesByOrganization,
   checkAuth,
+  community,
   customFieldsByOrganization,
   customDataByOrganization,
   directChatsByUserID,
