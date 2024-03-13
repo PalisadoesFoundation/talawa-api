@@ -7,8 +7,6 @@ export const queries = gql`
   type Query {
     adminPlugin(orgId: ID!): [Plugin]
 
-    actionItem(id: ID!): ActionItem
-
     actionItemsByEvent(eventId: ID!): [ActionItem]
 
     actionItemsByOrganization(
@@ -16,8 +14,6 @@ export const queries = gql`
       where: ActionItemWhereInput
       orderBy: ActionItemsOrderByInput
     ): [ActionItem]
-
-    actionItemCategory(id: ID!): ActionItemCategory
 
     actionItemCategoriesByOrganization(
       organizationId: ID!
