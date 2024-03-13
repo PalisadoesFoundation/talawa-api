@@ -58,7 +58,7 @@ beforeAll(async () => {
     description: `description${nanoid().toLowerCase()}`,
     allDay: true,
     startDate: new Date(),
-    recurring: true,
+    recurring: false,
     isPublic: true,
     isRegisterable: true,
     creatorId: testUser2?._id,

@@ -37,7 +37,7 @@ describe(`resolvers -> Query -> getEventAttendeeByEventId `, () => {
 
     const args: QueryGetEventAttendeeArgs = {
       eventId: testEvent?._id,
-      userId: testUser?._id,
+      userId: testUser?._id.toString() as string,
     };
 
     const { getEventAttendee } = await import(
