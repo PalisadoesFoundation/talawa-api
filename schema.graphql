@@ -1459,6 +1459,7 @@ input UpdateOrganizationInput {
 
 input UpdateUserInput {
   address: AddressInput
+  appLanguageCode: String
   birthDate: Date
   educationGrade: EducationGrade
   email: EmailAddress
