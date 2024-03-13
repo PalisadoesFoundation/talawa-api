@@ -29,12 +29,14 @@ dotenv.config();
 
 export async function loadDefaultOrganization(
   url: string | undefined,
+  dbName?: string,
 ): Promise<void> {
   if (url == null) {
     console.log("Couldn't find mongodb url");
     return;
   }
   await mongoose.connect(url, {
+    dbName,
     useCreateIndex: true,
     useUnifiedTopology: true,
     useFindAndModify: false,
@@ -77,5 +79,3 @@ export async function loadDefaultOrganization(
   session?.endSession();
   await mongoose.connection.close();
 }
-
-loadDefaultOrganization(process.env.MONGO_DB_URL);
