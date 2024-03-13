@@ -6,6 +6,7 @@ export * from "./AgendaItem";
 export * from "./AgendaSection";
 export * from "./CheckIn";
 export * from "./Comment";
+export * from "./Community";
 export * from "./DirectChat";
 export * from "./DirectChatMessage";
 export * from "./Donation";
