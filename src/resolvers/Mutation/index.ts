@@ -113,6 +113,9 @@ import { deleteAdvertisement } from "./deleteAdvertisement";
 import { createAgendaItem } from "./createAgendaItem";
 import { removeAgendaItem } from "./removeAgendaItem";
 import { updateAgendaItem } from "./updateAgendaItem";
+import { createAgendaSection } from "./createAgendaSection";
+import removeAgendaSection from "./removeAgendaSection";
+import { updateAgendaSection } from "./updateAgendaSection";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -144,6 +147,7 @@ export const Mutation: MutationResolvers = {
   createAdvertisement,
   createAgendaCategory,
   createAgendaItem,
+  createAgendaSection,
   createDirectChat,
   createDonation,
   createEvent,
@@ -182,6 +186,7 @@ export const Mutation: MutationResolvers = {
   removeAdmin,
   removeActionItem,
   removeAgendaItem,
+  removeAgendaSection,
   removeComment,
   removeDirectChat,
   removeEvent,
@@ -216,6 +221,7 @@ export const Mutation: MutationResolvers = {
   updateActionItemCategory,
   updateAgendaCategory,
   updateAgendaItem,
+  updateAgendaSection,
   updateEvent,
   updateEventVolunteer,
   updateFund,

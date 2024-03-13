@@ -124,6 +124,18 @@ type AgendaItem {
   user: String!
 }
 
+type AgendaSection {
+  _id: ID!
+  createdAt: Date!
+  createdBy: User
+  description: String!
+  items: [AgendaItem]
+  relatedEvent: Event
+  sequence: Int!
+  updatedAt: Date
+  updatedBy: User
+}
+
 type AggregatePost {
   count: Int!
 }
@@ -250,6 +262,13 @@ input CreateAgendaItemInput {
   title: String!
   urls: [String]
   user: String
+}
+
+input CreateAgendaSectionInput {
+  description: String!
+  items: [CreateAgendaItemInput]
+  relatedEvent: ID
+  sequence: Int!
 }
 
 input CreateUserTagInput {
@@ -968,6 +987,7 @@ type Mutation {
   createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
   createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!
+  createAgendaSection(input: CreateAgendaSectionInput!): AgendaSection!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
@@ -1011,6 +1031,7 @@ type Mutation {
   removeAdmin(data: UserAndOrganizationInput!): User!
   removeAdvertisement(id: ID!): Advertisement
   removeAgendaItem(id: ID!): AgendaItem!
+  removeAgendaSection(id: ID!): ID!
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!, recurringEventDeleteType: RecurringEventMutationType): Event!
@@ -1050,6 +1071,7 @@ type Mutation {
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
   updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
+  updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
   updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateEventVolunteerGroup(data: UpdateEventVolunteerGroupInput, id: ID!): EventVolunteerGroup!
@@ -1328,6 +1350,7 @@ type Query {
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
   getAgendaItem(id: ID!): AgendaItem
+  getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
@@ -1487,6 +1510,12 @@ input UpdateAgendaItemInput {
   updatedBy: ID!
   urls: [String]
   user: String
+}
+
+input UpdateAgendaSectionInput {
+  description: String
+  relatedEvent: ID
+  sequence: Int
 }
 
 input UpdateEventInput {
