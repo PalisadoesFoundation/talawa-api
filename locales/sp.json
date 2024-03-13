@@ -6,6 +6,7 @@
   "user.profileImage.notFound": "No se encontró la imagen de perfil de usuario",
   "actionItemCategory.notFound": "No se encontró la categoría de elemento de acción",
   "actionItemCategory.alreadyExists": "Ya existe una categoría de elemento de acción",
+  "actionItemCategory.isDisabled": "La categoría de elemento de acción está deshabilitada",
   "actionItem.notFound": "Elemento de acción no encontrado",
   "event.notFound": "Evento no encontrado",
   "organization.notFound": "Organización no encontrada",
