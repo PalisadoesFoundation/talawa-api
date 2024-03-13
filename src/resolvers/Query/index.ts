@@ -1,9 +1,7 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { isSampleOrganization } from "../Query/organizationIsSample";
-import { actionItem } from "./actionItem";
 import { actionItemCategoriesByOrganization } from "./actionItemCategoriesByOrganization";
 import { advertisementsConnection } from "./advertisementsConnection";
-import { actionItemCategory } from "./actionItemCategory";
 import { actionItemsByEvent } from "./actionItemsByEvent";
 import { actionItemsByOrganization } from "./actionItemsByOrganization";
 import { agendaCategory } from "./agendaCategory";
@@ -37,9 +35,7 @@ import { getAgendaItem } from "./agendaItemById";
 import { venue } from "./venue";
 
 export const Query: QueryResolvers = {
-  actionItem,
   actionItemsByEvent,
-  actionItemCategory,
   agendaCategory,
   getAgendaItem,
   getAllAgendaItems,

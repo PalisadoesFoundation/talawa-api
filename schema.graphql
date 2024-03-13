@@ -1309,9 +1309,7 @@ type PostsConnection {
 }
 
 type Query {
-  actionItem(id: ID!): ActionItem
   actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
-  actionItemCategory(id: ID!): ActionItemCategory
   actionItemsByEvent(eventId: ID!): [ActionItem]
   actionItemsByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
