@@ -6,6 +6,7 @@
   "user.profileImage.notFound": "未找到用戶個人資料圖像",
   "actionItemCategory.notFound": "未找到措施项类别",
   "actionItemCategory.alreadyExists": "措施项类别已存在",
+  "actionItemCategory.isDisabled": "操作项类别已禁用",
   "actionItem.notFound": "找不到操作项",
   "event.notFound": "未找到事件",
   "organization.notFound": "未找到組織",

@@ -8,6 +8,7 @@ import {
   EVENT_NOT_FOUND_ERROR,
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
+  ACTION_ITEM_CATEGORY_IS_DISABLED,
 } from "../../constants";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
@@ -22,10 +23,11 @@ import { Types } from "mongoose";
  * 1. If the user exists
  * 3. If the asignee exists
  * 4. If the actionItemCategory exists
- * 5. If the asignee is a member of the organization
- * 6. If the user is a member of the organization
- * 7. If the event exists (if action item related to an event)
- * 8. If the user is authorized.
+ * 5. If the actionItemCategory is disabled
+ * 6. If the asignee is a member of the organization
+ * 7. If the user is a member of the organization
+ * 8. If the event exists (if action item related to an event)
+ * 9. If the user is authorized.
  * @returns Created action item
  */
 
@@ -70,6 +72,15 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       requestContext.translate(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
       ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.CODE,
       ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  // Checks if the actionItemCategory is disabled
+  if (actionItemCategory.isDisabled) {
+    throw new errors.ConflictError(
+      requestContext.translate(ACTION_ITEM_CATEGORY_IS_DISABLED.MESSAGE),
+      ACTION_ITEM_CATEGORY_IS_DISABLED.CODE,
+      ACTION_ITEM_CATEGORY_IS_DISABLED.PARAM,
     );
   }
 

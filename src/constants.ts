@@ -27,6 +27,12 @@ export const ACTION_ITEM_CATEGORY_ALREADY_EXISTS = {
   MESSAGE: "actionItemCategory.alreadyExists",
   PARAM: "actionItemCategory",
 };
+export const ACTION_ITEM_CATEGORY_IS_DISABLED = {
+  DESC: "Action Item Category is disabled",
+  CODE: "actionItemCategory.isDisabled",
+  MESSAGE: "actionItemCategory.isDisabled",
+  PARAM: "actionItemCategory",
+};
 
 export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
   DESC: "Agenda category not found",
