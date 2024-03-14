@@ -89,13 +89,17 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
       USER_ALREADY_REGISTERED_FOR_EVENT.PARAM,
     );
   }
+  const eventOrgId = event.organization._id.toString();
 
-  const currentUserIsOrganizationMember =
-    currentUser.joinedOrganizations.includes(requestUser.joinedOrganizations);
+  const joinedOrgs = requestUser.joinedOrganizations.map((org) =>
+    org.toString(),
+  );
+
+  const requestUserIsOrganizationMember = joinedOrgs.includes(eventOrgId);
 
   if (
     process.env.SKIP_ORG_MEMBER_CHECK_TEST !== "true" &&
-    !currentUserIsOrganizationMember
+    !requestUserIsOrganizationMember
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
