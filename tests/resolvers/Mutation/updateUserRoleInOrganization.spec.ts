@@ -199,7 +199,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testNonMemberAdmin?._id.toString() as string,
+        userId: testNonMemberAdmin?._id.toHexString() as string,
         role: "USER",
       };
       const context = {
@@ -225,7 +225,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testMemberUser?._id.toString() as string,
+        userId: testUserSuperAdmin?._id.toString() as string,
         role: "ADMIN",
       };
       const context = {
@@ -251,7 +251,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testAdminUser?._id.toString() as string,
+        userId: testUserSuperAdmin?._id.toString() as string,
         role: "USER",
       };
       const context = {
@@ -277,7 +277,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testMemberUser?._id.toString() as string,
+        userId: testUserSuperAdmin?._id.toString() as string,
         role: "ADMIN",
       };
       const context = {
@@ -303,7 +303,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testMemberUser?._id.toString() as string,
+        userId: testUserSuperAdmin?._id.toString() as string,
         role: "SUPERADMIN",
       };
       const context = {
@@ -329,11 +329,11 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: testAdminUser?._id.toString() as string,
+        userId: testUserSuperAdmin?._id.toString() as string,
         role: "USER",
       };
       const context = {
-        userId: testAdminUser?._id,
+        userId: testUserSuperAdmin?._id,
       };
 
       const {

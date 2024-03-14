@@ -19,6 +19,8 @@
   "chat.notFound": "未找到聊天",
   "email.alreadyExists": "電子郵件地址已經存在",
   "comment.notFound": "未找到評論",
+  "community.logoMissing": "社区标志未提供",
+  "community.notFound": "未找到社群",
   "post.notFound": "找不到帖子",
   "group.notFound": "未找到組",
   "invalid.fileType": "無效的文件類型",

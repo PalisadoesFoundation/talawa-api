@@ -20,6 +20,8 @@
   "chat.notFound": "चैट नहीं मिली",
   "email.alreadyExists": "ईमेल पहले से मौजूद है",
   "comment.notFound": "टिप्पणी नहीं मिली",
+  "community.logoMissing": "समुदाय लोगो उपलब्ध नहीं है",
+  "community.notFound": "समुदाय नहीं मिला",
   "post.notFound": "पोस्ट नहीं मिली",
   "group.notFound": "समूह नहीं मिला",
   "invalid.fileType": "अमान्य फ़ाइल प्रकार",
