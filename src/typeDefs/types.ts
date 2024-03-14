@@ -368,7 +368,7 @@ export const types = gql`
 
   type MembershipRequest {
     _id: ID!
-    user(where: MembershipRequestsWhereInput): User!
+    user: User!
     organization: Organization!
   }
 

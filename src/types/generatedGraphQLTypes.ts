@@ -990,11 +990,6 @@ export type MembershipRequest = {
   user: User;
 };
 
-
-export type MembershipRequestUserArgs = {
-  where?: InputMaybe<MembershipRequestsWhereInput>;
-};
-
 export type MembershipRequestsWhereInput = {
   id?: InputMaybe<Scalars['ID']['input']>;
   id_contains?: InputMaybe<Scalars['ID']['input']>;
@@ -3816,7 +3811,7 @@ export type MaximumValueErrorResolvers<ContextType = any, ParentType extends Res
 export type MembershipRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['MembershipRequest'] = ResolversParentTypes['MembershipRequest']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MembershipRequestUserArgs>>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

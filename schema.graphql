@@ -912,7 +912,7 @@ type MaximumValueError implements FieldError {
 type MembershipRequest {
   _id: ID!
   organization: Organization!
-  user(where: MembershipRequestsWhereInput): User!
+  user: User!
 }
 
 input MembershipRequestsWhereInput {
