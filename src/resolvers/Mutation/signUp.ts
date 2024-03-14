@@ -57,14 +57,6 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     }
   }
 
-  if (!organization) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
-    );
-  }
-
   const isLastResortSuperAdmin =
     args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
