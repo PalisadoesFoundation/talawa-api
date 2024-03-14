@@ -90,8 +90,10 @@ describe("resolvers -> Mutation -> blockUser", () => {
       };
 
       await blockUserResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -107,8 +109,8 @@ describe("resolvers -> Mutation -> blockUser", () => {
       };
 
       await blockUserResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -132,8 +134,8 @@ describe("resolvers -> Mutation -> blockUser", () => {
       );
 
       await blockUserResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -157,8 +159,8 @@ describe("resolvers -> Mutation -> blockUser", () => {
       );
 
       await blockUserResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_BLOCKING_SELF.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_BLOCKING_SELF.MESSAGE);
     }
   });
 
@@ -193,8 +195,10 @@ describe("resolvers -> Mutation -> blockUser", () => {
       };
 
       await blockUserResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ADMIN.MESSAGE,
+      );
     }
   });
 
@@ -241,8 +245,10 @@ describe("resolvers -> Mutation -> blockUser", () => {
       };
 
       await blockUserResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
