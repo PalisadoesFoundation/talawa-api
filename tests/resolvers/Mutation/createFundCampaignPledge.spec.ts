@@ -41,7 +41,7 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
       const args: MutationCreateFundraisingCampaignPledgeArgs = {
         data: {
           campaignId: testFundraisingCampaign._id.toString(),
-          userIds: [testUser?._id],
+          userIds: [testUser?._id.toString() as string],
           startDate: new Date(new Date().toDateString()),
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -62,7 +62,7 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
       const args: MutationCreateFundraisingCampaignPledgeArgs = {
         data: {
           campaignId: Types.ObjectId().toString(),
-          userIds: [testUser?._id],
+          userIds: [testUser?._id.toString() as string],
           startDate: new Date(new Date().toDateString()),
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -85,7 +85,7 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
       const args: MutationCreateFundraisingCampaignPledgeArgs = {
         data: {
           campaignId: testFundraisingCampaign._id.toString(),
-          userIds: [testUser?._id],
+          userIds: [testUser?._id.toString() as string],
           startDate: "Tue Feb 13 2023",
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -108,7 +108,7 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
       const args: MutationCreateFundraisingCampaignPledgeArgs = {
         data: {
           campaignId: testFundraisingCampaign._id.toString(),
-          userIds: [testUser?._id],
+          userIds: [testUser?._id.toString() as string],
           startDate: new Date(new Date().toDateString()),
           endDate: "Tue Feb 13 2023",
           currency: "USD",
@@ -130,7 +130,7 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
     const args: MutationCreateFundraisingCampaignPledgeArgs = {
       data: {
         campaignId: testFundraisingCampaign._id.toString(),
-        userIds: [testUser?._id],
+        userIds: [testUser?._id.toString() as string],
         currency: "USD",
         amount: 1000,
       },
@@ -146,7 +146,7 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
     const args: MutationCreateFundraisingCampaignPledgeArgs = {
       data: {
         campaignId: testFundraisingCampaign._id.toString(),
-        userIds: [testUser?._id],
+        userIds: [testUser?._id.toString() as string],
         startDate: new Date(new Date().toDateString()),
         endDate: new Date(new Date().toDateString()),
         currency: "USD",

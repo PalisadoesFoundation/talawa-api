@@ -188,6 +188,18 @@ input CommentInput {
   text: String!
 }
 
+type Community {
+  _id: ID!
+  createdAt: DateTime
+  description: String!
+  logoUrl: String
+  name: String!
+  socialMediaUrls: SocialMediaUrls
+  timeout: Int
+  updatedAt: DateTime
+  websiteLink: String
+}
+
 union ConnectionError = InvalidCursor | MaximumValueError
 
 """
@@ -1032,6 +1044,7 @@ type Mutation {
   removeUserFromUserFamily(familyId: ID!, userId: ID!): UserFamily!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
+  resetCommunity(id: ID!): Boolean!
   revokeRefreshTokenForUser: Boolean!
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
@@ -1050,6 +1063,7 @@ type Mutation {
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
   updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
   updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
+  updateCommunity(data: UpdateCommunityInput, file: String, id: ID!): Community!
   updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
@@ -1309,15 +1323,14 @@ type PostsConnection {
 }
 
 type Query {
-  actionItem(id: ID!): ActionItem
   actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
-  actionItemCategory(id: ID!): ActionItemCategory
   actionItemsByEvent(eventId: ID!): [ActionItem]
   actionItemsByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
+  community(id: ID!): Community!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   directChatsByUserID(id: ID!): [DirectChat]
@@ -1380,6 +1393,28 @@ enum RecurringEventMutationType {
   AllInstances
   ThisAndFollowingInstances
   ThisInstance
+}
+
+type SocialMediaUrls {
+  facebook: String
+  gitHub: String
+  instagram: String
+  linkedIn: String
+  reddit: String
+  slack: String
+  twitter: String
+  youTube: String
+}
+
+input SocialMediaUrlsInput {
+  facebook: String
+  gitHub: String
+  instagram: String
+  linkedIn: String
+  reddit: String
+  slack: String
+  twitter: String
+  youTube: String
 }
 
 """
@@ -1493,6 +1528,13 @@ input UpdateAgendaSectionInput {
   description: String
   relatedEvent: ID
   sequence: Int
+}
+
+input UpdateCommunityInput {
+  description: String
+  name: String
+  socialMediaUrls: SocialMediaUrlsInput
+  websiteLink: String
 }
 
 input UpdateEventInput {

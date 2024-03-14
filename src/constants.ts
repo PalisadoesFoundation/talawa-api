@@ -27,6 +27,12 @@ export const ACTION_ITEM_CATEGORY_ALREADY_EXISTS = {
   MESSAGE: "actionItemCategory.alreadyExists",
   PARAM: "actionItemCategory",
 };
+export const ACTION_ITEM_CATEGORY_IS_DISABLED = {
+  DESC: "Action Item Category is disabled",
+  CODE: "actionItemCategory.isDisabled",
+  MESSAGE: "actionItemCategory.isDisabled",
+  PARAM: "actionItemCategory",
+};
 
 export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
   DESC: "Agenda category not found",
@@ -61,6 +67,18 @@ export const COMMENT_NOT_FOUND_ERROR = {
   CODE: "comment.notFound",
   MESSAGE: "comment.notFound",
   PARAM: "comment",
+};
+export const COMMUNITY_NOT_FOUND_ERROR = {
+  DESC: "Community not found",
+  CODE: "community.notFound",
+  MESSAGE: "community.notFound",
+  PARAM: "community",
+};
+export const COMMUNITY_LOGO_NOT_MISSING_IN_ARGS = {
+  DESC: "Community logo was not provided",
+  CODE: "community.logoMissing",
+  MESSAGE: "community.logoMissing",
+  PARAM: "community",
 };
 export const ERROR_IN_SENDING_MAIL = "Error in sending mail";
 export const EVENT_NOT_FOUND_ERROR = {
@@ -699,3 +717,8 @@ export enum EventVolunteerResponse {
   YES = "YES",
   NO = "NO",
 }
+
+export const DEFAULT_COMMUNITY = {
+  name: "Palisadoes Foundation",
+  description: "An open source application by Palisadoes Foundation volunteers",
+};
