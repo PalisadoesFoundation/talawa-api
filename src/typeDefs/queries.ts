@@ -88,7 +88,13 @@ export const queries = gql`
 
     myLanguage: String @auth
 
-    organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
+    organizations(
+      id: ID
+      orderBy: OrganizationOrderByInput
+      first: Int
+      skip: Int
+      where: MembershipRequestsWhereInput
+    ): [Organization]
 
     organizationsConnection(
       where: OrganizationWhereInput

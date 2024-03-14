@@ -912,7 +912,17 @@ type MaximumValueError implements FieldError {
 type MembershipRequest {
   _id: ID!
   organization: Organization!
-  user: User!
+  user(where: MembershipRequestsWhereInput): User!
+}
+
+input MembershipRequestsWhereInput {
+  id: ID
+  id_contains: ID
+  id_in: [ID!]
+  id_not: ID
+  id_not_in: [ID!]
+  id_starts_with: ID
+  user: UserWhereInput
 }
 
 type Message {
@@ -1100,7 +1110,7 @@ type Organization {
   funds: [Fund]
   image: String
   members: [User]
-  membershipRequests: [MembershipRequest]
+  membershipRequests(first: Int, skip: Int, where: MembershipRequestsWhereInput): [MembershipRequest]
   name: String!
   pinnedPosts: [Post]
   posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostsConnection
@@ -1357,7 +1367,7 @@ type Query {
   joinedOrganizations(id: ID): [Organization]
   me: User!
   myLanguage: String
-  organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
+  organizations(first: Int, id: ID, orderBy: OrganizationOrderByInput, skip: Int, where: MembershipRequestsWhereInput): [Organization]
   organizationsConnection(first: Int, orderBy: OrganizationOrderByInput, skip: Int, where: OrganizationWhereInput): [Organization]!
   organizationsMemberConnection(first: Int, orderBy: UserOrderByInput, orgId: ID!, skip: Int, where: UserWhereInput): UserConnection!
   plugin(orgId: ID!): [Plugin]
