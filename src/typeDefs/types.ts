@@ -57,6 +57,17 @@ export const types = gql`
     updatedAt: Date
   }
 
+  type AgendaSection {
+    _id: ID!
+    relatedEvent: Event
+    description: String!
+    items: [AgendaItem]
+    sequence: Int!
+    createdAt: Date!
+    updatedAt: Date
+    createdBy: User
+    updatedBy: User
+  }
   # Action Item for a ActionItemCategory
   type ActionItem {
     _id: ID!
@@ -102,6 +113,18 @@ export const types = gql`
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  type Community {
+    _id: ID!
+    name: String!
+    logoUrl: String
+    description: String!
+    websiteLink: String
+    socialMediaUrls: SocialMediaUrls
+    timeout: Int
+    createdAt: DateTime
+    updatedAt: DateTime
   }
 
   type UserFamily {
@@ -493,6 +516,17 @@ export const types = gql`
     likeCount: Int
     commentCount: Int
     pinned: Boolean
+  }
+
+  type SocialMediaUrls {
+    facebook: String
+    instagram: String
+    twitter: String
+    linkedIn: String
+    gitHub: String
+    youTube: String
+    slack: String
+    reddit: String
   }
 
   type Translation {
