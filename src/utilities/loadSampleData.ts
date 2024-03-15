@@ -3,7 +3,6 @@ import yargs from "yargs";
 import fs from "fs/promises";
 import path from "path";
 import { connect } from "../db";
-import { User, Organization, Event, Post } from "../models";
 import { encryptEmail } from "./encryptionModule";
 import {
   User,
