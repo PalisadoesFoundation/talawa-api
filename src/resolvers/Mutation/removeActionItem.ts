@@ -71,7 +71,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
   const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
     (ogranizationId) =>
       ogranizationId === actionItem.actionItemCategoryId.organizationId ||
-      Types.ObjectId(ogranizationId?.toString()).equals(
+      new Types.ObjectId(ogranizationId?.toString()).equals(
         actionItem.actionItemCategoryId.organizationId,
       ),
   );
@@ -108,7 +108,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        Types.ObjectId(admin).equals(context.userId),
+        new Types.ObjectId(admin).equals(context.userId),
     );
   }
 

@@ -7,6 +7,7 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { AppUserProfile, User } from "../../models";
+import type { InterfaceAppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfaceJwtTokenPayload } from "../../utilities";
 import {
@@ -90,8 +91,14 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
   }
 
   // send new access and refresh token to user
-  const newAccessToken = await createAccessToken(user, appUserProfile);
-  const newRefreshToken = await createRefreshToken(user, appUserProfile);
+  const newAccessToken = await createAccessToken(
+    user,
+    appUserProfile as InterfaceAppUserProfile,
+  );
+  const newRefreshToken = await createRefreshToken(
+    user,
+    appUserProfile as InterfaceAppUserProfile,
+  );
 
   //update the token version for the user
   const filter = { userId: jwtPayload.userId };

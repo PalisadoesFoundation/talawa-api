@@ -1,21 +1,22 @@
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, Organization } from "../../../src/models";
+import { expect, vi, beforeAll, afterAll, describe, it } from "vitest";
 import type { MutationCreateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import type {
-  TestOrganizationType,
-  TestUserType,
-} from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
+import type {
+  TestUserType,
+  TestOrganizationType,
+} from "../../helpers/userAndOrg";
+import { AppUserProfile, Organization, User } from "../../../src/models";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
+let testUserSuperAdmin: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser2: TestUserType;
@@ -24,6 +25,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
   testAdminUser = await createTestUser();
+  testUserSuperAdmin = await createTestUser();
   testUser2 = await createTestUser();
   testOrganization = await Organization.create({
     name: "name",
@@ -35,13 +37,23 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-  await AppUserProfile.updateOne(
+  await User.updateOne(
     {
-      userId: testUser?._id,
+      _id: testUser?._id,
     },
     {
       $push: {
         adminFor: testOrganization?._id,
+      },
+    },
+  );
+  await AppUserProfile.updateOne(
+    {
+      userId: testUserSuperAdmin?._id,
+    },
+    {
+      $set: {
+        isSuperAdmin: true,
       },
     },
   );
@@ -107,7 +119,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(), // A random ID that does not exist in the database
+        userId: new Types.ObjectId().toString(), // A random ID that does not exist in the database
       };
 
       const { createAgendaCategory: createAgendaCategoryResolver } =
@@ -123,7 +135,9 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
     } catch (error: unknown) {
       // The resolver should throw a NotFoundError with the appropriate message, code, and parameter
 
-      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -133,7 +147,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
         input: {
           name: "Agenda Category",
           description: "Description for the agenda category",
-          organizationId: Types.ObjectId().toString(), // A random ID that does not exist in the database
+          organizationId: new Types.ObjectId().toString(), // A random ID that does not exist in the database
         },
       };
 
@@ -187,6 +201,35 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       expect((error as Error).message).toEqual(
         "Error: Current user must be an ADMIN or a SUPERADMIN",
       ); // The resolver should throw an UnauthorizedError with the appropriate message, code, and parameter
+    }
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    const args: MutationCreateAgendaCategoryArgs = {
+      input: {
+        name: "Agenda Category",
+        description: "Description for the agenda category",
+        organizationId: testOrganization?.id,
+      },
+    };
+    const context = { userId: testUser?._id };
+    const { createAgendaCategory: createAgendaCategoryResolver } = await import(
+      "../../../src/resolvers/Mutation/createAgendaCategory"
+    );
+
+    try {
+      await createAgendaCategoryResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 });

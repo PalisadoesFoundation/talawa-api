@@ -21,6 +21,7 @@ export const organizationsConnection: QueryResolvers["organizationsConnection"] 
     const sort = getSort(args.orderBy);
 
     const organizations = await Organization.find(where)
+      //@ts-expect-error - type error
       .sort(sort)
       .limit(args.first ?? 0)
       .skip(args.skip ?? 0)

@@ -5,7 +5,7 @@ import {
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceUser } from "../../models";
-import { User } from "../../models";
+import { AppUserProfile, User } from "../../models";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to update user profile.
@@ -57,7 +57,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   }
 
   // Update User
-  const updatedUser = await User.findOneAndUpdate(
+  let updatedUser = await User.findOneAndUpdate(
     {
       _id: context.userId,
     },
@@ -128,11 +128,26 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       runValidators: true,
     },
   ).lean();
-  if (updatedUser) {
+
+  if (args.data?.appLanguageCode) {
+    await AppUserProfile.findOneAndUpdate(
+      {
+        userId: context.userId,
+      },
+      {
+        $set: {
+          appLanguageCode: args.data?.appLanguageCode,
+        },
+      },
+    );
+  }
+
+  if (updatedUser != null) {
     updatedUser.image = updatedUser?.image
       ? `${context.apiRootUrl}${updatedUser?.image}`
       : null;
   }
+  if (args.data == undefined) updatedUser = null;
 
   return updatedUser ?? ({} as InterfaceUser);
 };

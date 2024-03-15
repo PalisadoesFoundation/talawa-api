@@ -73,7 +73,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (organizationId) =>
       organizationId &&
-      Types.ObjectId(organizationId.toString()).equals(post?.organization),
+      new Types.ObjectId(organizationId.toString()).equals(post?.organization),
   );
 
   if (
@@ -105,7 +105,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     }
   }
   const currentPostIsPinned = organization?.pinnedPosts.some((postID) =>
-    Types.ObjectId(postID).equals(args.id),
+    new Types.ObjectId(postID).equals(args.id),
   );
 
   if (currentPostIsPinned) {

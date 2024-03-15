@@ -1,18 +1,20 @@
 import mongoose from "mongoose";
 import { MONGO_DB_URL } from "./constants";
 import { logger } from "./libraries";
+import { checkReplicaSet } from "./utilities/checkReplicaSet";
 
 let session!: mongoose.ClientSession;
 
 export const connect = async (): Promise<void> => {
   try {
-    await mongoose.connect(MONGO_DB_URL as string, {
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-      useNewUrlParser: true,
-    });
-    session = await mongoose.startSession();
+    await mongoose.connect(MONGO_DB_URL as string);
+    const replicaSet = await checkReplicaSet();
+    if (replicaSet) {
+      logger.info("Session started --> Connected to a replica set!");
+      session = await mongoose.startSession();
+    } else {
+      logger.info("Session not started --> Not Connected to a replica set!");
+    }
   } catch (error: unknown) {
     if (error instanceof Error) {
       const errorMessage = error.toString();

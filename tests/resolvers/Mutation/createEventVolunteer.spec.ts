@@ -58,7 +58,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createEventVolunteer: createEventVolunteerResolver } =
@@ -78,7 +78,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
     try {
       const args: MutationCreateEventVolunteerArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           eventId: testEvent?._id,
         },
       };
@@ -108,7 +108,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
       const args: MutationCreateEventVolunteerArgs = {
         data: {
           userId: testUser2?._id,
-          eventId: Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
@@ -150,7 +150,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
 
     expect(createdVolunteer).toEqual(
       expect.objectContaining({
-        eventId: Types.ObjectId(testEvent?.id),
+        eventId: new Types.ObjectId(testEvent?.id),
         userId: testUser2?._id,
         creatorId: testUser1?._id,
         isInvited: true,

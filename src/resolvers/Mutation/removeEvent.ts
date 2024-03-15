@@ -80,7 +80,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (organization) =>
       organization &&
-      Types.ObjectId(organization.toString()).equals(event?.organization),
+      new Types.ObjectId(organization.toString()).equals(event?.organization),
   );
 
   // Boolean to determine whether user is an admin of event.

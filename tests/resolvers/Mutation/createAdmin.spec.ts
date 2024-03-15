@@ -46,7 +46,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     try {
       const args: MutationCreateAdminArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           userId: "",
         },
       };
@@ -71,7 +71,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         },
         {
           $set: {
-            creatorId: Types.ObjectId().toString(),
+            creatorId: new Types.ObjectId().toString(),
           },
         },
       );
@@ -84,7 +84,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await createAdminResolver?.({}, args, context);
@@ -120,7 +120,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       const args: MutationCreateAdminArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
         },
       };
 
@@ -138,7 +138,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       const args: MutationCreateAdminArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
         },
       };
       const newUser = await User.create({
@@ -300,7 +300,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       const args: MutationCreateAdminArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
         },
       };
 

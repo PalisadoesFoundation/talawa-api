@@ -69,7 +69,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       const args: MutationCreateMessageChatArgs = {
         data: {
           message: "",
-          receiver: Types.ObjectId().toString(),
+          receiver: new Types.ObjectId().toString(),
         },
       };
 
@@ -103,7 +103,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createMessageChat: createMessageChatResolver } = await import(

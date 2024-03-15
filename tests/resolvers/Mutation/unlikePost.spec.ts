@@ -43,7 +43,7 @@ describe("resolvers -> Mutation -> unlikePost", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnlikePostArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

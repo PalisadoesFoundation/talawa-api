@@ -65,7 +65,8 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
 
   const isUserEventAdmin = event.admins.some(
     (admin) =>
-      admin === context.userID || Types.ObjectId(admin).equals(context.userId),
+      admin === context.userID ||
+      new Types.ObjectId(admin).equals(context.userId),
   );
 
   if (!isUserEventAdmin && !currentUserAppProfile.isSuperAdmin) {

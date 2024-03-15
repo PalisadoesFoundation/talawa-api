@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
 
     try {
       const args: MutationUpdateOrganizationArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

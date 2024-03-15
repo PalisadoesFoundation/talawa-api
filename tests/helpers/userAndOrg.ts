@@ -9,8 +9,8 @@ import type {
 import { AppUserProfile, Organization, User } from "../../src/models";
 
 export type TestOrganizationType =
-  | (InterfaceOrganization & Document<any, any, InterfaceOrganization>)
-  | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (InterfaceOrganization & Document<any, any, InterfaceOrganization>) | null;
 
 export type TestUserType =
   | (InterfaceUser & Document<any, any, InterfaceUser>)
@@ -92,7 +92,7 @@ export const createTestUserAndOrganization = async (
 ): Promise<[TestUserType, TestOrganizationType]> => {
   const testUser = await createTestUser();
   const testOrganization = await createTestOrganizationWithAdmin(
-    testUser?._id,
+    testUser?._id.toString(),
     isMember,
     isAdmin,
     userRegistrationRequired,

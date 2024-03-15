@@ -26,7 +26,7 @@ describe("resolvers -> Query -> actionItemCategory", () => {
   it(`throws NotFoundError if no actionItemCategory exists with _id === args.id`, async () => {
     try {
       const args: QueryActionItemCategoryArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       await actionItemCategoryResolver?.({}, args, {});

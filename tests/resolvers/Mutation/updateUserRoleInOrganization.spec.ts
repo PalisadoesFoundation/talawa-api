@@ -225,7 +225,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     );
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
-        organizationId: Types.ObjectId().toHexString(),
+        organizationId: new Types.ObjectId().toHexString(),
         userId: testUserSuperAdmin?._id.toString() ?? "",
         role: "ADMIN",
       };
@@ -253,7 +253,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     try {
       const args: MutationUpdateUserRoleInOrganizationArgs = {
         organizationId: testOrganization?._id,
-        userId: Types.ObjectId().toHexString(),
+        userId: new Types.ObjectId().toHexString(),
         role: "ADMIN",
       };
       const context = {
@@ -309,7 +309,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         role: "ADMIN",
       };
       const context = {
-        userId: Types.ObjectId().toHexString(),
+        userId: new Types.ObjectId().toHexString(),
       };
 
       const {
@@ -480,9 +480,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     const updatedOrganization = await Organization.findOne({
       _id: testOrganization?._id,
     }).lean();
-    const updatedUser: InterfaceAppUserProfile = await AppUserProfile.findOne({
+    const updatedUser: InterfaceAppUserProfile = (await AppUserProfile.findOne({
       userId: testMemberUser?._id,
-    }).lean();
+    }).lean()) as InterfaceAppUserProfile;
 
     const updatedOrganizationCheck = updatedOrganization?.admins.some(
       (member) => member.equals(testMemberUser?._id),
@@ -490,7 +490,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     const updatedUserCheck: boolean = updatedUser?.adminFor.some(
       (organization) =>
         organization &&
-        Types.ObjectId(organization.toString()).equals(testOrganization?._id),
+        new Types.ObjectId(organization.toString()).equals(
+          testOrganization?._id,
+        ),
     );
     expect(updatedOrganizationCheck).toBe(true);
     expect(updatedUserCheck).toBe(true);
@@ -526,7 +528,9 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
       member.equals(testAdminUser?._id),
     );
     const updatedUserCheck = updatedUser?.adminFor.some((organization) =>
-      Types.ObjectId(organization?.toString()).equals(testOrganization?._id),
+      new Types.ObjectId(organization?.toString()).equals(
+        testOrganization?._id,
+      ),
     );
 
     expect(updatedOrgCheck).toBe(false);

@@ -26,9 +26,9 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
       );
     }
 
-    const currentUserExists = await User.exists({
+    const currentUserExists = !!(await User.exists({
       _id: context.userId,
-    });
+    }));
 
     if (currentUserExists === false) {
       throw new errors.NotFoundError(

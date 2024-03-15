@@ -68,7 +68,7 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
 
     const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
       (orgId) =>
-        orgId && Types.ObjectId(orgId.toString()).equals(organization._id),
+        orgId && new Types.ObjectId(orgId.toString()).equals(organization._id),
     );
 
     if (

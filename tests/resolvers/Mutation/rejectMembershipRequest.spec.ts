@@ -59,7 +59,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRejectMembershipRequestArgs = {
-        membershipRequestId: Types.ObjectId().toString(),
+        membershipRequestId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -91,7 +91,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
         },
       );
@@ -140,7 +140,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         },
         {
           $set: {
-            user: Types.ObjectId().toString(),
+            user: new Types.ObjectId().toString(),
           },
         },
       );

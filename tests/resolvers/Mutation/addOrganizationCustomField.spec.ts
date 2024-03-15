@@ -139,7 +139,7 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     const unknownUser = {
-      _id: Types.ObjectId().toString(),
+      _id: new Types.ObjectId().toString(),
     };
 
     const args = {
@@ -166,7 +166,7 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     const args = {
-      organizationId: Types.ObjectId().toString(),
+      organizationId: new Types.ObjectId().toString(),
       name: "testName",
       type: "testType",
     };

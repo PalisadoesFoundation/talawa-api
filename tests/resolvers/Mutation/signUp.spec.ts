@@ -271,7 +271,7 @@ describe("resolvers -> Mutation -> signUp", () => {
           lastName: "lastName",
           password: "password",
           appLanguageCode: "en",
-          organizationUserBelongsToId: Types.ObjectId().toString(),
+          organizationUserBelongsToId: new Types.ObjectId().toString(),
         },
       };
 
