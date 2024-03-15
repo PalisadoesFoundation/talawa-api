@@ -17,7 +17,7 @@ import {
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, User } from "../../../src/models";
+import { AppUserProfile } from "../../../src/models";
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";

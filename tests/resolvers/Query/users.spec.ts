@@ -336,7 +336,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
-        image: user.image ? `${BASE_URL}${user.image}` : null
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(payload).toEqual(users);

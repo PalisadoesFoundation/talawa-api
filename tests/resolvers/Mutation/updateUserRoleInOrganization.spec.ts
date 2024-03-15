@@ -59,7 +59,7 @@ beforeAll(async () => {
     userId: testUserSuperAdmin._id,
     appLanguageCode: "en",
     isSuperAdmin: true,
-    adminApproved: true
+    adminApproved: true,
   });
   await User.updateOne(
     {

@@ -50,7 +50,7 @@ const appUserSchema = new Schema(
     adminApproved: {
       type: Boolean,
       required: true,
-      default: false
+      default: false,
     },
     appLanguageCode: {
       type: String,
