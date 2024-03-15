@@ -1630,11 +1630,6 @@ export type MutationRemoveUserTagArgs = {
 };
 
 
-export type MutationResetCommunityArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
 export type MutationSaveFcmTokenArgs = {
   token?: InputMaybe<Scalars['String']['input']>;
 };
@@ -2406,14 +2401,14 @@ export type SocialMediaUrls = {
 };
 
 export type SocialMediaUrlsInput = {
-  facebook: Scalars['String']['input'];
-  gitHub: Scalars['String']['input'];
-  instagram: Scalars['String']['input'];
-  linkedIn: Scalars['String']['input'];
-  reddit: Scalars['String']['input'];
-  slack: Scalars['String']['input'];
-  twitter: Scalars['String']['input'];
-  youTube: Scalars['String']['input'];
+  facebook?: InputMaybe<Scalars['String']['input']>;
+  gitHub?: InputMaybe<Scalars['String']['input']>;
+  instagram?: InputMaybe<Scalars['String']['input']>;
+  linkedIn?: InputMaybe<Scalars['String']['input']>;
+  reddit?: InputMaybe<Scalars['String']['input']>;
+  slack?: InputMaybe<Scalars['String']['input']>;
+  twitter?: InputMaybe<Scalars['String']['input']>;
+  youTube?: InputMaybe<Scalars['String']['input']>;
 };
 
 /**
@@ -3915,7 +3910,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeUserFromUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationRemoveUserFromUserFamilyArgs, 'familyId' | 'userId'>>;
   removeUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   removeUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationRemoveUserTagArgs, 'id'>>;
-  resetCommunity?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationResetCommunityArgs, 'id'>>;
+  resetCommunity?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   revokeRefreshTokenForUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   saveFcmToken?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationSaveFcmTokenArgs>>;
   sendMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationSendMembershipRequestArgs, 'organizationId'>>;

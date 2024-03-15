@@ -233,7 +233,7 @@ export const mutations = gql`
 
     removeUserImage: User! @auth
 
-    resetCommunity(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
+    resetCommunity: Boolean! @auth @role(requires: SUPERADMIN)
 
     revokeRefreshTokenForUser: Boolean! @auth
 

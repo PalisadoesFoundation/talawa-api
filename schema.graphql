@@ -1044,7 +1044,7 @@ type Mutation {
   removeUserFromUserFamily(familyId: ID!, userId: ID!): UserFamily!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
-  resetCommunity(id: ID!): Boolean!
+  resetCommunity: Boolean!
   revokeRefreshTokenForUser: Boolean!
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
@@ -1407,14 +1407,14 @@ type SocialMediaUrls {
 }
 
 input SocialMediaUrlsInput {
-  facebook: String!
-  gitHub: String!
-  instagram: String!
-  linkedIn: String!
-  reddit: String!
-  slack: String!
-  twitter: String!
-  youTube: String!
+  facebook: String
+  gitHub: String
+  instagram: String
+  linkedIn: String
+  reddit: String
+  slack: String
+  twitter: String
+  youTube: String
 }
 
 """

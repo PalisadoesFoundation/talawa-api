@@ -16,7 +16,7 @@ import { superAdminCheck } from "../../utilities";
  */
 export const resetCommunity: MutationResolvers["resetCommunity"] = async (
   _parent,
-  args,
+  _args,
   context,
 ) => {
   const user = await User.findById(context.userId);
@@ -29,7 +29,7 @@ export const resetCommunity: MutationResolvers["resetCommunity"] = async (
 
   superAdminCheck(user);
 
-  await Community.deleteOne({ _id: args.id });
+  await Community.deleteMany();
 
   return true;
 };
