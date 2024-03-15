@@ -429,8 +429,6 @@ export const types = gql`
     _id: ID!
     appUserProfileId: AppUserProfile
     address: Address
-    adminApproved: Boolean
-
     birthDate: Date
     createdAt: DateTime!
     educationGrade: EducationGrade
@@ -460,6 +458,7 @@ export const types = gql`
     _id: ID!
     userId: User!
     adminFor: [Organization]
+    adminApproved: Boolean
     createdEvents: [Event]
     createdOrganizations: [Organization]
     eventAdmin: [Event]

@@ -153,6 +153,7 @@ export type AggregateUser = {
 export type AppUserProfile = {
   __typename?: 'AppUserProfile';
   _id: Scalars['ID']['output'];
+  adminApproved?: Maybe<Scalars['Boolean']['output']>;
   adminFor?: Maybe<Array<Maybe<Organization>>>;
   appLanguageCode: Scalars['String']['output'];
   createdEvents?: Maybe<Array<Maybe<Event>>>;
@@ -1925,7 +1926,6 @@ export type User = {
   __typename?: 'User';
   _id: Scalars['ID']['output'];
   address?: Maybe<Address>;
-  adminApproved?: Maybe<Scalars['Boolean']['output']>;
   appUserProfileId?: Maybe<AppUserProfile>;
   birthDate?: Maybe<Scalars['Date']['output']>;
   createdAt: Scalars['DateTime']['output'];
@@ -2606,6 +2606,7 @@ export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
 
 export type AppUserProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppUserProfile'] = ResolversParentTypes['AppUserProfile']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
@@ -3218,7 +3219,6 @@ export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
-  adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   appUserProfileId?: Resolver<Maybe<ResolversTypes['AppUserProfile']>, ParentType, ContextType>;
   birthDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

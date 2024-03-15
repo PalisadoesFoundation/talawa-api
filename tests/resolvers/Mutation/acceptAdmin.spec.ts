@@ -108,13 +108,13 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
         },
       },
     );
-    await User.updateOne(
+    await AppUserProfile.updateOne(
       {
-        _id: testUserAdmin?._id,
+        userId: testUserAdmin?._id,
       },
       {
         $set: {
-          adminApproved: false,
+          adminApproved: true,
         },
       },
     );
@@ -131,8 +131,8 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
 
     expect(acceptAdminPayload).toEqual(true);
 
-    const updatedTestUser = await User.findOne({
-      _id: testUserAdmin?._id,
+    const updatedTestUser = await AppUserProfile.findOne({
+      userId: testUserAdmin?._id,
     })
       .select(["adminApproved"])
       .lean();

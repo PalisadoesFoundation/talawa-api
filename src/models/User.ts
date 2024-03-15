@@ -24,7 +24,6 @@ export interface InterfaceUser {
     sortingCode: string;
     state: string;
   };
-  adminApproved: boolean;
 
   birthDate: Date;
   createdAt: Date;
@@ -58,7 +57,6 @@ export interface InterfaceUser {
  * This describes the schema for a `User` that corresponds to `InterfaceUser` document.
  * @param appUserProfileId - AppUserProfile id of the User
  * @param address - User address
- * @param adminApproved - Wheather user is admin approved.
 
  * @param birthDate - User Date of birth
  * @param createdAt - Time stamp of data creation.
@@ -117,11 +115,6 @@ const userSchema = new Schema(
         type: String,
       },
     },
-    adminApproved: {
-      type: Boolean,
-      default: false,
-    },
-
     birthDate: {
       type: Date,
     },
