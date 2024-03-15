@@ -896,21 +896,6 @@ async function main(): Promise<void> {
     config.LAST_RESORT_SUPERADMIN_EMAIL = config.MAIL_USERNAME;
     updateEnvVariable(config);
   }
-  if (!isDockerInstallation) {
-    const { shouldRunDataImport } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "shouldRunDataImport",
-        message: "Do you want to import sample data?",
-        default: false,
-      },
-    ]);
-    if (shouldRunDataImport) {
-      await importData();
-    } else {
-      await importDefaultOrganization();
-    }
-  }
 
   const { imageSizeLimit } = await inquirer.prompt([
     {
@@ -928,8 +913,6 @@ async function main(): Promise<void> {
     },
   ]);
 
-  await setImageUploadSize(imageSizeLimit * 1000);
-
   if (!isDockerInstallation) {
     const { shouldRunDataImport } = await inquirer.prompt([
       {
@@ -939,11 +922,14 @@ async function main(): Promise<void> {
         default: false,
       },
     ]);
-
     if (shouldRunDataImport) {
       await importData();
+    } else {
+      await importDefaultOrganization();
     }
   }
+
+  await setImageUploadSize(imageSizeLimit * 1000);
 
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉",
