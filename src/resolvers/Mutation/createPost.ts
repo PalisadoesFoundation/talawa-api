@@ -138,7 +138,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     // Check if the user has privileges to pin the post
     const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
-        Types.ObjectId(organizationId?.toString()).equals(
+        new Types.ObjectId(organizationId?.toString()).equals(
           args.data.organizationId,
         ),
     );

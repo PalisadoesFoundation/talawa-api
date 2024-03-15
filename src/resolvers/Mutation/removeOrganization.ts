@@ -14,7 +14,9 @@ import {
   Organization,
   Post,
   User,
+  Fund,
 } from "../../models";
+
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { deleteOrganizationFromCache } from "../../services/OrganizationCache/deleteOrganizationFromCache";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
@@ -84,7 +86,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       );
     }
     // Checks whether currentUser is a SUPERADMIN
-    superAdminCheck(currentUserAppProfile);
+    superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
     // Remove each post and comments associated to it for organization.posts list.
     await Post.deleteMany({ _id: { $in: organization.posts } });
@@ -161,7 +163,10 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     await ActionItem.deleteMany({
       actionItemCategoryId: { $in: actionItemCategoriesIds },
     });
-
+    //Remove all the funds specific to organization
+    await Fund.deleteMany({
+      _id: { $in: organization.funds },
+    });
     // Deletes the organzation.
     await Organization.deleteOne({
       _id: organization._id,
@@ -172,20 +177,20 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     if (organization?.image) {
       await deleteImage(organization?.image);
     }
-    const updatedUser: InterfaceUser = await User.findOne({
+    const updatedUser: InterfaceUser = (await User.findOne({
       _id: currentUser._id,
     })
       .select(["-password"])
-      .lean();
+      .lean()) as InterfaceUser;
     const updatedAppUserProfile: InterfaceAppUserProfile =
-      await AppUserProfile.findOne({
+      (await AppUserProfile.findOne({
         userId: currentUser._id,
       })
         .populate("createdOrganizations")
         .populate("createdEvents")
         .populate("eventAdmin")
         .populate("adminFor")
-        .lean();
+        .lean()) as InterfaceAppUserProfile;
     // Returns updated currentUser.
     return {
       user: updatedUser,

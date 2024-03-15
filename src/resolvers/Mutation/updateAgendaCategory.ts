@@ -6,10 +6,12 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { AgendaCategoryModel, AppUserProfile, User } from "../../models";
+import type { InterfaceAgendaCategory } from "../../models";
 import type {
   MutationResolvers,
   UpdateAgendaCategoryInput,
 } from "../../types/generatedGraphQLTypes";
+
 /**
  * This is a resolver function for the GraphQL mutation 'updateAgendaCategory'.
  *
@@ -72,7 +74,7 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
 
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
-        Types.ObjectId(organizationId?.toString()).equals(
+        new Types.ObjectId(organizationId?.toString()).equals(
           currentOrg?.organizationId?.toString() || "",
         ),
     );
@@ -104,5 +106,5 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
       },
     ).lean();
 
-    return updatedAgendaCategory;
+    return updatedAgendaCategory as InterfaceAgendaCategory;
   };

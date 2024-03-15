@@ -77,7 +77,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createPost: createPostResolver } = await import(
@@ -101,7 +101,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     try {
       const args: MutationCreatePostArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           text: "",
           videoUrl: "",
           title: "",

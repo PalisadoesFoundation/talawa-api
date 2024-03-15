@@ -55,7 +55,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (organization) =>
       organization &&
-      Types.ObjectId(organization.toString()).equals(
+      new Types.ObjectId(organization.toString()).equals(
         existingTag?.organizationId,
       ),
   );

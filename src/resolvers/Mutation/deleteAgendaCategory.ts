@@ -1,12 +1,12 @@
-import { Types } from "mongoose";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { errors, requestContext } from "../../libraries";
+import { AgendaCategoryModel, AppUserProfile, User } from "../../models";
 import {
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { errors } from "../../libraries";
-import { AgendaCategoryModel, AppUserProfile, User } from "../../models";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { Types } from "mongoose";
 /**
  * This is a resolver function for the GraphQL mutation 'deleteAgendaCategory'.
  *
@@ -38,17 +38,18 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
-    const currentUserAppProfile = await AppUserProfile.findOne({
+
+    const currentAppUserProfile = await AppUserProfile.findOne({
       userId: currentUser._id,
     }).lean();
-
-    if (!currentUserAppProfile) {
+    if (!currentAppUserProfile) {
       throw new errors.UnauthorizedError(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
         USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
+
     if (!agendaCategory) {
       throw new errors.NotFoundError(
         AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
@@ -58,19 +59,19 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
     }
 
     const currentOrg = await AgendaCategoryModel.findById(agendaCategory._id)
-
       .select("organizationId")
       .lean();
 
     const currentOrgId = currentOrg?.organizationId?.toString() || "";
-    const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
+
+    const currentUserIsOrgAdmin = currentAppUserProfile.adminFor.some(
       (organizationId) =>
-        Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
+        new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
     );
     // If the user is a normal user, throw an error
     if (
       currentUserIsOrgAdmin === false &&
-      !currentUserAppProfile.isSuperAdmin
+      currentAppUserProfile.isSuperAdmin === false
     ) {
       throw new errors.UnauthorizedError(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,

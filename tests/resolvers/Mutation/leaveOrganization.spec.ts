@@ -55,7 +55,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationLeaveOrganizationArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -86,7 +86,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { leaveOrganization: leaveOrganizationResolver } = await import(
@@ -113,8 +113,8 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
         },
         {
           $set: {
-            creatorId: Types.ObjectId().toString(),
-            members: [Types.ObjectId().toString()],
+            creatorId: new Types.ObjectId().toString(),
+            members: [new Types.ObjectId().toString()],
           },
         },
         {

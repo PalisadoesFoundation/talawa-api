@@ -77,7 +77,7 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
 
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (orgId) =>
-      orgId && Types.ObjectId(orgId.toString()).equals(tag.organizationId),
+      orgId && new Types.ObjectId(orgId.toString()).equals(tag.organizationId),
   );
   //check whether current user can assign tag to user or not
   if (!(currentUserIsOrganizationAdmin || currentUserAppProfile.isSuperAdmin)) {

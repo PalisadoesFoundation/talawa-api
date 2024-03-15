@@ -84,7 +84,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removeUserTag: removeUserTagResolver } = await import(
@@ -108,7 +108,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
 
     try {
       const args: MutationRemoveUserTagArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

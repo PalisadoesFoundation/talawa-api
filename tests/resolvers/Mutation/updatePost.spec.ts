@@ -43,7 +43,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
   it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
     try {
       const args: MutationUpdatePostArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -69,7 +69,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
       await Post.updateOne(
         { _id: testPost?._id },
-        { $set: { creatorId: Types.ObjectId().toString() } },
+        { $set: { creatorId: new Types.ObjectId().toString() } },
       );
 
       await updatePostResolver?.({}, args, context);

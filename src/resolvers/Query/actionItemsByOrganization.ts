@@ -1,5 +1,8 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceActionItem } from "../../models";
 import { ActionItem, ActionItemCategory } from "../../models";
+import { getWhere } from "./helperFunctions/getWhere";
+import { getSort } from "./helperFunctions/getSort";
 /**
  * This query will fetch all action items for an organization from database.
  * @param _parent-
@@ -8,6 +11,9 @@ import { ActionItem, ActionItemCategory } from "../../models";
  */
 export const actionItemsByOrganization: QueryResolvers["actionItemsByOrganization"] =
   async (_parent, args) => {
+    const where = getWhere<InterfaceActionItem>(args.where);
+    const sort = getSort(args.orderBy);
+
     // Get the ids of all ActionItemCategories associated with the organization
     const actionItemCategories = await ActionItemCategory.find({
       organizationId: args.organizationId,
@@ -18,7 +24,10 @@ export const actionItemsByOrganization: QueryResolvers["actionItemsByOrganizatio
 
     const actionItems = await ActionItem.find({
       actionItemCategoryId: { $in: actionItemCategoriesIds },
-    }).lean();
+      ...where,
+    }) //@ts-expect-error - type error
+      .sort(sort)
+      .lean();
 
     return actionItems;
   };

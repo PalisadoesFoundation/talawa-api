@@ -48,7 +48,9 @@ export const removeSampleOrganization: MutationResolvers["removeSampleOrganizati
     const currentUserOrgAdmin = currentUserAppProfile.adminFor.some(
       (org) =>
         org &&
-        Types.ObjectId(org.toString()).equals(existingOrganization.documentId),
+        new Types.ObjectId(org.toString()).equals(
+          existingOrganization.documentId,
+        ),
     );
 
     if (!currentUserAppProfile.isSuperAdmin && !currentUserOrgAdmin) {

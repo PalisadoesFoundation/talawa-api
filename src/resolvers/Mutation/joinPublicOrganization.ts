@@ -7,6 +7,7 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { Organization, User } from "../../models";
+import type { InterfaceUser } from "../../models/User";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -56,9 +57,9 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
         USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
-    const currentUserExists = await User.exists({
+    const currentUserExists = !!(await User.exists({
       _id: context.userId,
-    });
+    }));
     // Checks whether currentUser with _id === context.userId exists.
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
@@ -69,7 +70,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     }
 
     const currentUserIsOrganizationMember = organization.members.some(
-      (member) => Types.ObjectId(member).equals(context.userId),
+      (member) => new Types.ObjectId(member).equals(context.userId),
     );
 
     // Checks whether currentUser with _id === context.userId is already a member of organzation.
@@ -104,7 +105,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     Adds organization._id to joinedOrganizations list of currentUser's document
     with _id === context.userId and returns the updated currentUser.
     */
-    return await User.findOneAndUpdate(
+    return (await User.findOneAndUpdate(
       {
         _id: context.userId,
       },
@@ -119,5 +120,5 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     )
       .select(["-password"])
       .populate("joinedOrganizations")
-      .lean();
+      .lean()) as InterfaceUser;
   };

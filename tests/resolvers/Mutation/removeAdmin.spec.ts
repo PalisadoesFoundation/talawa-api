@@ -64,8 +64,8 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     try {
       const args: MutationRemoveAdminArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
-          userId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
         },
       };
 
@@ -94,7 +94,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       const args: MutationRemoveAdminArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
         },
       };
 
@@ -122,7 +122,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       const args: MutationRemoveAdminArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
         },
       };
 
@@ -156,7 +156,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       const args: MutationRemoveAdminArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userId: newUser._id,
+          userId: newUser._id.toString(),
         },
       };
       const context = {
@@ -216,7 +216,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       const args: MutationRemoveAdminArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
         },
       };
       const context = {
@@ -299,7 +299,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
             admins: testUserRemoved?._id,
           },
           $set: {
-            creatorId: Types.ObjectId().toString(),
+            creatorId: new Types.ObjectId().toString(),
           },
         },
         {
@@ -383,7 +383,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
   });
   it("throws error if user does not exists", async () => {
     const context = {
-      userId: Types.ObjectId().toString(),
+      userId: new Types.ObjectId().toString(),
     };
 
     const args: MutationRemoveAdminArgs = {

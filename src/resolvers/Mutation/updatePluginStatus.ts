@@ -30,20 +30,20 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
 
     let uninstalledOrgsList = plugin.uninstalledOrgs;
 
-    if (uninstalledOrgsList.includes(mongoose.Types.ObjectId(currOrgID))) {
+    if (uninstalledOrgsList.includes(new mongoose.Types.ObjectId(currOrgID))) {
       //if already uninstalled then install it by removing from array
       uninstalledOrgsList = uninstalledOrgsList.filter(
         (oid: unknown) => oid != currOrgID,
       );
     } else {
       //not already present then uninstall plugin on that org by adding it to the list
-      uninstalledOrgsList.push(mongoose.Types.ObjectId(currOrgID));
+      uninstalledOrgsList.push(new mongoose.Types.ObjectId(currOrgID));
     }
     plugin.uninstalledOrgs = uninstalledOrgsList;
 
     const res = await Plugin.findOneAndUpdate(
       {
-        _id: mongoose.Types.ObjectId(uid),
+        _id: new mongoose.Types.ObjectId(uid),
       },
       {
         ...plugin,

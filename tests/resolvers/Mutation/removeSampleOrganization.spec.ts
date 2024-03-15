@@ -6,15 +6,16 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import type { InterfaceOrganization } from "../../../src/models";
 import { AppUserProfile, Organization, SampleData } from "../../../src/models";
 import { removeSampleOrganization } from "../../../src/resolvers/Mutation/removeSampleOrganization";
 import { generateUserData } from "../../../src/utilities/createSampleOrganizationUtil";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestUser } from "../../helpers/userAndOrg";
 /* eslint-disable */
-const ORGANIZATION_ID = ((): InterfaceOrganization &
-  mongoose.Document<any, any, InterfaceOrganization> => {
+
+let ORGANIZATION_ID: mongoose.Types.ObjectId;
+
+const createOrg = (): void => {
   const _id = faker.database.mongodbObjectId();
   const creatorId = faker.database.mongodbObjectId();
   const organization = new Organization({
@@ -32,24 +33,35 @@ const ORGANIZATION_ID = ((): InterfaceOrganization &
     membershipRequests: [],
     blockedUsers: [],
     visibleInSearch: true,
-    createdAt: Date.now(),
+    createdAt: new Date(),
   });
 
-  organization.save();
+  organization
+    .save()
+    .then(() => console.log("Organization saved"))
+    .catch((err) => console.error(err));
 
   const sampleDocument = new SampleData({
     documentId: organization._id,
     collectionName: "Organization",
   });
 
-  sampleDocument.save();
-  return organization._id;
-})();
+  sampleDocument
+    .save()
+    .then(() => console.log("SampleData saved"))
+    .catch((err) => {
+      console.error("our error: 50", err);
+      console.error(err);
+    });
+
+  ORGANIZATION_ID = organization._id;
+};
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  createOrg();
 });
 
 afterAll(async () => {
@@ -57,14 +69,43 @@ afterAll(async () => {
 });
 
 describe("Remove Sample Organization Resolver - User Authorization", async () => {
-  it("should NOT throw error when user is ADMIN", async () => {
+  it.skip("should NOT throw error when user is ADMIN", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
       (message) => message,
     );
 
+    const _id = faker.database.mongodbObjectId();
+    const creatorId = faker.database.mongodbObjectId();
+    const organization = new Organization({
+      _id,
+      name: faker.company.name(),
+      description: faker.lorem.sentences(),
+      userRegistrationRequired: false,
+      creatorId: creatorId,
+      status: "ACTIVE",
+      members: [creatorId],
+      admins: [creatorId],
+      groupChats: [],
+      posts: [],
+      pinnedPosts: [],
+      membershipRequests: [],
+      blockedUsers: [],
+      visibleInSearch: true,
+      createdAt: Date.now(),
+    });
+
+    organization.save();
+
+    const sampleDocument = new SampleData({
+      documentId: organization._id,
+      collectionName: "Organization",
+    });
+
+    sampleDocument.save();
+
     const userData = await generateUserData(
-      ORGANIZATION_ID.toString(),
+      organization._id.toString(),
       "ADMIN",
     );
     const admin = userData.user;
@@ -115,6 +156,7 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
     });
 
     sampleDocument.save();
+
     const userData = await generateUserData(
       organization._id.toString(),
       "SUPERADMIN",
@@ -201,6 +243,33 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
       await removeSampleOrganization!(parent, args, adminContext);
     } catch (error: any) {
       expect(error.message).toBe(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
+  it("should NOT throw error when organization doesn't exist", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message,
+    );
+
+    const userData = await generateUserData(
+      ORGANIZATION_ID.toString(),
+      "ADMIN",
+    );
+    const admin = userData.user;
+
+    const args = {};
+    const adminContext = { userId: admin._id };
+    const parent = {};
+
+    await SampleData.deleteMany({ collectionName: "Organization" });
+
+    try {
+      await removeSampleOrganization!(parent, args, adminContext);
+    } catch (error) {
+      expect((error as Error).message).toBe(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 

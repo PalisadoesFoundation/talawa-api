@@ -4,6 +4,7 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { AppUserProfile, User } from "../../models";
+import type { InterfaceAppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities/superAdminCheck";
 /**
@@ -45,11 +46,11 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
     );
   }
 
-  superAdminCheck(currentUserAppProfile);
+  superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
-  const userExists = await User.exists({
+  const userExists = !!(await User.exists({
     _id: args.id,
-  });
+  }));
 
   if (userExists === false) {
     throw new errors.NotFoundError(

@@ -24,6 +24,7 @@ import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/
 import * as uploadImage from "../../../src/utilities/uploadImage";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
+import { Types } from "mongoose";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -203,9 +204,10 @@ describe("resolvers -> Mutation -> createOrganization", () => {
   });
   it(`creates the organization without image and returns it`, async () => {
     vi.spyOn(uploadImage, "uploadImage").mockImplementation(
-      async (newImagePath, imageAlreadyInDbPath) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      async (newImagePath: any, imageAlreadyInDbPath: any) => ({
         newImagePath,
-        imageAlreadyInDbPath: imageAlreadyInDbPath || "",
+        imageAlreadyInDbPath,
       }),
     );
     const args: MutationCreateOrganizationArgs = {
@@ -474,12 +476,12 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       };
 
       const context = {
-        userId: "randomUserId",
+        userId: new Types.ObjectId().toString(),
       };
 
       await createOrganizationResolver?.({}, args, context);
     } catch (error: unknown) {
-      console.log(error);
+      // console.log(error);
       // expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }

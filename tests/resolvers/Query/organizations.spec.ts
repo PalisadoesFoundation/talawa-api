@@ -34,14 +34,13 @@ describe("resolvers -> Query -> organizations", () => {
   it("throws NotFoundError if no organization exists with _id === args.id", async () => {
     try {
       const args: QueryOrganizationsArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       await organizationsResolver?.({}, args, {});
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.DESC,
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -67,10 +66,6 @@ describe("resolvers -> Query -> organizations", () => {
 
   it(`returns list of at most 100 organizations sorted by ascending order of
   organization._id if args.orderBy === 'id_ASC'`, async () => {
-    const sort = {
-      _id: 1,
-    };
-
     const args: QueryOrganizationsArgs = {
       orderBy: "id_ASC",
     };
@@ -78,7 +73,9 @@ describe("resolvers -> Query -> organizations", () => {
     const organizationsPayload = await organizationsResolver?.({}, args, {});
 
     const organizations = await Organization.find()
-      .sort(sort)
+      .sort({
+        _id: 1,
+      })
       .limit(100)
       .lean();
 
@@ -87,10 +84,6 @@ describe("resolvers -> Query -> organizations", () => {
 
   it(`returns list of at most 100 organizations sorted by descending order of
   organization._id if args.orderBy === 'id_DESC'`, async () => {
-    const sort = {
-      _id: -1,
-    };
-
     const args: QueryOrganizationsArgs = {
       orderBy: "id_DESC",
     };
@@ -98,7 +91,9 @@ describe("resolvers -> Query -> organizations", () => {
     const organizationsPayload = await organizationsResolver?.({}, args, {});
 
     const organizations = await Organization.find()
-      .sort(sort)
+      .sort({
+        _id: -1,
+      })
       .limit(100)
       .lean();
 
@@ -107,10 +102,6 @@ describe("resolvers -> Query -> organizations", () => {
 
   it(`returns list of at most 100 organizations sorted by ascending order of
   organization.name if args.orderBy === 'name_ASC'`, async () => {
-    const sort = {
-      name: 1,
-    };
-
     const args: QueryOrganizationsArgs = {
       orderBy: "name_ASC",
     };
@@ -118,7 +109,9 @@ describe("resolvers -> Query -> organizations", () => {
     const organizationsPayload = await organizationsResolver?.({}, args, {});
 
     const organizations = await Organization.find()
-      .sort(sort)
+      .sort({
+        name: 1,
+      })
       .limit(100)
       .lean();
 
@@ -127,10 +120,6 @@ describe("resolvers -> Query -> organizations", () => {
 
   it(`returns list of at most 100 organizations sorted by descending order of
   organization.name if args.orderBy === 'name_DESC'`, async () => {
-    const sort = {
-      name: -1,
-    };
-
     const args: QueryOrganizationsArgs = {
       orderBy: "name_DESC",
     };
@@ -138,7 +127,9 @@ describe("resolvers -> Query -> organizations", () => {
     const organizationsPayload = await organizationsResolver?.({}, args, {});
 
     const organizations = await Organization.find()
-      .sort(sort)
+      .sort({
+        name: -1,
+      })
       .limit(100)
       .lean();
 
@@ -147,10 +138,6 @@ describe("resolvers -> Query -> organizations", () => {
 
   it(`returns list of at most 100 organizations sorted by ascending order of
   organization.description if args.orderBy === 'description_ASC'`, async () => {
-    const sort = {
-      description: 1,
-    };
-
     const args: QueryOrganizationsArgs = {
       orderBy: "description_ASC",
     };
@@ -158,7 +145,9 @@ describe("resolvers -> Query -> organizations", () => {
     const organizationsPayload = await organizationsResolver?.({}, args, {});
 
     const organizations = await Organization.find()
-      .sort(sort)
+      .sort({
+        description: 1,
+      })
       .limit(100)
       .lean();
 
@@ -167,10 +156,6 @@ describe("resolvers -> Query -> organizations", () => {
 
   it(`returns list of at most 100 organizations sorted by descending order of
   organization.description if args.orderBy === 'description_DESC'`, async () => {
-    const sort = {
-      description: -1,
-    };
-
     const args: QueryOrganizationsArgs = {
       orderBy: "description_DESC",
     };
@@ -178,7 +163,9 @@ describe("resolvers -> Query -> organizations", () => {
     const organizationsPayload = await organizationsResolver?.({}, args, {});
 
     const organizations = await Organization.find()
-      .sort(sort)
+      .sort({
+        description: -1,
+      })
       .limit(100)
       .lean();
 
@@ -187,10 +174,6 @@ describe("resolvers -> Query -> organizations", () => {
 
   it(`returns list of at most 100 organizations sorted by ascending order of
   organization.apiUrl if args.orderBy === 'apiUrl_ASC'`, async () => {
-    const sort = {
-      apiUrl: 1,
-    };
-
     const args: QueryOrganizationsArgs = {
       orderBy: "apiUrl_ASC",
     };
@@ -198,7 +181,9 @@ describe("resolvers -> Query -> organizations", () => {
     const organizationsPayload = await organizationsResolver?.({}, args, {});
 
     const organizations = await Organization.find()
-      .sort(sort)
+      .sort({
+        apiUrl: 1,
+      })
       .limit(100)
       .lean();
 
@@ -207,10 +192,6 @@ describe("resolvers -> Query -> organizations", () => {
 
   it(`returns list of at most 100 organizations sorted by descending order of
   organization.apiUrl if args.orderBy === 'apiUrl_DESC'`, async () => {
-    const sort = {
-      apiUrl: -1,
-    };
-
     const args: QueryOrganizationsArgs = {
       orderBy: "apiUrl_DESC",
     };
@@ -218,7 +199,9 @@ describe("resolvers -> Query -> organizations", () => {
     const organizationsPayload = await organizationsResolver?.({}, args, {});
 
     const organizations = await Organization.find()
-      .sort(sort)
+      .sort({
+        apiUrl: -1,
+      })
       .limit(100)
       .lean();
 

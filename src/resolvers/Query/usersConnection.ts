@@ -19,7 +19,7 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
   const where = getWhere<InterfaceUser>(args.where);
   const sort = getSort(args.orderBy);
 
-  const users = await User.find(where)
+  const users = await User.find(where) //@ts-expect-error - type error
     .sort(sort)
     .limit(args.first ?? 0)
     .skip(args.skip ?? 0)

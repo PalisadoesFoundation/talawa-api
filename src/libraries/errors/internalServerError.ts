@@ -7,7 +7,8 @@ export class InternalServerError extends ApplicationError {
     message = "Internal Server Error!",
     code: string | null = null,
     param: string | null = null,
-    metadata: Record<string, string> = {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    metadata: Record<any, any> = {},
   ) {
     const errorJson = [
       {

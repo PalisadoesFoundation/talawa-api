@@ -51,7 +51,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       organization: organization._id,
     });
 
-    if (membershipRequestExists === true) {
+    if (membershipRequestExists) {
       throw new errors.ConflictError(
         requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,

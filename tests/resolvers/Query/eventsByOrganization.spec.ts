@@ -1,21 +1,39 @@
 import "dotenv/config";
-import type mongoose from "mongoose";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Event } from "../../../src/models";
-import type { QueryEventsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import type { TestOrganizationType } from "../../helpers/userAndOrg";
+import type { QueryEventsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import type {
+  TestUserType,
+  TestOrganizationType,
+} from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { createEventWithRegistrant } from "../../helpers/events";
+import type mongoose from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-
+let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestUserAndOrganization();
-  testOrganization = temp[1];
+  [testUser, testOrganization] = await createTestUserAndOrganization();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const testEvent1 = await createEventWithRegistrant(
+    testUser?._id,
+    testOrganization?._id,
+    true,
+    "ONCE",
+  );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const testEvent2 = await createEventWithRegistrant(
+    testUser?._id,
+    testOrganization?._id,
+    true,
+    "ONCE",
+  );
 });
+
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
@@ -23,10 +41,6 @@ afterAll(async () => {
 describe("resolvers -> Query -> eventsByOrganization", () => {
   it(`returns list of all existing events sorted by ascending order of event._id
   if args.orderBy === 'id_ASC'`, async () => {
-    const sort = {
-      _id: 1,
-    };
-
     const args: QueryEventsByOrganizationArgs = {
       id: testOrganization?._id,
       orderBy: "id_ASC",
@@ -44,8 +58,10 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
       organization: testOrganization?._id,
       status: "ACTIVE",
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        _id: 1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 

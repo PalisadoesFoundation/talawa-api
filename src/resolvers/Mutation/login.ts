@@ -74,8 +74,14 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     );
   }
 
-  const accessToken = createAccessToken(user, appUserProfile);
-  const refreshToken = createRefreshToken(user, appUserProfile);
+  const accessToken = createAccessToken(
+    user,
+    appUserProfile as InterfaceAppUserProfile,
+  );
+  const refreshToken = createRefreshToken(
+    user,
+    appUserProfile as InterfaceAppUserProfile,
+  );
   copyToClipboard(`{
     "Authorization": "Bearer ${accessToken}"
   }`);
