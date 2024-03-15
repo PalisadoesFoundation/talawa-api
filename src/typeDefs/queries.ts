@@ -28,7 +28,7 @@ export const queries = gql`
 
     checkAuth: User! @auth
 
-    community(id: ID!): Community! @auth
+    getCommunityData: Community
 
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]
 

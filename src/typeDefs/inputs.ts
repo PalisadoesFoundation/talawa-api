@@ -344,14 +344,14 @@ export const inputs = gql`
   }
 
   input SocialMediaUrlsInput {
-    facebook: String
-    instagram: String
-    twitter: String
-    linkedIn: String
-    gitHub: String
-    youTube: String
-    slack: String
-    reddit: String
+    facebook: String!
+    gitHub: String!
+    instagram: String!
+    linkedIn: String!
+    reddit: String!
+    slack: String!
+    twitter: String!
+    youTube: String!
   }
 
   input ToggleUserTagAssignInput {
@@ -369,10 +369,11 @@ export const inputs = gql`
   }
 
   input UpdateCommunityInput {
-    name: String
-    description: String
-    websiteLink: String
-    socialMediaUrls: SocialMediaUrlsInput
+    description: String!
+    name: String!
+    socialMediaUrls: SocialMediaUrlsInput!
+    websiteLink: String!
+    logo: String!
   }
 
   input UpdateEventInput {

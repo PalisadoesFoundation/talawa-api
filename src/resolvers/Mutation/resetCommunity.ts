@@ -1,14 +1,19 @@
-import {
-  COMMUNITY_NOT_FOUND_ERROR,
-  DEFAULT_COMMUNITY,
-  USER_NOT_FOUND_ERROR,
-} from "../../constants";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { Community, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
-import { deletePreviousImage } from "../../utilities/encodedImageStorage/deletePreviousImage";
 
+/**
+ * This function enables to reset Pre login imagery.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the user is super admin.
+ * @returns Boolean.
+ */
 export const resetCommunity: MutationResolvers["resetCommunity"] = async (
   _parent,
   args,
@@ -24,39 +29,7 @@ export const resetCommunity: MutationResolvers["resetCommunity"] = async (
 
   superAdminCheck(user);
 
-  const community = await Community.findById(args.id);
-  if (!community)
-    throw new errors.NotFoundError(
-      requestContext.translate(COMMUNITY_NOT_FOUND_ERROR.MESSAGE),
-      COMMUNITY_NOT_FOUND_ERROR.CODE,
-      COMMUNITY_NOT_FOUND_ERROR.PARAM,
-    );
+  await Community.deleteOne({ _id: args.id });
 
-  //delete the previous community logo
-  if (community.logoUrl) await deletePreviousImage(community.logoUrl as string);
-
-  const defaultCommunity = {
-    name: DEFAULT_COMMUNITY.name,
-    logoUrl: "",
-    description: DEFAULT_COMMUNITY.description,
-    websiteLink: "",
-    socialMediaUrls: {
-      facebook: "",
-      instagram: "",
-      twitter: "",
-      linkedIn: "",
-      gitHub: "",
-      youTube: "",
-      slack: "",
-      reddit: "",
-    },
-  };
-
-  const updatedCommunity = await Community.findByIdAndUpdate(
-    args.id,
-    defaultCommunity,
-    { new: true },
-  );
-
-  return Boolean(updatedCommunity);
+  return true;
 };

@@ -1,10 +1,8 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Community } from "../../../src/models";
 import type { MutationResetCommunityArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import { resetCommunity } from "../../../src/resolvers/Mutation/resetCommunity";
 import {
   beforeAll,
   afterAll,
@@ -19,10 +17,10 @@ import type { TestCommunityType } from "../../helpers/community";
 import { createTestUserWithUserTypeFunc } from "../../helpers/user";
 import { createTestCommunityFunc } from "../../helpers/community";
 import {
-  COMMUNITY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { Community } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser1: TestUserType;
@@ -59,7 +57,11 @@ describe("resolvers -> Mutation -> resetCommunity", () => {
 
       const context = { userId: Types.ObjectId().toString() };
 
-      await resetCommunity?.({}, args, context);
+      const { resetCommunity: resetCommunityResolver } = await import(
+        "../../../src/resolvers/Mutation/resetCommunity"
+      );
+
+      await resetCommunityResolver?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof Error) {
         expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -72,9 +74,9 @@ describe("resolvers -> Mutation -> resetCommunity", () => {
 
   it(`throws UnauthorizedError if user with _id === context.userId is not superadmin with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => `Translated ${message}`,
-    );
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
 
     const args: MutationResetCommunityArgs = {
       id: testCommunity?._id.toString() as string,
@@ -85,76 +87,33 @@ describe("resolvers -> Mutation -> resetCommunity", () => {
     };
 
     try {
-      await resetCommunity?.({}, args, context);
+      const { resetCommunity: resetCommunityResolver } = await import(
+        "../../../src/resolvers/Mutation/resetCommunity"
+      );
+
+      await resetCommunityResolver?.({}, args, context);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        expect(error.message).toEqual(
-          `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
-        );
-      }
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
+      );
     }
   });
 
-  it(`throws NotFoundError if no community exists with _id === args.id`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => `Translated ${message}`,
-    );
-
-    try {
-      const args: MutationResetCommunityArgs = {
-        id: Types.ObjectId().toString(),
-      };
-
-      const context = {
-        userId: testUser1?._id,
-      };
-
-      await resetCommunity?.({}, args, context);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        expect(error.message).toEqual(
-          `Translated ${COMMUNITY_NOT_FOUND_ERROR.MESSAGE}`,
-        );
-      }
-    }
-  });
-
-  it(`updates the community with default values and returns true`, async () => {
-    const context = { userId: testUser1?._id };
+  it(`deletes the previous data and returns true`, async () => {
     const args: MutationResetCommunityArgs = {
       id: testCommunity?._id.toString() as string,
     };
-
-    const result = await resetCommunity?.({}, args, context);
-    expect(result).toBe(true);
-  });
-
-  it(`updates the community with default values and returns true while deleting the previous logo if present`, async () => {
-    const context = { userId: testUser1?._id };
-    const args: MutationResetCommunityArgs = {
-      id: testCommunity?._id.toString() as string,
+    const context = {
+      userId: testUser1?._id,
     };
 
-    const deletePreviousImage = await import(
-      "../../../src/utilities/encodedImageStorage/deletePreviousImage"
-    );
-    vi.spyOn(deletePreviousImage, "deletePreviousImage").mockImplementation(
-      () => {
-        return Promise.resolve();
-      },
+    const { resetCommunity: resetCommunityResolver } = await import(
+      "../../../src/resolvers/Mutation/resetCommunity"
     );
 
-    await Community.findByIdAndUpdate(
-      testCommunity?._id,
-      {
-        logoUrl: "fakeLogoPath.png",
-      },
-      { new: true },
-    );
+    await resetCommunityResolver?.({}, args, context);
 
-    const result = await resetCommunity?.({}, args, context);
-    expect(result).toBe(true);
+    expect(await Community.findOne()).toBe(null);
   });
 });

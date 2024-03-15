@@ -288,11 +288,9 @@ export const mutations = gql`
       input: UpdateAdvertisementInput!
     ): UpdateAdvertisementPayload @auth
 
-    updateCommunity(
-      id: ID!
-      data: UpdateCommunityInput
-      file: String
-    ): Community! @auth @role(requires: SUPERADMIN)
+    updateCommunity(data: UpdateCommunityInput!): Boolean!
+      @auth
+      @role(requires: SUPERADMIN)
 
     updateEvent(
       id: ID!

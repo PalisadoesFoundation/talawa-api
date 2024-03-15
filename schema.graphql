@@ -1063,7 +1063,7 @@ type Mutation {
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
   updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
   updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
-  updateCommunity(data: UpdateCommunityInput, file: String, id: ID!): Community!
+  updateCommunity(data: UpdateCommunityInput!): Boolean!
   updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
@@ -1330,7 +1330,6 @@ type Query {
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
-  community(id: ID!): Community!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   directChatsByUserID(id: ID!): [DirectChat]
@@ -1342,6 +1341,7 @@ type Query {
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
+  getCommunityData: Community
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
@@ -1407,14 +1407,14 @@ type SocialMediaUrls {
 }
 
 input SocialMediaUrlsInput {
-  facebook: String
-  gitHub: String
-  instagram: String
-  linkedIn: String
-  reddit: String
-  slack: String
-  twitter: String
-  youTube: String
+  facebook: String!
+  gitHub: String!
+  instagram: String!
+  linkedIn: String!
+  reddit: String!
+  slack: String!
+  twitter: String!
+  youTube: String!
 }
 
 """
@@ -1531,10 +1531,11 @@ input UpdateAgendaSectionInput {
 }
 
 input UpdateCommunityInput {
-  description: String
-  name: String
-  socialMediaUrls: SocialMediaUrlsInput
-  websiteLink: String
+  description: String!
+  logo: String!
+  name: String!
+  socialMediaUrls: SocialMediaUrlsInput!
+  websiteLink: String!
 }
 
 input UpdateEventInput {
