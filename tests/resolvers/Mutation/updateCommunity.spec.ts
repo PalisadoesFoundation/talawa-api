@@ -28,7 +28,6 @@ let testUser2: TestUserType;
 
 const args: MutationUpdateCommunityArgs = {
   data: {
-    description: "Test Descriptionj",
     logo: "image.png",
     name: "testName",
     socialMediaUrls: {
@@ -100,9 +99,9 @@ describe("resolvers -> Mutation -> updateCommunity", () => {
         "../../../src/resolvers/Mutation/updateCommunity"
       );
       await updateCommunityResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
     }
@@ -111,7 +110,6 @@ describe("resolvers -> Mutation -> updateCommunity", () => {
   it(`throws field cannot be empty error if websiteName, websiteLink or logo in passed empty`, async () => {
     const args: MutationUpdateCommunityArgs = {
       data: {
-        description: "",
         logo: "",
         name: "",
         socialMediaUrls: {

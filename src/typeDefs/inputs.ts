@@ -369,7 +369,6 @@ export const inputs = gql`
   }
 
   input UpdateCommunityInput {
-    description: String!
     name: String!
     socialMediaUrls: SocialMediaUrlsInput!
     websiteLink: String!

@@ -190,13 +190,9 @@ input CommentInput {
 
 type Community {
   _id: ID!
-  createdAt: DateTime
-  description: String!
   logoUrl: String
   name: String!
   socialMediaUrls: SocialMediaUrls
-  timeout: Int
-  updatedAt: DateTime
   websiteLink: String
 }
 
@@ -1531,7 +1527,6 @@ input UpdateAgendaSectionInput {
 }
 
 input UpdateCommunityInput {
-  description: String!
   logo: String!
   name: String!
   socialMediaUrls: SocialMediaUrlsInput!

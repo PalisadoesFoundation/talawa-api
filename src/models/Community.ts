@@ -8,7 +8,6 @@ export interface InterfaceCommunity {
   _id: Types.ObjectId;
   name: string;
   logoUrl: string;
-  description: string;
   websiteLink: string;
   socialMediaUrls: {
     facebook: string;
@@ -25,7 +24,6 @@ export interface InterfaceCommunity {
 /**
  * This describes the schema for a `Community` that corresponds to `InterfaceCommunity` document.
  * @param logoUrl - Community logo URL.
- * @param description - Community description.
  * @param socialMediaUrls - Social media URLs.
  * @param facebook - Facebook URL.
  * @param instagram - Instagram URL
@@ -46,10 +44,6 @@ const communitySchema = new Schema({
   },
   logoUrl: {
     type: String,
-  },
-  description: {
-    type: String,
-    required: true,
   },
   websiteLink: {
     type: String,

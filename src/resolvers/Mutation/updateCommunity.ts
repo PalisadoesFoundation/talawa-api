@@ -50,7 +50,6 @@ export const updateCommunity: MutationResolvers["updateCommunity"] = async (
 
   await Community.create({
     name: args.data.name,
-    description: args.data.description,
     websiteLink: args.data.websiteLink,
     logoUrl: args.data.logo,
     socialMediaUrls: {
