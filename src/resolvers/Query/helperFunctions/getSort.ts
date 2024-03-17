@@ -16,7 +16,12 @@ export const getSort = (
         | UserOrderByInput
       >
     | undefined,
-): string | { [key: string]: SortOrder | { $meta: any; }; } | [string, SortOrder][] | null | undefined => {
+):
+  | string
+  | { [key: string]: SortOrder | { $meta: unknown } }
+  | [string, SortOrder][]
+  | null
+  | undefined => {
   let sortPayload = {};
 
   switch (orderBy) {
