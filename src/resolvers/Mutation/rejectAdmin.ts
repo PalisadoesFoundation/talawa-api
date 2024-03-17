@@ -64,9 +64,9 @@ export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
   }
 
   // Rejects the user as admin.
-  await User.updateOne(
+  await AppUserProfile.updateOne(
     {
-      _id: args.id,
+      userId: args.id,
     },
     {
       $set: {

@@ -48,13 +48,13 @@ export const users: QueryResolvers["users"] = async (
     ...where,
   };
 
-  if (args.adminApproved === true) {
-    filterCriteria.adminApproved = true;
-  } else if (args.adminApproved === false) {
-    filterCriteria.adminApproved = false;
-  }
+  // if (args.adminApproved === true) {
+  //   filterCriteria.adminApproved = true;
+  // } else if (args.adminApproved === false) {
+  //   filterCriteria.adminApproved = false;
+  // }
 
-  const users = await User.find(filterCriteria) //@ts-expect-error - type error
+  let users = await User.find(filterCriteria)
     .sort(sort)
     .limit(args.first ?? 0)
     .skip(args.skip ?? 0)
@@ -64,6 +64,15 @@ export const users: QueryResolvers["users"] = async (
     .populate("registeredEvents")
     .populate("organizationsBlockedBy")
     .lean();
+
+  users = await Promise.all(
+    users.filter(async (user) => {
+      const appUserProfile = await AppUserProfile.findOne({
+        userId: user._id,
+      });
+      return args.adminApproved == appUserProfile?.adminApproved;
+    }),
+  );
 
   return await Promise.all(
     users.map(async (user) => {

@@ -54,12 +54,12 @@ beforeAll(async () => {
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",
-    adminApproved: true,
   });
   testUserSuperAdminAppProfile = await AppUserProfile.create({
     userId: testUserSuperAdmin._id,
     appLanguageCode: "en",
     isSuperAdmin: true,
+    adminApproved: true,
   });
   await User.updateOne(
     {
@@ -77,11 +77,11 @@ beforeAll(async () => {
     lastName: "lastName",
     // appLanguageCode: "en",
     // userType: "ADMIN",
-    adminApproved: true,
   });
   testAdminUserAppProfile = await AppUserProfile.create({
     userId: testAdminUser._id,
     appLanguageCode: "en",
+    adminApproved: true,
   });
   await User.updateOne(
     {
@@ -97,10 +97,10 @@ beforeAll(async () => {
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",
-    adminApproved: true,
   });
   testMemberUserAppProfile = await AppUserProfile.create({
     userId: testMemberUser._id,
+    adminApproved: true,
   });
   await User.updateOne(
     { _id: testMemberUser._id },
@@ -114,10 +114,10 @@ beforeAll(async () => {
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",
-    adminApproved: true,
   });
   testBlockedMemberUserAppProfile = await AppUserProfile.create({
     userId: testBlockedMemberUser._id,
+    adminApproved: true,
   });
   await User.updateOne(
     { _id: testBlockedMemberUser._id },
@@ -132,11 +132,11 @@ beforeAll(async () => {
     lastName: "lastName",
     // appLanguageCode: "en",
     // userType: "ADMIN",
-    adminApproved: true,
   });
   testNonMemberAdminAppProfile = await AppUserProfile.create({
     userId: testNonMemberAdmin._id,
     appLanguageCode: "en",
+    adminApproved: true,
   });
   await User.updateOne(
     {

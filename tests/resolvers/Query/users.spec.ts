@@ -306,7 +306,7 @@ describe("resolvers -> Query -> users", () => {
       const filterCriteria = {
         ...where,
         // userType: args.userType as string,
-        adminApproved: args.adminApproved as boolean,
+        // adminApproved: args.adminApproved as boolean,
       };
 
       const usersPayload = await usersResolver?.({}, args, {
@@ -329,6 +329,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(payload).toEqual(users);
@@ -363,7 +364,7 @@ describe("resolvers -> Query -> users", () => {
       const filterCriteria = {
         ...where,
         // userType: args.userType as string,
-        adminApproved: args.adminApproved as boolean,
+        // adminApproved: args.adminApproved as boolean,
       };
 
       const usersPayload = await usersResolver?.({}, args, {

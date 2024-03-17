@@ -60,9 +60,9 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
     );
   }
 
-  await User.updateOne(
+  await AppUserProfile.updateOne(
     {
-      _id: args.id,
+      userId: args.id,
     },
     {
       $set: {

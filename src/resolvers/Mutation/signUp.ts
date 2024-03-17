@@ -129,12 +129,12 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,
     // userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
-    adminApproved: isLastResortSuperAdmin,
   });
   let appUserProfile: InterfaceAppUserProfile = await AppUserProfile.create({
     userId: createdUser._id,
     appLanguageCode: args.data.appLanguageCode || "en",
     isSuperAdmin: isLastResortSuperAdmin,
+    adminApproved: isLastResortSuperAdmin,
   });
 
   const updatedUser = await User.findOneAndUpdate(

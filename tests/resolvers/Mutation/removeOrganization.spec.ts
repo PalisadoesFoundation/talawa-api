@@ -329,22 +329,13 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       await cacheOrganizations([updatedOrganization]);
     }
 
-    await User.updateOne(
-      {
-        _id: testUsers[0]?.id,
-      },
-      {
-        $set: {
-          adminApproved: true,
-        },
-      },
-    );
     await AppUserProfile.updateOne(
       {
         userId: testUsers[0]?._id,
       },
       {
         isSuperAdmin: true,
+        adminApproved: true,
       },
     );
 

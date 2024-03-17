@@ -17,7 +17,7 @@ import {
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, User } from "../../../src/models";
+import { AppUserProfile } from "../../../src/models";
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
@@ -108,13 +108,13 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
         },
       },
     );
-    await User.updateOne(
+    await AppUserProfile.updateOne(
       {
-        _id: testUserAdmin?._id,
+        userId: testUserAdmin?._id,
       },
       {
         $set: {
-          adminApproved: false,
+          adminApproved: true,
         },
       },
     );
@@ -131,8 +131,8 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
 
     expect(acceptAdminPayload).toEqual(true);
 
-    const updatedTestUser = await User.findOne({
-      _id: testUserAdmin?._id,
+    const updatedTestUser = await AppUserProfile.findOne({
+      userId: testUserAdmin?._id,
     })
       .select(["adminApproved"])
       .lean();

@@ -103,17 +103,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
       async (encodedImageURL: string) => encodedImageURL,
     );
-
-    await User.findOneAndUpdate(
-      {
-        _id: testUser?._id,
-      },
-      {
-        $set: {
-          adminApproved: true,
-        },
-      },
-    );
     await AppUserProfile.updateOne(
       {
         userId: testUser?._id,
@@ -121,6 +110,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       {
         $set: {
           isSuperAdmin: true,
+          adminApproved: true,
         },
       },
     );

@@ -5,6 +5,7 @@ import type {
   PostOrderByInput,
   UserOrderByInput,
 } from "../../../types/generatedGraphQLTypes";
+import type { SortOrder } from "mongoose";
 
 export const getSort = (
   orderBy:
@@ -15,7 +16,12 @@ export const getSort = (
         | UserOrderByInput
       >
     | undefined,
-): unknown => {
+):
+  | string
+  | { [key: string]: SortOrder | { $meta: unknown } }
+  | [string, SortOrder][]
+  | null
+  | undefined => {
   let sortPayload = {};
 
   switch (orderBy) {

@@ -193,7 +193,7 @@ describe("resolvers -> Mutation -> signUp", () => {
       userId: createdUser?._id,
     });
     expect(createdAppUserProfile?.isSuperAdmin).toEqual(true);
-    expect(createdUser?.adminApproved).toBeTruthy();
+    expect(createdAppUserProfile?.adminApproved).toBeTruthy();
   });
   it(`Check if the User is not being promoted to SUPER ADMIN automatically`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
@@ -214,8 +214,11 @@ describe("resolvers -> Mutation -> signUp", () => {
     const createdUser = await User.findOne({
       email,
     });
+    const createdAppUserProfile = await AppUserProfile.findOne({
+      userId: createdUser?._id,
+    });
     expect(createdUser?.userType).not.to.toEqual("SUPERADMIN");
-    expect(createdUser?.adminApproved).toBeFalsy();
+    expect(createdAppUserProfile?.adminApproved).toBeFalsy();
   });
 });
 

@@ -350,16 +350,6 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       },
     );
 
-    await User.updateOne(
-      {
-        _id: testUserRemover?.id,
-      },
-      {
-        $set: {
-          adminApproved: true,
-        },
-      },
-    );
     await AppUserProfile.updateOne(
       {
         userId: testUserRemover?.id,
@@ -367,6 +357,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       {
         $set: {
           isSuperAdmin: true,
+          adminApproved: true,
         },
       },
     );
