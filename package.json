@@ -51,7 +51,7 @@
     "@graphql-tools/utils": "^10.1.0",
     "@types/graphql-upload": "^16.0.5",
     "@types/yargs": "^17.0.32",
-    "axios": "^1.6.7",
+    "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "cls-bluebird": "^2.1.0",
     "cls-hooked": "^4.2.2",
