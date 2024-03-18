@@ -104,6 +104,38 @@ type AgendaCategory {
   updatedBy: User
 }
 
+type AgendaItem {
+  _id: ID!
+  attachments: [String]
+  categories: [AgendaCategory]
+  createdAt: Date!
+  createdBy: User!
+  description: String
+  duration: String!
+  isNote: Boolean!
+  itemType: ItemType!
+  organization: Organization!
+  relatedEvent: Event
+  sequence: Int!
+  title: String!
+  updatedAt: Date!
+  updatedBy: User!
+  urls: [String]
+  user: String!
+}
+
+type AgendaSection {
+  _id: ID!
+  createdAt: Date!
+  createdBy: User
+  description: String!
+  items: [AgendaItem]
+  relatedEvent: Event
+  sequence: Int!
+  updatedAt: Date
+  updatedBy: User
+}
+
 type AggregatePost {
   count: Int!
 }
@@ -154,6 +186,18 @@ type Comment {
 
 input CommentInput {
   text: String!
+}
+
+type Community {
+  _id: ID!
+  createdAt: DateTime
+  description: String!
+  logoUrl: String
+  name: String!
+  socialMediaUrls: SocialMediaUrls
+  timeout: Int
+  updatedAt: DateTime
+  websiteLink: String
 }
 
 union ConnectionError = InvalidCursor | MaximumValueError
@@ -224,6 +268,7 @@ input CreateAgendaCategoryInput {
   organizationId: ID!
 }
 
+
 union CreateCommentError = PostNotFoundError
 
 type CreateCommentPayload {
@@ -238,6 +283,28 @@ union CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoun
 type CreateMemberPayload {
   organization: Organization
   userErrors: [CreateMemberError!]!
+
+input CreateAgendaItemInput {
+  attachments: [String]
+  categories: [ID]
+  description: String
+  duration: String!
+  isNote: Boolean!
+  itemType: ItemType!
+  organizationId: ID!
+  relatedEventId: ID
+  sequence: Int!
+  title: String!
+  urls: [String]
+  user: String
+}
+
+input CreateAgendaSectionInput {
+  description: String!
+  items: [CreateAgendaItemInput]
+  relatedEvent: ID
+  sequence: Int!
+
 }
 
 input CreateUserTagInput {
@@ -531,6 +598,7 @@ type Event {
   _id: ID!
   actionItems: [ActionItem]
   admins(adminId: ID): [User!]
+  agendaItems: [AgendaItem]
   allDay: Boolean!
   attendees: [User]
   attendeesCheckInStatus: [CheckInStatus!]!
@@ -808,6 +876,11 @@ type InvalidCursor implements FieldError {
   path: [String!]!
 }
 
+enum ItemType {
+  Note
+  Regular
+}
+
 scalar JSON
 
 type Language {
@@ -933,6 +1006,8 @@ type Mutation {
   createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
+  createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!
+  createAgendaSection(input: CreateAgendaSectionInput!): AgendaSection!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
@@ -973,6 +1048,9 @@ type Mutation {
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): User!
+  removeAdvertisement(id: ID!): Advertisement
+  removeAgendaItem(id: ID!): AgendaItem!
+  removeAgendaSection(id: ID!): ID!
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!, recurringEventDeleteType: RecurringEventMutationType): Event!
@@ -994,6 +1072,7 @@ type Mutation {
   removeUserFromUserFamily(familyId: ID!, userId: ID!): UserFamily!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
+  resetCommunity(id: ID!): Boolean!
   revokeRefreshTokenForUser: Boolean!
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
@@ -1010,6 +1089,9 @@ type Mutation {
   updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
+  updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
+  updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
+  updateCommunity(data: UpdateCommunityInput, file: String, id: ID!): Community!
   updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
@@ -1281,15 +1363,14 @@ type PostsConnection {
 }
 
 type Query {
-  actionItem(id: ID!): ActionItem
   actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
-  actionItemCategory(id: ID!): ActionItemCategory
   actionItemsByEvent(eventId: ID!): [ActionItem]
   actionItemsByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
+  community(id: ID!): Community!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   directChatsByUserID(id: ID!): [DirectChat]
@@ -1298,6 +1379,9 @@ type Query {
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
+  getAgendaItem(id: ID!): AgendaItem
+  getAgendaSection(id: ID!): AgendaSection
+  getAllAgendaItems: [AgendaItem]
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
@@ -1349,6 +1433,28 @@ enum RecurringEventMutationType {
   AllInstances
   ThisAndFollowingInstances
   ThisInstance
+}
+
+type SocialMediaUrls {
+  facebook: String
+  gitHub: String
+  instagram: String
+  linkedIn: String
+  reddit: String
+  slack: String
+  twitter: String
+  youTube: String
+}
+
+input SocialMediaUrlsInput {
+  facebook: String
+  gitHub: String
+  instagram: String
+  linkedIn: String
+  reddit: String
+  slack: String
+  twitter: String
+  youTube: String
 }
 
 """
@@ -1441,6 +1547,34 @@ type UpdateAdvertisementPayload {
 input UpdateAgendaCategoryInput {
   description: String
   name: String
+}
+
+input UpdateAgendaItemInput {
+  attachments: [String]
+  categories: [ID]
+  description: String
+  duration: String
+  isNote: Boolean
+  itemType: ItemType
+  relatedEvent: ID
+  sequence: Int
+  title: String
+  updatedBy: ID!
+  urls: [String]
+  user: String
+}
+
+input UpdateAgendaSectionInput {
+  description: String
+  relatedEvent: ID
+  sequence: Int
+}
+
+input UpdateCommunityInput {
+  description: String
+  name: String
+  socialMediaUrls: SocialMediaUrlsInput
+  websiteLink: String
 }
 
 input UpdateEventInput {

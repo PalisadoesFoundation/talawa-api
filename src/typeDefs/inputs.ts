@@ -45,6 +45,36 @@ export const inputs = gql`
     eventId: ID
   }
 
+  input CreateAgendaItemInput {
+    title: String!
+    description: String
+    duration: String!
+    attachments: [String]
+    relatedEventId: ID
+    urls: [String]
+    user: String
+    categories: [ID]
+    sequence: Int!
+    itemType: ItemType!
+    organizationId: ID!
+    isNote: Boolean!
+  }
+
+  input UpdateAgendaItemInput {
+    title: String
+    description: String
+    duration: String
+    attachments: [String]
+    relatedEvent: ID
+    updatedBy: ID!
+    urls: [String]
+    user: String
+    categories: [ID]
+    sequence: Int
+    itemType: ItemType
+    isNote: Boolean
+  }
+
   input ActionItemWhereInput {
     actionItemCategory_id: ID
     event_id: ID
@@ -56,6 +86,13 @@ export const inputs = gql`
     name: String!
     description: String
     organizationId: ID!
+  }
+
+  input CreateAgendaSectionInput {
+    description: String!
+    relatedEvent: ID
+    items: [CreateAgendaItemInput]
+    sequence: Int!
   }
 
   input CursorPaginationInput {
@@ -306,6 +343,17 @@ export const inputs = gql`
     count: Int
   }
 
+  input SocialMediaUrlsInput {
+    facebook: String
+    instagram: String
+    twitter: String
+    linkedIn: String
+    gitHub: String
+    youTube: String
+    slack: String
+    reddit: String
+  }
+
   input ToggleUserTagAssignInput {
     userId: ID!
     tagId: ID!
@@ -318,6 +366,13 @@ export const inputs = gql`
     dueDate: Date
     completionDate: Date
     isCompleted: Boolean
+  }
+
+  input UpdateCommunityInput {
+    name: String
+    description: String
+    websiteLink: String
+    socialMediaUrls: SocialMediaUrlsInput
   }
 
   input UpdateEventInput {
@@ -390,6 +445,11 @@ export const inputs = gql`
     description: String
   }
 
+  input UpdateAgendaSectionInput {
+    relatedEvent: ID
+    description: String
+    sequence: Int
+  }
   input AddressInput {
     city: String
     countryCode: String

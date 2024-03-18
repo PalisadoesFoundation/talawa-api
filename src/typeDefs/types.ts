@@ -26,6 +26,26 @@ export const types = gql`
     updatedAt: Date!
   }
 
+  type AgendaItem {
+    _id: ID!
+    title: String!
+    description: String
+    duration: String!
+    attachments: [String]
+    createdBy: User!
+    updatedBy: User!
+    urls: [String]
+    user: String!
+    categories: [AgendaCategory]
+    sequence: Int!
+    itemType: ItemType!
+    createdAt: Date!
+    updatedAt: Date!
+    isNote: Boolean!
+    organization: Organization!
+    relatedEvent: Event
+  }
+
   type AgendaCategory {
     _id: ID!
     name: String!
@@ -37,6 +57,17 @@ export const types = gql`
     updatedAt: Date
   }
 
+  type AgendaSection {
+    _id: ID!
+    relatedEvent: Event
+    description: String!
+    items: [AgendaItem]
+    sequence: Int!
+    createdAt: Date!
+    updatedAt: Date
+    createdBy: User
+    updatedBy: User
+  }
   # Action Item for a ActionItemCategory
   type ActionItem {
     _id: ID!
@@ -82,6 +113,18 @@ export const types = gql`
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  type Community {
+    _id: ID!
+    name: String!
+    logoUrl: String
+    description: String!
+    websiteLink: String
+    socialMediaUrls: SocialMediaUrls
+    timeout: Int
+    createdAt: DateTime
+    updatedAt: DateTime
   }
 
   type UserFamily {
@@ -228,6 +271,7 @@ export const types = gql`
     status: Status!
     feedback: [Feedback!]!
     averageFeedbackScore: Float
+    agendaItems: [AgendaItem]
   }
 
   type EventVolunteer {
@@ -492,6 +536,17 @@ export const types = gql`
     likeCount: Int
     commentCount: Int
     pinned: Boolean
+  }
+
+  type SocialMediaUrls {
+    facebook: String
+    instagram: String
+    twitter: String
+    linkedIn: String
+    gitHub: String
+    youTube: String
+    slack: String
+    reddit: String
   }
 
   type Translation {

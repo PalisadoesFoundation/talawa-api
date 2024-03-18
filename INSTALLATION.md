@@ -76,7 +76,7 @@ You will need to have copies of your code on your local system. Here's how to do
 
 ## Install node.js
 
-Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system ensure the installation of Node.js version 20 LTS. 
+Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system ensure the installation of Node.js version 20 LTS.
 
 _**NOTE**_
 
@@ -86,9 +86,11 @@ _**NOTE**_
 ## Install npm
 
 npm is a package manager for Node.js and is installed with Node.js. npm is used to install, share, and distribute code as well as to manage dependencies in your projects. To check if you have npm installed you can run this command in your terminal:
+
 ```
 npm -v
 ```
+
 If you have it installed then you should see the version that's installed. If not, you can download Node.js and npm from the official [Node.js website](https://nodejs.org/en/download/).
 
 ## Install TypeScript
@@ -100,6 +102,7 @@ To install TypeScript, you can use npm:
 ```bash
 npm install -g typescript
 ```
+
 This command installs TypeScript globally on your system so that it can be accessed from any project.
 
 ## Install git
@@ -208,10 +211,10 @@ Talawa-api makes use of `Redis` for caching frequently accessed data items in th
      ```bash
      redis-cli
      ```
-   - **Step 6**: 
+   - **Step 6**:
      - Use these parameters when running the setup script if you have configured the server on your local machine:
-        - Redis Host: `localhost`
-        - Redis Port: `6379` (default Redis port)
+       - Redis Host: `localhost`
+       - Redis Port: `6379` (default Redis port)
 
 2. `For Windows Users using WSL`:
 
@@ -240,11 +243,12 @@ If you'd rather not deal with the hassle of setting up WSL on your computer, the
   ```
 
 - **Step 6**: Test if Redis is running by running the Redis CLI:
+
   ```bash
   redis-cli
   ```
 
-- **Step 7**: 
+- **Step 7**:
   - Use these parameters when running the setup script if you have configured the server on your local machine:
     - Redis Host: `localhost`
     - Redis Port: `6379` (default Redis port)
@@ -264,7 +268,7 @@ Remember to adjust any paths or details as needed for your specific environment.
 
 It's important to configure Talawa-API to complete it's setup.
 
-A configuration file named `.env` is required in the root directory of `Talawa-API` for storing environment variables used at runtime. It is not a part of the repo and you will have to create it. 
+A configuration file named `.env` is required in the root directory of `Talawa-API` for storing environment variables used at runtime. It is not a part of the repo and you will have to create it.
 
 ## Automated Configuration of `.env`
 
@@ -289,27 +293,28 @@ Use this command to do this
 ```
 cp .env.sample .env
 ```
+
 ### The Environment Variables in `.env`
 
 This `.env` file must be populated with the following environment variables for talawa-api to work:
 
-| Variable                     | Description                                            |
-| ---------------------------- | ------------------------------------------------------ |
-| NODE_ENV                     | Used for providing the environment in which the the talawa-api is running                              |
-| ACCESS_TOKEN_SECRET          | Used for signing/verifying JWT tokens                  |
-| REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                  |
-| MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database |
-| RECAPTCHA_SECRET_KEY         | Used for authentication using reCAPTCHA                |
-| RECAPTCHA_SITE_KEY           | Used for authentication using reCAPTCHA                |
-| MAIL_USERNAME                | Used for mailing service                               |
-| MAIL_PASSWORD                | Used for mailing service                               |
-| LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
-| COLORIZE_LOGS                | Used for colorized log formats in console              |
-| LOG_LEVEL                    | Used for setting the logging level                     |
-| REDIS HOST                   | Used for connecting talawa-api to the redis instance   |
-| REDIS_PORT                   | Specifies the port of the active redis-server          |
-| REDIS_PASSWORD(optional)     | Used for authenticating the connection request to      |
-|                              | a hosted redis-server                                  |
+| Variable                     | Description                                                               |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| NODE_ENV                     | Used for providing the environment in which the the talawa-api is running |
+| ACCESS_TOKEN_SECRET          | Used for signing/verifying JWT tokens                                     |
+| REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                                     |
+| MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database                    |
+| RECAPTCHA_SECRET_KEY         | Used for authentication using reCAPTCHA                                   |
+| RECAPTCHA_SITE_KEY           | Used for authentication using reCAPTCHA                                   |
+| MAIL_USERNAME                | Used for mailing service                                                  |
+| MAIL_PASSWORD                | Used for mailing service                                                  |
+| LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin                                |
+| COLORIZE_LOGS                | Used for colorized log formats in console                                 |
+| LOG_LEVEL                    | Used for setting the logging level                                        |
+| REDIS HOST                   | Used for connecting talawa-api to the redis instance                      |
+| REDIS_PORT                   | Specifies the port of the active redis-server                             |
+| REDIS_PASSWORD(optional)     | Used for authenticating the connection request to                         |
+|                              | a hosted redis-server                                                     |
 
 The following sections will show you how to configure each of these parameters.
 
@@ -491,9 +496,8 @@ We use `reCAPTCHA` for two factor authentication (2FA). Follow these steps:
 The MAIL_USERNAME and MAIL_PASSWORD parameters are required to enable an app to access 2FA features. This is how to know what they should be.
 
 1. Go to your [google account page](https://myaccount.google.com/).
-1. Select `Security`.
-1. Under `Signing in to Google` section select `App Passwords`.
-1. Click on `Select app` section and choose `Other(Custom name)`, enter `talawa` as the custom name and press `Generate` button.
+1. Search for `App Passwords` in the `Search Google Account` search bar and select it.
+1. Click on `create a new app-specific password` and enter `talawa` as the custom name and press the `Create` button.
 1. Copy the 16 character generated app password to the variable named `MAIL_PASSWORD` in `.env` file.
 1. Copy your usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
 
@@ -546,7 +550,6 @@ If the parameter value is set to `true`, you should be able to see colorized log
 #### Setting up LOG_LEVEL in .env file
 
 There are different logging levels that can be configured by setting this parameter. The severity order of levels are displayed numerically ascending from most important to least important.
-
 
 ```
  levels = {
