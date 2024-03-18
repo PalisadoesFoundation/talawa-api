@@ -26,7 +26,9 @@ export const membershipRequests: OrganizationResolvers["membershipRequests"] =
           user &&
           user.firstName
             .toLowerCase()
-            .includes(args.where?.user?.firstName_contains?.toLowerCase() || "")
+            .startsWith(
+              args.where?.user?.firstName_contains?.toLowerCase() || "",
+            )
         );
       },
     );
