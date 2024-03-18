@@ -72,9 +72,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       userId: testUser?.id,
     };
 
-
     const result = await createMemberResolver?.({}, args, context);
-
 
     expect(result?.userErrors[0]).toStrictEqual({
       __typename: "MemberAlreadyInOrganizationError",
@@ -106,12 +104,10 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
     const result = await createMemberResolver?.({}, args, context);
 
-
     expect(result?.userErrors[0]).toStrictEqual({
       __typename: "UserNotFoundError",
       message: USER_NOT_FOUND_ERROR.MESSAGE,
     });
-
   });
 
   it(`throws NotFoundError if no user exists with _id === args.input.userId`, async () => {
@@ -137,7 +133,6 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       },
     );
 
-
     const args: MutationCreateMemberArgs = {
       input: {
         organizationId: testOrganization?.id,
@@ -151,13 +146,11 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
     const result = await createMemberResolver?.({}, args, context);
 
-
     expect(result?.userErrors[0]).toStrictEqual({
       __typename: "UserNotFoundError",
       message: USER_NOT_FOUND_ERROR.MESSAGE,
     });
   });
-
 
   it(`throws NotFoundError if no organization exists with _id === args.input.organizationId`, async () => {
     const args: MutationCreateMemberArgs = {
@@ -189,8 +182,6 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           members: [],
         },
       },
-
-    
     );
     const testUser2 = await User.create({
       email: `email2${nanoid().toLowerCase()}@gmail.com`,

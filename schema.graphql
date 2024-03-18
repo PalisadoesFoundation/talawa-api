@@ -268,22 +268,6 @@ input CreateAgendaCategoryInput {
   organizationId: ID!
 }
 
-
-union CreateCommentError = PostNotFoundError
-
-type CreateCommentPayload {
-  comment: Comment
-  userErrors: [CreateCommentError!]!
-}
-
-union CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError
-
-union CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError
-
-type CreateMemberPayload {
-  organization: Organization
-  userErrors: [CreateMemberError!]!
-
 input CreateAgendaItemInput {
   attachments: [String]
   categories: [ID]
@@ -304,7 +288,22 @@ input CreateAgendaSectionInput {
   items: [CreateAgendaItemInput]
   relatedEvent: ID
   sequence: Int!
+}
 
+union CreateCommentError = PostNotFoundError
+
+type CreateCommentPayload {
+  comment: Comment
+  userErrors: [CreateCommentError!]!
+}
+
+union CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError
+
+union CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError
+
+type CreateMemberPayload {
+  organization: Organization
+  userErrors: [CreateMemberError!]!
 }
 
 input CreateUserTagInput {

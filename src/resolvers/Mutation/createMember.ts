@@ -10,14 +10,13 @@ import {
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
-import { isAuthCheck } from "../../utilities/isAuthCheck";
 /**
  * This function enables to add a member.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
- * 1. Checks whether current user making the request is an superAdmin or an Admin.
+ * 1. Checks whether current user making the request is an superAdmin
  * 2. If the organization exists
  * 3. Checks whether curent user exists.
  * 4. Checks whether user with _id === args.input.userId is already an member of organization..
@@ -44,7 +43,7 @@ export const createMember: MutationResolvers["createMember"] = async (
       ],
     };
   }
-  isAuthCheck(currentUser);
+  superAdminCheck(currentUser);
 
   // Checks if organization exists.
   let organization;
@@ -59,7 +58,6 @@ export const createMember: MutationResolvers["createMember"] = async (
     organization = await Organization.findOne({
       _id: args.input.organizationId,
     }).lean();
-
 
     await cacheOrganizations([organization as InterfaceOrganization]);
   }
@@ -150,10 +148,8 @@ export const createMember: MutationResolvers["createMember"] = async (
     await cacheOrganizations([updatedOrganization]);
   }
 
-
   return {
     organization: updatedOrganization,
     userErrors: [],
   };
-
 };

@@ -337,24 +337,6 @@ export type CreateAgendaCategoryInput = {
   organizationId: Scalars['ID']['input'];
 };
 
-
-export type CreateCommentError = PostNotFoundError;
-
-export type CreateCommentPayload = {
-  __typename?: 'CreateCommentPayload';
-  comment?: Maybe<Comment>;
-  userErrors: Array<CreateCommentError>;
-};
-
-export type CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError;
-
-export type CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError;
-
-export type CreateMemberPayload = {
-  __typename?: 'CreateMemberPayload';
-  organization?: Maybe<Organization>;
-  userErrors: Array<CreateMemberError>;
-
 export type CreateAgendaItemInput = {
   attachments?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   categories?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
@@ -375,7 +357,24 @@ export type CreateAgendaSectionInput = {
   items?: InputMaybe<Array<InputMaybe<CreateAgendaItemInput>>>;
   relatedEvent?: InputMaybe<Scalars['ID']['input']>;
   sequence: Scalars['Int']['input'];
+};
 
+export type CreateCommentError = PostNotFoundError;
+
+export type CreateCommentPayload = {
+  __typename?: 'CreateCommentPayload';
+  comment?: Maybe<Comment>;
+  userErrors: Array<CreateCommentError>;
+};
+
+export type CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError;
+
+export type CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError;
+
+export type CreateMemberPayload = {
+  __typename?: 'CreateMemberPayload';
+  organization?: Maybe<Organization>;
+  userErrors: Array<CreateMemberError>;
 };
 
 export type CreateUserTagInput = {
@@ -3065,13 +3064,13 @@ export type ResolversTypes = {
   CreateAdvertisementInput: CreateAdvertisementInput;
   CreateAdvertisementPayload: ResolverTypeWrapper<Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   CreateAgendaCategoryInput: CreateAgendaCategoryInput;
+  CreateAgendaItemInput: CreateAgendaItemInput;
+  CreateAgendaSectionInput: CreateAgendaSectionInput;
   CreateCommentError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateCommentError']>;
   CreateCommentPayload: ResolverTypeWrapper<Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversTypes['Comment']>, userErrors: Array<ResolversTypes['CreateCommentError']> }>;
   CreateDirectChatError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateDirectChatError']>;
   CreateMemberError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateMemberError']>;
   CreateMemberPayload: ResolverTypeWrapper<Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversTypes['Organization']>, userErrors: Array<ResolversTypes['CreateMemberError']> }>;
-  CreateAgendaItemInput: CreateAgendaItemInput;
-  CreateAgendaSectionInput: CreateAgendaSectionInput;
   CreateUserTagInput: CreateUserTagInput;
   Currency: Currency;
   CursorPaginationInput: CursorPaginationInput;
@@ -3260,13 +3259,13 @@ export type ResolversParentTypes = {
   CreateAdvertisementInput: CreateAdvertisementInput;
   CreateAdvertisementPayload: Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   CreateAgendaCategoryInput: CreateAgendaCategoryInput;
+  CreateAgendaItemInput: CreateAgendaItemInput;
+  CreateAgendaSectionInput: CreateAgendaSectionInput;
   CreateCommentError: ResolversUnionTypes<ResolversParentTypes>['CreateCommentError'];
   CreateCommentPayload: Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversParentTypes['Comment']>, userErrors: Array<ResolversParentTypes['CreateCommentError']> };
   CreateDirectChatError: ResolversUnionTypes<ResolversParentTypes>['CreateDirectChatError'];
   CreateMemberError: ResolversUnionTypes<ResolversParentTypes>['CreateMemberError'];
   CreateMemberPayload: Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversParentTypes['Organization']>, userErrors: Array<ResolversParentTypes['CreateMemberError']> };
-  CreateAgendaItemInput: CreateAgendaItemInput;
-  CreateAgendaSectionInput: CreateAgendaSectionInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
