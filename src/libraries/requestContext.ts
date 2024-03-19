@@ -1,5 +1,6 @@
 import cls from "cls-hooked";
 // No type defintions available for package 'cls-bluebird'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import clsBluebird from "cls-bluebird";
 import i18n from "i18n";
@@ -12,6 +13,7 @@ export const requestContextNamespace = cls.createNamespace(
 clsBluebird(requestContextNamespace);
 
 export const setRequestContextValue = <T>(key: string, value: T): T => {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   return requestContextNamespace.set<T>(key, value);
 };
@@ -19,7 +21,7 @@ export const setRequestContextValue = <T>(key: string, value: T): T => {
 export const getRequestContextValue = <T>(key: string): T => {
   return requestContextNamespace.get(key);
 };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const setRequestContext = (obj: any): void => {
   setRequestContextValue("translate", obj.__);
   setRequestContextValue("translatePlural", obj.__n);
@@ -36,29 +38,43 @@ export const middleware = () => {
     });
   };
 };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface InterfaceInitOptions<T> extends Record<any, any> {
   requestHandler?: () => T;
 }
 
 // Invalid code. Currently ignored by typescript. Needs fix.
 export const init = <T>(options: InterfaceInitOptions<T> = {}): T => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const obj: any = {};
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   i18n.init(obj);
-  obj.setLocale(options.lang);
+
+  if (
+    !options.locale ||
+    !["en", "fr", "hi", "zh", "sp", "fr"].includes(options.locale)
+  ) {
+    throw new Error("Invalid locale. Please provide a valid 'lang' option.");
+  }
+  obj.setLocale(options.locale);
+
+  if (options.requestHandler == null) {
+    throw new Error("Missing request handler during initialization");
+  }
+
   return requestContextNamespace.runAndReturn<T>(() => {
     setRequestContext({
       __: obj.__,
       __n: obj.__n,
     });
-    // return options.requestHandler?.()!;
+
     return options.requestHandler != null
       ? options.requestHandler()
       : ({} as T);
   });
 };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const translate = (...args: any): any => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const __ = getRequestContextValue("translate");
@@ -67,7 +83,7 @@ export const translate = (...args: any): any => {
   }
   return __(...args);
 };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const translatePlural = (...args: any): any => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const __n = getRequestContextValue("translatePlural");
