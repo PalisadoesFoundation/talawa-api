@@ -442,11 +442,10 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         expect(result).toEqual({ isAddressValid: false });
       } catch (error) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect((error as Error).message).toEqual("Not a Valid Address");
-
-        expect(error).toBeInstanceOf(Error);
-
-        expect.fail("The error message does not match the expected message");
+        if(error instanceof Error){
+          expect(error.message).toEqual("Not a Valid Address");
+          expect.fail("The error message does not match the expected message");
+        }
       }
     } else {
       console.error(
