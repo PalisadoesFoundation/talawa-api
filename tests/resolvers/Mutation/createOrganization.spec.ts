@@ -444,14 +444,14 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         // Validate that the error message matches the expected Address Validation Error message
         if(error instanceof Error){
           expect(error.message).toEqual("Not a Valid Address");
-          expect.fail("The error message does not match the expected message");
+          throw new Error("The error message does not match the expected message");
         }
       }
     } else {
-      console.error(
-        "Error: createOrganizationResolver is undefined in the test suite",
+      console.log(
+        "Error: createOrganizationResolver is undefined in the test suite"
       );
-      expect.fail("createOrganizationResolver is undefined");
+      throw new Error("createOrganizationResolver is undefined");
     }
   });
 });
