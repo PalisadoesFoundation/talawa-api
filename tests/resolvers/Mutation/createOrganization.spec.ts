@@ -3,6 +3,7 @@ import type mongoose from "mongoose";
 import { ActionItemCategory, User } from "../../../src/models";
 import type { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
+import { vi } from 'vitest';
 
 import {
   afterAll,
@@ -11,7 +12,6 @@ import {
   describe,
   expect,
   it,
-  vi,
 } from "vitest";
 import {
   LENGTH_VALIDATION_ERROR,
@@ -79,11 +79,12 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         "../../../src/resolvers/Mutation/createOrganization"
       );
       await createOrganization?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(
-        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
-      );
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+    } catch (error) {
+      if(error instanceof Error) {
+        expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
+          );
+        expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+      }
     }
   });
 
@@ -193,9 +194,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
   });
   it(`creates the organization without image and returns it`, async () => {
     vi.spyOn(uploadImage, "uploadImage").mockImplementation(
-      async (newImagePath: any, imageAlreadyInDbPath: any) => ({
-        newImagePath,
-        imageAlreadyInDbPath,
+      async (newImagePath: string, imageAlreadyInDbPath: string) => ({
+        newImagePath: newImagePath || "",
+        imageAlreadyInDbPath: imageAlreadyInDbPath || "",
       }),
     );
     const args: MutationCreateOrganizationArgs = {
@@ -283,10 +284,12 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       };
 
       await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error) {
+      if(error instanceof Error){
+        expect(error.message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
       );
+      }
     }
   });
   it(`throws String Length Validation error if description is greater than 500 characters`, async () => {
@@ -321,10 +324,12 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       };
 
       await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error) {
+      if(error instanceof Error){
+        expect(error.message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
       );
+      }
     }
   });
   it("throws Address Validation Error for an invalid address", async () => {
@@ -386,17 +391,21 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       // Testing for Invalid address
       try {
         await createOrganizationResolver({}, invalidArgs, context);
-      } catch (error: any) {
+      } catch (error) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Not a Valid Address");
+        if(error instanceof Error){
+          expect(error.message).toEqual("Not a Valid Address");
+        }
       }
 
       //Testing for Valid address
       try {
         await createOrganizationResolver({}, validArgs, context);
-      } catch (error: any) {
+      } catch (error) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Something went wrong.");
+        if(error instanceof Error){
+          expect(error.message).toEqual("Something went wrong.");
+        }
       }
     } else {
       console.error(
@@ -429,15 +438,20 @@ describe("resolvers -> Mutation -> createOrganization", () => {
 
     if (createOrganizationResolver) {
       try {
-        await createOrganizationResolver({}, validArgs, context);
-      } catch (error: any) {
+        const result = await createOrganizationResolver({}, validArgs, context);
+        expect(result).toEqual({ isAddressValid: false });
+      } catch (error) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Not a Valid Address");
+        if(error instanceof Error){
+          expect(error.message).toEqual("Not a Valid Address");
+          throw new Error("The error message does not match the expected message");
+        }
       }
     } else {
-      console.error(
-        "Error: createOrganizationResolver is undefined in the test suite",
+      console.log(
+        "Error: createOrganizationResolver is undefined in the test suite"
       );
+      throw new Error("createOrganizationResolver is undefined");
     }
   });
 });
