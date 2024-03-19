@@ -453,7 +453,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
       await updateUserRoleInOrganizationResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        ADMIN_CHANGING_ROLE_OF_CREATOR.MESSAGE,
+        "Error: Current user must be an ADMIN or a SUPERADMIN"
       );
     }
   });

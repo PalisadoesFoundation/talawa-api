@@ -44,7 +44,6 @@ export const createTestMembershipRequest = async (): Promise<
           membershipRequests: testMembershipRequest._id,
         },
       },
-<<<<<<< HEAD
     );
     await AppUserProfile.updateOne(
       {
@@ -56,8 +55,6 @@ export const createTestMembershipRequest = async (): Promise<
           adminFor: testOrganization._id,
         },
       },
-=======
->>>>>>> develop
     );
 
     await Organization.updateOne(

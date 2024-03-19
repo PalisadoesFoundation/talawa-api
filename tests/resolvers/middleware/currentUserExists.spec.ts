@@ -36,27 +36,6 @@ describe("resolvers -> Middleware -> currentUserExists", () => {
     vi.resetModules();
   });
 
-<<<<<<< HEAD
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const context = {
-        userId: new Types.ObjectId().toString(),
-      };
-
-      await composedResolver({}, {}, context, {});
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-=======
   it("Test: User Exists", async () => {
     vi.spyOn(requestContext, "translate").mockImplementation(
       (): string => "test error message",
@@ -67,7 +46,6 @@ describe("resolvers -> Middleware -> currentUserExists", () => {
     const next = vi.fn().mockReturnValue("next executed");
     const functionCall = await currentUserExists()(next)({}, {}, context, {});
     expect(functionCall).toBe("next executed");
->>>>>>> develop
   });
 
   it("Test: User does not exist", async () => {
@@ -75,11 +53,7 @@ describe("resolvers -> Middleware -> currentUserExists", () => {
       (): string => "test error message",
     );
     const context = {
-<<<<<<< HEAD
       userId: testUser?.id.toString(),
-=======
-      userId: Types.ObjectId().toString(),
->>>>>>> develop
     };
     const next = vi.fn();
     await expect(

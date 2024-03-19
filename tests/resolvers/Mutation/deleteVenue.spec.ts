@@ -36,18 +36,19 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creatorId: Types.ObjectId().toString(),
-    admins: [Types.ObjectId().toString()],
-    members: [Types.ObjectId().toString()],
+    creatorId: new Types.ObjectId().toString(),
+    admins: [new Types.ObjectId().toString()],
+    members: [new Types.ObjectId().toString()],
     visibleInSearch: true,
   });
 
-  testVenue = await Venue.create({
-    name: "testVenue",
-    description: "description",
-    capacity: Math.floor(Math.random() * 100),
-    organization: Types.ObjectId().toString(),
-  });
+  // testVenue =  await Venue.create({
+  //   name: "testVenue",
+  //   description: "description",
+  //   capacity: Math.floor(Math.random() * 100),
+  //   organization: testOrganization?.id,
+    
+  // });
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
@@ -67,7 +68,7 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { deleteVenue } = await import(
@@ -87,7 +88,7 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
   it(`throws NotFoundError if the provided venue doesn't exist`, async () => {
     try {
       const args: MutationDeleteVenueArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

@@ -45,6 +45,8 @@ const config: CodegenConfig = {
 
           Comment: "../models/Comment#InterfaceComment",
 
+          Community : "../models/Community#InterfaceCommunity",
+
           DirectChat: "../models/DirectChat#InterfaceDirectChat",
 
           DirectChatMessage:
@@ -95,6 +97,8 @@ const config: CodegenConfig = {
           UserTag: "../models/OrganizationTagUser#InterfaceOrganizationTagUser",
 
           User: "../models/User#InterfaceUser",
+
+          Venue : "../models/Venue#InterfaceVenue"
         },
 
         useTypeImports: true,

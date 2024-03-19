@@ -41,9 +41,9 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creatorId: Types.ObjectId().toString(),
-    admins: [Types.ObjectId().toString()],
-    members: [Types.ObjectId().toString()],
+    creatorId: new Types.ObjectId().toString(),
+    admins: [new Types.ObjectId().toString()],
+    members: [new Types.ObjectId().toString()],
     visibleInSearch: true,
   });
 
@@ -54,12 +54,12 @@ beforeAll(async () => {
     organization: testOrganization?.id,
   });
 
-  testVenue = await Venue.create({
-    name: "venue",
-    description: "description",
-    capacity: Math.floor(Math.random() * 100),
-    organization: Types.ObjectId().toString(),
-  });
+  // testVenue = await Venue.create({
+  //   name: "venue",
+  //   description: "description",
+  //   capacity: Math.floor(Math.random() * 100),
+  //   organization: new Types.ObjectId().toString(),
+  // });
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          id: Types.ObjectId().toString(),
+          id: new Types.ObjectId().toString(),
           capacity: 10,
           name: "testVenue",
           description: "description",
@@ -84,7 +84,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { editVenue } = await import(
@@ -105,7 +105,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          id: Types.ObjectId().toString(),
+          id: new Types.ObjectId().toString(),
           capacity: 10,
           name: "testVenue",
           description: "description",

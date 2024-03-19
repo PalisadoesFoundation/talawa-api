@@ -1,9 +1,10 @@
 import {
   COMMUNITY_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { Community, User } from "../../models";
+import { AppUserProfile, Community, InterfaceAppUserProfile, User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
 
@@ -16,6 +17,7 @@ import { superAdminCheck } from "../../utilities";
  * {@link https://www.apollographql.com/docs/apollo-server/data/resolvers/ | here}.
  */
 
+    //@ts-expect-error
 export const community: QueryResolvers["community"] = async (
   _parent,
   args,
@@ -31,8 +33,18 @@ export const community: QueryResolvers["community"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentAppUserProfile = await AppUserProfile.findOne({
+    userId: user?._id,
+  }).lean();
+  if (!currentAppUserProfile) {
+    throw new errors.UnauthenticatedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
-  superAdminCheck(user);
+  superAdminCheck(currentAppUserProfile as InterfaceAppUserProfile);
 
   const community = await Community.findById(args.id).lean();
 

@@ -159,7 +159,7 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
       const args: MutationCreateAgendaSectionArgs = {
         input: {
           relatedEvent: testEvent?._id?.toString(),
-          description: "",
+          description: "sample desc",
           sequence: 0,
         },
       };
@@ -184,7 +184,7 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
       const args: MutationCreateAgendaSectionArgs = {
         input: {
           relatedEvent: new Types.ObjectId().toString(),
-          description: "",
+          description: "sample desc 2",
           sequence: 0,
         },
       };
@@ -206,7 +206,7 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
     const args: MutationCreateAgendaSectionArgs = {
       input: {
         relatedEvent: testEvent?._id?.toString(),
-        description: "desc",
+        description: "samp desc",
         sequence: 1,
       },
     };

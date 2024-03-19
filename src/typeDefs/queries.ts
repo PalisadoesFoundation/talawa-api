@@ -26,7 +26,6 @@ export const queries = gql`
 
     getAgendaSection(id: ID!): AgendaSection
 
-    agendaCategory(id: ID!): AgendaCategory!
 
     checkAuth: User! @auth
 

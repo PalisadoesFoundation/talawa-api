@@ -16,13 +16,14 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import type { TestCommunityType } from "../../helpers/community";
-import { createTestUserWithUserTypeFunc } from "../../helpers/user";
+import {  createTestUserFunc} from "../../helpers/user";
 import { createTestCommunityFunc } from "../../helpers/community";
 import {
   COMMUNITY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { createTestSuperAdmin } from "../../helpers/advertisement";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser1: TestUserType;
@@ -31,8 +32,8 @@ let testCommunity: TestCommunityType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  testUser1 = await createTestUserWithUserTypeFunc("SUPERADMIN");
-  testUser2 = await createTestUserWithUserTypeFunc("USER");
+  testUser1 =   await createTestSuperAdmin();
+  testUser2 = await createTestUserFunc(); //normalUser
   testCommunity = await createTestCommunityFunc();
 });
 
@@ -57,7 +58,7 @@ describe("resolvers -> Mutation -> resetCommunity", () => {
         id: testCommunity?._id.toString() as string,
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       await resetCommunity?.({}, args, context);
     } catch (error: unknown) {
@@ -104,7 +105,7 @@ describe("resolvers -> Mutation -> resetCommunity", () => {
 
     try {
       const args: MutationResetCommunityArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

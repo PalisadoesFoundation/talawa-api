@@ -9,6 +9,7 @@ import type { InterfaceAgendaSection as InterfaceAgendaSectionModel } from '../m
 import type { InterfaceCheckIn as InterfaceCheckInModel } from '../models/CheckIn';
 import type { InterfaceMessageChat as InterfaceMessageChatModel } from '../models/MessageChat';
 import type { InterfaceComment as InterfaceCommentModel } from '../models/Comment';
+import type { InterfaceCommunity as InterfaceCommunityModel } from '../models/Community';
 import type { InterfaceDirectChat as InterfaceDirectChatModel } from '../models/DirectChat';
 import type { InterfaceDirectChatMessage as InterfaceDirectChatMessageModel } from '../models/DirectChatMessage';
 import type { InterfaceDonation as InterfaceDonationModel } from '../models/Donation';
@@ -32,6 +33,7 @@ import type { InterfacePluginField as InterfacePluginFieldModel } from '../model
 import type { InterfacePost as InterfacePostModel } from '../models/Post';
 import type { InterfaceOrganizationTagUser as InterfaceOrganizationTagUserModel } from '../models/OrganizationTagUser';
 import type { InterfaceUser as InterfaceUserModel } from '../models/User';
+import type { InterfaceVenue as InterfaceVenueModel } from '../models/Venue';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -2996,7 +2998,7 @@ export type ResolversTypes = {
   CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
   Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
-  Community: ResolverTypeWrapper<Community>;
+  Community: ResolverTypeWrapper<InterfaceCommunityModel>;
   ConnectionError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['ConnectionError']>;
   ConnectionPageInfo: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['ConnectionPageInfo']>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
@@ -3147,7 +3149,7 @@ export type ResolversTypes = {
   UserWhereInput: UserWhereInput;
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UsersConnectionEdge']> }>;
   UsersConnectionEdge: ResolverTypeWrapper<Omit<UsersConnectionEdge, 'node'> & { node: ResolversTypes['User'] }>;
-  Venue: ResolverTypeWrapper<Omit<Venue, 'organization'> & { organization: ResolversTypes['Organization'] }>;
+  Venue: ResolverTypeWrapper<InterfaceVenueModel>;
   VenueInput: VenueInput;
   WeekDays: WeekDays;
   createChatInput: CreateChatInput;
@@ -3179,7 +3181,7 @@ export type ResolversParentTypes = {
   CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
   Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
-  Community: Community;
+  Community: InterfaceCommunityModel;
   ConnectionError: ResolversUnionTypes<ResolversParentTypes>['ConnectionError'];
   ConnectionPageInfo: ResolversInterfaceTypes<ResolversParentTypes>['ConnectionPageInfo'];
   CountryCode: Scalars['CountryCode']['output'];
@@ -3311,7 +3313,7 @@ export type ResolversParentTypes = {
   UserWhereInput: UserWhereInput;
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UsersConnectionEdge']> };
   UsersConnectionEdge: Omit<UsersConnectionEdge, 'node'> & { node: ResolversParentTypes['User'] };
-  Venue: Omit<Venue, 'organization'> & { organization: ResolversParentTypes['Organization'] };
+  Venue: InterfaceVenueModel;
   VenueInput: VenueInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;

@@ -204,7 +204,7 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
   });
   it("throws an error if the user does not have appUserProfile", async () => {
     await AppUserProfile.deleteOne({
-      userId: testUser?._id,
+      userId: testAdminUser?._id,
     });
     const args: MutationRemoveAgendaItemArgs = {
       id: testAgendaItem?._id,

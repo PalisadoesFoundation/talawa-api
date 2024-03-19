@@ -13,17 +13,11 @@ export type TestOrganizationType =
   (InterfaceOrganization & Document<any, any, InterfaceOrganization>) | null;
 
 export type TestUserType =
-<<<<<<< HEAD
   | (InterfaceUser & Document<any, any, InterfaceUser>)
   | null;
 export type TestAppUserProfileType =
   | (InterfaceAppUserProfile & Document<any, any, InterfaceAppUserProfile>)
   | null;
-=======
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (InterfaceUser & Document<any, any, InterfaceUser>) | null;
-
->>>>>>> develop
 export const createTestUser = async (): Promise<TestUserType> => {
   let testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -76,7 +70,6 @@ export const createTestOrganizationWithAdmin = async (
         joinedOrganizations: testOrganization._id,
       },
     },
-<<<<<<< HEAD
   );
   await AppUserProfile.updateOne(
     {
@@ -88,8 +81,6 @@ export const createTestOrganizationWithAdmin = async (
         adminFor: testOrganization._id,
       },
     },
-=======
->>>>>>> develop
   );
   return testOrganization;
 };
@@ -133,7 +124,6 @@ export const createOrganizationwithVisibility = async (
         joinedOrganizations: testOrganization._id,
       },
     },
-<<<<<<< HEAD
   );
   await AppUserProfile.updateOne(
     {
@@ -145,8 +135,6 @@ export const createOrganizationwithVisibility = async (
         adminFor: testOrganization._id,
       },
     },
-=======
->>>>>>> develop
   );
 
   return testOrganization;

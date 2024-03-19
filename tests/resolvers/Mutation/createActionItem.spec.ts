@@ -20,7 +20,7 @@ import type {
 import { createTestUser } from "../../helpers/userAndOrg";
 
 import { nanoid } from "nanoid";
-import { AppUserProfile, Event, User } from "../../../src/models";
+import { ActionItemCategory, AppUserProfile, Event, User } from "../../../src/models";
 import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { createTestCategory } from "../../helpers/actionItemCategory";
 import type { TestEventType } from "../../helpers/events";

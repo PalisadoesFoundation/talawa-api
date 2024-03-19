@@ -108,7 +108,6 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
-import { updateUserType } from "./updateUserType";
 import { deleteAdvertisement } from "./deleteAdvertisement";
 import { createAgendaItem } from "./createAgendaItem";
 import { removeAgendaItem } from "./removeAgendaItem";

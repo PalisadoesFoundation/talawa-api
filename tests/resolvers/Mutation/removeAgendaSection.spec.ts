@@ -17,6 +17,8 @@ let testUser: TestUserType;
 let testRandomUser: TestUserType;
 let testRandomUser2: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
+let testAdminUser : TestUserType;
+
 
 import type { TestUserType } from "../../helpers/userAndOrg";
 
@@ -25,6 +27,7 @@ beforeAll(async () => {
   testUser = await createTestUser();
   testRandomUser = await createTestUser();
   testRandomUser2 = await createTestUser();
+  testAdminUser = await createTestUser();
   await User.updateOne(
     {
       _id: testUser?._id,
@@ -189,7 +192,7 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
   });
   it("throws an error if the user does not have appUserProfile", async () => {
     await AppUserProfile.deleteOne({
-      userId: testUser?._id,
+      userId:  testAdminUser?._id,
     });
     const agendaSection = await AgendaSectionModel.create({
       createdBy: testUser?._id,
@@ -202,7 +205,7 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
       id: agendaSection._id.toString(),
     };
     const context = {
-      userId: testRandomUser?._id,
+      userId: testAdminUser?._id
     };
 
     try {

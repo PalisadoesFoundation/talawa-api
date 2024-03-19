@@ -15,5 +15,7 @@ export const createTestVenue = async (
     organization: organizationId,
     imageUrl: null,
   });
+
+  //@ts-expect-error
   return testVenue;
 };

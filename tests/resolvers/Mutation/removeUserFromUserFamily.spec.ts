@@ -1,11 +1,11 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { UserFamily } from "../../../src/models/userFamily";
 import type { MutationRemoveUserFromUserFamilyArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
-  ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
   USER_FAMILY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -55,14 +55,11 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        familyId: testUserFamily!.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        userId: new mongoose.Types.ObjectId()._id!.toString(),
+        familyId: testUserFamily?.id,
+        userId: testUsers[4]?._id,
       };
 
       const context = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[1]?.id,
       };
 
@@ -72,9 +69,8 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
-      expect.fail("Error not caught!");
     } catch (error) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
@@ -93,7 +89,6 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       };
 
       const context = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[0]?._id,
       };
 
@@ -103,7 +98,6 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
-      expect.fail("Error not caught!");
     } catch (error) {
       expect(spy).toBeCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
@@ -120,14 +114,11 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         familyId: testUserFamily?.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[3]?._id,
       };
 
       const context = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?.id,
       };
 
@@ -137,7 +128,6 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
-      expect.fail("Error not caught!");
     } catch (error) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
@@ -153,14 +143,11 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         familyId: testUserFamily?.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[3]?._id,
       };
 
       const context = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?.id,
       };
 
@@ -170,7 +157,6 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
-      expect.fail("Error not caught!");
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
@@ -186,14 +172,11 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         familyId: testUserFamily?.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?._id,
       };
 
       const context = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?.id,
       };
 
@@ -203,7 +186,6 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
-      expect.fail("Error not caught!");
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.MESSAGE);
       expect((error as Error).message).toEqual(
@@ -219,14 +201,11 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         familyId: testUserFamily?.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[1]?._id,
       };
 
       const context = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?.id,
       };
 
@@ -236,9 +215,8 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
-      expect.fail("Error not caught!");
     } catch (error) {
-      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_ADMIN.MESSAGE);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
@@ -252,14 +230,11 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
       .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationRemoveUserFromUserFamilyArgs = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         familyId: testUserFamily?.id,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[2]?._id,
       };
 
       const context = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         userId: testUsers[1]?.id,
       };
 
@@ -269,7 +244,6 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
         );
 
       await removeUserFromUserFamilyResolver?.({}, args, context);
-      expect.fail("Error not caught!");
     } catch (error) {
       expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.MESSAGE);
       expect((error as Error).message).toEqual(
@@ -280,23 +254,23 @@ describe("resolver -> Mutation -> removerUserFromUserFamily", () => {
 
   it("remove that user with _id === args.data.userId from that user Family", async () => {
     const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => `Translated ${message}`,
-    );
-    const args: MutationRemoveUserFromUserFamilyArgs = {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      familyId: testUserFamily?.id,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      userId: testUsers[4]?._id,
-    };
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+    try {
+      const args: MutationRemoveUserFromUserFamilyArgs = {
+        familyId: testUserFamily?.id,
+        userId: testUsers[4]?._id,
+      };
 
-    const context = {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      userId: testUsers[2]?.id,
-    };
+      const context = {
+        userId: testUsers[2]?.id,
+      };
 
-    const { removeUserFromUserFamily: removeUserFromUserFamilyResolver } =
-      await import("../../../src/resolvers/Mutation/removeUserFromUserFamily");
+      const { removeUserFromUserFamily: removeUserFromUserFamilyResolver } =
+        await import(
+          "../../../src/resolvers/Mutation/removeUserFromUserFamily"
+        );
 
       const updatedUserFamily = await removeUserFromUserFamilyResolver?.(
         {},

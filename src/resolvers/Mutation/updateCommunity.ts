@@ -2,9 +2,10 @@ import {
   COMMUNITY_NOT_FOUND_ERROR,
   COMMUNITY_LOGO_NOT_MISSING_IN_ARGS,
   USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { Community, User } from "../../models";
+import { AppUserProfile, Community, InterfaceAppUserProfile, User } from "../../models";
 import type { InterfaceCommunity } from "../../models/Community";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
@@ -22,8 +23,18 @@ export const updateCommunity: MutationResolvers["updateCommunity"] = async (
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM,
     );
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: user?._id
+    }).lean();
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
 
-  superAdminCheck(user);
+  superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
   const community = await Community.findById(args.id);
   if (!community)

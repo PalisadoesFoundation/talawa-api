@@ -24,8 +24,9 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import type { TestCommunityType } from "../../helpers/community";
-import { createTestUserWithUserTypeFunc } from "../../helpers/user";
+import { createTestUserFunc,   } from "../../helpers/user";
 import { createTestCommunityFunc } from "../../helpers/community";
+import { createTestSuperAdmin } from "../../helpers/advertisement";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser1: TestUserType;
@@ -37,9 +38,9 @@ vi.mock("../../utilities/uploadEncodedImage", () => ({
 }));
 
 beforeAll(async () => {
-  MONGOOSE_INSTANCE = await connect();
-  testUser1 = await createTestUserWithUserTypeFunc("SUPERADMIN");
-  testUser2 = await createTestUserWithUserTypeFunc("USER");
+  MONGOOSE_INSTANCE = await connect(); 
+  testUser1 =  await createTestSuperAdmin();
+  testUser2 = await   createTestUserFunc(); //normal user
   testCommunity = await createTestCommunityFunc();
 });
 
@@ -62,11 +63,11 @@ describe("resolvers -> Mutation -> updateCommunity", () => {
 
     try {
       const args: MutationUpdateCommunityArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await updateCommunity?.({}, args, context);
@@ -109,7 +110,7 @@ describe("resolvers -> Mutation -> updateCommunity", () => {
 
     try {
       const args: MutationUpdateCommunityArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
