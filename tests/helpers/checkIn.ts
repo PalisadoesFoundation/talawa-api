@@ -34,7 +34,11 @@ export const createEventWithCheckedInUser = async (): Promise<
       eventId: testEvent?._id,
     },
     {
+<<<<<<< HEAD
       checkInId: checkIn?._id,
+=======
+      checkInId: checkIn!._id,
+>>>>>>> develop
     },
   );
 

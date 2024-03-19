@@ -4,7 +4,6 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 import { currentUserExists } from "../../../src/resolvers/middleware/currentUserExists";
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -16,15 +15,14 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
+import { requestContext } from "../../../src/libraries";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-let composedResolver: (root: any, args: any, context: any, info: any) => any;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
-  composedResolver = currentUserExists();
 });
 
 afterAll(async () => {
@@ -38,6 +36,7 @@ describe("resolvers -> Middleware -> currentUserExists", () => {
     vi.resetModules();
   });
 
+<<<<<<< HEAD
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -57,14 +56,34 @@ describe("resolvers -> Middleware -> currentUserExists", () => {
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
-  });
-
-  it(`throws no error if a user exists with _id === context.userId`, async () => {
+=======
+  it("Test: User Exists", async () => {
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (): string => "test error message",
+    );
     const context = {
       userId: testUser?.id.toString(),
     };
+    const next = vi.fn().mockReturnValue("next executed");
+    const functionCall = await currentUserExists()(next)({}, {}, context, {});
+    expect(functionCall).toBe("next executed");
+>>>>>>> develop
+  });
 
-    const nextResolver = await composedResolver({}, {}, context, {});
-    expect(nextResolver).not.toBeNull();
+  it("Test: User does not exist", async () => {
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (): string => "test error message",
+    );
+    const context = {
+<<<<<<< HEAD
+      userId: testUser?.id.toString(),
+=======
+      userId: Types.ObjectId().toString(),
+>>>>>>> develop
+    };
+    const next = vi.fn();
+    await expect(
+      async () => await currentUserExists()(next)({}, {}, context, {}),
+    ).rejects.toThrowError("test error message");
   });
 });

@@ -415,7 +415,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         role: "USER",
       };
       const context = {
-        userId: testAdminUser?._id,
+        userId: testUserSuperAdmin?._id,
       };
 
       const {

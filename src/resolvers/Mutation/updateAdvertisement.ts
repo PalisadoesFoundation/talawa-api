@@ -1,5 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { Advertisement, User } from "../../models";
+import { Advertisement, Organization, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
@@ -14,7 +14,7 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
-  async (_parent, args, _context) => {
+  async (_parent, args, context) => {
     const { _id, ...otherFields } = args.input;
 
     //If there is no input
@@ -41,7 +41,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
     }
 
     const currentUser = await User.findOne({
-      _id: _context.userId,
+      _id: context.userId,
     });
 
     if (currentUser === null) {
@@ -52,7 +52,12 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       );
     }
 
-    if (currentUser.userType === "USER") {
+    if (
+      !(
+        currentUser?.userType === "ADMIN" ||
+        currentUser?.userType === "SUPERADMIN"
+      )
+    ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,

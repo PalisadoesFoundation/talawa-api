@@ -11,7 +11,6 @@ import type {
   MutationResolvers,
   UpdateAgendaCategoryInput,
 } from "../../types/generatedGraphQLTypes";
-
 /**
  * This is a resolver function for the GraphQL mutation 'updateAgendaCategory'.
  *

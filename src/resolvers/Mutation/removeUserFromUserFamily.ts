@@ -28,7 +28,6 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     const userFamily = await UserFamily.findById({
       _id: args.familyId,
     }).lean();
-
     const currentUser = await User.findById({
       _id: context.userId,
     });
@@ -44,7 +43,6 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     const userIdUserFamilyAdmin = userFamily?.admins.some((admin) => {
       new Types.ObjectId(admin).equals(user?._id);
     });
-
     //Check whether user family exists.
     if (!userFamily) {
       throw new errors.NotFoundError(

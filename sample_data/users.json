@@ -138,6 +138,10 @@
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
     "pluginCreationAllowed": true,
+<<<<<<< HEAD
+=======
+    "adminApproved": false,
+>>>>>>> develop
     "firstName": "Teresa",
     "lastName": "Bradley",
     "email": "testuser4@example.com",
@@ -166,6 +170,10 @@
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
     "pluginCreationAllowed": true,
+<<<<<<< HEAD
+=======
+    "adminApproved": false,
+>>>>>>> develop
     "firstName": "Bruce",
     "lastName": "Garza",
     "email": "testuser5@example.com",
@@ -194,6 +202,10 @@
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
     "pluginCreationAllowed": true,
+<<<<<<< HEAD
+=======
+    "adminApproved": false,
+>>>>>>> develop
     "firstName": "Burton",
     "lastName": "Sanders",
     "email": "testuser6@example.com",
@@ -222,6 +234,10 @@
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
     "pluginCreationAllowed": true,
+<<<<<<< HEAD
+=======
+    "adminApproved": false,
+>>>>>>> develop
     "firstName": "Jeramy",
     "lastName": "Garcia",
     "email": "testuser7@example.com",
@@ -250,6 +266,10 @@
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
     "pluginCreationAllowed": true,
+<<<<<<< HEAD
+=======
+    "adminApproved": false,
+>>>>>>> develop
     "firstName": "Deanne",
     "lastName": "Marks",
     "email": "testuser8@example.com",
@@ -278,6 +298,10 @@
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
     "pluginCreationAllowed": true,
+<<<<<<< HEAD
+=======
+    "adminApproved": false,
+>>>>>>> develop
     "firstName": "Romeo",
     "lastName": "Holland",
     "email": "testuser9@example.com",
@@ -306,6 +330,10 @@
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
     "pluginCreationAllowed": true,
+<<<<<<< HEAD
+=======
+    "adminApproved": false,
+>>>>>>> develop
     "firstName": "Carla",
     "lastName": "Nguyen",
     "email": "testuser10@example.com",
@@ -334,6 +362,10 @@
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
     "pluginCreationAllowed": true,
+<<<<<<< HEAD
+=======
+    "adminApproved": false,
+>>>>>>> develop
     "firstName": "Peggy",
     "lastName": "Bowers",
     "email": "testuser11@example.com",

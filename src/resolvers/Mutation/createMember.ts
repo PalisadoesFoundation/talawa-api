@@ -20,7 +20,7 @@ import { superAdminCheck } from "../../utilities";
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
- * 1. Checks whether current user making the request is an superAdmin
+ * 1. Checks whether current user making the request is an superAdmin or an Admin.
  * 2. If the organization exists
  * 3. Checks whether curent user exists.
  * 4. Checks whether current user has appProfile.

@@ -82,7 +82,11 @@ export const mutations = gql`
       organizationId: ID!
     ): ActionItemCategory! @auth
 
+    createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!
+
     createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
+
+    createAgendaSection(input: CreateAgendaSectionInput!): AgendaSection!
 
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
@@ -133,11 +137,17 @@ export const mutations = gql`
 
     createSampleOrganization: Boolean! @auth
 
+    createVenue(data: VenueInput!): Venue @auth
+
     deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
 
     deleteAgendaCategory(id: ID!): ID!
 
     deleteDonationById(id: ID!): DeletePayload!
+
+    deleteVenue(id: ID!): Venue @auth
+
+    editVenue(data: EditVenueInput!): Venue @auth
 
     forgotPassword(data: ForgotPasswordData!): Boolean!
 
@@ -186,9 +196,14 @@ export const mutations = gql`
 
     removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
 
-    removeEvent(id: ID!): Event! @auth
+    removeEvent(
+      id: ID!
+      recurringEventDeleteType: RecurringEventMutationType
+    ): Event! @auth
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
+
+    removeAgendaItem(id: ID!): AgendaItem!
 
     removeEventVolunteer(id: ID!): EventVolunteer! @auth
     removeFund(id: ID!): Fund! @auth
@@ -207,6 +222,10 @@ export const mutations = gql`
 
     removeUserCustomData(organizationId: ID!): UserCustomData! @auth
 
+    removeAdvertisement(id: ID!): Advertisement
+
+    removeAgendaSection(id: ID!): ID!
+
     removeUserTag(id: ID!): UserTag @auth
 
     removeSampleOrganization: Boolean! @auth
@@ -214,6 +233,8 @@ export const mutations = gql`
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
 
     removeUserImage: User! @auth
+
+    resetCommunity(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
 
     revokeRefreshTokenForUser: Boolean! @auth
 
@@ -252,20 +273,33 @@ export const mutations = gql`
       data: UpdateActionItemCategoryInput!
     ): ActionItemCategory @auth
 
+    updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
+
     updateAgendaCategory(
       id: ID!
       input: UpdateAgendaCategoryInput!
     ): AgendaCategory
 
+    updateAgendaSection(
+      id: ID!
+      input: UpdateAgendaSectionInput!
+    ): AgendaSection
+
     updateAdvertisement(
       input: UpdateAdvertisementInput!
     ): UpdateAdvertisementPayload @auth
+
+    updateCommunity(
+      id: ID!
+      data: UpdateCommunityInput
+      file: String
+    ): Community! @auth @role(requires: SUPERADMIN)
 
     updateEvent(
       id: ID!
       data: UpdateEventInput
       recurrenceRuleData: RecurrenceRuleInput
-      recurringEventUpdateType: RecurringEventUpdateType
+      recurringEventUpdateType: RecurringEventMutationType
     ): Event! @auth
 
     updateEventVolunteer(

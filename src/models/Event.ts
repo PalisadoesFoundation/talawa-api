@@ -4,6 +4,7 @@ import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
 import type { InterfaceRecurrenceRule } from "./RecurrenceRule";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+import type { InterfaceAgendaItem } from "./AgendaItem";
 
 /**
  * This is an interface representing a document for an event in the database(MongoDB).
@@ -13,6 +14,7 @@ export interface InterfaceEvent {
   title: string;
   description: string;
   attendees: string | undefined;
+  images: string[];
   location: string | undefined;
   latitude: number | undefined;
   longitude: number;
@@ -35,6 +37,7 @@ export interface InterfaceEvent {
   status: string;
   createdAt: Date;
   updatedAt: Date;
+  agendaItems: PopulatedDoc<InterfaceAgendaItem & Document>[];
 }
 
 /**
@@ -42,6 +45,7 @@ export interface InterfaceEvent {
  * @param title - Title of the event
  * @param description - Description of the event
  * @param attendees - Attendees
+ * @param images -Event Flyer
  * @param location - Location of the event
  * @param latitude - Latitude
  * @param longitude - Longitude
@@ -79,6 +83,16 @@ const eventSchema = new Schema(
     attendees: {
       type: String,
       required: false,
+    },
+    images: {
+      type: [String],
+      required: false,
+      validate: {
+        validator: function (images: string[]): boolean {
+          return images.length <= 5;
+        },
+        message: "Up to 5 images are allowed.",
+      },
     },
     location: {
       type: String,

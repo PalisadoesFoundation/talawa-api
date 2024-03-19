@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 import yargs from "yargs";
 import { connect } from "../db";
-import { AppUserProfile, Event, Organization, Post, User } from "../models";
+import { ActionItemCategory, AppUserProfile, Community, Event, Organization, Post, User } from "../models";
 
 interface InterfaceArgs {
   items?: string;
@@ -13,8 +13,10 @@ interface InterfaceArgs {
 
 async function formatDatabase(): Promise<void> {
   await Promise.all([
+    Community.deleteMany({}),
     User.deleteMany({}),
     Organization.deleteMany({}),
+    ActionItemCategory.deleteMany({}),
     Event.deleteMany({}),
     Post.deleteMany({}),
     AppUserProfile.deleteMany({}),
@@ -57,11 +59,17 @@ async function insertCollections(collections: string[]): Promise<void> {
       const docs = JSON.parse(data) as Record<string, unknown>[];
 
       switch (collection) {
+        case "communities":
+          await Community.insertMany(docs);
+          break;
         case "users":
           await User.insertMany(docs);
           break;
         case "organizations":
           await Organization.insertMany(docs);
+          break;
+        case "actionItemCategories":
+          await ActionItemCategory.insertMany(docs);
           break;
         case "events":
           await Event.insertMany(docs);

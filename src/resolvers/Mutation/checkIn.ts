@@ -41,6 +41,29 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
  */
 
+/**
+ * Handles the check-in process for event attendees.
+ * 
+ * This resolver function allows event admins or superadmins to check-in attendees for a specific event.
+ * It verifies the existence of the current user, the event, and the attendee to be checked in,
+ * and ensures proper authorization before performing the check-in operation.
+ * 
+ * @param _parent - The parent resolver.
+ * @param args - Arguments containing data for the check-in, including the eventId, userId, allotedSeat, and allotedRoom.
+ * @param context - Context object containing user authentication and request information.
+ * @returns The check-in data if successful.
+ * @throws NotFoundError if the current user, event, or attendee is not found.
+ * @throws UnauthorizedError if the current user lacks authorization to perform the check-in operation.
+ * @throws ConflictError if the attendee is already checked in for the event.
+ * @remarks
+ * The function performs the following checks and operations:
+ * 1. Verifies the existence of the current user, event, and attendee.
+ * 2. Checks if the current user is authorized to perform the check-in operation.
+ * 3. Checks if the attendee is already registered for the event. If so, updates the check-in status and isCheckedIn.
+ * 4. Checks if the attendee is not already checked in for the event then creates a new check-in entry and create new eventAttendee with chechInId and isCheckedIn.
+
+ */
+
 export const checkIn: MutationResolvers["checkIn"] = async (
   _parent,
   args,
@@ -158,6 +181,9 @@ export const checkIn: MutationResolvers["checkIn"] = async (
       checkInId: checkIn._id,
     },
   );
+  // attendeeData.isCheckedIn = true;
+  // attendeeData.checkInId = checkIn._id;
+  // await attendeeData.save();
 
   return checkIn.toObject();
 };

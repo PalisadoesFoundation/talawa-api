@@ -52,7 +52,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+      .mockImplementationOnce((message : unknown) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: new Types.ObjectId().toString(),
@@ -77,7 +77,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+      .mockImplementationOnce((message : unknown) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -103,7 +103,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+      .mockImplementationOnce(( message : unknown) => message);
     try {
       const updatedOrganizaiton = await Organization.findOneAndUpdate(
         {
@@ -142,7 +142,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+      .mockImplementationOnce((message : unknown) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -164,12 +164,62 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     }
   });
 
+  it(`throws UnauthorizedError if the user is blocked from the organization`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message : unknown) => message);
+    try {
+      const updatedOrganization = await Organization.findOneAndUpdate(
+        {
+          _id: testOrganization?.id,
+        },
+        {
+          $pull: {
+            members: testUser?.id,
+          },
+          $addToSet: {
+            blockedUsers: testUser?.id,
+          },
+        },
+        {
+          new: true,
+        },
+      );
+
+      if (updatedOrganization !== null) {
+        cacheOrganizations([updatedOrganization]);
+      }
+
+      const args: MutationJoinPublicOrganizationArgs = {
+        organizationId: testOrganization?.id,
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { joinPublicOrganization: joinPublicOrganizationResolver } =
+        await import("../../../src/resolvers/Mutation/joinPublicOrganization");
+
+      await joinPublicOrganizationResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
+  });
+
   it(`returns user object with _id === context.userId after joining the organization    `, async () => {
     const updatedOrganizaiton = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
       {
+        $pull: {
+          blockedUsers: testUser?.id,
+        },
         $set: {
           members: [],
         },

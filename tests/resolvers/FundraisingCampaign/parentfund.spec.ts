@@ -25,7 +25,11 @@ describe("resolvers->FundrasingCampaign->parentFund", () => {
     if (parent) {
       const fundPayload = await fundResolvers?.(parent, {}, {});
       const fund = await Fund.findOne({
+<<<<<<< HEAD
         _id: new Types.ObjectId(testFundCampaigns?.fundId?.toString()),
+=======
+        _id: Types.ObjectId(testFundCampaigns?.fundId?.toString()),
+>>>>>>> develop
       }).lean();
 
       expect(fundPayload?._id).toEqual(fund?._id);

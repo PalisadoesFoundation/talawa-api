@@ -148,8 +148,8 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       const args: MutationCreateMemberArgs = {
         input: {
-          organizationId: testOrganization?.id,
-          userId: testUser?.id,
+          organizationId: resultsArrayForMemberTest[1]?._id,
+          userId: resultsArrayForMemberTest[0]?._id,
         },
       };
 
@@ -164,6 +164,19 @@ describe("resolvers -> Mutation -> createAdmin", () => {
   });
 
   it(`Verify that the organization's members list now contains the user's ID`, async () => {
+    const args: MutationCreateMemberArgs = {
+      input: {
+        organizationId: testOrganization?._id,
+        userId: testUser?._id,
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    await createMemberResolver?.({}, args, context);
+
     const updatedTestOrganization = await Organization.findOne({
       _id: testOrganization?._id,
     })

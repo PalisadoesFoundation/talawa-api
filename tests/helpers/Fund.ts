@@ -11,7 +11,11 @@ export type TestFundType = (InterfaceFund & Document) | null;
 export const createTestFund = async (): Promise<
   [TestUserType, TestOrganizationType, TestFundType]
 > => {
+<<<<<<< HEAD
   const userAndOrg = await createTestUserAndOrganization(true, true);
+=======
+  const userAndOrg = await createTestUserAndOrganization();
+>>>>>>> develop
   const testUser = userAndOrg[0];
   const testOrganization = userAndOrg[1];
   if (testUser && testOrganization) {

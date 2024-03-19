@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 import { EventVolunteerResponse } from "../../src/constants";
@@ -13,6 +14,19 @@ import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
 
 export type TestEventType = (InterfaceEvent & Document) | null;
+=======
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
+import type { InterfaceEvent, InterfaceEventVolunteer } from "../../src/models";
+import { EventVolunteer, Event, EventAttendee, User } from "../../src/models";
+import type { Document } from "mongoose";
+import { nanoid } from "nanoid";
+import { EventVolunteerResponse } from "../../src/constants";
+
+export type TestEventType =
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+  (InterfaceEvent & Document<any, any, InterfaceEvent>) | null;
+>>>>>>> develop
 
 export type TestEventVolunteerType =
   | (InterfaceEventVolunteer & Document)
@@ -31,12 +45,13 @@ export const createTestEvent = async (): Promise<
       description: `description${nanoid().toLowerCase()}`,
       allDay: true,
       startDate: new Date(),
-      recurring: true,
+      recurring: false,
       isPublic: true,
       isRegisterable: true,
       creatorId: testUser._id,
       admins: [testUser._id],
       organization: testOrganization._id,
+      images: ["image.png", "image2.png", "image3.png", "image4.png"],
     });
 
     await User.updateOne(
@@ -45,6 +60,7 @@ export const createTestEvent = async (): Promise<
       },
       {
         $push: {
+<<<<<<< HEAD
           registeredEvents: testEvent._id,
         },
       },
@@ -59,6 +75,13 @@ export const createTestEvent = async (): Promise<
           createdEvents: testEvent._id,
         },
       },
+=======
+          eventAdmin: testEvent?._id,
+          createdEvents: testEvent?._id,
+          registeredEvents: testEvent?._id,
+        },
+      },
+>>>>>>> develop
     );
 
     return [testUser, testOrganization, testEvent];
@@ -101,6 +124,7 @@ export const createEventWithRegistrant = async (
     },
     {
       $push: {
+<<<<<<< HEAD
         registeredEvents: testEvent._id,
       },
     },
@@ -115,6 +139,13 @@ export const createEventWithRegistrant = async (
         createdEvents: testEvent._id,
       },
     },
+=======
+        eventAdmin: testEvent?._id,
+        createdEvents: testEvent?._id,
+        registeredEvents: testEvent?._id,
+      },
+    },
+>>>>>>> develop
   );
   return testEvent;
 };

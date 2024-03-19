@@ -12,6 +12,7 @@ import {
   afterEach,
   vi,
 } from "vitest";
+import { createTestUser } from "../../helpers/user";
 import type {
   TestOrganizationType,
   TestUserType,
@@ -27,7 +28,15 @@ import {
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { createAdvertisement } from "../../../src/resolvers/Mutation/createAdvertisement";
 import { ApplicationError } from "../../../src/libraries/errors";
+<<<<<<< HEAD
 let testUser: TestUserType;
+=======
+import { createTestSuperAdmin } from "../..//helpers/advertisement";
+
+let testSuperAdmin: TestUserType;
+let testUser: TestUserType;
+let testUserAdmin: TestUserType;
+>>>>>>> develop
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -38,6 +47,11 @@ vi.mock("../../utilities/uploadEncodedImage", () => ({
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
+<<<<<<< HEAD
+=======
+  testSuperAdmin = await createTestSuperAdmin();
+  testUserAdmin = await createTestUser();
+>>>>>>> develop
 });
 
 afterAll(async () => {
@@ -69,7 +83,11 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       };
 
       const context = {
+<<<<<<< HEAD
         userId: testUser?.id,
+=======
+        userId: testSuperAdmin?.id,
+>>>>>>> develop
       };
 
       const { createAdvertisement: createAdvertisementResolver } = await import(
@@ -104,7 +122,11 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       };
 
       const context = {
+<<<<<<< HEAD
         userId: new Types.ObjectId().toString(),
+=======
+        userId: Types.ObjectId().toString(),
+>>>>>>> develop
       };
 
       const { createAdvertisement: createAdvertisementResolver } = await import(
@@ -134,7 +156,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     };
 
     const context = {
-      userId: testUser?.id,
+      userId: testSuperAdmin?.id,
     };
 
     const { createAdvertisement: createAdvertisementResolver } = await import(
@@ -171,7 +193,11 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     };
 
     const context = {
+<<<<<<< HEAD
       userId: testUser?.id,
+=======
+      userId: testSuperAdmin?.id,
+>>>>>>> develop
       apiRootUrl: BASE_URL,
     };
 
@@ -188,6 +214,79 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     );
   });
 
+<<<<<<< HEAD
+=======
+  it(`throw user unauthorized error if user is not the ADMIN of the organization`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationCreateAdvertisementArgs = {
+        input: {
+          name: "myad",
+          organizationId: testOrganization?._id,
+          type: "POPUP",
+          mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
+          startDate: "2023-10-08T13:02:29.000Z",
+          endDate: "2023-10-08T13:02:29.000Z",
+        },
+      };
+
+      const context = {
+        userId: testUserAdmin?._id,
+      };
+
+      const { createAdvertisement: createAdvertisementResolver } = await import(
+        "../../../src/resolvers/Mutation/createAdvertisement"
+      );
+
+      await createAdvertisementResolver?.({}, args, context);
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
+  });
+
+  it(`throw user unauthorized error if user is not the ADMIN or SUPERADMIN`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationCreateAdvertisementArgs = {
+        input: {
+          name: "myad",
+          organizationId: testOrganization?._id,
+          type: "POPUP",
+          mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
+          startDate: "2023-10-08T13:02:29.000Z",
+          endDate: "2023-10-08T13:02:29.000Z",
+        },
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      const { createAdvertisement: createAdvertisementResolver } = await import(
+        "../../../src/resolvers/Mutation/createAdvertisement"
+      );
+
+      await createAdvertisementResolver?.({}, args, context);
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
+  });
+
+>>>>>>> develop
   it(`should create the ad and returns `, async () => {
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`,
@@ -204,7 +303,11 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     };
 
     const context = {
+<<<<<<< HEAD
       userId: testUser?.id,
+=======
+      userId: testSuperAdmin?.id,
+>>>>>>> develop
     };
 
     const { createAdvertisement: createAdvertisementResolver } = await import(

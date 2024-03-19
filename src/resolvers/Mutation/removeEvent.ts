@@ -1,15 +1,20 @@
 import { Types } from "mongoose";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceEvent } from "../../models";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
 import { ActionItem, AppUserProfile, Event, User } from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import {
+  deleteRecurringEvent,
+  deleteSingleEvent,
+} from "../../helpers/event/deleteEventHelpers";
+import { session } from "../../db";
 /**
  * This function enables to remove an event.
  * @param _parent - parent of current request
@@ -141,7 +146,30 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     await cacheEvents([updatedEvent]);
   }
 
-  await ActionItem.deleteMany({ eventId: event?._id });
+  /* c8 ignore stop */
+  try {
+    if (event.recurring) {
+      // if the event is recurring
+      await deleteRecurringEvent(args, event, session);
+    } else {
+      // if the event is non-recurring
+      await deleteSingleEvent(event._id.toString(), session);
+    }
 
+    /* c8 ignore start */
+    if (session) {
+      // commit transaction if everything's successful
+      await session.commitTransaction();
+    }
+  } catch (error) {
+    if (session) {
+      // abort transaction if something fails
+      await session.abortTransaction();
+    }
+
+    throw error;
+  }
+
+  /* c8 ignore stop */
   return event;
 };

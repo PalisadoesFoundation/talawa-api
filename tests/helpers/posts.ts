@@ -6,12 +6,21 @@ import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUserAndOrganization } from "./userAndOrg";
 
 export type TestPostType =
+<<<<<<< HEAD
   | (InterfacePost & Document<unknown, unknown, InterfacePost>)
   | null;
 
 export type TestCommentType =
   | (InterfaceComment & Document<unknown, unknown, InterfaceComment>)
   | null;
+=======
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (InterfacePost & Document<any, any, InterfacePost>) | null;
+
+export type TestCommentType =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (InterfaceComment & Document<any, any, InterfaceComment>) | null;
+>>>>>>> develop
 
 export const createTestPost = async (
   pinned = false,

@@ -34,6 +34,11 @@ const config: CodegenConfig = {
 
           Advertisement: "../models/Advertisement#InterfaceAdvertisement",
 
+     
+          AgendaItem: "../models/AgendaItem#InterfaceAgendaItem",
+
+          AgendaSection: "../models/AgendaSection#InterfaceAgendaSection",
+
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
           MessageChat: "../models/MessageChat#InterfaceMessageChat",

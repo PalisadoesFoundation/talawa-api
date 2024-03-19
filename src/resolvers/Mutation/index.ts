@@ -26,6 +26,7 @@ import { createComment } from "./createComment";
 import { createDirectChat } from "./createDirectChat";
 import { createDonation } from "./createDonation";
 import { createEvent } from "./createEvent";
+import { createEventVolunteer } from "./createEventVolunteer";
 import { createFund } from "./createFund";
 import { createFundraisingCampaign } from "./createFundraisingCampaign";
 import { createGroupChat } from "./createGroupChat";
@@ -37,12 +38,14 @@ import { createPost } from "./createPost";
 import { createSampleOrganization } from "./createSampleOrganization";
 import { createUserFamily } from "./createUserFamily";
 import { createUserTag } from "./createUserTag";
+import { createVenue } from "./createVenue";
+import { deleteVenue } from "./deleteVenue";
+import { editVenue } from "./editVenue";
 import { deleteDonationById } from "./deleteDonationById";
 import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { forgotPassword } from "./forgotPassword";
 import { inviteEventAttendee } from "./inviteEventAttendee";
 import { joinPublicOrganization } from "./joinPublicOrganization";
-import { createEventVolunteer } from "./createEventVolunteer";
 import { leaveOrganization } from "./leaveOrganization";
 import { likeComment } from "./likeComment";
 import { likePost } from "./likePost";
@@ -76,6 +79,7 @@ import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
 import { removeUserImage } from "./removeUserImage";
 import { removeUserTag } from "./removeUserTag";
+import { resetCommunity } from "./resetCommunity";
 import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
 import { saveFcmToken } from "./saveFcmToken";
 import { sendMembershipRequest } from "./sendMembershipRequest";
@@ -92,6 +96,7 @@ import { updateActionItem } from "./updateActionItem";
 import { updateActionItemCategory } from "./updateActionItemCategory";
 import { updateAdvertisement } from "./updateAdvertisement";
 import { updateAgendaCategory } from "./updateAgendaCategory";
+import { updateCommunity } from "./updateCommunity";
 import { updateEvent } from "./updateEvent";
 import { updateEventVolunteer } from "./updateEventVolunteer";
 import { updateFund } from "./updateFund";
@@ -103,7 +108,14 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
+import { updateUserType } from "./updateUserType";
 import { deleteAdvertisement } from "./deleteAdvertisement";
+import { createAgendaItem } from "./createAgendaItem";
+import { removeAgendaItem } from "./removeAgendaItem";
+import { updateAgendaItem } from "./updateAgendaItem";
+import { createAgendaSection } from "./createAgendaSection";
+import removeAgendaSection from "./removeAgendaSection";
+import { updateAgendaSection } from "./updateAgendaSection";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -134,6 +146,8 @@ export const Mutation: MutationResolvers = {
   createComment,
   createAdvertisement,
   createAgendaCategory,
+  createAgendaItem,
+  createAgendaSection,
   createDirectChat,
   createDonation,
   createEvent,
@@ -147,8 +161,11 @@ export const Mutation: MutationResolvers = {
   createSampleOrganization,
   createActionItemCategory,
   createUserTag,
+  createVenue,
   deleteDonationById,
   deleteAdvertisement,
+  deleteVenue,
+  editVenue,
   deleteAgendaCategory,
   forgotPassword,
   inviteEventAttendee,
@@ -168,6 +185,8 @@ export const Mutation: MutationResolvers = {
   rejectMembershipRequest,
   removeAdmin,
   removeActionItem,
+  removeAgendaItem,
+  removeAgendaSection,
   removeComment,
   removeDirectChat,
   removeEvent,
@@ -185,6 +204,7 @@ export const Mutation: MutationResolvers = {
   removeUserFromGroupChat,
   removeUserImage,
   removeUserTag,
+  resetCommunity,
   revokeRefreshTokenForUser,
   saveFcmToken,
   sendMembershipRequest,
@@ -200,6 +220,9 @@ export const Mutation: MutationResolvers = {
   updateActionItem,
   updateActionItemCategory,
   updateAgendaCategory,
+  updateAgendaItem,
+  updateAgendaSection,
+  updateCommunity,
   updateEvent,
   updateEventVolunteer,
   updateFund,
