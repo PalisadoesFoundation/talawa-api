@@ -285,9 +285,11 @@ describe("resolvers -> Mutation -> createOrganization", () => {
 
       await createOrganizationResolver?.({}, args, context);
     } catch (error) {
-      expect((error as Error).message).toEqual(
+      if(error instanceof Error){
+        expect(error.message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`,
       );
+      }
     }
   });
   it(`throws String Length Validation error if description is greater than 500 characters`, async () => {
@@ -323,9 +325,11 @@ describe("resolvers -> Mutation -> createOrganization", () => {
 
       await createOrganizationResolver?.({}, args, context);
     } catch (error) {
-      expect((error as Error).message).toEqual(
+      if(error instanceof Error){
+        expect(error.message).toEqual(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
       );
+      }
     }
   });
   it("throws Address Validation Error for an invalid address", async () => {
@@ -389,7 +393,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         await createOrganizationResolver({}, invalidArgs, context);
       } catch (error) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect((error as Error).message).toEqual("Not a Valid Address");
+        if(error instanceof Error){
+          expect(error.message).toEqual("Not a Valid Address");
+        }
       }
 
       //Testing for Valid address
@@ -397,7 +403,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         await createOrganizationResolver({}, validArgs, context);
       } catch (error) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect((error as Error).message).toEqual("Something went wrong.");
+        if(error instanceof Error){
+          expect(error.message).toEqual("Something went wrong.");
+        }
       }
     } else {
       console.error(
