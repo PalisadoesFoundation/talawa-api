@@ -88,6 +88,13 @@ export const inputs = gql`
     organizationId: ID!
   }
 
+  input CreateAgendaSectionInput {
+    description: String!
+    relatedEvent: ID
+    items: [CreateAgendaItemInput]
+    sequence: Int!
+  }
+
   input CursorPaginationInput {
     cursor: String
     direction: PaginationDirection!
@@ -336,6 +343,17 @@ export const inputs = gql`
     count: Int
   }
 
+  input SocialMediaUrlsInput {
+    facebook: String
+    instagram: String
+    twitter: String
+    linkedIn: String
+    gitHub: String
+    youTube: String
+    slack: String
+    reddit: String
+  }
+
   input ToggleUserTagAssignInput {
     userId: ID!
     tagId: ID!
@@ -348,6 +366,13 @@ export const inputs = gql`
     dueDate: Date
     completionDate: Date
     isCompleted: Boolean
+  }
+
+  input UpdateCommunityInput {
+    name: String
+    description: String
+    websiteLink: String
+    socialMediaUrls: SocialMediaUrlsInput
   }
 
   input UpdateEventInput {
@@ -420,6 +445,11 @@ export const inputs = gql`
     description: String
   }
 
+  input UpdateAgendaSectionInput {
+    relatedEvent: ID
+    description: String
+    sequence: Int
+  }
   input AddressInput {
     city: String
     countryCode: String

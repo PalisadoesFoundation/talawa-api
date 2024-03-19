@@ -7,7 +7,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import type { InterfaceOrganization } from "../../models";
-import { Organization, User } from "../../models";
+import { MembershipRequest, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { Types } from "mongoose";
@@ -37,8 +37,9 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) {
+      await cacheOrganizations([organization]);
+    }
   } else {
     organization = organizationFoundInCache[0];
   }
@@ -99,6 +100,64 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   ).lean();
 
   if (updatedOrganization !== null) {
+    if (updatedOrganization.userRegistrationRequired === true) {
+      // create a membership request for the user
+      const createdMembershipRequest = await MembershipRequest.create({
+        user: user._id,
+        organization: organization._id,
+      });
+      // add membership request to organization
+      await Organization.findOneAndUpdate(
+        {
+          _id: organization._id,
+        },
+        {
+          $push: {
+            membershipRequests: createdMembershipRequest._id,
+          },
+        },
+        {
+          new: true,
+        },
+      ).lean();
+      // add membership request to user
+      await User.updateOne(
+        {
+          _id: user._id,
+        },
+        {
+          $push: {
+            membershipRequests: createdMembershipRequest._id,
+          },
+        },
+      );
+    } else {
+      // add user to the members list inside the organization record
+      await Organization.findOneAndUpdate(
+        {
+          _id: organization._id,
+        },
+        {
+          $push: {
+            members: user._id,
+          },
+        },
+        {
+          new: true,
+        },
+      ).lean();
+      // add organization to the joinedOrganizations list inside the user record
+      await User.updateOne(
+        {
+          _id: user._id,
+        },
+        {
+          $push: {
+            joinedOrganizations: organization._id,
+          },
+        },
+      ).lean();
+    }
     await cacheOrganizations([updatedOrganization]);
   }
   // remove the organization from the organizationsBlockedBy array inside the user record
