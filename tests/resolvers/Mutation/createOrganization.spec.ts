@@ -3,6 +3,7 @@ import type mongoose from "mongoose";
 import { ActionItemCategory, User } from "../../../src/models";
 import type { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
+import { vi } from 'vitest';
 
 import {
   afterAll,
@@ -11,7 +12,6 @@ import {
   describe,
   expect,
   it,
-  vi,
 } from "vitest";
 import {
   LENGTH_VALIDATION_ERROR,
