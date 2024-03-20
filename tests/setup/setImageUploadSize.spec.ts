@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   setImageUploadSize,
   validateImageFileSize,
@@ -9,6 +9,15 @@ import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "../../src/constants";
 
 describe("setImageUploadSize", () => {
   const originalEnv = { ...process.env };
+
+  beforeEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+    vi.restoreAllMocks();
+  });
 
   it("should set the image upload size correctly in .env file", async () => {
     vi.spyOn(dotenv, "parse").mockResolvedValue({
