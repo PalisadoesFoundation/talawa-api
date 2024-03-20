@@ -32,9 +32,7 @@ export async function findEventsInCache(
 
       return {
         ...eventObj,
-
         _id: Types.ObjectId(eventObj._id),
-
         admins:
           eventObj?.admins?.length !== 0
             ? eventObj?.admins?.map((admin: string) => {

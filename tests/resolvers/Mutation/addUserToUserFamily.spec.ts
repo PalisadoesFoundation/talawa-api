@@ -78,7 +78,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: Types.ObjectId().toString(),
       };
 
       const { addUserToUserFamily } = await import(
