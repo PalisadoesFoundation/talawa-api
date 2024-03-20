@@ -1620,12 +1620,13 @@ input UpdateUserTagInput {
 input UpdateUserTypeInput {
   id: ID
   userType: String
-}
+}   
 
 scalar Upload
 
 type User {
   _id: ID!
+  identifier: Int!
   address: Address
   adminApproved: Boolean
   adminFor: [Organization]

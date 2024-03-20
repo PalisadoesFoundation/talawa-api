@@ -7,10 +7,13 @@ import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
+import { identifier_count } from "./identifier_count";
+
 /**
  * This is an interface that represents a database(MongoDB) document for User.
  */
 export interface InterfaceUser {
+  identifier: number;
   _id: Types.ObjectId;
   address: {
     city: string;
@@ -57,6 +60,7 @@ export interface InterfaceUser {
 }
 /**
  * This describes the schema for a `User` that corresponds to `InterfaceUser` document.
+ * @param identifier - unique numeric identifier for each User
  * @param address - User address
  * @param adminApproved - Wheather user is admin approved.
  * @param adminFor - Collection of organization where user is admin, each object refer to `Organization` model.
@@ -89,6 +93,12 @@ export interface InterfaceUser {
  */
 const userSchema = new Schema(
   {
+    identifier: {
+      type: Number,
+      unique: true,
+      required: true,
+      immutable: true,
+    },
     address: {
       city: {
         type: String,
@@ -132,6 +142,11 @@ const userSchema = new Schema(
     },
     birthDate: {
       type: Date,
+    },
+    createdAt: {
+      type: Date,
+      required:true,
+      default: Date.now,
     },
     createdOrganizations: [
       {
@@ -281,6 +296,19 @@ const userSchema = new Schema(
 );
 
 userSchema.plugin(mongoosePaginate);
+
+userSchema.pre<InterfaceUser>("validate", async function (next) {
+  if (!this.identifier) {
+    const counter = await identifier_count.findOneAndUpdate(
+      { _id: "userCounter" },
+      { $inc: { sequence_value: 1 } },
+      { new: true, upsert: true },
+    );
+
+    this.identifier = counter.sequence_value;
+  }
+  return next();
+});
 
 const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
