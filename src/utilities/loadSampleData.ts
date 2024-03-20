@@ -3,6 +3,7 @@ import yargs from "yargs";
 import fs from "fs/promises";
 import path from "path";
 import { connect } from "../db";
+import { encryptEmail } from "./encryptionModule";
 import {
   User,
   Organization,
@@ -69,6 +70,10 @@ async function insertCollections(collections: string[]): Promise<void> {
           await Community.insertMany(docs);
           break;
         case "users":
+          for (const user of docs) {
+            const encryptedEmail = encryptEmail(user.email as string);
+            user.email = encryptedEmail;
+          }
           await User.insertMany(docs);
           break;
         case "organizations":

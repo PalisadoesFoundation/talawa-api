@@ -11,10 +11,16 @@ import type { QueryOrganizationsMemberConnectionArgs } from "../../../src/types/
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { BASE_URL } from "../../../src/constants";
+import {
+  decryptEmail,
+  encryptEmail,
+} from "../../../src/utilities/encryptionModule";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
+// eslint-disable-next-line
 let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
 let testOrganization: InterfaceOrganization &
+  // eslint-disable-next-line
   Document<any, any, InterfaceOrganization>;
 
 beforeAll(async () => {
@@ -22,21 +28,21 @@ beforeAll(async () => {
 
   testUsers = await User.insertMany([
     {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
       password: "password",
       firstName: `1firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
       appLanguageCode: `en${nanoid().toLowerCase()}`,
     },
     {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
       password: "password",
       firstName: `2firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
       appLanguageCode: `en${nanoid().toLowerCase()}`,
     },
     {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
       password: "password",
       firstName: `3firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
@@ -169,6 +175,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         ...user,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: user.image || null,
         id: String(user._id),
@@ -245,6 +252,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         ...user,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: user.image || null,
         id: String(user._id),
@@ -320,6 +328,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         ...user,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: user.image || null,
         id: String(user._id),
@@ -398,6 +407,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         ...user,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: user.image || null,
         id: String(user._id),
@@ -476,6 +486,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         ...user,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: user.image || null,
         id: String(user._id),
@@ -542,6 +553,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         ...user,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: user.image || null,
         id: String(user._id),
@@ -597,6 +609,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         ...user,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: user.image || null,
         id: String(user._id),
@@ -652,6 +665,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         ...user,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: user.image || null,
         id: String(user._id),
@@ -707,6 +721,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         ...user,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: user.image || null,
         id: String(user._id),
@@ -762,6 +777,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         ...user,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: user.image || null,
         id: String(user._id),
@@ -795,6 +811,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     try {
       await organizationsMemberConnectionResolver?.({}, args, {});
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(error).toEqual(
         "Missing Skip parameter. Set it to either 0 or some other value",
@@ -813,6 +830,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     try {
       await organizationsMemberConnectionResolver?.({}, args, {});
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(error.message).toEqual("Skip parameter is missing");
     }
@@ -845,6 +863,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = usersTestModel.docs.map((user) => {
       return {
         ...user._doc,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: null,
       };
@@ -909,6 +928,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         ...user,
+        email: decryptEmail(user.email).decrypted,
         password: null,
         image: `${BASE_URL}${user.image}`,
         id: String(user._id),
@@ -971,6 +991,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = usersTestModel.docs.map((user) => {
       return {
         ...user._doc,
+        email: decryptEmail(user.email).decrypted,
         image: `${BASE_URL}${user.image}`,
         password: null,
       };

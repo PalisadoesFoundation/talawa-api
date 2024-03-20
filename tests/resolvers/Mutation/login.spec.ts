@@ -21,6 +21,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
+import { decryptEmail } from "../../../src/utilities/encryptionModule";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -118,9 +119,12 @@ email === args.data.email`, async () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
+      if (!testUser) {
+        throw new Error("Error creating Test User.");
+      }
       const args: MutationLoginArgs = {
         data: {
-          email: testUser?.email,
+          email: decryptEmail(testUser.email).decrypted,
           password: "incorrectPassword",
         },
       };
@@ -141,15 +145,20 @@ email === args.data.email`, async () => {
     // Set the LAST_RESORT_SUPERADMIN_EMAIL to equal to the test user's email
     vi.doMock("../../../src/constants", async () => {
       const constants: object = await vi.importActual("../../../src/constants");
+      if (!testUser) {
+        throw new Error("Error creating test user.");
+      }
       return {
         ...constants,
-        LAST_RESORT_SUPERADMIN_EMAIL: testUser?.email,
+        LAST_RESORT_SUPERADMIN_EMAIL: decryptEmail(testUser.email).decrypted,
       };
     });
-
+    if (!testUser) {
+      throw new Error("Error creating test user.");
+    }
     const args: MutationLoginArgs = {
       data: {
-        email: testUser?.email,
+        email: decryptEmail(testUser.email).decrypted,
         password: "password",
       },
     };
@@ -188,9 +197,12 @@ email === args.data.email`, async () => {
   it(`returns the user object with populated fields joinedOrganizations, createdOrganizations,
   createdEvents, registeredEvents, eventAdmin, adminFor, membershipRequests, 
   organizationsBlockedBy`, async () => {
+    if (!testUser) {
+      throw new Error("Error creating test user.");
+    }
     const args: MutationLoginArgs = {
       data: {
-        email: testUser?.email,
+        email: decryptEmail(testUser?.email).decrypted,
         password: "password",
       },
     };
@@ -210,10 +222,15 @@ email === args.data.email`, async () => {
       .populate("membershipRequests")
       .populate("organizationsBlockedBy")
       .lean();
-
+    if (!testUser) {
+      throw new Error("Error creating test user.");
+    }
     expect(loginPayload).toEqual(
       expect.objectContaining({
-        user: testUser,
+        user: {
+          ...testUser,
+          email: decryptEmail(testUser.email).decrypted,
+        },
       }),
     );
     expect(loginPayload?.user).toBeDefined();

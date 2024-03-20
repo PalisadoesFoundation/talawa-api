@@ -10,6 +10,7 @@ import type { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { decryptEmail } from "../../../src/utilities/encryptionModule";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -24,13 +25,14 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> user", () => {
-  it("throws NotFoundError if no user exists with _id === args.id", async () => {
+  it("throws NotFoundError if no user exists with _id === context.id", async () => {
     try {
       const args: QueryUserArgs = {
         id: Types.ObjectId().toString(),
       };
 
       await userResolver?.({}, args, {});
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
@@ -53,8 +55,13 @@ describe("resolvers -> Query -> user", () => {
       .populate("adminFor")
       .lean();
 
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
     expect(userPayload).toEqual({
       ...user,
+      email: decryptEmail(user.email).decrypted,
       organizationsBlockedBy: [],
       image: null,
     });
@@ -88,10 +95,29 @@ describe("resolvers -> Query -> user", () => {
       .populate("adminFor")
       .lean();
 
+    if (!user) {
+      throw new Error("User not found.");
+    }
     expect(userPayload).toEqual({
       ...user,
+      email: decryptEmail(user.email).decrypted,
       organizationsBlockedBy: [],
       image: user?.image ? `${BASE_URL}${user.image}` : null,
     });
+  });
+  it("throws NotFoundError if no user exists with _id === args.id", async () => {
+    try {
+      const args: QueryUserArgs = {
+        id: Types.ObjectId().toString(),
+      };
+      const context = {
+        userId: testUser?.id,
+        apiRootUrl: BASE_URL,
+      };
+      await userResolver?.({}, args, context);
+      // eslint-disable-next-line
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+    }
   });
 });

@@ -27,6 +27,7 @@ describe("resolvers -> Query -> checkAuth", () => {
       };
 
       await checkAuthResolver?.({}, {}, context);
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
@@ -40,7 +41,10 @@ describe("resolvers -> Query -> checkAuth", () => {
     };
 
     const user = await checkAuthResolver?.({}, {}, context);
-
+    if (!testUser || !user) {
+      throw new Error("Error fetching users");
+    }
+    testUser.email = user.email;
     expect(user).toEqual({ ...testUser?.toObject(), image: null });
   });
 
@@ -66,7 +70,10 @@ describe("resolvers -> Query -> checkAuth", () => {
     };
 
     const user = await checkAuthResolver?.({}, {}, context);
-
+    if (!testUser || !user) {
+      throw new Error("Error fetching users");
+    }
+    testUser.email = user.email;
     expect(user).toEqual({
       ...testUser?.toObject(),
       image: `${context.apiRootUrl}${testUser?.image}`,

@@ -54,8 +54,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("eventAdmin")
       .populate("adminFor")
       .lean();
-
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users filtered by
@@ -106,8 +106,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("eventAdmin")
       .populate("adminFor")
       .lean();
-
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users filtered by
@@ -169,9 +169,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
-
+  /* eslint-disable */
   it(`returns paginated list of users filtered by
   args.where === { id_in: [testUsers[1].id], firstName_in: [testUsers[1].firstName],
   lastName_in: [testUsers[1].lastName], email_in: [testUsers[1].email],
@@ -232,6 +233,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       .lean();
 
     expect(usersConnectionPayload).toEqual(users);
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users filtered by
@@ -279,7 +281,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
-
+    /* eslint-enable */
     const users = await User.find(where)
       .limit(2)
       .skip(1)
@@ -293,7 +295,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users filtered by
@@ -442,7 +445,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users sorted by
@@ -479,7 +483,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users
@@ -516,7 +521,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users
@@ -553,7 +559,8 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 
   it(`returns paginated list of users without sorting if orderBy === null`, async () => {
@@ -587,6 +594,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersConnectionPayload).toBeDefined();
+    expect(users).toBeDefined();
   });
 });

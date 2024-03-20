@@ -3,6 +3,7 @@ import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
+import { decryptEmail } from "../../utilities/encryptionModule";
 
 /**
  * This query will fetch all the users in a specified order to paginate from the database.
@@ -31,6 +32,11 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
     .populate("eventAdmin")
     .populate("adminFor")
     .lean();
+
+  for (const user of users) {
+    const { decrypted } = decryptEmail(user.email);
+    user.email = decrypted;
+  }
 
   return users;
 };

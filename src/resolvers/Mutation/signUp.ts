@@ -17,6 +17,7 @@ import {
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { encryptEmail, decryptEmail } from "../../utilities/encryptionModule";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -25,19 +26,29 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
  * @param args - payload provided with the request
  * @returns Sign up details.
  */
+
 export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
-  const userWithEmailExists = await User.exists({
-    email: args.data.email.toLowerCase(),
-  });
+  //Fetching all the users, as emails in the DB are encrypted.
+  const allUsers = await User.find({});
 
-  if (userWithEmailExists === true) {
-    throw new errors.ConflictError(
-      requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
-      EMAIL_ALREADY_EXISTS_ERROR.CODE,
-      EMAIL_ALREADY_EXISTS_ERROR.PARAM,
-    );
+  for (const user of allUsers) {
+    try {
+      // Decrypting the email for each user
+      const { decrypted } = decryptEmail(user.email);
+      if (decrypted === args.data.email) {
+        // The decrypted email matches the user-provided email
+        throw new errors.ConflictError(
+          requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
+          EMAIL_ALREADY_EXISTS_ERROR.CODE,
+          EMAIL_ALREADY_EXISTS_ERROR.PARAM,
+        );
+      }
+    } catch (error) {
+      // Handling decryption errors (e.g., incorrect encryption key)
+      console.error("Error decrypting email:", error);
+    }
   }
-
+  /* eslint-disable */
   // TODO: this check is to be removed
   let organization;
   if (args.data.organizationUserBelongsToId) {
@@ -64,6 +75,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     }
   }
 
+  const encryptedEmail = encryptEmail(args.data.email);
   // // Checks if the recieved arguments are valid according to standard input norms
   // const validationResult_firstName = isValidString(args.data!.firstName, 50);
   // const validationResult_lastName = isValidString(args.data!.lastName, 50);
@@ -108,7 +120,6 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   //     `Invalid Password`
   //   );
   // }
-
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
   // Upload file
@@ -122,7 +133,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 
   const createdUser = await User.create({
     ...args.data,
-    email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
+    email: encryptedEmail,
     image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,
     userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",

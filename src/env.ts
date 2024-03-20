@@ -31,6 +31,7 @@ export const envSchema = z.object({
   REDIS_HOST: z.string(),
   REDIS_PORT: z.string().refine((value) => /^\d+$/.test(value)),
   REDIS_PASSWORD: z.string().optional(),
+  ENCRYPTION_KEY: z.string(),
 });
 
 export const getEnvIssues = (): z.ZodIssue[] | void => {

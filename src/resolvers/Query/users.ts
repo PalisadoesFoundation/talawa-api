@@ -5,6 +5,7 @@ import { errors, requestContext } from "../../libraries";
 import { UNAUTHENTICATED_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
+import { decryptEmail } from "../../utilities/encryptionModule";
 
 /**
  * This query will fetch all the users in specified order from the database.
@@ -59,10 +60,12 @@ export const users: QueryResolvers["users"] = async (
     .lean();
 
   return users.map((user) => {
+    const { decrypted } = decryptEmail(user.email);
     const { userType } = currentUser;
 
     return {
       ...user,
+      email: decrypted,
       image: user.image ? `${context.apiRootUrl}${user.image}` : null,
       organizationsBlockedBy:
         (userType === "ADMIN" || userType === "SUPERADMIN") &&

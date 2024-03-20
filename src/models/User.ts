@@ -1,7 +1,6 @@
 import type { PopulatedDoc, PaginateModel, Types, Document } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
-import validator from "validator";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
@@ -170,7 +169,7 @@ const userSchema = new Schema(
     email: {
       type: String,
       required: true,
-      validate: [validator.isEmail, "invalid email"],
+      // validate: [validator.isEmail, "invalid email"],
     },
     employmentStatus: {
       type: String,

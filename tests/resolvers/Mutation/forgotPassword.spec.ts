@@ -26,7 +26,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
-
+/* eslint-disable */
 describe("resolvers -> Mutation -> forgotPassword", () => {
   it(`throws Error if args.otp is incorrect`, async () => {
     try {
@@ -58,6 +58,38 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
   });
 
   //added ths test
+  it(`throws Error if newPassword is the same as the old password`, async () => {
+    const otp = "correctOtp";
+
+    const hashedOtp = await bcrypt.hash(otp, 1);
+
+    const otpToken = jwt.sign(
+      {
+        email: testUser?.email ?? "",
+        otp: hashedOtp,
+      },
+      ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: 99999999,
+      },
+    );
+
+    const args: MutationForgotPasswordArgs = {
+      data: {
+        newPassword: testUser?.password ?? "", // Using optional chaining and nullish coalescing
+        otpToken,
+        userOtp: otp,
+      },
+    };
+
+    try {
+      await forgotPasswordResolver?.({}, args, {});
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        "New password cannot be same as old password",
+      );
+    }
+  });
   it("throws an error when the email is changed in the token", async () => {
     const otp = "correctOtp";
 
@@ -74,11 +106,10 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
         expiresIn: 99999999,
       },
     );
-    const oldPassword = testUser?.password;
+
     const args: MutationForgotPasswordArgs = {
       data: {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        newPassword: oldPassword!, // Using optional chaining and nullish coalescing
+        newPassword: testUser?.password ?? "", // Using optional chaining and nullish coalescing
         otpToken,
         userOtp: otp,
       },
@@ -86,10 +117,8 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     try {
       await forgotPasswordResolver?.({}, args, {});
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        expect(error.message).toEqual(INVALID_OTP);
-      }
+    } catch (error: any) {
+      expect(error.message).toEqual(INVALID_OTP);
     }
   });
   it(`throws an error when the user is not found`, async () => {

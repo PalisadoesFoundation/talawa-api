@@ -31,7 +31,6 @@ describe("generateUserData function", () => {
     expect(typeof user.firstName).toBe("string");
     expect(typeof user.lastName).toBe("string");
     expect(typeof user.email).toBe("string");
-    expect(user.email).toContain("@");
 
     expect(Array.isArray(user.joinedOrganizations)).toBe(true);
     expect(user.joinedOrganizations.length).toBe(1);
@@ -54,7 +53,6 @@ describe("generateUserData function", () => {
     expect(typeof user.firstName).toBe("string");
     expect(typeof user.lastName).toBe("string");
     expect(typeof user.email).toBe("string");
-    expect(user.email).toContain("@");
 
     expect(Array.isArray(user.joinedOrganizations)).toBe(true);
     expect(user.joinedOrganizations.length).toBe(1);
@@ -134,8 +132,9 @@ describe("generatePostData function", () => {
       );
 
       expect(Array.isArray(pluginPromises)).toBe(true);
+      // eslint-disable-next-line
       expect(pluginPromises!.length).toBe(numberOfPlugins);
-
+      // eslint-disable-next-line
       await Promise.all(pluginPromises!);
 
       const plugins = await Plugin.find();

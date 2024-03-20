@@ -30,6 +30,7 @@ describe("resolvers -> Query -> me", () => {
       };
 
       await meResolver?.({}, {}, context);
+      // eslint-disable-next-line
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
@@ -55,7 +56,10 @@ describe("resolvers -> Query -> me", () => {
       .populate("eventAdmin")
       .populate("adminFor")
       .lean();
-
+    if (!mePayload || !user) {
+      throw new Error("Error loading payloads");
+    }
+    mePayload.email = user.email;
     expect(mePayload).toEqual(user);
   });
 });
