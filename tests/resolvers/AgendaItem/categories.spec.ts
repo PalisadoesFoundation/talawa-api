@@ -4,7 +4,6 @@ import { categories as relatedCategoriesResolver } from "../../../src/resolvers/
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  User,
   Event,
   Organization,
   AgendaItemModel,
@@ -23,7 +22,6 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
-let testSuperAdmin: TestUserType;
 let testAdminUser: TestUserType;
 let testAgendaItem: TestAgendaItemType;
 let testAgendaCategory: TestAgendaCategoryType; // Assuming you have TestAgendaCategoryType defined
@@ -42,7 +40,6 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-  
   testEvent = await Event.create({
     title: "title",
     description: "description",

@@ -3,12 +3,7 @@ import { connect, disconnect } from "../../helpers/db";
 import { relatedEvent as relatedEventResolver } from "../../../src/resolvers/AgendaItem/relatedEvent";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
-  User,
-  Event,
-  Organization,
-  AgendaItemModel,
-} from "../../../src/models";
+import { Event, Organization, AgendaItemModel } from "../../../src/models";
 import {
   createTestUser,
   type TestOrganizationType,
@@ -37,8 +32,6 @@ beforeAll(async () => {
     members: [testUser?._id, testAdminUser?._id],
     creatorId: testUser?._id,
   });
-
- 
 
   testEvent = await Event.create({
     title: "title",
