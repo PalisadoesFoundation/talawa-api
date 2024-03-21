@@ -4,7 +4,8 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { AppUserProfile, Community, InterfaceAppUserProfile, User } from "../../models";
+import { AppUserProfile, Community, User } from "../../models";
+import type { InterfaceAppUserProfile } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
 
@@ -17,7 +18,6 @@ import { superAdminCheck } from "../../utilities";
  * {@link https://www.apollographql.com/docs/apollo-server/data/resolvers/ | here}.
  */
 
-    //@ts-expect-error
 export const community: QueryResolvers["community"] = async (
   _parent,
   args,
@@ -58,7 +58,7 @@ export const community: QueryResolvers["community"] = async (
 
   return {
     ...community,
-    _id: community._id.toString(),
+    _id: community._id,
     logoUrl: community?.logoUrl
       ? `${context.apiRootUrl}${community?.logoUrl}`
       : null,
