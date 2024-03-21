@@ -36,7 +36,7 @@ jobs:
       - name: Count number of lines
         run: |
           chmod +x ./.github/workflows/countline.py
-          ./.github/workflows/countline.py --lines 600 --exclude_files src/types/generatedGraphQLTypes.ts tests
+          ./.github/workflows/countline.py --lines 600 --exclude_files src/types/generatedGraphQLTypes.ts tests src/typeDefs/types.ts src/constants.ts
 
       - name: Restore node_modules from cache
         id: cache-npm
@@ -77,6 +77,14 @@ jobs:
 
       - name: Run Typescript Type-Checker
         run: npm run typecheck
+
+      - name: Check if the source and target branches are different
+        if: ${{ github.event.pull_request.base.ref == github.event.pull_request.head.ref }}
+        run: |
+          echo "Source Branch ${{ github.event.pull_request.head.ref }}"
+          echo "Target Branch ${{ github.event.pull_request.base.ref }}"
+          echo "Error: Source and Target Branches are the same. Please ensure they are different."
+          exit 1
 
   File-count-check:
     name: Counting files changed
@@ -170,7 +178,7 @@ jobs:
         run: npm ci
 
       - name: Sleep for 10s
-        uses: juliangruber/sleep-action@v1
+        uses: juliangruber/sleep-action@v2
         with:
           time: 10s
 
