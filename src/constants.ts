@@ -41,6 +41,13 @@ export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
   PARAM: "agendaCategory",
 };
 
+export const COMMUNITY_NOT_FOUND_ERROR = {
+  DESC: "Community not found",
+  CODE: "community.notFound",
+  MESSAGE: "community.notFound",
+  PARAM: "community",
+};
+
 export const CHAT_NOT_FOUND_ERROR = {
   DESC: "Chat not found",
   CODE: "chat.notFound",
@@ -68,12 +75,7 @@ export const COMMENT_NOT_FOUND_ERROR = {
   MESSAGE: "comment.notFound",
   PARAM: "comment",
 };
-export const COMMUNITY_NOT_FOUND_ERROR = {
-  DESC: "Community not found",
-  CODE: "community.notFound",
-  MESSAGE: "community.notFound",
-  PARAM: "community",
-};
+
 export const COMMUNITY_LOGO_NOT_MISSING_IN_ARGS = {
   DESC: "Community logo was not provided",
   CODE: "community.logoMissing",
@@ -136,6 +138,13 @@ export const FUND_NOT_FOUND_ERROR = {
   PARAM: "fund",
 };
 export const INVALID_OTP = "Invalid OTP";
+
+export const INVALID_TIMEOUT_RANGE = {
+  DESC: "Timeout should be in the range of 15 to 60 minutes.",
+  CODE: "invalid.timeoutRange",
+  MESSAGE: "invalid.timeoutRange",
+  PARAM: "timeout",
+};
 
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";
 export const MEMBER_NOT_FOUND_ERROR = {
@@ -722,3 +731,6 @@ export const DEFAULT_COMMUNITY = {
   name: "Palisadoes Foundation",
   description: "An open source application by Palisadoes Foundation volunteers",
 };
+
+export const MINIMUM_TIMEOUT_MINUTES = 15;
+export const MAXIMUM_TIMEOUT_MINUTES = 60;

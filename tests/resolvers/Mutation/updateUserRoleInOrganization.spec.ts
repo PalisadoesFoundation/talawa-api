@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         role: "ADMIN",
       };
       const context = {
-        userId: testUserSuperAdmin?._id,
+        userId: testUserSuperAdmin?._id.toString() as string,
       };
 
       const {
@@ -177,7 +177,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         role: "ADMIN",
       };
       const context = {
-        userId: testUserSuperAdmin?._id,
+        userId: testUserSuperAdmin?._id.toString() as string,
       };
 
       const {
@@ -203,7 +203,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         role: "USER",
       };
       const context = {
-        userId: testUserSuperAdmin?._id,
+        userId: testUserSuperAdmin?._id.toString() as string,
       };
 
       const {
@@ -255,7 +255,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         role: "USER",
       };
       const context = {
-        userId: testMemberUser?._id,
+        userId: testMemberUser?._id.toString() as string,
       };
 
       const {
@@ -384,7 +384,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
       role: "ADMIN",
     };
     const context = {
-      userId: testUserSuperAdmin?._id,
+      userId: testUserSuperAdmin?._id.toString() as string,
     };
 
     const {
@@ -420,7 +420,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
       role: "USER",
     };
     const context = {
-      userId: testUserSuperAdmin?._id,
+      userId: testUserSuperAdmin?._id.toString() as string,
     };
 
     const {
