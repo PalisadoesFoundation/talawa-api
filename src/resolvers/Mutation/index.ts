@@ -108,6 +108,8 @@ import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
 import { deleteAdvertisement } from "./deleteAdvertisement";
+import { updateFundraisingCampaign } from "./updateFundraisingCampaign";
+import { updateFundraisingCampaignPledge } from "./updateFundCampaignPledge";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -219,4 +221,6 @@ export const Mutation: MutationResolvers = {
   updateUserTag,
   updatePost,
   updateAdvertisement,
+  updateFundraisingCampaign,
+  updateFundraisingCampaignPledge,
 };
