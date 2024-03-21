@@ -24,8 +24,7 @@ let randomUser: TestUserType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testCategory: TestActionItemCategoryType;
-let testCategory2: TestActionItemCategoryType;
-let MONGOOSE_INSTANCE: typeof mongoose;
+ let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -37,12 +36,7 @@ beforeAll(async () => {
   randomUser = await createTestUser();
 
   [testUser, testOrganization, testCategory] = await createTestCategory();
-
-  testCategory2 = await ActionItemCategory.create({
-    name: "another action item category",
-    organizationId: testOrganization?._id,
-    creatorId: testUser?._id,
-  });
+ 
 });
 
 afterAll(async () => {

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 import { currentUserExists } from "../../../src/resolvers/middleware/currentUserExists";
 import {

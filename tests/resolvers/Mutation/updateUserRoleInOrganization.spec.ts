@@ -4,7 +4,6 @@ import { Types } from "mongoose";
 import type { InterfaceAppUserProfile } from "../../../src/models";
 import { AppUserProfile, Organization, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import {
@@ -18,7 +17,6 @@ import {
 } from "vitest";
 import {
   ADMIN_CANNOT_CHANGE_ITS_ROLE,
-  ADMIN_CHANGING_ROLE_OF_CREATOR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_AUTHORIZED_ERROR,

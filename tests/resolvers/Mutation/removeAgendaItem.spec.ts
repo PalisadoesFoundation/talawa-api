@@ -28,7 +28,6 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { deleteAgendaCategory } from "../../../src/resolvers/Mutation/deleteAgendaCategory";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

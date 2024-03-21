@@ -29,14 +29,13 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdvertisement: TestAdvertisementType;
 let testSuperAdmin: TestSuperAdminType;
-let testAdmin: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
   testSuperAdmin = await createTestSuperAdmin();
   testAdvertisement = await createTestAdvertisement();
-  testAdmin = await createTestSuperAdmin();
+ 
 });
 
 afterAll(async () => {

@@ -21,13 +21,11 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
-let testSuperAdmin: TestUserType;
 let testAdminUser: TestUserType;
 let testAgendaItem: TestAgendaItemType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
-  testSuperAdmin = await createTestUser();
   testAdminUser = await createTestUser();
   testOrganization = await Organization.create({
     name: "name",
@@ -39,18 +37,7 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-  testSuperAdmin = await User.findOneAndUpdate(
-    {
-      _id: testSuperAdmin?._id,
-    },
-    {
-      userType: "SUPERADMIN",
-    },
-    {
-      new: true,
-    },
-  );
-
+  
   testEvent = await Event.create({
     title: "title",
     description: "description",

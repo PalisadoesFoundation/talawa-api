@@ -32,7 +32,6 @@ import { createTestSuperAdmin } from "../..//helpers/advertisement";
 
 let testSuperAdmin: TestUserType;
 let testUser: TestUserType;
-let testUserAdmin: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -44,7 +43,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
   testSuperAdmin = await createTestSuperAdmin();
-  testUserAdmin = await createTestUser();
+ 
 });
 
 afterAll(async () => {

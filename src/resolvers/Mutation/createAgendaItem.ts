@@ -48,7 +48,6 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
     );
   }
 
-
   const organizationFoundInCache = await findOrganizationsInCache([
     args.input.organizationId,
   ]);

@@ -31,7 +31,6 @@ let testAgendaCategory: TestAgendaCategoryType; // Assuming you have TestAgendaC
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
-  testSuperAdmin = await createTestUser();
   testAdminUser = await createTestUser();
   testOrganization = await Organization.create({
     name: "name",
@@ -43,18 +42,7 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-  testSuperAdmin = await User.findOneAndUpdate(
-    {
-      _id: testSuperAdmin?._id,
-    },
-    {
-      userType: "SUPERADMIN",
-    },
-    {
-      new: true,
-    },
-  );
-
+  
   testEvent = await Event.create({
     title: "title",
     description: "description",

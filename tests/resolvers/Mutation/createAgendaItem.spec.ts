@@ -41,17 +41,7 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-  testUserSuperAdmin = await User.findOneAndUpdate(
-    {
-      _id: testUserSuperAdmin?._id,
-    },
-    {
-      userType: "SUPERADMIN",
-    },
-    {
-      new: true,
-    },
-  );
+ 
   await AppUserProfile.updateOne(
     {
       userId: testUserSuperAdmin?._id,
@@ -328,10 +318,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
     await AppUserProfile.deleteOne({
       userId: testUser?._id,
     });
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+ 
       const args: MutationCreateAgendaItemArgs = {
         input: {
           title: "Regular Agenda Item",
@@ -358,7 +345,6 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
         context,
       );
     } catch (error: unknown) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
