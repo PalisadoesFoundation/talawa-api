@@ -1,5 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { Advertisement,  User } from "../../models";
+import { Advertisement, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,

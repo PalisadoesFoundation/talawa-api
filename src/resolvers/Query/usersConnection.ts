@@ -13,7 +13,7 @@ import { getWhere } from "./helperFunctions/getWhere";
  * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
  */
 
-    //@ts-expect-error
+//@ts-expect-error directive is necessary to suppress the TypeScript error until the corresponding type is implemented.
 export const usersConnection: QueryResolvers["usersConnection"] = async (
   _parent,
   args,

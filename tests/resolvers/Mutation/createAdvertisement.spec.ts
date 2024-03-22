@@ -12,7 +12,6 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { createTestUser } from "../../helpers/user";
 import type {
   TestOrganizationType,
   TestUserType,
@@ -43,7 +42,6 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
   testSuperAdmin = await createTestSuperAdmin();
- 
 });
 
 afterAll(async () => {

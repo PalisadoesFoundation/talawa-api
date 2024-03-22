@@ -16,6 +16,5 @@ export const createTestVenue = async (
     imageUrl: null,
   });
 
-  //@ts-expect-error
-  return testVenue;
+  return testVenue as TestVenueType;
 };

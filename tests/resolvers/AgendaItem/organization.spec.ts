@@ -3,12 +3,7 @@ import { connect, disconnect } from "../../helpers/db";
 import { organization as organizationResolver } from "../../../src/resolvers/AgendaItem/organization";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
-  User,
-  Event,
-  Organization,
-  AgendaItemModel,
-} from "../../../src/models";
+import { Event, Organization, AgendaItemModel } from "../../../src/models";
 import {
   createTestUser,
   type TestOrganizationType,
@@ -27,7 +22,7 @@ let testAgendaItem: TestAgendaItemType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
- 
+
   testAdminUser = await createTestUser();
   testOrganization = await Organization.create({
     name: "name",
@@ -38,7 +33,6 @@ beforeAll(async () => {
     members: [testUser?._id, testAdminUser?._id],
     creatorId: testUser?._id,
   });
- 
 
   testEvent = await Event.create({
     title: "title",

@@ -6,7 +6,7 @@ import { community } from "../../../src/resolvers/Query/community";
 import { errors } from "../../../src/libraries";
 
 import { connect, disconnect } from "../../helpers/db";
-import { createTestUserFunc  } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 import { createTestCommunityFunc } from "../../helpers/community";
 import type { TestCommunityType } from "../../helpers/community";
 import type { TestUserType } from "../../helpers/user";
@@ -26,8 +26,8 @@ let testCommunity: TestCommunityType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
-  testUser = await  createTestSuperAdmin();
-  testUser2 = await    createTestUserFunc(); //normal user
+  testUser = await createTestSuperAdmin();
+  testUser2 = await createTestUserFunc(); //normal user
   testCommunity = await createTestCommunityFunc();
 });
 
@@ -83,7 +83,7 @@ describe("resolvers -> Query -> community", () => {
 
     const result = await community?.({}, args, context);
 
-    //@ts-expect-error
+    //@ts-expect-error As result can undefined as well.
     delete result?.updatedAt;
 
     const expected = {

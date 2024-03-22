@@ -136,8 +136,8 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       };
 
       await createActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ACTION_ITEM_CATEGORY_IS_DISABLED.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(ACTION_ITEM_CATEGORY_IS_DISABLED.MESSAGE);
     }
   });
 

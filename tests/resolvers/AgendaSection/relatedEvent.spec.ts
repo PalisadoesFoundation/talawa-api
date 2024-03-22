@@ -4,7 +4,6 @@ import { relatedEvent as relatedEventResolver } from "../../../src/resolvers/Age
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  User,
   Event,
   Organization,
   AgendaItemModel,
