@@ -136,8 +136,6 @@ export const updateThisAndFollowingInstances = async (
         },
         {
           $pull: {
-            eventAdmin: { $in: recurringEventInstancesIds },
-            createdEvents: { $in: recurringEventInstancesIds },
             registeredEvents: { $in: recurringEventInstancesIds },
           },
         },

@@ -1,5 +1,5 @@
 import type mongoose from "mongoose";
-import { ActionItem, Event, EventAttendee, User } from "../../../models";
+import { ActionItem, AppUserProfile, Event, EventAttendee, User } from "../../../models";
 
 /**
  * This function deletes a single event.
@@ -22,18 +22,28 @@ export const deleteSingleEvent = async (
       { session },
     ),
     User.updateMany(
+      { registeredEvents: eventId, },
+      {
+        $pull: {
+          registeredEvents: eventId,
+        },
+      },
+      { session },
+
+    ),
+    AppUserProfile.updateMany(
       {
         $or: [
           { createdEvents: eventId },
           { eventAdmin: eventId },
-          { registeredEvents: eventId },
+
         ],
       },
       {
         $pull: {
           createdEvents: eventId,
           eventAdmin: eventId,
-          registeredEvents: eventId,
+
         },
       },
       { session },
