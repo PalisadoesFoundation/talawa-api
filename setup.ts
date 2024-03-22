@@ -4,11 +4,11 @@ import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
-import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 /* eslint-disable */
 import type { ExecException } from "child_process";
 import { exec } from "child_process";
 import mongodb from "mongodb";
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import {
   askForMongoDBUrl,
   checkConnection,
