@@ -1,16 +1,22 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, AgendaItemModel, Organization } from "../../../src/models";
-import type { MutationUpdateAgendaItemArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { updateAgendaItem } from "../../../src/resolvers/Mutation/updateAgendaItem";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
-  USER_NOT_FOUND_ERROR,
   AGENDA_ITEM_NOT_FOUND_ERROR,
   UNAUTHORIZED_UPDATE_AGENDA_ITEM_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import {
+  AgendaItemModel,
+  AppUserProfile,
+  Organization,
+  User,
+} from "../../../src/models";
+import { updateAgendaItem } from "../../../src/resolvers/Mutation/updateAgendaItem";
+import type { MutationUpdateAgendaItemArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
@@ -21,13 +27,13 @@ let testOrganization: TestOrganizationType;
 let testAgendaItem: TestAgendaItemType;
 let testAgendaItem2: TestAgendaItemType;
 
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
-import type { TestEventType } from "../../helpers/eventsWithRegistrants";
-import { createTestEvent } from "../../helpers/events";
 import type { TestAgendaItemType } from "../../helpers/agendaItem";
+import { createTestEvent } from "../../helpers/events";
+import type { TestEventType } from "../../helpers/eventsWithRegistrants";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -44,9 +50,9 @@ beforeAll(async () => {
   });
   const temp = await createTestEvent();
   testEvent = temp[2];
-  await User.updateOne(
+  await AppUserProfile.updateOne(
     {
-      _id: testUser?._id,
+      userId: testUser?._id,
     },
     {
       $push: {
@@ -184,5 +190,29 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
     }).lean();
 
     expect(updateAgendaItemPayload).toEqual(testUpdateAgendaItemPayload);
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationUpdateAgendaItemArgs = {
+      id: testAgendaItem?._id,
+      input: {
+        description: "Updated Description",
+        updatedBy: testUser?._id,
+      },
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await updateAgendaItem?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

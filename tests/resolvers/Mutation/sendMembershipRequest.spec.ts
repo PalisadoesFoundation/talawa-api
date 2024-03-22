@@ -13,6 +13,7 @@ import {
 import { sendMembershipRequest as sendMembershipRequestResolver } from "../../../src/resolvers/Mutation/sendMembershipRequest";
 import type { TestMembershipRequestType } from "../../helpers/membershipRequests";
 import { createTestMembershipRequest } from "../../helpers/membershipRequests";
+import { createTestUser } from "../../helpers/user";
 import type {
   TestOrganizationType,
   TestUserType,
@@ -72,9 +73,9 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       const args: MutationSendMembershipRequestArgs = {
         organizationId: testOrganization?.id,
       };
-
+      const tempUser = await createTestUser();
       const context = {
-        userId: testUser?.id,
+        userId: tempUser?._id,
       };
 
       const { sendMembershipRequest: sendMembershipRequestResolver } =
