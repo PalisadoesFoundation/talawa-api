@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { InterfaceVenue, Organization, Venue } from "../../../src/models";
+import { Organization, Venue, type InterfaceVenue } from "../../../src/models";
 import type { MutationDeleteVenueArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -48,7 +48,7 @@ beforeAll(async () => {
     capacity: Math.floor(Math.random() * 100),
     organization: testOrganization?.id,
   });
-   testVenue2 = await Venue.create({
+  testVenue2 = await Venue.create({
     name: "venue",
     description: "description",
     capacity: Math.floor(Math.random() * 100),

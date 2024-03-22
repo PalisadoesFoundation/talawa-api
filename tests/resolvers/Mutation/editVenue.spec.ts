@@ -1,12 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { InterfaceVenue, Organization, Venue } from "../../../src/models";
+import { Organization, Venue, type InterfaceVenue } from "../../../src/models";
 import type { MutationEditVenueArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { ConflictError } from "./../../../src/libraries/errors/conflictError";
 import { InvalidFileTypeError } from "./../../../src/libraries/errors/invalidFileTypeError";
-import type { TestVenueType } from "./../../helpers/venue";
 
 import { fail } from "assert";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -32,7 +31,7 @@ import { createTestUser } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testVenue:InterfaceVenue
+let testVenue: InterfaceVenue;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
