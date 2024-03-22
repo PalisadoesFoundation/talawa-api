@@ -164,7 +164,7 @@
   },
   {
     "_id": "6589387e2caa9d8d69087485",
-    "appUserProfileId":"64378abd85108f171cf2993d",
+    "appUserProfileId": "64378abd85108f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -186,7 +186,7 @@
   },
   {
     "_id": "6589388b2caa9d8d69087486",
-    "appUserProfileId":"64378abd85208f171cf2993d",
+    "appUserProfileId": "64378abd85208f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -208,7 +208,7 @@
   },
   {
     "_id": "6589389d2caa9d8d69087487",
-    "appUserProfileId":"64378abd85308f171cf2993d",
+    "appUserProfileId": "64378abd85308f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -230,7 +230,7 @@
   },
   {
     "_id": "658938a62caa9d8d69087488",
-    "appUserProfileId":"64378abd85408f171cf2993d",
+    "appUserProfileId": "64378abd85408f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -252,7 +252,7 @@
   },
   {
     "_id": "658938b02caa9d8d69087489",
-    "appUserProfileId":"64378abd85508f171cf2993d",
+    "appUserProfileId": "64378abd85508f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -274,7 +274,7 @@
   },
   {
     "_id": "658938ba2caa9d8d6908748a",
-    "appUserProfileId":null,
+    "appUserProfileId": null,
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
