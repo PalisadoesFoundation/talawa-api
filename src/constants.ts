@@ -41,8 +41,6 @@ export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
   PARAM: "agendaCategory",
 };
 
-
-
 export const CHAT_NOT_FOUND_ERROR = {
   DESC: "Chat not found",
   CODE: "chat.notFound",

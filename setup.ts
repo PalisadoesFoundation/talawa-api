@@ -969,8 +969,9 @@ async function main(): Promise<void> {
         ? "X".repeat(process.env.REDIS_PASSWORD.length)
         : "";
 
-      const url = `redis://${process.env.REDIS_PASSWORD ? redisPasswordStr + "@" : ""
-        }${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
+      const url = `redis://${
+        process.env.REDIS_PASSWORD ? redisPasswordStr + "@" : ""
+      }${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
 
       console.log(`\nRedis URL already exists with the value:\n${url}`);
 
@@ -1115,12 +1116,14 @@ async function main(): Promise<void> {
     {
       type: "input",
       name: "imageSizeLimit",
-      message: `Enter the maximum size limit of Images uploaded (in MB) max: ${MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
-        }`,
+      message: `Enter the maximum size limit of Images uploaded (in MB) max: ${
+        MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+      }`,
       default: 3,
       validate: (input: number) =>
         validateImageFileSize(input) ||
-        `Enter a valid number between 0 and ${MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+        `Enter a valid number between 0 and ${
+          MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
         }`,
     },
   ]);

@@ -1,21 +1,21 @@
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
+  EVENT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
-  EVENT_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { expect, vi, beforeAll, afterAll, describe, it } from "vitest";
+import { AppUserProfile, Event, Organization, User } from "../../../src/models";
 import type { MutationCreateAgendaItemArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import { createTestUser } from "../../helpers/userAndOrg";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
-import { Organization, Event, User, AppUserProfile } from "../../../src/models";
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
@@ -41,7 +41,6 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
- 
   await AppUserProfile.updateOne(
     {
       userId: testUserSuperAdmin?._id,
@@ -318,32 +317,28 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
     await AppUserProfile.deleteOne({
       userId: testUser?._id,
     });
- 
-      const args: MutationCreateAgendaItemArgs = {
-        input: {
-          title: "Regular Agenda Item",
-          description: "Description for the regular agenda item",
-          duration: "1 hour",
-          relatedEventId: testEvent?._id,
-          sequence: 1,
-          itemType: "Regular",
-          organizationId: testOrganization?._id,
-          isNote: false,
-        },
-      };
-      const context = {
-        userId: testAdminUser?._id,
-      };
-      const { createAgendaItem: createAgendaItemResolver } = await import(
-        "../../../src/resolvers/Mutation/createAgendaItem"
-      );
- 
+
+    const args: MutationCreateAgendaItemArgs = {
+      input: {
+        title: "Regular Agenda Item",
+        description: "Description for the regular agenda item",
+        duration: "1 hour",
+        relatedEventId: testEvent?._id,
+        sequence: 1,
+        itemType: "Regular",
+        organizationId: testOrganization?._id,
+        isNote: false,
+      },
+    };
+    const context = {
+      userId: testAdminUser?._id,
+    };
+    const { createAgendaItem: createAgendaItemResolver } = await import(
+      "../../../src/resolvers/Mutation/createAgendaItem"
+    );
+
     try {
-      await createAgendaItemResolver?.(
-        {},
-        args,
-        context,
-      );
+      await createAgendaItemResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
