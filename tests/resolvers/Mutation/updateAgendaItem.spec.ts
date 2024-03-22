@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, AgendaItemModel, Organization } from "../../../src/models";
+import { User, AgendaItemModel, Organization, AppUserProfile } from "../../../src/models";
 import type { MutationUpdateAgendaItemArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -10,6 +10,7 @@ import {
   USER_NOT_FOUND_ERROR,
   AGENDA_ITEM_NOT_FOUND_ERROR,
   UNAUTHORIZED_UPDATE_AGENDA_ITEM_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import { createTestUser } from "../../helpers/userAndOrg";
 
@@ -184,5 +185,33 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
     }).lean();
 
     expect(updateAgendaItemPayload).toEqual(testUpdateAgendaItemPayload);
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationUpdateAgendaItemArgs = {
+      id: testAgendaItem?._id,
+      input: {
+        description: "Updated Description",
+        updatedBy : testUser?._id
+      },
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+   await updateAgendaItem?.(
+        {},
+        args,
+        context,
+      );
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });
