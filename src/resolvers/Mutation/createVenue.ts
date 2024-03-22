@@ -1,4 +1,4 @@
-import { Organization, User } from "../../models";
+import { Organization, User, AppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -33,6 +33,10 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     _id: context.userId,
   });
 
+  const currentAppProfile = await AppUserProfile.findOne({
+    userId: context.userId,
+  });
+
   // Checks whether currentUser with _id == context.userId exists.
   if (currentUser === null) {
     throw new errors.NotFoundError(
@@ -59,7 +63,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
   if (
     !(
       organization.admins?.some((admin) => admin._id.equals(context.userId)) ||
-      currentUser.userType == "SUPERADMIN"
+      currentAppProfile?.isSuperAdmin
     )
   ) {
     throw new errors.UnauthorizedError(

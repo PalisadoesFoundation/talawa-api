@@ -6,7 +6,7 @@ import {
   VENUE_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "./../../constants";
-import { Organization, User } from "../../models";
+import { Organization, User, AppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Venue } from "../../models/Venue";
@@ -33,6 +33,10 @@ export const editVenue: MutationResolvers["editVenue"] = async (
 ) => {
   const currentUser = await User.findOne({
     _id: context.userId,
+  });
+
+  const currentAppProfile = await AppUserProfile.findOne({
+    userId: context.userId,
   });
 
   // Checks whether currentUser with _id == context.userId exists.
@@ -73,7 +77,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
   if (
     !(
       organization.admins?.some((admin) => admin._id.equals(context.userId)) ||
-      currentUser.userType == "SUPERADMIN"
+      currentAppProfile?.isSuperAdmin
     )
   ) {
     throw new errors.UnauthorizedError(

@@ -133,7 +133,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          id: testVenue?.id,
+          id: testVenue._id,
           capacity: 10,
           name: "testVenue",
           description: "description",
