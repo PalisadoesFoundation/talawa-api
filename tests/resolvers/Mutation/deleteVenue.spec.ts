@@ -1,10 +1,9 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, Venue } from "../../../src/models";
+import { InterfaceVenue, Organization, Venue } from "../../../src/models";
 import type { MutationDeleteVenueArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import type { TestVenueType } from "./../../helpers/venue";
 
 import { fail } from "assert";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -26,7 +25,8 @@ import { createTestUser } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testVenue: TestVenueType;
+let testVenue: InterfaceVenue;
+let testVenue2: InterfaceVenue;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -42,13 +42,18 @@ beforeAll(async () => {
     visibleInSearch: true,
   });
 
-  // testVenue =  await Venue.create({
-  //   name: "testVenue",
-  //   description: "description",
-  //   capacity: Math.floor(Math.random() * 100),
-  //   organization: testOrganization?.id,
-
-  // });
+  testVenue = await Venue.create({
+    name: "testVenue",
+    description: "description",
+    capacity: Math.floor(Math.random() * 100),
+    organization: testOrganization?.id,
+  });
+   testVenue2 = await Venue.create({
+    name: "venue",
+    description: "description",
+    capacity: Math.floor(Math.random() * 100),
+    organization: new Types.ObjectId().toString(),
+  });
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
@@ -64,7 +69,7 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationDeleteVenueArgs = {
-        id: testVenue?.id,
+        id: testVenue?._id.toString(),
       };
 
       const context = {
@@ -112,11 +117,11 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
   _id: testVenue?.id,ganizationId`, async () => {
     try {
       const args: MutationDeleteVenueArgs = {
-        id: testVenue?.id,
+        id: testVenue2?._id.toString(),
       };
 
       const context = {
-        userId: testUser?.id,
+        userId: testUser?._id,
       };
 
       const { deleteVenue } = await import(
@@ -145,7 +150,7 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
         { new: true },
       );
       const args: MutationDeleteVenueArgs = {
-        id: testVenue?.id,
+        id: testVenue?._id.toString(),
       };
 
       const context = {
@@ -180,7 +185,7 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
       { new: true },
     );
     const args: MutationDeleteVenueArgs = {
-      id: testVenue?.id,
+      id: testVenue?._id.toString(),
     };
 
     const context = {

@@ -1,13 +1,15 @@
-import { InvalidFileTypeError } from "./../../../src/libraries/errors/invalidFileTypeError";
-import { ConflictError } from "./../../../src/libraries/errors/conflictError";
-import type { TestVenueType } from "./../../helpers/venue";
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, Venue } from "../../../src/models";
+import { InterfaceVenue, Organization, Venue } from "../../../src/models";
 import type { MutationEditVenueArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
+import { ConflictError } from "./../../../src/libraries/errors/conflictError";
+import { InvalidFileTypeError } from "./../../../src/libraries/errors/invalidFileTypeError";
+import type { TestVenueType } from "./../../helpers/venue";
 
+import { fail } from "assert";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   INVALID_FILE_TYPE,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
@@ -17,22 +19,20 @@ import {
   VENUE_NAME_MISSING_ERROR,
   VENUE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
-import { createTestUser } from "../../helpers/userAndOrg";
 import {
   InputValidationError,
   NotFoundError,
   UnauthorizedError,
 } from "../../../src/libraries/errors";
-import { fail } from "assert";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testVenue: TestVenueType;
+let testVenue:InterfaceVenue
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -54,12 +54,12 @@ beforeAll(async () => {
     organization: testOrganization?.id,
   });
 
-  // testVenue = await Venue.create({
-  //   name: "venue",
-  //   description: "description",
-  //   capacity: Math.floor(Math.random() * 100),
-  //   organization: new Types.ObjectId().toString(),
-  // });
+  testVenue = await Venue.create({
+    name: "venue",
+    description: "description",
+    capacity: Math.floor(Math.random() * 100),
+    organization: new Types.ObjectId().toString(),
+  });
 
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
@@ -133,7 +133,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          id: testVenue._id,
+          id: testVenue?._id.toString(),
           capacity: 10,
           name: "testVenue",
           description: "description",
@@ -172,7 +172,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
 
       const args: MutationEditVenueArgs = {
         data: {
-          id: testVenue?.id,
+          id: testVenue?._id.toString(),
           capacity: 10,
           name: "testVenue",
           description: "description",
@@ -213,7 +213,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
       );
       const args: MutationEditVenueArgs = {
         data: {
-          id: testVenue?.id,
+          id: testVenue?._id.toString(),
           capacity: 10,
           name: "",
           description: "description",
@@ -241,7 +241,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          id: testVenue?.id,
+          id: testVenue?._id.toString(),
           capacity: 10,
           name: "testVenue",
           description: "description",
@@ -269,7 +269,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
     try {
       const args: MutationEditVenueArgs = {
         data: {
-          id: testVenue?.id,
+          id: testVenue?._id.toString(),
           capacity: 90,
           name: "newTestVenue",
           description: "newDescription",
@@ -297,7 +297,7 @@ describe("resolvers -> Mutation -> editVenue", () => {
   it(`Edits the provided venue inside the provided organization`, async () => {
     const args: MutationEditVenueArgs = {
       data: {
-        id: testVenue?.id,
+        id: testVenue?._id.toString(),
         capacity: 90,
         name: "newTestVenue",
         description: "newDescription",
