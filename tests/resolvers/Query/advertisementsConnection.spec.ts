@@ -105,7 +105,7 @@ describe("resolvers -> Organization -> Advertisement", () => {
       ],
       pageInfo: {
         endCursor: testAdvertisement1?._id.toString(),
-        hasNextPage: false,
+        hasNextPage: true,
         hasPreviousPage: false,
         startCursor: testAdvertisement2?._id.toString(),
       },
