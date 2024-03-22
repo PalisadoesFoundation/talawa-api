@@ -88,7 +88,7 @@ describe("resolvers -> Query -> community", () => {
 
     const expected = {
       ...testCommunity?.toObject(),
-      _id: testCommunity?._id.toString(),
+      _id: testCommunity?._id,
       name: testCommunity?.name,
       logoUrl: testCommunity?.logoUrl
         ? `${context.apiRootUrl}${testCommunity?.logoUrl}`
@@ -99,7 +99,6 @@ describe("resolvers -> Query -> community", () => {
       websiteLink: testCommunity?.websiteLink,
     };
     delete expected?.updatedAt;
-
     expect(result).toEqual(expected);
   });
 

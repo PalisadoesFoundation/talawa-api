@@ -4,8 +4,8 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { AppUserProfile, Community, User } from "../../models";
 import type { InterfaceAppUserProfile } from "../../models";
+import { AppUserProfile, Community, User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
 
@@ -58,7 +58,6 @@ export const community: QueryResolvers["community"] = async (
 
   return {
     ...community,
-    _id: community._id,
     logoUrl: community?.logoUrl
       ? `${context.apiRootUrl}${community?.logoUrl}`
       : null,
