@@ -84,9 +84,9 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
     );
     if (!userIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
       throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
-        USER_NOT_AUTHORIZED_ADMIN.CODE,
-        USER_NOT_AUTHORIZED_ADMIN.PARAM,
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
