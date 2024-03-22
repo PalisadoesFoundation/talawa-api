@@ -1,20 +1,20 @@
-import { Organization, Event, AppUserProfile } from "../../../src/models";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { createTestUser } from "../../helpers/userAndOrg";
+import { AppUserProfile, Event, Organization } from "../../../src/models";
+import type { MutationCreateAgendaSectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
+import type { TestEventType } from "../../helpers/events";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
-import { connect, disconnect } from "../../helpers/db";
-import type {  MutationCreateAgendaSectionArgs } from "../../../src/types/generatedGraphQLTypes";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type { TestEventType } from "../../helpers/events";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
@@ -230,21 +230,21 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
-      const args: MutationCreateAgendaSectionArgs = {
-        input: {
-          relatedEvent: testEvent?._id?.toString(),
-          description: "desc",
-          sequence: 1,
-        },
-      };
-  
-      const context = {
-        userId: testAdminUser?._id,
-      };
-  
-      const { createAgendaSection: createAgendaSectionResolver } = await import(
-        "../../../src/resolvers/Mutation/createAgendaSection"
-      );
+    const args: MutationCreateAgendaSectionArgs = {
+      input: {
+        relatedEvent: testEvent?._id?.toString(),
+        description: "desc",
+        sequence: 1,
+      },
+    };
+
+    const context = {
+      userId: testAdminUser?._id,
+    };
+
+    const { createAgendaSection: createAgendaSectionResolver } = await import(
+      "../../../src/resolvers/Mutation/createAgendaSection"
+    );
     try {
       await createAgendaSectionResolver?.({}, args, context);
     } catch (error: unknown) {

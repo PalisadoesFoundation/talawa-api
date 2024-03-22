@@ -1,22 +1,23 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, MembershipRequest } from "../../../src/models";
+import { MembershipRequest, Organization, User } from "../../../src/models";
 import type { MutationSendMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { sendMembershipRequest as sendMembershipRequestResolver } from "../../../src/resolvers/Mutation/sendMembershipRequest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { sendMembershipRequest as sendMembershipRequestResolver } from "../../../src/resolvers/Mutation/sendMembershipRequest";
+import type { TestMembershipRequestType } from "../../helpers/membershipRequests";
+import { createTestMembershipRequest } from "../../helpers/membershipRequests";
+import { createTestUser } from "../../helpers/user";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import type { TestMembershipRequestType } from "../../helpers/membershipRequests";
-import { createTestMembershipRequest } from "../../helpers/membershipRequests";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -72,9 +73,9 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       const args: MutationSendMembershipRequestArgs = {
         organizationId: testOrganization?.id,
       };
-
+      const tempUser = await createTestUser();
       const context = {
-        userId: testUser?.id,
+        userId: tempUser?._id,
       };
 
       const { sendMembershipRequest: sendMembershipRequestResolver } =

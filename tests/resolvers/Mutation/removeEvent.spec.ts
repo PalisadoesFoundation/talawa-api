@@ -1,10 +1,8 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Event, ActionItem, AppUserProfile} from "../../../src/models";
-import type {
-  MutationRemoveEventArgs
-} from "../../../src/types/generatedGraphQLTypes";
+import { ActionItem, AppUserProfile, Event } from "../../../src/models";
+import type { MutationRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
   connect,
   disconnect,
@@ -27,7 +25,7 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
- 
+
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 // let testUserAppProfile: TestAppUserProfileType;

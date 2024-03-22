@@ -1,10 +1,7 @@
+import bcrypt from "bcryptjs";
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceAppUserProfile } from "../../../src/models";
-import { AppUserProfile, Organization, User } from "../../../src/models";
-import { connect, disconnect } from "../../helpers/db";
-import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import {
   afterAll,
@@ -23,7 +20,10 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
+import type { InterfaceAppUserProfile } from "../../../src/models";
+import { AppUserProfile, Organization, User } from "../../../src/models";
 import type { MutationUpdateUserRoleInOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/user";
 import type {
   TestAppUserProfileType,
@@ -451,7 +451,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
       await updateUserRoleInOrganizationResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        "Error: Current user must be an ADMIN or a SUPERADMIN"
+        "Error: Current user must be an ADMIN or a SUPERADMIN",
       );
     }
   });
