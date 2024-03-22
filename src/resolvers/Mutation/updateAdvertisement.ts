@@ -1,17 +1,23 @@
+import { Types } from "mongoose";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { Advertisement, Organization, User } from "../../models";
+import { AppUserProfile, Advertisement, Organization, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
   INPUT_NOT_FOUND_ERROR,
   END_DATE_VALIDATION_ERROR,
   START_DATE_VALIDATION_ERROR,
   FIELD_NON_EMPTY_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
 } from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
+import type { InterfaceOrganization } from "../../models";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
   async (_parent, args, context) => {
@@ -44,7 +50,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       _id: context.userId,
     });
 
-    if (currentUser === null) {
+    if (!currentUser) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
@@ -52,16 +58,51 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       );
     }
 
-    if (
-      !(
-        currentUser?.userType === "ADMIN" ||
-        currentUser?.userType === "SUPERADMIN"
-      )
-    ) {
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
         USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+
+    // Checks if organization exists.
+    let organization;
+
+    const organizationFoundInCache = await findOrganizationsInCache([
+      args.input._id, //args.input.organizationId
+    ]);
+    organization = organizationFoundInCache[0];
+
+    if (organizationFoundInCache.includes(null)) {
+      organization = await Organization.findOne({
+        _id: args.input._id, //args.input.organizationId
+
+      }).lean();
+      await cacheOrganizations([organization as InterfaceOrganization]);
+    }
+
+    if (!organization) {
+      throw new errors.NotFoundError(
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    const userIsOrganizationAdmin = organization.admins.some(
+      (admin) =>
+        admin === currentUser._id ||
+        new Types.ObjectId(admin).equals(currentUser._id),
+    );
+    if (!userIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
+        USER_NOT_AUTHORIZED_ADMIN.CODE,
+        USER_NOT_AUTHORIZED_ADMIN.PARAM,
       );
     }
 
