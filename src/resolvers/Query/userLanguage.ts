@@ -1,7 +1,10 @@
+import {
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import { AppUserProfile, User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
-import { errors } from "../../libraries";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This query will fetch the language code for the user from the database.
  * @param _parent-
@@ -14,9 +17,7 @@ export const userLanguage: QueryResolvers["userLanguage"] = async (
 ) => {
   const user = await User.findOne({
     _id: args.userId,
-  })
-    .select(["appLanguageCode"])
-    .lean();
+  }).lean();
 
   if (!user) {
     throw new errors.NotFoundError(
@@ -25,6 +26,18 @@ export const userLanguage: QueryResolvers["userLanguage"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const appUserProfile = await AppUserProfile.findOne({
+    userId: user._id,
+  })
+    .select(["appLanguageCode"])
+    .lean();
+  if (!appUserProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
-  return user.appLanguageCode;
+  return appUserProfile.appLanguageCode;
 };

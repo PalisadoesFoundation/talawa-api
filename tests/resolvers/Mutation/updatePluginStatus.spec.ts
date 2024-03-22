@@ -54,8 +54,8 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
 
     try {
       const args: MutationUpdatePluginStatusArgs = {
-        id: Types.ObjectId().toString(),
-        orgId: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
+        orgId: new Types.ObjectId().toString(),
       };
 
       const context = async (): Promise<void> => {
@@ -67,9 +67,11 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
       );
 
       await updatePluginStatusResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(PLUGIN_NOT_FOUND.MESSAGE);
-      expect(error.message).toEqual(`Translated ${PLUGIN_NOT_FOUND.MESSAGE}`);
+      expect((error as Error).message).toEqual(
+        `Translated ${PLUGIN_NOT_FOUND.MESSAGE}`,
+      );
     }
   });
 

@@ -1,22 +1,23 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, AgendaSectionModel } from "../../../src/models";
-import type { MutationRemoveAgendaSectionArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import removeAgendaSection from "../../../src/resolvers/Mutation/removeAgendaSection";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
-  USER_NOT_FOUND_ERROR,
   AGENDA_SECTION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { AgendaSectionModel, AppUserProfile, User } from "../../../src/models";
+import removeAgendaSection from "../../../src/resolvers/Mutation/removeAgendaSection";
+import type { MutationRemoveAgendaSectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testRandomUser: TestUserType;
 let testRandomUser2: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
+let testAdminUser: TestUserType;
 
 import type { TestUserType } from "../../helpers/userAndOrg";
 
@@ -25,13 +26,14 @@ beforeAll(async () => {
   testUser = await createTestUser();
   testRandomUser = await createTestUser();
   testRandomUser2 = await createTestUser();
+  testAdminUser = await createTestUser();
   await User.updateOne(
     {
       _id: testUser?._id,
     },
     {
       $push: {
-        createdAgendaSections: Types.ObjectId().toString(),
+        createdAgendaSections: new Types.ObjectId().toString(),
       },
     },
   );
@@ -48,11 +50,11 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
   it("throws NotFoundError if no user exists with _id === userId", async () => {
     try {
       const args: MutationRemoveAgendaSectionArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       if (removeAgendaSection) {
@@ -72,7 +74,7 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
   it("throws NotFoundError if no agenda section exists with _id === args.id", async () => {
     try {
       const args: MutationRemoveAgendaSectionArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -185,6 +187,36 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
       expect(deletedAgendaSection).toBeNull();
     } else {
       throw new Error("removeAgendaSection resolver is undefined");
+    }
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testAdminUser?._id,
+    });
+    const agendaSection = await AgendaSectionModel.create({
+      createdBy: testUser?._id,
+      sequence: 3,
+      description: "Sample description....!",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    const args: MutationRemoveAgendaSectionArgs = {
+      id: agendaSection._id.toString(),
+    };
+    const context = {
+      userId: testAdminUser?._id,
+    };
+
+    try {
+      if (removeAgendaSection) {
+        await removeAgendaSection({}, args, context);
+      } else {
+        throw new Error("removeAgendaSection resolver is undefined");
+      }
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 });

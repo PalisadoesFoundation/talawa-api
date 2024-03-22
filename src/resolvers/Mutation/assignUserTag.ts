@@ -1,13 +1,35 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { User, OrganizationTagUser, TagUser } from "../../models";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
   TAG_NOT_FOUND,
-  USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION,
   USER_ALREADY_HAS_TAG,
+  USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import {
+  AppUserProfile,
+  OrganizationTagUser,
+  TagUser,
+  User,
+} from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+
+/**
+ * This function enables an admin to assign tag to user or not.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the user has appProfile.
+ * 3. If the tag object exists.
+ * 4. If the user is an admin for the organization.
+ * 5. If the user to be assigned the tag exists.
+ * 6. If the user to be assigned the tag belongs to the tag's organization.
+ * 7. If the user already has the tag.
+ * @returns User to which the tag is assigned.
+ */
 
 export const assignUserTag: MutationResolvers["assignUserTag"] = async (
   _parent,
@@ -26,6 +48,17 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
   // Get the tag object
   const tag = await OrganizationTagUser.findOne({
@@ -41,15 +74,13 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
   }
 
   // Boolean to determine whether user is an admin of organization of the tag.
-  const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.equals(tag.organizationId),
-  );
 
-  // Checks whether currentUser can assign the tag or not.
-  if (
-    !currentUserIsOrganizationAdmin &&
-    !(currentUser.userType === "SUPERADMIN")
-  ) {
+  const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+    (orgId) =>
+      orgId && new Types.ObjectId(orgId.toString()).equals(tag.organizationId),
+  );
+  //check whether current user can assign tag to user or not
+  if (!(currentUserIsOrganizationAdmin || currentUserAppProfile.isSuperAdmin)) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,

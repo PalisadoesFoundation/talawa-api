@@ -51,7 +51,7 @@ This is an interface that represents a database(MongoDB) document for User.
 
 [src/models/User.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L15)
 
-___
+---
 
 ### address
 
@@ -59,22 +59,22 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
-| `city` | `string` |
-| `countryCode` | `string` |
+| Name                | Type     |
+| :------------------ | :------- |
+| `city`              | `string` |
+| `countryCode`       | `string` |
 | `dependentLocality` | `string` |
-| `line1` | `string` |
-| `line2` | `string` |
-| `postalCode` | `string` |
-| `sortingCode` | `string` |
-| `state` | `string` |
+| `line1`             | `string` |
+| `line2`             | `string` |
+| `postalCode`        | `string` |
+| `sortingCode`       | `string` |
+| `state`             | `string` |
 
 #### Defined in
 
 [src/models/User.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L16)
 
-___
+---
 
 ### adminApproved
 
@@ -84,7 +84,7 @@ ___
 
 [src/models/User.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L26)
 
-___
+---
 
 ### adminFor
 
@@ -94,7 +94,7 @@ ___
 
 [src/models/User.ts:27](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L27)
 
-___
+---
 
 ### appLanguageCode
 
@@ -104,7 +104,7 @@ ___
 
 [src/models/User.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L28)
 
-___
+---
 
 ### birthDate
 
@@ -114,7 +114,7 @@ ___
 
 [src/models/User.ts:29](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L29)
 
-___
+---
 
 ### createdAt
 
@@ -124,7 +124,7 @@ ___
 
 [src/models/User.ts:30](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L30)
 
-___
+---
 
 ### createdEvents
 
@@ -134,7 +134,7 @@ ___
 
 [src/models/User.ts:31](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L31)
 
-___
+---
 
 ### createdOrganizations
 
@@ -144,7 +144,7 @@ ___
 
 [src/models/User.ts:32](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L32)
 
-___
+---
 
 ### educationGrade
 
@@ -154,7 +154,7 @@ ___
 
 [src/models/User.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L33)
 
-___
+---
 
 ### email
 
@@ -164,7 +164,7 @@ ___
 
 [src/models/User.ts:34](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L34)
 
-___
+---
 
 ### employmentStatus
 
@@ -174,7 +174,7 @@ ___
 
 [src/models/User.ts:35](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L35)
 
-___
+---
 
 ### eventAdmin
 
@@ -184,7 +184,7 @@ ___
 
 [src/models/User.ts:36](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L36)
 
-___
+---
 
 ### firstName
 
@@ -194,7 +194,7 @@ ___
 
 [src/models/User.ts:37](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L37)
 
-___
+---
 
 ### gender
 
@@ -204,17 +204,17 @@ ___
 
 [src/models/User.ts:38](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L38)
 
-___
+---
 
 ### image
 
-• **image**: `undefined` \| ``null`` \| `string`
+• **image**: `undefined` \| `null` \| `string`
 
 #### Defined in
 
 [src/models/User.ts:39](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L39)
 
-___
+---
 
 ### joinedOrganizations
 
@@ -224,7 +224,7 @@ ___
 
 [src/models/User.ts:40](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L40)
 
-___
+---
 
 ### lastName
 
@@ -234,7 +234,7 @@ ___
 
 [src/models/User.ts:41](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L41)
 
-___
+---
 
 ### maritalStatus
 
@@ -244,7 +244,7 @@ ___
 
 [src/models/User.ts:42](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L42)
 
-___
+---
 
 ### membershipRequests
 
@@ -254,7 +254,7 @@ ___
 
 [src/models/User.ts:43](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L43)
 
-___
+---
 
 ### organizationsBlockedBy
 
@@ -264,7 +264,7 @@ ___
 
 [src/models/User.ts:44](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L44)
 
-___
+---
 
 ### password
 
@@ -274,7 +274,7 @@ ___
 
 [src/models/User.ts:45](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L45)
 
-___
+---
 
 ### phone
 
@@ -282,17 +282,17 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
-| `home` | `string` |
+| Name     | Type     |
+| :------- | :------- |
+| `home`   | `string` |
 | `mobile` | `string` |
-| `work` | `string` |
+| `work`   | `string` |
 
 #### Defined in
 
 [src/models/User.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L46)
 
-___
+---
 
 ### pluginCreationAllowed
 
@@ -302,7 +302,7 @@ ___
 
 [src/models/User.ts:51](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L51)
 
-___
+---
 
 ### registeredEvents
 
@@ -312,7 +312,7 @@ ___
 
 [src/models/User.ts:52](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L52)
 
-___
+---
 
 ### status
 
@@ -322,7 +322,7 @@ ___
 
 [src/models/User.ts:53](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L53)
 
-___
+---
 
 ### token
 
@@ -332,7 +332,7 @@ ___
 
 [src/models/User.ts:54](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L54)
 
-___
+---
 
 ### tokenVersion
 
@@ -342,7 +342,7 @@ ___
 
 [src/models/User.ts:55](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L55)
 
-___
+---
 
 ### updatedAt
 
@@ -352,7 +352,7 @@ ___
 
 [src/models/User.ts:56](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/User.ts#L56)
 
-___
+---
 
 ### userType
 

@@ -31,6 +31,7 @@ context of the entire application
 **`Remarks`**
 
 The following checks are done:
+
 1. If the user exists
 2. If the organization exists.
 

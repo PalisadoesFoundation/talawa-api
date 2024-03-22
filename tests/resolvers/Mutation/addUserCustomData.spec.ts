@@ -60,13 +60,13 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       dataValue: "testDataValue",
     };
 
-    const context = { userId: Types.ObjectId().toString() };
+    const context = { userId: new Types.ObjectId().toString() };
 
     try {
       await addUserCustomData?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -80,7 +80,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     const args = {
-      organizationId: Types.ObjectId().toString(),
+      organizationId: new Types.ObjectId().toString(),
       dataName: "testDataName",
       dataValue: "testDataValue",
     };
@@ -89,11 +89,11 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
 
     try {
       await addUserCustomData?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
         ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }

@@ -23,7 +23,7 @@
 
 [src/models/OrganizationCustomField.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/OrganizationCustomField.ts#L5)
 
-___
+---
 
 ### name
 
@@ -33,7 +33,7 @@ ___
 
 [src/models/OrganizationCustomField.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/OrganizationCustomField.ts#L8)
 
-___
+---
 
 ### organizationId
 
@@ -43,7 +43,7 @@ ___
 
 [src/models/OrganizationCustomField.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/OrganizationCustomField.ts#L6)
 
-___
+---
 
 ### type
 

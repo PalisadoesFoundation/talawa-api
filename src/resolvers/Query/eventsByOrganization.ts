@@ -16,7 +16,7 @@ export const eventsByOrganization: QueryResolvers["eventsByOrganization"] =
       status: "ACTIVE",
     })
       .sort(sort)
-      .populate("creator", "-password")
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 

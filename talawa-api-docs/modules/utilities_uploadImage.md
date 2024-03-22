@@ -12,20 +12,20 @@
 
 ### uploadImage
 
-▸ **uploadImage**(`newImageFile`, `oldImagePath`): `Promise`\<\{ `imageAlreadyInDbPath`: `string` ; `newImagePath`: `string`  \}\>
+▸ **uploadImage**(`newImageFile`, `oldImagePath`): `Promise`\<\{ `imageAlreadyInDbPath`: `string` ; `newImagePath`: `string` \}\>
 
 This function uploads the new image and deletes the previously uploaded image if exists.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `newImageFile` | `any` | File of a new Image with `any` type. |
-| `oldImagePath` | ``null`` \| `string` | File of a current Image. It can be `null`. |
+| Name           | Type               | Description                                |
+| :------------- | :----------------- | :----------------------------------------- |
+| `newImageFile` | `any`              | File of a new Image with `any` type.       |
+| `oldImagePath` | `null` \| `string` | File of a current Image. It can be `null`. |
 
 #### Returns
 
-`Promise`\<\{ `imageAlreadyInDbPath`: `string` ; `newImagePath`: `string`  \}\>
+`Promise`\<\{ `imageAlreadyInDbPath`: `string` ; `newImagePath`: `string` \}\>
 
 Path of an uploaded image.
 

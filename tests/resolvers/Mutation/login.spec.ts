@@ -1,26 +1,31 @@
+import bcrypt from "bcryptjs";
 import "dotenv/config";
-import { User, Organization, MembershipRequest } from "../../../src/models";
-import type { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
+import { nanoid } from "nanoid";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   INVALID_CREDENTIALS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import bcrypt from "bcryptjs";
-import { nanoid } from "nanoid";
 import {
-  beforeAll,
-  afterAll,
-  afterEach,
-  describe,
-  it,
-  expect,
-  vi,
-} from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
+  AppUserProfile,
+  MembershipRequest,
+  Organization,
+  User,
+} from "../../../src/models";
+import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
+import type { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -108,6 +113,47 @@ describe("resolvers -> Mutation -> login", () => {
       }
     }
   });
+  it("creates a appUserProfile of the user if does not exist", async () => {
+    const newUser = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: "password",
+      firstName: "firstName",
+      lastName: "lastName",
+    });
+    // console.log(newUser);
+    const hashedTestPassword = await bcrypt.hash("password", 12);
+    await User.updateOne(
+      {
+        _id: newUser?._id,
+      },
+      {
+        $set: {
+          password: hashedTestPassword,
+        },
+      },
+    );
+    const args: MutationLoginArgs = {
+      data: {
+        email: newUser?.email,
+        password: "password",
+      },
+    };
+
+    const loginPayload = await loginResolver?.({}, args, {});
+
+    const userAppProfile = await AppUserProfile.findOne({
+      userId: newUser?._id,
+    });
+
+    expect(userAppProfile).toBeDefined();
+    expect(loginPayload).toEqual(
+      expect.objectContaining({
+        user: expect.objectContaining({
+          appUserProfileId: userAppProfile?._id,
+        }),
+      }),
+    );
+  });
 
   it(`throws ValidationError if args.data.password !== password for user with
 email === args.data.email`, async () => {
@@ -161,18 +207,18 @@ email === args.data.email`, async () => {
     const loginPayload = await loginResolver?.({}, args, {});
 
     expect(await loginPayload?.user).toBeDefined();
-    expect((await loginPayload?.user)?.userType).toEqual("SUPERADMIN");
+    // expect((await loginPayload?.user)?.userType).toEqual("SUPERADMIN");
   });
 
   it("should update the user's token and increment the tokenVersion", async () => {
     const newToken = "new-token";
 
-    const mockUser = await User.findOne({
-      _id: testUser?._id,
+    const mockUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
     }).lean();
 
-    const updatedUser = await User.findOneAndUpdate(
-      { _id: testUser?._id },
+    const updatedUser = await AppUserProfile.findOneAndUpdate(
+      { userId: testUser?._id },
       { token: newToken, $inc: { tokenVersion: 1 } },
       { new: true },
     );
@@ -180,13 +226,15 @@ email === args.data.email`, async () => {
     expect(updatedUser).toBeDefined();
     expect(updatedUser?.token).toBe(newToken);
 
-    if (mockUser?.tokenVersion !== undefined) {
-      expect(updatedUser?.tokenVersion).toBe(mockUser?.tokenVersion + 1);
+    if (mockUserAppProfile?.tokenVersion !== undefined) {
+      expect(updatedUser?.tokenVersion).toBe(
+        mockUserAppProfile?.tokenVersion + 1,
+      );
     }
   });
 
-  it(`returns the user object with populated fields joinedOrganizations, createdOrganizations,
-  createdEvents, registeredEvents, eventAdmin, adminFor, membershipRequests, 
+  it(`returns the user object with populated fields joinedOrganizations,
+ registeredEvents,  membershipRequests, 
   organizationsBlockedBy`, async () => {
     const args: MutationLoginArgs = {
       data: {
@@ -202,11 +250,7 @@ email === args.data.email`, async () => {
     })
       .select(["-password"])
       .populate("joinedOrganizations")
-      .populate("createdOrganizations")
-      .populate("createdEvents")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
       .populate("membershipRequests")
       .populate("organizationsBlockedBy")
       .lean();

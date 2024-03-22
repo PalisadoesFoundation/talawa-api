@@ -31,10 +31,11 @@ context of entire application
 **`Remarks`**
 
 The following checks are done:
+
 1. Whether the membership request exists or not.
 2. Whether thr organization exists or not
 3. Whether the user exists
-4. whether currentUser with _id === context.userId is an admin of organization.
+4. whether currentUser with \_id === context.userId is an admin of organization.
 5. Whether user is already a member of organization.
 
 #### Defined in

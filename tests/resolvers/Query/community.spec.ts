@@ -6,7 +6,7 @@ import { community } from "../../../src/resolvers/Query/community";
 import { errors } from "../../../src/libraries";
 
 import { connect, disconnect } from "../../helpers/db";
-import { createTestUserWithUserTypeFunc } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 import { createTestCommunityFunc } from "../../helpers/community";
 import type { TestCommunityType } from "../../helpers/community";
 import type { TestUserType } from "../../helpers/user";
@@ -16,6 +16,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { Community } from "../../../src/models";
+import { createTestSuperAdmin } from "../../helpers/advertisement";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -25,8 +26,8 @@ let testCommunity: TestCommunityType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
-  testUser = await createTestUserWithUserTypeFunc("SUPERADMIN");
-  testUser2 = await createTestUserWithUserTypeFunc("ADMIN");
+  testUser = await createTestSuperAdmin();
+  testUser2 = await createTestUserFunc(); //normal user
   testCommunity = await createTestCommunityFunc();
 });
 
@@ -40,8 +41,8 @@ describe("resolvers -> Query -> community", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementation((message) => `Translated ${message}`);
-    const context = { userId: Types.ObjectId().toString() };
-    const args = { id: Types.ObjectId().toString() };
+    const context = { userId: new Types.ObjectId().toString() };
+    const args = { id: new Types.ObjectId().toString() };
 
     await expect(community?.({}, args, context)).rejects.toThrow(
       errors.NotFoundError,
@@ -51,7 +52,7 @@ describe("resolvers -> Query -> community", () => {
 
   test("should throw AuthorizationError if user is not a super admin", async () => {
     const context = { userId: testUser2?._id.toString() };
-    const args = { id: Types.ObjectId().toString() };
+    const args = { id: new Types.ObjectId().toString() };
 
     await expect(community?.({}, args, context)).rejects.toThrow(
       errors.UnauthorizedError,
@@ -81,11 +82,13 @@ describe("resolvers -> Query -> community", () => {
     });
 
     const result = await community?.({}, args, context);
+
+    //@ts-expect-error As result can undefined as well.
     delete result?.updatedAt;
 
     const expected = {
       ...testCommunity?.toObject(),
-      _id: testCommunity?._id.toString(),
+      _id: testCommunity?._id,
       name: testCommunity?.name,
       logoUrl: testCommunity?.logoUrl
         ? `${context.apiRootUrl}${testCommunity?.logoUrl}`
@@ -96,7 +99,6 @@ describe("resolvers -> Query -> community", () => {
       websiteLink: testCommunity?.websiteLink,
     };
     delete expected?.updatedAt;
-
     expect(result).toEqual(expected);
   });
 

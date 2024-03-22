@@ -26,7 +26,7 @@ This is an interface that represents a database(MongoDB) document for Plugin.
 
 [src/models/Plugin.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Plugin.ts#L7)
 
-___
+---
 
 ### pluginCreatedBy
 
@@ -36,7 +36,7 @@ ___
 
 [src/models/Plugin.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Plugin.ts#L9)
 
-___
+---
 
 ### pluginDesc
 
@@ -46,7 +46,7 @@ ___
 
 [src/models/Plugin.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Plugin.ts#L10)
 
-___
+---
 
 ### pluginName
 
@@ -56,7 +56,7 @@ ___
 
 [src/models/Plugin.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Plugin.ts#L8)
 
-___
+---
 
 ### uninstalledOrgs
 

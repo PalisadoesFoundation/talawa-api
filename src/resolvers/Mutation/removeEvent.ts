@@ -1,14 +1,15 @@
+import { Types } from "mongoose";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event } from "../../models";
 import {
-  USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { AppUserProfile, Event, User } from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import {
   deleteRecurringEvent,
   deleteSingleEvent,
@@ -24,6 +25,7 @@ import { session } from "../../db";
  * 2. If the event exists
  * 3. If the user is an admin of the organization.
  * 4. If the user is an admin of the event.
+ * 5. If the user has appUserProfile
  * @returns Deleted event.
  */
 export const removeEvent: MutationResolvers["removeEvent"] = async (
@@ -41,6 +43,16 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -70,8 +82,10 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   }
 
   // Boolean to determine whether user is an admin of organization.
-  const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.equals(event?.organization),
+  const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+    (organization) =>
+      organization &&
+      new Types.ObjectId(organization.toString()).equals(event?.organization),
   );
 
   // Boolean to determine whether user is an admin of event.
@@ -84,7 +98,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     !(
       currentUserIsOrganizationAdmin ||
       currentUserIsEventAdmin ||
-      currentUser.userType === "SUPERADMIN"
+      currentUserAppProfile.isSuperAdmin
     )
   ) {
     throw new errors.UnauthorizedError(
@@ -94,10 +108,42 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     );
   }
 
-  /* c8 ignore start */
-  if (session) {
-    // start a transaction
-    session.startTransaction();
+  await AppUserProfile.updateMany(
+    {
+      createdEvents: event._id,
+    },
+    {
+      $pull: {
+        createdEvents: event._id,
+      },
+    },
+  );
+
+  await AppUserProfile.updateMany(
+    {
+      eventAdmin: event._id,
+    },
+    {
+      $pull: {
+        eventAdmin: event._id,
+      },
+    },
+  );
+
+  const updatedEvent = await Event.findOneAndUpdate(
+    {
+      _id: event._id,
+    },
+    {
+      status: "DELETED",
+    },
+    {
+      new: true,
+    },
+  );
+
+  if (updatedEvent !== null) {
+    await cacheEvents([updatedEvent]);
   }
 
   /* c8 ignore stop */

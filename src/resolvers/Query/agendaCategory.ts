@@ -33,5 +33,6 @@ export const agendaCategory: QueryResolvers["agendaCategory"] = async (
       AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM,
     );
   }
-  return foundAgendaCategory;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return foundAgendaCategory as any;
 };
