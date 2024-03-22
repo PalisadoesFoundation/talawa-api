@@ -52,7 +52,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message : unknown) => message);
+      .mockImplementationOnce((message: unknown) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: new Types.ObjectId().toString(),
@@ -77,7 +77,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message : unknown) => message);
+      .mockImplementationOnce((message: unknown) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -103,7 +103,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce(( message : unknown) => message);
+      .mockImplementationOnce((message: unknown) => message);
     try {
       const updatedOrganizaiton = await Organization.findOneAndUpdate(
         {
@@ -142,7 +142,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message : unknown) => message);
+      .mockImplementationOnce((message: unknown) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -168,7 +168,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message : unknown) => message);
+      .mockImplementationOnce((message: unknown) => message);
     try {
       const updatedOrganization = await Organization.findOneAndUpdate(
         {

@@ -26,7 +26,6 @@ export const queries = gql`
 
     getAgendaSection(id: ID!): AgendaSection
 
-
     checkAuth: User! @auth
 
     community(id: ID!): Community! @auth
@@ -132,7 +131,7 @@ export const queries = gql`
       first: Int
       skip: Int
       orderBy: UserOrderByInput
-    ): [User]! @auth
+    ): [UserData]! @auth
 
     venue(id: ID!): Venue
   }

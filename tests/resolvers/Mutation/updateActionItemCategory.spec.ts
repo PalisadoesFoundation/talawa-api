@@ -15,7 +15,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 
-import { ActionItemCategory, AppUserProfile } from "../../../src/models";
+import { AppUserProfile } from "../../../src/models";
 import { updateActionItemCategory as updateActionItemCategoryResolver } from "../../../src/resolvers/Mutation/updateActionItemCategory";
 import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { createTestCategory } from "../../helpers/actionItemCategory";
@@ -24,7 +24,6 @@ let randomUser: TestUserType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testCategory: TestActionItemCategoryType;
-let testCategory2: TestActionItemCategoryType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
@@ -37,12 +36,6 @@ beforeAll(async () => {
   randomUser = await createTestUser();
 
   [testUser, testOrganization, testCategory] = await createTestCategory();
-
-  testCategory2 = await ActionItemCategory.create({
-    name: "another action item category",
-    organizationId: testOrganization?._id,
-    creatorId: testUser?._id,
-  });
 });
 
 afterAll(async () => {

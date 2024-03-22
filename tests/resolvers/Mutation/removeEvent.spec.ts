@@ -1,13 +1,8 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceEvent } from "../../../src/models";
-import { User, Event, ActionItem, EventAttendee , AppUserProfile} from "../../../src/models";
-import type {
-  MutationCreateEventArgs,
-  MutationRemoveEventArgs,
-  MutationUpdateEventArgs,
-} from "../../../src/types/generatedGraphQLTypes";
+import { ActionItem, AppUserProfile, Event } from "../../../src/models";
+import type { MutationRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
   connect,
   disconnect,
@@ -30,7 +25,7 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
- 
+
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 // let testUserAppProfile: TestAppUserProfileType;
@@ -38,7 +33,6 @@ let newTestUser: TestUserType;
 // let newTestUserAppProfile: TestAppUserProfileType;
 let testOrganization: TestOrganizationType;
 let testEvent: TestEventType;
-let testRecurringEvent: InterfaceEvent;
 let newTestEvent: TestEventType;
 
 beforeAll(async () => {

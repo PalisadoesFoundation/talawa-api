@@ -1,12 +1,12 @@
-import { AgendaSectionModel, User, Event, AppUserProfile } from "../../models";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
+import { Types } from "mongoose";
 import {
+  EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
-  EVENT_NOT_FOUND_ERROR,
 } from "../../constants";
-import { Types } from "mongoose";
+import { errors, requestContext } from "../../libraries";
+import { AgendaSectionModel, AppUserProfile, Event, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * Resolver function for the GraphQL mutation 'createAgendaSection'.
@@ -56,15 +56,14 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
     }
 
     if (event) {
-     
-      const currentUserIsOrganizationAdmin = currentAppUserProfile.adminFor.some(
-        (organizationId) =>
-          (organizationId &&
-            organizationId ===  event?.organization) ||
-          new Types.ObjectId(organizationId?.toString()).equals(
-            event?.organization
-          ),
-      );
+      const currentUserIsOrganizationAdmin =
+        currentAppUserProfile.adminFor.some(
+          (organizationId) =>
+            (organizationId && organizationId === event?.organization) ||
+            new Types.ObjectId(organizationId?.toString()).equals(
+              event?.organization,
+            ),
+        );
       const currentUserIsEventAdmin = event.admins.some((admin) =>
         admin.equals(currentUser._id),
       );

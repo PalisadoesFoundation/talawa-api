@@ -1,42 +1,40 @@
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Advertisement } from "../../../src/models";
-import type { MutationUpdateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
-import { updateAdvertisement as updateAdvertisementResolver } from "../../../src/resolvers/Mutation/updateAdvertisement";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
+  BASE_URL,
   END_DATE_VALIDATION_ERROR,
+  FIELD_NON_EMPTY_ERROR,
   INPUT_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
-  FIELD_NON_EMPTY_ERROR,
-  BASE_URL,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
+import { ApplicationError } from "../../../src/libraries/errors";
+import { Advertisement } from "../../../src/models";
+import { updateAdvertisement as updateAdvertisementResolver } from "../../../src/resolvers/Mutation/updateAdvertisement";
+import type { MutationUpdateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import {
   createTestAdvertisement,
-  type TestAdvertisementType,
   createTestSuperAdmin,
+  type TestAdvertisementType,
   type TestSuperAdminType,
 } from "../../helpers/advertisement";
-import { ApplicationError } from "../../../src/libraries/errors";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { connect, disconnect } from "../../helpers/db";
+import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdvertisement: TestAdvertisementType;
 let testSuperAdmin: TestSuperAdminType;
-let testAdmin: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
   testSuperAdmin = await createTestSuperAdmin();
   testAdvertisement = await createTestAdvertisement();
-  testAdmin = await createTestSuperAdmin();
 });
 
 afterAll(async () => {

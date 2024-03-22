@@ -2156,7 +2156,7 @@ export type Query = {
   user: UserData;
   userLanguage?: Maybe<Scalars['String']['output']>;
   users?: Maybe<Array<Maybe<UserData>>>;
-  usersConnection: Array<Maybe<User>>;
+  usersConnection: Array<Maybe<UserData>>;
   venue?: Maybe<Venue>;
 };
 
@@ -4149,7 +4149,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   user?: Resolver<ResolversTypes['UserData'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   userLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryUserLanguageArgs, 'userId'>>;
   users?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserData']>>>, ParentType, ContextType, Partial<QueryUsersArgs>>;
-  usersConnection?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType, Partial<QueryUsersConnectionArgs>>;
+  usersConnection?: Resolver<Array<Maybe<ResolversTypes['UserData']>>, ParentType, ContextType, Partial<QueryUsersConnectionArgs>>;
   venue?: Resolver<Maybe<ResolversTypes['Venue']>, ParentType, ContextType, RequireFields<QueryVenueArgs, 'id'>>;
 };
 

@@ -1,29 +1,29 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Community } from "../../../src/models";
-import type { MutationResetCommunityArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
-import { resetCommunity } from "../../../src/resolvers/Mutation/resetCommunity";
 import {
-  beforeAll,
   afterAll,
   afterEach,
+  beforeAll,
   describe,
+  expect,
   it,
   vi,
-  expect,
 } from "vitest";
-import type { TestUserType } from "../../helpers/user";
-import type { TestCommunityType } from "../../helpers/community";
-import {  createTestUserFunc} from "../../helpers/user";
-import { createTestCommunityFunc } from "../../helpers/community";
 import {
   COMMUNITY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { Community } from "../../../src/models";
+import { resetCommunity } from "../../../src/resolvers/Mutation/resetCommunity";
+import type { MutationResetCommunityArgs } from "../../../src/types/generatedGraphQLTypes";
 import { createTestSuperAdmin } from "../../helpers/advertisement";
+import type { TestCommunityType } from "../../helpers/community";
+import { createTestCommunityFunc } from "../../helpers/community";
+import { connect, disconnect } from "../../helpers/db";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser1: TestUserType;
@@ -32,7 +32,7 @@ let testCommunity: TestCommunityType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  testUser1 =   await createTestSuperAdmin();
+  testUser1 = await createTestSuperAdmin();
   testUser2 = await createTestUserFunc(); //normalUser
   testCommunity = await createTestCommunityFunc();
 });

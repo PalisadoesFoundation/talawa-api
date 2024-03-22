@@ -56,7 +56,7 @@ function updateEnvVariable(config: { [key: string]: string | number }): void {
  * environment (either "development" or "production") and returns the selected environment as a string.
  * @returns a Promise that resolves to a string representing the selected Node environment.
  */
- export async function getNodeEnvironment(): Promise<string> {
+export async function getNodeEnvironment(): Promise<string> {
   const { nodeEnv } = await inquirer.prompt([
     {
       type: "list",

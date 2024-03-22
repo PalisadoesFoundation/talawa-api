@@ -1,24 +1,23 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, AgendaSectionModel, AppUserProfile } from "../../../src/models";
-import type { MutationRemoveAgendaSectionArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import removeAgendaSection from "../../../src/resolvers/Mutation/removeAgendaSection";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
-  USER_NOT_FOUND_ERROR,
   AGENDA_SECTION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { AgendaSectionModel, AppUserProfile, User } from "../../../src/models";
+import removeAgendaSection from "../../../src/resolvers/Mutation/removeAgendaSection";
+import type { MutationRemoveAgendaSectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testRandomUser: TestUserType;
 let testRandomUser2: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testAdminUser : TestUserType;
-
+let testAdminUser: TestUserType;
 
 import type { TestUserType } from "../../helpers/userAndOrg";
 
@@ -192,7 +191,7 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
   });
   it("throws an error if the user does not have appUserProfile", async () => {
     await AppUserProfile.deleteOne({
-      userId:  testAdminUser?._id,
+      userId: testAdminUser?._id,
     });
     const agendaSection = await AgendaSectionModel.create({
       createdBy: testUser?._id,
@@ -205,7 +204,7 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
       id: agendaSection._id.toString(),
     };
     const context = {
-      userId: testAdminUser?._id
+      userId: testAdminUser?._id,
     };
 
     try {

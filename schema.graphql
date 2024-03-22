@@ -1381,7 +1381,7 @@ type Query {
   user(id: ID!): UserData!
   userLanguage(userId: ID!): String
   users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]
-  usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]!
+  usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]!
   venue(id: ID!): Venue
 }
 

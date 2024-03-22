@@ -5,18 +5,18 @@ import { UserFamily } from "../../../src/models/userFamily";
 import type { MutationRemoveUserFromUserFamilyArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ADMIN_REMOVING_CREATOR,
   USER_FAMILY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_REMOVING_SELF,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTestUserFunc } from "../../helpers/userAndUserFamily";
 import type {
   TestUserFamilyType,
   TestUserType,
 } from "../../helpers/userAndUserFamily";
+import { createTestUserFunc } from "../../helpers/userAndUserFamily";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];

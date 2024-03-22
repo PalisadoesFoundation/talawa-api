@@ -1,9 +1,9 @@
 import type mongoose from "mongoose";
-import type { MutationRemoveEventArgs } from "../../../types/generatedGraphQLTypes";
-import { RecurrenceRule } from "../../../models/RecurrenceRule";
 import type { InterfaceEvent } from "../../../models";
 import { Event } from "../../../models";
-import { deleteSingleEvent, deleteRecurringEventInstances } from "./index";
+import { RecurrenceRule } from "../../../models/RecurrenceRule";
+import type { MutationRemoveEventArgs } from "../../../types/generatedGraphQLTypes";
+import { deleteRecurringEventInstances, deleteSingleEvent } from "./index";
 
 /**
  * This function deletes thisInstance / allInstances / thisAndFollowingInstances of a recurring event.

@@ -1,3 +1,4 @@
+import type { SortOrder } from "mongoose";
 import type {
   EventOrderByInput,
   InputMaybe,
@@ -5,7 +6,6 @@ import type {
   PostOrderByInput,
   UserOrderByInput,
 } from "../../../types/generatedGraphQLTypes";
-import type { SortOrder } from "mongoose";
 
 export const getSort = (
   orderBy:

@@ -13,7 +13,6 @@ import { getWhere } from "./helperFunctions/getWhere";
  * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
  */
 
-    //@ts-expect-error
 export const usersConnection: QueryResolvers["usersConnection"] = async (
   _parent,
   args,

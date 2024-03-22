@@ -7,7 +7,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { ActionItem, AppUserProfile, Event, User } from "../../models";
+import { AppUserProfile, Event, User } from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import {

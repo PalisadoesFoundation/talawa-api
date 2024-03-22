@@ -3,12 +3,12 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
+  ACTION_ITEM_CATEGORY_IS_DISABLED,
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
-  ACTION_ITEM_CATEGORY_IS_DISABLED,
 } from "../../../src/constants";
 import { createActionItem as createActionItemResolver } from "../../../src/resolvers/Mutation/createActionItem";
 import type { MutationCreateActionItemArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -20,7 +20,12 @@ import type {
 import { createTestUser } from "../../helpers/userAndOrg";
 
 import { nanoid } from "nanoid";
-import { ActionItemCategory, AppUserProfile, Event, User } from "../../../src/models";
+import {
+  ActionItemCategory,
+  AppUserProfile,
+  Event,
+  User,
+} from "../../../src/models";
 import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { createTestCategory } from "../../helpers/actionItemCategory";
 import type { TestEventType } from "../../helpers/events";
@@ -136,8 +141,10 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       };
 
       await createActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ACTION_ITEM_CATEGORY_IS_DISABLED.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ACTION_ITEM_CATEGORY_IS_DISABLED.MESSAGE,
+      );
     }
   });
 
