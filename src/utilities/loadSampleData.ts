@@ -3,7 +3,15 @@ import fs from "fs/promises";
 import path from "path";
 import yargs from "yargs";
 import { connect } from "../db";
-import { ActionItemCategory, AppUserProfile, Community, Event, Organization, Post, User } from "../models";
+import {
+  ActionItemCategory,
+  AppUserProfile,
+  Community,
+  Event,
+  Organization,
+  Post,
+  User,
+} from "../models";
 
 interface InterfaceArgs {
   items?: string;

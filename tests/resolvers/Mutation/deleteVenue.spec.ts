@@ -1,28 +1,28 @@
-import type { TestVenueType } from "./../../helpers/venue";
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { Organization, Venue } from "../../../src/models";
 import type { MutationDeleteVenueArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
+import type { TestVenueType } from "./../../helpers/venue";
 
+import { fail } from "assert";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   VENUE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
-import { createTestUser } from "../../helpers/userAndOrg";
 import {
   NotFoundError,
   UnauthorizedError,
 } from "../../../src/libraries/errors";
-import { fail } from "assert";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -47,7 +47,7 @@ beforeAll(async () => {
   //   description: "description",
   //   capacity: Math.floor(Math.random() * 100),
   //   organization: testOrganization?.id,
-    
+
   // });
 
   const { requestContext } = await import("../../../src/libraries");

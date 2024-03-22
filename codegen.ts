@@ -34,7 +34,7 @@ const config: CodegenConfig = {
 
           Advertisement: "../models/Advertisement#InterfaceAdvertisement",
 
-     
+
           AgendaItem: "../models/AgendaItem#InterfaceAgendaItem",
 
           AgendaSection: "../models/AgendaSection#InterfaceAgendaSection",
@@ -45,7 +45,7 @@ const config: CodegenConfig = {
 
           Comment: "../models/Comment#InterfaceComment",
 
-          Community : "../models/Community#InterfaceCommunity",
+          Community: "../models/Community#InterfaceCommunity",
 
           DirectChat: "../models/DirectChat#InterfaceDirectChat",
 
@@ -98,7 +98,7 @@ const config: CodegenConfig = {
 
           User: "../models/User#InterfaceUser",
 
-          Venue : "../models/Venue#InterfaceVenue"
+          Venue: "../models/Venue#InterfaceVenue"
         },
 
         useTypeImports: true,

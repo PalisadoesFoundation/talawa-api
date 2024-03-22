@@ -280,10 +280,6 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
-   
-
-  
-
   type Feedback {
     _id: ID!
     event: Event!
@@ -606,7 +602,7 @@ export const types = gql`
     isSuperAdmin: Boolean!
     appLanguageCode: String!
   }
-  
+
   type PostsConnection {
     edges: [PostEdge!]!
     pageInfo: DefaultConnectionPageInfo!

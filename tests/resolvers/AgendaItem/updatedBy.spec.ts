@@ -1,21 +1,21 @@
 import "dotenv/config";
-import { connect, disconnect } from "../../helpers/db";
-import { updatedBy as updatedByResolver } from "../../../src/resolvers/AgendaItem/updatedBy";
 import type mongoose from "mongoose";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   AgendaItemModel,
   Event,
   Organization,
   User,
 } from "../../../src/models";
+import { updatedBy as updatedByResolver } from "../../../src/resolvers/AgendaItem/updatedBy";
+import type { TestAgendaItemType } from "../../helpers/agendaItem";
+import { connect, disconnect } from "../../helpers/db";
+import type { TestEventType } from "../../helpers/events";
 import {
   createTestUser,
   type TestOrganizationType,
   type TestUserType,
 } from "../../helpers/userAndOrg";
-import type { TestEventType } from "../../helpers/events";
-import type { TestAgendaItemType } from "../../helpers/agendaItem";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
@@ -37,7 +37,6 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-  
   testEvent = await Event.create({
     title: "title",
     description: "description",

@@ -1,11 +1,29 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, AgendaItemModel, Organization, AppUserProfile } from "../../../src/models";
-import type { MutationRemoveAgendaItemArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  AGENDA_ITEM_NOT_FOUND_ERROR,
+  UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
+import {
+  AgendaItemModel,
+  AppUserProfile,
+  Organization,
+  User,
+} from "../../../src/models";
 import { removeAgendaItem } from "../../../src/resolvers/Mutation/removeAgendaItem";
+import type { MutationRemoveAgendaItemArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { TestAgendaItemType } from "../../helpers/agendaItem";
+import { connect, disconnect } from "../../helpers/db";
+import { createTestEvent } from "../../helpers/events";
+import type { TestEventType } from "../../helpers/eventsWithRegistrants";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
@@ -15,19 +33,6 @@ let testEvent: TestEventType;
 let testOrganization: TestOrganizationType;
 let testAgendaItem: TestAgendaItemType;
 let testAgendaItem2: TestAgendaItemType;
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
-import type { TestEventType } from "../../helpers/eventsWithRegistrants";
-import { createTestEvent } from "../../helpers/events";
-import type { TestAgendaItemType } from "../../helpers/agendaItem";
-import {
-  AGENDA_ITEM_NOT_FOUND_ERROR,
-  UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../../src/constants";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -213,8 +218,7 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
     };
 
     try {
-      if(removeAgendaItem)
-        await removeAgendaItem({}, args, context);
+      if (removeAgendaItem) await removeAgendaItem({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
