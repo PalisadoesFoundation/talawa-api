@@ -76,10 +76,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       new Types.ObjectId(organizationId.toString()).equals(post?.organization),
   );
 
-  if (
-    !((currentUser?.userType ?? "") === "SUPERADMIN") &&
-    !currentUserIsOrganizationAdmin
-  ) {
+  if (!currentUserAppProfile.isSuperAdmin && !currentUserIsOrganizationAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
       USER_NOT_AUTHORIZED_TO_PIN.CODE,

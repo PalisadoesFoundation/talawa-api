@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
     const args: MutationUpdateActionItemCategoryArgs = {
       id: testCategory?._id,
       data: {
-        name: "updatedDefault",
+        name: "updatedDefault2",
         isDisabled: false,
       },
     };
@@ -169,7 +169,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
     expect(updatedCategory).toEqual(
       expect.objectContaining({
         organizationId: testOrganization?._id,
-        name: "updatedDefault",
+        name: "updatedDefault2",
         isDisabled: false,
       }),
     );

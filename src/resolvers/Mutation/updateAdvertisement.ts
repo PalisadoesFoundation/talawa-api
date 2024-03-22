@@ -1,20 +1,21 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { Advertisement, User } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import { Types } from "mongoose";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-  INPUT_NOT_FOUND_ERROR,
   END_DATE_VALIDATION_ERROR,
-  START_DATE_VALIDATION_ERROR,
   FIELD_NON_EMPTY_ERROR,
+  INPUT_NOT_FOUND_ERROR,
+  START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import { Advertisement, AppUserProfile, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
-  async (_parent, args, _context) => {
+  async (_parent, args, context) => {
     const { _id, ...otherFields } = args.input;
 
     //If there is no input
@@ -41,10 +42,10 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
     }
 
     const currentUser = await User.findOne({
-      _id: _context.userId,
+      _id: context.userId,
     });
 
-    if (currentUser === null) {
+    if (!currentUser) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
@@ -52,7 +53,35 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       );
     }
 
-    if (currentUser.userType === "USER") {
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+    const advertisement = await Advertisement.findOne({
+      _id: _id,
+    });
+    if (!advertisement) {
+      throw new errors.NotFoundError(
+        requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
+        ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
+        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    const userIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+      (organisation) =>
+        organisation === advertisement.organizationId ||
+        new Types.ObjectId(organisation?.toString()).equals(
+          advertisement.organizationId,
+        ),
+    );
+    if (!userIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,

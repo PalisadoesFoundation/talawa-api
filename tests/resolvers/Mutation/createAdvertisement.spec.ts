@@ -3,30 +3,33 @@ import type mongoose from "mongoose";
 import type { MutationCreateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import { Types } from "mongoose";
 import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
   vi,
 } from "vitest";
-import type {
-  TestOrganizationType,
-  TestUserType,
-} from "../../helpers/userAndOrg";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { requestContext } from "../../../src/libraries";
-import { Types } from "mongoose";
 import {
   BASE_URL,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { createAdvertisement } from "../../../src/resolvers/Mutation/createAdvertisement";
+import { requestContext } from "../../../src/libraries";
 import { ApplicationError } from "../../../src/libraries/errors";
+import { createAdvertisement } from "../../../src/resolvers/Mutation/createAdvertisement";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { createTestSuperAdmin } from "../..//helpers/advertisement";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+
+let testSuperAdmin: TestUserType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -38,6 +41,7 @@ vi.mock("../../utilities/uploadEncodedImage", () => ({
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
+  testSuperAdmin = await createTestSuperAdmin();
 });
 
 afterAll(async () => {
@@ -134,7 +138,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     };
 
     const context = {
-      userId: testUser?.id,
+      userId: testSuperAdmin?.id,
     };
 
     const { createAdvertisement: createAdvertisementResolver } = await import(

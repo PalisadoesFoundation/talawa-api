@@ -34,11 +34,17 @@ const config: CodegenConfig = {
 
           Advertisement: "../models/Advertisement#InterfaceAdvertisement",
 
+          AgendaItem: "../models/AgendaItem#InterfaceAgendaItem",
+
+          AgendaSection: "../models/AgendaSection#InterfaceAgendaSection",
+
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
           MessageChat: "../models/MessageChat#InterfaceMessageChat",
 
           Comment: "../models/Comment#InterfaceComment",
+
+          Community: "../models/Community#InterfaceCommunity",
 
           DirectChat: "../models/DirectChat#InterfaceDirectChat",
 
@@ -90,6 +96,8 @@ const config: CodegenConfig = {
           UserTag: "../models/OrganizationTagUser#InterfaceOrganizationTagUser",
 
           User: "../models/User#InterfaceUser",
+
+          Venue: "../models/Venue#InterfaceVenue",
         },
 
         useTypeImports: true,

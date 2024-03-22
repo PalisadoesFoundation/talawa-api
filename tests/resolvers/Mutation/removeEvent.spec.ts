@@ -3,7 +3,11 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { ActionItem, AppUserProfile, Event } from "../../../src/models";
 import type { MutationRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
@@ -33,6 +37,8 @@ let newTestEvent: TestEventType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
+
   const temp = await createTestEvent();
   testUser = temp[0];
   testOrganization = temp[1];
@@ -40,6 +46,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
   await disconnect(MONGOOSE_INSTANCE);
 });
 
@@ -200,13 +207,11 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     expect(updatedTestUserAppProfile?.createdEvents).toEqual([]);
     expect(updatedTestUserAppProfile?.eventAdmin).toEqual([]);
 
-    const updatedTestEvent = await Event.findOne({
+    const testEventExists = await Event.exists({
       _id: testEvent?._id,
-    })
-      .select(["status"])
-      .lean();
+    });
 
-    expect(updatedTestEvent?.status).toEqual("DELETED");
+    expect(testEventExists).toBeFalsy();
   });
 
   it(`removes the events and all action items assiciated with it`, async () => {

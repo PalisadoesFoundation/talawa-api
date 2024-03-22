@@ -3,6 +3,7 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
+  ACTION_ITEM_CATEGORY_IS_DISABLED,
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -19,7 +20,12 @@ import type {
 import { createTestUser } from "../../helpers/userAndOrg";
 
 import { nanoid } from "nanoid";
-import { AppUserProfile, Event, User } from "../../../src/models";
+import {
+  ActionItemCategory,
+  AppUserProfile,
+  Event,
+  User,
+} from "../../../src/models";
 import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { createTestCategory } from "../../helpers/actionItemCategory";
 import type { TestEventType } from "../../helpers/events";
@@ -30,6 +36,7 @@ let randomUser2: TestUserType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testCategory: TestActionItemCategoryType;
+let testDisabledCategory: TestActionItemCategoryType;
 let testEvent: TestEventType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -54,12 +61,19 @@ beforeAll(async () => {
 
   [testUser, testOrganization, testCategory] = await createTestCategory();
 
+  testDisabledCategory = await ActionItemCategory.create({
+    name: "a disabled category",
+    organizationId: testOrganization?._id,
+    isDisabled: true,
+    creatorId: testUser?._id,
+  });
+
   testEvent = await Event.create({
     title: `title${nanoid().toLowerCase()}`,
     description: `description${nanoid().toLowerCase()}`,
     allDay: true,
     startDate: new Date(),
-    recurring: true,
+    recurring: false,
     isPublic: true,
     isRegisterable: true,
     creatorId: randomUser?._id,
@@ -92,7 +106,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     }
   });
 
-  it(`throws NotFoundError if no actionItemCategory exists with _id === args.organizationId`, async () => {
+  it(`throws NotFoundError if no actionItemCategory exists with _id === args.actionItemCategoryId`, async () => {
     try {
       const args: MutationCreateActionItemArgs = {
         data: {
@@ -109,6 +123,27 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
+      );
+    }
+  });
+
+  it(`throws ConflictError if the actionItemCategory is disabled`, async () => {
+    try {
+      const args: MutationCreateActionItemArgs = {
+        data: {
+          assigneeId: randomUser?._id,
+        },
+        actionItemCategoryId: testDisabledCategory._id,
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      await createActionItemResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ACTION_ITEM_CATEGORY_IS_DISABLED.MESSAGE,
       );
     }
   });

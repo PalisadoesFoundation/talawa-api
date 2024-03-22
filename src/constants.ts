@@ -27,6 +27,12 @@ export const ACTION_ITEM_CATEGORY_ALREADY_EXISTS = {
   MESSAGE: "actionItemCategory.alreadyExists",
   PARAM: "actionItemCategory",
 };
+export const ACTION_ITEM_CATEGORY_IS_DISABLED = {
+  DESC: "Action Item Category is disabled",
+  CODE: "actionItemCategory.isDisabled",
+  MESSAGE: "actionItemCategory.isDisabled",
+  PARAM: "actionItemCategory",
+};
 
 export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
   DESC: "Agenda category not found",
@@ -41,11 +47,38 @@ export const CHAT_NOT_FOUND_ERROR = {
   MESSAGE: "chat.notFound",
   PARAM: "chat",
 };
+
+export const VENUE_ALREADY_EXISTS_ERROR = {
+  DESC: "Venue already exists",
+  CODE: "venue.alreadyExists",
+  MESSAGE: "venue.alreadyExists",
+  PARAM: "venue",
+};
+
+export const VENUE_NOT_FOUND_ERROR = {
+  DESC: "Venue does not exist",
+  CODE: "venue.NotFound",
+  MESSAGE: "venue.NotFound",
+  PARAM: "venue",
+};
+
 export const COMMENT_NOT_FOUND_ERROR = {
   DESC: "Comment not found",
   CODE: "comment.notFound",
   MESSAGE: "comment.notFound",
   PARAM: "comment",
+};
+export const COMMUNITY_NOT_FOUND_ERROR = {
+  DESC: "Community not found",
+  CODE: "community.notFound",
+  MESSAGE: "community.notFound",
+  PARAM: "community",
+};
+export const COMMUNITY_LOGO_NOT_MISSING_IN_ARGS = {
+  DESC: "Community logo was not provided",
+  CODE: "community.logoMissing",
+  MESSAGE: "community.logoMissing",
+  PARAM: "community",
 };
 export const ERROR_IN_SENDING_MAIL = "Error in sending mail";
 export const EVENT_NOT_FOUND_ERROR = {
@@ -117,8 +150,13 @@ export const MEMBERSHIP_REQUEST_NOT_FOUND_ERROR = {
   MESSAGE: "membershipRequest.notFound",
   PARAM: "membershipRequest",
 };
-export const MEMBERSHIP_REQUEST_ALREADY_EXISTS =
-  "Membership Request already exists";
+
+export const MEMBERSHIP_REQUEST_ALREADY_EXISTS = {
+  DESC: "Membership Request already exists",
+  CODE: "membershipRequest.alreadyExists",
+  MESSAGE: "membershipRequest.alreadyExists",
+  PARAM: "membershipRequest",
+};
 
 export const ORGANIZATION_MEMBER_NOT_FOUND_ERROR = {
   DESC: "Organization's user is not a member",
@@ -138,6 +176,20 @@ export const ORGANIZATION_NOT_FOUND_ERROR = {
   MESSAGE: "organization.notFound",
   PARAM: "organization",
 };
+export const VENUE_NAME_MISSING_ERROR = {
+  DESC: "Venue name not found",
+  CODE: "venueName.notFound",
+  MESSAGE: "venueName.notFound",
+  PARAM: "venueName",
+};
+
+export const VENUE_ALREADY_SCHEDULED = {
+  DESC: "Venue is already scheduled",
+  CODE: "venue.alreadySchduled",
+  MESSAGE: "venue.alreadySchduled",
+  PARAM: "venue",
+};
+
 export const ORGANIZATION_IMAGE_NOT_FOUND_ERROR = {
   DESC: "OrganizationImage not found",
   CODE: "organizationImage.notFound",
@@ -439,6 +491,40 @@ export const USER_NOT_AUTHORIZED_ERROR = {
   MESSAGE: "user.notAuthorized",
   PARAM: "user",
 };
+
+export const UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR = {
+  DESC: "Unauthorized to remove the agenda item",
+  CODE: "unauthorized.removeAgendaItem",
+  MESSAGE: "Unauthorized to remove the agenda item",
+  PARAM: "agendaItem",
+};
+
+export const UNAUTHORIZED_UPDATE_AGENDA_ITEM_ERROR = {
+  DESC: "Unauthorized to update the agenda item",
+  CODE: "unauthorized.updateAgendaItem",
+  MESSAGE: "Unauthorized to update the agenda item",
+  PARAM: "agendaItem",
+};
+
+export const AGENDA_ITEM_NOT_FOUND_ERROR = {
+  DESC: "Agenda item not found",
+  CODE: "agendaItem.notFound",
+  MESSAGE: "agendaItem.notFound",
+  PARAM: "agendaItem",
+};
+export const AGENDA_ITEM_CREATION_ERROR = {
+  DESC: "Agenda item not created",
+  CODE: "agendaItem.notCreated",
+  MESSAGE: "agendaItem.notCreated",
+  PARAM: "agendaItem",
+};
+export const AGENDA_SECTION_NOT_FOUND_ERROR = {
+  DESC: "Agenda section not found",
+  CODE: "agendaSection.notFound",
+  MESSAGE: "agendaSection.notFound",
+  PARAM: "agendaSection",
+};
+
 export const USER_NOT_FOUND_ERROR = {
   DESC: "User not found",
   CODE: "user.notFound",
@@ -631,3 +717,8 @@ export enum EventVolunteerResponse {
   YES = "YES",
   NO = "NO",
 }
+
+export const DEFAULT_COMMUNITY = {
+  name: "Palisadoes Foundation",
+  description: "An open source application by Palisadoes Foundation volunteers",
+};

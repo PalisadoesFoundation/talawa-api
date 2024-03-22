@@ -30,7 +30,6 @@ export const createFund: MutationResolvers["createFund"] = async (
   const currentUser = await User.findOne({
     _id: context.userId,
   });
-
   // Checks whether currentUser with _id === context.userId exists.
   if (currentUser === null) {
     throw new errors.NotFoundError(

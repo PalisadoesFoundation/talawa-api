@@ -75,7 +75,6 @@ export const posts: OrganizationResolvers["posts"] = async (parent, args) => {
       .countDocuments()
       .exec(),
   ]);
-
   return transformToDefaultGraphQLConnection<
     ParsedCursor,
     InterfacePost,

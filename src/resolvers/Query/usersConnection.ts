@@ -12,6 +12,7 @@ import { getWhere } from "./helperFunctions/getWhere";
  * @remarks Connection in graphQL means pagination,
  * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
  */
+
 export const usersConnection: QueryResolvers["usersConnection"] = async (
   _parent,
   args,

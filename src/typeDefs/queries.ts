@@ -7,8 +7,6 @@ export const queries = gql`
   type Query {
     adminPlugin(orgId: ID!): [Plugin]
 
-    actionItem(id: ID!): ActionItem
-
     actionItemsByEvent(eventId: ID!): [ActionItem]
 
     actionItemsByOrganization(
@@ -17,15 +15,20 @@ export const queries = gql`
       orderBy: ActionItemsOrderByInput
     ): [ActionItem]
 
-    actionItemCategory(id: ID!): ActionItemCategory
-
     actionItemCategoriesByOrganization(
       organizationId: ID!
     ): [ActionItemCategory]
+    getAgendaItem(id: ID!): AgendaItem
+
+    getAllAgendaItems: [AgendaItem]
 
     agendaCategory(id: ID!): AgendaCategory!
 
+    getAgendaSection(id: ID!): AgendaSection
+
     checkAuth: User! @auth
+
+    community(id: ID!): Community! @auth
 
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]
 
@@ -69,7 +72,12 @@ export const queries = gql`
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]
-    advertisementsConnection: [Advertisement]
+    advertisementsConnection(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): AdvertisementsConnection
 
     isSampleOrganization(id: ID!): Boolean!
     hasSubmittedFeedback(userId: ID!, eventId: ID!): Boolean
@@ -124,5 +132,7 @@ export const queries = gql`
       skip: Int
       orderBy: UserOrderByInput
     ): [UserData]! @auth
+
+    venue(id: ID!): Venue
   }
 `;

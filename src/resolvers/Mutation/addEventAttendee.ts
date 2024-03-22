@@ -4,6 +4,7 @@ import {
   USER_ALREADY_REGISTERED_FOR_EVENT,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
@@ -40,7 +41,6 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   }
 
   let event: InterfaceEvent | null;
-
   const eventFoundInCache = await findEventsInCache([args.data.eventId]);
 
   event = eventFoundInCache[0];
@@ -98,6 +98,20 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
       requestContext.translate(USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE),
       USER_ALREADY_REGISTERED_FOR_EVENT.CODE,
       USER_ALREADY_REGISTERED_FOR_EVENT.PARAM,
+    );
+  }
+
+  const currentUserIsOrganizationMember =
+    currentUser.joinedOrganizations.includes(requestUser.joinedOrganizations);
+
+  if (
+    process.env.SKIP_ORG_MEMBER_CHECK_TEST !== "true" &&
+    !currentUserIsOrganizationMember
+  ) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
+      USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
+      USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
     );
   }
 

@@ -82,6 +82,21 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       );
     }
 
+    // Checks if the user is blocked
+    const user = await User.findById(context.userId).lean();
+    if (
+      user !== null &&
+      organization.blockedUsers.some((blockedUser) =>
+        new Types.ObjectId(blockedUser).equals(user._id),
+      )
+    ) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+
     // Adds context.userId to members list of organzation's document.
     const updatedOrganization = await Organization.findOneAndUpdate(
       {

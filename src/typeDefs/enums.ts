@@ -30,7 +30,7 @@ export const enums = gql`
     location_DESC
   }
 
-  enum RecurringEventUpdateType {
+  enum RecurringEventMutationType {
     AllInstances
     ThisInstance
     ThisAndFollowingInstances
@@ -176,6 +176,11 @@ export const enums = gql`
     BANNER
     POPUP
     MENU
+  }
+
+  enum ItemType {
+    Regular
+    Note
   }
 
   enum Currency {

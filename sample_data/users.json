@@ -120,11 +120,7 @@
   },
   {
     "_id": "658930fd2caa9d8d6908745c",
-    "tokenVersion": 0,
-    "appLanguageCode": "en",
-    "createdOrganizations": [],
-    "createdEvents": [],
-    "userType": "USER",
+    "appUserProfileId": "69178abd85008f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -132,8 +128,6 @@
       "6437904485008f171cf29924"
     ],
     "registeredEvents": [],
-    "eventAdmin": [],
-    "adminFor": [],
     "membershipRequests": [],
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
@@ -148,11 +142,7 @@
   },
   {
     "_id": "6589386a2caa9d8d69087484",
-    "tokenVersion": 0,
-    "appLanguageCode": "en",
-    "createdOrganizations": [],
-    "createdEvents": [],
-    "userType": "USER",
+    "appUserProfileId": "64378abd85008f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -160,8 +150,6 @@
       "6437904485008f171cf29924"
     ],
     "registeredEvents": [],
-    "eventAdmin": [],
-    "adminFor": [],
     "membershipRequests": [],
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
@@ -176,11 +164,7 @@
   },
   {
     "_id": "6589387e2caa9d8d69087485",
-    "tokenVersion": 0,
-    "appLanguageCode": "en",
-    "createdOrganizations": [],
-    "createdEvents": [],
-    "userType": "USER",
+    "appUserProfileId": "64378abd85108f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -188,8 +172,6 @@
       "6437904485008f171cf29924"
     ],
     "registeredEvents": [],
-    "eventAdmin": [],
-    "adminFor": [],
     "membershipRequests": [],
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
@@ -204,11 +186,7 @@
   },
   {
     "_id": "6589388b2caa9d8d69087486",
-    "tokenVersion": 0,
-    "appLanguageCode": "en",
-    "createdOrganizations": [],
-    "createdEvents": [],
-    "userType": "USER",
+    "appUserProfileId": "64378abd85208f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -216,8 +194,6 @@
       "6437904485008f171cf29924"
     ],
     "registeredEvents": [],
-    "eventAdmin": [],
-    "adminFor": [],
     "membershipRequests": [],
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
@@ -232,11 +208,7 @@
   },
   {
     "_id": "6589389d2caa9d8d69087487",
-    "tokenVersion": 0,
-    "appLanguageCode": "en",
-    "createdOrganizations": [],
-    "createdEvents": [],
-    "userType": "USER",
+    "appUserProfileId": "64378abd85308f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -244,8 +216,6 @@
       "6437904485008f171cf29924"
     ],
     "registeredEvents": [],
-    "eventAdmin": [],
-    "adminFor": [],
     "membershipRequests": [],
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
@@ -260,11 +230,7 @@
   },
   {
     "_id": "658938a62caa9d8d69087488",
-    "tokenVersion": 0,
-    "appLanguageCode": "en",
-    "createdOrganizations": [],
-    "createdEvents": [],
-    "userType": "USER",
+    "appUserProfileId": "64378abd85408f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -272,8 +238,6 @@
       "6437904485008f171cf29924"
     ],
     "registeredEvents": [],
-    "eventAdmin": [],
-    "adminFor": [],
     "membershipRequests": [],
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
@@ -288,11 +252,7 @@
   },
   {
     "_id": "658938b02caa9d8d69087489",
-    "tokenVersion": 0,
-    "appLanguageCode": "en",
-    "createdOrganizations": [],
-    "createdEvents": [],
-    "userType": "USER",
+    "appUserProfileId": "64378abd85508f171cf2993d",
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -300,8 +260,6 @@
       "6437904485008f171cf29924"
     ],
     "registeredEvents": [],
-    "eventAdmin": [],
-    "adminFor": [],
     "membershipRequests": [],
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
@@ -316,11 +274,7 @@
   },
   {
     "_id": "658938ba2caa9d8d6908748a",
-    "tokenVersion": 0,
-    "appLanguageCode": "en",
-    "createdOrganizations": [],
-    "createdEvents": [],
-    "userType": "USER",
+    "appUserProfileId": null,
     "joinedOrganizations": [
       "6537904485008f171cf29924",
       "6637904485008f171cf29924",
@@ -328,8 +282,6 @@
       "6437904485008f171cf29924"
     ],
     "registeredEvents": [],
-    "eventAdmin": [],
-    "adminFor": [],
     "membershipRequests": [],
     "organizationsBlockedBy": [],
     "status": "ACTIVE",

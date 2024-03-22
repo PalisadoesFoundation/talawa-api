@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
@@ -7,6 +8,7 @@ import {
   USER_ALREADY_REGISTERED_FOR_EVENT,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
 import { AppUserProfile, EventAttendee, User } from "../../../src/models";
 import type { MutationAddEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -163,7 +165,7 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
     const { addEventAttendee: addEventAttendeeResolver } = await import(
       "../../../src/resolvers/Mutation/addEventAttendee"
     );
-
+    process.env.SKIP_ORG_MEMBER_CHECK_TEST = "true";
     const payload = await addEventAttendeeResolver?.({}, args, context);
 
     const requestUser = await User.findOne({
@@ -173,7 +175,7 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
     const isUserRegistered = await EventAttendee.exists({
       ...args.data,
     });
-
+    process.env.SKIP_ORG_MEMBER_CHECK_TEST = undefined;
     expect(payload).toEqual(requestUser);
     expect(isUserRegistered).toBeTruthy();
   });
@@ -235,6 +237,51 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
       expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
+
+      //   await addEventAttendeeResolver?.({}, args, context);
+      // } catch (error: unknown) {
+      //   if (error instanceof Error) {
+      //     expect(error.message).toEqual(
+      //       `Translated ${USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE}`,
+      //     );
+      //     expect(spy).toHaveBeenLastCalledWith(
+      //       USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE,
+      //     );
+      //   }
     }
+    it(`throws UnauthorizedError if the requestUser is not a member of the organization`, async () => {
+      const { requestContext } = await import("../../../src/libraries");
+
+      const spy = vi
+        .spyOn(requestContext, "translate")
+        .mockImplementationOnce((message) => `Translated ${message}`);
+
+      try {
+        // Create a test user who is not a member of the organization
+        const args: MutationAddEventAttendeeArgs = {
+          data: {
+            userId: randomTestUser!._id,
+            eventId: testEvent!._id,
+          },
+        };
+
+        const context = { userId: testUser!._id };
+
+        const { addEventAttendee: addEventAttendeeResolver } = await import(
+          "../../../src/resolvers/Mutation/addEventAttendee"
+        );
+
+        await addEventAttendeeResolver?.({}, args, context);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          expect(error.message).toEqual(
+            `Translated ${USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE}`,
+          );
+          expect(spy).toHaveBeenLastCalledWith(
+            USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE,
+          );
+        }
+      }
+    });
   });
 });
