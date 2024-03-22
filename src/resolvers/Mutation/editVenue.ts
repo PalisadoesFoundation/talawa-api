@@ -43,7 +43,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM,
     );
-  } 
+  }
   const currentAppProfile = await AppUserProfile.findOne({
     userId: context.userId,
   });
