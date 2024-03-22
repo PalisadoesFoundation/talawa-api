@@ -1,6 +1,11 @@
 import { Types } from "mongoose";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { Advertisement, AppUserProfile, Organization, User } from "../../models";
+import {
+  Advertisement,
+  AppUserProfile,
+  Organization,
+  User,
+} from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
@@ -80,7 +85,6 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
     if (organizationFoundInCache.includes(null)) {
       organization = await Organization.findOne({
         _id: args.input._id, //args.input.organizationId
-
       }).lean();
       await cacheOrganizations([organization as InterfaceOrganization]);
     }
