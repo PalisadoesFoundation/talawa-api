@@ -22,8 +22,8 @@ This function determines whether the user is authorised and whether the access t
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type                                                                                   |
+| :-------- | :------------------------------------------------------------------------------------- |
 | `request` | `Request`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`\>\> |
 
 #### Returns

@@ -4,7 +4,6 @@ import { categories as relatedCategoriesResolver } from "../../../src/resolvers/
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  User,
   Event,
   Organization,
   AgendaItemModel,
@@ -23,7 +22,6 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
-let testSuperAdmin: TestUserType;
 let testAdminUser: TestUserType;
 let testAgendaItem: TestAgendaItemType;
 let testAgendaCategory: TestAgendaCategoryType; // Assuming you have TestAgendaCategoryType defined
@@ -31,7 +29,6 @@ let testAgendaCategory: TestAgendaCategoryType; // Assuming you have TestAgendaC
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
-  testSuperAdmin = await createTestUser();
   testAdminUser = await createTestUser();
   testOrganization = await Organization.create({
     name: "name",
@@ -42,18 +39,6 @@ beforeAll(async () => {
     members: [testUser?._id, testAdminUser?._id],
     creatorId: testUser?._id,
   });
-
-  testSuperAdmin = await User.findOneAndUpdate(
-    {
-      _id: testSuperAdmin?._id,
-    },
-    {
-      userType: "SUPERADMIN",
-    },
-    {
-      new: true,
-    },
-  );
 
   testEvent = await Event.create({
     title: "title",

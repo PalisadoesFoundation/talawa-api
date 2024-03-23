@@ -29,13 +29,13 @@
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
-| `model` | `string` |
-| `query?` | `string` |
+| Name        | Type     |
+| :---------- | :------- |
+| `model`     | `string` |
+| `query?`    | `string` |
 | `timestamp` | `string` |
-| `type` | `string` |
-| `update?` | `string` |
+| `type`      | `string` |
+| `update?`   | `string` |
 
 #### Defined in
 
@@ -45,7 +45,7 @@
 
 ### default
 
-• **default**: `winston.Logger` \| ``null`` = `null`
+• **default**: `winston.Logger` \| `null` = `null`
 
 #### Defined in
 
@@ -59,16 +59,16 @@
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `T` | extends `Document`\<`any`, `any`, `any`\> |
+| Name | Type                                      |
+| :--- | :---------------------------------------- |
+| `T`  | extends `Document`\<`any`, `any`, `any`\> |
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `schema` | `Schema`\<`T`, `Model`\<`T`, `any`, `any`\>, `undefined`, \{\}\> |
-| `modelName` | `string` |
+| Name        | Type                                                             |
+| :---------- | :--------------------------------------------------------------- |
+| `schema`    | `Schema`\<`T`, `Model`\<`T`, `any`, `any`\>, `undefined`, \{\}\> |
+| `modelName` | `string`                                                         |
 
 #### Returns
 

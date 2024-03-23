@@ -1,7 +1,5 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { Types } from "mongoose";
-
 import type { MutationCreateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -35,14 +33,12 @@ import {
 import { requestContext } from "../../../src/libraries";
 import { ApplicationError } from "../../../src/libraries/errors";
 import type { InterfaceAdvertisement } from "../../../src/models";
-import { createTestUser } from "../../helpers/user";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testSuperAdmin: TestSuperAdminType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testAdvertisement: TestAdvertisementType;
-let testAdmin: TestUserType;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
@@ -55,7 +51,6 @@ beforeAll(async () => {
   testOrganization = temp[1];
   testSuperAdmin = await createTestSuperAdmin();
   testAdvertisement = await createTestAdvertisement();
-  testAdmin = await createTestUser();
 });
 
 afterAll(async () => {
@@ -75,7 +70,7 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       "../../../src/resolvers/Mutation/deleteAdvertisement"
     );
     const context = {
-      userId: null,
+      userId: "123456789sdfghjk",
     };
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
@@ -89,30 +84,6 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-  });
-
-  it(`throws NotAuthorizedError if ADMIN does not belongs to the organization`, async () => {
-    // deleting
-    const { deleteAdvertisement } = await import(
-      "../../../src/resolvers/Mutation/deleteAdvertisement"
-    );
-    const context = {
-      userId: testAdmin?._id,
-    };
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message: string) => `Translated ${message}`);
-
-    try {
-      await deleteAdvertisement?.({}, { id: testAdvertisement._id }, context);
-    } catch (error: unknown) {
-      if (!(error instanceof ApplicationError)) return;
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -165,37 +136,6 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
     }
   });
 
-  it("should throw NOT_FOUND_ERROR on wrong advertisement", async () => {
-    // deleting
-    const { deleteAdvertisement } = await import(
-      "../../../src/resolvers/Mutation/deleteAdvertisement"
-    );
-
-    const context = {
-      userId: testSuperAdmin?._id,
-    };
-
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message: string) => `Translated ${message}`);
-
-    try {
-      await deleteAdvertisement?.(
-        {},
-        { id: Types.ObjectId().toString() },
-        context,
-      );
-    } catch (error: unknown) {
-      console.log(error);
-      if (!(error instanceof ApplicationError)) return;
-      expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-  });
-
   it(`creates the ad and then deleting the ad`, async () => {
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`,
@@ -238,5 +178,56 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       context,
     );
     expect(deleteAdvertisementPayload).toEqual(createdAdvertisementPayload);
+  });
+  it("should throw NOT_FOUND_ERROR on wrong advertisement", async () => {
+    // deleting
+    const { deleteAdvertisement } = await import(
+      "../../../src/resolvers/Mutation/deleteAdvertisement"
+    );
+    const context = {
+      userId: testUser?.id,
+    };
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message: string) => `Translated ${message}`);
+
+    try {
+      await deleteAdvertisement?.(
+        {},
+        { id: "64d1f8cb77a4b51004f824b8" },
+        context,
+      );
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
+      expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
+  });
+
+  it("should throw NOT_FOUND_ERROR when id not provided", async () => {
+    // deleting
+    const { deleteAdvertisement } = await import(
+      "../../../src/resolvers/Mutation/deleteAdvertisement"
+    );
+    const context = {
+      userId: testUser?.id,
+    };
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message: string) => `Translated ${message}`);
+
+    try {
+      await deleteAdvertisement?.({}, { id: "" }, context);
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
+      expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
   });
 });

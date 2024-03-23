@@ -30,7 +30,7 @@ This is an interface representing a document for a file in the database(MongoDB)
 
 [src/models/File.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/File.ts#L8)
 
-___
+---
 
 ### contentType
 
@@ -40,7 +40,7 @@ ___
 
 [src/models/File.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/File.ts#L13)
 
-___
+---
 
 ### createdAt
 
@@ -50,7 +50,7 @@ ___
 
 [src/models/File.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/File.ts#L15)
 
-___
+---
 
 ### name
 
@@ -60,7 +60,7 @@ ___
 
 [src/models/File.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/File.ts#L9)
 
-___
+---
 
 ### secret
 
@@ -70,7 +70,7 @@ ___
 
 [src/models/File.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/File.ts#L12)
 
-___
+---
 
 ### size
 
@@ -80,7 +80,7 @@ ___
 
 [src/models/File.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/File.ts#L11)
 
-___
+---
 
 ### status
 
@@ -90,7 +90,7 @@ ___
 
 [src/models/File.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/File.ts#L14)
 
-___
+---
 
 ### updatedAt
 
@@ -100,7 +100,7 @@ ___
 
 [src/models/File.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/File.ts#L16)
 
-___
+---
 
 ### url
 

@@ -1,7 +1,13 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, EventAttendee, Event } from "../../../src/models";
+import {
+  AppUserProfile,
+  Event,
+  EventAttendee,
+  Organization,
+  User,
+} from "../../../src/models";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
   connect,
@@ -9,27 +15,28 @@ import {
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
 
+import { fail } from "assert";
+import { addMonths } from "date-fns";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
-import { createTestUser } from "../../helpers/userAndOrg";
 import {
   InputValidationError,
   NotFoundError,
   UnauthorizedError,
 } from "../../../src/libraries/errors";
-import { fail } from "assert";
-import { addMonths } from "date-fns";
 import { Frequency, RecurrenceRule } from "../../../src/models/RecurrenceRule";
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -53,9 +60,9 @@ beforeAll(async () => {
     visibleInSearch: true,
   });
 
-  await User.updateOne(
+  await AppUserProfile.updateOne(
     {
-      _id: testUser?._id,
+      userId: testUser?._id,
     },
     {
       $push: {
@@ -98,7 +105,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createEvent: createEventResolverError } = await import(
@@ -119,7 +126,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     try {
       const args: MutationCreateEventArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           allDay: false,
           description: "",
           endDate: "",
@@ -207,8 +214,18 @@ describe("resolvers -> Mutation -> createEvent", () => {
       },
       {
         $push: {
-          createdOrganizations: testOrganization?._id,
           joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+          adminFor: testOrganization?._id,
         },
       },
     );
@@ -278,13 +295,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -297,8 +312,18 @@ describe("resolvers -> Mutation -> createEvent", () => {
       },
       {
         $push: {
-          createdOrganizations: testOrganization?._id,
           joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+          adminFor: testOrganization?._id,
         },
       },
     );
@@ -386,13 +411,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -406,7 +429,16 @@ describe("resolvers -> Mutation -> createEvent", () => {
       {
         $push: {
           createdOrganizations: testOrganization?._id,
-          joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
         },
       },
     );
@@ -428,7 +460,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         longitude: 1,
         location: "newLocation",
         recurring: true,
-        images: ["image_url_1", "image_url_2", "image_url_3", "image_url_4"],
         startDate,
         startTime: startDate.toUTCString(),
         endDate,
@@ -498,13 +529,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -518,7 +547,16 @@ describe("resolvers -> Mutation -> createEvent", () => {
       {
         $push: {
           createdOrganizations: testOrganization?._id,
-          joinedOrganizations: testOrganization?._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
         },
       },
     );
@@ -606,13 +644,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -626,11 +662,19 @@ describe("resolvers -> Mutation -> createEvent", () => {
       {
         $push: {
           createdOrganizations: testOrganization?._id,
-          joinedOrganizations: testOrganization?._id,
         },
       },
     );
-
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+        },
+      },
+    );
     let startDate = new Date();
     startDate = addMonths(startDate, 3);
 
@@ -715,13 +759,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -823,13 +865,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -931,13 +971,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-        createdEvents: expect.arrayContaining([createEventPayload?._id]),
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
@@ -1211,56 +1249,7 @@ describe("Check for validation conditions", () => {
       }
     }
   });
-  it(`throws Time Validation error if start time is greater than end time`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message,
-    );
-    try {
-      const args: MutationCreateEventArgs = {
-        data: {
-          organizationId: testOrganization?.id,
-          allDay: false,
-          description: "Random",
-          endDate: "",
-          endTime: "2024-03-02T06:00:00.000Z",
-          isPublic: false,
-          isRegisterable: false,
-          latitude: 1,
-          longitude: 1,
-          location: "Random",
-          recurring: false,
-          startDate: "",
-          startTime: "2024-03-02T08:00:00.000Z",
-          title: "Random",
-          recurrance: "DAILY",
-        },
-      };
-
-      const context = {
-        userId: testUser?.id,
-      };
-
-      const { createEvent: createEventResolverError } = await import(
-        "../../../src/resolvers/Mutation/createEvent"
-      );
-
-      await createEventResolverError?.({}, args, context);
-    } catch (error: unknown) {
-      if (error instanceof InputValidationError) {
-        expect(error.message).toEqual(
-          `start time must be earlier than end time`,
-        );
-      } else {
-        fail(`Expected TimeValidationError, but got ${error}`);
-      }
-    }
-  });
-  it(`throws Image Validation error if greater then 5 images are uploaded`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message,
-    );
+  it("throws error if the user does not have appUserProfile", async () => {
     try {
       const args: MutationCreateEventArgs = {
         data: {
@@ -1279,17 +1268,11 @@ describe("Check for validation conditions", () => {
           startTime: new Date().toUTCString(),
           title: "newTitle",
           recurrance: "DAILY",
-          images: [
-            "image_url_1.jpg",
-            "image_url_2.jpg",
-            "image_url_3.jpg",
-            "image_url_4.jpg",
-            "image_url_5.jpg",
-            "image_url_6.jpg",
-          ],
         },
       };
-
+      await AppUserProfile.deleteOne({
+        userId: testUser?._id,
+      });
       const context = {
         userId: testUser?.id,
       };
@@ -1300,11 +1283,9 @@ describe("Check for validation conditions", () => {
 
       await createEventResolverError?.({}, args, context);
     } catch (error: unknown) {
-      if (error instanceof InputValidationError) {
-        expect(error.message).toEqual(
-          `Event validation failed: images: Up to 5 images are allowed.`,
-        );
-      }
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 });

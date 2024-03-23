@@ -16,17 +16,17 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `str` | `string` |
+| Name        | Type     |
+| :---------- | :------- |
+| `str`       | `string` |
 | `maxLength` | `number` |
 
 #### Returns
 
 `Object`
 
-| Name | Type |
-| :------ | :------ |
+| Name                  | Type      |
+| :-------------------- | :-------- |
 | `isLessThanMaxLength` | `boolean` |
 
 #### Defined in

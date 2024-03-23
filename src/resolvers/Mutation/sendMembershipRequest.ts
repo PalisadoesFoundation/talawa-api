@@ -55,7 +55,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
     });
 
     // Checks whether user exists.
-    if (userExists === false) {
+    if (!userExists) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
@@ -65,7 +65,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
 
     // Checks if the user is already a member of the organization
     const isMember = organization.members.some((member) =>
-      Types.ObjectId(member).equals(context.userId),
+      new Types.ObjectId(member).equals(context.userId),
     );
 
     if (isMember === true) {
@@ -81,7 +81,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
     if (
       user !== null &&
       organization.blockedUsers.some((blockedUser) =>
-        Types.ObjectId(blockedUser).equals(user._id),
+        new Types.ObjectId(blockedUser).equals(user._id),
       )
     ) {
       throw new errors.UnauthorizedError(
@@ -97,7 +97,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       organization: organization._id,
     });
 
-    if (membershipRequestExists === true) {
+    if (membershipRequestExists) {
       throw new errors.ConflictError(
         requestContext.translate(MEMBERSHIP_REQUEST_ALREADY_EXISTS.MESSAGE),
         MEMBERSHIP_REQUEST_ALREADY_EXISTS.CODE,

@@ -7,7 +7,7 @@ import {
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event, EventAttendee } from "../../models";
+import { User, Event, EventAttendee, AppUserProfile } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 
@@ -24,7 +24,16 @@ export const removeEventAttendee: MutationResolvers["removeEventAttendee"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
-
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
     let currentEvent: InterfaceEvent | null;
 
     const eventFoundInCache = await findEventsInCache([args.data.eventId]);
@@ -53,7 +62,7 @@ export const removeEventAttendee: MutationResolvers["removeEventAttendee"] =
       (admin) => admin.toString() === context.userId.toString(),
     );
 
-    if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {
+    if (!isUserEventAdmin && currentUserAppProfile.isSuperAdmin === false) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,

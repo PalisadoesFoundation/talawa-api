@@ -16,8 +16,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name           | Type                                                                                  |
+| :------------- | :------------------------------------------------------------------------------------ |
 | `organization` | [`InterfaceOrganization`](../interfaces/models_Organization.InterfaceOrganization.md) |
 
 #### Returns

@@ -1,6 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors } from "../../libraries";
-import { AgendaCategoryModel, User } from "../../models";
+import { errors, requestContext } from "../../libraries";
+import { AgendaCategoryModel, AppUserProfile, User } from "../../models";
 import {
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -38,6 +38,18 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+
+    const currentAppUserProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentAppUserProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+
     if (!agendaCategory) {
       throw new errors.NotFoundError(
         AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
@@ -47,19 +59,19 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
     }
 
     const currentOrg = await AgendaCategoryModel.findById(agendaCategory._id)
-      .populate("organization")
-      .select("organization")
+      .select("organizationId")
       .lean();
 
-    const currentUserIsOrgAdmin = currentUser.adminFor.some(
+    const currentOrgId = currentOrg?.organizationId?.toString() || "";
+
+    const currentUserIsOrgAdmin = currentAppUserProfile.adminFor.some(
       (organizationId) =>
-        organizationId === currentOrg?._id ||
-        Types.ObjectId(organizationId).equals(organizationId),
+        new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
     );
     // If the user is a normal user, throw an error
     if (
       currentUserIsOrgAdmin === false &&
-      currentUser.userType !== "SUPERADMIN"
+      currentAppUserProfile.isSuperAdmin === false
     ) {
       throw new errors.UnauthorizedError(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,

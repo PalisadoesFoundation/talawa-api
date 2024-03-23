@@ -1,14 +1,14 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { Types } from "mongoose";
 import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { addOrganizationCustomField } from "../../../src/resolvers/Mutation/addOrganizationCustomField";
+import { connect, disconnect } from "../../helpers/db";
 import {
   createTestUser,
   createTestUserAndOrganization,
   type TestOrganizationType,
   type TestUserType,
 } from "../../helpers/userAndOrg";
-import { connect, disconnect } from "../../helpers/db";
 
 import {
   CUSTOM_FIELD_NAME_MISSING,
@@ -17,6 +17,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { AppUserProfile } from "../../../src/models";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -74,9 +75,9 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
 
     try {
       await addOrganizationCustomField?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
@@ -98,9 +99,9 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
 
     try {
       await addOrganizationCustomField?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(CUSTOM_FIELD_NAME_MISSING.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${CUSTOM_FIELD_NAME_MISSING.MESSAGE}`,
       );
     }
@@ -122,9 +123,9 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
 
     try {
       await addOrganizationCustomField?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(CUSTOM_FIELD_TYPE_MISSING.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${CUSTOM_FIELD_TYPE_MISSING.MESSAGE}`,
       );
     }
@@ -138,7 +139,7 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     const unknownUser = {
-      _id: Types.ObjectId().toString(),
+      _id: new Types.ObjectId().toString(),
     };
 
     const args = {
@@ -150,9 +151,9 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
 
     try {
       await addOrganizationCustomField?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -165,7 +166,7 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     const args = {
-      organizationId: Types.ObjectId().toString(),
+      organizationId: new Types.ObjectId().toString(),
       name: "testName",
       type: "testType",
     };
@@ -173,12 +174,39 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
 
     try {
       await addOrganizationCustomField?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
         ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const args = {
+      organizationId: testOrganization?._id,
+      name: "testName",
+      type: "testType",
+    };
+    const testUser = await createTestUser();
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const context = { userId: testUser?._id };
+
+    try {
+      await addOrganizationCustomField?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });

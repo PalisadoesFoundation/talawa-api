@@ -1,6 +1,6 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
-import { Event, EventAttendee, User } from "../../../models";
+import { AppUserProfile, Event, EventAttendee, User } from "../../../models";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import { getEventData } from "./getEventData";
@@ -123,17 +123,26 @@ export const updateSingleEvent = async (
         },
         {
           $pull: {
-            eventAdmin: event._id,
-            createdEvents: event._id,
             registeredEvents: event._id,
           },
         },
         { session },
       ),
+      AppUserProfile.updateOne(
+        {
+          userId: event.creatorId,
+        },
+        {
+          $push: {
+            eventAdmin: event._id,
+            createdEvents: event._id,
+          },
+        },
+      ),
     ]);
   } else {
     // else (i.e. the event is still non-recurring), just perform a regular update
-    updatedEvent = await Event.findOneAndUpdate(
+    updatedEvent = (await Event.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -144,7 +153,7 @@ export const updateSingleEvent = async (
         new: true,
         session,
       },
-    ).lean();
+    ).lean()) as InterfaceEvent;
 
     if (updatedEvent !== null) {
       await cacheEvents([updatedEvent]);

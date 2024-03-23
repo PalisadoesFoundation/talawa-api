@@ -1,9 +1,11 @@
-import { errors, requestContext } from "../libraries";
 import { USER_NOT_AUTHORIZED_SUPERADMIN } from "../constants";
-import type { InterfaceUser } from "../models";
+import { errors, requestContext } from "../libraries";
+import type { InterfaceAppUserProfile } from "../models";
 
-export const superAdminCheck = (user: InterfaceUser): void => {
-  const userIsSuperAdmin: boolean = user.userType === "SUPERADMIN";
+export const superAdminCheck = (
+  appUserProfile: InterfaceAppUserProfile,
+): void => {
+  const userIsSuperAdmin: boolean = appUserProfile.isSuperAdmin;
 
   if (!userIsSuperAdmin) {
     throw new errors.UnauthorizedError(

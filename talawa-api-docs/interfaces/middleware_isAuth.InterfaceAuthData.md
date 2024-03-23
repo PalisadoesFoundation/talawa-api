@@ -22,7 +22,7 @@
 
 [src/middleware/isAuth.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/middleware/isAuth.ts#L9)
 
-___
+---
 
 ### isAuth
 
@@ -32,7 +32,7 @@ ___
 
 [src/middleware/isAuth.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/middleware/isAuth.ts#L8)
 
-___
+---
 
 ### userId
 

@@ -23,7 +23,7 @@
 
 [src/models/EventAttendee.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/EventAttendee.ts#L8)
 
-___
+---
 
 ### checkInId
 
@@ -33,7 +33,7 @@ ___
 
 [src/models/EventAttendee.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/EventAttendee.ts#L11)
 
-___
+---
 
 ### eventId
 
@@ -43,7 +43,7 @@ ___
 
 [src/models/EventAttendee.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/EventAttendee.ts#L10)
 
-___
+---
 
 ### userId
 

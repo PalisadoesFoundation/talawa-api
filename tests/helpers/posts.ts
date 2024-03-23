@@ -1,17 +1,17 @@
-import type { TestOrganizationType, TestUserType } from "./userAndOrg";
-import { createTestUserAndOrganization } from "./userAndOrg";
-import type { InterfacePost, InterfaceComment } from "../../src/models";
-import { Post, Organization, Comment } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
+import type { InterfaceComment, InterfacePost } from "../../src/models";
+import { Comment, Organization, Post } from "../../src/models";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
 
 export type TestPostType =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (InterfacePost & Document<any, any, InterfacePost>) | null;
+  | (InterfacePost & Document<unknown, unknown, InterfacePost>)
+  | null;
 
 export type TestCommentType =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (InterfaceComment & Document<any, any, InterfaceComment>) | null;
+  | (InterfaceComment & Document<unknown, unknown, InterfaceComment>)
+  | null;
 
 export const createTestPost = async (
   pinned = false,

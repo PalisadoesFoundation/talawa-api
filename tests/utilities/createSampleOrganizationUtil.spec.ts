@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import type mongoose from "mongoose";
-import { Plugin } from "../../src/models";
 import { faker } from "@faker-js/faker";
+import type mongoose from "mongoose";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { Plugin } from "../../src/models";
 import {
+  generateEventData as generateEventDataFn,
+  generatePostData,
   generateRandomPlugins,
   generateUserData,
-  generatePostData,
-  generateEventData as generateEventDataFn,
 } from "../../src/utilities/createSampleOrganizationUtil";
 
 import { connect, disconnect } from "../helpers/db";
@@ -25,7 +25,9 @@ describe("generateUserData function", () => {
   it("should return correct properties given ADMIN userType and organization Id", async () => {
     const organizationId = faker.database.mongodbObjectId();
 
-    const user = await generateUserData(organizationId, "ADMIN");
+    const userData = await generateUserData(organizationId, "ADMIN");
+    const user = userData.user;
+    const appUserProfile = userData.appUserProfile;
 
     expect(typeof user._id.toString()).toBe("string");
     expect(typeof user.firstName).toBe("string");
@@ -37,18 +39,17 @@ describe("generateUserData function", () => {
     expect(user.joinedOrganizations.length).toBe(1);
     expect(typeof user.joinedOrganizations[0].toString()).toBe("string");
 
-    expect(typeof user.userType).toBe("string");
-    expect(user.userType).toBe("ADMIN");
-
-    expect(Array.isArray(user.adminFor)).toBe(true);
-    expect(user.adminFor.length).toBe(1);
-    expect(typeof user.adminFor[0].toString()).toBe("string");
+    expect(Array.isArray(appUserProfile.adminFor)).toBe(true);
+    expect(appUserProfile.adminFor?.length).toBe(1);
+    expect(typeof appUserProfile.adminFor?.[0]?.toString()).toBe("string");
   });
 
   it("should return User with correct properties", async () => {
     const organizationId = faker.database.mongodbObjectId();
 
-    const user = await generateUserData(organizationId, "SUPERADMIN");
+    const userData = await generateUserData(organizationId, "SUPERADMIN");
+    const user = userData.user;
+    const appUserProfile = userData.appUserProfile;
 
     expect(typeof user._id.toString()).toBe("string");
     expect(typeof user.firstName).toBe("string");
@@ -60,18 +61,17 @@ describe("generateUserData function", () => {
     expect(user.joinedOrganizations.length).toBe(1);
     expect(typeof user.joinedOrganizations[0].toString()).toBe("string");
 
-    expect(typeof user.userType).toBe("string");
-    expect(user.userType).toBe("SUPERADMIN");
+    expect(appUserProfile.isSuperAdmin).toBe(true);
 
-    expect(Array.isArray(user.adminFor)).toBe(true);
-    expect(user.adminFor.length).toBe(0);
+    expect(Array.isArray(appUserProfile.adminFor)).toBe(true);
+    expect(appUserProfile.adminFor.length).toBe(0);
   });
 
   it("should return Event with correct properties", async () => {
-    const users = [
+    const userData = [
       await generateUserData(faker.database.mongodbObjectId(), "USER"),
     ];
-
+    const users = userData.map((user) => user.user);
     const organizationId = faker.database.mongodbObjectId();
     const event = await generateEventDataFn(users, organizationId);
     expect(event._id).toEqual(expect.any(Object));
@@ -100,9 +100,10 @@ describe("generateUserData function", () => {
 
 describe("generatePostData function", () => {
   it("should return Post with the correct properties", async () => {
-    const users = [
+    const usersData = [
       await generateUserData(faker.database.mongodbObjectId(), "USER"),
     ];
+    const users = usersData.map((user) => user.user);
     const organizationId = faker.database.mongodbObjectId(); // Fake ObjectID for the organization
 
     const post = await generatePostData(users, organizationId);
@@ -122,11 +123,16 @@ describe("generatePostData function", () => {
   });
 
   describe("generateRandomPlugins function", () => {
+    beforeEach(async () => {
+      // Clear the plugins collection before each test
+      await Plugin.deleteMany({});
+    });
     it("should generate and save the specified number of plugins with correct properties", async () => {
       const numberOfPlugins = 5;
-      const users = [
+      const usersData = [
         await generateUserData(faker.database.mongodbObjectId(), "USER"),
       ];
+      const users = usersData.map((user) => user.user);
 
       const pluginPromises = await generateRandomPlugins(
         numberOfPlugins,
@@ -134,9 +140,9 @@ describe("generatePostData function", () => {
       );
 
       expect(Array.isArray(pluginPromises)).toBe(true);
-      expect(pluginPromises!.length).toBe(numberOfPlugins);
+      expect(pluginPromises.length).toBe(numberOfPlugins);
 
-      await Promise.all(pluginPromises!);
+      await Promise.all(pluginPromises);
 
       const plugins = await Plugin.find();
       expect(plugins.length).toBe(numberOfPlugins);
