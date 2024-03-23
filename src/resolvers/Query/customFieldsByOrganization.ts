@@ -27,7 +27,7 @@ export const customFieldsByOrganization: QueryResolvers["customFieldsByOrganizat
     }
 
     const customFields = await OrganizationCustomField.find({
-      organizationId: organization._id,
+      organizationId: organization._id.toString(),
     });
 
     return customFields;
