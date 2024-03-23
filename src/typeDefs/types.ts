@@ -412,7 +412,11 @@ export const types = gql`
     actionItemCategories: [ActionItemCategory]
     agendaCategories: [AgendaCategory]
     admins(adminId: ID): [User!]
-    membershipRequests: [MembershipRequest]
+    membershipRequests(
+      first: Int
+      skip: Int
+      where: MembershipRequestsWhereInput
+    ): [MembershipRequest]
     userRegistrationRequired: Boolean!
     visibleInSearch: Boolean!
     blockedUsers: [User]
