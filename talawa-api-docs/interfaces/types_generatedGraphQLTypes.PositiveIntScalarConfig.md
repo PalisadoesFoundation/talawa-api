@@ -38,7 +38,7 @@ GraphQLScalarTypeConfig.astNode
 
 node_modules/graphql/type/definition.d.ts:369
 
-___
+---
 
 ### description
 
@@ -52,7 +52,7 @@ GraphQLScalarTypeConfig.description
 
 node_modules/graphql/type/definition.d.ts:360
 
-___
+---
 
 ### extensionASTNodes
 
@@ -66,7 +66,7 @@ GraphQLScalarTypeConfig.extensionASTNodes
 
 node_modules/graphql/type/definition.d.ts:370
 
-___
+---
 
 ### extensions
 
@@ -80,11 +80,11 @@ GraphQLScalarTypeConfig.extensions
 
 node_modules/graphql/type/definition.d.ts:368
 
-___
+---
 
 ### name
 
-• **name**: ``"PositiveInt"``
+• **name**: `"PositiveInt"`
 
 #### Overrides
 
@@ -94,7 +94,7 @@ GraphQLScalarTypeConfig.name
 
 [src/types/generatedGraphQLTypes.ts:2857](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/types/generatedGraphQLTypes.ts#L2857)
 
-___
+---
 
 ### parseLiteral
 
@@ -110,7 +110,7 @@ GraphQLScalarTypeConfig.parseLiteral
 
 node_modules/graphql/type/definition.d.ts:367
 
-___
+---
 
 ### parseValue
 
@@ -126,7 +126,7 @@ GraphQLScalarTypeConfig.parseValue
 
 node_modules/graphql/type/definition.d.ts:365
 
-___
+---
 
 ### serialize
 
@@ -142,7 +142,7 @@ GraphQLScalarTypeConfig.serialize
 
 node_modules/graphql/type/definition.d.ts:363
 
-___
+---
 
 ### specifiedByURL
 

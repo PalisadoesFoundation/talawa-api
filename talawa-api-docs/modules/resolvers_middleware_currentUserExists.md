@@ -12,18 +12,18 @@
 
 ### currentUserExists
 
-▸ **currentUserExists**(): (`next`: (`root`: `any`, `args`: `any`, `context`: `any`, `info`: `any`) =\> `any`) =\> (`root`: `any`, `args`: `any`, `context`: \{ `userId`: `any`  \}, `info`: `any`) =\> `Promise`\<`any`\>
+▸ **currentUserExists**(): (`next`: (`root`: `any`, `args`: `any`, `context`: `any`, `info`: `any`) =\> `any`) =\> (`root`: `any`, `args`: `any`, `context`: \{ `userId`: `any` \}, `info`: `any`) =\> `Promise`\<`any`\>
 
 #### Returns
 
 `fn`
 
-▸ (`next`): (`root`: `any`, `args`: `any`, `context`: \{ `userId`: `any`  \}, `info`: `any`) =\> `Promise`\<`any`\>
+▸ (`next`): (`root`: `any`, `args`: `any`, `context`: \{ `userId`: `any` \}, `info`: `any`) =\> `Promise`\<`any`\>
 
 ##### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                                                      |
+| :----- | :------------------------------------------------------------------------ |
 | `next` | (`root`: `any`, `args`: `any`, `context`: `any`, `info`: `any`) =\> `any` |
 
 ##### Returns
@@ -34,13 +34,13 @@
 
 ##### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `root` | `any` |
-| `args` | `any` |
-| `context` | `Object` |
-| `context.userId` | `any` |
-| `info` | `any` |
+| Name             | Type     |
+| :--------------- | :------- |
+| `root`           | `any`    |
+| `args`           | `any`    |
+| `context`        | `Object` |
+| `context.userId` | `any`    |
+| `info`           | `any`    |
 
 ##### Returns
 

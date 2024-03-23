@@ -22,7 +22,7 @@
 
 [src/models/TagUser.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/TagUser.ts#L7)
 
-___
+---
 
 ### tagId
 
@@ -32,7 +32,7 @@ ___
 
 [src/models/TagUser.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/TagUser.ts#L9)
 
-___
+---
 
 ### userId
 

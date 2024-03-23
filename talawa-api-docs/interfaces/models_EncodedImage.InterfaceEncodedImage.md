@@ -25,7 +25,7 @@ This is an interface that represents a database(MongoDB) document for Encoded Im
 
 [src/models/EncodedImage.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/EncodedImage.ts#L7)
 
-___
+---
 
 ### content
 
@@ -35,7 +35,7 @@ ___
 
 [src/models/EncodedImage.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/EncodedImage.ts#L9)
 
-___
+---
 
 ### fileName
 
@@ -45,7 +45,7 @@ ___
 
 [src/models/EncodedImage.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/EncodedImage.ts#L8)
 
-___
+---
 
 ### numberOfUses
 

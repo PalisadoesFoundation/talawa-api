@@ -33,11 +33,11 @@ export async function findPostsInCache(
       return {
         ...postObj,
 
-        _id: Types.ObjectId(postObj._id),
+        _id: new Types.ObjectId(postObj._id),
 
         createdAt: new Date(postObj.createdAt),
 
-        organization: Types.ObjectId(postObj.organization),
+        organization: new Types.ObjectId(postObj.organization),
 
         likeCount: Number(postObj.likeCount),
 
@@ -46,11 +46,11 @@ export async function findPostsInCache(
         likedBy:
           postObj?.likedBy.length !== 0
             ? postObj?.likedBy?.map((user: string) => {
-                return Types.ObjectId(user);
+                return new Types.ObjectId(user);
               })
             : [],
 
-        creatorId: Types.ObjectId(postObj.creatorId),
+        creatorId: new Types.ObjectId(postObj.creatorId),
 
         updatedAt: new Date(postObj.updatedAt),
       };

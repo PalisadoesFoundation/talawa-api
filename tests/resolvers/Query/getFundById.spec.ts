@@ -26,7 +26,7 @@ describe("resolvers->Query->getFundById", () => {
   });
   it(`returns null if fund not found for args.id`, async () => {
     const args = {
-      id: Types.ObjectId().toString(),
+      id: new Types.ObjectId().toString(),
     };
     const getFundByIdPayload = await getFundById?.({}, args, {});
     expect(getFundByIdPayload).toEqual({});

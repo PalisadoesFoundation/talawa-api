@@ -8,7 +8,7 @@ import {
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event, EventAttendee } from "../../models";
+import { User, Event, EventAttendee, AppUserProfile } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
@@ -43,6 +43,17 @@ export const inviteEventAttendee: MutationResolvers["inviteEventAttendee"] =
       );
     }
 
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+
     let event: InterfaceEvent | null;
 
     const eventFoundInCache = await findEventsInCache([args.data.eventId]);
@@ -70,10 +81,10 @@ export const inviteEventAttendee: MutationResolvers["inviteEventAttendee"] =
     const isUserEventAdmin = event.admins.some(
       (admin) =>
         admin === context.userID ||
-        Types.ObjectId(admin).equals(context.userId),
+        new Types.ObjectId(admin).equals(context.userId),
     );
 
-    if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {
+    if (!isUserEventAdmin && !currentUserAppProfile.isSuperAdmin) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,

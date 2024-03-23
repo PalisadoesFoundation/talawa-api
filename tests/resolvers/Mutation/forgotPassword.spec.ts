@@ -35,7 +35,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
           email: testUser?.email ?? "",
           otp: "otp",
         },
-        ACCESS_TOKEN_SECRET as string,
+        process.env.NODE_ENV ?? "",
         {
           expiresIn: 99999999,
         },
@@ -51,9 +51,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
       await forgotPasswordResolver?.({}, args, {});
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        expect(error.message).toEqual(INVALID_OTP);
-      }
+      expect((error as Error).message).toEqual(INVALID_OTP);
     }
   });
 
@@ -153,11 +151,9 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     expect(forgotPasswordPayload).toEqual(true);
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const updatedTestUser = await User!
-      .findOne({
-        _id: testUser?._id ?? "",
-      })
+    const updatedTestUser = await User.findOne({
+      _id: testUser?._id ?? "",
+    })
       .select(["password"])
       .lean();
 

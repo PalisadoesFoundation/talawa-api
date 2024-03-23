@@ -1,6 +1,7 @@
 export * from "./ActionItem";
 export * from "./ActionItemCategory";
 export * from "./Advertisement";
+export * from "./AppUserProfile";
 export * from "./AgendaCategory";
 export * from "./AgendaItem";
 export * from "./AgendaSection";

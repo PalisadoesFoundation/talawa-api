@@ -1,13 +1,13 @@
 import "dotenv/config";
-import { event as eventResolver } from "../../../src/resolvers/CheckIn/event";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Event } from "../../../src/models";
+import { event as eventResolver } from "../../../src/resolvers/CheckIn/event";
 import {
   createEventWithCheckedInUser,
   type TestCheckInType,
 } from "../../helpers/checkIn";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestEventType } from "../../helpers/eventsWithRegistrants";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -25,12 +25,12 @@ afterAll(async () => {
 
 describe("resolvers -> CheckIn -> Event", () => {
   it(`returns the event object for parent post`, async () => {
-    const parent = testCheckIn!.toObject();
-
-    const eventPayload = await eventResolver?.(parent, {}, {});
+    const parent = testCheckIn?.toObject();
+    let eventPayload;
+    if (parent) eventPayload = await eventResolver?.(parent, {}, {});
 
     const eventObject = await Event.findOne({
-      _id: testEvent!._id,
+      _id: testEvent?._id,
     }).lean();
 
     expect(eventPayload).toEqual(eventObject);

@@ -1,9 +1,9 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { Organization } from "../../../src/models";
 import { organization as organizationResolver } from "../../../src/resolvers/DirectChat/organization";
 import { connect, disconnect } from "../../helpers/db";
-import type mongoose from "mongoose";
-import { Organization } from "../../../src/models";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { TestDirectChatType } from "../../helpers/directChat";
 import { createTestDirectChat } from "../../helpers/directChat";
 
@@ -22,7 +22,10 @@ afterAll(async () => {
 
 describe("resolvers -> DirectChat -> organization", () => {
   it(`returns user object for parent.organization`, async () => {
-    const parent = testDirectChat!.toObject();
+    const parent = testDirectChat?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
 
     const organizationPayload = await organizationResolver?.(parent, {}, {});
 
@@ -34,7 +37,10 @@ describe("resolvers -> DirectChat -> organization", () => {
   });
 
   it(`returns user object for parent.organization`, async () => {
-    const parent = testDirectChat!.toObject();
+    const parent = testDirectChat?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
 
     const organizationPayload = await organizationResolver?.(parent, {}, {});
 

@@ -20,10 +20,10 @@ Else, allow the file to get uploaded.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `oldImagePath` | ``null`` \| `string` | Path of image |
-| `newImagePath` | `string` | Does image belong to an item |
+| Name           | Type               | Description                  |
+| :------------- | :----------------- | :--------------------------- |
+| `oldImagePath` | `null` \| `string` | Path of image                |
+| `newImagePath` | `string`           | Does image belong to an item |
 
 #### Returns
 

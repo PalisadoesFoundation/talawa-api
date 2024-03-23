@@ -20,14 +20,14 @@ type if not present before in the intersection type.
 
 #### Type parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `T` | `unknown` | used to return an object of a generic type `FilterQuery\<T\>` |
+| Name | Type      | Description                                                   |
+| :--- | :-------- | :------------------------------------------------------------ |
+| `T`  | `unknown` | used to return an object of a generic type `FilterQuery\<T\>` |
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name    | Type                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Description                                                                  |
+| :------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
 | `where` | `undefined` \| [`InputMaybe`](types_generatedGraphQLTypes.md#inputmaybe)\<`Partial`\<[`EventWhereInput`](types_generatedGraphQLTypes.md#eventwhereinput) & [`OrganizationWhereInput`](types_generatedGraphQLTypes.md#organizationwhereinput) & [`PostWhereInput`](types_generatedGraphQLTypes.md#postwhereinput) & [`UserWhereInput`](types_generatedGraphQLTypes.md#userwhereinput) & [`DonationWhereInput`](types_generatedGraphQLTypes.md#donationwhereinput)\>\> | an object that contains properties that can be used to filter out documents. |
 
 #### Returns

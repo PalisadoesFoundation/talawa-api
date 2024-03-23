@@ -27,6 +27,7 @@ payload provided with the request
 **`Remarks`**
 
 The following tasks are done:
+
 1. Extracts email and otp out of otpToken.
 2. Compares otpToken and otp.
 3. Checks whether otp is valid.

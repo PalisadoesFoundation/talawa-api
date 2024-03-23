@@ -25,7 +25,7 @@ This is an interface that represents a database(MongoDB) document for Encoded Vi
 
 [src/models/EncodedVideo.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/EncodedVideo.ts#L7)
 
-___
+---
 
 ### content
 
@@ -35,7 +35,7 @@ ___
 
 [src/models/EncodedVideo.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/EncodedVideo.ts#L9)
 
-___
+---
 
 ### fileName
 
@@ -45,7 +45,7 @@ ___
 
 [src/models/EncodedVideo.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/EncodedVideo.ts#L8)
 
-___
+---
 
 ### numberOfUses
 

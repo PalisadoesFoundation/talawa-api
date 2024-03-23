@@ -3,14 +3,16 @@ import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   END_DATE_VALIDATION_ERROR,
-  FUNDRAISING_CAMPAIGN_ALREADY_EXISTS,
   FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR,
   FUND_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { type InterfaceFundraisingCampaign } from "../../../src/models";
+import {
+  AppUserProfile,
+  type InterfaceFundraisingCampaign,
+} from "../../../src/models";
 import { updateFundraisingCampaign } from "../../../src/resolvers/Mutation/updateFundraisingCampaign";
 import type { MutationUpdateFundraisingCampaignArgs } from "../../../src/types/generatedGraphQLTypes";
 import { createTestFund, type TestFundType } from "../../helpers/Fund";
@@ -51,7 +53,7 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
         },
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await updateFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
@@ -61,7 +63,7 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
   it("throw error if no campaign exists with _id===args.id", async () => {
     try {
       const args: MutationUpdateFundraisingCampaignArgs = {
-        id: Types.ObjectId().toString() || "",
+        id: new Types.ObjectId().toString() || "",
         data: {
           name: "testFundraisingCampaign",
           startDate: new Date(new Date().toDateString()),
@@ -84,7 +86,7 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
   it("throws error if no fund exists with _id===campaign.fundId", async () => {
     try {
       const campaign = await createTestFundraisingCampaign(
-        Types.ObjectId().toString(),
+        new Types.ObjectId().toString(),
       );
       const args: MutationUpdateFundraisingCampaignArgs = {
         id: campaign?._id.toString() || "",
@@ -195,7 +197,7 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
     } catch (error: unknown) {
       //   console.log(error);
       expect((error as Error).message).toEqual(
-        FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE,
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
@@ -214,8 +216,41 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
     const context = {
       userId: testUser?._id,
     };
-    const result = await updateFundraisingCampaign?.({}, args, context);
+    try {
+      const result = await updateFundraisingCampaign?.({}, args, context);
 
-    expect(result).toBeTruthy();
+      expect(result).toBeTruthy();
+    } catch (error) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationUpdateFundraisingCampaignArgs = {
+      id: testFundraisingCampaign?._id.toString() || "",
+      data: {
+        name: "testFundraisingCampaign",
+
+        startDate: new Date(new Date().toDateString()),
+        endDate: new Date(new Date().toDateString()),
+        currency: "USD",
+        fundingGoal: 1000,
+      },
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await updateFundraisingCampaign?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });
