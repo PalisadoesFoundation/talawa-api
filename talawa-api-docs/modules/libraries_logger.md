@@ -19,7 +19,7 @@
 
 [src/libraries/logger.ts:48](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/logger.ts#L48)
 
-___
+---
 
 ### stream
 
@@ -27,9 +27,9 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
-| `write` | (`message`: ``null`` \| `string`) =\> `void` |
+| Name    | Type                                       |
+| :------ | :----------------------------------------- |
+| `write` | (`message`: `null` \| `string`) =\> `void` |
 
 #### Defined in
 

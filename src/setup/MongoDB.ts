@@ -42,9 +42,7 @@ export async function checkConnection(url: string): Promise<boolean> {
   console.log("\nChecking MongoDB connection....");
 
   try {
-    const connection = await mongodb.connect(url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    const connection = await mongodb.MongoClient.connect(url, {
       serverSelectionTimeoutMS: 1000,
     });
     await connection.close();

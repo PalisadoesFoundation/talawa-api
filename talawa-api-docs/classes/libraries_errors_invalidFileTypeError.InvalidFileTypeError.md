@@ -40,12 +40,12 @@ This class detects invalid file type errors and sends those errors to the superc
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `message` | `string` | `"Invalid File Type"` |
-| `code` | ``null`` \| `string` | `null` |
-| `param` | ``null`` \| `string` | `null` |
-| `metadata` | `Record`\<`any`, `any`\> | `\{\}` |
+| Name       | Type                     | Default value         |
+| :--------- | :----------------------- | :-------------------- |
+| `message`  | `string`                 | `"Invalid File Type"` |
+| `code`     | `null` \| `string`       | `null`                |
+| `param`    | `null` \| `string`       | `null`                |
+| `metadata` | `Record`\<`any`, `any`\> | `\{\}`                |
 
 #### Returns
 
@@ -73,7 +73,7 @@ This class detects invalid file type errors and sends those errors to the superc
 
 [src/libraries/errors/applicationError.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/errors/applicationError.ts#L11)
 
-___
+---
 
 ### httpCode
 
@@ -87,7 +87,7 @@ ___
 
 [src/libraries/errors/applicationError.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/errors/applicationError.ts#L12)
 
-___
+---
 
 ### message
 
@@ -101,7 +101,7 @@ ___
 
 node_modules/typescript/lib/lib.es5.d.ts:1076
 
-___
+---
 
 ### name
 
@@ -115,7 +115,7 @@ ___
 
 node_modules/typescript/lib/lib.es5.d.ts:1075
 
-___
+---
 
 ### stack
 
@@ -129,7 +129,7 @@ ___
 
 node_modules/typescript/lib/lib.es5.d.ts:1077
 
-___
+---
 
 ### prepareStackTrace
 
@@ -149,9 +149,9 @@ Optional override for formatting stack traces
 
 ##### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `err` | `Error` |
+| Name          | Type         |
+| :------------ | :----------- |
+| `err`         | `Error`      |
 | `stackTraces` | `CallSite`[] |
 
 ##### Returns
@@ -170,7 +170,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 node_modules/@types/node/globals.d.ts:28
 
-___
+---
 
 ### stackTraceLimit
 
@@ -194,9 +194,9 @@ Create .stack property on a target object
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `targetObject` | `object` |
+| Name              | Type       |
+| :---------------- | :--------- |
+| `targetObject`    | `object`   |
 | `constructorOpt?` | `Function` |
 
 #### Returns

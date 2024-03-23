@@ -1,31 +1,32 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { AppUserProfile, Organization, User } from "../../../src/models";
 import type { MutationLeaveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { leaveOrganization as leaveOrganizationResolver } from "../../../src/resolvers/Mutation/leaveOrganization";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  afterEach,
-  vi,
-} from "vitest";
+import { leaveOrganization as leaveOrganizationResolver } from "../../../src/resolvers/Mutation/leaveOrganization";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -54,7 +55,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationLeaveOrganizationArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -66,9 +67,11 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       );
 
       await leaveOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -83,7 +86,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { leaveOrganization: leaveOrganizationResolver } = await import(
@@ -91,9 +94,9 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       );
 
       await leaveOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -110,8 +113,8 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
         },
         {
           $set: {
-            creatorId: Types.ObjectId().toString(),
-            members: [Types.ObjectId().toString()],
+            creatorId: new Types.ObjectId().toString(),
+            members: [new Types.ObjectId().toString()],
           },
         },
         {
@@ -136,9 +139,9 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       );
 
       await leaveOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(MEMBER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -191,5 +194,31 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
 
     expect(updatedTestOrganization?.admins).toEqual([]);
     expect(updatedTestOrganization?.members).toEqual([]);
+  });
+  it("throws error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationLeaveOrganizationArgs = {
+      organizationId: testOrganization?.id,
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+    try {
+      const { leaveOrganization: leaveOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/leaveOrganization"
+      );
+      await leaveOrganizationResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

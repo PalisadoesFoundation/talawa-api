@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "../constants";
-import type { InterfaceUser } from "../models";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../models";
 import { User } from "../models";
 
 export interface InterfaceJwtTokenPayload {
@@ -16,10 +16,13 @@ export interface InterfaceJwtTokenPayload {
  * @param user - User data
  * @returns JSON Web Token string payload
  */
-export const createAccessToken = (user: InterfaceUser): string => {
+export const createAccessToken = (
+  user: InterfaceUser,
+  appUserProfile: InterfaceAppUserProfile,
+): string => {
   return jwt.sign(
     {
-      tokenVersion: user.tokenVersion,
+      tokenVersion: appUserProfile.tokenVersion,
       userId: user._id.toString(),
       firstName: user.firstName,
       lastName: user.lastName,
@@ -32,14 +35,17 @@ export const createAccessToken = (user: InterfaceUser): string => {
   );
 };
 
-export const createRefreshToken = (user: InterfaceUser): string => {
+export const createRefreshToken = (
+  user: InterfaceUser,
+  appUserProfile: InterfaceAppUserProfile,
+): string => {
   return jwt.sign(
     {
-      tokenVersion: user.tokenVersion,
-      userId: user._id.toString(),
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
+      tokenVersion: appUserProfile?.tokenVersion,
+      userId: user?._id.toString(),
+      firstName: user?.firstName,
+      lastName: user?.lastName,
+      email: user?.email,
     },
     REFRESH_TOKEN_SECRET as string,
     {

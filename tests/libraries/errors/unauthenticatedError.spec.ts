@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { UNAUTHENTICATED_ERROR } from "../../../src/constants";
 import { errors } from "../../../src/libraries";
 
@@ -11,8 +11,8 @@ describe("libraries -> errors -> unauthenticatedError", () => {
         UNAUTHENTICATED_ERROR.CODE,
         UNAUTHENTICATED_ERROR.PARAM,
       );
-    } catch (error: any) {
-      expect(error.errors).toEqual([
+    } catch (error: unknown) {
+      expect((error as errors.InternalServerError).errors).toEqual([
         expect.objectContaining({
           message: UNAUTHENTICATED_ERROR.MESSAGE,
           code: UNAUTHENTICATED_ERROR.CODE,

@@ -16,12 +16,12 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `args` | `Partial`\<[`MutationCreateEventArgs`](types_generatedGraphQLTypes.md#mutationcreateeventargs)\> |
-| `currentUser` | [`InterfaceUser`](../interfaces/models_User.InterfaceUser.md) |
-| `organization` | [`InterfaceOrganization`](../interfaces/models_Organization.InterfaceOrganization.md) |
-| `session` | `ClientSession` |
+| Name           | Type                                                                                             |
+| :------------- | :----------------------------------------------------------------------------------------------- |
+| `args`         | `Partial`\<[`MutationCreateEventArgs`](types_generatedGraphQLTypes.md#mutationcreateeventargs)\> |
+| `currentUser`  | [`InterfaceUser`](../interfaces/models_User.InterfaceUser.md)                                    |
+| `organization` | [`InterfaceOrganization`](../interfaces/models_Organization.InterfaceOrganization.md)            |
+| `session`      | `ClientSession`                                                                                  |
 
 #### Returns
 

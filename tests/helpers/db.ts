@@ -7,10 +7,6 @@ export async function connect(
 ): Promise<typeof mongoose> {
   return await mongoose.connect(process.env.MONGO_DB_URL as string, {
     dbName,
-    useCreateIndex: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    useNewUrlParser: true,
   });
 }
 

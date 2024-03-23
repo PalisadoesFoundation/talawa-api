@@ -35,7 +35,7 @@ This is an interface that represents a database(MongoDB) document for Post.
 
 [src/models/Post.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L10)
 
-___
+---
 
 ### commentCount
 
@@ -45,7 +45,7 @@ ___
 
 [src/models/Post.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L11)
 
-___
+---
 
 ### createdAt
 
@@ -55,7 +55,7 @@ ___
 
 [src/models/Post.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L12)
 
-___
+---
 
 ### creatorId
 
@@ -65,17 +65,17 @@ ___
 
 [src/models/Post.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L13)
 
-___
+---
 
 ### imageUrl
 
-• **imageUrl**: `undefined` \| ``null`` \| `string`
+• **imageUrl**: `undefined` \| `null` \| `string`
 
 #### Defined in
 
 [src/models/Post.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L14)
 
-___
+---
 
 ### likeCount
 
@@ -85,7 +85,7 @@ ___
 
 [src/models/Post.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L15)
 
-___
+---
 
 ### likedBy
 
@@ -95,7 +95,7 @@ ___
 
 [src/models/Post.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L16)
 
-___
+---
 
 ### organization
 
@@ -105,7 +105,7 @@ ___
 
 [src/models/Post.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L17)
 
-___
+---
 
 ### pinned
 
@@ -115,7 +115,7 @@ ___
 
 [src/models/Post.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L18)
 
-___
+---
 
 ### status
 
@@ -125,7 +125,7 @@ ___
 
 [src/models/Post.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L19)
 
-___
+---
 
 ### text
 
@@ -135,7 +135,7 @@ ___
 
 [src/models/Post.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L20)
 
-___
+---
 
 ### title
 
@@ -145,7 +145,7 @@ ___
 
 [src/models/Post.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L21)
 
-___
+---
 
 ### updatedAt
 
@@ -155,11 +155,11 @@ ___
 
 [src/models/Post.ts:22](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Post.ts#L22)
 
-___
+---
 
 ### videoUrl
 
-• **videoUrl**: `undefined` \| ``null`` \| `string`
+• **videoUrl**: `undefined` \| `null` \| `string`
 
 #### Defined in
 

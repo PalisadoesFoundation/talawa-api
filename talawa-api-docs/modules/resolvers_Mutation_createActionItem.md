@@ -31,13 +31,14 @@ context of entire application
 **`Remarks`**
 
 The following checks are done:
+
 1. If the user exists
-3. If the asignee exists
-4. If the actionItemCategory exists
-5. If the asignee is a member of the organization
-6. If the user is a member of the organization
-7. If the event exists (if action item related to an event)
-8. If the user is authorized.
+2. If the asignee exists
+3. If the actionItemCategory exists
+4. If the asignee is a member of the organization
+5. If the user is a member of the organization
+6. If the event exists (if action item related to an event)
+7. If the user is authorized.
 
 #### Defined in
 

@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import {
   FUNDRAISING_CAMPAIGN_ALREADY_EXISTS,
   FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR,
@@ -11,6 +12,7 @@ import {
   FundraisingCampaign,
   User,
   type InterfaceFundraisingCampaign,
+  AppUserProfile,
 } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { validateDate } from "../../utilities/dateValidator";
@@ -42,6 +44,17 @@ export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCamp
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
     const campaigin = await FundraisingCampaign.findById({
@@ -80,12 +93,22 @@ export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCamp
       );
     }
 
-    const isUserOrgAdmin = currentUser.adminFor.some((orgId) =>
-      orgId.equals(fund.organizationId),
+    const currentOrg = await Fund.findById(fund._id)
+      .select("organizationId")
+      .lean();
+
+    const currentOrgId = currentOrg?.organizationId?.toString() || "";
+
+    const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
+      (organizationId) =>
+        new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
     );
 
     //Checks if the user is authorized to update the fundraising campaign
-    if (!(isUserOrgAdmin || currentUser.userType === "SUPERADMIN")) {
+    if (
+      !currentUserIsOrgAdmin ||
+      currentUserAppProfile.isSuperAdmin === false
+    ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,

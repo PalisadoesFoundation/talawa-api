@@ -16,8 +16,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                                                            |
+| :----- | :------------------------------------------------------------------------------ |
 | `args` | [`CursorPaginationInput`](types_generatedGraphQLTypes.md#cursorpaginationinput) |
 
 #### Returns

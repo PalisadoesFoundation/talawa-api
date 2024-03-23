@@ -1,12 +1,12 @@
-import { nanoid } from "nanoid";
-import { CheckIn, type InterfaceFeedback, Feedback } from "../../src/models";
 import type { Document } from "mongoose";
+import { nanoid } from "nanoid";
+import { CheckIn, Feedback, type InterfaceFeedback } from "../../src/models";
+import type { TestCheckInType, TestEventType } from "./checkIn";
 import { createEventWithCheckedInUser } from "./checkIn";
-import type { TestEventType, TestCheckInType } from "./checkIn";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 
 export type TestFeedbackType =
-  | (InterfaceFeedback & Document<any, any, InterfaceFeedback>)
+  | (InterfaceFeedback & Document<unknown, unknown, InterfaceFeedback>)
   | null;
 
 export const createFeedbackWithIDs = async (
@@ -36,7 +36,10 @@ export const createFeedback = async (): Promise<
   ]
 > => {
   const result = await createEventWithCheckedInUser();
-  const feedback = await createFeedbackWithIDs(result[2]!._id, result[3]!._id);
+  const feedback = await createFeedbackWithIDs(
+    result[2]?._id.toString() ?? "",
+    result[3]?._id.toString() ?? "",
+  );
 
   return [...result, feedback];
 };

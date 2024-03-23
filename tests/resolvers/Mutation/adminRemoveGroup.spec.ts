@@ -1,25 +1,27 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, GroupChat } from "../../../src/models";
+import { GroupChat, Organization, User } from "../../../src/models";
 import type { MutationAdminRemoveGroupArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { adminRemoveGroup as adminRemoveGroupResolver } from "../../../src/resolvers/Mutation/adminRemoveGroup";
+import { nanoid } from "nanoid";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
+import { adminRemoveGroup as adminRemoveGroupResolver } from "../../../src/resolvers/Mutation/adminRemoveGroup";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChat } from "../../helpers/groupChat";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -44,10 +46,35 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> adminRemoveGroup", () => {
+  it("throws an error if the user does not have appUserProfile", async () => {
+    try {
+      const args: MutationAdminRemoveGroupArgs = {
+        groupId: testGroupChat?.id,
+      };
+
+      const newUser = await User.create({
+        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        password: `pass${nanoid().toLowerCase()}`,
+        firstName: `firstName${nanoid().toLowerCase()}`,
+        lastName: `lastName${nanoid().toLowerCase()}`,
+        image: null,
+      });
+
+      const context = {
+        userId: newUser?.id,
+      };
+      await adminRemoveGroupResolver?.({}, args, context);
+    } catch (error: unknown) {
+      // console.log(error);?
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
+  });
   it(`throws NotFoundError if no groupChat exists with _id === args.groupId`, async () => {
     try {
       const args: MutationAdminRemoveGroupArgs = {
-        groupId: Types.ObjectId().toString(),
+        groupId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -55,8 +82,8 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       };
 
       await adminRemoveGroupResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -69,7 +96,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
         },
       );
@@ -83,8 +110,10 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       };
 
       await adminRemoveGroupResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -106,12 +135,12 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await adminRemoveGroupResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -142,8 +171,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
           new: true,
         },
       );
-
-      cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization) cacheOrganizations([updatedOrganization]);
 
       const args: MutationAdminRemoveGroupArgs = {
         groupId: testGroupChat?.id,
@@ -154,8 +182,10 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       };
 
       await adminRemoveGroupResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ADMIN.MESSAGE,
+      );
     }
   });
 
@@ -173,8 +203,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         new: true,
       },
     );
-
-    cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization) cacheOrganizations([updatedOrganization]);
 
     const args: MutationAdminRemoveGroupArgs = {
       groupId: testGroupChat?.id,

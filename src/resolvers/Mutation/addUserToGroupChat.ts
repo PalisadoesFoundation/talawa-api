@@ -1,16 +1,17 @@
 import "dotenv/config";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
-import { User, GroupChat, Organization } from "../../models";
 import {
   CHAT_NOT_FOUND_ERROR,
-  USER_ALREADY_MEMBER_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_ALREADY_MEMBER_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { errors, requestContext } from "../../libraries";
+import { GroupChat, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
+import type { InterfaceGroupChat } from "../../models";
 /**
  * This function adds user to group chat.
  * @param _parent - parent of current request
@@ -50,8 +51,9 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
       organization = await Organization.findOne({
         _id: groupChat.organization,
       }).lean();
-
-      await cacheOrganizations([organization!]);
+      if (organization) {
+        await cacheOrganizations([organization]);
+      }
     }
 
     // Checks whether organization exists.
@@ -66,9 +68,9 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     // Checks whether currentUser with _id === context.userId is an admin of organization.
     await adminCheck(context.userId, organization);
 
-    const userExists = await User.exists({
+    const userExists = !!(await User.exists({
       _id: args.userId,
-    });
+    }));
 
     // Checks whether user with _id === args.userId exists.
     if (userExists === false) {
@@ -93,7 +95,7 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     }
 
     // Adds args.userId to users list on groupChat's document and returns the updated groupChat.
-    return await GroupChat.findOneAndUpdate(
+    return (await GroupChat.findOneAndUpdate(
       {
         _id: args.chatId,
       },
@@ -105,5 +107,5 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
       {
         new: true,
       },
-    ).lean();
+    ).lean()) as InterfaceGroupChat;
   };

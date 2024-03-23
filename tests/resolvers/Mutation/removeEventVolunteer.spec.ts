@@ -52,7 +52,7 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
         id: testEventVolunteer?._id,
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const u = await User.findById(context.userId);
       console.log(u);
@@ -78,7 +78,7 @@ describe("resolvers -> Mutation -> removeEventVolunteer", () => {
 
     try {
       const args: MutationUpdateEventVolunteerArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = { userId: testUser?._id };

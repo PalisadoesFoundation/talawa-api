@@ -1,20 +1,20 @@
 import { GraphQLError } from "graphql";
 import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Advertisement } from "../../../src/models";
 import {
   advertisementsConnection as AdvertisementResolvers,
   parseCursor,
 } from "../../../src/resolvers/Query/advertisementsConnection";
-import { connect, disconnect } from "../../helpers/db";
-import { type TestAdvertisementType } from "../../helpers/advertisement";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
 import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
-import { Types } from "mongoose";
+import { type TestAdvertisementType } from "../../helpers/advertisement";
+import { connect, disconnect } from "../../helpers/db";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testAdvertisement1: TestAdvertisementType;
@@ -118,7 +118,7 @@ describe("parseCursor function", () => {
     const result = await parseCursor({
       cursorName: "after",
       cursorPath: ["after"],
-      cursorValue: Types.ObjectId().toString(),
+      cursorValue: new Types.ObjectId().toString(),
     });
 
     expect(result.isSuccessful).toEqual(false);

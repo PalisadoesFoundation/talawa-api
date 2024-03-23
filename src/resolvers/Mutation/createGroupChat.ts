@@ -1,12 +1,12 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, GroupChat, Organization } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import {
-  USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import { GroupChat, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to create a group chat.
  * @param _parent - parent of current request
@@ -34,8 +34,7 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
     organization = await Organization.findOne({
       _id: args.data.organizationId,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) await cacheOrganizations([organization]);
   }
 
   // Checks whether organization with _id === args.data.organizationId exists.
@@ -52,9 +51,9 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
 
   // Loops over each item in args.data.userIds list.
   for await (const userId of args.data.userIds) {
-    const userExists = await User.exists({
+    const userExists = !!(await User.exists({
       _id: userId,
-    });
+    }));
 
     // Checks whether user with _id === userId exists.
     if (userExists === false) {

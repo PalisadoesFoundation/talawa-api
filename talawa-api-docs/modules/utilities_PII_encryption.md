@@ -16,11 +16,11 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `text` | `string` |
-| `key` | `string` |
-| `iv` | `string` |
+| `key`  | `string` |
+| `iv`   | `string` |
 
 #### Returns
 

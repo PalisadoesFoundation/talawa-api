@@ -12,17 +12,17 @@
 
 ### findOrganizationsInCache
 
-▸ **findOrganizationsInCache**(`ids`): `Promise`\<([`InterfaceOrganization`](../interfaces/models_Organization.InterfaceOrganization.md) \| ``null``)[]\>
+▸ **findOrganizationsInCache**(`ids`): `Promise`\<([`InterfaceOrganization`](../interfaces/models_Organization.InterfaceOrganization.md) \| `null`)[]\>
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type       |
+| :---- | :--------- |
 | `ids` | `string`[] |
 
 #### Returns
 
-`Promise`\<([`InterfaceOrganization`](../interfaces/models_Organization.InterfaceOrganization.md) \| ``null``)[]\>
+`Promise`\<([`InterfaceOrganization`](../interfaces/models_Organization.InterfaceOrganization.md) \| `null`)[]\>
 
 #### Defined in
 
