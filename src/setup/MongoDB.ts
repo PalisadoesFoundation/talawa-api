@@ -1,5 +1,5 @@
 import inquirer from "inquirer";
-import mongodb from "mongodb";
+import mongoose from "mongoose";
 
 /**
  * Function to check if Existing MongoDB instance is running
@@ -42,10 +42,10 @@ export async function checkConnection(url: string): Promise<boolean> {
   console.log("\nChecking MongoDB connection....");
 
   try {
-    const connection = await mongodb.MongoClient.connect(url, {
+    await mongoose.connect(url, {
       serverSelectionTimeoutMS: 1000,
     });
-    await connection.close();
+    await mongoose.connection.close();
     return true;
   } catch (error) {
     console.log(`\nConnection to MongoDB failed. Please try again.\n`);

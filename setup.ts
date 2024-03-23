@@ -7,7 +7,6 @@ import path from "path";
 /* eslint-disable */
 import type { ExecException } from "child_process";
 import { exec } from "child_process";
-import mongodb from "mongodb";
 import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import {
   askForMongoDBUrl,
@@ -30,6 +29,7 @@ import {
 import { askForSuperAdminEmail } from "./src/setup/superAdmin";
 import { updateEnvVariable } from "./src/setup/updateEnvVariable";
 import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
+import mongoose from "mongoose";
 /* eslint-enable */
 
 dotenv.config();
@@ -210,10 +210,9 @@ async function askForTransactionLogPath(): Promise<string> {
  */
 export async function shouldWipeExistingData(url: string): Promise<boolean> {
   let shouldImport = false;
-  const client = new mongodb.MongoClient(url);
   try {
-    await client.connect();
-    const db = client.db();
+    await mongoose.connect(process.env.MONGO_DB_URL as string);
+    const db = mongoose.connection.db;
     const collections = await db.listCollections().toArray();
 
     if (collections.length > 0) {
@@ -237,9 +236,9 @@ export async function shouldWipeExistingData(url: string): Promise<boolean> {
       shouldImport = true;
     }
   } catch (error) {
-    console.error("Could not connect to database to check for data");
+    console.error("Could not connect to database to check for data", error);
   }
-  client.close();
+  await mongoose.connection.close();
   return shouldImport;
 }
 //Import sample data
