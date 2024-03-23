@@ -27,11 +27,7 @@ import { MAXIMUM_FETCH_LIMIT } from "../../constants";
  *
  * @throws GraphQLError Throws an error if the provided arguments are invalid.
  */
-export const posts: OrganizationResolvers["posts"] = async (
-  parent,
-  args,
-  context,
-) => {
+export const posts: OrganizationResolvers["posts"] = async (parent, args) => {
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArguments({
       args,
@@ -79,17 +75,12 @@ export const posts: OrganizationResolvers["posts"] = async (
       .countDocuments()
       .exec(),
   ]);
-  const posts = objectList.map((post) => ({
-    ...post,
-    imageUrl: post.imageUrl ? `${context.apiRootUrl}${post.imageUrl}` : null,
-    videoUrl: post.videoUrl ? `${context.apiRootUrl}${post.videoUrl}` : null,
-  }));
   return transformToDefaultGraphQLConnection<
     ParsedCursor,
     InterfacePost,
     InterfacePost
   >({
-    objectList: posts,
+    objectList,
     parsedArgs,
     totalCount,
   });

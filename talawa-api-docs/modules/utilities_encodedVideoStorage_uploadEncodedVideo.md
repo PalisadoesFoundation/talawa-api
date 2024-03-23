@@ -16,10 +16,10 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `encodedVideoURL` | `string` |
-| `previousVideoPath?` | ``null`` \| `string` |
+| Name                 | Type               |
+| :------------------- | :----------------- |
+| `encodedVideoURL`    | `string`           |
+| `previousVideoPath?` | `null` \| `string` |
 
 #### Returns
 

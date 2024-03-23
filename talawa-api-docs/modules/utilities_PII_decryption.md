@@ -16,11 +16,11 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name            | Type     |
+| :-------------- | :------- |
 | `encryptedText` | `string` |
-| `key` | `string` |
-| `iv` | `string` |
+| `key`           | `string` |
+| `iv`            | `string` |
 
 #### Returns
 

@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> updateAgendaSection", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await updateAgendaSection?.({}, args, context);
     } catch (error: unknown) {
@@ -75,7 +75,7 @@ describe("resolvers -> Mutation -> updateAgendaSection", () => {
   it("throws NotFoundError if no agenda section exists with _id === args.id", async () => {
     try {
       const args: MutationUpdateAgendaSectionArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         input: {},
       };
 

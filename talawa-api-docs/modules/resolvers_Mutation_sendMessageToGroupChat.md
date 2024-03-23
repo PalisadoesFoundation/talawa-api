@@ -31,6 +31,7 @@ context of entire application
 **`Remarks`**
 
 The following checks are done:
+
 1. If the group chat exists.
 2. If the user exists
 3. If the group chat contains the user.

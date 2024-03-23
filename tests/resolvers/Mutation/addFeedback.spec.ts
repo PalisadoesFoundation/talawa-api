@@ -1,18 +1,18 @@
 import "dotenv/config";
-import { connect, disconnect } from "../../helpers/db";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type { MutationAddFeedbackArgs } from "../../../src/types/generatedGraphQLTypes";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { CheckIn, EventAttendee } from "../../../src/models";
+import type { MutationAddFeedbackArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
+import { createTestEvent, type TestEventType } from "../../helpers/events";
 import {
   EVENT_NOT_FOUND_ERROR,
-  USER_NOT_CHECKED_IN,
   FEEDBACK_ALREADY_SUBMITTED,
+  USER_NOT_CHECKED_IN,
   USER_NOT_REGISTERED_FOR_EVENT,
 } from "./../../../src/constants";
-import { type TestUserType, createTestUser } from "./../../helpers/userAndOrg";
-import { createTestEvent, type TestEventType } from "../../helpers/events";
-import { CheckIn, EventAttendee } from "../../../src/models";
+import { createTestUser, type TestUserType } from "./../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let randomTestUser: TestUserType;
@@ -41,14 +41,14 @@ describe("resolvers -> Query -> addFeedback", () => {
     try {
       const args: MutationAddFeedbackArgs = {
         data: {
-          eventId: Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
           rating: 4,
           review: "Test Review",
         },
       };
 
       const context = {
-        userId: randomTestUser!._id,
+        userId: randomTestUser?._id,
       };
 
       const { addFeedback: addFeedbackResolver } = await import(
@@ -56,8 +56,8 @@ describe("resolvers -> Query -> addFeedback", () => {
       );
 
       await addFeedbackResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
@@ -74,14 +74,14 @@ describe("resolvers -> Query -> addFeedback", () => {
     try {
       const args: MutationAddFeedbackArgs = {
         data: {
-          eventId: testEvent!._id,
+          eventId: testEvent?._id.toString() ?? "",
           rating: 4,
           review: "Test Review",
         },
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { addFeedback: addFeedbackResolver } = await import(
@@ -89,8 +89,8 @@ describe("resolvers -> Query -> addFeedback", () => {
       );
 
       await addFeedbackResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_REGISTERED_FOR_EVENT.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
@@ -101,10 +101,10 @@ describe("resolvers -> Query -> addFeedback", () => {
 
   it(`throws Error if the user is has not checked in to the event`, async () => {
     const eventAttendee = await EventAttendee.create({
-      eventId: testEvent!._id,
-      userId: testUser!._id,
+      eventId: testEvent?._id,
+      userId: testUser?._id,
     });
-    eventAttendeeId = eventAttendee._id;
+    eventAttendeeId = eventAttendee._id.toString();
 
     const { requestContext } = await import("../../../src/libraries");
 
@@ -115,22 +115,22 @@ describe("resolvers -> Query -> addFeedback", () => {
     try {
       const args: MutationAddFeedbackArgs = {
         data: {
-          eventId: testEvent!._id,
+          eventId: testEvent?._id.toString() ?? "",
           rating: 4,
           review: "Test Review",
         },
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
       const { addFeedback: addFeedbackResolver } = await import(
         "../../../src/resolvers/Mutation/addFeedback"
       );
 
       await addFeedbackResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_CHECKED_IN.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_CHECKED_IN.MESSAGE);
@@ -148,14 +148,14 @@ describe("resolvers -> Query -> addFeedback", () => {
 
     const args: MutationAddFeedbackArgs = {
       data: {
-        eventId: testEvent!._id,
+        eventId: testEvent?._id.toString() ?? "",
         rating: 4,
         review: "Test Review",
       },
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { addFeedback: addFeedbackResolver } = await import(
@@ -165,7 +165,7 @@ describe("resolvers -> Query -> addFeedback", () => {
     const payload = await addFeedbackResolver?.({}, args, context);
 
     expect(payload).toMatchObject({
-      eventId: testEvent!._id,
+      eventId: testEvent?._id,
       rating: 4,
       review: "Test Review",
     });
@@ -181,22 +181,22 @@ describe("resolvers -> Query -> addFeedback", () => {
     try {
       const args: MutationAddFeedbackArgs = {
         data: {
-          eventId: testEvent!._id,
+          eventId: testEvent?._id.toString() ?? "",
           rating: 4,
           review: "Test Review",
         },
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
       const { addFeedback: addFeedbackResolver } = await import(
         "../../../src/resolvers/Mutation/addFeedback"
       );
 
       await addFeedbackResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${FEEDBACK_ALREADY_SUBMITTED.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(FEEDBACK_ALREADY_SUBMITTED.MESSAGE);

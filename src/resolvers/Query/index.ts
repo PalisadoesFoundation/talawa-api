@@ -4,7 +4,6 @@ import { actionItemCategoriesByOrganization } from "./actionItemCategoriesByOrga
 import { advertisementsConnection } from "./advertisementsConnection";
 import { actionItemsByEvent } from "./actionItemsByEvent";
 import { actionItemsByOrganization } from "./actionItemsByOrganization";
-import { agendaCategory } from "./agendaCategory";
 import { checkAuth } from "./checkAuth";
 import { community } from "./community";
 import { customDataByOrganization } from "./customDataByOrganization";
@@ -31,6 +30,7 @@ import { user } from "./user";
 import { userLanguage } from "./userLanguage";
 import { users } from "./users";
 import { usersConnection } from "./usersConnection";
+import { agendaCategory } from "./agendaCategory";
 import { getAllAgendaItems } from "./getAllAgendaItems";
 import { getAgendaItem } from "./agendaItemById";
 import { venue } from "./venue";

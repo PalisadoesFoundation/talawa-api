@@ -1,36 +1,35 @@
 // eslint-disable-next-line
-import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
+import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
-import path from "path";
-import * as cryptolib from "crypto";
 import inquirer from "inquirer";
+import path from "path";
 /* eslint-disable */
+import type { ExecException } from "child_process";
+import { exec } from "child_process";
+import { MongoClient } from "mongodb";
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import {
   askForMongoDBUrl,
   checkConnection,
   checkExistingMongoDB,
 } from "./src/setup/MongoDB";
-import type { ExecException } from "child_process";
-import { exec } from "child_process";
+import { askToKeepValues } from "./src/setup/askToKeepValues";
+import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
+import { isValidEmail } from "./src/setup/isValidEmail";
+import { validateRecaptcha } from "./src/setup/reCaptcha";
 import {
   askForRedisUrl,
   checkExistingRedis,
   checkRedisConnection,
 } from "./src/setup/redisConfiguration";
-import { askToKeepValues } from "./src/setup/askToKeepValues";
-import { validateRecaptcha } from "./src/setup/reCaptcha";
-import { isValidEmail } from "./src/setup/isValidEmail";
-import e from "cors";
-import { askForSuperAdminEmail } from "./src/setup/superAdmin";
 import {
   setImageUploadSize,
   validateImageFileSize,
 } from "./src/setup/setImageUploadSize";
+import { askForSuperAdminEmail } from "./src/setup/superAdmin";
 import { updateEnvVariable } from "./src/setup/updateEnvVariable";
-import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
 import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
-import mongodb from "mongodb";
 /* eslint-enable */
 
 dotenv.config();
@@ -211,10 +210,7 @@ async function askForTransactionLogPath(): Promise<string> {
  */
 export async function shouldWipeExistingData(url: string): Promise<boolean> {
   let shouldImport = false;
-  const client = new mongodb.MongoClient(url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  const client = new MongoClient(`${url}`);
   try {
     await client.connect();
     const db = client.db();

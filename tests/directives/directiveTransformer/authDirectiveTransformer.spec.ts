@@ -57,7 +57,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await testUser!.remove();
+  await testUser?.deleteOne();
   await disconnect(MONGOOSE_INSTANCE);
 });
 
@@ -166,7 +166,7 @@ it("checks if the resolver is supplied, and return null data, if not", async () 
     },
   );
 
-  //@ts-ignore
+  //@ts-expect-error-ts-ignore
   expect(result.body.singleResult.data).toEqual({ hello: null });
 });
 
@@ -200,6 +200,6 @@ it("returns data if isAuth == true and expire == false", async () => {
       contextValue: authenticatedContext,
     },
   );
-  //@ts-ignore
+  //@ts-expect-error-ignore
   expect(result.body.singleResult.data).toEqual({ hello: "hi" });
 });

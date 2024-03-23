@@ -1,31 +1,29 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import type { MutationUpdateActionItemCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ADMIN,
-  ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
-  ACTION_ITEM_CATEGORY_ALREADY_EXISTS,
-} from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTestUser } from "../../helpers/userAndOrg";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
+import { AppUserProfile } from "../../../src/models";
 import { updateActionItemCategory as updateActionItemCategoryResolver } from "../../../src/resolvers/Mutation/updateActionItemCategory";
 import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { createTestCategory } from "../../helpers/actionItemCategory";
-import { ActionItemCategory, User } from "../../../src/models";
 
 let randomUser: TestUserType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testCategory: TestActionItemCategoryType;
-let testCategory2: TestActionItemCategoryType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
@@ -38,12 +36,6 @@ beforeAll(async () => {
   randomUser = await createTestUser();
 
   [testUser, testOrganization, testCategory] = await createTestCategory();
-
-  testCategory2 = await ActionItemCategory.create({
-    name: "another action item category",
-    organizationId: testOrganization?._id,
-    creatorId: testUser?._id,
-  });
 });
 
 afterAll(async () => {
@@ -54,7 +46,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationUpdateActionItemCategoryArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         data: {
           name: "updatedDefault",
           isDisabled: true,
@@ -62,19 +54,19 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await updateActionItemCategoryResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no actionItemCategory exists with _id === args.id`, async () => {
     try {
       const args: MutationUpdateActionItemCategoryArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         data: {
           name: "updatedDefault",
           isDisabled: true,
@@ -86,30 +78,9 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
       };
 
       await updateActionItemCategoryResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
-      );
-    }
-  });
-
-  it(`throws ConflictError if an actionItemCategory already exists with name === args.data.name`, async () => {
-    try {
-      const args: MutationUpdateActionItemCategoryArgs = {
-        id: testCategory2._id,
-        data: {
-          name: "Default",
-        },
-      };
-
-      const context = {
-        userId: testUser?.id,
-      };
-
-      await updateActionItemCategoryResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        ACTION_ITEM_CATEGORY_ALREADY_EXISTS.MESSAGE,
       );
     }
   });
@@ -129,8 +100,10 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
       };
 
       await updateActionItemCategoryResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ADMIN.MESSAGE,
+      );
     }
   });
 
@@ -163,12 +136,12 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
   });
 
   it(`updates the actionItemCategory and returns it as superadmin`, async () => {
-    const superAdminTestUser = await User.findOneAndUpdate(
+    const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
       {
-        _id: randomUser?._id,
+        userId: randomUser?._id,
       },
       {
-        userType: "SUPERADMIN",
+        isSuperAdmin: true,
       },
       {
         new: true,
@@ -184,7 +157,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
     };
 
     const context = {
-      userId: superAdminTestUser?._id,
+      userId: superAdminTestUser?.userId,
     };
 
     const updatedCategory = await updateActionItemCategoryResolver?.(

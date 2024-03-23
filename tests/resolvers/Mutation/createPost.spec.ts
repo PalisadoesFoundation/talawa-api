@@ -5,33 +5,33 @@ import type { MutationCreatePostArgs } from "../../../src/types/generatedGraphQL
 import { connect, disconnect } from "../../helpers/db";
 
 import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
-  LENGTH_VALIDATION_ERROR,
-  USER_NOT_AUTHORIZED_TO_PIN,
-  BASE_URL,
-} from "../../../src/constants";
-import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
   vi,
 } from "vitest";
+import {
+  BASE_URL,
+  LENGTH_VALIDATION_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_TO_PIN,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
+import { Organization, Post } from "../../../src/models";
+import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import * as uploadEncodedVideo from "../../../src/utilities/encodedVideoStorage/uploadEncodedVideo";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
 import {
-  createTestUserAndOrganization,
   createTestUser,
+  createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
-import { Organization, Post } from "../../../src/models";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import * as uploadEncodedVideo from "../../../src/utilities/encodedVideoStorage/uploadEncodedVideo";
-import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
 
 let testUser: TestUserType;
 let randomUser: TestUserType;
@@ -77,7 +77,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createPost: createPostResolver } = await import(
@@ -85,13 +85,11 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
 
       await createPostResolver?.({}, args, context);
-    } catch (error) {
-      if (error instanceof Error) {
-        expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-        expect(error.message).toEqual(
-          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-        );
-      }
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+      );
     }
   });
 
@@ -103,7 +101,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     try {
       const args: MutationCreatePostArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           text: "",
           videoUrl: "",
           title: "",

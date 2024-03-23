@@ -1,7 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event } from "../../models";
+import { User, Event, AppUserProfile } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -17,7 +17,6 @@ import {
   updateRecurringEvent,
   updateSingleEvent,
 } from "../../helpers/event/updateEventHelpers";
-import { compareTime } from "../../libraries/validators/compareTime";
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -44,6 +43,17 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -74,13 +84,14 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
 
   const currentUserIsEventAdmin = event.admins.some(
     (admin) =>
-      admin === context.userID || Types.ObjectId(admin).equals(context.userId),
+      admin === context.userID ||
+      new Types.ObjectId(admin).equals(context.userId),
   );
 
   // checks if current user is an admin of the event with _id === args.id
   if (
     currentUserIsEventAdmin === false &&
-    currentUser.userType !== "SUPERADMIN"
+    currentUserAppProfile.isSuperAdmin === false
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -121,17 +132,6 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  const compareTimeResult = compareTime(
-    args.data?.startTime,
-    args.data?.endTime,
-  );
-  if (compareTimeResult !== "") {
-    throw new errors.InputValidationError(
-      requestContext.translate(compareTimeResult),
-      compareTimeResult,
-    );
-  }
-
   /* c8 ignore start */
   if (session) {
     // start a transaction
@@ -157,7 +157,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     }
 
     /* c8 ignore stop */
-    return updatedEvent;
+    return updatedEvent as InterfaceEvent;
     /* c8 ignore start */
   } catch (error) {
     if (session) {

@@ -16,13 +16,13 @@
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
-| `colorize_logs` | `undefined` \| `string` |
-| `defaultLocale` | `string` |
-| `env` | `undefined` \| `string` |
-| `log_level` | `undefined` \| `string` |
-| `supportedLocales` | `string`[] |
+| Name               | Type                    |
+| :----------------- | :---------------------- |
+| `colorize_logs`    | `undefined` \| `string` |
+| `defaultLocale`    | `string`                |
+| `env`              | `undefined` \| `string` |
+| `log_level`        | `undefined` \| `string` |
+| `supportedLocales` | `string`[]              |
 
 #### Defined in
 

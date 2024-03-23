@@ -3,6 +3,7 @@ import type { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
 
 const MESSAGE_SENT_TO_DIRECT_CHAT = "MESSAGE_SENT_TO_DIRECT_CHAT";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const filterFunction = function (payload: any, context: any): boolean {
   const { currentUserId } = context.context;
   return (
@@ -20,7 +21,7 @@ export const filterFunction = function (payload: any, context: any): boolean {
  */
 export const messageSentToDirectChat: SubscriptionResolvers["messageSentToDirectChat"] =
   {
-    // @ts-ignore
+    // @ts-expect-error-ts-ignore
     subscribe: withFilter(
       (_parent, _args, context) =>
         context.pubsub.asyncIterator([MESSAGE_SENT_TO_DIRECT_CHAT]),

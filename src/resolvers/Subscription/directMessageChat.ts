@@ -10,7 +10,7 @@ const CHAT_CHANNEL = "CHAT_CHANNEL";
  * You can learn about `subscription` {@link https://www.apollographql.com/docs/apollo-server/data/subscriptions/ | here }.
  */
 export const directMessageChat: SubscriptionResolvers["directMessageChat"] = {
-  // @ts-ignore
+  // @ts-expect-error-ts-ignore
   subscribe: withFilter(
     (_parent, _args, context) => context.pubsub.asyncIterator(CHAT_CHANNEL),
 

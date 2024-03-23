@@ -24,61 +24,61 @@
 
 Re-exports [ApplicationError](../classes/libraries_errors_applicationError.ApplicationError.md)
 
-___
+---
 
 ### ConflictError
 
 Re-exports [ConflictError](../classes/libraries_errors_conflictError.ConflictError.md)
 
-___
+---
 
 ### ImageSizeLimitExceeded
 
 Re-exports [ImageSizeLimitExceeded](../classes/libraries_errors_ImageSizeLimitExceeded.ImageSizeLimitExceeded.md)
 
-___
+---
 
 ### InputValidationError
 
 Re-exports [InputValidationError](../classes/libraries_errors_inputValidationError.InputValidationError.md)
 
-___
+---
 
 ### InterfaceError
 
 Re-exports [InterfaceError](../interfaces/libraries_errors_applicationError.InterfaceError.md)
 
-___
+---
 
 ### InternalServerError
 
 Re-exports [InternalServerError](../classes/libraries_errors_internalServerError.InternalServerError.md)
 
-___
+---
 
 ### InvalidFileTypeError
 
 Re-exports [InvalidFileTypeError](../classes/libraries_errors_invalidFileTypeError.InvalidFileTypeError.md)
 
-___
+---
 
 ### NotFoundError
 
 Re-exports [NotFoundError](../classes/libraries_errors_notFoundError.NotFoundError.md)
 
-___
+---
 
 ### UnauthenticatedError
 
 Re-exports [UnauthenticatedError](../classes/libraries_errors_unauthenticatedError.UnauthenticatedError.md)
 
-___
+---
 
 ### UnauthorizedError
 
 Re-exports [UnauthorizedError](../classes/libraries_errors_unauthorizedError.UnauthorizedError.md)
 
-___
+---
 
 ### ValidationError
 

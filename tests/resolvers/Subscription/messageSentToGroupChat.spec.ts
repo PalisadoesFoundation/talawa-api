@@ -39,9 +39,9 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
         groupChatMessageBelongsTo: testGroupChat?._id,
       },
     };
-    // @ts-ignore
+    // @ts-expect-error-ignore
     messageSentToGroupChatPayload.payload = payload;
-    // @ts-ignore
+    // @ts-expect-error-ignore
     const x = messageSentToGroupChatPayload?.subscribe(_parent, _args, context);
     expect(x).not.toBe(null);
     expect(await filterFunction(payload, context)).toBe(true);
@@ -67,9 +67,9 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
         groupChatMessageBelongsTo: new mongoose.Types.ObjectId(),
       },
     };
-    // @ts-ignore
+    // @ts-expect-error-ignore
     messageSentToGroupChatPayload.payload = payload;
-    // @ts-ignore
+    // @ts-expect-error-ignore
     const x = messageSentToGroupChatPayload?.subscribe(_parent, _args, context);
     expect(x).not.toBe(null);
     expect(await filterFunction(payload, context)).toBe(false);

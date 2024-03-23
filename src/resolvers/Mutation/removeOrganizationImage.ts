@@ -1,13 +1,14 @@
 import {
-  ORGANIZATION_NOT_FOUND_ERROR,
   ORGANIZATION_IMAGE_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceOrganization } from "../../models";
 import { Organization } from "../../models";
-import { adminCheck, deleteImage } from "../../utilities";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck, deleteImage } from "../../utilities";
 /**
  * This function enables to remove an organization's image.
  * @param _parent - parent of current request
@@ -33,8 +34,7 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
       organization = await Organization.findOne({
         _id: args.organizationId,
       }).lean();
-
-      await cacheOrganizations([organization!]);
+      if (organization) await cacheOrganizations([organization]);
     }
 
     // Checks whether organization exists.
@@ -79,5 +79,5 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
       await cacheOrganizations([updatedOrganization]);
     }
 
-    return updatedOrganization!;
+    return updatedOrganization as InterfaceOrganization;
   };

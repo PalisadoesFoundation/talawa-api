@@ -18,8 +18,8 @@ This function deletes a duplicated image using the function fs.unlink().
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name        | Type       | Description       |
+| :---------- | :--------- | :---------------- |
 | `imagePath` | `PathLike` | Path of the image |
 
 #### Returns
