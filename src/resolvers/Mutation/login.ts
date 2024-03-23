@@ -53,8 +53,11 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
       requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE),
     );
   }
-  let appUserProfile = await AppUserProfile.findOne({
+  let appUserProfile: InterfaceAppUserProfile | null = await AppUserProfile.findOne({
     userId: user._id.toString(),
+    appLanguageCode: "en",
+    tokenVersion: 0,
+    isSuperAdmin: false,
   }).lean();
 
   if (!appUserProfile) {
@@ -69,7 +72,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
         _id: user._id.toString(),
       },
       {
-        appUserProfileId: appUserProfile._id.toString(),
+        appUserProfileId: appUserProfile?._id?.toString(),
       },
     );
   }
