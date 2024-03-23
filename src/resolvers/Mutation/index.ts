@@ -109,6 +109,8 @@ import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
 import { deleteAdvertisement } from "./deleteAdvertisement";
+import { updateFundraisingCampaign } from "./updateFundraisingCampaign";
+import { updateFundraisingCampaignPledge } from "./updateFundCampaignPledge";
 import { createAgendaItem } from "./createAgendaItem";
 import { removeAgendaItem } from "./removeAgendaItem";
 import { updateAgendaItem } from "./updateAgendaItem";
@@ -233,4 +235,6 @@ export const Mutation: MutationResolvers = {
   updateUserTag,
   updatePost,
   updateAdvertisement,
+  updateFundraisingCampaign,
+  updateFundraisingCampaignPledge,
 };
