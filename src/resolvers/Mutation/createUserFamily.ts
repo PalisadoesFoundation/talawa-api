@@ -1,13 +1,17 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import {
   LENGTH_VALIDATION_ERROR,
   USER_FAMILY_MIN_MEMBERS_ERROR_CODE,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+
+import { errors, requestContext } from "../../libraries";
 import { isValidString } from "../../libraries/validators/validateString";
+import { AppUserProfile, User } from "../../models";
 import { UserFamily } from "../../models/userFamily";
+import type { InterfaceAppUserProfile } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+
 import { superAdminCheck } from "../../utilities";
 /**
  * This Function enables to create a user Family
@@ -38,8 +42,18 @@ export const createUserFamily: MutationResolvers["createUserFamily"] = async (
     );
   }
 
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthenticatedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
   // Check whether the user is super admin.
-  superAdminCheck(currentUser);
+  superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
   let validationResultName = {
     isLessThanMaxLength: false,

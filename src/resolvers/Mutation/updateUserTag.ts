@@ -1,13 +1,14 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { User, OrganizationTagUser } from "../../models";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-  TAG_NOT_FOUND,
   NO_CHANGE_IN_TAG_NAME,
   TAG_ALREADY_EXISTS,
+  TAG_NOT_FOUND,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import { AppUserProfile, OrganizationTagUser, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   _parent,
@@ -26,6 +27,16 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
   // Get the tag object
   const existingTag = await OrganizationTagUser.findOne({
@@ -41,15 +52,16 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   }
 
   // Boolean to determine whether user is an admin of organization of the tag folder.
-  const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.equals(existingTag?.organizationId),
+  const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+    (organization) =>
+      organization &&
+      new Types.ObjectId(organization.toString()).equals(
+        existingTag?.organizationId,
+      ),
   );
 
   // Checks whether currentUser can update the tag
-  if (
-    !(currentUser.userType === "SUPERADMIN") &&
-    !currentUserIsOrganizationAdmin
-  ) {
+  if (!currentUserAppProfile.isSuperAdmin && !currentUserIsOrganizationAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -58,7 +70,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   }
 
   // Throw error if the new tag name is the same as the old one
-  if (existingTag!.name === args.input.name) {
+  if (existingTag.name === args.input.name) {
     throw new errors.ConflictError(
       requestContext.translate(NO_CHANGE_IN_TAG_NAME.MESSAGE),
       NO_CHANGE_IN_TAG_NAME.CODE,
@@ -69,8 +81,8 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   // Check if another tag with the new name exists under the same parent tag
   const anotherTagExists = await OrganizationTagUser.exists({
     name: args.input.name,
-    parentTagId: existingTag!.parentTagId,
-    organizationId: existingTag!.organizationId,
+    parentTagId: existingTag.parentTagId,
+    organizationId: existingTag.organizationId,
   });
 
   if (anotherTagExists) {

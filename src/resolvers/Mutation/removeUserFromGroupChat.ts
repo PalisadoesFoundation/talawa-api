@@ -9,6 +9,7 @@ import { GroupChat, Organization } from "../../models";
 import { adminCheck } from "../../utilities";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { InterfaceGroupChat } from "../../models";
 /**
  * This function enables to remove a user from group chat.
  * @param _parent - parent of current request
@@ -48,8 +49,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
       organization = await Organization.findOne({
         _id: groupChat.organization,
       }).lean();
-
-      await cacheOrganizations([organization!]);
+      if (organization) await cacheOrganizations([organization]);
     }
 
     // Checks whether organization exists.
@@ -78,7 +78,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     }
 
     // Removes args.userId from users list of groupChat and returns the updated groupChat.
-    return await GroupChat.findOneAndUpdate(
+    return (await GroupChat.findOneAndUpdate(
       {
         _id: args.chatId,
       },
@@ -92,5 +92,5 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
       {
         new: true,
       },
-    ).lean();
+    ).lean()) as InterfaceGroupChat;
   };

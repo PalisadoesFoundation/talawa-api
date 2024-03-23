@@ -1,10 +1,16 @@
 import type mongoose from "mongoose";
+import type { Types } from "mongoose";
+import type { InterfaceEvent } from "../../../models";
+import {
+  ActionItem,
+  AppUserProfile,
+  Event,
+  EventAttendee,
+  User,
+} from "../../../models";
 import type { InterfaceRecurrenceRule } from "../../../models/RecurrenceRule";
 import { RecurrenceRule } from "../../../models/RecurrenceRule";
-import type { InterfaceEvent } from "../../../models";
-import { ActionItem, Event, EventAttendee, User } from "../../../models";
 import { shouldUpdateBaseRecurringEvent } from "../updateEventHelpers";
-import type { Types } from "mongoose";
 
 /**
  * This function deletes allInstances / thisAndFollowingInstances of a recurring event.
@@ -58,21 +64,32 @@ export const deleteRecurringEventInstances = async (
     ),
     User.updateMany(
       {
+        registeredEvents: { $in: recurringEventInstancesIds },
+      },
+      {
+        $pull: {
+          registeredEvents: { $in: recurringEventInstancesIds },
+        },
+      },
+      { session },
+    ),
+
+    AppUserProfile.updateMany(
+      {
         $or: [
           { createdEvents: { $in: recurringEventInstancesIds } },
           { eventAdmin: { $in: recurringEventInstancesIds } },
-          { registeredEvents: { $in: recurringEventInstancesIds } },
         ],
       },
       {
         $pull: {
           createdEvents: { $in: recurringEventInstancesIds },
           eventAdmin: { $in: recurringEventInstancesIds },
-          registeredEvents: { $in: recurringEventInstancesIds },
         },
       },
       { session },
     ),
+
     ActionItem.deleteMany(
       { eventId: { $in: recurringEventInstancesIds } },
       { session },

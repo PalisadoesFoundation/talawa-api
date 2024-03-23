@@ -15,7 +15,7 @@
 
 Re-exports [InterfaceAuthData](../interfaces/middleware_isAuth.InterfaceAuthData.md)
 
-___
+---
 
 ### isAuth
 

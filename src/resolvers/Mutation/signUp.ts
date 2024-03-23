@@ -1,22 +1,25 @@
 import bcrypt from "bcryptjs";
 import {
+  EMAIL_ALREADY_EXISTS_ERROR,
   LAST_RESORT_SUPERADMIN_EMAIL,
   //LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  EMAIL_ALREADY_EXISTS_ERROR,
-  //REGEX_VALIDATION_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Organization } from "../../models";
-import {
-  createAccessToken,
-  createRefreshToken,
-  copyToClipboard,
-} from "../../utilities";
-import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceOrganization,
+} from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import {
+  copyToClipboard,
+  createAccessToken,
+  createRefreshToken,
+} from "../../utilities";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -30,7 +33,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     email: args.data.email.toLowerCase(),
   });
 
-  if (userWithEmailExists === true) {
+  if (userWithEmailExists) {
     throw new errors.ConflictError(
       requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
       EMAIL_ALREADY_EXISTS_ERROR.CODE,
@@ -52,7 +55,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         _id: args.data.organizationUserBelongsToId,
       }).lean();
 
-      await cacheOrganizations([organization!]);
+      await cacheOrganizations([organization as InterfaceOrganization]);
     }
 
     if (!organization) {
@@ -120,29 +123,59 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const isLastResortSuperAdmin =
     args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
 
-  const createdUser = await User.create({
+  let createdUser = await User.create({
     ...args.data,
     email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
     image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,
-    userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
+    // userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
+  });
+  let appUserProfile: InterfaceAppUserProfile = await AppUserProfile.create({
+    userId: createdUser._id,
+    appLanguageCode: args.data.appLanguageCode || "en",
+    isSuperAdmin: isLastResortSuperAdmin,
     adminApproved: isLastResortSuperAdmin,
   });
 
-  const accessToken = await createAccessToken(createdUser);
-  const refreshToken = await createRefreshToken(createdUser);
+  const updatedUser = await User.findOneAndUpdate(
+    {
+      _id: createdUser._id,
+    },
+    {
+      appUserProfileId: appUserProfile._id,
+    },
+    {
+      new: true,
+    },
+  );
+
+  if (updatedUser) {
+    createdUser = updatedUser;
+  } else {
+    throw new Error("Failed to update user.");
+  }
+
+  const accessToken = await createAccessToken(createdUser, appUserProfile);
+  const refreshToken = await createRefreshToken(createdUser, appUserProfile);
 
   copyToClipboard(`{
     "Authorization": "Bearer ${accessToken}"
   }`);
 
-  const filteredCreatedUser = createdUser.toObject();
+  const filteredCreatedUser = updatedUser.toObject();
+  appUserProfile = (await AppUserProfile.findOne({
+    userId: updatedUser?._id.toString(),
+  })
+    .populate("createdOrganizations")
+    .populate("createdEvents")
+    .populate("eventAdmin")
+    .populate("adminFor")) as InterfaceAppUserProfile;
 
-  // @ts-ignore
   delete filteredCreatedUser.password;
 
   return {
     user: filteredCreatedUser,
+    appUserProfile: appUserProfile as InterfaceAppUserProfile,
     accessToken,
     refreshToken,
   };

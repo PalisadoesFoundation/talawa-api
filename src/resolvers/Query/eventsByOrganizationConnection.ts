@@ -25,7 +25,7 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
       .sort(sort)
       .limit(args.first ?? 0)
       .skip(args.skip ?? 0)
-      .populate("creator", "-password")
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 

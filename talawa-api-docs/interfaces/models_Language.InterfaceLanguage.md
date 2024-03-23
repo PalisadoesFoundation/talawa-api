@@ -25,7 +25,7 @@ This is an interface that represents a database(MongoDB) document for Language.
 
 [src/models/Language.ts:47](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Language.ts#L47)
 
-___
+---
 
 ### createdAt
 
@@ -35,7 +35,7 @@ ___
 
 [src/models/Language.ts:50](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Language.ts#L50)
 
-___
+---
 
 ### en
 
@@ -45,7 +45,7 @@ ___
 
 [src/models/Language.ts:48](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Language.ts#L48)
 
-___
+---
 
 ### translation
 

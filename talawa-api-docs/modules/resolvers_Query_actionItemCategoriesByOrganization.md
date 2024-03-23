@@ -20,7 +20,7 @@ This query will fetch all categories for the organization from database.
 
 **`Param`**
 
-An object that contains `organizationId` which is the _id of the Organization.
+An object that contains `organizationId` which is the \_id of the Organization.
 
 #### Defined in
 

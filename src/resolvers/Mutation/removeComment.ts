@@ -1,15 +1,16 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import type { InterfaceComment } from "../../models";
-import { User, Post, Comment } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
   COMMENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { findCommentsInCache } from "../../services/CommentCache/findCommentsInCache";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceComment } from "../../models";
+import { AppUserProfile, Comment, Post, User } from "../../models";
 import { deleteCommentFromCache } from "../../services/CommentCache/deleteCommentFromCache";
+import { findCommentsInCache } from "../../services/CommentCache/findCommentsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables to remove a comment.
@@ -20,6 +21,7 @@ import { cachePosts } from "../../services/PostCache/cachePosts";
  * 1. If the user exists
  * 2. If the comment exists.
  * 3. If the user is the creator of the organization.
+ * 4. If the user has appUserProfile
  * @returns Deleted comment.
  */
 
@@ -40,17 +42,26 @@ export const removeComment: MutationResolvers["removeComment"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
   let comment: InterfaceComment;
 
   const commentsFoundInCache = await findCommentsInCache([args.id]);
 
   if (commentsFoundInCache[0] == null) {
-    comment = await Comment.findOne({
+    comment = (await Comment.findOne({
       _id: args.id,
     })
       .populate("postId")
-      .lean();
+      .lean()) as InterfaceComment;
   } else {
     comment = commentsFoundInCache[0];
   }
@@ -64,13 +75,17 @@ export const removeComment: MutationResolvers["removeComment"] = async (
     );
   }
 
-  const isCurrentUserAdminOfOrganization = currentUser.adminFor.some(
-    (organization) => organization.equals(comment.postId.organization),
+  const isCurrentUserAdminOfOrganization = currentUserAppProfile.adminFor.some(
+    (organization) =>
+      organization &&
+      new Types.ObjectId(organization.toString()).equals(
+        comment.postId.organization,
+      ),
   );
 
   // Checks whether currentUser with _id === context.userId has the authorization to delete the comment
   if (
-    currentUser.userType !== "SUPERADMIN" &&
+    !currentUserAppProfile.isSuperAdmin &&
     !isCurrentUserAdminOfOrganization &&
     comment.creatorId.toString() !== context.userId
   ) {
@@ -85,7 +100,7 @@ export const removeComment: MutationResolvers["removeComment"] = async (
 
   const updatedPost = await Post.findOneAndUpdate(
     {
-      _id: comment!.postId._id,
+      _id: comment.postId._id,
     },
     {
       $inc: {

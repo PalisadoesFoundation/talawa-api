@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { withFilter } from "graphql-subscriptions";
 import type { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
 import { GroupChat } from "../../models";
@@ -34,7 +35,7 @@ export const filterFunction = async function (
  */
 export const messageSentToGroupChat: SubscriptionResolvers["messageSentToGroupChat"] =
   {
-    // @ts-ignore
+    // @ts-expect-error-ts-ignore
     subscribe: withFilter(
       (_parent, _args, context) =>
         context.pubsub.asyncIterator([MESSAGE_SENT_TO_GROUP_CHAT]),

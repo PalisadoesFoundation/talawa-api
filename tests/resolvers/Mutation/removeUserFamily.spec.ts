@@ -6,23 +6,23 @@ import type { MutationRemoveUserFamilyArgs } from "../../../src/types/generatedG
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import {
   USER_FAMILY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  afterEach,
-  vi,
-} from "vitest";
-import { createTestUserFunc } from "../../helpers/userAndUserFamily";
 import type {
   TestUserFamilyType,
   TestUserType,
 } from "../../helpers/userAndUserFamily";
+import { createTestUserFunc } from "../../helpers/userAndUserFamily";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removeUserFamily: removeUserFamilyResolver } = await import(

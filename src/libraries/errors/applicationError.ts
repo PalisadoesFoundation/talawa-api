@@ -2,7 +2,7 @@ export interface InterfaceError {
   message: string;
   code: string | null;
   param: string | null;
-  metadata?: Record<any, any>;
+  metadata?: Record<string, string>;
 }
 /**
  * This class is responsible for finding the application errors. It adds those errors to superclass called Error.

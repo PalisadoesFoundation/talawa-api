@@ -12,17 +12,17 @@
 
 ### findEventsInCache
 
-▸ **findEventsInCache**(`ids`): `Promise`\<([`InterfaceEvent`](../interfaces/models_Event.InterfaceEvent.md) \| ``null``)[]\>
+▸ **findEventsInCache**(`ids`): `Promise`\<([`InterfaceEvent`](../interfaces/models_Event.InterfaceEvent.md) \| `null`)[]\>
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type       |
+| :---- | :--------- |
 | `ids` | `string`[] |
 
 #### Returns
 
-`Promise`\<([`InterfaceEvent`](../interfaces/models_Event.InterfaceEvent.md) \| ``null``)[]\>
+`Promise`\<([`InterfaceEvent`](../interfaces/models_Event.InterfaceEvent.md) \| `null`)[]\>
 
 #### Defined in
 

@@ -22,12 +22,15 @@ afterAll(async () => {
 
 describe("resolvers -> Tag -> organization", () => {
   it(`returns the organization object for organization with _id === tag.organizationId`, async () => {
-    const parent = testTag!;
+    const parent = testTag;
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
 
     const payload = await organizationResolver?.(parent, {}, {});
 
     const organization = await Organization.findOne({
-      _id: testOrg!._id,
+      _id: testOrg?._id,
     }).lean();
 
     expect(payload).toEqual(organization);

@@ -12,7 +12,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testLanguages: (InterfaceLanguage &
-  Document<any, any, InterfaceLanguage>)[];
+  Document<unknown, unknown, InterfaceLanguage>)[];
 
 const enValue = `en ${nanoid().toLowerCase()}`;
 const deValue = `de ${nanoid().toLowerCase()}`;

@@ -8,7 +8,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
  * @param _parent-
  * @param args - An object that contains `id` of the fund.
  * @returns A `fundraisingCampaignPledge` object.
- */
+ */ //@ts-expect-error - type error
 export const getFundraisingCampaignPledgeById: QueryResolvers["getFundraisingCampaignPledgeById"] =
   async (_parent, args) => {
     const pledge = await FundraisingCampaignPledge.findOne({

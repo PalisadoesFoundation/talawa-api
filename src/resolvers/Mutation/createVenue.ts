@@ -1,14 +1,15 @@
-import { Organization, User } from "../../models";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import {
-  ORGANIZATION_NOT_FOUND_ERROR,
-  VENUE_ALREADY_EXISTS_ERROR,
-  USER_NOT_FOUND_ERROR,
-  VENUE_NAME_MISSING_ERROR,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+  VENUE_ALREADY_EXISTS_ERROR,
+  VENUE_NAME_MISSING_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import { AppUserProfile, Organization, User } from "../../models";
 import { Venue } from "../../models/Venue";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to create a venue in an organization.
@@ -33,12 +34,23 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     _id: context.userId,
   });
 
+  const currentAppProfile = await AppUserProfile.findOne({
+    userId: context.userId,
+  });
+
   // Checks whether currentUser with _id == context.userId exists.
   if (currentUser === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  if (!currentAppProfile) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -59,7 +71,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
   if (
     !(
       organization.admins?.some((admin) => admin._id.equals(context.userId)) ||
-      currentUser.userType == "SUPERADMIN"
+      currentAppProfile?.isSuperAdmin
     )
   ) {
     throw new errors.UnauthorizedError(

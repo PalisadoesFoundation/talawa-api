@@ -7,7 +7,7 @@ import type { Types, Model } from "mongoose";
 export interface InterfaceCommunity {
   _id: Types.ObjectId;
   name: string;
-  logoUrl: string | undefined;
+  logoUrl: string | null;
   description: string;
   websiteLink: string | undefined;
   socialMediaUrls: {

@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import {
   CUSTOM_FIELD_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -5,7 +6,12 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { OrganizationCustomField, Organization, User } from "../../models";
+import {
+  AppUserProfile,
+  Organization,
+  OrganizationCustomField,
+  User,
+} from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
@@ -18,6 +24,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * 2. If the organization exists.
  * 3. If the user is an admin for the organization.
  * 4. If the custom field to be removed exists
+ * 5. If the user has appUserProfile
  * @returns Deleted Organization Custom Field.
  */
 
@@ -36,6 +43,16 @@ export const removeOrganizationCustomField: MutationResolvers["removeOrganizatio
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
 
     const organization = await Organization.findOne({
       _id: organizationId,
@@ -49,12 +66,13 @@ export const removeOrganizationCustomField: MutationResolvers["removeOrganizatio
       );
     }
 
-    const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-      (organization) => organization.equals(organization._id),
+    const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+      (orgId) =>
+        orgId && new Types.ObjectId(orgId.toString()).equals(organization._id),
     );
 
     if (
-      !(currentUserIsOrganizationAdmin || currentUser.userType === "SUPERADMIN")
+      !(currentUserIsOrganizationAdmin || currentUserAppProfile.isSuperAdmin)
     ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),

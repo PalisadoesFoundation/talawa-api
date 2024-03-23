@@ -1,11 +1,20 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { AppUserProfile, Organization, User } from "../../../src/models";
 import type { MutationBlockUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/blockUser";
+import { nanoid } from "nanoid";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -14,22 +23,13 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
+import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/blockUser";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import type {
-  TestUserType,
   TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testUser2: TestUserType;
@@ -58,8 +58,17 @@ beforeAll(async () => {
     },
     {
       $set: {
-        createdOrganizations: [testOrganization._id],
         joinedOrganizations: [testOrganization._id],
+      },
+    },
+  );
+  await AppUserProfile.updateOne(
+    {
+      userId: testUser?._id,
+    },
+    {
+      $set: {
+        createdOrganizations: [testOrganization._id],
       },
     },
   );
@@ -81,7 +90,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
   it(`throws NotFoundError if no organization exists with with _id === args.organizationId`, async () => {
     try {
       const args: MutationBlockUserArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
         userId: "",
       };
 
@@ -101,7 +110,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
     try {
       const args: MutationBlockUserArgs = {
         organizationId: testOrganization?.id,
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -224,9 +233,9 @@ describe("resolvers -> Mutation -> blockUser", () => {
         await cacheOrganizations([updatedOrganization]);
       }
 
-      await User.updateOne(
+      await AppUserProfile.updateOne(
         {
-          _id: testUser?.id,
+          userId: testUser?.id,
         },
         {
           $push: {

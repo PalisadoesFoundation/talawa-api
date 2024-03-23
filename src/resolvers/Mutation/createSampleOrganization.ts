@@ -1,12 +1,11 @@
 import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
-  SAMPLE_ORGANIZATION_ALREADY_EXISTS,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import { AppUserProfile, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { createSampleOrganization as createSampleOrgUtil } from "../../utilities/createSampleOrganizationUtil";
-import { SampleData, User } from "../../models";
 
 /**
  * Generates sample data for testing or development purposes.
@@ -26,12 +25,10 @@ export const createSampleOrganization: MutationResolvers["createSampleOrganizati
       );
     }
 
-    if (
-      !(
-        currentUser.userType === "SUPERADMIN" ||
-        currentUser.userType === "ADMIN"
-      )
-    ) {
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -39,15 +36,11 @@ export const createSampleOrganization: MutationResolvers["createSampleOrganizati
       );
     }
 
-    const existingOrganization = await SampleData.findOne({
-      collectionName: "Organization",
-    });
-
-    if (existingOrganization) {
+    if (!currentUserAppProfile.isSuperAdmin) {
       throw new errors.UnauthorizedError(
-        requestContext.translate(SAMPLE_ORGANIZATION_ALREADY_EXISTS.MESSAGE),
-        SAMPLE_ORGANIZATION_ALREADY_EXISTS.CODE,
-        SAMPLE_ORGANIZATION_ALREADY_EXISTS.PARAM,
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 

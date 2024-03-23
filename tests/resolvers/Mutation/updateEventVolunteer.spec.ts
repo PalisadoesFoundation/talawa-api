@@ -59,7 +59,7 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
         },
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const { updateEventVolunteer: updateEventVolunteerResolver } =
         await import("../../../src/resolvers/Mutation/updateEventVolunteer");
@@ -82,7 +82,7 @@ describe("resolvers -> Mutation -> updateEventVolunteer", () => {
 
     try {
       const args: MutationUpdateEventVolunteerArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         data: {
           response: EventVolunteerResponse.YES,
         },

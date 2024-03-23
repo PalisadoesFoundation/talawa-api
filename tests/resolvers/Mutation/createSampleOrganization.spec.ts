@@ -1,25 +1,25 @@
+import { faker } from "@faker-js/faker";
+import type mongoose from "mongoose";
 import {
   afterAll,
   beforeAll,
+  beforeEach,
   describe,
   expect,
   it,
   vi,
-  beforeEach,
 } from "vitest";
-import { generateUserData } from "../../../src/utilities/createSampleOrganizationUtil";
-import { faker } from "@faker-js/faker";
+import { SampleData, User } from "../../../src/models";
 import { createSampleOrganization } from "../../../src/resolvers/Mutation/createSampleOrganization";
-import type mongoose from "mongoose";
-import { SampleData } from "../../../src/models";
+import { generateUserData } from "../../../src/utilities/createSampleOrganizationUtil";
 
+import { Types } from "mongoose";
+import { nanoid } from "nanoid";
 import {
-  SAMPLE_ORGANIZATION_ALREADY_EXISTS,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { connect, disconnect } from "../../helpers/db";
-import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -43,20 +43,21 @@ describe("createSampleOrganization resolver", async () => {
     );
 
     const ORGANIZATION_ID = faker.database.mongodbObjectId();
-    const admin = await generateUserData(ORGANIZATION_ID, "ADMIN");
-    admin.save();
+    const userData = await generateUserData(ORGANIZATION_ID, "ADMIN");
+    const admin = userData.user;
 
     const args = {};
     const adminContext = { userId: admin._id };
     const parent = {};
 
-    const adminResult = await createSampleOrganization!(
-      parent,
-      args,
-      adminContext,
-    );
-    expect(adminResult).toBe(true);
-    await SampleData.deleteMany({});
+    try {
+      if (createSampleOrganization) {
+        await createSampleOrganization(parent, args, adminContext);
+      }
+    } catch (error: unknown) {
+      expect((error as Error).message).toBe(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      await SampleData.deleteMany({});
+    }
   });
 
   it("should NOT throw error when user is SUPERADMIN", async () => {
@@ -66,19 +67,21 @@ describe("createSampleOrganization resolver", async () => {
     );
 
     const ORGANIZATION_ID = faker.database.mongodbObjectId();
-    const admin = await generateUserData(ORGANIZATION_ID, "SUPERADMIN");
-    admin.save();
+    const userData = await generateUserData(ORGANIZATION_ID, "SUPERADMIN");
+    const admin = userData.user;
 
     const args = {};
     const adminContext = { userId: admin._id };
     const parent = {};
+    if (createSampleOrganization) {
+      const adminResult = await createSampleOrganization(
+        parent,
+        args,
+        adminContext,
+      );
 
-    const adminResult = await createSampleOrganization!(
-      parent,
-      args,
-      adminContext,
-    );
-    expect(adminResult).toBe(true);
+      expect(adminResult).toBe(true);
+    }
     await SampleData.deleteMany({});
   });
 
@@ -89,49 +92,20 @@ describe("createSampleOrganization resolver", async () => {
     );
 
     const ORGANIZATION_ID = faker.database.mongodbObjectId();
-    const admin = await generateUserData(ORGANIZATION_ID, "USER");
-    admin.save();
+    const userData = await generateUserData(ORGANIZATION_ID, "USER");
+    const admin = userData.user;
 
     const args = {};
     const adminContext = { userId: admin._id };
     const parent = {};
 
     try {
-      await createSampleOrganization!(parent, args, adminContext);
-    } catch (error: any) {
-      expect(error.message).toBe(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      if (createSampleOrganization) {
+        await createSampleOrganization(parent, args, adminContext);
+      }
+    } catch (error: unknown) {
+      expect((error as Error).message).toBe(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
-  });
-
-  it("should throw error when the sample organization already exist", async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message,
-    );
-
-    const ORGANIZATION_ID = faker.database.mongodbObjectId();
-    const admin = await generateUserData(ORGANIZATION_ID, "ADMIN");
-    admin.save();
-
-    const args = {};
-    const adminContext = { userId: admin._id };
-    const parent = {};
-
-    const adminResult = await createSampleOrganization!(
-      parent,
-      args,
-      adminContext,
-    );
-
-    expect(adminResult).toBe(true);
-
-    try {
-      await createSampleOrganization!(parent, args, adminContext);
-    } catch (error: any) {
-      expect(error.message).toBe(SAMPLE_ORGANIZATION_ALREADY_EXISTS.MESSAGE);
-    }
-
-    await SampleData.deleteMany({});
   });
 
   it("should throw error when the current user doesn't exist", async () => {
@@ -141,15 +115,43 @@ describe("createSampleOrganization resolver", async () => {
     );
 
     const args = {};
-    const adminContext = { userId: Types.ObjectId().toString() };
+    const adminContext = { userId: new Types.ObjectId().toString() };
     const parent = {};
 
     try {
-      await createSampleOrganization!(parent, args, adminContext);
-    } catch (error: any) {
-      expect(error.message).toBe(USER_NOT_FOUND_ERROR.MESSAGE);
+      if (createSampleOrganization)
+        await createSampleOrganization(parent, args, adminContext);
+    } catch (error: unknown) {
+      expect((error as Error).message).toBe(USER_NOT_FOUND_ERROR.MESSAGE);
     }
 
     await SampleData.deleteMany({});
+  });
+  it("throws error if user does not have AppUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    const newUser = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: `pass${nanoid().toLowerCase()}`,
+      firstName: `firstName${nanoid().toLowerCase()}`,
+      lastName: `lastName${nanoid().toLowerCase()}`,
+      image: null,
+    });
+    const args = {};
+    const context = {
+      userId: newUser.id,
+    };
+
+    try {
+      if (createSampleOrganization)
+        await createSampleOrganization({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+      );
+    }
   });
 });

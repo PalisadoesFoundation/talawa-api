@@ -31,6 +31,7 @@ context of entire application
 **`Remarks`**
 
 The following checks are done:
+
 1. If the receiver user exists
 2. If the sender and receiver users have same language code.
 
