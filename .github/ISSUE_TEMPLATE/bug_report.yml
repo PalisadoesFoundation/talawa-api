@@ -70,7 +70,7 @@ body:
     id: terms
     attributes:
       label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/PalisadoesFoundation/talawa-admin/tree/develop?tab=coc-ov-file)
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/PalisadoesFoundation/talawa-api/tree/develop?tab=coc-ov-file)
       options:
         - label: I have used the search function to check if an issue already exists
         - label: I agree to follow this project's Code of Conduct
