@@ -1,13 +1,13 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
-import { Event, EventAttendee } from "../../models";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_UNREGISTERED_ERROR,
 } from "../../constants";
-import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceEvent } from "../../models";
+import { Event, EventAttendee } from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables a user to unregister from an event.

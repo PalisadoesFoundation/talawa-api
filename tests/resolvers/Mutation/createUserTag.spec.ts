@@ -5,30 +5,31 @@ import type { MutationCreateUserTagArgs } from "../../../src/types/generatedGrap
 import { connect, disconnect } from "../../helpers/db";
 
 import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_TO_CREATE_TAG,
-  INCORRECT_TAG_INPUT,
-  ORGANIZATION_NOT_FOUND_ERROR,
-  TAG_NOT_FOUND,
-  TAG_ALREADY_EXISTS,
-} from "../../../src/constants";
-import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
   vi,
 } from "vitest";
+import {
+  INCORRECT_TAG_INPUT,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  TAG_ALREADY_EXISTS,
+  TAG_NOT_FOUND,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_AUTHORIZED_TO_CREATE_TAG,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
+import { AppUserProfile, OrganizationTagUser } from "../../../src/models";
+import type { TestUserTagType } from "../../helpers/tags";
+import { createRootTagWithOrg } from "../../helpers/tags";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { OrganizationTagUser } from "../../../src/models";
-import type { TestUserTagType } from "../../helpers/tags";
-import { createRootTagWithOrg } from "../../helpers/tags";
 
 let testUser: TestUserType;
 let randomUser: TestUserType;
@@ -65,13 +66,13 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     try {
       const args: MutationCreateUserTagArgs = {
         input: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           name: "TestUserTag",
         },
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createUserTag: createUserTagResolver } = await import(
@@ -79,9 +80,9 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -96,7 +97,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     try {
       const args: MutationCreateUserTagArgs = {
         input: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           name: "TestUserTag",
         },
       };
@@ -110,9 +111,9 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -129,7 +130,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
         input: {
           organizationId: testOrganization?._id,
           name: "TestUserTag",
-          parentTagId: Types.ObjectId().toString(),
+          parentTagId: new Types.ObjectId().toString(),
         },
       };
 
@@ -142,9 +143,11 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(TAG_NOT_FOUND.MESSAGE);
-      expect(error.message).toEqual(`Translated ${TAG_NOT_FOUND.MESSAGE}`);
+      expect((error as Error).message).toEqual(
+        `Translated ${TAG_NOT_FOUND.MESSAGE}`,
+      );
     }
   });
 
@@ -172,9 +175,9 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(INCORRECT_TAG_INPUT.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${INCORRECT_TAG_INPUT.MESSAGE}`,
       );
     }
@@ -204,9 +207,9 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE}`,
       );
     }
@@ -236,9 +239,11 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(TAG_ALREADY_EXISTS.MESSAGE);
-      expect(error.message).toEqual(`Translated ${TAG_ALREADY_EXISTS.MESSAGE}`);
+      expect((error as Error).message).toEqual(
+        `Translated ${TAG_ALREADY_EXISTS.MESSAGE}`,
+      );
     }
   });
 
@@ -279,5 +284,35 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     });
 
     expect(createdTagExists).toBeTruthy();
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationCreateUserTagArgs = {
+        input: {
+          organizationId: testOrganization?._id,
+          name: "TestUserTag",
+        },
+      };
+      const newUser = await createTestUser();
+      await AppUserProfile.deleteOne({
+        userId: newUser?.id,
+      });
+      const context = {
+        userId: newUser?.id,
+      };
+      const { createUserTag: createUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/createUserTag"
+      );
+      await createUserTagResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+      );
+    }
   });
 });

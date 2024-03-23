@@ -25,7 +25,7 @@
 
 [src/models/Feedback.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Feedback.ts#L6)
 
-___
+---
 
 ### createdAt
 
@@ -35,7 +35,7 @@ ___
 
 [src/models/Feedback.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Feedback.ts#L10)
 
-___
+---
 
 ### eventId
 
@@ -45,7 +45,7 @@ ___
 
 [src/models/Feedback.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Feedback.ts#L7)
 
-___
+---
 
 ### rating
 
@@ -55,17 +55,17 @@ ___
 
 [src/models/Feedback.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Feedback.ts#L8)
 
-___
+---
 
 ### review
 
-• **review**: ``null`` \| `string`
+• **review**: `null` \| `string`
 
 #### Defined in
 
 [src/models/Feedback.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Feedback.ts#L9)
 
-___
+---
 
 ### updatedAt
 

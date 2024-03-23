@@ -1,12 +1,12 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import {
   AGENDA_SECTION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { InterfaceAgendaSection } from "../../models";
-import { AgendaSectionModel, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceAgendaSection } from "../../models";
+import { AgendaSectionModel, AppUserProfile, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * Resolver function for the GraphQL mutation 'updateAgendaSection'.
@@ -34,6 +34,17 @@ export const updateAgendaSection: MutationResolvers["updateAgendaSection"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
     // Find the agenda section by ID
     const agendaSection = await AgendaSectionModel.findById(args.id);
 
@@ -52,7 +63,7 @@ export const updateAgendaSection: MutationResolvers["updateAgendaSection"] =
     // Check if the current user is the creator of the agenda section or is a superadmin
     if (
       !agendaSection.createdBy.equals(currentUser._id) &&
-      currentUser.userType !== "SUPERADMIN"
+      !currentUserAppProfile.isSuperAdmin
     ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(

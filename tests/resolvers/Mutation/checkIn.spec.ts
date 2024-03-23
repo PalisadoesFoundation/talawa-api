@@ -1,20 +1,20 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { EventAttendee } from "../../../src/models";
-import type { MutationCheckInArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
+  USER_ALREADY_CHECKED_IN,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_REGISTERED_FOR_EVENT,
-  USER_ALREADY_CHECKED_IN,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
+import { AppUserProfile, EventAttendee } from "../../../src/models";
+import type { MutationCheckInArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import { type TestEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
+import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -42,12 +42,12 @@ describe("resolvers -> Mutation -> checkIn", () => {
     try {
       const args: MutationCheckInArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const { checkIn: checkInResolver } = await import(
         "../../../src/resolvers/Mutation/checkIn"
@@ -72,8 +72,8 @@ describe("resolvers -> Mutation -> checkIn", () => {
     try {
       const args: MutationCheckInArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
@@ -102,8 +102,8 @@ describe("resolvers -> Mutation -> checkIn", () => {
     try {
       const args: MutationCheckInArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: testEvent?._id,
+          userId: new Types.ObjectId().toString(),
+          eventId: testEvent?._id.toString() ?? "",
         },
       };
 
@@ -132,8 +132,8 @@ describe("resolvers -> Mutation -> checkIn", () => {
     try {
       const args: MutationCheckInArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: testEvent?._id,
+          userId: new Types.ObjectId().toString(),
+          eventId: testEvent?._id.toString() ?? "",
         },
       };
 
@@ -163,7 +163,7 @@ describe("resolvers -> Mutation -> checkIn", () => {
       const args: MutationCheckInArgs = {
         data: {
           userId: randomTestUser?._id,
-          eventId: testEvent?._id,
+          eventId: testEvent?._id.toString() ?? "",
         },
       };
 
@@ -188,7 +188,7 @@ describe("resolvers -> Mutation -> checkIn", () => {
     const args: MutationCheckInArgs = {
       data: {
         userId: testUser?._id,
-        eventId: testEvent?._id,
+        eventId: testEvent?._id.toString() ?? "",
       },
     };
 
@@ -205,7 +205,7 @@ describe("resolvers -> Mutation -> checkIn", () => {
       userId: testUser?._id,
     }).lean();
 
-    expect(eventAttendee?.isCheckedIn).toBeTruthy();
+    expect(eventAttendee?.checkInId).not.toBeNull();
     expect(payload).toMatchObject({
       eventAttendeeId: eventAttendee?._id,
     });
@@ -222,7 +222,7 @@ describe("resolvers -> Mutation -> checkIn", () => {
       const args: MutationCheckInArgs = {
         data: {
           userId: testUser?._id,
-          eventId: testEvent?._id,
+          eventId: testEvent?._id.toString() ?? "",
         },
       };
 
@@ -238,6 +238,33 @@ describe("resolvers -> Mutation -> checkIn", () => {
         `Translated ${USER_ALREADY_CHECKED_IN.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_ALREADY_CHECKED_IN.MESSAGE);
+    }
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    const args: MutationCheckInArgs = {
+      data: {
+        userId: testUser?._id,
+        eventId: testEvent?._id.toString() ?? "",
+      },
+    };
+    const context = { userId: testUser?._id };
+    const { checkIn: checkInResolver } = await import(
+      "../../../src/resolvers/Mutation/checkIn"
+    );
+    try {
+      await checkInResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 });

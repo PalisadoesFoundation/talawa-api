@@ -1,24 +1,24 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User } from "../../../src/models";
+import { AppUserProfile } from "../../../src/models";
 import type { MutationRejectAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { rejectAdmin as rejectAdminResolver } from "../../../src/resolvers/Mutation/rejectAdmin";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  afterEach,
-  vi,
-} from "vitest";
+import { rejectAdmin as rejectAdminResolver } from "../../../src/resolvers/Mutation/rejectAdmin";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
 
@@ -56,17 +56,10 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       const context = {
         userId: testUser1?.id,
       };
-      await User.findByIdAndUpdate(
-        {
-          _id: testUser1?._id,
-        },
-        {
-          userType: "USER",
-        },
-      );
+
       await rejectAdminResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`,
       );
 
@@ -85,7 +78,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { rejectAdmin: rejectAdminResolver } = await import(
@@ -93,9 +86,9 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       );
 
       await rejectAdminResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -105,19 +98,19 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      await User.updateOne(
+      await AppUserProfile.updateOne(
         {
-          _id: testUser1?._id,
+          userId: testUser1?._id,
         },
         {
           $set: {
-            userType: "SUPERADMIN",
+            isSuperAdmin: true,
           },
         },
       );
 
       const args: MutationRejectAdminArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -128,9 +121,9 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
         "../../../src/resolvers/Mutation/rejectAdmin"
       );
       await rejectAdminResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -150,5 +143,31 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     const flag = await rejectAdminResolver?.({}, args, context);
 
     expect(flag).toBe(true);
+  });
+  it("throws an errorr if the user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    await AppUserProfile.deleteOne({
+      userId: testUser1?._id,
+    });
+    const args: MutationRejectAdminArgs = {
+      id: testUser2?.id,
+    };
+    const context = {
+      userId: testUser1?.id,
+    };
+    const { rejectAdmin: rejectAdminResolver } = await import(
+      "../../../src/resolvers/Mutation/rejectAdmin"
+    );
+    try {
+      await rejectAdminResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
+      );
+    }
   });
 });

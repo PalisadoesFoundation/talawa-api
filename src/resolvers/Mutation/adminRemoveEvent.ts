@@ -1,17 +1,18 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
-import { User, Organization, Event } from "../../models";
 import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
-import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { errors, requestContext } from "../../libraries";
+import { AppUserProfile, Event, Organization, User } from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { deleteEventFromCache } from "../../services/EventCache/deleteEventFromCache";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
 /**
  * This function enables an admin to remove a event
  * @param _parent - parent of current request
@@ -65,8 +66,9 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
     organization = await Organization.findOne({
       _id: event.organization,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization !== null) {
+      await cacheOrganizations([organization]);
+    }
   }
 
   // Checks whether organization exists.
@@ -90,6 +92,16 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
   // Checks whether currentUser is an admin of organization.
   await adminCheck(currentUser._id, organization);
@@ -104,13 +116,21 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
     },
     {
       $pull: {
-        eventAdmin: event._id,
-        createdEvents: event._id,
         registeredEvents: event._id,
       },
     },
   );
-
+  await AppUserProfile.updateOne(
+    {
+      userId: currentUser._id,
+    },
+    {
+      $pull: {
+        eventAdmin: event._id,
+        createdEvents: event._id,
+      },
+    },
+  );
   // Deletes the event.
   await Event.deleteOne({
     _id: event._id,

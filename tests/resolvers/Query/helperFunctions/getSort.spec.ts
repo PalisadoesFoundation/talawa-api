@@ -39,8 +39,6 @@ describe("getSort function", () => {
     ["firstName_DESC", { firstName: -1 }],
     ["lastName_ASC", { lastName: 1 }],
     ["lastName_DESC", { lastName: -1 }],
-    ["appLanguageCode_ASC", { appLanguageCode: 1 }],
-    ["appLanguageCode_DESC", { appLanguageCode: -1 }],
     ["email_ASC", { email: 1 }],
     ["email_DESC", { email: -1 }],
     ["text_ASC", { text: 1 }],

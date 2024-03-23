@@ -4,6 +4,7 @@ import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities/userFamilyAdminCheck";
 import { User } from "../../models";
 import { UserFamily } from "../../models/userFamily";
+import type { InterfaceUserFamily } from "../../models/userFamily";
 import {
   USER_FAMILY_NOT_FOUND_ERROR,
   USER_ALREADY_MEMBER_ERROR,
@@ -66,7 +67,7 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
     }
 
     // Adds args.userId to users lists on family group and return the updated family.
-    return await UserFamily.findOneAndUpdate(
+    const updatedFamily = await UserFamily.findOneAndUpdate(
       {
         _id: args.familyId,
       },
@@ -79,4 +80,6 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
         new: true,
       },
     ).lean();
+
+    return updatedFamily as InterfaceUserFamily;
   };

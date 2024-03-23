@@ -1,15 +1,25 @@
 import "dotenv/config";
-import type {
-  MutationResolvers,
-  Address,
-} from "../../types/generatedGraphQLTypes";
-import { User, Organization, ActionItemCategory } from "../../models";
+import {
+  LENGTH_VALIDATION_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { LENGTH_VALIDATION_ERROR } from "../../constants";
-import { superAdminCheck } from "../../utilities";
 import { isValidString } from "../../libraries/validators/validateString";
-import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import {
+  ActionItemCategory,
+  AppUserProfile,
+  Organization,
+  User,
+} from "../../models";
+import type { InterfaceAppUserProfile } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import type {
+  Address,
+  MutationResolvers,
+} from "../../types/generatedGraphQLTypes";
+import { superAdminCheck } from "../../utilities";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to create an organization.
  * @param _parent - parent of current request
@@ -17,6 +27,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
+ * 2. If the user has appUserProfile
  * @returns Created organization
  */
 export const createOrganization: MutationResolvers["createOrganization"] =
@@ -25,9 +36,24 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       _id: context.userId,
     });
 
-    if (currentUser) {
-      superAdminCheck(currentUser);
+    if (!currentUser) {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM,
+      );
     }
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+    superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
     //Upload file
     let uploadImageFileName = null;
@@ -98,6 +124,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     Adds createdOrganization._id to joinedOrganizations, createdOrganizations
     and adminFor lists on currentUser's document with _id === context.userId
     */
+
     await User.updateOne(
       {
         _id: context.userId,
@@ -105,6 +132,15 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       {
         $push: {
           joinedOrganizations: createdOrganization._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: currentUserAppProfile._id,
+      },
+      {
+        $push: {
           createdOrganizations: createdOrganization._id,
           adminFor: createdOrganization._id,
         },

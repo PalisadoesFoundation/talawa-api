@@ -1,6 +1,6 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
-import { Event, EventAttendee, User } from "../../../models";
+import { AppUserProfile, Event, EventAttendee, User } from "../../../models";
 import type { EventInput } from "../../../types/generatedGraphQLTypes";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 
@@ -94,12 +94,21 @@ export const generateRecurringEventInstances = async ({
       { _id: creatorId },
       {
         $push: {
-          eventAdmin: { $each: eventInstanceIds },
-          createdEvents: { $each: eventInstanceIds },
           registeredEvents: { $each: eventInstanceIds },
         },
       },
       { session },
+    ),
+    AppUserProfile.updateOne(
+      {
+        userId: creatorId,
+      },
+      {
+        $push: {
+          eventAdmin: { $each: eventInstanceIds },
+          createdEvents: { $each: eventInstanceIds },
+        },
+      },
     ),
   ]);
 

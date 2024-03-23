@@ -26,7 +26,7 @@
 
 [src/utilities/createSampleOrganizationUtil.ts:215](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/createSampleOrganizationUtil.ts#L215)
 
-___
+---
 
 ### generateEventData
 
@@ -34,10 +34,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `users` | [`InterfaceUser`](../interfaces/models_User.InterfaceUser.md)[] |
-| `organizationId` | `string` |
+| Name             | Type                                                            |
+| :--------------- | :-------------------------------------------------------------- |
+| `users`          | [`InterfaceUser`](../interfaces/models_User.InterfaceUser.md)[] |
+| `organizationId` | `string`                                                        |
 
 #### Returns
 
@@ -47,7 +47,7 @@ ___
 
 [src/utilities/createSampleOrganizationUtil.ts:64](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/createSampleOrganizationUtil.ts#L64)
 
-___
+---
 
 ### generatePostData
 
@@ -55,10 +55,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `users` | [`InterfaceUser`](../interfaces/models_User.InterfaceUser.md)[] |
-| `organizationId` | `string` |
+| Name             | Type                                                            |
+| :--------------- | :-------------------------------------------------------------- |
+| `users`          | [`InterfaceUser`](../interfaces/models_User.InterfaceUser.md)[] |
+| `organizationId` | `string`                                                        |
 
 #### Returns
 
@@ -68,7 +68,7 @@ ___
 
 [src/utilities/createSampleOrganizationUtil.ts:128](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/createSampleOrganizationUtil.ts#L128)
 
-___
+---
 
 ### generateRandomPlugins
 
@@ -76,10 +76,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `numberOfPlugins` | `number` |
-| `users` | `string`[] |
+| Name              | Type       |
+| :---------------- | :--------- |
+| `numberOfPlugins` | `number`   |
+| `users`           | `string`[] |
 
 #### Returns
 
@@ -89,7 +89,7 @@ ___
 
 [src/utilities/createSampleOrganizationUtil.ts:185](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/createSampleOrganizationUtil.ts#L185)
 
-___
+---
 
 ### generateUserData
 
@@ -97,10 +97,10 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name             | Type     |
+| :--------------- | :------- |
 | `organizationId` | `string` |
-| `userType` | `string` |
+| `userType`       | `string` |
 
 #### Returns
 

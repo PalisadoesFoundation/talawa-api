@@ -1,16 +1,17 @@
+import { errors, requestContext } from "../../libraries";
+import { AppUserProfile, Organization, User } from "../../models";
+import { Venue } from "../../models/Venue";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import {
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
   VENUE_ALREADY_EXISTS_ERROR,
   VENUE_NAME_MISSING_ERROR,
   VENUE_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
 } from "./../../constants";
-import { Organization, User } from "../../models";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { Venue } from "../../models/Venue";
-import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to edit a venue.
  * @param _parent - parent of current request
@@ -43,6 +44,16 @@ export const editVenue: MutationResolvers["editVenue"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentAppProfile = await AppUserProfile.findOne({
+    userId: context.userId,
+  });
+  if (!currentAppProfile) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
   const venue = await Venue.findById({
     _id: args.data.id,
@@ -73,7 +84,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
   if (
     !(
       organization.admins?.some((admin) => admin._id.equals(context.userId)) ||
-      currentUser.userType == "SUPERADMIN"
+      currentAppProfile?.isSuperAdmin
     )
   ) {
     throw new errors.UnauthorizedError(
