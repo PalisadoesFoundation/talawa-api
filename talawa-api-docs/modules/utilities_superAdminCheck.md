@@ -16,8 +16,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                                          |
+| :----- | :------------------------------------------------------------ |
 | `user` | [`InterfaceUser`](../interfaces/models_User.InterfaceUser.md) |
 
 #### Returns

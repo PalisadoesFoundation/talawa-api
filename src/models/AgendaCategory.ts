@@ -9,7 +9,7 @@ export interface InterfaceAgendaCategory {
   _id: Types.ObjectId; // Unique identifier for the agenda category.
   name: string; // Name of the agenda category.
   description?: string; // Optional description of the agenda category.
-  organization: PopulatedDoc<InterfaceOrganization & Document>; // Reference to the organization associated with the agenda category.
+  organizationId: PopulatedDoc<InterfaceOrganization & Document>; // Reference to the organization associated with the agenda category.
   createdBy: PopulatedDoc<InterfaceUser & Document>; // Reference to the user who created the agenda category.
   updatedBy: PopulatedDoc<InterfaceUser & Document>; // Reference to the user who last updated the agenda category.
 }

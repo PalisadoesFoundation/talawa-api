@@ -108,7 +108,7 @@ describe("resolvers -> Query -> getAgendaSection", () => {
   it("throws NotFoundError if no agenda section exists with the given ID", async () => {
     try {
       const args = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       await getAgendaSection?.({}, args, {});

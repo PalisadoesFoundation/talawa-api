@@ -22,7 +22,7 @@
 
 [src/utilities/mailer.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/mailer.ts#L14)
 
-___
+---
 
 ### emailTo
 
@@ -32,7 +32,7 @@ ___
 
 [src/utilities/mailer.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/mailer.ts#L12)
 
-___
+---
 
 ### subject
 

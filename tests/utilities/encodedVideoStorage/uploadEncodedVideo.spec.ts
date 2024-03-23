@@ -31,8 +31,10 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
       const vid = "data:video/avi;base64,VIDEO_BASE64_DATA_HERE"; // Use an invalid video format
 
       await uploadEncodedVideo(vid, null);
-    } catch (error: any) {
-      expect(error.message).toEqual(`Translated ${INVALID_FILE_TYPE.MESSAGE}`);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${INVALID_FILE_TYPE.MESSAGE}`,
+      );
       expect(spy).toBeCalledWith(INVALID_FILE_TYPE.MESSAGE);
     }
   });
@@ -42,7 +44,7 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
       const vid = "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE"; // Replace with valid video data
       const fileName = await uploadEncodedVideo(vid, null);
       expect(fileName).not.toBe(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
     }
   });

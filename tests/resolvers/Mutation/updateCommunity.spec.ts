@@ -6,26 +6,27 @@ import type { MutationUpdateCommunityArgs } from "../../../src/types/generatedGr
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import {
   COMMUNITY_LOGO_NOT_MISSING_IN_ARGS,
   COMMUNITY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { updateCommunity } from "../../../src/resolvers/Mutation/updateCommunity";
-import {
-  beforeAll,
-  afterAll,
-  afterEach,
-  describe,
-  it,
-  vi,
-  expect,
-} from "vitest";
-import type { TestUserType } from "../../helpers/user";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { createTestSuperAdmin } from "../../helpers/advertisement";
 import type { TestCommunityType } from "../../helpers/community";
-import { createTestUserWithUserTypeFunc } from "../../helpers/user";
 import { createTestCommunityFunc } from "../../helpers/community";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser1: TestUserType;
@@ -38,8 +39,8 @@ vi.mock("../../utilities/uploadEncodedImage", () => ({
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  testUser1 = await createTestUserWithUserTypeFunc("SUPERADMIN");
-  testUser2 = await createTestUserWithUserTypeFunc("USER");
+  testUser1 = await createTestSuperAdmin();
+  testUser2 = await createTestUserFunc(); //normal user
   testCommunity = await createTestCommunityFunc();
 });
 
@@ -62,11 +63,11 @@ describe("resolvers -> Mutation -> updateCommunity", () => {
 
     try {
       const args: MutationUpdateCommunityArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await updateCommunity?.({}, args, context);
@@ -109,7 +110,7 @@ describe("resolvers -> Mutation -> updateCommunity", () => {
 
     try {
       const args: MutationUpdateCommunityArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {

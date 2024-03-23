@@ -1,6 +1,8 @@
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import { GraphQLError } from "graphql";
+import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import type { InterfaceAdvertisement } from "../../models";
 import { Advertisement } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import {
   getCommonGraphQLConnectionFilter,
   getCommonGraphQLConnectionSort,
@@ -10,8 +12,6 @@ import {
   type ParseGraphQLConnectionCursorArguments,
   type ParseGraphQLConnectionCursorResult,
 } from "../../utilities/graphQLConnection";
-import { GraphQLError } from "graphql";
-import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 
 export const advertisementsConnection: QueryResolvers["advertisementsConnection"] =
   async (_parent, args, context) => {

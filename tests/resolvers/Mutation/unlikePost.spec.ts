@@ -5,12 +5,12 @@ import { Post } from "../../../src/models";
 import type { MutationUnlikePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { unlikePost as unlikePostResolver } from "../../../src/resolvers/Mutation/unlikePost";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { unlikePost as unlikePostResolver } from "../../../src/resolvers/Mutation/unlikePost";
+import type { TestPostType } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import type { TestPostType } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -43,7 +43,7 @@ describe("resolvers -> Mutation -> unlikePost", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnlikePostArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -55,16 +55,16 @@ describe("resolvers -> Mutation -> unlikePost", () => {
       );
 
       await unlikePostResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(POST_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`removes current user with _id === context.userId from likedBy list
   on post with _id === args.id`, async () => {
     const args: MutationUnlikePostArgs = {
-      id: testPost?._id,
+      id: testPost?._id.toString() ?? "",
     };
 
     const context = {
@@ -83,7 +83,7 @@ describe("resolvers -> Mutation -> unlikePost", () => {
   it(`returns the post with _id === args.id without any mutation if current user
   with _id === context.userId does not exist in likedBy list of the post`, async () => {
     const args: MutationUnlikePostArgs = {
-      id: testPost?._id,
+      id: testPost?._id.toString() ?? "",
     };
 
     const context = {

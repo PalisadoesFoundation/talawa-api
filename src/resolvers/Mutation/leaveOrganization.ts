@@ -1,14 +1,17 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Organization } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import type { UpdateQuery } from "mongoose";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceOrganization, InterfaceUser } from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { Types } from "mongoose";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to leave an organization.
  * @param _parent - parent of current request
@@ -38,8 +41,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) await cacheOrganizations([organization]);
   }
 
   // Checks whether organization exists.
@@ -63,9 +65,19 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
   const currentUserIsOrganizationMember = organization.members.some((member) =>
-    Types.ObjectId(member).equals(currentUser?._id),
+    new Types.ObjectId(member).equals(currentUser?._id),
   );
 
   // Checks whether currentUser is not a member of organzation.
@@ -76,18 +88,41 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
       MEMBER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentUserIsOrgAdmin = organization.admins.some((admin) =>
+    new Types.ObjectId(admin).equals(currentUser._id),
+  );
 
   // Removes currentUser._id from admins and members lists of organzation's document.
+
+  let updateQuery: UpdateQuery<InterfaceOrganization> = {
+    $pull: {
+      members: currentUser._id,
+    },
+  };
+  if (currentUserIsOrgAdmin) {
+    await AppUserProfile.updateOne(
+      {
+        userId: currentUser._id,
+      },
+      {
+        $pull: {
+          organizations: organization._id,
+        },
+      },
+    );
+    updateQuery = {
+      $pull: {
+        members: currentUser._id,
+        admins: currentUser._id,
+      },
+    };
+  }
+
   const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization._id,
     },
-    {
-      $pull: {
-        admins: currentUser._id,
-        members: currentUser._id,
-      },
-    },
+    updateQuery,
     {
       new: true,
     },
@@ -100,7 +135,8 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   Removes organization._id from joinedOrganizations list of currentUser's document
   and returns the updated currentUser.
   */
-  return await User.findOneAndUpdate(
+
+  return (await User.findOneAndUpdate(
     {
       _id: currentUser._id,
     },
@@ -115,5 +151,5 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     },
   )
     .select(["-password"])
-    .lean();
+    .lean()) as InterfaceUser;
 };

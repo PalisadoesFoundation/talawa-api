@@ -6,7 +6,7 @@ export const deletePreviousVideo = async (
   videoToBeDeletedPath: string,
 ): Promise<void> => {
   const videoToBeDeleted = await EncodedVideo.findOne({
-    fileName: videoToBeDeletedPath!,
+    fileName: videoToBeDeletedPath,
   });
 
   if (videoToBeDeleted?.numberOfUses === 1) {

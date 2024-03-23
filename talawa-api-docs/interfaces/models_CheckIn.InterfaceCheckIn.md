@@ -27,7 +27,7 @@
 
 [src/models/CheckIn.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/CheckIn.ts#L13)
 
-___
+---
 
 ### allotedRoom
 
@@ -37,7 +37,7 @@ ___
 
 [src/models/CheckIn.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/CheckIn.ts#L16)
 
-___
+---
 
 ### allotedSeat
 
@@ -47,7 +47,7 @@ ___
 
 [src/models/CheckIn.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/CheckIn.ts#L17)
 
-___
+---
 
 ### createdAt
 
@@ -57,7 +57,7 @@ ___
 
 [src/models/CheckIn.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/CheckIn.ts#L19)
 
-___
+---
 
 ### eventAttendeeId
 
@@ -67,7 +67,7 @@ ___
 
 [src/models/CheckIn.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/CheckIn.ts#L14)
 
-___
+---
 
 ### feedbackSubmitted
 
@@ -77,7 +77,7 @@ ___
 
 [src/models/CheckIn.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/CheckIn.ts#L18)
 
-___
+---
 
 ### time
 
@@ -87,7 +87,7 @@ ___
 
 [src/models/CheckIn.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/CheckIn.ts#L15)
 
-___
+---
 
 ### updatedAt
 

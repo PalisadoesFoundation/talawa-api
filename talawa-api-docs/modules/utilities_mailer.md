@@ -22,8 +22,8 @@ This function sends emails to the specified user using the node mailer module.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name         | Type                                                                           |
+| :----------- | :----------------------------------------------------------------------------- |
 | `mailFields` | [`InterfaceMailFields`](../interfaces/utilities_mailer.InterfaceMailFields.md) |
 
 #### Returns

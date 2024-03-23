@@ -27,6 +27,7 @@ payload provided with the request
 **`Remarks`**
 
 The following checks are done:
+
 1. If the user exists
 
 #### Defined in

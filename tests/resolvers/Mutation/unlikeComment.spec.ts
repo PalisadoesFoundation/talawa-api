@@ -15,7 +15,8 @@ import { createTestPost } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
+let testComment: InterfaceComment &
+  Document<unknown, unknown, InterfaceComment>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -58,7 +59,7 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnlikeCommentArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -70,16 +71,16 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
       );
 
       await unlikeCommentResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(COMMENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(COMMENT_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(COMMENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`removes current user with _id === context.userId from likedBy list
     on comment with _id === args.id`, async () => {
     const args: MutationUnlikeCommentArgs = {
-      id: testComment._id,
+      id: testComment._id.toString(),
     };
 
     const context = {
@@ -102,7 +103,7 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
   it(`returns the comment with _id === args.id without any mutation if current user
     with _id === context.userId does not exist in likedBy list of the comment`, async () => {
     const args: MutationUnlikeCommentArgs = {
-      id: testComment._id,
+      id: testComment._id.toString(),
     };
 
     const context = {

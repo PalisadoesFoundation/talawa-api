@@ -22,12 +22,15 @@ afterAll(async () => {
 
 describe("resolvers -> DirectChat -> creator", () => {
   it(`returns user object for parent.creator`, async () => {
-    const parent = testDirectChat!.toObject();
+    const parent = testDirectChat?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
 
     const creatorPayload = await creatorResolver?.(parent, {}, {});
 
     const creator = await User.findOne({
-      _id: testDirectChat!.creatorId,
+      _id: testDirectChat?.creatorId,
     }).lean();
 
     expect(creatorPayload).toEqual(creator);

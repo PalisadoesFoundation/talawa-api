@@ -1,18 +1,24 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
-import { User, Organization, AgendaItemModel, Event } from "../../models";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
+  EVENT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
-  EVENT_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { Types } from "mongoose";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceEvent } from "../../models";
+import {
+  AgendaItemModel,
+  AppUserProfile,
+  Event,
+  Organization,
+  User,
+} from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * Create an agenda item based on the provided input.
  *
@@ -35,6 +41,16 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  const currentAppUserProfile = await AppUserProfile.findOne({
+    userId: currentUser?._id,
+  }).lean();
+  if (!currentAppUserProfile) {
+    throw new errors.UnauthenticatedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -95,22 +111,25 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        Types.ObjectId(admin).equals(context.userId),
+        new Types.ObjectId(admin).equals(context.userId),
     );
   }
 
   // Checks if the currUser is an admin of the organization
-  const currentUserIsOrgAdmin = currentUser.adminFor.some(
-    (ogranizationId) =>
-      ogranizationId === args.input.organizationId ||
-      Types.ObjectId(ogranizationId).equals(args.input.organizationId),
+  const currentUserIsOrgAdmin = currentAppUserProfile.adminFor.some(
+    (organizationId) =>
+      (organizationId &&
+        organizationId.toString() === args.input.organizationId.toString()) ||
+      new Types.ObjectId(organizationId?.toString()).equals(
+        args.input.organizationId,
+      ),
   );
 
   // Checks whether currentUser with _id === context.userId is authorized for the operation.
   if (
     currentUserIsEventAdmin === false &&
     currentUserIsOrgAdmin === false &&
-    currentUser.userType !== "SUPERADMIN"
+    !currentAppUserProfile.isSuperAdmin
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
