@@ -6,12 +6,12 @@
 
 ## Type parameters
 
-| Name |
-| :------ |
-| `TResult` |
-| `TParent` |
+| Name       |
+| :--------- |
+| `TResult`  |
+| `TParent`  |
 | `TContext` |
-| `TArgs` |
+| `TArgs`    |
 
 ## Table of contents
 
@@ -30,7 +30,7 @@
 
 [src/types/generatedGraphQLTypes.ts:2014](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/types/generatedGraphQLTypes.ts#L2014)
 
-___
+---
 
 ### subscribe
 

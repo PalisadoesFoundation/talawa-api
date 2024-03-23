@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type mongoose from "mongoose";
 import { isSampleOrganization } from "../../../src/resolvers/Query/organizationIsSample";
@@ -117,7 +118,9 @@ describe("ensure organization exists in organization collection", async () => {
     const args = { id: randomId };
     const context = {};
     try {
-      await isSampleOrganization!(parent, args, context);
+      if (isSampleOrganization) {
+        await isSampleOrganization(parent, args, context);
+      }
     } catch (error: any) {
       expect(error.message).toBe(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }

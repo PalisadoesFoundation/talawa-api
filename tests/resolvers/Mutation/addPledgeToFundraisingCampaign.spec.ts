@@ -57,7 +57,7 @@ describe("resolvers->Mutation->addPledgeToFundraisingCampaign", () => {
         campaignId: testCampaign?._id.toString() || "",
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await addPledgeToFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
@@ -67,7 +67,7 @@ describe("resolvers->Mutation->addPledgeToFundraisingCampaign", () => {
   it("throw error if no fund campaign pledge exists with _id===args.id", async () => {
     try {
       const args: MutationAddPledgeToFundraisingCampaignArgs = {
-        pledgeId: Types.ObjectId().toString(),
+        pledgeId: new Types.ObjectId().toString(),
         campaignId: testCampaign?._id.toString() || "",
       };
       const context = {
@@ -84,7 +84,7 @@ describe("resolvers->Mutation->addPledgeToFundraisingCampaign", () => {
     try {
       const args: MutationAddPledgeToFundraisingCampaignArgs = {
         pledgeId: testPledge?._id.toString() || "",
-        campaignId: Types.ObjectId().toString(),
+        campaignId: new Types.ObjectId().toString(),
       };
       const context = {
         userId: testUser?._id,

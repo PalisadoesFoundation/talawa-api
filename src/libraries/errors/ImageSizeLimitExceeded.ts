@@ -7,6 +7,7 @@ export class ImageSizeLimitExceeded extends ApplicationError {
     message = "Image Size Limit Exceeded",
     code: string | null = null,
     param: string | null = null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     metadata: Record<any, any> = {},
   ) {
     const errorJson = [

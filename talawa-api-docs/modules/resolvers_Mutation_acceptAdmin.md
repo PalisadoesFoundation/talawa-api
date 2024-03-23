@@ -31,6 +31,7 @@ context of entire application
 **`Remarks`**
 
 THe following checks are done:
+
 1. Whether the user exists
 2. Whether the user accepting the admin request is a superadmin or not.
 

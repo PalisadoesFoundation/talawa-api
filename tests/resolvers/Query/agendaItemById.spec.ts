@@ -73,7 +73,7 @@ describe("resolvers -> Query -> getAgendaItem", () => {
   it("throws NotFoundError if no agenda item exists with the given ID", async () => {
     try {
       const args = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       if (getAgendaItem) {

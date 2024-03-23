@@ -16,8 +16,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type                                                               |
+| :------- | :----------------------------------------------------------------- |
 | `events` | [`InterfaceEvent`](../interfaces/models_Event.InterfaceEvent.md)[] |
 
 #### Returns

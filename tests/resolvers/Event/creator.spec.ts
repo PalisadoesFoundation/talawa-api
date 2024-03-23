@@ -23,12 +23,14 @@ afterAll(async () => {
 
 describe("resolvers -> Event -> organization", () => {
   it(`returns the creator user object for parent event`, async () => {
-    const parent = testEvent!.toObject();
-
+    const parent = testEvent?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
     const creatorIdPayload = await creatorResolver?.(parent, {}, {});
 
     const creatorIdObject = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     }).lean();
 
     expect(creatorIdPayload).toEqual(creatorIdObject);

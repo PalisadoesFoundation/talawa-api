@@ -8,6 +8,7 @@ import {
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
+import type { InterfaceUserFamily } from "../../models/userFamily";
 import { UserFamily } from "../../models/userFamily";
 import { adminCheck } from "../../utilities/userFamilyAdminCheck";
 import { Types } from "mongoose";
@@ -31,24 +32,16 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       _id: context.userId,
     });
 
-    const user = await User.findById({
+    const user = (await User.findById({
       _id: args.userId,
-    });
-    // Check whether the user exists.
-    if (!user) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
-      );
-    }
+    })) as InterfaceUserFamily;
 
     const userIsMemberOfUserFamily = userFamily?.users.some((member) => {
-      return Types.ObjectId(member).equals(user?._id);
+      return new Types.ObjectId(member).equals(user?._id);
     });
 
     const userIdUserFamilyAdmin = userFamily?.admins.some((admin) => {
-      return Types.ObjectId(admin).equals(user?._id);
+      new Types.ObjectId(admin).equals(user?._id);
     });
     //Check whether user family exists.
     if (!userFamily) {
@@ -60,7 +53,13 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     }
 
     //check whether user is admin of the family.
-    await adminCheck(currentUser?._id, userFamily);
+    if (currentUser && currentUser._id) {
+      const userId: string = currentUser._id.toString(); // Convert ObjectId to string
+      await adminCheck(userId, userFamily);
+    } else {
+      console.error("Invalid currentUser or missing _id.");
+      // Handle the case where currentUser is undefined or _id is missing
+    }
 
     //Check whether user is member of the family.
     if (!userIsMemberOfUserFamily) {
@@ -81,24 +80,9 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     }
 
     /*
-    Administrators cannot remove creator of userFamily from the members list.
-    Following if block matches userFamily's creator's id to
-    user's id. Match being true implies that current user is the creator
-    of userFamily. If match is true assigns error message to errors list
-    and breaks out of loop.
-    */
-    if (Types.ObjectId(userFamily.creator.toString()).equals(user._id)) {
-      throw new errors.UnauthorizedError(
-        requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
-        ADMIN_REMOVING_CREATOR.CODE,
-        ADMIN_REMOVING_CREATOR.PARAM,
-      );
-    }
-
-    /*
-    userIsUserFamilyAdmin being true implies that the current user is an admin of userFamily.
-    If userIsUserFamilyAdmin is true pushes error message to errors list and breaks out of loop.
-    */
+          userIsUserFamilyAdmin being true implies that the current user is an admin of userFamily.
+          If userIsUserFamilyAdmin is true pushes error message to errors list and breaks out of loop.
+        */
     if (userIdUserFamilyAdmin) {
       throw new errors.ConflictError(
         requestContext.translate(ADMIN_REMOVING_ADMIN.MESSAGE),
@@ -107,8 +91,23 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       );
     }
 
+    /*
+          Administrators cannot remove creator of userFamily from the members list.
+          Following if block matches userFamily's creator's id to
+          user's id. Match being true implies that current user is the creator
+          of userFamily. If match is true assigns error message to errors list
+          and breaks out of loop.
+        */
+    if (new Types.ObjectId(userFamily.creator.toString()).equals(user._id)) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
+        ADMIN_REMOVING_CREATOR.CODE,
+        ADMIN_REMOVING_CREATOR.PARAM,
+      );
+    }
+
     //Removes args.userId from users list of user family ans return the updated family.
-    return await UserFamily.findOneAndUpdate(
+    return (await UserFamily.findOneAndUpdate(
       {
         _id: args.familyId,
       },
@@ -122,5 +121,5 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
       {
         new: true,
       },
-    ).lean();
+    ).lean()) as InterfaceUserFamily;
   };

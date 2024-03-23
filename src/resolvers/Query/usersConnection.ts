@@ -1,6 +1,6 @@
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import { AppUserProfile, User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import type { InterfaceUser } from "../../models";
-import { User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -12,6 +12,7 @@ import { getWhere } from "./helperFunctions/getWhere";
  * @remarks Connection in graphQL means pagination,
  * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
  */
+
 export const usersConnection: QueryResolvers["usersConnection"] = async (
   _parent,
   args,
@@ -24,13 +25,23 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
     .limit(args.first ?? 0)
     .skip(args.skip ?? 0)
     .select(["-password"])
-    .populate("createdOrganizations")
-    .populate("createdEvents")
     .populate("joinedOrganizations")
     .populate("registeredEvents")
-    .populate("eventAdmin")
-    .populate("adminFor")
     .lean();
-
-  return users;
+  return await Promise.all(
+    users.map(async (user) => {
+      const userAppProfile = await AppUserProfile.findOne({
+        userId: user._id,
+      })
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .lean();
+      return {
+        user: user as InterfaceUser,
+        appUserProfile: userAppProfile as InterfaceAppUserProfile,
+      };
+    }),
+  );
 };

@@ -6,7 +6,7 @@ export const deletePreviousImage = async (
   imageToBeDeletedPath: string,
 ): Promise<void> => {
   const imageToBeDeleted = await EncodedImage.findOne({
-    fileName: imageToBeDeletedPath!,
+    fileName: imageToBeDeletedPath ?? "",
   });
 
   if (imageToBeDeleted?.numberOfUses === 1) {

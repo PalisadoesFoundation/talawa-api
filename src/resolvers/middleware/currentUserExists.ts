@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { User } from "../../models";
 import { USER_NOT_FOUND_ERROR } from "../../constants";

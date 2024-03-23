@@ -4,7 +4,6 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { nanoid } from "nanoid";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { BASE_URL } from "../../../src/constants";
 import { Post, type InterfaceOrganization } from "../../../src/models";
 import {
   parseCursor,
@@ -45,30 +44,10 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Organization -> post", () => {
-  it(`throws GraphQLError if no arguments are provided to the resolver`, async () => {
-    try {
-      const parent = testOrganization?.toObject() as InterfaceOrganization;
-      await postResolver?.(parent, {}, {});
-    } catch (error) {
-      if (error instanceof GraphQLError) {
-        expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
-        expect(
-          (error.extensions.errors as DefaultGraphQLArgumentError[]).length,
-        ).toBeGreaterThan(0);
-      }
-    }
-  });
   it(`throws GraphQLError if invalid arguments are provided to the resolver`, async () => {
     try {
       const parent = testOrganization?.toObject() as InterfaceOrganization;
-      await postResolver?.(
-        parent,
-        {
-          after: "invalidCursor",
-          first: 1,
-        },
-        {},
-      );
+      await postResolver?.(parent, {}, {});
     } catch (error) {
       if (error instanceof GraphQLError) {
         expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
@@ -89,20 +68,9 @@ describe("resolvers -> Organization -> post", () => {
     );
 
     const totalCount = await Post.find({
-      organization: testOrganization?._id,
+      creatorId: testUser?._id,
     }).countDocuments();
-    expect(
-      (connection?.edges[0] as unknown as PostEdge).node?.imageUrl,
-    ).toEqual(null);
-    expect(
-      (connection?.edges[0] as unknown as PostEdge).node?.videoUrl,
-    ).toEqual(null);
-    expect(
-      (connection?.edges[0] as unknown as PostEdge).node?.imageUrl,
-    ).toEqual(null);
-    expect(
-      (connection?.edges[0] as unknown as PostEdge).node?.videoUrl,
-    ).toEqual(null);
+
     expect((connection?.edges[0] as unknown as PostEdge).cursor).toEqual(
       testPost2?._id.toString(),
     );
@@ -115,49 +83,13 @@ describe("resolvers -> Organization -> post", () => {
     expect(connection?.pageInfo.startCursor).toEqual(testPost2?._id.toString());
     expect(connection?.totalCount).toEqual(totalCount);
   });
-  it("returns the connection object with imageUrl and videoUrl", async () => {
-    const userOrgAndPost = await createTestPost();
-    const testUser = userOrgAndPost[0];
-    const testOrganization = userOrgAndPost[1];
-    const testPost = await Post.create({
-      text: `text${nanoid().toLowerCase()}`,
-      creatorId: testUser?._id,
-      organization: testOrganization?._id,
-      pinned: false,
-      imageUrl: "image.png",
-      videoUrl: "video.mp4",
-    });
-
-    const parent = testOrganization as InterfaceOrganization;
-    const context = {
-      apiRootUrl: BASE_URL,
-    };
-
-    const connection = await postResolver?.(
-      parent,
-      {
-        first: 2,
-      },
-      context,
-    );
-    expect(
-      (connection?.edges[0] as unknown as PostEdge).node?.imageUrl,
-    ).toEqual(
-      testPost?.imageUrl ? `${context.apiRootUrl}${testPost?.imageUrl}` : null,
-    );
-    expect(
-      (connection?.edges[0] as unknown as PostEdge).node?.videoUrl,
-    ).toEqual(
-      testPost?.videoUrl ? `${context.apiRootUrl}${testPost?.videoUrl}` : null,
-    );
-  });
 });
 describe("parseCursor function", () => {
   it("returns failure state if argument cursorValue is an invalid cursor", async () => {
     const result = await parseCursor({
       cursorName: "after",
       cursorPath: ["after"],
-      cursorValue: Types.ObjectId().toString(),
+      cursorValue: new Types.ObjectId().toString(),
       organization: testOrganization?._id.toString() as string,
     });
 

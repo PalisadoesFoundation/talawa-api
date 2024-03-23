@@ -4,16 +4,18 @@ import { Types } from "mongoose";
 import type { MutationCreateUserFamilyArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   LENGTH_VALIDATION_ERROR,
   USER_FAMILY_MIN_MEMBERS_ERROR_CODE,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { AppUserProfile } from "../../../src/models";
+import { createTestUserFunc as createTestUser } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndUserFamily";
 import { createTestUserFunc } from "../../helpers/userAndUserFamily";
-import { createTestUserFunc as createTestUser } from "../../helpers/user";
 
 let testUser: TestUserType;
 let testUser2: TestUserType;
@@ -48,7 +50,7 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createUserFamily: createUserFamilyResolver } = await import(
@@ -185,5 +187,29 @@ describe("resolvers -> Mutation -> createUserFamily", () => {
         title: "title",
       }),
     );
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationCreateUserFamilyArgs = {
+      data: {
+        title: "title",
+        userIds: [testUser2?._id, testUser?._id],
+      },
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+    const { createUserFamily: createUserFamilyResolver } = await import(
+      "../../../src/resolvers/Mutation/createUserFamily"
+    );
+    try {
+      await createUserFamilyResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

@@ -1,14 +1,14 @@
 import "dotenv/config";
-import { averageFeedbackScore as averageFeedbackScoreResolver } from "../../../src/resolvers/Event/averageFeedbackScore";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { averageFeedbackScore as averageFeedbackScoreResolver } from "../../../src/resolvers/Event/averageFeedbackScore";
+import {
+  createEventWithCheckedInUser,
+  type TestCheckInType,
+} from "../../helpers/checkIn";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestEventType } from "../../helpers/events";
 import { createFeedbackWithIDs } from "../../helpers/feedback";
-import {
-  type TestCheckInType,
-  createEventWithCheckedInUser,
-} from "../../helpers/checkIn";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
@@ -25,7 +25,8 @@ afterAll(async () => {
 
 describe("resolvers -> Event -> averageFeedbackScore", () => {
   it(`Should return 0 if there are no submitted feedbacks for the event`, async () => {
-    const parent = testEvent!.toObject();
+    if (!testEvent) throw new Error("testEvent is null");
+    const parent = testEvent.toObject();
 
     const averageFeedbackScorePayload = await averageFeedbackScoreResolver?.(
       parent,
@@ -37,9 +38,14 @@ describe("resolvers -> Event -> averageFeedbackScore", () => {
   });
 
   it(`Should return the proper average score if there are some submitted feedbacks for the event`, async () => {
-    await createFeedbackWithIDs(testEvent!._id, testCheckIn!._id);
+    if (!testEvent) throw new Error("testEvent is null");
+    if (!testCheckIn) throw new Error("testCheckIn is null");
+    await createFeedbackWithIDs(
+      testEvent._id.toString(),
+      testCheckIn._id.toString(),
+    );
 
-    const parent = testEvent!.toObject();
+    const parent = testEvent.toObject();
 
     const averageFeedbackScorePayload = await averageFeedbackScoreResolver?.(
       parent,

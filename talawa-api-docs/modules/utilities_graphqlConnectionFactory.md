@@ -20,18 +20,18 @@
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name | Type             |
+| :--- | :--------------- |
 | `T1` | extends `Object` |
 | `T2` | extends `Object` |
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `args` | [`CursorPaginationInput`](types_generatedGraphQLTypes.md#cursorpaginationinput) |
-| `allFetchedObjects` | ``null`` \| `T2`[] |
-| `getNodeFromResult` | `GetNodeFromResultFnType`\<`T1`, `T2`\> |
+| Name                | Type                                                                            |
+| :------------------ | :------------------------------------------------------------------------------ |
+| `args`              | [`CursorPaginationInput`](types_generatedGraphQLTypes.md#cursorpaginationinput) |
+| `allFetchedObjects` | `null` \| `T2`[]                                                                |
+| `getNodeFromResult` | `GetNodeFromResultFnType`\<`T1`, `T2`\>                                         |
 
 #### Returns
 
@@ -41,27 +41,27 @@
 
 [src/utilities/graphqlConnectionFactory.ts:106](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/graphqlConnectionFactory.ts#L106)
 
-___
+---
 
 ### getFilterObject
 
-▸ **getFilterObject**(`args`): `FilterObjectType` \| ``null``
+▸ **getFilterObject**(`args`): `FilterObjectType` \| `null`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                                                            |
+| :----- | :------------------------------------------------------------------------------ |
 | `args` | [`CursorPaginationInput`](types_generatedGraphQLTypes.md#cursorpaginationinput) |
 
 #### Returns
 
-`FilterObjectType` \| ``null``
+`FilterObjectType` \| `null`
 
 #### Defined in
 
 [src/utilities/graphqlConnectionFactory.ts:75](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/graphqlConnectionFactory.ts#L75)
 
-___
+---
 
 ### getLimit
 
@@ -69,8 +69,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type     |
+| :------ | :------- |
 | `limit` | `number` |
 
 #### Returns
@@ -81,7 +81,7 @@ ___
 
 [src/utilities/graphqlConnectionFactory.ts:46](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/graphqlConnectionFactory.ts#L46)
 
-___
+---
 
 ### getSortingObject
 
@@ -89,9 +89,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `direction` | ``"BACKWARD"`` \| ``"FORWARD"`` |
+| Name            | Type                           |
+| :-------------- | :----------------------------- |
+| `direction`     | `"BACKWARD"` \| `"FORWARD"`    |
 | `sortingObject` | `Record`\<`string`, `number`\> |
 
 #### Returns
@@ -102,7 +102,7 @@ ___
 
 [src/utilities/graphqlConnectionFactory.ts:53](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/graphqlConnectionFactory.ts#L53)
 
-___
+---
 
 ### graphqlConnectionFactory
 
@@ -111,8 +111,8 @@ ___
 #### Type parameters
 
 | Name |
-| :------ |
-| `T` |
+| :--- |
+| `T`  |
 
 #### Returns
 

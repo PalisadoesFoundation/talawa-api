@@ -1,14 +1,18 @@
-import type { TestOrganizationType, TestUserType } from "./userAndOrg";
-import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
-import type { InterfaceEvent, InterfaceEventVolunteer } from "../../src/models";
-import { EventVolunteer, Event, EventAttendee, User } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 import { EventVolunteerResponse } from "../../src/constants";
+import type { InterfaceEvent, InterfaceEventVolunteer } from "../../src/models";
+import {
+  AppUserProfile,
+  Event,
+  EventAttendee,
+  EventVolunteer,
+  User,
+} from "../../src/models";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
 
-export type TestEventType =
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  (InterfaceEvent & Document<any, any, InterfaceEvent>) | null;
+export type TestEventType = (InterfaceEvent & Document) | null;
 
 export type TestEventVolunteerType =
   | (InterfaceEventVolunteer & Document)
@@ -42,9 +46,18 @@ export const createTestEvent = async (): Promise<
       },
       {
         $push: {
-          eventAdmin: testEvent?._id,
-          createdEvents: testEvent?._id,
-          registeredEvents: testEvent?._id,
+          registeredEvents: testEvent._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        userId: testUser._id,
+      },
+      {
+        $push: {
+          eventAdmin: testEvent._id,
+          createdEvents: testEvent._id,
         },
       },
     );
@@ -89,9 +102,18 @@ export const createEventWithRegistrant = async (
     },
     {
       $push: {
-        eventAdmin: testEvent?._id,
-        createdEvents: testEvent?._id,
-        registeredEvents: testEvent?._id,
+        registeredEvents: testEvent._id,
+      },
+    },
+  );
+  await AppUserProfile.updateOne(
+    {
+      userId,
+    },
+    {
+      $push: {
+        eventAdmin: testEvent._id,
+        createdEvents: testEvent._id,
       },
     },
   );

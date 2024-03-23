@@ -42,7 +42,7 @@ beforeAll(async () => {
   await createDirectChatMessage(
     testUser1?._id,
     testUser2?._id,
-    testDirectChats[0]?._id,
+    testDirectChats[0]?._id.toString() || "",
   );
 });
 
@@ -54,12 +54,12 @@ describe("resolvers -> Query -> directChatsMessagesByChatID", () => {
   it(`throws NotFoundError if no directChat exists with _id === args.id`, async () => {
     try {
       const args: QueryDirectChatsMessagesByChatIdArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       await directChatsMessagesByChatIDResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -67,19 +67,19 @@ describe("resolvers -> Query -> directChatsMessagesByChatID", () => {
    for directChat with _id === args.id`, async () => {
     try {
       const args: QueryDirectChatsMessagesByChatIdArgs = {
-        id: testDirectChats[1]?._id,
+        id: testDirectChats[1]?._id.toString() || "",
       };
 
       await directChatsMessagesByChatIDResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.DESC);
     }
   });
 
   it(`returns list of all directChatMessages found
    for directChat with _id === args.id`, async () => {
     const args: QueryDirectChatsMessagesByChatIdArgs = {
-      id: testDirectChats[0]?._id,
+      id: testDirectChats[0]?._id.toString() || "",
     };
 
     const directChatsMessagesByChatIdPayload =
