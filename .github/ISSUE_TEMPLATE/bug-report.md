@@ -1,34 +1,84 @@
----
 name: Bug Report
-about: Create a report to help us improve.
-title: Bug Report
-labels: bug
-assignees: ''
-
----
-
-**Describe the bug**
-A clear and concise description of what the bug is.
-
-**To Reproduce**
-Steps to reproduce the behavior:
-
-1.
-2.
-3.
-4.
-
-**Expected behavior**
-A clear and concise description of what you expected to happen.
-
-**Actual behavior**
-A clear and concise description of how the code performed w.r.t expectations.
-
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Additional details**
-Add any other context or screenshots about the feature request here.
-
-**Potential internship candidates**
-Please read this if you are planning to apply for a Palisadoes Foundation internship https://github.com/PalisadoesFoundation/talawa/issues/359
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: Tell us what happened!
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: "How do you trigger this bug? Please walk us through it step by step."
+      value: |
+        1.
+        2.
+        3.
+        ...
+      render: bash
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: A clear and concise description of how the code performed w.r.t expectations.
+      placeholder: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: screeshot
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+      placeholder:
+    validations:
+      required: false
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional details
+      description: Add any other context or screenshots about the feature request here.
+      placeholder:
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Are you interested in contributing?
+      options:
+        - label: I'd like to work on this issue
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/PalisadoesFoundation/talawa-admin/tree/develop?tab=coc-ov-file)
+      options:
+        - label: I have used the search function to check if an issue already exists
+        - label: I agree to follow this project's Code of Conduct
+          required: true
+  - type: markdown
+    attributes:
+      value: "### Potential internship candidates"
+  - type: markdown
+    attributes:
+      value: |
+        Please read this if you are planning to apply for a Palisadoes Foundation internship https://github.com/PalisadoesFoundation/talawa/issues/359
