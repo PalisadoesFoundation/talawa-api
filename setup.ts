@@ -7,7 +7,7 @@ import path from "path";
 /* eslint-disable */
 import type { ExecException } from "child_process";
 import { exec } from "child_process";
-import mongodb from "mongodb";
+import mongodb, { MongoClient } from "mongodb";
 import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import {
   askForMongoDBUrl,
@@ -210,7 +210,7 @@ async function askForTransactionLogPath(): Promise<string> {
  */
 export async function shouldWipeExistingData(url: string): Promise<boolean> {
   let shouldImport = false;
-  const client = new mongodb.MongoClient(url);
+  const client = new MongoClient(`${url}`);
   try {
     await client.connect();
     const db = client.db();
