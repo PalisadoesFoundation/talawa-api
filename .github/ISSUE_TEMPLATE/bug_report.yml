@@ -67,7 +67,7 @@ body:
       options:
         - label: I'd like to work on this issue
   - type: checkboxes
-    id: terms
+    id: terms 
     attributes:
       label: Code of Conduct
       description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/PalisadoesFoundation/talawa-api/tree/develop?tab=coc-ov-file)
