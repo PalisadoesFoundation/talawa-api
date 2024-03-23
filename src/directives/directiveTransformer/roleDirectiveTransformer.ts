@@ -1,18 +1,16 @@
-import type { GraphQLFieldConfig } from "graphql";
-import {
-  USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../constants";
+import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
+import type { GraphQLSchema } from "graphql";
+import { defaultFieldResolver } from "graphql";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors } from "../../libraries";
 import { User } from "../../models";
-import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
 
-//@ts-ignore
-function roleDirectiveTransformer(schema, directiveName): any {
+function roleDirectiveTransformer(
+  schema: GraphQLSchema,
+  directiveName: string,
+): GraphQLSchema {
   return mapSchema(schema, {
-    [MapperKind.OBJECT_FIELD]: (
-      fieldConfig: GraphQLFieldConfig<any, any>,
-    ): any => {
+    [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
       // Check whether this field has the specified directive
       const roleDirective = getDirective(
         schema,
@@ -21,11 +19,9 @@ function roleDirectiveTransformer(schema, directiveName): any {
       )?.[0];
 
       if (roleDirective) {
-        //@ts-ignore
-
         const { resolve = defaultFieldResolver } = fieldConfig;
 
-        const { requires } = roleDirective;
+        // const { requires } = roleDirective;
 
         fieldConfig.resolve = async (
           root,
@@ -45,17 +41,17 @@ function roleDirectiveTransformer(schema, directiveName): any {
             );
           }
 
-          if (currentUser.userType !== requires) {
-            throw new errors.UnauthenticatedError(
-              USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-              USER_NOT_AUTHORIZED_ERROR.CODE,
-              USER_NOT_AUTHORIZED_ERROR.PARAM,
-            );
-          }
+          // if (currentUser.userType !== requires) {
+          //   throw new errors.UnauthenticatedError(
+          //     USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+          //     USER_NOT_AUTHORIZED_ERROR.CODE,
+          //     USER_NOT_AUTHORIZED_ERROR.PARAM
+          //   );
+          // }
 
           context.user = currentUser;
 
-          return resolve(root, args, context, info);
+          return resolve(root, args, context, info) as string;
         };
 
         return fieldConfig;

@@ -20,8 +20,8 @@ then the file is deleted and a validation error is thrown.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name       | Type     | Description  |
+| :--------- | :------- | :----------- |
 | `filename` | `string` | Name of file |
 
 #### Returns

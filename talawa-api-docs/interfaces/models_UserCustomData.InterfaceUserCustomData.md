@@ -25,7 +25,7 @@ This is an interface representing a document for custom field in the database(Mo
 
 [src/models/UserCustomData.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/UserCustomData.ts#L8)
 
-___
+---
 
 ### organizationId
 
@@ -35,7 +35,7 @@ ___
 
 [src/models/UserCustomData.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/UserCustomData.ts#L9)
 
-___
+---
 
 ### userId
 
@@ -45,7 +45,7 @@ ___
 
 [src/models/UserCustomData.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/UserCustomData.ts#L11)
 
-___
+---
 
 ### values
 

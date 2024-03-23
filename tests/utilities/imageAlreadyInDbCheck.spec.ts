@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import "dotenv/config";
 import { ImageHash } from "../../src/models";
 import {

@@ -29,7 +29,7 @@ This is an interface representing a document for direct chat in the database(Mon
 
 [src/models/DirectChat.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/DirectChat.ts#L10)
 
-___
+---
 
 ### createdAt
 
@@ -39,7 +39,7 @@ ___
 
 [src/models/DirectChat.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/DirectChat.ts#L16)
 
-___
+---
 
 ### creatorId
 
@@ -49,7 +49,7 @@ ___
 
 [src/models/DirectChat.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/DirectChat.ts#L13)
 
-___
+---
 
 ### messages
 
@@ -59,7 +59,7 @@ ___
 
 [src/models/DirectChat.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/DirectChat.ts#L12)
 
-___
+---
 
 ### organization
 
@@ -69,7 +69,7 @@ ___
 
 [src/models/DirectChat.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/DirectChat.ts#L14)
 
-___
+---
 
 ### status
 
@@ -79,7 +79,7 @@ ___
 
 [src/models/DirectChat.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/DirectChat.ts#L15)
 
-___
+---
 
 ### updatedAt
 
@@ -89,7 +89,7 @@ ___
 
 [src/models/DirectChat.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/DirectChat.ts#L17)
 
-___
+---
 
 ### users
 

@@ -5,24 +5,24 @@ import type { MutationRemovePostArgs } from "../../../src/types/generatedGraphQL
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import {
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import type { TestUserType } from "../../helpers/userAndOrg";
-import { createTestUser } from "../../helpers/userAndOrg";
+import { AppUserProfile, Post } from "../../../src/models";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
-import { Post } from "../../../src/models";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -58,7 +58,7 @@ describe("resolvers -> Mutation -> removePost", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removePost: removePostResolver } = await import(
@@ -66,8 +66,8 @@ describe("resolvers -> Mutation -> removePost", () => {
       );
 
       await removePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> removePost", () => {
 
     try {
       const args: MutationRemovePostArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -93,8 +93,8 @@ describe("resolvers -> Mutation -> removePost", () => {
       );
 
       await removePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${POST_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -120,8 +120,8 @@ describe("resolvers -> Mutation -> removePost", () => {
       );
 
       await removePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
@@ -233,5 +233,35 @@ describe("resolvers -> Mutation -> removePost", () => {
     const removePostPayload = await removePostResolver?.({}, args, context);
     expect(removePostPayload).toEqual(updatedPost);
     expect(deleteVideoSpy).toBeCalledWith("videos/fakeVideoPathvideo.png");
+  });
+  it("throws an error  if the user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`,
+    );
+
+    try {
+      const args: MutationRemovePostArgs = {
+        id: testPost?.id,
+      };
+
+      const newUser = await createTestUser();
+      await AppUserProfile.deleteOne({
+        userId: newUser?.id,
+      });
+      const context = {
+        userId: newUser?.id,
+      };
+
+      const { removePost: removePostResolver } = await import(
+        "../../../src/resolvers/Mutation/removePost"
+      );
+
+      await removePostResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+      );
+    }
   });
 });

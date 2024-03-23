@@ -15,13 +15,13 @@
 
 ### collectionName
 
-• **collectionName**: ``"Organization"`` \| ``"User"`` \| ``"Post"`` \| ``"Event"`` \| ``"Plugin"``
+• **collectionName**: `"Organization"` \| `"User"` \| `"Post"` \| `"Event"` \| `"Plugin"`
 
 #### Defined in
 
 [src/models/SampleData.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/SampleData.ts#L6)
 
-___
+---
 
 ### documentId
 

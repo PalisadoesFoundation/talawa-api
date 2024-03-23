@@ -1,32 +1,32 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { MutationUpdateActionItemArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
-  USER_NOT_FOUND_ERROR,
   ACTION_ITEM_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import {
-  createTestUser,
-  createTestUserAndOrganization,
-} from "../../helpers/userAndOrg";
 import { updateActionItem as updateActionItemResolver } from "../../../src/resolvers/Mutation/updateActionItem";
+import type { MutationUpdateActionItemArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import {
+  createTestUser,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
 
-import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
-import { ActionItem, Event, User } from "../../../src/models";
+import { nanoid } from "nanoid";
+import { ActionItem, AppUserProfile, Event, User } from "../../../src/models";
 import type { TestActionItemType } from "../../helpers/actionItem";
 import { createTestActionItem } from "../../helpers/actionItem";
+import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import type { TestEventType } from "../../helpers/events";
-import { nanoid } from "nanoid";
 
 let randomUser: TestUserType;
 let assignedTestUser: TestUserType;
@@ -73,26 +73,26 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationUpdateActionItemArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         data: {
           assigneeId: randomUser?._id,
         },
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await updateActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no action item exists with _id === args.id`, async () => {
     try {
       const args: MutationUpdateActionItemArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         data: {
           assigneeId: randomUser?._id,
         },
@@ -103,8 +103,10 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       };
 
       await updateActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ACTION_ITEM_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ACTION_ITEM_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -113,7 +115,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       const args: MutationUpdateActionItemArgs = {
         id: testActionItem?._id,
         data: {
-          assigneeId: Types.ObjectId().toString(),
+          assigneeId: new Types.ObjectId().toString(),
         },
       };
 
@@ -122,8 +124,8 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       };
 
       await updateActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -141,8 +143,10 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       };
 
       await updateActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE,
+      );
     }
   });
 
@@ -160,8 +164,10 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       };
 
       await updateActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -172,7 +178,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
         assigneeId: assignedTestUser?._id,
       },
     };
-
+    // console.log(testUser?._id);
     const context = {
       userId: testUser?._id,
     };
@@ -192,12 +198,12 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
   });
 
   it(`updates the action item and returns it as superadmin`, async () => {
-    const superAdminTestUser = await User.findOneAndUpdate(
+    const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
       {
-        _id: randomUser?._id,
+        userId: randomUser?._id,
       },
       {
-        userType: "SUPERADMIN",
+        isSuperAdmin: true,
       },
       {
         new: true,
@@ -212,7 +218,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     };
 
     const context = {
-      userId: superAdminTestUser?._id,
+      userId: superAdminTestUser?.userId,
     };
 
     const updatedActionItemPayload = await updateActionItemResolver?.(
@@ -235,7 +241,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
         _id: testActionItem?._id,
       },
       {
-        eventId: Types.ObjectId().toString(),
+        eventId: new Types.ObjectId().toString(),
       },
       {
         new: true,
@@ -253,7 +259,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
 
     try {
       const args: MutationUpdateActionItemArgs = {
-        id: updatedTestActionItem?._id,
+        id: updatedTestActionItem?._id.toString() ?? "",
         data: {
           assigneeId: randomUser?._id,
         },
@@ -264,8 +270,8 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       };
 
       await updateActionItemResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -286,7 +292,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       data: {
         assigneeId: testUser?._id,
       },
-      id: updatedTestActionItem?._id,
+      id: updatedTestActionItem?._id.toString() ?? "",
     };
 
     const context = {
@@ -305,5 +311,26 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
         assigneeId: testUser?._id,
       }),
     );
+  });
+  it("throws error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser2?._id,
+    });
+    const args: MutationUpdateActionItemArgs = {
+      id: testActionItem?._id,
+      data: {
+        assigneeId: testUser?._id,
+      },
+    };
+    const context = {
+      userId: testUser2?._id,
+    };
+    try {
+      await updateActionItemResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

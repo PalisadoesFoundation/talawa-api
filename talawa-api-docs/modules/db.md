@@ -37,7 +37,7 @@
 
 [src/db.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/db.ts#L7)
 
-___
+---
 
 ### disconnect
 

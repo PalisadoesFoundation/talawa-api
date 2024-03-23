@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import {
   FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR,
   FUND_NOT_FOUND_ERROR,
@@ -10,6 +11,7 @@ import {
   FundraisingCampaign,
   User,
   type InterfaceFundraisingCampaign,
+  AppUserProfile,
 } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
@@ -19,7 +21,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
- * 1. If the user exists
+ * 1. If the user exists.
  * 2. If the fundraising campaign  exists.
  * 3. If the user is authorized.
  * 4. If the user is admin of the organization.
@@ -40,6 +42,18 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+
     const campaign = await FundraisingCampaign.findOne({
       _id: args.id,
     }).lean();
@@ -64,12 +78,19 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
         FUND_NOT_FOUND_ERROR.PARAM,
       );
     }
-    const isUserOrgAdmin = currentUser.adminFor.some((orgId) =>
-      orgId.equals(fund.organizationId),
+    const currentOrg = await Fund.findById(fund._id)
+      .select("organizationId")
+      .lean();
+
+    const currentOrgId = currentOrg?.organizationId?.toString() || "";
+
+    const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
+      (organizationId) =>
+        new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
     );
 
     // Checks whether the user is admin of the organization or not.
-    if (!(isUserOrgAdmin || currentUser.userType === "SUPERADMIN")) {
+    if (!currentUserIsOrgAdmin || !currentUserAppProfile.isSuperAdmin) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,

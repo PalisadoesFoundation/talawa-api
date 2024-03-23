@@ -1,5 +1,5 @@
+import { AppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
 /**
  * This function creates a refresh token for user.
  * @param _parent - parent of current request
@@ -8,9 +8,9 @@ import { User } from "../../models";
  */
 export const revokeRefreshTokenForUser: MutationResolvers["revokeRefreshTokenForUser"] =
   async (_parent, args, context) => {
-    await User.updateOne(
+    await AppUserProfile.updateOne(
       {
-        _id: context.userId,
+        userId: context.userId,
       },
       {
         $unset: { token: 1 },

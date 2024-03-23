@@ -41,8 +41,8 @@ import { createUserTag } from "./createUserTag";
 import { createVenue } from "./createVenue";
 import { deleteVenue } from "./deleteVenue";
 import { editVenue } from "./editVenue";
-import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { deleteDonationById } from "./deleteDonationById";
+import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { forgotPassword } from "./forgotPassword";
 import { inviteEventAttendee } from "./inviteEventAttendee";
 import { joinPublicOrganization } from "./joinPublicOrganization";
@@ -108,7 +108,6 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
-import { updateUserType } from "./updateUserType";
 import { deleteAdvertisement } from "./deleteAdvertisement";
 import { updateFundraisingCampaign } from "./updateFundraisingCampaign";
 import { updateFundraisingCampaignPledge } from "./updateFundCampaignPledge";
@@ -233,7 +232,6 @@ export const Mutation: MutationResolvers = {
   updatePluginStatus,
   updateUserProfile,
   updateUserPassword,
-  updateUserType,
   updateUserTag,
   updatePost,
   updateAdvertisement,

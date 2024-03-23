@@ -1,17 +1,18 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
+import type { Document } from "mongoose";
 import { Types } from "mongoose";
 import type { InterfaceDonation } from "../../../src/models";
 import { Donation } from "../../../src/models";
 import type { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { deleteDonationById as deleteDonationByIdResolver } from "../../../src/resolvers/Mutation/deleteDonationById";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
-let testDonation: InterfaceDonation & Document<any, any, InterfaceDonation>;
+let testDonation: InterfaceDonation &
+  Document<unknown, unknown, InterfaceDonation>;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
@@ -38,7 +39,7 @@ afterAll(async () => {
 describe("resolvers -> Mutation -> deleteDonationById", () => {
   it(`returns false if deletion of donation was unsuccessful`, async () => {
     const args: MutationDeleteDonationByIdArgs = {
-      id: Types.ObjectId().toString(),
+      id: new Types.ObjectId().toString(),
     };
 
     const deleteDonationByIdPayload = await deleteDonationByIdResolver?.(
@@ -54,7 +55,7 @@ describe("resolvers -> Mutation -> deleteDonationById", () => {
 
   it(`returns true if deletion of donation was successful`, async () => {
     const args: MutationDeleteDonationByIdArgs = {
-      id: testDonation._id,
+      id: testDonation._id as string,
     };
 
     const deleteDonationByIdPayload = await deleteDonationByIdResolver?.(

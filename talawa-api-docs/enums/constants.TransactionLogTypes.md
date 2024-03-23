@@ -16,27 +16,27 @@
 
 ### CREATE
 
-• **CREATE** = ``"CREATE"``
+• **CREATE** = `"CREATE"`
 
 #### Defined in
 
 [src/constants.ts:528](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/constants.ts#L528)
 
-___
+---
 
 ### DELETE
 
-• **DELETE** = ``"DELETE"``
+• **DELETE** = `"DELETE"`
 
 #### Defined in
 
 [src/constants.ts:530](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/constants.ts#L530)
 
-___
+---
 
 ### UPDATE
 
-• **UPDATE** = ``"UPDATE"``
+• **UPDATE** = `"UPDATE"`
 
 #### Defined in
 

@@ -35,7 +35,7 @@ describe("resolvers->Query->getFundCampaignById", () => {
   });
   it(`returns null if campaign not found for args.id`, async () => {
     const args = {
-      id: Types.ObjectId().toString(),
+      id: new Types.ObjectId().toString(),
     };
     const getFundCampaignByIdPayload = await getFundraisingCampaignById?.(
       {},

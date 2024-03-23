@@ -13,6 +13,7 @@ import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 const app = express();
 
 app.use(requestTracing.middleware());
+app.use(i18n.init);
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,

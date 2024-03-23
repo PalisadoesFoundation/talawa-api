@@ -19,6 +19,7 @@ export type TypeImagePath =
 
 const getImageHash = (oldSrc: TypeImagePath): object => {
   return new Promise((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     imageHash(oldSrc, 16, true, (error: Error, data: any) => {
       if (error) {
         reject(error);

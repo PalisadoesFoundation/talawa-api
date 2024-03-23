@@ -21,7 +21,7 @@ export const updateThisInstance = async (
   let updatedEvent: InterfaceEvent = event;
 
   // update this instance
-  updatedEvent = await Event.findOneAndUpdate(
+  updatedEvent = (await Event.findOneAndUpdate(
     {
       _id: args.id,
     },
@@ -32,7 +32,7 @@ export const updateThisInstance = async (
       new: true,
       session,
     },
-  ).lean();
+  ).lean()) as InterfaceEvent;
 
   if (updatedEvent !== null) {
     await cacheEvents([updatedEvent]);
