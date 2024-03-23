@@ -7,6 +7,35 @@ import fs from "fs";
 import dotenv from "dotenv";
 import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "../../src/constants";
 
+/* Test Cases for setImageUploadSize
+
+Test Case 1: Setting a valid image upload size within the limit
+Description: When setImageUploadSize is called with a valid size within the maximum limit, it should update the correct .env file with the provided size.
+Expected Behavior: The .env_test file should be truncated, and the new size should be appended to it.
+
+Test Case 2: Setting an image upload size exceeding the maximum limit
+Description: When setImageUploadSize is called with a size exceeding the maximum limit, it should set the size to the maximum limit and update the .env file.
+Expected Behavior: The .env_test file should be truncated, and the maximum limit size should be appended to it.
+
+Test Case 3: Setting the image upload size in a non-test environment
+Description: When setImageUploadSize is called in a non-test environment (e.g., development, production), it should update the regular .env file.
+Expected Behavior: The .env file should be truncated, and the new size should be appended to it.
+
+Test Cases for validateImageFileSize
+
+Test Case 4: Validating a valid image file size
+Description: When validateImageFileSize is called with a valid size within the allowed range, it should return true.
+Expected Behavior: The function should return true.
+
+Test Case 5: Validating an invalid image file size of 0
+Description: When validateImageFileSize is called with a size of 0, it should return false.
+Expected Behavior: The function should return false.
+
+Test Case 6: Validating a negative image file size
+Description: When validateImageFileSize is called with a negative size, it should return false.
+Expected Behavior: The function should return false.
+*/
+
 describe("setImageUploadSize", () => {
   const originalEnv = { ...process.env };
 
