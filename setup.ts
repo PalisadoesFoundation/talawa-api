@@ -7,7 +7,7 @@ import path from "path";
 /* eslint-disable */
 import type { ExecException } from "child_process";
 import { exec } from "child_process";
-import mongodb, { MongoClient } from "mongodb";
+import { MongoClient } from "mongodb";
 import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import {
   askForMongoDBUrl,
