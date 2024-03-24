@@ -261,14 +261,14 @@ export const createSampleOrganization = async (): Promise<void> => {
   }
 
   const address: Address = {
-    city: faker.address.city(),
-    countryCode: faker.address.countryCode(),
-    dependentLocality: faker.address.secondaryAddress(),
-    line1: faker.address.streetAddress(),
-    line2: faker.address.secondaryAddress(),
-    postalCode: faker.address.zipCode(),
-    sortingCode: faker.address.zipCode(),
-    state: faker.address.state(),
+    city: faker.location.city(),
+    countryCode: faker.location.countryCode(),
+    dependentLocality: faker.location.secondaryAddress(),
+    line1: faker.location.streetAddress(),
+    line2: faker.location.secondaryAddress(),
+    postalCode: faker.location.zipCode(),
+    sortingCode: faker.location.zipCode(),
+    state: faker.location.state(),
   };
 
   const organization = new Organization({

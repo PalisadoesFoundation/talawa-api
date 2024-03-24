@@ -120,12 +120,8 @@ export const types = gql`
     _id: ID!
     name: String!
     logoUrl: String
-    description: String!
     websiteLink: String
     socialMediaUrls: SocialMediaUrls
-    timeout: Int
-    createdAt: DateTime
-    updatedAt: DateTime
   }
 
   type UserFamily {
@@ -412,7 +408,11 @@ export const types = gql`
     actionItemCategories: [ActionItemCategory]
     agendaCategories: [AgendaCategory]
     admins(adminId: ID): [User!]
-    membershipRequests: [MembershipRequest]
+    membershipRequests(
+      first: Int
+      skip: Int
+      where: MembershipRequestsWhereInput
+    ): [MembershipRequest]
     userRegistrationRequired: Boolean!
     visibleInSearch: Boolean!
     blockedUsers: [User]

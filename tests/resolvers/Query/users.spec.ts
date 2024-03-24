@@ -206,6 +206,17 @@ describe("resolvers -> Query -> users", () => {
           },
         },
       );
+
+      await User.updateOne(
+        {
+          userId: testUsers[4]._id,
+        },
+        {
+          $set: { appUserProfileId: null },
+        },
+      );
+
+      await AppUserProfile.deleteOne({ userId: testUsers[4]._id });
     });
 
     it(`returns empty array for organizationsBlockedBy fields when the client is a normal user`, async () => {

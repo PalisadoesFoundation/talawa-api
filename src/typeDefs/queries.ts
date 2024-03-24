@@ -28,7 +28,7 @@ export const queries = gql`
 
     checkAuth: User! @auth
 
-    community(id: ID!): Community! @auth
+    getCommunityData: Community
 
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]
 
@@ -88,7 +88,13 @@ export const queries = gql`
 
     myLanguage: String @auth
 
-    organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
+    organizations(
+      id: ID
+      orderBy: OrganizationOrderByInput
+      first: Int
+      skip: Int
+      where: MembershipRequestsWhereInput
+    ): [Organization]
 
     organizationsConnection(
       where: OrganizationWhereInput

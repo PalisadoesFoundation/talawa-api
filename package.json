@@ -17,7 +17,7 @@
     "lint-staged": "lint-staged",
     "format:fix": "prettier --write \"**/*.{ts,tsx,json,scss,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,scss,css}\"",
-    "prepare": "husky install",
+    "prepare": "husky",
     "generate:graphql-markdown": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md",
     "generate:graphql-schema": "get-graphql-schema http://localhost:4000/graphql --json > docs/schema.json",
     "generate:ssl-private-key": "openssl genrsa -out ./key.pem",
@@ -135,7 +135,7 @@
     "prettier": "3.2.5",
     "rimraf": "^5.0.5",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.2",
+    "typescript": "^5.4.2",
     "vitest": "^0.24.5"
   },
   "overrides": {
