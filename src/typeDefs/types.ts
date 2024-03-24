@@ -120,12 +120,8 @@ export const types = gql`
     _id: ID!
     name: String!
     logoUrl: String
-    description: String!
     websiteLink: String
     socialMediaUrls: SocialMediaUrls
-    timeout: Int
-    createdAt: DateTime
-    updatedAt: DateTime
   }
 
   type UserFamily {
