@@ -65,14 +65,14 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     try {
       const args: MutationCreateUserTagArgs = {
         input: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           name: "TestUserTag",
           tagColor: "#000000",
         },
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createUserTag: createUserTagResolver } = await import(
@@ -98,7 +98,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     try {
       const args: MutationCreateUserTagArgs = {
         input: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           name: "TestUserTag",
           tagColor: "#000000",
         },
@@ -133,7 +133,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
         input: {
           organizationId: testOrganization?._id,
           name: "TestUserTag",
-          parentTagId: Types.ObjectId().toString(),
+          parentTagId: new Types.ObjectId().toString(),
           tagColor: "#000000",
         },
       };
