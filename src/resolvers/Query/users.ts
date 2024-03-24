@@ -92,7 +92,15 @@ export const users: QueryResolvers["users"] = async (
               ? user.organizationsBlockedBy
               : [],
         },
-        appUserProfile: appUserProfile as InterfaceAppUserProfile,
+        appUserProfile: (appUserProfile as InterfaceAppUserProfile) || {
+          _id: "",
+          adminApproved: false,
+          adminFor: [],
+          isSuperAdmin: false,
+          createdOrganizations: [],
+          createdEvents: [],
+          eventAdmin: [],
+        },
       };
     }),
   );
