@@ -236,6 +236,17 @@ export const inputs = gql`
     password: String!
   }
 
+  input MembershipRequestsWhereInput {
+    id: ID
+    id_not: ID
+    id_in: [ID!]
+    id_not_in: [ID!]
+    id_contains: ID
+    id_starts_with: ID
+
+    user: UserWhereInput
+  }
+
   input MessageChatInput {
     message: String!
     receiver: ID!
