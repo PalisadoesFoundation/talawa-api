@@ -204,13 +204,9 @@ input CommentInput {
 
 type Community {
   _id: ID!
-  createdAt: DateTime
-  description: String!
   logoUrl: String
   name: String!
   socialMediaUrls: SocialMediaUrls
-  timeout: Int
-  updatedAt: DateTime
   websiteLink: String
 }
 
@@ -301,6 +297,7 @@ input CreateUserTagInput {
   name: String!
   organizationId: ID!
   parentTagId: ID
+  tagColor: String!
 }
 
 enum Currency {
@@ -1068,7 +1065,7 @@ type Mutation {
   removeUserFromUserFamily(familyId: ID!, userId: ID!): UserFamily!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
-  resetCommunity(id: ID!): Boolean!
+  resetCommunity: Boolean!
   revokeRefreshTokenForUser: Boolean!
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
@@ -1087,7 +1084,7 @@ type Mutation {
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
   updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
   updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
-  updateCommunity(data: UpdateCommunityInput, file: String, id: ID!): Community!
+  updateCommunity(data: UpdateCommunityInput!): Boolean!
   updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
@@ -1354,7 +1351,6 @@ type Query {
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
   checkAuth: User!
-  community(id: ID!): Community!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   directChatsByUserID(id: ID!): [DirectChat]
@@ -1366,6 +1362,7 @@ type Query {
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
+  getCommunityData: Community
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
@@ -1555,10 +1552,10 @@ input UpdateAgendaSectionInput {
 }
 
 input UpdateCommunityInput {
-  description: String
-  name: String
-  socialMediaUrls: SocialMediaUrlsInput
-  websiteLink: String
+  logo: String!
+  name: String!
+  socialMediaUrls: SocialMediaUrlsInput!
+  websiteLink: String!
 }
 
 input UpdateEventInput {
@@ -1640,6 +1637,7 @@ input UpdateUserPasswordInput {
 input UpdateUserTagInput {
   _id: ID!
   name: String!
+  tagColor: String!
 }
 
 input UpdateUserTypeInput {
