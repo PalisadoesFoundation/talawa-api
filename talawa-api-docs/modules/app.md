@@ -19,10 +19,10 @@ third argument.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                                                                                        |
+| :---- | :---------------------------------------------------------------------------------------------------------- |
 | `req` | `IncomingMessage` \| `Request`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`\>\> |
-| `res` | `ServerResponse`\<`IncomingMessage`\> \| `Response`\<`any`, `Record`\<`string`, `any`\>, `number`\> |
+| `res` | `ServerResponse`\<`IncomingMessage`\> \| `Response`\<`any`, `Record`\<`string`, `any`\>, `number`\>         |
 
 #### Returns
 
@@ -36,11 +36,11 @@ third argument.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `req` | `Request`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`\>\> |
-| `res` | `Response`\<`any`, `Record`\<`string`, `any`\>, `number`\> |
-| `next` | `NextFunction` |
+| Name   | Type                                                                                   |
+| :----- | :------------------------------------------------------------------------------------- |
+| `req`  | `Request`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`\>\> |
+| `res`  | `Response`\<`any`, `Record`\<`string`, `any`\>, `number`\>                             |
+| `next` | `NextFunction`                                                                         |
 
 #### Returns
 

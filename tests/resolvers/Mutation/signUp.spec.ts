@@ -1,34 +1,35 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User } from "../../../src/models";
-import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import { nanoid } from "nanoid";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   LAST_RESORT_SUPERADMIN_EMAIL,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  vi,
-  expect,
-  afterEach,
-} from "vitest";
+import { AppUserProfile, User } from "../../../src/models";
+import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
+import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { connect, disconnect } from "../../helpers/db";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
 
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
+
 let testOrganization: TestOrganizationType;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
@@ -47,6 +48,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
+
   testOrganization = temp[1];
 });
 
@@ -84,6 +86,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     })
       .select("-password")
       .lean();
+    // console.log(createdUser, signUpPayload?.user);
 
     expect({
       user: signUpPayload?.user,
@@ -186,8 +189,11 @@ describe("resolvers -> Mutation -> signUp", () => {
     const createdUser = await User.findOne({
       email,
     });
-    expect(createdUser?.userType).toEqual("SUPERADMIN");
-    expect(createdUser?.adminApproved).toBeTruthy();
+    const createdAppUserProfile = await AppUserProfile.findOne({
+      userId: createdUser?._id,
+    });
+    expect(createdAppUserProfile?.isSuperAdmin).toEqual(true);
+    expect(createdAppUserProfile?.adminApproved).toBeTruthy();
   });
   it(`Check if the User is not being promoted to SUPER ADMIN automatically`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
@@ -208,8 +214,11 @@ describe("resolvers -> Mutation -> signUp", () => {
     const createdUser = await User.findOne({
       email,
     });
+    const createdAppUserProfile = await AppUserProfile.findOne({
+      userId: createdUser?._id,
+    });
     expect(createdUser?.userType).not.to.toEqual("SUPERADMIN");
-    expect(createdUser?.adminApproved).toBeFalsy();
+    expect(createdAppUserProfile?.adminApproved).toBeFalsy();
   });
 });
 
@@ -242,9 +251,9 @@ describe("resolvers -> Mutation -> signUp", () => {
       );
 
       await signUpResolver?.({}, args, {});
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(EMAIL_MESSAGE);
-      expect(error.message).toEqual(EMAIL_MESSAGE);
+      expect((error as Error).message).toEqual(EMAIL_MESSAGE);
     }
   });
   it(`throws NotFoundError message if no organization exists with _id === args.data.organizationUserBelongsToId`, async () => {
@@ -262,7 +271,7 @@ describe("resolvers -> Mutation -> signUp", () => {
           lastName: "lastName",
           password: "password",
           appLanguageCode: "en",
-          organizationUserBelongsToId: Types.ObjectId().toString(),
+          organizationUserBelongsToId: new Types.ObjectId().toString(),
         },
       };
 
@@ -271,9 +280,11 @@ describe("resolvers -> Mutation -> signUp", () => {
       );
 
       await signUpResolver?.({}, args, {});
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 });

@@ -235,6 +235,17 @@ export const inputs = gql`
     password: String!
   }
 
+  input MembershipRequestsWhereInput {
+    id: ID
+    id_not: ID
+    id_in: [ID!]
+    id_not_in: [ID!]
+    id_contains: ID
+    id_starts_with: ID
+
+    user: UserWhereInput
+  }
+
   input MessageChatInput {
     message: String!
     receiver: ID!
@@ -478,6 +489,7 @@ export const inputs = gql`
     lastName: String
     maritalStatus: MaritalStatus
     phone: UserPhoneInput
+    appLanguageCode: String
   }
 
   input UpdateUserPasswordInput {
@@ -533,15 +545,6 @@ export const inputs = gql`
     email_not_in: [EmailAddress!]
     email_contains: EmailAddress
     email_starts_with: EmailAddress
-
-    appLanguageCode: String
-    appLanguageCode_not: String
-    appLanguageCode_in: [String!]
-    appLanguageCode_not_in: [String!]
-    appLanguageCode_contains: String
-    appLanguageCode_starts_with: String
-
-    admin_for: ID
 
     event_title_contains: String
   }

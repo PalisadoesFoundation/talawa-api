@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import {
   FUNDRAISING_CAMPAIGN_ALREADY_EXISTS,
   FUND_NOT_FOUND_ERROR,
@@ -5,7 +6,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { Fund, FundraisingCampaign, User } from "../../models";
+import { AppUserProfile, Fund, FundraisingCampaign, User } from "../../models";
 import { type InterfaceFundraisingCampaign } from "../../models/";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { validateDate } from "../../utilities/dateValidator";
@@ -37,6 +38,17 @@ export const createFundraisingCampaign: MutationResolvers["createFundraisingCamp
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
     // Checks whether fundraisingCampaign already exists.
     const existigngCampaign = await FundraisingCampaign.findOne({
       name: args.data.name,
@@ -65,10 +77,20 @@ export const createFundraisingCampaign: MutationResolvers["createFundraisingCamp
         FUND_NOT_FOUND_ERROR.PARAM,
       );
     }
-    const isUserOrgAdmin = currentUser.adminFor.some((orgId) =>
-      orgId.equals(fund.organizationId),
+    const currentOrg = await Fund.findById(fund._id)
+      .select("organizationId")
+      .lean();
+
+    const currentOrgId = currentOrg?.organizationId?.toString() || "";
+
+    const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
+      (organizationId) =>
+        new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
     );
-    if (!(isUserOrgAdmin || currentUser.userType === "SUPERADMIN")) {
+    if (
+      !currentUserIsOrgAdmin ||
+      currentUserAppProfile.isSuperAdmin === false
+    ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,

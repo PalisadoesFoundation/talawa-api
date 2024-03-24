@@ -28,12 +28,12 @@ describe("resolvers -> Query -> directChatsByUserID", () => {
   containing user with _id === args.id`, async () => {
     try {
       const args: QueryDirectChatsByUserIdArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       await directChatsByUserIDResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual("DirectChats not found");
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual("DirectChats not found");
     }
   });
 

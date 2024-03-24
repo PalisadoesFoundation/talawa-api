@@ -16,8 +16,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type     |
+| :------ | :------- |
 | `date1` | `string` |
 | `date2` | `string` |
 

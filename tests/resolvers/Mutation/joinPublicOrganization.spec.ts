@@ -52,10 +52,10 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+      .mockImplementationOnce((message: unknown) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -77,7 +77,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+      .mockImplementationOnce((message: unknown) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -103,7 +103,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+      .mockImplementationOnce((message: unknown) => message);
     try {
       const updatedOrganizaiton = await Organization.findOneAndUpdate(
         {
@@ -118,17 +118,14 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
           new: true,
         },
       );
-
-      if (updatedOrganizaiton !== null) {
-        await cacheOrganizations([updatedOrganizaiton]);
-      }
+      if (updatedOrganizaiton) await cacheOrganizations([updatedOrganizaiton]);
 
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: testOrganization?.id,
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { joinPublicOrganization: joinPublicOrganizationResolver } =
@@ -145,7 +142,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+      .mockImplementationOnce((message: unknown) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -171,7 +168,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+      .mockImplementationOnce((message: unknown) => message);
     try {
       const updatedOrganization = await Organization.findOneAndUpdate(
         {
@@ -231,10 +228,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         new: true,
       },
     );
-
-    if (updatedOrganizaiton !== null) {
-      await cacheOrganizations([updatedOrganizaiton]);
-    }
+    if (updatedOrganizaiton) await cacheOrganizations([updatedOrganizaiton]);
 
     const args: MutationJoinPublicOrganizationArgs = {
       organizationId: testOrganization?.id,

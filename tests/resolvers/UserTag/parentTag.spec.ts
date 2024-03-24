@@ -1,11 +1,11 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { OrganizationTagUser } from "../../../src/models";
 import { parentTag as parentTagResolver } from "../../../src/resolvers/UserTag/parentTag";
 import { connect, disconnect } from "../../helpers/db";
-import type mongoose from "mongoose";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
-import { OrganizationTagUser } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testChildTag: TestUserTagType, testParentTag: TestUserTagType;
@@ -21,7 +21,10 @@ afterAll(async () => {
 
 describe("resolvers -> Tag -> parentTag", () => {
   it(`returns the correct parentTag object`, async () => {
-    const parent = testChildTag!;
+    const parent = testChildTag;
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
 
     const payload = await parentTagResolver?.(parent, {}, {});
 
@@ -33,8 +36,10 @@ describe("resolvers -> Tag -> parentTag", () => {
   });
 
   it(`returns null if the tag is a root tag and has no parent tag i.e. tag.parentTagId === null`, async () => {
-    const parent = testParentTag!;
-
+    const parent = testParentTag;
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
     const payload = await parentTagResolver?.(parent, {}, {});
 
     expect(payload).toEqual(null);

@@ -24,7 +24,7 @@
 
 [src/utilities/auth.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/auth.ts#L11)
 
-___
+---
 
 ### firstName
 
@@ -34,7 +34,7 @@ ___
 
 [src/utilities/auth.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/auth.ts#L9)
 
-___
+---
 
 ### lastName
 
@@ -44,7 +44,7 @@ ___
 
 [src/utilities/auth.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/auth.ts#L10)
 
-___
+---
 
 ### tokenVersion
 
@@ -54,7 +54,7 @@ ___
 
 [src/utilities/auth.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/auth.ts#L7)
 
-___
+---
 
 ### userId
 

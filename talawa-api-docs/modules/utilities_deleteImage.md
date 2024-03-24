@@ -20,9 +20,9 @@ After deleting the image, the number of uses of the hashed image are decremented
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `imageToBeDeleted` | `string` | Path of image |
+| Name                    | Type     | Description                  |
+| :---------------------- | :------- | :--------------------------- |
+| `imageToBeDeleted`      | `string` | Path of image                |
 | `imageBelongingToItem?` | `string` | Does image belong to an item |
 
 #### Returns

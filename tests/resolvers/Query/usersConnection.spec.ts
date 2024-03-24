@@ -1,16 +1,17 @@
+//ts-ignore
 import "dotenv/config";
-import { usersConnection as usersConnectionResolver } from "../../../src/resolvers/Query/usersConnection";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { User } from "../../../src/models";
+import { usersConnection as usersConnectionResolver } from "../../../src/resolvers/Query/usersConnection";
 import type { QueryUsersConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { connect, disconnect } from "../../helpers/db";
+import { createEventWithRegistrant } from "../../helpers/events";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import {
-  createTestUserAndOrganization,
   createTestUser,
+  createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
-import { createEventWithRegistrant } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -43,19 +44,22 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user ?? null,
+    );
+    // console.log(usersPayload);
+
     const users = await User.find()
       .limit(0)
       .skip(0)
       .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
       .populate("joinedOrganizations")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 
   it(`returns paginated list of users filtered by
@@ -68,11 +72,6 @@ describe("resolvers -> Query -> usersConnection", () => {
       firstName: testUsers[1]?.firstName,
       lastName: testUsers[1]?.lastName,
       email: testUsers[1]?.email,
-      appLanguageCode: testUsers[1]?.appLanguageCode,
-    };
-
-    const sort = {
-      _id: 1,
     };
 
     const args: QueryUsersConnectionArgs = {
@@ -83,7 +82,6 @@ describe("resolvers -> Query -> usersConnection", () => {
         firstName: testUsers[1]?.firstName,
         lastName: testUsers[1]?.lastName,
         email: testUsers[1]?.email,
-        appLanguageCode: testUsers[1]?.appLanguageCode,
       },
       orderBy: "id_ASC",
     };
@@ -97,14 +95,12 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        _id: 1,
+      })
       .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
       .populate("joinedOrganizations")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
       .lean();
 
     expect(usersConnectionPayload).toEqual(users);
@@ -128,13 +124,9 @@ describe("resolvers -> Query -> usersConnection", () => {
       email: {
         $ne: testUsers[2]?.email,
       },
-      appLanguageCode: {
-        $ne: testUsers[2]?.appLanguageCode,
-      },
-    };
-
-    const sort = {
-      _id: -1,
+      // appLanguageCode: {
+      //   $ne: testUsers[2]?.appLanguageCode,
+      // },
     };
 
     const args: QueryUsersConnectionArgs = {
@@ -145,7 +137,7 @@ describe("resolvers -> Query -> usersConnection", () => {
         firstName_not: testUsers[2]?.firstName,
         lastName_not: testUsers[2]?.lastName,
         email_not: testUsers[2]?.email,
-        appLanguageCode_not: testUsers[2]?.appLanguageCode,
+        // appLanguageCode_not: testUsers[2]?.appLanguageCode,
       },
       orderBy: "id_DESC",
     };
@@ -155,21 +147,23 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user,
+    );
 
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        _id: -1,
+      })
       .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
       .populate("joinedOrganizations")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 
   it(`returns paginated list of users filtered by
@@ -179,24 +173,20 @@ describe("resolvers -> Query -> usersConnection", () => {
   sorted by args.orderBy === 'firstName_ASC'`, async () => {
     const where = {
       _id: {
-        $in: [testUsers[1]!.id],
+        $in: [testUsers[1]?.id ?? ""],
       },
       firstName: {
-        $in: [testUsers[1]!.firstName],
+        $in: [testUsers[1]?.firstName ?? ""],
       },
       lastName: {
-        $in: [testUsers[1]!.lastName],
+        $in: [testUsers[1]?.lastName ?? ""],
       },
       email: {
-        $in: [testUsers[1]!.email],
+        $in: [testUsers[1]?.email ?? ""],
       },
-      appLanguageCode: {
-        $in: [testUsers[1]!.appLanguageCode],
-      },
-    };
-
-    const sort = {
-      firstName: 1,
+      // appLanguageCode: {
+      //   $in: [testUsers[1]?.appLanguageCode],
+      // },
     };
 
     const args: QueryUsersConnectionArgs = {
@@ -204,10 +194,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       skip: 1,
       where: {
         id_in: [testUsers[1]?.id],
-        firstName_in: [testUsers[1]!.firstName],
-        lastName_in: [testUsers[1]!.lastName],
-        email_in: [testUsers[1]!.email],
-        appLanguageCode_in: [testUsers[1]!.appLanguageCode],
+        firstName_in: [testUsers[1]?.firstName ?? ""],
+        lastName_in: [testUsers[1]?.lastName ?? ""],
+        email_in: [testUsers[1]?.email],
+        // appLanguageCode_in: [testUsers[1]!.appLanguageCode],
       },
       orderBy: "firstName_ASC",
     };
@@ -221,14 +211,13 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        firstName: 1,
+      })
       .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
+
       .populate("joinedOrganizations")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
       .lean();
 
     expect(usersConnectionPayload).toEqual(users);
@@ -241,24 +230,20 @@ describe("resolvers -> Query -> usersConnection", () => {
   sorted by args.orderBy === 'firstName_DESC'`, async () => {
     const where = {
       _id: {
-        $nin: [testUsers[2]!._id],
+        $nin: [testUsers[2]?._id ?? ""],
       },
       firstName: {
-        $nin: [testUsers[2]!.firstName],
+        $nin: [testUsers[2]?.firstName ?? ""],
       },
       lastName: {
-        $nin: [testUsers[2]!.lastName],
+        $nin: [testUsers[2]?.lastName ?? ""],
       },
       email: {
-        $nin: [testUsers[2]!.email],
+        $nin: [testUsers[2]?.email ?? ""],
       },
-      appLanguageCode: {
-        $nin: [testUsers[2]!.appLanguageCode],
-      },
-    };
-
-    const sort = {
-      firstName: -1,
+      // appLanguageCode: {
+      //   $nin: [testUsers[2]!.appLanguageCode],
+      // },
     };
 
     const args: QueryUsersConnectionArgs = {
@@ -266,10 +251,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       skip: 1,
       where: {
         id_not_in: [testUsers[2]?._id],
-        firstName_not_in: [testUsers[2]!.firstName],
-        lastName_not_in: [testUsers[2]!.lastName],
-        email_not_in: [testUsers[2]!.email],
-        appLanguageCode_not_in: [testUsers[2]!.appLanguageCode],
+        firstName_not_in: [testUsers[2]?.firstName ?? ""],
+        lastName_not_in: [testUsers[2]?.lastName ?? ""],
+        email_not_in: [testUsers[2]?.email ?? ""],
+        // appLanguageCode_not_in: [testUsers[2]?.appLanguageCode],
       },
       orderBy: "firstName_DESC",
     };
@@ -279,21 +264,23 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user,
+    );
 
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        firstName: -1,
+      })
       .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
       .populate("joinedOrganizations")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 
   it(`returns paginated list of users filtered by
@@ -314,14 +301,10 @@ describe("resolvers -> Query -> usersConnection", () => {
         $regex: testUsers[1]?.email,
         $options: "i",
       },
-      appLanguageCode: {
-        $regex: testUsers[1]?.appLanguageCode,
-        $options: "i",
-      },
-    };
-
-    const sort = {
-      lastName: 1,
+      // appLanguageCode: {
+      //   $regex: testUsers[1]?.appLanguageCode,
+      //   $options: "i",
+      // },
     };
 
     const args: QueryUsersConnectionArgs = {
@@ -331,7 +314,7 @@ describe("resolvers -> Query -> usersConnection", () => {
         firstName_contains: testUsers[1]?.firstName,
         lastName_contains: testUsers[1]?.lastName,
         email_contains: testUsers[1]?.email,
-        appLanguageCode_contains: testUsers[1]?.appLanguageCode,
+        // appLanguageCode_contains: testUsers[1]?.appLanguageCode,
       },
       orderBy: "lastName_ASC",
     };
@@ -345,14 +328,14 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        lastName: 1,
+      })
       .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
+
       .populate("joinedOrganizations")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
+
       .lean();
 
     expect(usersConnectionPayload).toEqual(users);
@@ -367,11 +350,7 @@ describe("resolvers -> Query -> usersConnection", () => {
       firstName: new RegExp("^" + testUsers[1]?.firstName),
       lastName: new RegExp("^" + testUsers[1]?.lastName),
       email: new RegExp("^" + testUsers[1]?.email),
-      appLanguageCode: new RegExp("^" + testUsers[1]?.appLanguageCode),
-    };
-
-    const sort = {
-      lastName: -1,
+      // appLanguageCode: new RegExp("^" + testUsers[1]?.appLanguageCode),
     };
 
     const args: QueryUsersConnectionArgs = {
@@ -381,7 +360,7 @@ describe("resolvers -> Query -> usersConnection", () => {
         firstName_starts_with: testUsers[1]?.firstName,
         lastName_starts_with: testUsers[1]?.lastName,
         email_starts_with: testUsers[1]?.email,
-        appLanguageCode_starts_with: testUsers[1]?.appLanguageCode,
+        // appLanguageCode_starts_with: testUsers[1]?.appLanguageCode,
       },
       orderBy: "lastName_DESC",
     };
@@ -395,88 +374,12 @@ describe("resolvers -> Query -> usersConnection", () => {
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        lastName: -1,
+      })
       .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
       .populate("joinedOrganizations")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
-      .lean();
-
-    expect(usersConnectionPayload).toEqual(users);
-  });
-
-  it(`returns paginated list of users sorted by
-  args.orderBy === 'appLanguageCode_ASC'`, async () => {
-    const where = {};
-
-    const sort = {
-      appLanguageCode: 1,
-    };
-
-    const args: QueryUsersConnectionArgs = {
-      first: 2,
-      skip: 1,
-      where: null,
-      orderBy: "appLanguageCode_ASC",
-    };
-
-    const usersConnectionPayload = await usersConnectionResolver?.(
-      {},
-      args,
-      {},
-    );
-
-    const users = await User.find(where)
-      .limit(2)
-      .skip(1)
-      .sort(sort)
-      .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
-      .populate("joinedOrganizations")
-      .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
-      .lean();
-
-    expect(usersConnectionPayload).toEqual(users);
-  });
-
-  it(`returns paginated list of users sorted by
-   args.orderBy === 'appLanguageCode_DESC'`, async () => {
-    const where = {};
-
-    const sort = {
-      appLanguageCode: -1,
-    };
-
-    const args: QueryUsersConnectionArgs = {
-      first: 2,
-      skip: 1,
-      where: null,
-      orderBy: "appLanguageCode_DESC",
-    };
-
-    const usersConnectionPayload = await usersConnectionResolver?.(
-      {},
-      args,
-      {},
-    );
-
-    const users = await User.find(where)
-      .limit(2)
-      .skip(1)
-      .sort(sort)
-      .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
-      .populate("joinedOrganizations")
-      .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
       .lean();
 
     expect(usersConnectionPayload).toEqual(users);
@@ -485,10 +388,6 @@ describe("resolvers -> Query -> usersConnection", () => {
   it(`returns paginated list of users
   sorted by args.orderBy === 'email_ASC'`, async () => {
     const where = {};
-
-    const sort = {
-      email: 1,
-    };
 
     const args: QueryUsersConnectionArgs = {
       first: 2,
@@ -502,30 +401,28 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user,
+    );
 
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        email: 1,
+      })
       .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
       .populate("joinedOrganizations")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 
   it(`returns paginated list of users
   sorted by args.orderBy === 'email_DESC'`, async () => {
     const where = {};
-
-    const sort = {
-      email: -1,
-    };
 
     const args: QueryUsersConnectionArgs = {
       first: 2,
@@ -539,21 +436,23 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user,
+    );
 
     const users = await User.find(where)
       .limit(2)
       .skip(1)
-      .sort(sort)
+      .sort({
+        email: -1,
+      })
       .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
       .populate("joinedOrganizations")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 
   it(`returns paginated list of users without sorting if orderBy === null`, async () => {
@@ -573,20 +472,20 @@ describe("resolvers -> Query -> usersConnection", () => {
       args,
       {},
     );
+    const usersPayload = usersConnectionPayload?.map(
+      // @ts-expect-error-ignore
+      (userConnection) => userConnection?.user,
+    );
 
     const users = await User.find(where)
       .limit(2)
       .skip(1)
       .sort(sort)
       .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
       .populate("joinedOrganizations")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
       .lean();
 
-    expect(usersConnectionPayload).toEqual(users);
+    expect(usersPayload).toEqual(users);
   });
 });

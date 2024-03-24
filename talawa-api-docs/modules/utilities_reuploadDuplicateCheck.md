@@ -33,10 +33,10 @@ attempting to re-upload the same profile photo or organisation image.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `oldImagePath` | ``null`` \| [`TypeImagePath`](utilities_reuploadDuplicateCheck.md#typeimagepath) | Path of a current Org/User image of `type: TypeImagePath`. |
-| `newImagePath` | [`TypeImagePath`](utilities_reuploadDuplicateCheck.md#typeimagepath) | Path of a new image of `type: TypeImagePath`. |
+| Name           | Type                                                                           | Description                                                |
+| :------------- | :----------------------------------------------------------------------------- | :--------------------------------------------------------- |
+| `oldImagePath` | `null` \| [`TypeImagePath`](utilities_reuploadDuplicateCheck.md#typeimagepath) | Path of a current Org/User image of `type: TypeImagePath`. |
+| `newImagePath` | [`TypeImagePath`](utilities_reuploadDuplicateCheck.md#typeimagepath)           | Path of a new image of `type: TypeImagePath`.              |
 
 #### Returns
 

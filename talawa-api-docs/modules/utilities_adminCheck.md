@@ -18,9 +18,9 @@ If the current user is an admin of the organisation, this function returns `true
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `userId` | `string` \| `ObjectId` | Current user id. |
+| Name           | Type                                                                                  | Description                                        |
+| :------------- | :------------------------------------------------------------------------------------ | :------------------------------------------------- |
+| `userId`       | `string` \| `ObjectId`                                                                | Current user id.                                   |
 | `organization` | [`InterfaceOrganization`](../interfaces/models_Organization.InterfaceOrganization.md) | Organization data of `InterfaceOrganization` type. |
 
 #### Returns
