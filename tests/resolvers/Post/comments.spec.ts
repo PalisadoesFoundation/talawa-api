@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "dotenv/config";
+import type mongoose from "mongoose";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { Comment, Post } from "../../../src/models";
 import { comments as commentsResolver } from "../../../src/resolvers/Post/comments";
 import { connect, disconnect } from "../../helpers/db";
-import type mongoose from "mongoose";
-import { Comment, Post } from "../../../src/models";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
@@ -17,8 +18,8 @@ beforeAll(async () => {
   [testUser, , testPost] = await createTestPost();
   await Comment.create({
     text: "test comment",
-    creatorId: testUser!._id,
-    postId: testPost!._id,
+    creatorId: testUser?._id,
+    postId: testPost?._id,
   });
 
   await Post.findOneAndUpdate(

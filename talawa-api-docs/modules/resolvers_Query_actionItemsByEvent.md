@@ -20,7 +20,7 @@ This query will fetch all action items for an event from database.
 
 **`Param`**
 
-An object that contains `eventId` which is the _id of the Event.
+An object that contains `eventId` which is the \_id of the Event.
 
 #### Defined in
 

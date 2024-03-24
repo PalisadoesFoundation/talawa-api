@@ -1,5 +1,6 @@
 import type { GroupChatResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
+import type { InterfaceOrganization } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 /**
@@ -15,14 +16,13 @@ export const organization: GroupChatResolvers["organization"] = async (
   ]);
 
   if (!organizationFoundInCache.includes(null)) {
-    return organizationFoundInCache[0]!;
+    return organizationFoundInCache[0] as InterfaceOrganization;
   }
 
   const organization = await Organization.findOne({
     _id: parent.organization,
   }).lean();
+  if (organization) await cacheOrganizations([organization]);
 
-  await cacheOrganizations([organization!]);
-
-  return organization!;
+  return organization as InterfaceOrganization;
 };

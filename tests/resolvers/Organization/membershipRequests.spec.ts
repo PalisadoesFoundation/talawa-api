@@ -1,4 +1,5 @@
 import "dotenv/config";
+import _ from "lodash";
 import { membershipRequests as membershipRequestsResolver } from "../../../src/resolvers/Organization/membershipRequests";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
@@ -73,9 +74,50 @@ describe("resolvers -> Organization -> membershipRequests", () => {
         _id: {
           $in: testOrganization?.membershipRequests,
         },
-      }).lean();
+      })
+        .populate({
+          path: "user",
+        })
+        .lean();
+      expect(_.isEqual(membershipRequestsPayload, membershipRequests)).toBe(
+        true,
+      );
+    }
+  });
 
-      expect(membershipRequestsPayload).toEqual(membershipRequests);
+  it(`filters all membershipRequest by firstName_contains`, async () => {
+    const parent = testOrganization?.toObject();
+    const firstName = testUser?.firstName?.toLowerCase();
+
+    if (parent) {
+      const membershipRequestsPayload = await membershipRequestsResolver?.(
+        parent,
+        { where: { user: { firstName_contains: firstName } } },
+        {},
+      );
+
+      const membershipRequests = await MembershipRequest.find({
+        _id: {
+          $in: testOrganization?.membershipRequests,
+        },
+      })
+        .populate({
+          path: "user",
+        })
+        .lean();
+
+      const filteredMembershipRequests = membershipRequests.filter(
+        (membershipRequest) => {
+          const user = membershipRequest.user;
+          const filterFirstName = firstName?.toLowerCase();
+
+          return user && user.firstName.toLowerCase().includes(filterFirstName);
+        },
+      );
+
+      expect(
+        _.isEqual(membershipRequestsPayload, filteredMembershipRequests),
+      ).toBe(true);
     }
   });
 });

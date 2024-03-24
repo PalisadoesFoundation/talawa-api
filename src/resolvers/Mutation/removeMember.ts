@@ -1,19 +1,19 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import type { InterfaceOrganization } from "../../models";
-import { User, Organization } from "../../models";
-import { adminCheck } from "../../utilities";
+import { Types } from "mongoose";
 import {
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-  MEMBER_NOT_FOUND_ERROR,
-  USER_REMOVING_SELF,
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
+  MEMBER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+  USER_REMOVING_SELF,
 } from "../../constants";
-import { Types } from "mongoose";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceOrganization } from "../../models";
+import { Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
 /**
  * This function enables to remove a member.
  * @param _parent - parent of current request
@@ -38,11 +38,10 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   ]);
 
   if (organizationFoundInCache[0] == null) {
-    organization = await Organization.findOne({
+    organization = (await Organization.findOne({
       _id: args.data.organizationId,
-    }).lean();
-
-    await cacheOrganizations([organization!]);
+    }).lean()) as InterfaceOrganization;
+    if (organization) await cacheOrganizations([organization]);
   } else {
     organization = organizationFoundInCache[0];
   }
@@ -77,7 +76,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   }
 
   const userIsOrganizationMember = organization?.members.some((member) =>
-    Types.ObjectId(member).equals(user._id),
+    new Types.ObjectId(member).equals(user._id),
   );
 
   if (!userIsOrganizationMember) {
@@ -98,7 +97,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   }
 
   const userIsOrganizationAdmin = organization?.admins.some((admin) =>
-    Types.ObjectId(admin).equals(user._id),
+    new Types.ObjectId(admin).equals(user._id),
   );
 
   /*
@@ -120,7 +119,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     of organization. If match is true assigns error message to errors list
     and breaks out of loop.
     */
-  if (Types.ObjectId(organization?.creatorId).equals(user._id)) {
+  if (new Types.ObjectId(organization?.creatorId).equals(user._id)) {
     throw new errors.UnauthorizedError(
       requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
       ADMIN_REMOVING_CREATOR.CODE,
@@ -129,7 +128,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   }
 
   // Removes user's id from members list on organization.
-  organization = await Organization.findOneAndUpdate(
+  organization = (await Organization.findOneAndUpdate(
     {
       _id: organization?._id,
     },
@@ -143,9 +142,8 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     {
       new: true,
     },
-  ).lean();
-
-  await cacheOrganizations([organization!]);
+  ).lean()) as InterfaceOrganization;
+  if (organization) await cacheOrganizations([organization]);
 
   // Remove organization's id from joinedOrganizations list on user.
   await User.updateOne(

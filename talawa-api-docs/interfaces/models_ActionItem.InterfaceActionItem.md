@@ -35,7 +35,7 @@ This is an interface that represents a database(MongoDB) document for ActionItem
 
 [src/models/ActionItem.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L13)
 
-___
+---
 
 ### actionItemCategoryId
 
@@ -45,7 +45,7 @@ ___
 
 [src/models/ActionItem.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L16)
 
-___
+---
 
 ### assigneeId
 
@@ -55,7 +55,7 @@ ___
 
 [src/models/ActionItem.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L14)
 
-___
+---
 
 ### assignerId
 
@@ -65,7 +65,7 @@ ___
 
 [src/models/ActionItem.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L15)
 
-___
+---
 
 ### assignmentDate
 
@@ -75,7 +75,7 @@ ___
 
 [src/models/ActionItem.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L19)
 
-___
+---
 
 ### completionDate
 
@@ -85,7 +85,7 @@ ___
 
 [src/models/ActionItem.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L21)
 
-___
+---
 
 ### createdAt
 
@@ -95,7 +95,7 @@ ___
 
 [src/models/ActionItem.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L25)
 
-___
+---
 
 ### creatorId
 
@@ -105,7 +105,7 @@ ___
 
 [src/models/ActionItem.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L24)
 
-___
+---
 
 ### dueDate
 
@@ -115,7 +115,7 @@ ___
 
 [src/models/ActionItem.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L20)
 
-___
+---
 
 ### eventId
 
@@ -125,7 +125,7 @@ ___
 
 [src/models/ActionItem.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L23)
 
-___
+---
 
 ### isCompleted
 
@@ -135,7 +135,7 @@ ___
 
 [src/models/ActionItem.ts:22](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L22)
 
-___
+---
 
 ### postCompletionNotes
 
@@ -145,7 +145,7 @@ ___
 
 [src/models/ActionItem.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L18)
 
-___
+---
 
 ### preCompletionNotes
 
@@ -155,7 +155,7 @@ ___
 
 [src/models/ActionItem.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItem.ts#L17)
 
-___
+---
 
 ### updatedAt
 

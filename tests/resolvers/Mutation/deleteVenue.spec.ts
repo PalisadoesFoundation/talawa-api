@@ -1,32 +1,32 @@
-import type { TestVenueType } from "./../../helpers/venue";
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, Venue } from "../../../src/models";
+import { Organization, Venue, type InterfaceVenue } from "../../../src/models";
 import type { MutationDeleteVenueArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import { fail } from "assert";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   VENUE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
-import { createTestUser } from "../../helpers/userAndOrg";
 import {
   NotFoundError,
   UnauthorizedError,
 } from "../../../src/libraries/errors";
-import { fail } from "assert";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testVenue: TestVenueType;
+let testVenue: InterfaceVenue;
+let testVenue2: InterfaceVenue;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -36,9 +36,9 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creatorId: Types.ObjectId().toString(),
-    admins: [Types.ObjectId().toString()],
-    members: [Types.ObjectId().toString()],
+    creatorId: new Types.ObjectId().toString(),
+    admins: [new Types.ObjectId().toString()],
+    members: [new Types.ObjectId().toString()],
     visibleInSearch: true,
   });
 
@@ -46,7 +46,13 @@ beforeAll(async () => {
     name: "testVenue",
     description: "description",
     capacity: Math.floor(Math.random() * 100),
-    organization: Types.ObjectId().toString(),
+    organization: testOrganization?.id,
+  });
+  testVenue2 = await Venue.create({
+    name: "venue",
+    description: "description",
+    capacity: Math.floor(Math.random() * 100),
+    organization: new Types.ObjectId().toString(),
   });
 
   const { requestContext } = await import("../../../src/libraries");
@@ -63,11 +69,11 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationDeleteVenueArgs = {
-        id: testVenue?.id,
+        id: testVenue?._id.toString(),
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { deleteVenue } = await import(
@@ -87,7 +93,7 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
   it(`throws NotFoundError if the provided venue doesn't exist`, async () => {
     try {
       const args: MutationDeleteVenueArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -111,11 +117,11 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
   _id: testVenue?.id,ganizationId`, async () => {
     try {
       const args: MutationDeleteVenueArgs = {
-        id: testVenue?.id,
+        id: testVenue2?._id.toString(),
       };
 
       const context = {
-        userId: testUser?.id,
+        userId: testUser?._id,
       };
 
       const { deleteVenue } = await import(
@@ -144,7 +150,7 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
         { new: true },
       );
       const args: MutationDeleteVenueArgs = {
-        id: testVenue?.id,
+        id: testVenue?._id.toString(),
       };
 
       const context = {
@@ -179,7 +185,7 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
       { new: true },
     );
     const args: MutationDeleteVenueArgs = {
-      id: testVenue?.id,
+      id: testVenue?._id.toString(),
     };
 
     const context = {

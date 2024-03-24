@@ -1,5 +1,12 @@
 import type { InterfaceEvent, InterfacePost, InterfaceUser } from "../models";
-import { Organization, User, Event, Post, Plugin } from "../models";
+import {
+  AppUserProfile,
+  Event,
+  Organization,
+  Plugin,
+  Post,
+  User,
+} from "../models";
 
 import { faker } from "@faker-js/faker";
 import type mongoose from "mongoose";
@@ -10,7 +17,7 @@ import { SampleData } from "../models/SampleData";
 export const generateUserData = async (
   organizationId: string,
   userType: string,
-): Promise<InterfaceUser & mongoose.Document<any, any, InterfaceUser>> => {
+) => {
   const gender: "male" | "female" = faker.helpers.arrayElement([
     "male",
     "female",
@@ -33,9 +40,17 @@ export const generateUserData = async (
     )}.com`,
     password: "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
     joinedOrganizations: [organizationId],
-    userType,
+  });
+
+  const appUserProfile = new AppUserProfile({
+    userId: user._id,
     adminFor,
   });
+  if (userType == "SUPERADMIN") {
+    appUserProfile.isSuperAdmin = true;
+  }
+  await appUserProfile.save();
+  user.appUserProfileId = appUserProfile._id;
 
   await user.save();
 
@@ -43,21 +58,37 @@ export const generateUserData = async (
     documentId: user._id,
     collectionName: "User",
   });
+  const sampleModel2 = new SampleData({
+    documentId: appUserProfile._id,
+    collectionName: "AppUserProfile",
+  });
 
   await sampleModel.save();
-
-  return user;
+  await sampleModel2.save();
+  return {
+    user,
+    appUserProfile,
+  };
 };
 
 const createUser = async (
   generatedUser: InterfaceUser & mongoose.Document<any, any, InterfaceUser>,
 ): Promise<InterfaceUser & mongoose.Document<any, any, InterfaceUser>> => {
   const savedUser = await generatedUser.save();
+  const appUserProfile = await AppUserProfile.create({
+    userId: savedUser._id,
+  });
   const sampleModel = new SampleData({
     documentId: savedUser._id,
     collectionName: "User",
   });
+  const sampleModel2 = new SampleData({
+    documentId: appUserProfile._id,
+    collectionName: "AppUserProfile",
+  });
+
   await sampleModel.save();
+  await sampleModel2.save();
   return savedUser;
 };
 
@@ -214,7 +245,9 @@ export const generateRandomPlugins = async (
 
 export const createSampleOrganization = async (): Promise<void> => {
   const _id = faker.database.mongodbObjectId();
-  const creator = await generateUserData(_id, "ADMIN");
+  const userData = await generateUserData(_id, "ADMIN");
+  const creator = userData.user;
+  const creatorAppProfile = userData.appUserProfile;
 
   interface Address {
     city: string;
@@ -228,14 +261,14 @@ export const createSampleOrganization = async (): Promise<void> => {
   }
 
   const address: Address = {
-    city: faker.address.city(),
-    countryCode: faker.address.countryCode(),
-    dependentLocality: faker.address.secondaryAddress(),
-    line1: faker.address.streetAddress(),
-    line2: faker.address.secondaryAddress(),
-    postalCode: faker.address.zipCode(),
-    sortingCode: faker.address.zipCode(),
-    state: faker.address.state(),
+    city: faker.location.city(),
+    countryCode: faker.location.countryCode(),
+    dependentLocality: faker.location.secondaryAddress(),
+    line1: faker.location.streetAddress(),
+    line2: faker.location.secondaryAddress(),
+    postalCode: faker.location.zipCode(),
+    sortingCode: faker.location.zipCode(),
+    state: faker.location.state(),
   };
 
   const organization = new Organization({
@@ -257,15 +290,18 @@ export const createSampleOrganization = async (): Promise<void> => {
     createdAt: Date.now(),
   });
 
-  creator.adminFor.push(organization._id);
+  creatorAppProfile.adminFor.push(organization._id);
 
-  await creator.save();
+  // await creator.save();
+  await creatorAppProfile.save();
 
   for (let j = 0; j < 10; j++) {
     const userType = j === 0 ? "ADMIN" : "USER";
 
     const newUserData = await generateUserData(_id, userType);
-    const newUser = await createUser(newUserData);
+
+    const newUser = newUserData.user;
+    const newUserAppProfile = newUserData.appUserProfile;
 
     organization.members.push(newUser._id);
 

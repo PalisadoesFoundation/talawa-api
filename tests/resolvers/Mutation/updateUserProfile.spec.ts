@@ -41,7 +41,7 @@ const date = new Date("2002-03-04T18:30:00.000Z");
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
-  testUser = await User.create({
+  testUser = (await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
     password: "password",
     firstName: "firstName",
@@ -68,17 +68,17 @@ beforeAll(async () => {
       mobile: null,
       work: null,
     },
-  });
+  })) as UserDocument;
 
-  testUser2 = await User.create({
+  testUser2 = (await User.create({
     email: email,
     password: "password",
     firstName: "firstName",
     lastName: "lastName",
     appLanguageCode: "en",
-  });
-  testUser2.save();
-  testUser.save();
+  })) as UserDocument;
+  await testUser2.save();
+  await testUser.save();
 });
 
 afterAll(async () => {
@@ -105,7 +105,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { updateUserProfile: updateUserProfileResolver } = await import(
@@ -136,7 +136,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { updateUserProfile: updateUserProfileResolverUserError } =

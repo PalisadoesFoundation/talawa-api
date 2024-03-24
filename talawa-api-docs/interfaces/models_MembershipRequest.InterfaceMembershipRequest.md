@@ -25,7 +25,7 @@ This is an interface that represents a database(MongoDB) document for Membership
 
 [src/models/MembershipRequest.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/MembershipRequest.ts#L9)
 
-___
+---
 
 ### organization
 
@@ -35,7 +35,7 @@ ___
 
 [src/models/MembershipRequest.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/MembershipRequest.ts#L10)
 
-___
+---
 
 ### status
 
@@ -45,7 +45,7 @@ ___
 
 [src/models/MembershipRequest.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/MembershipRequest.ts#L12)
 
-___
+---
 
 ### user
 

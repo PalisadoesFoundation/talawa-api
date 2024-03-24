@@ -7,13 +7,7 @@ let session!: mongoose.ClientSession;
 
 export const connect = async (): Promise<void> => {
   try {
-    await mongoose.connect(MONGO_DB_URL as string, {
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-      useNewUrlParser: true,
-    });
-
+    await mongoose.connect(MONGO_DB_URL as string);
     const replicaSet = await checkReplicaSet();
     if (replicaSet) {
       logger.info("Session started --> Connected to a replica set!");

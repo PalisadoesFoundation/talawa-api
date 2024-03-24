@@ -1,4 +1,5 @@
 import "dotenv/config";
+import mongoose from "mongoose";
 import {
   afterAll,
   afterEach,
@@ -8,14 +9,13 @@ import {
   it,
   vi,
 } from "vitest";
-import { connect, disconnect } from "../helpers/db";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../../src/constants";
+import { ApplicationError } from "../../src/libraries/errors";
+import type { InterfaceOrganization } from "../../src/models";
+import { AppUserProfile, Organization } from "../../src/models";
+import { connect, disconnect } from "../helpers/db";
 import type { TestOrganizationType, TestUserType } from "../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../helpers/userAndOrg";
-import mongoose from "mongoose";
-import type { InterfaceOrganization } from "../../src/models";
-import { Organization, User } from "../../src/models";
-import { ApplicationError } from "../../src/libraries/errors";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -50,8 +50,8 @@ describe("utilities -> adminCheck", () => {
         testUser?._id,
         testOrganization ?? ({} as InterfaceOrganization),
       );
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
     }
@@ -59,12 +59,12 @@ describe("utilities -> adminCheck", () => {
   });
 
   it("throws no error if userIsOrganizationAdmin === false and isUserSuperAdmin === true", async () => {
-    const updatedUser = await User.findOneAndUpdate(
+    const updatedUser = await AppUserProfile.findOneAndUpdate(
       {
-        _id: testUser?._id,
+        userId: testUser?._id,
       },
       {
-        userType: "SUPERADMIN",
+        isSuperAdmin: true,
       },
       {
         new: true,
@@ -76,26 +76,13 @@ describe("utilities -> adminCheck", () => {
 
     await expect(
       adminCheck(
-        updatedUser?._id,
+        updatedUser?.userId?.toString() ?? "",
         testOrganization ?? ({} as InterfaceOrganization),
       ),
     ).resolves.not.toThrowError();
   });
 
   it("throws no error if user is an admin in that organization but not super admin", async () => {
-    const updatedUser = await User.findOneAndUpdate(
-      {
-        _id: testUser?._id,
-      },
-      {
-        userType: "USER",
-      },
-      {
-        new: true,
-        upsert: true,
-      },
-    );
-
     const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
@@ -115,7 +102,7 @@ describe("utilities -> adminCheck", () => {
 
     await expect(
       adminCheck(
-        updatedUser?._id,
+        testUser?._id,
         updatedOrganization ?? ({} as InterfaceOrganization),
       ),
     ).resolves.not.toThrowError();

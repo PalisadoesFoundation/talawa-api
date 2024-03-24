@@ -21,12 +21,15 @@ afterAll(async () => {
 
 describe("resolvers -> Event -> attendeesCheckInStatus", () => {
   it(`returns the attendeesCheckInStatus object for parent event`, async () => {
-    const parent = testEvent!.toObject();
+    const parent = testEvent?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
 
     const payload = await attendeesResolver?.(parent, {}, {});
 
     const eventAttendeeObjects = await EventAttendee.find({
-      eventId: testEvent!._id,
+      eventId: testEvent?._id,
     })
       .populate("userId")
       .populate("checkInId")

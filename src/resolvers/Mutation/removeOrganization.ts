@@ -1,21 +1,26 @@
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
 import {
   ActionItem,
   ActionItemCategory,
+  AppUserProfile,
   Comment,
-  Fund,
   MembershipRequest,
   Organization,
   Post,
   User,
+  Fund,
 } from "../../models";
+
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { deleteOrganizationFromCache } from "../../services/OrganizationCache/deleteOrganizationFromCache";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
 import { deletePreviousImage as deleteImage } from "../../utilities/encodedImageStorage/deletePreviousImage";
@@ -28,6 +33,7 @@ import { deletePreviousImage as deleteImage } from "../../utilities/encodedImage
  * 1. If the user exists.
  * 2. If the organization exists
  * 3. If the user is the creator of the organization.
+ * 4. If the user has appUserProfile.
  * @returns Updated user.
  */
 export const removeOrganization: MutationResolvers["removeOrganization"] =
@@ -44,6 +50,17 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+    const currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
 
     let organization;
 
@@ -55,7 +72,9 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       organization = await Organization.findOne({
         _id: args.id,
       }).lean();
-      if (organization) await cacheOrganizations([organization]);
+      if (organization != null) {
+        await cacheOrganizations([organization]);
+      }
     }
 
     // Checks whether organization exists.
@@ -67,16 +86,16 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       );
     }
     // Checks whether currentUser is a SUPERADMIN
-    superAdminCheck(currentUser);
+    superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
     // Remove each post and comments associated to it for organization.posts list.
     await Post.deleteMany({ _id: { $in: organization.posts } });
     await Comment.deleteMany({ postId: { $in: organization.posts } });
 
-    // Remove organization._id from createdOrganizations list of currentUser.
-    await User.updateOne(
+    // Remove organization._id from createdOrganizations list of currentUserAppProfile*.
+    await AppUserProfile.updateOne(
       {
-        _id: currentUser._id,
+        _id: currentUserAppProfile._id,
       },
       {
         $pull: {
@@ -158,11 +177,23 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     if (organization?.image) {
       await deleteImage(organization?.image);
     }
-
-    // Returns updated currentUser.
-    return await User.findOne({
+    const updatedUser: InterfaceUser = (await User.findOne({
       _id: currentUser._id,
     })
       .select(["-password"])
-      .lean();
+      .lean()) as InterfaceUser;
+    const updatedAppUserProfile: InterfaceAppUserProfile =
+      (await AppUserProfile.findOne({
+        userId: currentUser._id,
+      })
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .lean()) as InterfaceAppUserProfile;
+    // Returns updated currentUser.
+    return {
+      user: updatedUser,
+      appUserProfile: updatedAppUserProfile,
+    };
   };

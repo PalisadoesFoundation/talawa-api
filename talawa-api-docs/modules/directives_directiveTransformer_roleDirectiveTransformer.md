@@ -16,9 +16,9 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `schema` | `any` |
+| Name            | Type  |
+| :-------------- | :---- |
+| `schema`        | `any` |
 | `directiveName` | `any` |
 
 #### Returns

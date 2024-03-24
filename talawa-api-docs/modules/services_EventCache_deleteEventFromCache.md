@@ -16,8 +16,8 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type       |
+| :-------- | :--------- |
 | `eventId` | `ObjectId` |
 
 #### Returns

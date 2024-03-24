@@ -1,5 +1,5 @@
+import { AppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
 /**
  * This function enables to save Fcm Token.
  * @param _parent - parent of current request
@@ -14,9 +14,9 @@ export const saveFcmToken: MutationResolvers["saveFcmToken"] = async (
   args,
   context,
 ) => {
-  await User.updateOne(
+  await AppUserProfile.updateOne(
     {
-      _id: context.userId,
+      userId: context.userId,
     },
     {
       $set: {

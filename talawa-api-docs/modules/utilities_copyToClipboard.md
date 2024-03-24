@@ -18,8 +18,8 @@ This utility function copy the text into the clipboard.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
+| Name   | Type     | Description                         |
+| :----- | :------- | :---------------------------------- |
 | `text` | `string` | The content that need to be copied. |
 
 #### Returns

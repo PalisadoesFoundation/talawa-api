@@ -1,18 +1,18 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { User } from "../../../src/models";
+import { AppUserProfile } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
-import { logout as logoutResolver } from "../../../src/resolvers/Mutation/logout";
 import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
   vi,
 } from "vitest";
+import { logout as logoutResolver } from "../../../src/resolvers/Mutation/logout";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
@@ -44,12 +44,11 @@ describe("resolvers -> Mutation -> logout", () => {
 
     expect(logoutPayload).toEqual(true);
 
-    const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
+    const updateTestAppUserProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
     })
       .select(["token"])
       .lean();
-
-    expect(updatedTestUser?.token).toEqual(null);
+    expect(updateTestAppUserProfile?.token).toEqual(null);
   });
 });
