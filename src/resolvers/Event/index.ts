@@ -6,6 +6,7 @@ import { feedback } from "./feedback";
 import { organization } from "./organization";
 import { actionItems } from "./actionItems";
 import { creator } from "./creator";
+import { recurrenceRule } from "./recurrenceRule";
 
 export const Event: EventResolvers = {
   actionItems,
@@ -15,4 +16,5 @@ export const Event: EventResolvers = {
   feedback,
   organization,
   creator,
+  recurrenceRule,
 };

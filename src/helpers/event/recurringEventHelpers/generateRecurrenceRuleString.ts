@@ -1,3 +1,4 @@
+import { RECURRENCE_WEEKDAYS_MAPPING } from "../../../constants";
 import type { RecurrenceRuleInput } from "../../../types/generatedGraphQLTypes";
 import { convertToRRuleDateString } from "../../../utilities/recurrenceDatesUtil";
 
@@ -28,10 +29,20 @@ export const generateRecurrenceRuleString = (
   }
 
   // destructure the recurrence rules
-  const { frequency, count, weekDays } = recurrenceRuleData;
+  const { frequency, weekDays, interval, count, weekDayOccurenceInMonth } =
+    recurrenceRuleData;
+
+  // get weekdays for recurrence rule string, i.e. "MO", "TU", etc.
+  const recurrenceWeekDays = weekDays?.map((weekDay) => {
+    if (weekDay) {
+      return RECURRENCE_WEEKDAYS_MAPPING[weekDay];
+    }
+  });
 
   // string representing the days of the week the event would recur
-  const weekDaysString = weekDays?.length ? weekDays.join(",") : "";
+  const weekDaysString = recurrenceWeekDays?.length
+    ? recurrenceWeekDays.join(",")
+    : "";
 
   // initiate recurrence rule string
   let recurrenceRuleString = `DTSTART:${recurrenceStartDateString}\nRRULE:FREQ=${frequency}`;
@@ -40,9 +51,20 @@ export const generateRecurrenceRuleString = (
     recurrenceRuleString += `;UNTIL=${recurrenceEndDateString}`;
   }
 
+  if (interval) {
+    // interval of recurrence
+    recurrenceRuleString += `;INTERVAL=${interval}`;
+  }
+
   if (count) {
     // maximum number of instances to generate
     recurrenceRuleString += `;COUNT=${count}`;
+  }
+
+  if (weekDayOccurenceInMonth) {
+    // occurence of week day in month
+    // i.e. 1 = first monday, 3 = third monday, -1 = last monday
+    recurrenceRuleString += `;BYSETPOS=${weekDayOccurenceInMonth}`;
   }
 
   if (weekDaysString) {
