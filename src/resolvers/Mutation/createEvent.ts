@@ -64,7 +64,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   }
 
   const organization = await Organization.findOne({
-    _id: args.data?.organizationId.toString().substring(3),
+    _id: args.data?.organizationId,
   }).lean();
 
   // Checks whether organization exists.

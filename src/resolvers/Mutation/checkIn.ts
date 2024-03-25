@@ -132,6 +132,8 @@ export const checkIn: MutationResolvers["checkIn"] = async (
     _id: args.data.userId,
   }).lean();
 
+  console.log(`request user is: ${requestUser}`);
+
   if (requestUser === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
