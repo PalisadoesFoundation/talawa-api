@@ -10,7 +10,7 @@
     "prod": "cross-env NODE_ENV=production pm2-runtime start ./build/server.js",
     "start": "cross-env pm2-runtime start ./build/server.js --watch",
     "setup": "tsx setup.ts",
-    "test": "vitest run --no-threads --coverage",
+    "test": "vitest run --pool forks --poolOptions.forks.singleFork --coverage",
     "typecheck": "graphql-codegen && tsc --noEmit --pretty",
     "lint:check": "eslint . --max-warnings=1500",
     "lint:fix": "eslint . --fix",
@@ -92,7 +92,7 @@
     "typedoc-plugin-markdown": "^3.17.1",
     "uuid": "^9.0.0",
     "validator": "^13.7.0",
-    "winston": "^3.12.0",
+    "winston": "^3.13.0",
     "ws": "^8.15.0",
     "yargs": "^17.7.2",
     "zod": "^3.22.3",
@@ -122,7 +122,7 @@
     "@types/validator": "^13.11.9",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.1.1",
-    "@vitest/coverage-c8": "^0.24.3",
+    "@vitest/coverage-v8": "^1.4.0",
     "cls-bluebird": "^2.1.0",
     "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
@@ -137,7 +137,7 @@
     "rimraf": "^5.0.5",
     "tsx": "^4.7.0",
     "typescript": "^5.4.2",
-    "vitest": "^0.24.5"
+    "vitest": "^1.2.1"
   },
   "overrides": {
     "graphql-voyager": {

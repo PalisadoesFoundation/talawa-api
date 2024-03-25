@@ -230,6 +230,7 @@ export const types = gql`
     endTime: Time
     allDay: Boolean!
     recurring: Boolean!
+    recurrenceRule: RecurrenceRule
     recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
@@ -517,6 +518,14 @@ export const types = gql`
     likeCount: Int
     commentCount: Int
     pinned: Boolean
+  }
+
+  type RecurrenceRule {
+    frequency: Frequency
+    weekDays: [WeekDays]
+    interval: PositiveInt
+    count: PositiveInt
+    weekDayOccurenceInMonth: Int
   }
 
   type SocialMediaUrls {
