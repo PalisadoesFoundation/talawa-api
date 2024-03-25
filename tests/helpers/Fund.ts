@@ -22,6 +22,7 @@ export const createTestFund = async (): Promise<
       taxDeductible: true,
       isDefault: true,
       isArchived: false,
+      creatorId: testUser._id,
       campaigns: [],
     });
     return [testUser, testOrganization, testFund];
