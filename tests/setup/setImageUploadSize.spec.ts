@@ -45,7 +45,6 @@ describe("setImageUploadSize", () => {
 
   afterEach(() => {
     process.env = originalEnv;
-    vi.restoreAllMocks();
   });
 
   it("should set the image upload size correctly in .env file", async () => {
