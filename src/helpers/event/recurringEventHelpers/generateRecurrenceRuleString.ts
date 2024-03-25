@@ -28,7 +28,8 @@ export const generateRecurrenceRuleString = (
   }
 
   // destructure the recurrence rules
-  const { frequency, weekDays, interval, count } = recurrenceRuleData;
+  const { frequency, weekDays, interval, count, weekDayOccurenceInMonth } =
+    recurrenceRuleData;
 
   // string representing the days of the week the event would recur
   const weekDaysString = weekDays?.length ? weekDays.join(",") : "";
@@ -48,6 +49,12 @@ export const generateRecurrenceRuleString = (
   if (count) {
     // maximum number of instances to generate
     recurrenceRuleString += `;COUNT=${count}`;
+  }
+
+  if (weekDayOccurenceInMonth) {
+    // occurence of week day in month
+    // i.e. 1 = first monday, 3 = third monday, -1 = last monday
+    recurrenceRuleString += `;BYSETPOS=${weekDayOccurenceInMonth}`;
   }
 
   if (weekDaysString) {

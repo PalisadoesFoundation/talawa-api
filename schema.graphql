@@ -1406,16 +1406,18 @@ enum Recurrance {
 }
 
 type RecurrenceRule {
-  count: Int
+  count: PositiveInt
   frequency: Frequency
-  interval: Int
+  interval: PositiveInt
+  weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }
 
 input RecurrenceRuleInput {
-  count: Int
+  count: PositiveInt
   frequency: Frequency
-  interval: Int
+  interval: PositiveInt
+  weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }
 

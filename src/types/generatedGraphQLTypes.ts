@@ -2414,16 +2414,18 @@ export type Recurrance =
 
 export type RecurrenceRule = {
   __typename?: 'RecurrenceRule';
-  count?: Maybe<Scalars['Int']['output']>;
+  count?: Maybe<Scalars['PositiveInt']['output']>;
   frequency?: Maybe<Frequency>;
-  interval?: Maybe<Scalars['Int']['output']>;
+  interval?: Maybe<Scalars['PositiveInt']['output']>;
+  weekDayOccurenceInMonth?: Maybe<Scalars['Int']['output']>;
   weekDays?: Maybe<Array<Maybe<WeekDays>>>;
 };
 
 export type RecurrenceRuleInput = {
-  count?: InputMaybe<Scalars['Int']['input']>;
+  count?: InputMaybe<Scalars['PositiveInt']['input']>;
   frequency?: InputMaybe<Frequency>;
-  interval?: InputMaybe<Scalars['Int']['input']>;
+  interval?: InputMaybe<Scalars['PositiveInt']['input']>;
+  weekDayOccurenceInMonth?: InputMaybe<Scalars['Int']['input']>;
   weekDays?: InputMaybe<Array<InputMaybe<WeekDays>>>;
 };
 
@@ -4171,9 +4173,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type RecurrenceRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['RecurrenceRule'] = ResolversParentTypes['RecurrenceRule']> = {
-  count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  count?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
   frequency?: Resolver<Maybe<ResolversTypes['Frequency']>, ParentType, ContextType>;
-  interval?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  interval?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
+  weekDayOccurenceInMonth?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   weekDays?: Resolver<Maybe<Array<Maybe<ResolversTypes['WeekDays']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

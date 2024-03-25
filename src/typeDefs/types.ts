@@ -523,8 +523,9 @@ export const types = gql`
   type RecurrenceRule {
     frequency: Frequency
     weekDays: [WeekDays]
-    interval: Int
-    count: Int
+    interval: PositiveInt
+    count: PositiveInt
+    weekDayOccurenceInMonth: Int
   }
 
   type SocialMediaUrls {
