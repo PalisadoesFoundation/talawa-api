@@ -1850,13 +1850,13 @@ input VenueInput {
 }
 
 enum WeekDays {
-  FR
-  MO
-  SA
-  SU
-  TH
-  TU
-  WE
+  FRIDAY
+  MONDAY
+  SATURDAY
+  SUNDAY
+  THURSDAY
+  TUESDAY
+  WEDNESDAY
 }
 
 input createChatInput {

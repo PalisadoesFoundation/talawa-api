@@ -1,3 +1,4 @@
+import { RECURRENCE_WEEKDAYS_MAPPING } from "../../../constants";
 import type { RecurrenceRuleInput } from "../../../types/generatedGraphQLTypes";
 import { convertToRRuleDateString } from "../../../utilities/recurrenceDatesUtil";
 
@@ -31,8 +32,17 @@ export const generateRecurrenceRuleString = (
   const { frequency, weekDays, interval, count, weekDayOccurenceInMonth } =
     recurrenceRuleData;
 
+  // get weekdays for recurrence rule string, i.e. "MO", "TU", etc.
+  const recurrenceWeekDays = weekDays?.map((weekDay) => {
+    if (weekDay) {
+      return RECURRENCE_WEEKDAYS_MAPPING[weekDay];
+    }
+  });
+
   // string representing the days of the week the event would recur
-  const weekDaysString = weekDays?.length ? weekDays.join(",") : "";
+  const weekDaysString = recurrenceWeekDays?.length
+    ? recurrenceWeekDays.join(",")
+    : "";
 
   // initiate recurrence rule string
   let recurrenceRuleString = `DTSTART:${recurrenceStartDateString}\nRRULE:FREQ=${frequency}`;

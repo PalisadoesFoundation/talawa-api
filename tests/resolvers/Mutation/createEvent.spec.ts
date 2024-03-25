@@ -617,7 +617,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
       },
       recurrenceRuleData: {
         frequency: "WEEKLY",
-        weekDays: ["TH", "SA"],
+        weekDays: ["THURSDAY", "SATURDAY"],
         count: 10,
       },
     };
@@ -1003,7 +1003,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
       },
       recurrenceRuleData: {
         frequency: "MONTHLY",
-        weekDays: ["MO"],
+        weekDays: ["MONDAY"],
         count: 10,
         weekDayOccurenceInMonth: 1,
       },
@@ -1104,8 +1104,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
       startDate.setDate(startDate.getDate() - 1);
     }
 
-    console.log(startDate);
-
     const args: MutationCreateEventArgs = {
       data: {
         organizationId: testOrganization?.id,
@@ -1124,7 +1122,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
       },
       recurrenceRuleData: {
         frequency: "MONTHLY",
-        weekDays: ["MO"],
+        weekDays: ["MONDAY"],
         count: 10,
         weekDayOccurenceInMonth: -1,
       },

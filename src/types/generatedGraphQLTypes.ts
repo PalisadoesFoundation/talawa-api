@@ -31,6 +31,7 @@ import type { InterfaceOrganization as InterfaceOrganizationModel } from '../mod
 import type { InterfacePlugin as InterfacePluginModel } from '../models/Plugin';
 import type { InterfacePluginField as InterfacePluginFieldModel } from '../models/PluginField';
 import type { InterfacePost as InterfacePostModel } from '../models/Post';
+import type { InterfaceRecurrenceRule as InterfaceRecurrenceRuleModel } from '../models/RecurrenceRule';
 import type { InterfaceOrganizationTagUser as InterfaceOrganizationTagUserModel } from '../models/OrganizationTagUser';
 import type { InterfaceUser as InterfaceUserModel } from '../models/User';
 import type { InterfaceVenue as InterfaceVenueModel } from '../models/Venue';
@@ -2891,13 +2892,13 @@ export type VenueInput = {
 };
 
 export type WeekDays =
-  | 'FR'
-  | 'MO'
-  | 'SA'
-  | 'SU'
-  | 'TH'
-  | 'TU'
-  | 'WE';
+  | 'FRIDAY'
+  | 'MONDAY'
+  | 'SATURDAY'
+  | 'SUNDAY'
+  | 'THURSDAY'
+  | 'TUESDAY'
+  | 'WEDNESDAY';
 
 export type CreateChatInput = {
   organizationId: Scalars['ID']['input'];
@@ -3117,7 +3118,7 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
-  RecurrenceRule: ResolverTypeWrapper<RecurrenceRule>;
+  RecurrenceRule: ResolverTypeWrapper<InterfaceRecurrenceRuleModel>;
   RecurrenceRuleInput: RecurrenceRuleInput;
   RecurringEventMutationType: RecurringEventMutationType;
   SocialMediaUrls: ResolverTypeWrapper<SocialMediaUrls>;
@@ -3289,7 +3290,7 @@ export type ResolversParentTypes = {
   PostsConnection: Omit<PostsConnection, 'edges'> & { edges: Array<ResolversParentTypes['PostEdge']> };
   Query: {};
   RecaptchaVerification: RecaptchaVerification;
-  RecurrenceRule: RecurrenceRule;
+  RecurrenceRule: InterfaceRecurrenceRuleModel;
   RecurrenceRuleInput: RecurrenceRuleInput;
   SocialMediaUrls: SocialMediaUrls;
   SocialMediaUrlsInput: SocialMediaUrlsInput;
