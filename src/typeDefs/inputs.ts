@@ -352,7 +352,9 @@ export const inputs = gql`
   input RecurrenceRuleInput {
     frequency: Frequency
     weekDays: [WeekDays]
-    count: Int
+    interval: PositiveInt
+    count: PositiveInt
+    weekDayOccurenceInMonth: Int
   }
 
   input SocialMediaUrlsInput {
