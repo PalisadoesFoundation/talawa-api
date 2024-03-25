@@ -28,7 +28,7 @@ export const generateRecurrenceRuleString = (
   }
 
   // destructure the recurrence rules
-  const { frequency, count, weekDays } = recurrenceRuleData;
+  const { frequency, weekDays, interval, count } = recurrenceRuleData;
 
   // string representing the days of the week the event would recur
   const weekDaysString = weekDays?.length ? weekDays.join(",") : "";
@@ -38,6 +38,11 @@ export const generateRecurrenceRuleString = (
 
   if (recurrenceEndDateString) {
     recurrenceRuleString += `;UNTIL=${recurrenceEndDateString}`;
+  }
+
+  if (interval) {
+    // interval of recurrence
+    recurrenceRuleString += `;INTERVAL=${interval}`;
   }
 
   if (count) {

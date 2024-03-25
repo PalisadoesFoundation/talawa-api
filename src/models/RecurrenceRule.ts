@@ -31,8 +31,9 @@ export interface InterfaceRecurrenceRule {
   startDate: Date;
   endDate: Date;
   frequency: Frequency;
-  count: number;
   weekDays: WeekDays[];
+  interval: number;
+  count: number;
   latestInstanceDate: Date;
 }
 
@@ -44,8 +45,9 @@ export interface InterfaceRecurrenceRule {
  * @param startDate - Start date of the recurrence pattern (not necessarily the startDate of the first recurring instance)
  * @param endDate - Start date of the recurrence pattern (not necessarily the startDate of the last recurring instance)
  * @param frequency - Frequency of recurrence
- * @param count - Number of recurring instances
  * @param weekDays - Array containing the days of the week the recurring instance occurs
+ * @param interval - Interval of recurrence (i.e. 1 = every week, 2 = every other week, etc.)
+ * @param count - Number of recurring instances
  * @param latestInstanceDate - The startDate of the last recurring instance generated using this recurrence rule
  */
 
@@ -78,14 +80,19 @@ const recurrenceRuleSchema = new Schema(
       required: true,
       enum: Object.values(Frequency),
     },
-    count: {
-      type: Number,
-      required: false,
-    },
     weekDays: { type: [String], required: true, enum: Object.values(WeekDays) },
     latestInstanceDate: {
       type: Date,
       required: true,
+    },
+    interval: {
+      type: Number,
+      required: false,
+      default: 1,
+    },
+    count: {
+      type: Number,
+      required: false,
     },
   },
   {

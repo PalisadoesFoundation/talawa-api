@@ -33,7 +33,7 @@ export const createRecurrenceRule = async (
 ): Promise<InterfaceRecurrenceRule> => {
   const recurrenceRuleObject = rrulestr(recurrenceRuleString);
 
-  const { freq, byweekday } = recurrenceRuleObject.options;
+  const { freq, byweekday, interval, count } = recurrenceRuleObject.options;
 
   const weekDays: string[] = [];
   if (byweekday) {
@@ -53,8 +53,9 @@ export const createRecurrenceRule = async (
         startDate: recurrenceStartDate,
         endDate: recurrenceEndDate,
         frequency,
-        count: recurrenceRuleObject.options.count,
         weekDays,
+        interval,
+        count,
         latestInstanceDate,
       },
     ],

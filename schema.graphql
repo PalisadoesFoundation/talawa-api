@@ -604,6 +604,7 @@ type Event {
   longitude: Longitude
   organization: Organization
   recurrance: Recurrance
+  recurrenceRule: RecurrenceRule
   recurring: Boolean!
   startDate: Date!
   startTime: Time
@@ -1404,9 +1405,17 @@ enum Recurrance {
   YEARLY
 }
 
+type RecurrenceRule {
+  count: Int
+  frequency: Frequency
+  interval: Int
+  weekDays: [WeekDays]
+}
+
 input RecurrenceRuleInput {
   count: Int
   frequency: Frequency
+  interval: Int
   weekDays: [WeekDays]
 }
 
