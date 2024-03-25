@@ -29,7 +29,7 @@ This is an interface representing a document for a donation in the database(Mong
 
 [src/models/Donation.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Donation.ts#L12)
 
-___
+---
 
 ### createdAt
 
@@ -39,7 +39,7 @@ ___
 
 [src/models/Donation.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Donation.ts#L13)
 
-___
+---
 
 ### nameOfOrg
 
@@ -49,7 +49,7 @@ ___
 
 [src/models/Donation.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Donation.ts#L9)
 
-___
+---
 
 ### nameOfUser
 
@@ -59,7 +59,7 @@ ___
 
 [src/models/Donation.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Donation.ts#L11)
 
-___
+---
 
 ### orgId
 
@@ -69,7 +69,7 @@ ___
 
 [src/models/Donation.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Donation.ts#L8)
 
-___
+---
 
 ### payPalId
 
@@ -79,7 +79,7 @@ ___
 
 [src/models/Donation.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Donation.ts#L10)
 
-___
+---
 
 ### updatedAt
 
@@ -89,7 +89,7 @@ ___
 
 [src/models/Donation.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Donation.ts#L14)
 
-___
+---
 
 ### userId
 

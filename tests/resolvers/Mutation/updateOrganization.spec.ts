@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
 
     try {
       const args: MutationUpdateOrganizationArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -77,9 +77,9 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
       );
 
       await updateOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -107,9 +107,9 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
       );
 
       await updateOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }

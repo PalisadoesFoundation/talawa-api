@@ -1,20 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { connect, disconnect } from "../../helpers/db";
-import { currentUserExists } from "../../../src/resolvers/middleware/currentUserExists";
 import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
   vi,
 } from "vitest";
+import { requestContext } from "../../../src/libraries";
+import { currentUserExists } from "../../../src/resolvers/middleware/currentUserExists";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { requestContext } from "../../../src/libraries";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -52,7 +53,7 @@ describe("resolvers -> Middleware -> currentUserExists", () => {
       (): string => "test error message",
     );
     const context = {
-      userId: Types.ObjectId().toString(),
+      userId: new Types.ObjectId().toString(),
     };
     const next = vi.fn();
     await expect(

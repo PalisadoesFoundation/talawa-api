@@ -43,8 +43,8 @@ export const addUserCustomData: MutationResolvers["addUserCustomData"] = async (
   }
 
   const query = {
-    userId: currentUser._id,
-    organizationId: organization._id,
+    userId: currentUser._id.toString(),
+    organizationId: organization._id.toString(),
   };
 
   let userCustomData = await UserCustomData.findOne(query);

@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, EventAttendee } from "../../../src/models";
+import { User, EventAttendee, AppUserProfile } from "../../../src/models";
 import type { MutationRegisterEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -39,7 +39,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe(`resolvers -> Mutation - > registerForEvent`, () => {
+describe(`resolvers -> Mutation - > registerEventAttendee`, () => {
   afterEach(() => {
     vi.doUnmock("../../../src/contants");
     vi.resetModules();
@@ -54,12 +54,12 @@ describe(`resolvers -> Mutation - > registerForEvent`, () => {
     try {
       const args: MutationRegisterEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const { registerEventAttendee: registerForEventResolver } = await import(
         "../../../src/resolvers/Mutation/registerEventAttendee"
@@ -82,8 +82,8 @@ describe(`resolvers -> Mutation - > registerForEvent`, () => {
     try {
       const args: MutationRegisterEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
@@ -112,7 +112,7 @@ describe(`resolvers -> Mutation - > registerForEvent`, () => {
     try {
       const args: MutationRegisterEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           eventId: testEvent?._id,
         },
       };
@@ -144,7 +144,7 @@ describe(`resolvers -> Mutation - > registerForEvent`, () => {
     try {
       const args: MutationRegisterEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           eventId: testEvent?._id,
         },
       };
@@ -304,6 +304,33 @@ describe(`resolvers -> Mutation - > registerForEvent`, () => {
 
       expect(spy).toHaveBeenCalledWith(
         USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE,
+      );
+    }
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationRegisterEventAttendeeArgs = {
+      data: {
+        userId: testUser?._id,
+        eventId: testEvent?._id,
+      },
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    const { registerEventAttendee: registerForEventResolver } = await import(
+      "../../../src/resolvers/Mutation/registerEventAttendee"
+    );
+
+    try {
+      await registerForEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        "i18n is not initialized, try app.use(i18n.init);",
       );
     }
   });

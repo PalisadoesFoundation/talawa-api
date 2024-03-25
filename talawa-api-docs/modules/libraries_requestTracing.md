@@ -26,11 +26,11 @@
 
 [src/libraries/requestTracing.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/requestTracing.ts#L17)
 
-___
+---
 
 ### tracingIdHeaderName
 
-• `Const` **tracingIdHeaderName**: ``"X-Tracing-Id"``
+• `Const` **tracingIdHeaderName**: `"X-Tracing-Id"`
 
 #### Defined in
 
@@ -50,7 +50,7 @@ ___
 
 [src/libraries/requestTracing.ts:29](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/requestTracing.ts#L29)
 
-___
+---
 
 ### middleware
 
@@ -64,11 +64,11 @@ ___
 
 ##### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `req` | `Request`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`\>\> |
-| `res` | `Response`\<`any`, `Record`\<`string`, `any`\>\> |
-| `next` | `NextFunction` |
+| Name   | Type                                                                                   |
+| :----- | :------------------------------------------------------------------------------------- |
+| `req`  | `Request`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`\>\> |
+| `res`  | `Response`\<`any`, `Record`\<`string`, `any`\>\>                                       |
+| `next` | `NextFunction`                                                                         |
 
 ##### Returns
 
@@ -78,7 +78,7 @@ ___
 
 [src/libraries/requestTracing.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/requestTracing.ts#L33)
 
-___
+---
 
 ### setTracingId
 
@@ -86,8 +86,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name        | Type     |
+| :---------- | :------- |
 | `tracingId` | `string` |
 
 #### Returns
@@ -98,7 +98,7 @@ ___
 
 [src/libraries/requestTracing.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/requestTracing.ts#L25)
 
-___
+---
 
 ### trace
 
@@ -107,15 +107,15 @@ ___
 #### Type parameters
 
 | Name |
-| :------ |
-| `T` |
+| :--- |
+| `T`  |
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `tracingId` | `string` |
-| `method` | () =\> `T` |
+| Name        | Type       |
+| :---------- | :--------- |
+| `tracingId` | `string`   |
+| `method`    | () =\> `T` |
 
 #### Returns
 

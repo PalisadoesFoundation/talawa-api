@@ -32,8 +32,8 @@ describe("resolvers -> Mutation -> otp", () => {
       };
 
       await otpResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
   it("should generate and send OTP to the user", async () => {

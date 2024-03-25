@@ -1,12 +1,18 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { User, OrganizationTagUser, TagUser } from "../../models";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
   TAG_NOT_FOUND,
   USER_DOES_NOT_HAVE_THE_TAG,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import {
+  AppUserProfile,
+  OrganizationTagUser,
+  TagUser,
+  User,
+} from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
   _parent,
@@ -25,6 +31,16 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
   // Get the tag object
   const tag = await OrganizationTagUser.findOne({
@@ -40,15 +56,14 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
   }
 
   // Boolean to determine whether user is an admin of organization of the tag.
-  const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.equals(tag?.organizationId),
+  const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+    (organization) =>
+      organization &&
+      new Types.ObjectId(organization.toString()).equals(tag?.organizationId),
   );
 
   // Checks whether currentUser can assign the tag or not.
-  if (
-    !currentUserIsOrganizationAdmin &&
-    !(currentUser.userType === "SUPERADMIN")
-  ) {
+  if (!currentUserIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,

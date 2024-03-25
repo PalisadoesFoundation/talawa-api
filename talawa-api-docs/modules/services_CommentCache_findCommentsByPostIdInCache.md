@@ -12,17 +12,17 @@
 
 ### findCommentsByPostIdInCache
 
-▸ **findCommentsByPostIdInCache**(`postID`): `Promise`\<([`InterfaceComment`](../interfaces/models_Comment.InterfaceComment.md) \| ``null``)[]\>
+▸ **findCommentsByPostIdInCache**(`postID`): `Promise`\<([`InterfaceComment`](../interfaces/models_Comment.InterfaceComment.md) \| `null`)[]\>
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type       |
+| :------- | :--------- |
 | `postID` | `ObjectId` |
 
 #### Returns
 
-`Promise`\<([`InterfaceComment`](../interfaces/models_Comment.InterfaceComment.md) \| ``null``)[]\>
+`Promise`\<([`InterfaceComment`](../interfaces/models_Comment.InterfaceComment.md) \| `null`)[]\>
 
 #### Defined in
 

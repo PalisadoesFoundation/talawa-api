@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "dotenv/config";
 import { creator as creatorResolver } from "../../../src/resolvers/Post/creator";
 import { connect, disconnect } from "../../helpers/db";

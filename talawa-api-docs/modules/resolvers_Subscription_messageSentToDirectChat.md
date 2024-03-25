@@ -39,8 +39,8 @@ You can learn about `subscription` [here](https://www.apollographql.com/docs/apo
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type  |
+| :-------- | :---- |
 | `payload` | `any` |
 | `context` | `any` |
 

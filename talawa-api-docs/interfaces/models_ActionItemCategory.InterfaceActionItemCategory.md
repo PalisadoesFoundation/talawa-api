@@ -28,7 +28,7 @@ This is an interface that represents a database(MongoDB) document for ActionItem
 
 [src/models/ActionItemCategory.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItemCategory.ts#L11)
 
-___
+---
 
 ### createdAt
 
@@ -38,7 +38,7 @@ ___
 
 [src/models/ActionItemCategory.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItemCategory.ts#L16)
 
-___
+---
 
 ### creatorId
 
@@ -48,7 +48,7 @@ ___
 
 [src/models/ActionItemCategory.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItemCategory.ts#L15)
 
-___
+---
 
 ### isDisabled
 
@@ -58,7 +58,7 @@ ___
 
 [src/models/ActionItemCategory.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItemCategory.ts#L14)
 
-___
+---
 
 ### name
 
@@ -68,7 +68,7 @@ ___
 
 [src/models/ActionItemCategory.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItemCategory.ts#L12)
 
-___
+---
 
 ### organizationId
 
@@ -78,7 +78,7 @@ ___
 
 [src/models/ActionItemCategory.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/ActionItemCategory.ts#L13)
 
-___
+---
 
 ### updatedAt
 

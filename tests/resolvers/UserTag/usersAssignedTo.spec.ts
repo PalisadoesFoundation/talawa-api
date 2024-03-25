@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "dotenv/config";
 import {
   parseCursor,
@@ -91,7 +92,7 @@ describe("parseCursor function", () => {
     const result = await parseCursor({
       cursorName: "after",
       cursorPath: ["after"],
-      cursorValue: Types.ObjectId().toString(),
+      cursorValue: new Types.ObjectId().toString(),
       tagId: testTag?._id.toString() as string,
     });
 

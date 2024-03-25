@@ -31,6 +31,7 @@ context of entire application
 **`Remarks`**
 
 The following checks are done:
+
 1. If the current user exists
 2. If the organization exists
 3. If the user trying to add the image is an admin of organization

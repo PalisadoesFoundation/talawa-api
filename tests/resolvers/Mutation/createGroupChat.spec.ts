@@ -41,7 +41,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
     try {
       const args: MutationCreateGroupChatArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           title: "",
           userIds: [],
         },
@@ -52,8 +52,10 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
       };
 
       await createGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -63,7 +65,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
         data: {
           organizationId: testOrganization?.id,
           title: "",
-          userIds: [Types.ObjectId().toString()],
+          userIds: [new Types.ObjectId().toString()],
         },
       };
 
@@ -72,8 +74,8 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
       };
 
       await createGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

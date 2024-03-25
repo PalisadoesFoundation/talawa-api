@@ -1,16 +1,16 @@
 import "dotenv/config";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { checkAuth as checkAuthResolver } from "../../../src/resolvers/Query/checkAuth";
+import { connect, disconnect } from "../../helpers/db";
 
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
+import { AppUserProfile, User } from "../../../src/models";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { User } from "../../../src/models";
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 });
@@ -23,12 +23,12 @@ describe("resolvers -> Query -> checkAuth", () => {
   it("throws NotFoundError if no user exists with _id === context.userId", async () => {
     try {
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await checkAuthResolver?.({}, {}, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -71,5 +71,21 @@ describe("resolvers -> Query -> checkAuth", () => {
       ...testUser?.toObject(),
       image: `${context.apiRootUrl}${testUser?.image}`,
     });
+  });
+  it("throws error if user does not have appUserProfile", async () => {
+    try {
+      const testUser = await createTestUser();
+      await AppUserProfile.deleteOne({
+        userId: testUser?._id,
+      });
+
+      const context = {
+        userId: testUser?._id,
+      };
+      await checkAuthResolver?.({}, {}, context);
+    } catch (error: unknown) {
+      console.log(error);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+    }
   });
 });

@@ -17,13 +17,13 @@
 
 ### code
 
-• **code**: ``null`` \| `string`
+• **code**: `null` \| `string`
 
 #### Defined in
 
 [src/libraries/errors/applicationError.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/errors/applicationError.ts#L3)
 
-___
+---
 
 ### message
 
@@ -33,7 +33,7 @@ ___
 
 [src/libraries/errors/applicationError.ts:2](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/errors/applicationError.ts#L2)
 
-___
+---
 
 ### metadata
 
@@ -43,11 +43,11 @@ ___
 
 [src/libraries/errors/applicationError.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/errors/applicationError.ts#L5)
 
-___
+---
 
 ### param
 
-• **param**: ``null`` \| `string`
+• **param**: `null` \| `string`
 
 #### Defined in
 

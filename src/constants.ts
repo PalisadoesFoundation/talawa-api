@@ -68,19 +68,16 @@ export const COMMENT_NOT_FOUND_ERROR = {
   MESSAGE: "comment.notFound",
   PARAM: "comment",
 };
-export const COMMUNITY_NOT_FOUND_ERROR = {
-  DESC: "Community not found",
-  CODE: "community.notFound",
-  MESSAGE: "community.notFound",
-  PARAM: "community",
-};
+
 export const COMMUNITY_LOGO_NOT_MISSING_IN_ARGS = {
   DESC: "Community logo was not provided",
   CODE: "community.logoMissing",
   MESSAGE: "community.logoMissing",
   PARAM: "community",
 };
+
 export const ERROR_IN_SENDING_MAIL = "Error in sending mail";
+
 export const EVENT_NOT_FOUND_ERROR = {
   DESC: "Event not found",
   CODE: "event.notFound",
@@ -637,6 +634,12 @@ export const CUSTOM_FIELD_TYPE_MISSING = {
   MESSAGE: "The type of the custom field is missing",
   CODE: "customField.isMissing",
   PARAM: "customField.isMissing",
+};
+
+export const PRELOGIN_IMAGERY_FIELD_EMPTY = {
+  MESSAGE: "Website name, website link and the website logo cannot be empty",
+  CODE: "preLoginImagery.empty",
+  PARAM: "preLoginImagery.empty",
 };
 
 export const MAXIMUM_FETCH_LIMIT = 100;
