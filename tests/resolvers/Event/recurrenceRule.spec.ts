@@ -8,12 +8,9 @@ import {
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { InterfaceEvent } from "../../../src/models";
-import {
-  createTestUserAndOrganization} from "../../helpers/userAndOrg";
-import type {
-  TestOrganizationType,
-  type TestUserType,
-} from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import type { TestOrganizationType , TestUserType } from "../../helpers/userAndOrg";
+
 
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
