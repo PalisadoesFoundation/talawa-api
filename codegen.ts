@@ -93,6 +93,8 @@ const config: CodegenConfig = {
 
           Post: "../models/Post#InterfacePost",
 
+          RecurrenceRule: "../models/RecurrenceRule#InterfaceRecurrenceRule",
+
           UserTag: "../models/OrganizationTagUser#InterfaceOrganizationTagUser",
 
           User: "../models/User#InterfaceUser",

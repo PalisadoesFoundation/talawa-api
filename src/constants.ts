@@ -703,6 +703,16 @@ export const RECURRENCE_WEEKDAYS = [
   "SUNDAY",
 ];
 
+export const RECURRENCE_WEEKDAYS_MAPPING = {
+  MONDAY: "MO",
+  TUESDAY: "TU",
+  WEDNESDAY: "WE",
+  THURSDAY: "TH",
+  FRIDAY: "FR",
+  SATURDAY: "SA",
+  SUNDAY: "SU",
+};
+
 export const key = ENV.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");
 

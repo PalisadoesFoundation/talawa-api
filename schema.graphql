@@ -604,6 +604,7 @@ type Event {
   longitude: Longitude
   organization: Organization
   recurrance: Recurrance
+  recurrenceRule: RecurrenceRule
   recurring: Boolean!
   startDate: Date!
   startTime: Time
@@ -1404,9 +1405,19 @@ enum Recurrance {
   YEARLY
 }
 
-input RecurrenceRuleInput {
-  count: Int
+type RecurrenceRule {
+  count: PositiveInt
   frequency: Frequency
+  interval: PositiveInt
+  weekDayOccurenceInMonth: Int
+  weekDays: [WeekDays]
+}
+
+input RecurrenceRuleInput {
+  count: PositiveInt
+  frequency: Frequency
+  interval: PositiveInt
+  weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }
 
@@ -1839,13 +1850,13 @@ input VenueInput {
 }
 
 enum WeekDays {
-  FR
-  MO
-  SA
-  SU
-  TH
-  TU
-  WE
+  FRIDAY
+  MONDAY
+  SATURDAY
+  SUNDAY
+  THURSDAY
+  TUESDAY
+  WEDNESDAY
 }
 
 input createChatInput {

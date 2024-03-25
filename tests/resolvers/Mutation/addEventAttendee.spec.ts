@@ -8,7 +8,6 @@ import {
   USER_ALREADY_REGISTERED_FOR_EVENT,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
-  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
 import { AppUserProfile, EventAttendee, User } from "../../../src/models";
 import type { MutationAddEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -237,51 +236,40 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
       expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
-
-      //   await addEventAttendeeResolver?.({}, args, context);
-      // } catch (error: unknown) {
-      //   if (error instanceof Error) {
-      //     expect(error.message).toEqual(
-      //       `Translated ${USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE}`,
-      //     );
-      //     expect(spy).toHaveBeenLastCalledWith(
-      //       USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE,
-      //     );
-      //   }
     }
-    it(`throws UnauthorizedError if the requestUser is not a member of the organization`, async () => {
-      const { requestContext } = await import("../../../src/libraries");
+  });
 
-      const spy = vi
-        .spyOn(requestContext, "translate")
-        .mockImplementationOnce((message) => `Translated ${message}`);
+  it(`throws UnauthorizedError if the requestUser is not a member of the organization`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
 
-      try {
-        // Create a test user who is not a member of the organization
-        const args: MutationAddEventAttendeeArgs = {
-          data: {
-            userId: randomTestUser!._id,
-            eventId: testEvent!._id,
-          },
-        };
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
 
-        const context = { userId: testUser!._id };
+    try {
+      // Create a test user who is not a member of the organization
+      const args: MutationAddEventAttendeeArgs = {
+        data: {
+          userId: randomTestUser!._id,
+          eventId: testEvent!._id,
+        },
+      };
 
-        const { addEventAttendee: addEventAttendeeResolver } = await import(
-          "../../../src/resolvers/Mutation/addEventAttendee"
+      const context = { userId: testUser!._id };
+
+      const { addEventAttendee: addEventAttendeeResolver } = await import(
+        "../../../src/resolvers/Mutation/addEventAttendee"
+      );
+
+      await addEventAttendeeResolver?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          // `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+          `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
         );
-
-        await addEventAttendeeResolver?.({}, args, context);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          expect(error.message).toEqual(
-            `Translated ${USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE}`,
-          );
-          expect(spy).toHaveBeenLastCalledWith(
-            USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE,
-          );
-        }
+        expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       }
-    });
+    }
   });
 });
