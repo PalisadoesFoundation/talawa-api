@@ -16,6 +16,10 @@ let testPost: TestPostType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testPost = (await createPostwithComment())[2];
+  await Post.findByIdAndUpdate(testPost?._id, {
+    imageUrl: "imagelink",
+    videoUrl: "videolink",
+  });
 });
 
 afterAll(async () => {
@@ -35,7 +39,30 @@ describe("resolvers -> Query -> post", () => {
     }
   });
 
-  it(`returns post object`, async () => {
+  it(`returns post object with non null image and video links`, async () => {
+    const args: QueryPostArgs = {
+      id: testPost?._id.toString() || "",
+    };
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
+    const postPayload = await postResolver?.({}, args, context);
+
+    const post = await Post.findOne({ _id: testPost?._id })
+      .populate("organization")
+      .populate("likedBy")
+      .lean();
+
+    if (post) {
+      post.imageUrl = `${context.apiRootUrl}${post.imageUrl}`;
+      post.videoUrl = `${context.apiRootUrl}${post.videoUrl}`;
+    }
+
+    expect(postPayload).toEqual(post);
+  });
+  it(`returns post object with null image and video links`, async () => {
+    testPost = (await createPostwithComment())[2];
     const args: QueryPostArgs = {
       id: testPost?._id.toString() || "",
     };
@@ -56,11 +83,5 @@ describe("resolvers -> Query -> post", () => {
     }
 
     expect(postPayload).toEqual(post);
-    expect(postPayload?.imageUrl).toEqual(
-      post?.imageUrl ? `${context.apiRootUrl}${post?.imageUrl}` : null,
-    );
-    expect(postPayload?.videoUrl).toEqual(
-      post?.videoUrl ? `${context.apiRootUrl}${post?.videoUrl}` : null,
-    );
   });
 });
