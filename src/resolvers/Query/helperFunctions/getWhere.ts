@@ -3,6 +3,7 @@ import type {
   ActionItemWhereInput,
   DonationWhereInput,
   EventWhereInput,
+  FundWhereInput,
   InputMaybe,
   OrganizationWhereInput,
   PostWhereInput,
@@ -31,7 +32,8 @@ export const getWhere = <T = unknown>(
             PostWhereInput &
             UserWhereInput &
             DonationWhereInput &
-            ActionItemWhereInput
+            ActionItemWhereInput &
+            FundWhereInput
         >
       >
     | undefined,
