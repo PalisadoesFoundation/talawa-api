@@ -85,6 +85,7 @@ export const createFund: MutationResolvers["createFund"] = async (
     taxDeductible: args.data.taxDeductible,
     isDefault: args.data.isDefault,
     isArchived: args.data.isArchived,
+    creatorId: context.userId,
   });
 
   //push the created fund to the organization funds array

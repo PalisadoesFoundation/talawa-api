@@ -604,6 +604,7 @@ type Event {
   longitude: Longitude
   organization: Organization
   recurrance: Recurrance
+  recurrenceRule: RecurrenceRule
   recurring: Boolean!
   startDate: Date!
   startTime: Time
@@ -764,6 +765,7 @@ type Fund {
   _id: ID!
   campaigns: [FundraisingCampaign!]
   createdAt: DateTime!
+  creator: User
   isArchived: Boolean!
   isDefault: Boolean!
   name: String!
@@ -798,6 +800,10 @@ input FundInput {
   organizationId: ID!
   refrenceNumber: String
   taxDeductible: Boolean!
+}
+
+input FundWhereInput {
+  name_contains: String
 }
 
 type FundraisingCampaign {
@@ -1359,6 +1365,7 @@ type Query {
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
+  fundsByOrganization(organizationId: ID!, where: FundWhereInput): [Fund]
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
@@ -1404,9 +1411,19 @@ enum Recurrance {
   YEARLY
 }
 
-input RecurrenceRuleInput {
-  count: Int
+type RecurrenceRule {
+  count: PositiveInt
   frequency: Frequency
+  interval: PositiveInt
+  weekDayOccurenceInMonth: Int
+  weekDays: [WeekDays]
+}
+
+input RecurrenceRuleInput {
+  count: PositiveInt
+  frequency: Frequency
+  interval: PositiveInt
+  weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }
 
@@ -1603,6 +1620,7 @@ input UpdateFundInput {
   isArchived: Boolean
   isDefault: Boolean
   name: String
+  refrenceNumber: String
   taxDeductible: Boolean
 }
 
@@ -1839,13 +1857,13 @@ input VenueInput {
 }
 
 enum WeekDays {
-  FR
-  MO
-  SA
-  SU
-  TH
-  TU
-  WE
+  FRIDAY
+  MONDAY
+  SATURDAY
+  SUNDAY
+  THURSDAY
+  TUESDAY
+  WEDNESDAY
 }
 
 input createChatInput {

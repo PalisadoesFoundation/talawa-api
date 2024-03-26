@@ -225,6 +225,10 @@ export const inputs = gql`
     currency: Currency!
   }
 
+  input FundWhereInput {
+    name_contains: String
+  }
+
   input LanguageInput {
     en_value: String!
     translation_lang_code: String!
@@ -352,7 +356,9 @@ export const inputs = gql`
   input RecurrenceRuleInput {
     frequency: Frequency
     weekDays: [WeekDays]
-    count: Int
+    interval: PositiveInt
+    count: PositiveInt
+    weekDayOccurenceInMonth: Int
   }
 
   input SocialMediaUrlsInput {
@@ -410,6 +416,7 @@ export const inputs = gql`
     taxDeductible: Boolean
     isDefault: Boolean
     isArchived: Boolean
+    refrenceNumber: String
   }
   input UpdateFundCampaignInput {
     name: String
