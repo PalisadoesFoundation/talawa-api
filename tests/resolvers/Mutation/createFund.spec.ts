@@ -140,6 +140,7 @@ describe("resolvers-> Mutation-> createFund", () => {
         taxDeductible: true,
         isDefault: true,
         isArchived: false,
+        creatorId: testUser?._id,
       });
       const args: MutationCreateFundArgs = {
         data: {

@@ -173,6 +173,7 @@ beforeAll(async () => {
     taxDeductible: true,
     isDefault: true,
     isArchived: false,
+    creatorId: testUsers[0]?._id,
     campaigns: [],
   });
   await Organization.updateOne(

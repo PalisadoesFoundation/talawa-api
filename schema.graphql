@@ -765,6 +765,7 @@ type Fund {
   _id: ID!
   campaigns: [FundraisingCampaign!]
   createdAt: DateTime!
+  creator: User
   isArchived: Boolean!
   isDefault: Boolean!
   name: String!
@@ -799,6 +800,10 @@ input FundInput {
   organizationId: ID!
   refrenceNumber: String
   taxDeductible: Boolean!
+}
+
+input FundWhereInput {
+  name_contains: String
 }
 
 type FundraisingCampaign {
@@ -1360,6 +1365,7 @@ type Query {
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
+  fundsByOrganization(organizationId: ID!, where: FundWhereInput): [Fund]
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
@@ -1614,6 +1620,7 @@ input UpdateFundInput {
   isArchived: Boolean
   isDefault: Boolean
   name: String
+  refrenceNumber: String
   taxDeductible: Boolean
 }
 

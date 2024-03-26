@@ -225,6 +225,10 @@ export const inputs = gql`
     currency: Currency!
   }
 
+  input FundWhereInput {
+    name_contains: String
+  }
+
   input LanguageInput {
     en_value: String!
     translation_lang_code: String!
@@ -412,6 +416,7 @@ export const inputs = gql`
     taxDeductible: Boolean
     isDefault: Boolean
     isArchived: Boolean
+    refrenceNumber: String
   }
   input UpdateFundCampaignInput {
     name: String
