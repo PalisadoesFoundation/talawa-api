@@ -10,7 +10,7 @@ import {
   FundraisingCampaign,
   type InterfaceFundraisingCampaign,
 } from "../../../src/models";
-import { removeFundraisingCampaingPledge } from "../../../src/resolvers/Mutation/removeFundraisingCampaingPledge";
+import { removeFundraisingCampaignPledge } from "../../../src/resolvers/Mutation/removeFundraisingCampaingPledge";
 import type { MutationRemoveFundraisingCampaignPledgeArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
   createTestFundraisingCampaignPledge,
@@ -50,7 +50,7 @@ describe("resolvers->Mutation->removeFund", () => {
       const context = {
         userId: new Types.ObjectId().toString(),
       };
-      await removeFundraisingCampaingPledge?.({}, args, context);
+      await removeFundraisingCampaignPledge?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -63,7 +63,7 @@ describe("resolvers->Mutation->removeFund", () => {
       const context = {
         userId: testUser?._id,
       };
-      await removeFundraisingCampaingPledge?.({}, args, context);
+      await removeFundraisingCampaignPledge?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR.MESSAGE,
@@ -79,7 +79,7 @@ describe("resolvers->Mutation->removeFund", () => {
       const context = {
         userId: randomUser?._id.toString() || "",
       };
-      await removeFundraisingCampaingPledge?.({}, args, context);
+      await removeFundraisingCampaignPledge?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         USER_NOT_MADE_PLEDGE_ERROR.MESSAGE,
@@ -93,7 +93,7 @@ describe("resolvers->Mutation->removeFund", () => {
     const context = {
       userId: testUser?._id.toString() || "",
     };
-    const pledge = await removeFundraisingCampaingPledge?.({}, args, context);
+    const pledge = await removeFundraisingCampaignPledge?.({}, args, context);
     expect(pledge?._id.toString()).toEqual(testPledge?._id.toString());
     const campaign = await FundraisingCampaign.findOne({
       _id: testCampaign?._id,
