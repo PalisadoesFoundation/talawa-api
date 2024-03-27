@@ -1,9 +1,17 @@
-import mongoose from "mongoose";
 import path from "path";
-import { Organization, Post, User, Event } from "../models";
+import {
+  Organization,
+  Post,
+  User,
+  Event,
+  AppUserProfile,
+  Community,
+  ActionItemCategory,
+} from "../models";
 import fs from "fs";
 import dotenv from "dotenv";
 import * as yargs from "yargs";
+import { connect, disconnect } from "../db";
 
 interface InterfaceArgs {
   items?: string;
@@ -13,10 +21,13 @@ interface InterfaceArgs {
 
 export async function formatDatabase(): Promise<void> {
   await Promise.all([
+    Community.deleteMany({}),
     User.deleteMany({}),
     Organization.deleteMany({}),
+    ActionItemCategory.deleteMany({}),
     Event.deleteMany({}),
     Post.deleteMany({}),
+    AppUserProfile.deleteMany({}),
   ]);
   console.log("Cleared all collections\n");
 }
@@ -35,13 +46,7 @@ export async function loadDefaultOrganization(
     console.log("Couldn't find mongodb url");
     return;
   }
-  await mongoose.connect(url, {
-    dbName,
-    useCreateIndex: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    useNewUrlParser: true,
-  });
+  await connect(dbName);
 
   const args = yargs
     .options({
@@ -62,7 +67,6 @@ export async function loadDefaultOrganization(
   if (args.format) {
     await formatDatabase();
   }
-  const session = await mongoose.startSession();
   const userData = await fs.readFileSync(
     path.join(__dirname, `../../sample_data/defaultOrganizationAdmin.json`),
     "utf8",
@@ -75,7 +79,15 @@ export async function loadDefaultOrganization(
   );
   const docs = JSON.parse(data) as Record<string, unknown>[];
   await Organization.insertMany(docs);
+  const profileData = await fs.readFileSync(
+    path.join(
+      __dirname,
+      `../../sample_data/defaultOrganizationAdminProfileId.json`,
+    ),
+    "utf8",
+  );
+  const profileDocs = JSON.parse(profileData) as Record<string, unknown>[];
+  await AppUserProfile.insertMany(profileDocs);
   console.log("Default Organization loaded");
-  session?.endSession();
-  await mongoose.connection.close();
+  await disconnect();
 }

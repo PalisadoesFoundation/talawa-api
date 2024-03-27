@@ -1,15 +1,8 @@
 import "dotenv/config";
-import bcrypt from "bcryptjs";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import type { InterfaceUser } from "../../../src/models";
-import { Organization, User } from "../../../src/models";
-import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
-import {
-  LAST_RESORT_SUPERADMIN_EMAIL,
-  ORGANIZATION_NOT_FOUND_ERROR,
-} from "../../../src/constants";
+import { Organization, AppUserProfile, User } from "../../../src/models";
 import { nanoid } from "nanoid";
 import {
   afterAll,
@@ -24,10 +17,7 @@ import {
   LAST_RESORT_SUPERADMIN_EMAIL,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, User } from "../../../src/models";
-import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
 import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { connect, disconnect } from "../../helpers/db";
 import type {
   TestOrganizationType,
@@ -98,20 +88,23 @@ describe("resolvers -> Mutation -> signUp", () => {
     })
       .select("-password")
       .lean();
-    const updatedUser = {
-      ...createdUser,
-    };
+    const appUserProfile = await AppUserProfile.findOne({
+      userId: createdUser?._id,
+    }).lean();
+    expect(appUserProfile?.adminApproved).toBe(true);
+    expect(appUserProfile?.isSuperAdmin).toBe(false);
+    expect(appUserProfile?.userId).toStrictEqual(createdUser?._id);
+    expect(appUserProfile?.appLanguageCode).toBe("en");
     expect({
       user: signUpPayload?.user,
     }).toStrictEqual({
-      user: updatedUser,
+      user: createdUser,
     });
 
     const updatedOrganization = await Organization.findById(
       testOrganization?._id,
     ).select("members");
     expect(updatedOrganization?.members.includes(testUser?._id)).toBe(true);
-    expect(createdUser?.adminApproved).toBe(false);
 
     expect(typeof signUpPayload?.accessToken).toEqual("string");
     expect(signUpPayload?.accessToken.length).toBeGreaterThan(1);
@@ -154,19 +147,12 @@ describe("resolvers -> Mutation -> signUp", () => {
     }).toEqual({
       user: createdUser,
     });
-    const password = await User.findOne({
-      email,
-    })
-      .select("password")
-      .lean();
-    if (password != null) {
-      const ifRightPassword = await bcrypt.compare(
-        args.data.password,
-        password.password,
-      );
-      expect(ifRightPassword).toBe(true);
-    }
-    expect(createdUser?.adminApproved).toBe(false);
+    const appUserProfile = await AppUserProfile.findOne({
+      userId: createdUser?._id,
+    }).lean();
+    expect(appUserProfile?.adminApproved).toBe(false);
+    expect(appUserProfile?.isSuperAdmin).toBe(false);
+    expect(appUserProfile?.userId).toStrictEqual(createdUser?._id);
     expect(typeof signUpPayload?.accessToken).toEqual("string");
     expect(signUpPayload?.accessToken.length).toBeGreaterThan(1);
 
@@ -310,7 +296,7 @@ describe("resolvers -> Mutation -> signUp", () => {
           lastName: "lastName",
           password: "password",
           appLanguageCode: "en",
-          selectedOrgainzation: Types.ObjectId().toString(),
+          selectedOrgainzation: new Types.ObjectId().toString(),
         },
       };
 

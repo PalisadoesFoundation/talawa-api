@@ -46,17 +46,61 @@ export const createTestUser = async (): Promise<TestUserType> => {
 };
 
 export const createAdminApprovedTestUser = async (): Promise<TestUserType> => {
-  const testUser = await User.create({
+  let testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
     password: `pass${nanoid().toLowerCase()}`,
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
     image: null,
     appLanguageCode: "en",
+  });
+  const testUserAppProfile = await AppUserProfile.create({
+    userId: testUser._id,
+    appLanguageCode: "en",
     adminApproved: true,
   });
+  testUser = (await User.findOneAndUpdate(
+    {
+      _id: testUser._id,
+    },
+    {
+      appUserProfileId: testUserAppProfile._id,
+    },
+    {
+      new: true,
+    },
+  )) as InterfaceUser & Document<any, any, InterfaceUser>;
   return testUser;
 };
+
+export const createAdminDisapprovedTestUser =
+  async (): Promise<TestUserType> => {
+    let testUser = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: `pass${nanoid().toLowerCase()}`,
+      firstName: `firstName${nanoid().toLowerCase()}`,
+      lastName: `lastName${nanoid().toLowerCase()}`,
+      image: null,
+      appLanguageCode: "en",
+    });
+    const testUserAppProfile = await AppUserProfile.create({
+      userId: testUser._id,
+      appLanguageCode: "en",
+      adminApproved: false,
+    });
+    testUser = (await User.findOneAndUpdate(
+      {
+        _id: testUser._id,
+      },
+      {
+        appUserProfileId: testUserAppProfile._id,
+      },
+      {
+        new: true,
+      },
+    )) as InterfaceUser & Document<any, any, InterfaceUser>;
+    return testUser;
+  };
 
 export const createTestOrganizationWithAdmin = async (
   userID: string,

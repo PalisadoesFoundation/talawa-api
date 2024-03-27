@@ -5,15 +5,15 @@ import {
   //LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
-import type {
-  InterfaceAppUserProfile,
-  InterfaceOrganization,
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import {
+  AppUserProfile,
+  User,
+  Organization,
+  MembershipRequest,
 } from "../../models";
-import { AppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceUser } from "../../models";
-import { User, Organization, MembershipRequest } from "../../models";
 import {
   copyToClipboard,
   createAccessToken,
@@ -68,8 +68,13 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   if (args.file) {
     uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
-  let createdUser: (InterfaceUser & Document<unknown, unknown, InterfaceUser>) | null;
-  let appUserProfile : (InterfaceAppUserProfile & Document<unknown, unknown, InterfaceAppUserProfile>) | null;
+  let createdUser:
+    | (InterfaceUser & Document<unknown, unknown, InterfaceUser>)
+    | null;
+  let appUserProfile:
+    | (InterfaceAppUserProfile &
+        Document<unknown, unknown, InterfaceAppUserProfile>)
+    | null;
 
   if (organization !== null) {
     await cacheOrganizations([organization]);
@@ -82,7 +87,6 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         image: uploadImageFileName ? uploadImageFileName : null,
         password: hashedPassword,
         userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
-        adminApproved: isLastResortSuperAdmin,
         joinedOrganizations: [args.data.selectedOrgainzation],
       });
 
@@ -91,7 +95,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         appLanguageCode: args.data.appLanguageCode || "en",
         isSuperAdmin: isLastResortSuperAdmin,
         adminApproved: true,
-      })
+      });
       // Update the organization
       await Organization.findOneAndUpdate(
         {
@@ -119,8 +123,8 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         userId: createdUser._id,
         appLanguageCode: args.data.appLanguageCode || "en",
         isSuperAdmin: isLastResortSuperAdmin,
-        adminApproved: isLastResortSuperAdmin?true:false,
-      })
+        adminApproved: isLastResortSuperAdmin ? true : false,
+      });
       // A membership request will be made to the organization
       const createdMembershipRequest = await MembershipRequest.create({
         user: createdUser._id,
@@ -170,6 +174,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   }
   const updatedUser = await User.findOneAndUpdate(
     {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       _id: createdUser!._id,
     },
     {
@@ -177,7 +182,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     },
     {
       new: true,
-      projection: { password: 0 }
+      projection: { password: 0 },
     },
   );
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -190,13 +195,13 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 }`);
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const filteredCreatedUser = updatedUser!.toObject();
-  appUserProfile = (await AppUserProfile.findOne({
+  appUserProfile = await AppUserProfile.findOne({
     userId: updatedUser?._id.toString(),
   })
     .populate("createdOrganizations")
     .populate("createdEvents")
     .populate("eventAdmin")
-    .populate("adminFor"));
+    .populate("adminFor");
 
   return {
     user: filteredCreatedUser,

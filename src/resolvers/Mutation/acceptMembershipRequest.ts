@@ -2,7 +2,12 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import type { Types } from "mongoose";
-import { MembershipRequest, Organization, User } from "../../models";
+import {
+  AppUserProfile,
+  MembershipRequest,
+  Organization,
+  User,
+} from "../../models";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   USER_ALREADY_MEMBER_ERROR,
@@ -116,6 +121,18 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
           },
         },
       );
+      // Check if this request was made during signup
+      const appUserProfile = await AppUserProfile.findOne({
+        userId: user._id,
+      })
+        .select("adminApproved")
+        .lean();
+      // No need to check whether appUserProfile exists or not because if it doessn't exists, adminCheck will throw error.
+      if (appUserProfile?.adminApproved == false) {
+        await AppUserProfile.findByIdAndUpdate(appUserProfile._id, {
+          adminApproved: true,
+        });
+      }
     }
     return membershipRequest;
   };

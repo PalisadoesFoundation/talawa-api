@@ -21,10 +21,7 @@ export async function importDefaultOrganization(): Promise<void> {
     return;
   }
 
-  const client = new mongodb.MongoClient(process.env.MONGO_DB_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  const client = new mongodb.MongoClient(process.env.MONGO_DB_URL);
 
   try {
     await client.connect();
