@@ -195,10 +195,27 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const usersWithPassword = users.map((user) => {
       return {
-        ...user,
-        password: null,
+        _id: user._id,
+        appUserProfileId: user.appUserProfileId,
+        address: user.address,
+        birthDate: user.birthDate,
+        createdAt: user.createdAt,
+        educationGrade: user.educationGrade,
+        email: user.email,
+        employmentStatus: user.employmentStatus,
+        firstName: user.firstName,
+        gender: user.gender,
         image: user.image || null,
-        id: String(user._id),
+        joinedOrganizations: user.joinedOrganizations,
+        lastName: user.lastName,
+        maritalStatus: user.maritalStatus,
+        membershipRequests: user.membershipRequests,
+        organizationsBlockedBy: user.organizationsBlockedBy,
+        password: null,
+        phone: user.phone,
+        registeredEvents: user.registeredEvents,
+        status: user.status,
+        updatedAt: user.updatedAt,
       };
     });
 
@@ -269,10 +286,27 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const usersWithPassword = users.map((user) => {
       return {
-        ...user,
-        password: null,
+        _id: user._id,
+        appUserProfileId: user.appUserProfileId,
+        address: user.address,
+        birthDate: user.birthDate,
+        createdAt: user.createdAt,
+        educationGrade: user.educationGrade,
+        email: user.email,
+        employmentStatus: user.employmentStatus,
+        firstName: user.firstName,
+        gender: user.gender,
         image: user.image || null,
-        id: String(user._id),
+        joinedOrganizations: user.joinedOrganizations,
+        lastName: user.lastName,
+        maritalStatus: user.maritalStatus,
+        membershipRequests: user.membershipRequests,
+        organizationsBlockedBy: user.organizationsBlockedBy,
+        password: null,
+        phone: user.phone,
+        registeredEvents: user.registeredEvents,
+        status: user.status,
+        updatedAt: user.updatedAt,
       };
     });
     // console.log(organizationsMemberConnectionPayload, usersWithPassword);
@@ -342,10 +376,27 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const usersWithPassword = users.map((user) => {
       return {
-        ...user,
-        password: null,
+        _id: user._id,
+        appUserProfileId: user.appUserProfileId,
+        address: user.address,
+        birthDate: user.birthDate,
+        createdAt: user.createdAt,
+        educationGrade: user.educationGrade,
+        email: user.email,
+        employmentStatus: user.employmentStatus,
+        firstName: user.firstName,
+        gender: user.gender,
         image: user.image || null,
-        id: String(user._id),
+        joinedOrganizations: user.joinedOrganizations,
+        lastName: user.lastName,
+        maritalStatus: user.maritalStatus,
+        membershipRequests: user.membershipRequests,
+        organizationsBlockedBy: user.organizationsBlockedBy,
+        password: null,
+        phone: user.phone,
+        registeredEvents: user.registeredEvents,
+        status: user.status,
+        updatedAt: user.updatedAt,
       };
     });
 
@@ -418,10 +469,27 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const usersWithPassword = users.map((user) => {
       return {
-        ...user,
-        password: null,
+        _id: user._id,
+        appUserProfileId: user.appUserProfileId,
+        address: user.address,
+        birthDate: user.birthDate,
+        createdAt: user.createdAt,
+        educationGrade: user.educationGrade,
+        email: user.email,
+        employmentStatus: user.employmentStatus,
+        firstName: user.firstName,
+        gender: user.gender,
         image: user.image || null,
-        id: String(user._id),
+        joinedOrganizations: user.joinedOrganizations,
+        lastName: user.lastName,
+        maritalStatus: user.maritalStatus,
+        membershipRequests: user.membershipRequests,
+        organizationsBlockedBy: user.organizationsBlockedBy,
+        password: null,
+        phone: user.phone,
+        registeredEvents: user.registeredEvents,
+        status: user.status,
+        updatedAt: user.updatedAt,
       };
     });
 
@@ -494,10 +562,27 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const usersWithPassword = users.map((user) => {
       return {
-        ...user,
-        password: null,
+        _id: user._id,
+        appUserProfileId: user.appUserProfileId,
+        address: user.address,
+        birthDate: user.birthDate,
+        createdAt: user.createdAt,
+        educationGrade: user.educationGrade,
+        email: user.email,
+        employmentStatus: user.employmentStatus,
+        firstName: user.firstName,
+        gender: user.gender,
         image: user.image || null,
-        id: String(user._id),
+        joinedOrganizations: user.joinedOrganizations,
+        lastName: user.lastName,
+        maritalStatus: user.maritalStatus,
+        membershipRequests: user.membershipRequests,
+        organizationsBlockedBy: user.organizationsBlockedBy,
+        password: null,
+        phone: user.phone,
+        registeredEvents: user.registeredEvents,
+        status: user.status,
+        updatedAt: user.updatedAt,
       };
     });
 
@@ -558,10 +643,27 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const usersWithPassword = users.map((user) => {
       return {
-        ...user,
-        password: null,
+        _id: user._id,
+        appUserProfileId: user.appUserProfileId,
+        address: user.address,
+        birthDate: user.birthDate,
+        createdAt: user.createdAt,
+        educationGrade: user.educationGrade,
+        email: user.email,
+        employmentStatus: user.employmentStatus,
+        firstName: user.firstName,
+        gender: user.gender,
         image: user.image || null,
-        id: String(user._id),
+        joinedOrganizations: user.joinedOrganizations,
+        lastName: user.lastName,
+        maritalStatus: user.maritalStatus,
+        membershipRequests: user.membershipRequests,
+        organizationsBlockedBy: user.organizationsBlockedBy,
+        password: null,
+        phone: user.phone,
+        registeredEvents: user.registeredEvents,
+        status: user.status,
+        updatedAt: user.updatedAt,
       };
     });
 
@@ -721,10 +823,27 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const usersWithPassword = users.map((user) => {
       return {
-        ...user,
-        password: null,
+        _id: user._id,
+        appUserProfileId: user.appUserProfileId,
+        address: user.address,
+        birthDate: user.birthDate,
+        createdAt: user.createdAt,
+        educationGrade: user.educationGrade,
+        email: user.email,
+        employmentStatus: user.employmentStatus,
+        firstName: user.firstName,
+        gender: user.gender,
         image: user.image || null,
-        id: String(user._id),
+        joinedOrganizations: user.joinedOrganizations,
+        lastName: user.lastName,
+        maritalStatus: user.maritalStatus,
+        membershipRequests: user.membershipRequests,
+        organizationsBlockedBy: user.organizationsBlockedBy,
+        password: null,
+        phone: user.phone,
+        registeredEvents: user.registeredEvents,
+        status: user.status,
+        updatedAt: user.updatedAt,
       };
     });
 
@@ -774,10 +893,27 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const usersWithPassword = users.map((user) => {
       return {
-        ...user,
-        password: null,
+        _id: user._id,
+        appUserProfileId: user.appUserProfileId,
+        address: user.address,
+        birthDate: user.birthDate,
+        createdAt: user.createdAt,
+        educationGrade: user.educationGrade,
+        email: user.email,
+        employmentStatus: user.employmentStatus,
+        firstName: user.firstName,
+        gender: user.gender,
         image: user.image || null,
-        id: String(user._id),
+        joinedOrganizations: user.joinedOrganizations,
+        lastName: user.lastName,
+        maritalStatus: user.maritalStatus,
+        membershipRequests: user.membershipRequests,
+        organizationsBlockedBy: user.organizationsBlockedBy,
+        password: null,
+        phone: user.phone,
+        registeredEvents: user.registeredEvents,
+        status: user.status,
+        updatedAt: user.updatedAt,
       };
     });
 
@@ -857,9 +993,27 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const users = usersTestModel.docs.map((user) => {
       return {
-        ...user,
-        password: null,
+        _id: user._id,
+        appUserProfileId: user.appUserProfileId,
+        address: user.address,
+        birthDate: user.birthDate,
+        createdAt: user.createdAt,
+        educationGrade: user.educationGrade,
+        email: user.email,
+        employmentStatus: user.employmentStatus,
+        firstName: user.firstName,
+        gender: user.gender,
         image: null,
+        joinedOrganizations: user.joinedOrganizations,
+        lastName: user.lastName,
+        maritalStatus: user.maritalStatus,
+        membershipRequests: user.membershipRequests,
+        organizationsBlockedBy: user.organizationsBlockedBy,
+        password: null,
+        phone: user.phone,
+        registeredEvents: user.registeredEvents,
+        status: user.status,
+        updatedAt: user.updatedAt,
       };
     });
 
@@ -919,10 +1073,27 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     const usersWithPassword = users.map((user) => {
       return {
-        ...user,
-        password: null,
+        _id: user._id,
+        appUserProfileId: user.appUserProfileId,
+        address: user.address,
+        birthDate: user.birthDate,
+        createdAt: user.createdAt,
+        educationGrade: user.educationGrade,
+        email: user.email,
+        employmentStatus: user.employmentStatus,
+        firstName: user.firstName,
+        gender: user.gender,
         image: `${BASE_URL}${user.image}`,
-        id: String(user._id),
+        joinedOrganizations: user.joinedOrganizations,
+        lastName: user.lastName,
+        maritalStatus: user.maritalStatus,
+        membershipRequests: user.membershipRequests,
+        organizationsBlockedBy: user.organizationsBlockedBy,
+        password: null,
+        phone: user.phone,
+        registeredEvents: user.registeredEvents,
+        status: user.status,
+        updatedAt: user.updatedAt,
       };
     });
 
