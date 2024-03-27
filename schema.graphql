@@ -1710,7 +1710,7 @@ type UserCustomData {
 }
 
 type UserData {
-  appUserProfile: AppUserProfile!
+  appUserProfile: AppUserProfile
   user: User!
 }
 
