@@ -1,0 +1,25 @@
+# Stage 1: Install Dependencies and Build
+FROM node:lts AS builder
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+RUN npm install -g npm@latest && npm install && rm -rf ./package-lock.json
+
+COPY . .
+
+RUN npm run build
+
+# Stage 2: Final image
+FROM node:alpine
+
+WORKDIR /usr/src/app
+
+COPY --from=builder /usr/src/app/package.json ./
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/build ./build
+
+EXPOSE 4000
+
+CMD ["npm", "start"]

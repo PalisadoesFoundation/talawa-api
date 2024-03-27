@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   mongodb:
     image: mongo:latest
@@ -5,18 +7,23 @@ services:
       - 27017:27017
     volumes:
       - mongodb-data:/data/db
-
+  
   redis-stack-server:
     image: redis/redis-stack-server:latest
     ports:
       - 6379:6379
     volumes:
-      - redis-data:/data/redis
+      - redis-data:/data/redis 
 
-  talawa-api-container:
-    build: .
+  talawa-api-dev-container:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     ports:
       - 4000:4000
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
       - mongodb
       - redis-stack-server
