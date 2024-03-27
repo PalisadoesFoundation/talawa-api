@@ -26,7 +26,7 @@ This is an interface that represents a database(MongoDB) document for Plugin Fie
 
 [src/models/PluginField.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/PluginField.ts#L7)
 
-___
+---
 
 ### createdAt
 
@@ -36,7 +36,7 @@ ___
 
 [src/models/PluginField.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/PluginField.ts#L11)
 
-___
+---
 
 ### key
 
@@ -46,7 +46,7 @@ ___
 
 [src/models/PluginField.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/PluginField.ts#L8)
 
-___
+---
 
 ### status
 
@@ -56,7 +56,7 @@ ___
 
 [src/models/PluginField.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/PluginField.ts#L10)
 
-___
+---
 
 ### value
 

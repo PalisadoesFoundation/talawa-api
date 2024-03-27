@@ -31,6 +31,7 @@ context of entire application
 **`Remarks`**
 
 The following checks are done:
+
 1. If the user exists.
 2. If the event exists.
 3. The the user is an admin of the event.

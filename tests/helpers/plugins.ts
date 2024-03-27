@@ -6,7 +6,7 @@ import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestPluginType =
-  | (InterfacePlugin & Document<any, any, InterfacePlugin>)
+  | (InterfacePlugin & Document<unknown, unknown, InterfacePlugin>)
   | null;
 
 export const createTestPlugin = async (): Promise<

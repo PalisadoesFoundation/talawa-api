@@ -1,6 +1,6 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
-import { Event, EventAttendee, User } from "../../../models";
+import { AppUserProfile, Event, EventAttendee, User } from "../../../models";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import type { InterfaceRecurrenceRule } from "../../../models/RecurrenceRule";
 import { RecurrenceRule } from "../../../models/RecurrenceRule";
@@ -136,12 +136,21 @@ export const updateThisAndFollowingInstances = async (
         },
         {
           $pull: {
-            eventAdmin: { $in: recurringEventInstancesIds },
-            createdEvents: { $in: recurringEventInstancesIds },
             registeredEvents: { $in: recurringEventInstancesIds },
           },
         },
         { session },
+      ),
+      AppUserProfile.updateOne(
+        {
+          userId: event.creatorId,
+        },
+        {
+          $pull: {
+            eventAdmin: { $in: recurringEventInstancesIds },
+            createdEvents: { $in: recurringEventInstancesIds },
+          },
+        },
       ),
     ]);
 
@@ -191,9 +200,9 @@ export const updateThisAndFollowingInstances = async (
       },
     );
 
-    updatedEvent = await Event.findOne({
+    updatedEvent = (await Event.findOne({
       _id: event._id,
-    }).lean();
+    }).lean()) as InterfaceEvent;
   }
 
   // update the baseRecurringEvent if it is the latest recurrence rule that the instances are following

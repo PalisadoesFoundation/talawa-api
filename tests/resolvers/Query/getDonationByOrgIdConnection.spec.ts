@@ -31,7 +31,7 @@ describe("resolvers -> Query -> getDonationByOrgIdConnection", () => {
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
       where: {
-        id: testDonations[2]?._id,
+        id: testDonations[2]?._id as string,
       },
     };
 
@@ -53,7 +53,7 @@ describe("resolvers -> Query -> getDonationByOrgIdConnection", () => {
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
       where: {
-        id_not: testDonations[2]?._id,
+        id_not: testDonations[2]?._id as string,
       },
     };
 
@@ -75,7 +75,7 @@ describe("resolvers -> Query -> getDonationByOrgIdConnection", () => {
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
       where: {
-        id_in: [testDonations[2]?._id],
+        id_in: [testDonations[2]?._id] as string[],
       },
     };
 
@@ -97,7 +97,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
       where: {
-        id_not_in: [testDonations[2]?._id],
+        id_not_in: [testDonations[2]?._id] as string[],
       },
     };
 
@@ -119,7 +119,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
       where: {
-        id_not_in: [testDonations[2]?._id],
+        id_not_in: [testDonations[2]?._id] as string[],
       },
     };
 

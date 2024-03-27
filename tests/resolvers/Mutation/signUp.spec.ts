@@ -12,14 +12,23 @@ import {
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
-  beforeAll,
   afterAll,
+  afterEach,
+  beforeAll,
   describe,
+  expect,
   it,
   vi,
-  expect,
-  afterEach,
 } from "vitest";
+import {
+  LAST_RESORT_SUPERADMIN_EMAIL,
+  ORGANIZATION_NOT_FOUND_ERROR,
+} from "../../../src/constants";
+import { AppUserProfile, User } from "../../../src/models";
+import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
+import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { connect, disconnect } from "../../helpers/db";
 import type {
   TestOrganizationType,
   TestUserType,
@@ -32,6 +41,7 @@ import type { Document } from "mongoose";
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
+
 let testOrganization: TestOrganizationType;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
@@ -50,6 +60,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
+
   testOrganization = temp[1];
 });
 
@@ -89,7 +100,6 @@ describe("resolvers -> Mutation -> signUp", () => {
       .lean();
     const updatedUser = {
       ...createdUser,
-      password: "",
     };
     expect({
       user: signUpPayload?.user,
@@ -189,9 +199,9 @@ describe("resolvers -> Mutation -> signUp", () => {
       .select("-password")
       .lean();
 
-    expect(signedUpUserPayload?.user).toContain({
-      image: testImagePath,
-    });
+    const user = await signedUpUserPayload?.user;
+    const path = user?.image;
+    expect(path).toBe(testImagePath);
   });
 
   it(`Promotes the user to SUPER ADMIN if the email registering with is same that as provided in configuration file`, async () => {
@@ -213,8 +223,11 @@ describe("resolvers -> Mutation -> signUp", () => {
     const createdUser = await User.findOne({
       email,
     });
-    expect(createdUser?.userType).toEqual("SUPERADMIN");
-    expect(createdUser?.adminApproved).toBeTruthy();
+    const createdAppUserProfile = await AppUserProfile.findOne({
+      userId: createdUser?._id,
+    });
+    expect(createdAppUserProfile?.isSuperAdmin).toEqual(true);
+    expect(createdAppUserProfile?.adminApproved).toBeTruthy();
   });
   it(`Check if the User is not being promoted to SUPER ADMIN automatically`, async () => {
     const localTestOrganization = await createTestUserAndOrganization(
@@ -240,8 +253,11 @@ describe("resolvers -> Mutation -> signUp", () => {
     const createdUser = await User.findOne({
       email,
     });
+    const createdAppUserProfile = await AppUserProfile.findOne({
+      userId: createdUser?._id,
+    });
     expect(createdUser?.userType).not.to.toEqual("SUPERADMIN");
-    expect(createdUser?.adminApproved).toBeFalsy();
+    expect(createdAppUserProfile?.adminApproved).toBeFalsy();
   });
 });
 
@@ -274,12 +290,9 @@ describe("resolvers -> Mutation -> signUp", () => {
       );
 
       await signUpResolver?.({}, args, {});
-    } catch (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any
-    ) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(EMAIL_MESSAGE);
-      expect(error.message).toEqual(EMAIL_MESSAGE);
+      expect((error as Error).message).toEqual(EMAIL_MESSAGE);
     }
   });
   it(`throws NotFoundError message if no organization exists with _id === args.data.organizationUserBelongsToId`, async () => {
@@ -306,12 +319,11 @@ describe("resolvers -> Mutation -> signUp", () => {
       );
 
       await signUpResolver?.({}, args, {});
-    } catch (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any
-    ) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 });

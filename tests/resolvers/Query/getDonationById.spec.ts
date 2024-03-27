@@ -23,7 +23,7 @@ afterAll(async () => {
 describe("resolvers -> Mutation -> getDonationById", () => {
   it(`returns the donation with _id === args.id`, async () => {
     const args: QueryGetDonationByIdArgs = {
-      id: testDonation?._id,
+      id: testDonation?._id as string,
     };
 
     const getDonationByIdPayload = await getDonationByIdResolver?.(

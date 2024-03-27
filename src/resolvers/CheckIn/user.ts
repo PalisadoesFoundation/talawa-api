@@ -8,5 +8,5 @@ export const user: CheckInResolvers["user"] = async (parent) => {
     .populate("userId")
     .lean();
 
-  return attendeeObject!.userId;
+  return attendeeObject?.userId;
 };

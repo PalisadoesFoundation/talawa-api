@@ -108,8 +108,6 @@ export const enums = gql`
     lastName_DESC
     email_ASC
     email_DESC
-    appLanguageCode_ASC
-    appLanguageCode_DESC
   }
 
   enum UserType {
@@ -120,13 +118,13 @@ export const enums = gql`
   }
 
   enum WeekDays {
-    MO
-    TU
-    WE
-    TH
-    FR
-    SA
-    SU
+    MONDAY
+    TUESDAY
+    WEDNESDAY
+    THURSDAY
+    FRIDAY
+    SATURDAY
+    SUNDAY
   }
 
   enum EducationGrade {

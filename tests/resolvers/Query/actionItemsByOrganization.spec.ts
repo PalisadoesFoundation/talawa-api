@@ -95,7 +95,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
     const actionItemCategoryId = actionItemCategoriesIds[0];
 
     const where: ActionItemWhereInput = {
-      actionItemCategory_id: actionItemCategoryId,
+      actionItemCategory_id: actionItemCategoryId.toString(),
     };
 
     const args: QueryActionItemsByOrganizationArgs = {
@@ -215,7 +215,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
     const actionItemCategoryId = actionItemCategoriesIds[0];
 
     const where: ActionItemWhereInput = {
-      actionItemCategory_id: actionItemCategoryId,
+      actionItemCategory_id: actionItemCategoryId.toString(),
       event_id: testEvent?._id,
       is_completed: true,
     };

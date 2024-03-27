@@ -76,7 +76,7 @@ jobs:
         run: npm ci
 
       - name: Sleep for 10s
-        uses: juliangruber/sleep-action@v1
+        uses: juliangruber/sleep-action@v2
         with:
           time: 10s
 
@@ -93,10 +93,11 @@ jobs:
           fail_ci_if_error: false
           name: '${{env.CODECOV_UNIQUE_NAME}}'  
             
+            
   Generate-Documentation:
     name: Generate Documentation
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/automated-docs'
+    if: github.ref == 'refs/heads/develop'
     needs: Push-Workflow
     steps:
       - name: Checkout repository
@@ -170,23 +171,23 @@ jobs:
           git commit --allow-empty -m "Trigger Documentation Workflow"
           git push origin develop:automated-docs --force
   
-  Copy-docs-to-talawa-docs:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/automated-docs' && contains(github.event.head_commit.message, 'Trigger Documentation Workflow')
-    needs : Generate-Documentation
-    steps:
-    - uses: actions/checkout@v4
-    - uses: dmnemec/copy_file_to_another_repo_action@main
-      env:
-        API_TOKEN_GITHUB: ${{secrets.TALAWA_DOCS_SYNC}}
-      with:
-        source_file: 'talawa-api-docs/'
-        destination_repo: 'PalisadoesFoundation/talawa-docs'
-        destination_branch: 'develop'
-        destination_folder: 'docs/'
-        user_email: '${{env.email}}'
-        user_name: '${{github.actor}}'
-        commit_message: 'Talawa API docs updated'
+  # Copy-docs-to-talawa-docs:
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/automated-docs'
+  #   # needs: Generate-Documentation
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: dmnemec/copy_file_to_another_repo_action@v1.1.1
+  #     env:
+  #       API_TOKEN_GITHUB: ${{secrets.TALAWA_DOCS_SYNC}}    
+  #     with:
+  #       source_file: 'talawa-api-docs/'
+  #       destination_repo: 'PalisadoesFoundation/talawa-docs'
+  #       destination_branch: 'develop'
+  #       destination_folder: 'docs/'
+  #       user_email: '${{env.email}}'
+  #       user_name: '${{github.actor}}'
+  #       commit_message: 'Talawa API docs updated'
       
 # You can find the deployment instructions in the scripts/cloud-api-demo/README.md file
   Deploy-Workflow:

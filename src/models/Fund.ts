@@ -2,6 +2,7 @@ import type { Model, PopulatedDoc, Types } from "mongoose";
 
 import { Schema, model, models } from "mongoose";
 import type { InterfaceFundraisingCampaign } from "./FundraisingCampaign";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for fund in the database(MongoDB).
  */
@@ -13,6 +14,7 @@ export interface InterfaceFund {
   taxDeductible: boolean;
   isDefault: boolean;
   isArchived: boolean;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   campaigns: PopulatedDoc<InterfaceFundraisingCampaign & Document>[];
   createdAt: Date;
   updatedAt: Date;
@@ -29,6 +31,7 @@ export interface InterfaceFund {
  * @param campaign - Campaigns associated with the fund
  * @param createdAt - Timestamp of creation
  * @param updatedAt - Timestamp of updation
+ * @param creatorId - User who created the fund, refer to `User` model.
  *
  */
 const fundSchema = new Schema(
@@ -55,6 +58,11 @@ const fundSchema = new Schema(
     },
     isArchived: {
       type: Boolean,
+      required: true,
+    },
+    creatorId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     campaigns: [

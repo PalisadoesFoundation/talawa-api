@@ -1,26 +1,26 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  ACTION_ITEM_CATEGORY_ALREADY_EXISTS,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
+import { createActionItemCategory as createActionItemCategoryResolver } from "../../../src/resolvers/Mutation/createActionItemCategory";
 import type { MutationCreateActionItemCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import { createActionItemCategory as createActionItemCategoryResolver } from "../../../src/resolvers/Mutation/createActionItemCategory";
-import {
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ADMIN,
-  ACTION_ITEM_CATEGORY_ALREADY_EXISTS,
-} from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import {
-  createTestUser,
-  createTestUserAndOrganization,
-} from "../../helpers/userAndOrg";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import {
+  createTestUser,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
 
-import { Organization, User } from "../../../src/models";
+import { AppUserProfile } from "../../../src/models";
 
 let randomUser: TestUserType;
 let testUser: TestUserType;
@@ -52,19 +52,19 @@ describe("resolvers -> Mutation -> createCategory", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await createActionItemCategoryResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
     try {
       const args: MutationCreateActionItemCategoryArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
         name: "Default",
       };
 
@@ -73,8 +73,10 @@ describe("resolvers -> Mutation -> createCategory", () => {
       };
 
       await createActionItemCategoryResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -90,8 +92,10 @@ describe("resolvers -> Mutation -> createCategory", () => {
       };
 
       await createActionItemCategoryResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ADMIN.MESSAGE,
+      );
     }
   });
 
@@ -120,12 +124,12 @@ describe("resolvers -> Mutation -> createCategory", () => {
   });
 
   it(`creates the actionItemCategory and returns it as superAdmin`, async () => {
-    const superAdminTestUser = await User.findOneAndUpdate(
+    const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
       {
-        _id: randomUser?._id,
+        userId: randomUser?._id,
       },
       {
-        userType: "SUPERADMIN",
+        isSuperAdmin: true,
       },
       {
         new: true,
@@ -138,7 +142,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
     };
 
     const context = {
-      userId: superAdminTestUser?._id,
+      userId: superAdminTestUser?.userId,
     };
 
     const createCategoryPayload = await createActionItemCategoryResolver?.(
@@ -167,8 +171,8 @@ describe("resolvers -> Mutation -> createCategory", () => {
       };
 
       await createActionItemCategoryResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
         ACTION_ITEM_CATEGORY_ALREADY_EXISTS.MESSAGE,
       );
     }

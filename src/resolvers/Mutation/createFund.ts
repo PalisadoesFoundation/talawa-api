@@ -1,10 +1,11 @@
 import {
   FUND_ALREADY_EXISTS,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { Organization, User } from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
 import { Fund, type InterfaceFund } from "../../models/Fund";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { adminCheck } from "../../utilities";
@@ -37,6 +38,18 @@ export const createFund: MutationResolvers["createFund"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser?._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
+
   const organization = await Organization.findOne({
     _id: args.data.organizationId,
   });
@@ -72,6 +85,7 @@ export const createFund: MutationResolvers["createFund"] = async (
     taxDeductible: args.data.taxDeductible,
     isDefault: args.data.isDefault,
     isArchived: args.data.isArchived,
+    creatorId: context.userId,
   });
 
   //push the created fund to the organization funds array

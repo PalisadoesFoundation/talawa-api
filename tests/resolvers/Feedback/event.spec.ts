@@ -21,10 +21,13 @@ afterAll(async () => {
 
 describe("resolvers -> Feedback -> event", () => {
   it(`returns the correct event object for parent feedback`, async () => {
-    const parent = testFeedback!.toObject();
+    const parent = testFeedback?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
 
     const eventPayload = await eventResolver?.(parent, {}, {});
 
-    expect(eventPayload).toEqual(testEvent!.toObject());
+    expect(eventPayload).toEqual(testEvent?.toObject());
   });
 });

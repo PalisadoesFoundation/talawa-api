@@ -1,9 +1,10 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, AgendaSectionModel } from "../../models";
+import { User, AgendaSectionModel, AppUserProfile } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   AGENDA_SECTION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 
 /**
@@ -31,6 +32,16 @@ export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+    const currentAppUserProfile = await AppUserProfile.findOne({
+      userId: currentUser?._id,
+    }).lean();
+    if (!currentAppUserProfile) {
+      throw new errors.UnauthenticatedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
 
     // Fetch the agenda section to be removed
     const agendaSection = await AgendaSectionModel.findOne({
@@ -49,7 +60,7 @@ export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
     // Check if the current user is the creator of the agenda section or is a superadmin
     if (
       !agendaSection.createdBy.equals(currentUser._id) &&
-      currentUser.userType !== "SUPERADMIN"
+      !currentAppUserProfile.isSuperAdmin
     ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),

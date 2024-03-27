@@ -1,26 +1,28 @@
 import bcrypt from "bcryptjs";
 import {
+  EMAIL_ALREADY_EXISTS_ERROR,
   LAST_RESORT_SUPERADMIN_EMAIL,
   //LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  EMAIL_ALREADY_EXISTS_ERROR,
-  //REGEX_VALIDATION_ERROR,
 } from "../../constants";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceOrganization,
+} from "../../models";
+import { AppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceUser } from "../../models";
 import { User, Organization, MembershipRequest } from "../../models";
 import {
+  copyToClipboard,
   createAccessToken,
   createRefreshToken,
-  copyToClipboard,
 } from "../../utilities";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { Document } from "mongoose";
-//import { isValidString } from "../../libraries/validators/validateString";
-//import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
  * This function enables sign up.
  * @param _parent - parent of current request
@@ -32,7 +34,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     email: args.data.email.toLowerCase(),
   });
 
-  if (userWithEmailExists === true) {
+  if (userWithEmailExists) {
     throw new errors.ConflictError(
       requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
       EMAIL_ALREADY_EXISTS_ERROR.CODE,
@@ -66,8 +68,8 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   if (args.file) {
     uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let createdUser: (InterfaceUser & Document<any, any, InterfaceUser>) | null;
+  let createdUser: (InterfaceUser & Document<unknown, unknown, InterfaceUser>) | null;
+  let appUserProfile : (InterfaceAppUserProfile & Document<unknown, unknown, InterfaceAppUserProfile>) | null;
 
   if (organization !== null) {
     await cacheOrganizations([organization]);
@@ -83,10 +85,13 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         adminApproved: isLastResortSuperAdmin,
         joinedOrganizations: [args.data.selectedOrgainzation],
       });
-      const updatedUser: InterfaceUser = {
-        ...createdUser.toObject(),
-        password: "",
-      };
+
+      appUserProfile = await AppUserProfile.create({
+        userId: createdUser._id,
+        appLanguageCode: args.data.appLanguageCode || "en",
+        isSuperAdmin: isLastResortSuperAdmin,
+        adminApproved: true,
+      })
       // Update the organization
       await Organization.findOneAndUpdate(
         {
@@ -101,18 +106,6 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
           new: true,
         },
       );
-      const accessToken = await createAccessToken(createdUser);
-      const refreshToken = await createRefreshToken(createdUser);
-
-      copyToClipboard(`{
-  "Authorization": "Bearer ${accessToken}"
-  }`);
-      return {
-        user: updatedUser,
-        selectedOrganization: args.data.selectedOrgainzation,
-        accessToken,
-        refreshToken,
-      };
     } else {
       createdUser = await User.create({
         ...args.data,
@@ -120,9 +113,14 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         image: uploadImageFileName ? uploadImageFileName : null,
         password: hashedPassword,
         userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
-        adminApproved: isLastResortSuperAdmin,
       });
 
+      appUserProfile = await AppUserProfile.create({
+        userId: createdUser._id,
+        appLanguageCode: args.data.appLanguageCode || "en",
+        isSuperAdmin: isLastResortSuperAdmin,
+        adminApproved: isLastResortSuperAdmin?true:false,
+      })
       // A membership request will be made to the organization
       const createdMembershipRequest = await MembershipRequest.create({
         user: createdUser._id,
@@ -170,20 +168,40 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
       ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const updatedUser = await User.findOneAndUpdate(
+    {
+      _id: createdUser!._id,
+    },
+    {
+      appUserProfileId: appUserProfile._id,
+    },
+    {
+      new: true,
+      projection: { password: 0 }
+    },
+  );
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const accessToken = await createAccessToken(createdUser!);
+  const accessToken = await createAccessToken(createdUser!, appUserProfile);
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const refreshToken = await createRefreshToken(createdUser!);
+  const refreshToken = await createRefreshToken(createdUser!, appUserProfile);
 
   copyToClipboard(`{
   "Authorization": "Bearer ${accessToken}"
 }`);
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const filteredCreatedUser = createdUser!.toObject();
+  const filteredCreatedUser = updatedUser!.toObject();
+  appUserProfile = (await AppUserProfile.findOne({
+    userId: updatedUser?._id.toString(),
+  })
+    .populate("createdOrganizations")
+    .populate("createdEvents")
+    .populate("eventAdmin")
+    .populate("adminFor"));
 
   return {
     user: filteredCreatedUser,
     selectedOrganization: args.data.selectedOrgainzation,
+    appUserProfile: appUserProfile as InterfaceAppUserProfile,
     accessToken,
     refreshToken,
   };

@@ -15,7 +15,7 @@
 
 Renames and re-exports [helpers/eventInstances/once](helpers_eventInstances_once.md)
 
-___
+---
 
 ### Weekly
 

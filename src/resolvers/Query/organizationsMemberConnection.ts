@@ -1,6 +1,6 @@
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -15,32 +15,38 @@ import { getWhere } from "./helperFunctions/getWhere";
  * @remarks Connection in graphQL means pagination,
  * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
  */
-// @ts-ignore
 export const organizationsMemberConnection: QueryResolvers["organizationsMemberConnection"] =
   async (_parent, args, context) => {
     const where = getWhere<InterfaceUser>(args.where);
     const sort = getSort(args.orderBy);
 
     // Pagination based Options
-    let paginateOptions;
+    interface InterfacePaginateOptions {
+      lean?: boolean | undefined;
+      sort?: object | string | undefined;
+      pagination?: boolean | undefined;
+      page?: number | undefined;
+      limit?: number | undefined;
+    }
+    let paginateOptions: InterfacePaginateOptions =
+      {} as InterfacePaginateOptions;
 
     if (args.first) {
       if (args.skip === null) {
         throw "Missing Skip parameter. Set it to either 0 or some other value";
       }
-
       paginateOptions = {
         lean: true,
         sort: sort,
         pagination: true,
         page: args.skip,
         limit: args.first,
-      };
+      } as InterfacePaginateOptions;
     } else {
       paginateOptions = {
         sort: sort,
         pagination: false,
-      };
+      } as InterfacePaginateOptions;
     }
 
     const usersModel = await User.paginate(
@@ -57,13 +63,10 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       },
     );
 
-    let users = {};
+    let users: InterfaceUser[] = []; // Change the type of users
 
     if (paginateOptions.pagination) {
-      if (args.skip === undefined) {
-        throw new Error("Skip parameter is missing");
-      }
-
+      //@ts-expect-error - type error
       users = usersModel.docs.map((user) => {
         return {
           ...user,
@@ -72,9 +75,10 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         };
       });
     } else {
+      //@ts-expect-error - type error
       users = usersModel.docs.map((user) => {
         return {
-          ...user._doc,
+          ...user,
           image: user.image ? `${context.apiRootUrl}${user.image}` : null,
           password: null,
         };

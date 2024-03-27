@@ -48,7 +48,7 @@ describe("resolvers->Mutation->removeFund", () => {
         id: testPledge?._id.toString() || "",
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await removeFundraisingCampaingPledge?.({}, args, context);
     } catch (error: unknown) {
@@ -58,7 +58,7 @@ describe("resolvers->Mutation->removeFund", () => {
   it("throw error if no fund campaign pledge exists with _id===args.id", async () => {
     try {
       const args: MutationRemoveFundraisingCampaignPledgeArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
       const context = {
         userId: testUser?._id,

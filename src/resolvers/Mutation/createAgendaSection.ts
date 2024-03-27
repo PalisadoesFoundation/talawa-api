@@ -1,11 +1,12 @@
-import { AgendaSectionModel, User, Event } from "../../models";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors } from "../../libraries";
+import { Types } from "mongoose";
 import {
+  EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
-  EVENT_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import { AgendaSectionModel, AppUserProfile, Event, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * Resolver function for the GraphQL mutation 'createAgendaSection'.
@@ -33,6 +34,16 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+    const currentAppUserProfile = await AppUserProfile.findOne({
+      userId: currentUser?._id,
+    }).lean();
+    if (!currentAppUserProfile) {
+      throw new errors.UnauthenticatedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
     const event = await Event.findOne({
       _id: args.input.relatedEvent?.toString(),
     });
@@ -45,10 +56,14 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
     }
 
     if (event) {
-      const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-        (organization) => organization.equals(event?.organization),
-      );
-
+      const currentUserIsOrganizationAdmin =
+        currentAppUserProfile.adminFor.some(
+          (organizationId) =>
+            (organizationId && organizationId === event?.organization) ||
+            new Types.ObjectId(organizationId?.toString()).equals(
+              event?.organization,
+            ),
+        );
       const currentUserIsEventAdmin = event.admins.some((admin) =>
         admin.equals(currentUser._id),
       );
@@ -56,7 +71,7 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
         !(
           currentUserIsOrganizationAdmin ||
           currentUserIsEventAdmin ||
-          currentUser.userType === "SUPERADMIN"
+          !currentAppUserProfile.isSuperAdmin
         )
       ) {
         throw new errors.UnauthorizedError(

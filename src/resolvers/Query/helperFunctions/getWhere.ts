@@ -3,6 +3,7 @@ import type {
   ActionItemWhereInput,
   DonationWhereInput,
   EventWhereInput,
+  FundWhereInput,
   InputMaybe,
   OrganizationWhereInput,
   PostWhereInput,
@@ -31,7 +32,8 @@ export const getWhere = <T = unknown>(
             PostWhereInput &
             UserWhereInput &
             DonationWhereInput &
-            ActionItemWhereInput
+            ActionItemWhereInput &
+            FundWhereInput
         >
       >
     | undefined,
@@ -601,72 +603,72 @@ export const getWhere = <T = unknown>(
   }
 
   //Returns provided appLanguageCode user
-  if (where.appLanguageCode) {
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: where.appLanguageCode,
-    };
-  }
+  // if (where.appLanguageCode) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: where.appLanguageCode,
+  //   };
+  // }
 
-  //Returns user with not that provided appLanguageCode
-  if (where.appLanguageCode_not) {
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: {
-        $ne: where.appLanguageCode_not,
-      },
-    };
-  }
+  // //Returns user with not that provided appLanguageCode
+  // if (where.appLanguageCode_not) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: {
+  //       $ne: where.appLanguageCode_not,
+  //     },
+  //   };
+  // }
 
   // Objects appLanguageCode falls in provided list
-  if (where.appLanguageCode_in) {
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: {
-        $in: where.appLanguageCode_in,
-      },
-    };
-  }
+  // if (where.appLanguageCode_in) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: {
+  //       $in: where.appLanguageCode_in,
+  //     },
+  //   };
+  // }
 
-  // Return objects appLanguageCode not falls in the list
-  if (where.appLanguageCode_not_in) {
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: {
-        $nin: where.appLanguageCode_not_in,
-      },
-    };
-  }
+  // // Return objects appLanguageCode not falls in the list
+  // if (where.appLanguageCode_not_in) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: {
+  //       $nin: where.appLanguageCode_not_in,
+  //     },
+  //   };
+  // }
 
-  // Return objects with appLanguageCode containing provided string
-  if (where.appLanguageCode_contains) {
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: {
-        $regex: where.appLanguageCode_contains,
-        $options: "i",
-      },
-    };
-  }
+  // // Return objects with appLanguageCode containing provided string
+  // if (where.appLanguageCode_contains) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: {
+  //       $regex: where.appLanguageCode_contains,
+  //       $options: "i",
+  //     },
+  //   };
+  // }
 
-  // Returns objects with appLanguageCode starts with provided string
-  if (where.appLanguageCode_starts_with) {
-    const regexp = new RegExp("^" + where.appLanguageCode_starts_with);
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: regexp,
-    };
-  }
+  // // Returns objects with appLanguageCode starts with provided string
+  // if (where.appLanguageCode_starts_with) {
+  //   const regexp = new RegExp("^" + where.appLanguageCode_starts_with);
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: regexp,
+  //   };
+  // }
 
-  // Return users with admin for provided organizationId
-  if (where.admin_for) {
-    wherePayload = {
-      ...wherePayload,
-      adminFor: {
-        _id: where.admin_for,
-      },
-    };
-  }
+  // // Return users with admin for provided organizationId
+  // if (where.admin_for) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     adminFor: {
+  //       _id: where.admin_for,
+  //     },
+  //   };
+  // }
 
   if (where.event_title_contains) {
     wherePayload = {

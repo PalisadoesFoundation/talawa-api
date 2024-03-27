@@ -3,21 +3,21 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 
-import type { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
   vi,
 } from "vitest";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import { addUserImage as addUserImageResolverUserImage } from "../../../src/resolvers/Mutation/addUserImage";
+import type { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { addUserImage as addUserImageResolverUserImage } from "../../../src/resolvers/Mutation/addUserImage";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -54,7 +54,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { addUserImage: addUserImageResolverUserError } = await import(
@@ -62,9 +62,9 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       );
 
       await addUserImageResolverUserError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -86,7 +86,9 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       args,
       context,
     );
-
+    // const testApp = await AppUserProfile.findOne({ userId: testUser?._id });
+    // console.log(testApp);
+    // console.log(addUserImagePayload, testUser?.appUserProfileId);
     expect(addUserImagePayload).toEqual({
       ...testUser?.toObject(),
       createdAt: addUserImagePayload?.createdAt,

@@ -59,7 +59,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationAcceptMembershipRequestArgs = {
-        membershipRequestId: Types.ObjectId().toString(),
+        membershipRequestId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -70,14 +70,11 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
 
       await acceptMembershipRequestResolver?.({}, args, context);
-    } catch (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any
-    ) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE,
       );
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -96,7 +93,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
         },
       );
@@ -113,12 +110,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
 
       await acceptMembershipRequestResolver?.({}, args, context);
-    } catch (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any
-    ) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -138,7 +132,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         {
           $set: {
             organization: testOrganization?._id,
-            user: Types.ObjectId().toString(),
+            user: new Types.ObjectId().toString(),
           },
         },
       );
@@ -155,12 +149,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
 
       await acceptMembershipRequestResolver?.({}, args, context);
-    } catch (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any
-    ) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -210,12 +201,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
 
       await acceptMembershipRequestResolver?.({}, args, context);
-    } catch (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any
-    ) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
     }
@@ -253,12 +241,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
 
       await acceptMembershipRequestResolver?.({}, args, context);
-    } catch (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any
-    ) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_ALREADY_MEMBER_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_ALREADY_MEMBER_ERROR.MESSAGE}`,
       );
     }

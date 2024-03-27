@@ -16,10 +16,10 @@
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `encodedImageURL` | `string` |
-| `previousImagePath?` | ``null`` \| `string` |
+| Name                 | Type               |
+| :------------------- | :----------------- |
+| `encodedImageURL`    | `string`           |
+| `previousImagePath?` | `null` \| `string` |
 
 #### Returns
 
