@@ -40,7 +40,7 @@ export interface InterfaceUser {
   maritalStatus: string;
   membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
   organizationsBlockedBy: PopulatedDoc<InterfaceOrganization & Document>[];
-  password?: string;
+  password?: string | null;
   phone: {
     home: string;
     mobile: string;
@@ -51,7 +51,6 @@ export interface InterfaceUser {
   status: string;
 
   updatedAt: Date;
-  userType: string;
 }
 /**
  * This describes the schema for a `User` that corresponds to `InterfaceUser` document.

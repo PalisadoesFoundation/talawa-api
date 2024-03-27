@@ -242,7 +242,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     const createdAppUserProfile = await AppUserProfile.findOne({
       userId: createdUser?._id,
     });
-    expect(createdUser?.userType).not.to.toEqual("SUPERADMIN");
+    expect(createdAppUserProfile?.isSuperAdmin).toBeFalsy();
     expect(createdAppUserProfile?.adminApproved).toBeFalsy();
   });
 });
