@@ -294,6 +294,7 @@ export const types = gql`
     taxDeductible: Boolean!
     isDefault: Boolean!
     isArchived: Boolean!
+    creator: User
     campaigns: [FundraisingCampaign!]
     createdAt: DateTime!
     updatedAt: DateTime!
