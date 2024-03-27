@@ -631,7 +631,7 @@ export const types = gql`
   }
   type UserData {
     user: User!
-    appUserProfile: AppUserProfile!
+    appUserProfile: AppUserProfile
   }
   type UserConnection {
     pageInfo: PageInfo!
