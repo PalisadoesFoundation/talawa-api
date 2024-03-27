@@ -17,10 +17,12 @@ import {
   BASE_URL,
   LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
   USER_NOT_FOUND_ERROR,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
-import { Organization, Post } from "../../../src/models";
+import { AppUserProfile, Organization, Post } from "../../../src/models";
 import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import * as uploadEncodedVideo from "../../../src/utilities/encodedVideoStorage/uploadEncodedVideo";
@@ -34,7 +36,6 @@ import {
 } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
-let randomUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -47,7 +48,6 @@ beforeAll(async () => {
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   testOrganization = temp[1];
-  randomUser = await createTestUser();
 });
 
 afterAll(async () => {
@@ -85,6 +85,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
 
       await createPostResolver?.({}, args, context);
+      expect.fail();
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
@@ -118,6 +119,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
 
       await createPostResolver?.({}, args, context);
+      expect.fail();
     } catch (error) {
       if (error instanceof Error) {
         expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
@@ -128,7 +130,11 @@ describe("resolvers -> Mutation -> createPost", () => {
     }
   });
 
-  it(`throws USER_NOT_AUTHORIZED_TO_PIN ERROR if the user is not authorized to pin the post`, async () => {
+  it("throws error if AppUserProfile is not found", async () => {
+    const userWithoutProfileId = await createTestUser();
+    await AppUserProfile.findByIdAndDelete(
+      userWithoutProfileId?.appUserProfileId,
+    );
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -136,7 +142,44 @@ describe("resolvers -> Mutation -> createPost", () => {
     try {
       const args: MutationCreatePostArgs = {
         data: {
-          organizationId: testOrganization?._id,
+          organizationId: "",
+          text: "",
+          videoUrl: "",
+          title: "",
+        },
+      };
+
+      const context = {
+        userId: userWithoutProfileId?.id,
+      };
+
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
+      );
+
+      await createPostResolver?.({}, args, context);
+      expect.fail();
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+      );
+    }
+  });
+
+  it(`throws USER_NOT_AUTHORIZED_TO_PIN ERROR if the user is not authorized to pin the post`, async () => {
+    const organizationWithNoAdmin = await createTestUserAndOrganization(
+      true,
+      false,
+    );
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: organizationWithNoAdmin[1]?._id,
           text: "New Post Text",
           videoUrl: "http://dummyURL.com/",
           title: "New Post Title",
@@ -146,7 +189,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       };
 
       const context = {
-        userId: randomUser?.id,
+        userId: organizationWithNoAdmin[0]?.id,
       };
 
       expect(args.data.pinned).toBe(true);
@@ -154,13 +197,52 @@ describe("resolvers -> Mutation -> createPost", () => {
         "../../../src/resolvers/Mutation/createPost"
       );
 
-      const createPost = await createPostResolver?.({}, args, context);
-      expect(createPost?.pinned).toBe(true);
+      await createPostResolver?.({}, args, context);
+      expect.fail();
     } catch (error) {
       if (error instanceof Error) {
         expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
         expect(error.message).toEqual(
           `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`,
+        );
+      }
+    }
+  });
+
+  it("throws error if user is not member of the organization", async () => {
+    const organizationWithNoMember = await createTestUserAndOrganization(false);
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: organizationWithNoMember[1]?._id,
+          text: "New Post Text",
+          videoUrl: "http://dummyURL.com/",
+          title: "New Post Title",
+          imageUrl: "http://dummyURL.com/image/",
+          pinned: true,
+        },
+      };
+
+      const context = {
+        userId: organizationWithNoMember[0]?.id,
+      };
+
+      expect(args.data.pinned).toBe(true);
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
+      );
+
+      await createPostResolver?.({}, args, context);
+      expect.fail();
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE}`,
         );
       }
     }
