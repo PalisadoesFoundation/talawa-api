@@ -1,1 +1,10 @@
-npm test
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# npm run format:fix
+# npm run lint:fix
+npm run lint-staged
+npm run typecheck
+npm run update:toc
+
+git add .
