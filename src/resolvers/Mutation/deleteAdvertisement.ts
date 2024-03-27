@@ -48,8 +48,8 @@ export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
     if (!(currentAppUserProfile.isSuperAdmin || userIsOrgAdmin)) {
       throw new errors.UnauthenticatedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
