@@ -27,6 +27,12 @@ export const ACTION_ITEM_CATEGORY_ALREADY_EXISTS = {
   MESSAGE: "actionItemCategory.alreadyExists",
   PARAM: "actionItemCategory",
 };
+export const ACTION_ITEM_CATEGORY_IS_DISABLED = {
+  DESC: "Action Item Category is disabled",
+  CODE: "actionItemCategory.isDisabled",
+  MESSAGE: "actionItemCategory.isDisabled",
+  PARAM: "actionItemCategory",
+};
 
 export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
   DESC: "Agenda category not found",
@@ -62,7 +68,16 @@ export const COMMENT_NOT_FOUND_ERROR = {
   MESSAGE: "comment.notFound",
   PARAM: "comment",
 };
+
+export const COMMUNITY_LOGO_NOT_MISSING_IN_ARGS = {
+  DESC: "Community logo was not provided",
+  CODE: "community.logoMissing",
+  MESSAGE: "community.logoMissing",
+  PARAM: "community",
+};
+
 export const ERROR_IN_SENDING_MAIL = "Error in sending mail";
+
 export const EVENT_NOT_FOUND_ERROR = {
   DESC: "Event not found",
   CODE: "event.notFound",
@@ -628,6 +643,12 @@ export const CUSTOM_FIELD_TYPE_MISSING = {
   PARAM: "customField.isMissing",
 };
 
+export const PRELOGIN_IMAGERY_FIELD_EMPTY = {
+  MESSAGE: "Website name, website link and the website logo cannot be empty",
+  CODE: "preLoginImagery.empty",
+  PARAM: "preLoginImagery.empty",
+};
+
 export const MAXIMUM_FETCH_LIMIT = 100;
 
 export const MAXIMUM_IMAGE_SIZE_LIMIT_KB = 20000;
@@ -689,6 +710,16 @@ export const RECURRENCE_WEEKDAYS = [
   "SUNDAY",
 ];
 
+export const RECURRENCE_WEEKDAYS_MAPPING = {
+  MONDAY: "MO",
+  TUESDAY: "TU",
+  WEDNESDAY: "WE",
+  THURSDAY: "TH",
+  FRIDAY: "FR",
+  SATURDAY: "SA",
+  SUNDAY: "SU",
+};
+
 export const key = ENV.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");
 
@@ -706,3 +737,8 @@ export enum EventVolunteerResponse {
   YES = "YES",
   NO = "NO",
 }
+
+export const DEFAULT_COMMUNITY = {
+  name: "Palisadoes Foundation",
+  description: "An open source application by Palisadoes Foundation volunteers",
+};

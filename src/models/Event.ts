@@ -157,14 +157,6 @@ const eventSchema = new Schema(
         return !this.allDay;
       },
     },
-    recurrance: {
-      type: String,
-      required: function (this: InterfaceEvent): boolean {
-        return this.recurring;
-      },
-      enum: ["ONCE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
-      default: "ONCE",
-    },
     isPublic: {
       type: Boolean,
       required: true,

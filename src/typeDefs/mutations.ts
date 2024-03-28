@@ -55,9 +55,10 @@ export const mutations = gql`
 
     assignUserTag(input: ToggleUserTagAssignInput!): User @auth
 
-    blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User!
-      @auth
-      @role(requires: SUPERADMIN)
+    blockPluginCreationBySuperadmin(
+      userId: ID!
+      blockUser: Boolean!
+    ): AppUserProfile! @auth @role(requires: SUPERADMIN)
 
     blockUser(organizationId: ID!, userId: ID!): User! @auth
 
@@ -67,7 +68,7 @@ export const mutations = gql`
 
     createMember(input: UserAndOrganizationInput!): Organization! @auth
 
-    createAdmin(data: UserAndOrganizationInput!): User!
+    createAdmin(data: UserAndOrganizationInput!): AppUserProfile!
       @auth
       @role(requires: SUPERADMIN)
 
@@ -184,7 +185,7 @@ export const mutations = gql`
 
     rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    removeAdmin(data: UserAndOrganizationInput!): User!
+    removeAdmin(data: UserAndOrganizationInput!): AppUserProfile!
       @auth
       @role(requires: SUPERADMIN)
 
@@ -219,7 +220,7 @@ export const mutations = gql`
 
     removeMember(data: UserAndOrganizationInput!): Organization! @auth
 
-    removeOrganization(id: ID!): User! @auth @role(requires: SUPERADMIN)
+    removeOrganization(id: ID!): UserData! @auth @role(requires: SUPERADMIN)
 
     removeOrganizationImage(organizationId: String!): Organization! @auth
 
@@ -238,6 +239,8 @@ export const mutations = gql`
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
 
     removeUserImage: User! @auth
+
+    resetCommunity: Boolean! @auth @role(requires: SUPERADMIN)
 
     revokeRefreshTokenForUser: Boolean! @auth
 
@@ -292,6 +295,10 @@ export const mutations = gql`
       input: UpdateAdvertisementInput!
     ): UpdateAdvertisementPayload @auth
 
+    updateCommunity(data: UpdateCommunityInput!): Boolean!
+      @auth
+      @role(requires: SUPERADMIN)
+
     updateEvent(
       id: ID!
       data: UpdateEventInput
@@ -334,7 +341,7 @@ export const mutations = gql`
 
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 
-    updateUserPassword(data: UpdateUserPasswordInput!): User! @auth
+    updateUserPassword(data: UpdateUserPasswordInput!): UserData! @auth
 
     updateUserRoleInOrganization(
       organizationId: ID!

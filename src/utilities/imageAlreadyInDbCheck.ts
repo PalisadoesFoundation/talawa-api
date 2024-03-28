@@ -22,6 +22,7 @@ export const imageAlreadyInDbCheck = async (
 
     const getImageHash = (): Promise<string> =>
       new Promise((resolve, reject) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         imageHash(`./${newImagePath}`, 16, true, (error: any, data: any) => {
           if (error) {
             reject(error);

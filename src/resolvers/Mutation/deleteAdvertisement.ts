@@ -1,11 +1,11 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { Advertisement, User, Organization } from "../../models";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import { Advertisement, AppUserProfile, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
   async (_parent, args, context) => {
@@ -20,17 +20,14 @@ export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
-
-    if (
-      !(
-        currentUser?.userType === "ADMIN" ||
-        currentUser?.userType === "SUPERADMIN"
-      )
-    ) {
-      throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-        USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
+    const currentAppUserProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    });
+    if (!currentAppUserProfile) {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -45,18 +42,11 @@ export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
         ADVERTISEMENT_NOT_FOUND_ERROR.PARAM,
       );
     }
-
-    const organization = await Organization.findOne({
-      _id: existingAdvertisement.organizationId,
-    }).lean();
-
-    if (
-      currentUser?.userType !== "SUPERADMIN" &&
-      !organization?.admins.find((admin: { _id: string }) => {
-        admin._id === context.userId;
-      })
-    ) {
-      throw new errors.UnauthorizedError(
+    const userIsOrgAdmin = currentAppUserProfile.adminFor.some(
+      (organization) => organization === existingAdvertisement?.organizationId,
+    );
+    if (!(currentAppUserProfile.isSuperAdmin || userIsOrgAdmin)) {
+      throw new errors.UnauthenticatedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
         USER_NOT_AUTHORIZED_ERROR.PARAM,
@@ -68,6 +58,7 @@ export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
       mediaUrl: `${context.apiRootUrl}${existingAdvertisement.mediaUrl}`,
       _id: existingAdvertisement._id.toString(),
     };
+    console.log(advertisement);
     // Deletes the ad.
     await Advertisement.deleteOne({
       _id: args.id,

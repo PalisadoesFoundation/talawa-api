@@ -7,8 +7,6 @@ export const queries = gql`
   type Query {
     adminPlugin(orgId: ID!): [Plugin]
 
-    actionItem(id: ID!): ActionItem
-
     actionItemsByEvent(eventId: ID!): [ActionItem]
 
     actionItemsByOrganization(
@@ -16,8 +14,6 @@ export const queries = gql`
       where: ActionItemWhereInput
       orderBy: ActionItemsOrderByInput
     ): [ActionItem]
-
-    actionItemCategory(id: ID!): ActionItemCategory
 
     actionItemCategoriesByOrganization(
       organizationId: ID!
@@ -31,6 +27,8 @@ export const queries = gql`
     getAgendaSection(id: ID!): AgendaSection
 
     checkAuth: User! @auth
+
+    getCommunityData: Community
 
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]
 
@@ -52,6 +50,8 @@ export const queries = gql`
     ): [Event!]!
 
     eventVolunteersByEvent(id: ID!): [EventVolunteer]
+
+    fundsByOrganization(organizationId: ID!, where: FundWhereInput): [Fund]
 
     getDonationById(id: ID!): Donation!
 
@@ -86,11 +86,17 @@ export const queries = gql`
 
     joinedOrganizations(id: ID): [Organization]
 
-    me: User! @auth
+    me: UserData! @auth
 
     myLanguage: String @auth
 
-    organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
+    organizations(
+      id: ID
+      orderBy: OrganizationOrderByInput
+      first: Int
+      skip: Int
+      where: MembershipRequestsWhereInput
+    ): [Organization]
 
     organizationsConnection(
       where: OrganizationWhereInput
@@ -115,7 +121,7 @@ export const queries = gql`
 
     registrantsByEvent(id: ID!): [User]
 
-    user(id: ID!): User! @auth
+    user(id: ID!): UserData! @auth
 
     userLanguage(userId: ID!): String @auth
 
@@ -124,16 +130,16 @@ export const queries = gql`
       orderBy: UserOrderByInput
       first: Int
       skip: Int
-      userType: String
+
       adminApproved: Boolean
-    ): [User] @auth
+    ): [UserData] @auth
 
     usersConnection(
       where: UserWhereInput
       first: Int
       skip: Int
       orderBy: UserOrderByInput
-    ): [User]! @auth
+    ): [UserData]! @auth
 
     venue(id: ID!): Venue
   }

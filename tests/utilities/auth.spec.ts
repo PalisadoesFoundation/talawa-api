@@ -1,18 +1,20 @@
-import { expect, describe, it, beforeAll, afterAll } from "vitest";
+import jwt from "jsonwebtoken";
 import type mongoose from "mongoose";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../src/models";
+import { AppUserProfile } from "../../src/models";
 import {
   createAccessToken,
   createRefreshToken,
   revokeRefreshToken,
 } from "../../src/utilities";
-import type { InterfaceUser } from "../../src/models";
-import { User } from "../../src/models";
-import jwt from "jsonwebtoken";
+import { connect, disconnect } from "../helpers/db";
 import type { TestUserType } from "../helpers/user";
 import { createTestUserFunc } from "../helpers/user";
-import { connect, disconnect } from "../helpers/db";
+import type { TestAppUserProfileType } from "../helpers/userAndOrg";
 
 let user: TestUserType;
+let appUserProfile: TestAppUserProfileType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 export interface InterfaceJwtTokenPayload {
   tokenVersion: number;
@@ -25,6 +27,9 @@ export interface InterfaceJwtTokenPayload {
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   user = await createTestUserFunc();
+  appUserProfile = await AppUserProfile.findOne({
+    userId: user?._id,
+  });
 });
 
 afterAll(async () => {
@@ -35,6 +40,9 @@ describe("createAccessToken", () => {
   it("should create a JWT token with the correct payload", async () => {
     const token = createAccessToken(
       user ? user.toObject() : ({} as InterfaceUser),
+      appUserProfile
+        ? appUserProfile.toObject()
+        : ({} as InterfaceAppUserProfile),
     );
 
     expect(token).toBeDefined();
@@ -43,7 +51,7 @@ describe("createAccessToken", () => {
 
     expect(decodedToken).not.toBeNull();
     expect((decodedToken as InterfaceJwtTokenPayload).tokenVersion).toBe(
-      user?.tokenVersion,
+      appUserProfile?.tokenVersion,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).userId).toBe(
       user && user._id ? user._id.toString() : undefined,
@@ -62,6 +70,9 @@ describe("createRefreshToken", () => {
   it("should create a JWT token with the correct payload", () => {
     const token = createRefreshToken(
       user ? user.toObject() : ({} as InterfaceUser),
+      appUserProfile
+        ? appUserProfile.toObject()
+        : ({} as InterfaceAppUserProfile),
     );
 
     expect(token).toBeDefined();
@@ -69,7 +80,7 @@ describe("createRefreshToken", () => {
     const decodedToken = jwt.decode(token);
 
     expect((decodedToken as InterfaceJwtTokenPayload).tokenVersion).toBe(
-      user?.tokenVersion,
+      appUserProfile?.tokenVersion,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).userId).toBe(
       user && user._id ? user._id.toString() : undefined,
@@ -86,10 +97,13 @@ describe("createRefreshToken", () => {
 
 describe("revokeRefreshToken", () => {
   it("should unset the token field in the user document", async () => {
-    await revokeRefreshToken(user?._id);
+    await revokeRefreshToken(user?._id.toString() ?? "");
 
-    const updatedUser = await User.findOne({ _id: user?._id });
+    // const updatedUser = await User.findOne({ _id: user?._id });
+    const updateAppUserProfile = await AppUserProfile.findOne({
+      userId: user?._id,
+    });
 
-    expect(updatedUser?.token).toBeUndefined();
+    expect(updateAppUserProfile?.token).toBeUndefined();
   });
 });

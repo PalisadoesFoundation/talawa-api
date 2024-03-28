@@ -15,5 +15,6 @@ export const createTestVenue = async (
     organization: organizationId,
     imageUrl: null,
   });
-  return testVenue;
+
+  return testVenue as TestVenueType;
 };

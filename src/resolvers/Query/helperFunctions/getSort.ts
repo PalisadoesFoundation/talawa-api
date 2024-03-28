@@ -1,3 +1,4 @@
+import type { SortOrder } from "mongoose";
 import type {
   EventOrderByInput,
   InputMaybe,
@@ -15,7 +16,12 @@ export const getSort = (
         | UserOrderByInput
       >
     | undefined,
-): any => {
+):
+  | string
+  | { [key: string]: SortOrder | { $meta: unknown } }
+  | [string, SortOrder][]
+  | null
+  | undefined => {
   let sortPayload = {};
 
   switch (orderBy) {
@@ -115,18 +121,6 @@ export const getSort = (
       };
       break;
 
-    case "recurrance_ASC":
-      sortPayload = {
-        recurrance: 1,
-      };
-      break;
-
-    case "recurrance_DESC":
-      sortPayload = {
-        recurrance: -1,
-      };
-      break;
-
     case "location_ASC":
       sortPayload = {
         location: 1,
@@ -199,17 +193,17 @@ export const getSort = (
       };
       break;
 
-    case "appLanguageCode_ASC":
-      sortPayload = {
-        appLanguageCode: 1,
-      };
-      break;
+    // case "appLanguageCode_ASC":
+    //   sortPayload = {
+    //     appLanguageCode: 1,
+    //   };
+    //   break;
 
-    case "appLanguageCode_DESC":
-      sortPayload = {
-        appLanguageCode: -1,
-      };
-      break;
+    // case "appLanguageCode_DESC":
+    //   sortPayload = {
+    //     appLanguageCode: -1,
+    //   };
+    //   break;
 
     case "email_ASC":
       sortPayload = {

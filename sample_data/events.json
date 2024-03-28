@@ -2,8 +2,7 @@
   {
     "_comment": "Registration not required",
     "_id": "65915090c06a8200409b77d6",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -23,8 +22,7 @@
   },
   {
     "_id": "659156622caa9d8d6908754b",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -44,8 +42,7 @@
   },
   {
     "_id": "659156682caa9d8d6908754c",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -65,8 +62,7 @@
   },
   {
     "_id": "6591567b2caa9d8d6908754d",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -86,8 +82,7 @@
   },
   {
     "_id": "659156852caa9d8d6908754e",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -107,8 +102,7 @@
   },
   {
     "_id": "659157cb2caa9d8d6908754f",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -128,8 +122,7 @@
   },
   {
     "_id": "659158082caa9d8d69087550",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -149,8 +142,7 @@
   },
   {
     "_id": "659158292caa9d8d69087551",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -170,8 +162,7 @@
   },
   {
     "_id": "659158942caa9d8d69087552",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -191,8 +182,7 @@
   },
   {
     "_id": "659159cf2caa9d8d69087553",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -212,8 +202,7 @@
   },
   {
     "_id": "659158082caa9d8d69087554",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -233,8 +222,7 @@
   },
   {
     "_id": "659158292caa9d8d69087555",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -254,8 +242,7 @@
   },
   {
     "_id": "659158292caa9d8d69087556",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -275,8 +262,7 @@
   },
   {
     "_id": "659158942caa9d8d69087557",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -296,8 +282,7 @@
   },
   {
     "_id": "65916a6e2caa9d8d69087559",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -317,8 +302,7 @@
   },
   {
     "_id": "65916a732caa9d8d6908755a",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -338,8 +322,7 @@
   },
   {
     "_id": "65916a8a2caa9d8d6908755b",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -359,8 +342,7 @@
   },
   {
     "_id": "65916a8a2caa9d8d6908755c",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -380,8 +362,7 @@
   },
   {
     "_id": "65916a982caa9d8d6908755d",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -401,8 +382,7 @@
   },
   {
     "_id": "65916b2d2caa9d8d6908755e",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -422,8 +402,7 @@
   },
   {
     "_id": "65916b382caa9d8d6908755f",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -443,8 +422,7 @@
   },
   {
     "_id": "65916b462caa9d8d69087560",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -464,8 +442,7 @@
   },
   {
     "_id": "65916b4f2caa9d8d69087561",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -485,8 +462,7 @@
   },
   {
     "_id": "65916ca92caa9d8d69087562",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -506,8 +482,7 @@
   },
   {
     "_id": "65916cfa2caa9d8d69087563",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -527,8 +502,7 @@
   },
   {
     "_id": "65916f152caa9d8d69087564",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -548,8 +522,7 @@
   },
   {
     "_id": "659172742caa9d8d69087565",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -569,8 +542,7 @@
   },
   {
     "_id": "659172742caa9d8d69087566",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -590,8 +562,7 @@
   },
   {
     "_id": "659172742caa9d8d69087567",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -611,8 +582,7 @@
   },
   {
     "_id": "659172742caa9d8d69087568",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -632,8 +602,7 @@
   },
   {
     "_id": "659172742caa9d8d69087569",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -653,8 +622,7 @@
   },
   {
     "_id": "659172ae2caa9d8d6908756a",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -674,8 +642,7 @@
   },
   {
     "_id": "659172ae2caa9d8d6908756b",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -695,8 +662,7 @@
   },
   {
     "_id": "659172ae2caa9d8d6908756c",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -716,8 +682,7 @@
   },
   {
     "_id": "659172ae2caa9d8d6908756d",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -737,8 +702,7 @@
   },
   {
     "_id": "659172ae2caa9d8d6908756e",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -758,8 +722,7 @@
   },
   {
     "_id": "659172db2caa9d8d6908756f",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -779,8 +742,7 @@
   },
   {
     "_id": "659172e82caa9d8d69087570",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -800,8 +762,7 @@
   },
   {
     "_id": "659172e82caa9d8d69087571",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -821,8 +782,7 @@
   },
   {
     "_id": "659172e82caa9d8d69087572",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -842,8 +802,7 @@
   },
   {
     "_id": "659172e82caa9d8d69087573",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -863,8 +822,7 @@
   },
   {
     "_id": "659172e82caa9d8d69087574",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -884,8 +842,7 @@
   },
   {
     "_id": "659172e82caa9d8d69087575",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -905,8 +862,7 @@
   },
   {
     "_id": "659172e82caa9d8d69087576",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -926,8 +882,7 @@
   },
   {
     "_id": "659172e82caa9d8d69087577",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -947,8 +902,7 @@
   },
   {
     "_id": "659172e82caa9d8d69087578",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -968,8 +922,7 @@
   },
   {
     "_id": "659172e82caa9d8d69087579",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -989,8 +942,7 @@
   },
   {
     "_id": "659172e82caa9d8d6908757a",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1010,8 +962,7 @@
   },
   {
     "_id": "659172e82caa9d8d6908757b",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1031,8 +982,7 @@
   },
   {
     "_id": "659172e82caa9d8d6908757c",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["65378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1052,8 +1002,7 @@
   },
   {
     "_id": "659172e82caa9d8d6908757d",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1073,8 +1022,7 @@
   },
   {
     "_id": "659172e82caa9d8d6908757e",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1094,8 +1042,7 @@
   },
   {
     "_id": "659172e82caa9d8d6908757f",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1115,8 +1062,7 @@
   },
   {
     "_id": "659172742caa9d8d69087580",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1136,8 +1082,7 @@
   },
   {
     "_id": "659172742caa9d8d69087581",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1157,8 +1102,7 @@
   },
   {
     "_id": "659172742caa9d8d69087582",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1178,8 +1122,7 @@
   },
   {
     "_id": "659172742caa9d8d69087583",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1199,8 +1142,7 @@
   },
   {
     "_id": "659172742caa9d8d69087584",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1220,8 +1162,7 @@
   },
   {
     "_id": "659172742caa9d8d69087585",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1241,8 +1182,7 @@
   },
   {
     "_id": "659172742caa9d8d69087586",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1262,8 +1202,7 @@
   },
   {
     "_id": "659172742caa9d8d69087587",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1283,8 +1222,7 @@
   },
   {
     "_id": "659172742caa9d8d69087588",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1304,8 +1242,7 @@
   },
   {
     "_id": "659172742caa9d8d69087589",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1325,8 +1262,7 @@
   },
   {
     "_id": "659172742caa9d8d6908758a",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1346,8 +1282,7 @@
   },
   {
     "_id": "659172742caa9d8d6908758b",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1367,8 +1302,7 @@
   },
   {
     "_id": "659172742caa9d8d6908758c",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1388,8 +1322,7 @@
   },
   {
     "_id": "659172742caa9d8d6908758d",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1409,8 +1342,7 @@
   },
   {
     "_id": "659172742caa9d8d6908758e",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1430,8 +1362,7 @@
   },
   {
     "_id": "659172742caa9d8d6908758f",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1451,8 +1382,7 @@
   },
   {
     "_id": "659172742caa9d8d69087590",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1472,8 +1402,7 @@
   },
   {
     "_id": "659172742caa9d8d69087591",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1493,8 +1422,7 @@
   },
   {
     "_id": "659172742caa9d8d69087592",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1514,8 +1442,7 @@
   },
   {
     "_id": "659172742caa9d8d69087593",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1535,8 +1462,7 @@
   },
   {
     "_id": "659172742caa9d8d69087594",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1556,8 +1482,7 @@
   },
   {
     "_id": "659172742caa9d8d69087595",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["66378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1577,8 +1502,7 @@
   },
   {
     "_id": "659172742caa9d8d69087596",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1598,8 +1522,7 @@
   },
   {
     "_id": "659172742caa9d8d69087597",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1619,8 +1542,7 @@
   },
   {
     "_id": "659172742caa9d8d69087598",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1640,8 +1562,7 @@
   },
   {
     "_id": "659172742caa9d8d69087599",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1661,8 +1582,7 @@
   },
   {
     "_id": "659172742caa9d8d6908759a",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1682,8 +1602,7 @@
   },
   {
     "_id": "659172742caa9d8d6908759b",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1703,8 +1622,7 @@
   },
   {
     "_id": "659172742caa9d8d6908759c",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1724,8 +1642,7 @@
   },
   {
     "_id": "659172742caa9d8d6908759d",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1745,8 +1662,7 @@
   },
   {
     "_id": "659172742caa9d8d6908759e",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1766,8 +1682,7 @@
   },
   {
     "_id": "659172742caa9d8d6908759f",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1787,8 +1702,7 @@
   },
   {
     "_id": "659172742caa9d8d690875a0",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1808,8 +1722,7 @@
   },
   {
     "_id": "659172742caa9d8d690875a1",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1829,8 +1742,7 @@
   },
   {
     "_id": "659172742caa9d8d690875a2",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1850,8 +1762,7 @@
   },
   {
     "_id": "659172742caa9d8d690875a3",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1871,8 +1782,7 @@
   },
   {
     "_id": "659172742caa9d8d690875a4",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1892,8 +1802,7 @@
   },
   {
     "_id": "659172742caa9d8d690875a5",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1913,8 +1822,7 @@
   },
   {
     "_id": "659172742caa9d8d690875a6",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1934,8 +1842,7 @@
   },
   {
     "_id": "659172742caa9d8d690875a7",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1955,8 +1862,7 @@
   },
   {
     "_id": "659172742caa9d8d690875a8",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1976,8 +1882,7 @@
   },
   {
     "_id": "659172742caa9d8d690875a9",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -1997,8 +1902,7 @@
   },
   {
     "_id": "659172742caa9d8d690875aa",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -2018,8 +1922,7 @@
   },
   {
     "_id": "659172742caa9d8d690875ab",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -2039,8 +1942,7 @@
   },
   {
     "_id": "659172742caa9d8d690875ac",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -2060,8 +1962,7 @@
   },
   {
     "_id": "659172742caa9d8d690875ad",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -2081,8 +1982,7 @@
   },
   {
     "_id": "659172742caa9d8d690875ae",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["67378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -2103,8 +2003,7 @@
   {
     "_comment": "Registration required",
     "_id": "6437907585008f171cf2994c",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
@@ -2135,8 +2034,7 @@
   },
   {
     "_id": "659172742caa9d8d690875af",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Swimming Lessons",
@@ -2185,8 +2083,7 @@
   },
   {
     "_id": "659172742caa9d8d690875b0",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Finance Committee Meeting",
@@ -2235,8 +2132,7 @@
   },
   {
     "_id": "659172742caa9d8d690875b1",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Risk Committee Meeting",
@@ -2285,8 +2181,7 @@
   },
   {
     "_id": "659172742caa9d8d690875b2",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Adult Swimming Lessons",
@@ -2335,8 +2230,7 @@
   },
   {
     "_id": "659172742caa9d8d690875b3",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Conference Planning Committee",
@@ -2385,8 +2279,7 @@
   },
   {
     "_id": "659172742caa9d8d690875b4",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Organization Strategy Workshop",
@@ -2435,8 +2328,7 @@
   },
   {
     "_id": "659172742caa9d8d690875b5",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Swimming Lessons",
@@ -2485,8 +2377,7 @@
   },
   {
     "_id": "659172742caa9d8d690875b6",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Families With Addiction",
@@ -2535,8 +2426,7 @@
   },
   {
     "_id": "659172742caa9d8d690875b7",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Investment Strategy Committee",
@@ -2585,8 +2475,7 @@
   },
   {
     "_id": "659172742caa9d8d690875b8",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Adult Swimming Lessons",
@@ -2635,8 +2524,7 @@
   },
   {
     "_id": "659172742caa9d8d690875b9",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Programming for Everyone",
@@ -2685,8 +2573,7 @@
   },
   {
     "_id": "659172742caa9d8d690875ba",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "University Preparation Tips",
@@ -2735,8 +2622,7 @@
   },
   {
     "_id": "659172742caa9d8d690875bb",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Career Counseling",
@@ -2785,8 +2671,7 @@
   },
   {
     "_id": "659172742caa9d8d690875bc",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Saturday Serenade Concert",
@@ -2835,8 +2720,7 @@
   },
   {
     "_id": "659172742caa9d8d690875bd",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Soccer Lessons",
@@ -2885,8 +2769,7 @@
   },
   {
     "_id": "659172742caa9d8d690875be",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "64378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Travel Club",
@@ -2935,8 +2818,7 @@
   },
   {
     "_id": "659172742caa9d8d690875bf",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Swimming Lessons",
@@ -2985,8 +2867,7 @@
   },
   {
     "_id": "659172742caa9d8d690875c0",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Finance Committee Meeting",
@@ -3035,8 +2916,7 @@
   },
   {
     "_id": "659172742caa9d8d690875c1",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Risk Committee Meeting",
@@ -3085,8 +2965,7 @@
   },
   {
     "_id": "659172742caa9d8d690875c2",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Adult Swimming Lessons",
@@ -3135,8 +3014,7 @@
   },
   {
     "_id": "659172742caa9d8d690875c3",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Conference Planning Committee",
@@ -3185,8 +3063,7 @@
   },
   {
     "_id": "659172742caa9d8d690875c4",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Organization Strategy Workshop",
@@ -3235,8 +3112,7 @@
   },
   {
     "_id": "659172742caa9d8d690875c5",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Swimming Lessons",
@@ -3285,8 +3161,7 @@
   },
   {
     "_id": "659172742caa9d8d690875c6",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Families With Addiction",
@@ -3335,8 +3210,7 @@
   },
   {
     "_id": "659172742caa9d8d690875c7",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Investment Strategy Committee",
@@ -3385,8 +3259,7 @@
   },
   {
     "_id": "659172742caa9d8d690875c8",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Adult Swimming Lessons",
@@ -3435,8 +3308,7 @@
   },
   {
     "_id": "659172742caa9d8d690875c9",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Programming for Everyone",
@@ -3485,8 +3357,7 @@
   },
   {
     "_id": "659172742caa9d8d690875ca",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "University Preparation Tips",
@@ -3535,8 +3406,7 @@
   },
   {
     "_id": "659172742caa9d8d690875cb",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Career Counseling",
@@ -3585,8 +3455,7 @@
   },
   {
     "_id": "659172742caa9d8d690875cc",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Saturday Serenade Concert",
@@ -3635,8 +3504,7 @@
   },
   {
     "_id": "659172742caa9d8d690875cd",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Soccer Lessons",
@@ -3685,8 +3553,7 @@
   },
   {
     "_id": "659172742caa9d8d690875ce",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "65378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Travel Club",
@@ -3735,8 +3602,7 @@
   },
   {
     "_id": "659172742caa9d8d690875cf",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Swimming Lessons",
@@ -3785,8 +3651,7 @@
   },
   {
     "_id": "659172742caa9d8d690875d0",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Finance Committee Meeting",
@@ -3835,8 +3700,7 @@
   },
   {
     "_id": "659172742caa9d8d690875d1",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Risk Committee Meeting",
@@ -3885,8 +3749,7 @@
   },
   {
     "_id": "659172742caa9d8d690875d2",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Adult Swimming Lessons",
@@ -3935,8 +3798,7 @@
   },
   {
     "_id": "659172742caa9d8d690875d3",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Conference Planning Committee",
@@ -3985,8 +3847,7 @@
   },
   {
     "_id": "659172742caa9d8d690875d4",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Organization Strategy Workshop",
@@ -4035,8 +3896,7 @@
   },
   {
     "_id": "659172742caa9d8d690875d5",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Swimming Lessons",
@@ -4085,8 +3945,7 @@
   },
   {
     "_id": "659172742caa9d8d690875d6",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Families With Addiction",
@@ -4135,8 +3994,7 @@
   },
   {
     "_id": "659172742caa9d8d690875d7",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Investment Strategy Committee",
@@ -4185,8 +4043,7 @@
   },
   {
     "_id": "659172742caa9d8d690875d8",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Adult Swimming Lessons",
@@ -4235,8 +4092,7 @@
   },
   {
     "_id": "659172742caa9d8d690875d9",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Programming for Everyone",
@@ -4285,8 +4141,7 @@
   },
   {
     "_id": "659172742caa9d8d690875da",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "University Preparation Tips",
@@ -4335,8 +4190,7 @@
   },
   {
     "_id": "659172742caa9d8d690875db",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Career Counseling",
@@ -4385,8 +4239,7 @@
   },
   {
     "_id": "659172742caa9d8d690875dc",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Saturday Serenade Concert",
@@ -4435,8 +4288,7 @@
   },
   {
     "_id": "659172742caa9d8d690875dd",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Soccer Lessons",
@@ -4485,8 +4337,7 @@
   },
   {
     "_id": "659172742caa9d8d690875de",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "66378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Travel Club",
@@ -4535,8 +4386,7 @@
   },
   {
     "_id": "659172742caa9d8d690875df",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Swimming Lessons",
@@ -4585,8 +4435,7 @@
   },
   {
     "_id": "659172742caa9d8d690875e0",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Finance Committee Meeting",
@@ -4635,8 +4484,7 @@
   },
   {
     "_id": "659172742caa9d8d690875e1",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Risk Committee Meeting",
@@ -4685,8 +4533,7 @@
   },
   {
     "_id": "659172742caa9d8d690875e2",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Adult Swimming Lessons",
@@ -4735,8 +4582,7 @@
   },
   {
     "_id": "659172742caa9d8d690875e3",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Conference Planning Committee",
@@ -4785,8 +4631,7 @@
   },
   {
     "_id": "659172742caa9d8d690875e4",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Organization Strategy Workshop",
@@ -4835,8 +4680,7 @@
   },
   {
     "_id": "659172742caa9d8d690875e5",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Swimming Lessons",
@@ -4885,8 +4729,7 @@
   },
   {
     "_id": "659172742caa9d8d690875e6",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Families With Addiction",
@@ -4935,8 +4778,7 @@
   },
   {
     "_id": "659172742caa9d8d690875e7",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Investment Strategy Committee",
@@ -4985,8 +4827,7 @@
   },
   {
     "_id": "659172742caa9d8d690875e8",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Adult Swimming Lessons",
@@ -5035,8 +4876,7 @@
   },
   {
     "_id": "659172742caa9d8d690875e9",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Programming for Everyone",
@@ -5085,8 +4925,7 @@
   },
   {
     "_id": "659172742caa9d8d690875ea",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "University Preparation Tips",
@@ -5135,8 +4974,7 @@
   },
   {
     "_id": "659172742caa9d8d690875eb",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Career Counseling",
@@ -5185,8 +5023,7 @@
   },
   {
     "_id": "659172742caa9d8d690875ec",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Saturday Serenade Concert",
@@ -5235,8 +5072,7 @@
   },
   {
     "_id": "659172742caa9d8d690875ed",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Youth Soccer Lessons",
@@ -5285,8 +5121,7 @@
   },
   {
     "_id": "659172742caa9d8d690875ee",
-    "recurring": true,
-    "recurrance": "WEEKLY",
+    "recurring": false,
     "admins": "67378abd85008f171cf2990d",
     "status": "ACTIVE",
     "title": "Travel Club",

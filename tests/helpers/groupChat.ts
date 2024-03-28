@@ -9,11 +9,12 @@ import { createTestUserAndOrganization } from "./userAndOrg";
 import type { Document } from "mongoose";
 
 export type TestGroupChatType =
-  | (InterfaceGroupChat & Document<any, any, InterfaceGroupChat>)
+  | (InterfaceGroupChat & Document<unknown, unknown, InterfaceGroupChat>)
   | null;
 
 export type TestGroupChatMessageType =
-  | (InterfaceGroupChatMessage & Document<any, any, InterfaceGroupChatMessage>)
+  | (InterfaceGroupChatMessage &
+      Document<unknown, unknown, InterfaceGroupChatMessage>)
   | null;
 
 export const createTestGroupChat = async (): Promise<

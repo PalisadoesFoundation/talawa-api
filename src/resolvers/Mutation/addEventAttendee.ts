@@ -1,17 +1,17 @@
+import { Types } from "mongoose";
 import {
   EVENT_NOT_FOUND_ERROR,
+  USER_ALREADY_REGISTERED_FOR_EVENT,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
-  USER_ALREADY_REGISTERED_FOR_EVENT,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event, EventAttendee } from "../../models";
-import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { AppUserProfile, Event, EventAttendee, User } from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import { Types } from "mongoose";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   _parent,
@@ -27,6 +27,16 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -55,10 +65,11 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
 
   const isUserEventAdmin = event.admins.some(
     (admin) =>
-      admin === context.userID || Types.ObjectId(admin).equals(context.userId),
+      admin === context.userID ||
+      new Types.ObjectId(admin).equals(context.userId),
   );
 
-  if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {
+  if (!isUserEventAdmin && !currentUserAppProfile.isSuperAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -89,13 +100,17 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
       USER_ALREADY_REGISTERED_FOR_EVENT.PARAM,
     );
   }
+  const eventOrgId = event.organization._id.toString();
 
-  const currentUserIsOrganizationMember =
-    currentUser.joinedOrganizations.includes(requestUser.joinedOrganizations);
+  const joinedOrgs = requestUser.joinedOrganizations.map((org) =>
+    org.toString(),
+  );
+
+  const requestUserIsOrganizationMember = joinedOrgs.includes(eventOrgId);
 
   if (
     process.env.SKIP_ORG_MEMBER_CHECK_TEST !== "true" &&
-    !currentUserIsOrganizationMember
+    !requestUserIsOrganizationMember
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),

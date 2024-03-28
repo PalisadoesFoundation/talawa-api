@@ -25,12 +25,12 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creatorId: Types.ObjectId().toString(),
-    admins: [Types.ObjectId().toString()],
-    members: [Types.ObjectId().toString()],
+    creatorId: new Types.ObjectId().toString(),
+    admins: [new Types.ObjectId().toString()],
+    members: [new Types.ObjectId().toString()],
     visibleInSearch: true,
   });
-  testVenue = await createTestVenue(Types.ObjectId());
+  testVenue = await createTestVenue(new Types.ObjectId());
 });
 
 afterAll(async () => {
@@ -41,7 +41,7 @@ describe("resolvers -> Query -> venue", () => {
   it(`throws NotFoundError for venue not found`, async () => {
     try {
       const args: QueryVenueArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       await venueResolver?.({}, args, {});

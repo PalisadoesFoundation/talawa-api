@@ -88,12 +88,7 @@ export const updateFundraisingCampaignPledge: MutationResolvers["updateFundraisi
         _id: args.id,
       },
       {
-        $set: {
-          startDate: startDate,
-          endDate: endDate,
-          amount: args.data.amount,
-          currency: args.data.currency,
-        },
+        $set: args.data,
       },
       {
         new: true,

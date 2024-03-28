@@ -34,7 +34,7 @@ export const createTestAgendaItem = async (): Promise<
     startTime: new Date(),
     endTime: new Date(Date.now() + 3600000), // Ending time after 1 hour
     location: "Test Location",
-    categoryId: Types.ObjectId().toString(), // A random ID that does not exist in the database
+    categoryId: new Types.ObjectId().toString(), // A random ID that does not exist in the database
     creator: testUser?._id,
     organization: testOrganization?._id,
     creatorId: testUser?._id,

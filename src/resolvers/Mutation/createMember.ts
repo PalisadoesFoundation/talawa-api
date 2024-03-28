@@ -1,24 +1,29 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { User, Organization } from "../../models";
-import { superAdminCheck } from "../../utilities";
+import { Types } from "mongoose";
 import {
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceOrganization } from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to add a member.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
- * 1. Checks whether current user making the request is an superAdmin
+ * 1. Checks whether current user making the request is an superAdmin or an Admin.
  * 2. If the organization exists
  * 3. Checks whether curent user exists.
+ * 4. Checks whether current user has appProfile.
  * 4. Checks whether user with _id === args.input.userId is already an member of organization..
+ *
  * @returns Organization.
  */
 export const createMember: MutationResolvers["createMember"] = async (
@@ -38,7 +43,16 @@ export const createMember: MutationResolvers["createMember"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  superAdminCheck(currentUser);
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
   // Checks if organization exists.
   let organization;
@@ -54,7 +68,7 @@ export const createMember: MutationResolvers["createMember"] = async (
       _id: args.input.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    await cacheOrganizations([organization as InterfaceOrganization]);
   }
 
   if (!organization) {
@@ -62,6 +76,18 @@ export const createMember: MutationResolvers["createMember"] = async (
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
       ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  const userIsOrganizationAdmin = organization.admins.some(
+    (admin) =>
+      admin === currentUser._id ||
+      new Types.ObjectId(admin).equals(currentUser._id),
+  );
+  if (!userIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
+      USER_NOT_AUTHORIZED_ADMIN.CODE,
+      USER_NOT_AUTHORIZED_ADMIN.PARAM,
     );
   }
 
@@ -125,5 +151,5 @@ export const createMember: MutationResolvers["createMember"] = async (
     await cacheOrganizations([updatedOrganization]);
   }
 
-  return updatedOrganization!;
+  return updatedOrganization as InterfaceOrganization;
 };

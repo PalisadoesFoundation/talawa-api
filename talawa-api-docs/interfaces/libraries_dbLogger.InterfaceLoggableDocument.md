@@ -94,11 +94,11 @@ Document.$locals
 
 node_modules/mongoose/index.d.ts:554
 
-___
+---
 
 ### $op
 
-• **$op**: ``null`` \| `string`
+• **$op**: `null` \| `string`
 
 A string containing the current operation that Mongoose is executing
 on this document. May be `null`, `'save'`, `'validate'`, or `'remove'`.
@@ -111,7 +111,7 @@ Document.$op
 
 node_modules/mongoose/index.d.ts:563
 
-___
+---
 
 ### $where
 
@@ -127,13 +127,13 @@ Document.$where
 
 node_modules/mongoose/index.d.ts:578
 
-___
+---
 
 ### \_\_v
 
 • `Optional` **\_\_v**: `any`
 
-This documents __v.
+This documents \_\_v.
 
 #### Inherited from
 
@@ -143,13 +143,13 @@ Document.\_\_v
 
 node_modules/mongoose/index.d.ts:522
 
-___
+---
 
 ### \_id
 
 • `Optional` **\_id**: `any`
 
-This documents _id.
+This documents \_id.
 
 #### Inherited from
 
@@ -159,7 +159,7 @@ Document.\_id
 
 node_modules/mongoose/index.d.ts:519
 
-___
+---
 
 ### baseModelName
 
@@ -175,7 +175,7 @@ Document.baseModelName
 
 node_modules/mongoose/index.d.ts:581
 
-___
+---
 
 ### collection
 
@@ -191,7 +191,7 @@ Document.collection
 
 node_modules/mongoose/index.d.ts:584
 
-___
+---
 
 ### db
 
@@ -207,7 +207,7 @@ Document.db
 
 node_modules/mongoose/index.d.ts:587
 
-___
+---
 
 ### errors
 
@@ -223,13 +223,13 @@ Document.errors
 
 node_modules/mongoose/index.d.ts:619
 
-___
+---
 
 ### id
 
 • `Optional` **id**: `any`
 
-The string version of this documents _id.
+The string version of this documents \_id.
 
 #### Inherited from
 
@@ -239,7 +239,7 @@ Document.id
 
 node_modules/mongoose/index.d.ts:635
 
-___
+---
 
 ### isNew
 
@@ -255,7 +255,7 @@ Document.isNew
 
 node_modules/mongoose/index.d.ts:666
 
-___
+---
 
 ### logInfo
 
@@ -265,7 +265,7 @@ ___
 
 [src/libraries/dbLogger.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/libraries/dbLogger.ts#L33)
 
-___
+---
 
 ### modelName
 
@@ -281,7 +281,7 @@ Document.modelName
 
 node_modules/mongoose/index.d.ts:681
 
-___
+---
 
 ### schema
 
@@ -315,7 +315,7 @@ Document.$getAllSubdocs
 
 node_modules/mongoose/index.d.ts:525
 
-___
+---
 
 ### $getPopulatedDocs
 
@@ -335,7 +335,7 @@ Document.$getPopulatedDocs
 
 node_modules/mongoose/index.d.ts:537
 
-___
+---
 
 ### $ignore
 
@@ -345,8 +345,8 @@ Don't run validation on this path or persist changes to this path.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -361,7 +361,7 @@ Document.$ignore
 
 node_modules/mongoose/index.d.ts:528
 
-___
+---
 
 ### $isDefault
 
@@ -371,8 +371,8 @@ Checks if a path is set to its default.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -387,7 +387,7 @@ Document.$isDefault
 
 node_modules/mongoose/index.d.ts:531
 
-___
+---
 
 ### $isDeleted
 
@@ -397,8 +397,8 @@ Getter/setter, determines whether the document was removed or not.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type      |
+| :----- | :-------- |
 | `val?` | `boolean` |
 
 #### Returns
@@ -413,7 +413,7 @@ Document.$isDeleted
 
 node_modules/mongoose/index.d.ts:534
 
-___
+---
 
 ### $isEmpty
 
@@ -425,8 +425,8 @@ Useful for determining whether this subdoc will get stripped out by the
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -441,7 +441,7 @@ Document.$isEmpty
 
 node_modules/mongoose/index.d.ts:544
 
-___
+---
 
 ### $isValid
 
@@ -451,8 +451,8 @@ Checks if a path is invalid
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -467,7 +467,7 @@ Document.$isValid
 
 node_modules/mongoose/index.d.ts:547
 
-___
+---
 
 ### $markValid
 
@@ -477,8 +477,8 @@ Marks a path as valid, removing existing validation errors.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -493,7 +493,7 @@ Document.$markValid
 
 node_modules/mongoose/index.d.ts:557
 
-___
+---
 
 ### $parent
 
@@ -514,7 +514,7 @@ Document.$parent
 
 node_modules/mongoose/index.d.ts:694
 
-___
+---
 
 ### $session
 
@@ -526,9 +526,9 @@ query with an associated session.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `session?` | ``null`` \| `ClientSession` |
+| Name       | Type                      |
+| :--------- | :------------------------ |
+| `session?` | `null` \| `ClientSession` |
 
 #### Returns
 
@@ -542,7 +542,7 @@ Document.$session
 
 node_modules/mongoose/index.d.ts:570
 
-___
+---
 
 ### $set
 
@@ -552,11 +552,11 @@ Alias for `set()`, used internally to avoid conflicts
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `path` | `string` |
-| `val` | `any` |
-| `options?` | `any` |
+| Name       | Type     |
+| :--------- | :------- |
+| `path`     | `string` |
+| `val`      | `any`    |
+| `options?` | `any`    |
 
 #### Returns
 
@@ -574,12 +574,12 @@ node_modules/mongoose/index.d.ts:573
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `path` | `string` |
-| `val` | `any` |
-| `type` | `any` |
-| `options?` | `any` |
+| Name       | Type     |
+| :--------- | :------- |
+| `path`     | `string` |
+| `val`      | `any`    |
+| `type`     | `any`    |
+| `options?` | `any`    |
 
 #### Returns
 
@@ -597,8 +597,8 @@ node_modules/mongoose/index.d.ts:574
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type  |
+| :------ | :---- |
 | `value` | `any` |
 
 #### Returns
@@ -613,7 +613,7 @@ Document.$set
 
 node_modules/mongoose/index.d.ts:575
 
-___
+---
 
 ### delete
 
@@ -623,8 +623,8 @@ Removes this document from the db.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type           |
+| :--------- | :------------- |
 | `options?` | `QueryOptions` |
 
 #### Returns
@@ -643,10 +643,10 @@ node_modules/mongoose/index.d.ts:590
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `options` | `QueryOptions` |
-| `cb?` | `Callback`\<`any`\> |
+| Name      | Type                |
+| :-------- | :------------------ |
+| `options` | `QueryOptions`      |
+| `cb?`     | `Callback`\<`any`\> |
 
 #### Returns
 
@@ -664,8 +664,8 @@ node_modules/mongoose/index.d.ts:591
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name | Type                |
+| :--- | :------------------ |
 | `cb` | `Callback`\<`any`\> |
 
 #### Returns
@@ -680,7 +680,7 @@ Document.delete
 
 node_modules/mongoose/index.d.ts:592
 
-___
+---
 
 ### deleteOne
 
@@ -690,8 +690,8 @@ Removes this document from the db.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type           |
+| :--------- | :------------- |
 | `options?` | `QueryOptions` |
 
 #### Returns
@@ -710,10 +710,10 @@ node_modules/mongoose/index.d.ts:595
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `options` | `QueryOptions` |
-| `cb?` | `Callback`\<`any`\> |
+| Name      | Type                |
+| :-------- | :------------------ |
+| `options` | `QueryOptions`      |
+| `cb?`     | `Callback`\<`any`\> |
 
 #### Returns
 
@@ -731,8 +731,8 @@ node_modules/mongoose/index.d.ts:596
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name | Type                |
+| :--- | :------------------ |
 | `cb` | `Callback`\<`any`\> |
 
 #### Returns
@@ -747,7 +747,7 @@ Document.deleteOne
 
 node_modules/mongoose/index.d.ts:597
 
-___
+---
 
 ### depopulate
 
@@ -757,8 +757,8 @@ Takes a populated field and returns it to its unpopulated state.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -773,7 +773,7 @@ Document.depopulate
 
 node_modules/mongoose/index.d.ts:600
 
-___
+---
 
 ### directModifiedPaths
 
@@ -795,7 +795,7 @@ Document.directModifiedPaths
 
 node_modules/mongoose/index.d.ts:607
 
-___
+---
 
 ### equals
 
@@ -809,8 +809,8 @@ document has an `_id`, in which case this function falls back to using
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                              |
+| :---- | :-------------------------------- |
 | `doc` | `Document`\<`any`, `any`, `any`\> |
 
 #### Returns
@@ -825,7 +825,7 @@ Document.equals
 
 node_modules/mongoose/index.d.ts:616
 
-___
+---
 
 ### execPopulate
 
@@ -849,8 +849,8 @@ node_modules/mongoose/index.d.ts:622
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type                                                                                         |
+| :--------- | :------------------------------------------------------------------------------------------- |
 | `callback` | `Callback`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
 
 #### Returns
@@ -865,7 +865,7 @@ Document.execPopulate
 
 node_modules/mongoose/index.d.ts:623
 
-___
+---
 
 ### get
 
@@ -875,11 +875,11 @@ Returns the value of a path.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `path` | `string` |
-| `type?` | `any` |
-| `options?` | `any` |
+| Name       | Type     |
+| :--------- | :------- |
+| `path`     | `string` |
+| `type?`    | `any`    |
+| `options?` | `any`    |
 
 #### Returns
 
@@ -893,7 +893,7 @@ Document.get
 
 node_modules/mongoose/index.d.ts:626
 
-___
+---
 
 ### getChanges
 
@@ -914,7 +914,7 @@ Document.getChanges
 
 node_modules/mongoose/index.d.ts:632
 
-___
+---
 
 ### increment
 
@@ -934,7 +934,7 @@ Document.increment
 
 node_modules/mongoose/index.d.ts:638
 
-___
+---
 
 ### init
 
@@ -946,11 +946,11 @@ you do **not** need to call this function on your own.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | `any` |
-| `opts?` | `any` |
-| `cb?` | `Callback`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
+| Name    | Type                                                                                         |
+| :------ | :------------------------------------------------------------------------------------------- |
+| `obj`   | `any`                                                                                        |
+| `opts?` | `any`                                                                                        |
+| `cb?`   | `Callback`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
 
 #### Returns
 
@@ -964,26 +964,26 @@ Document.init
 
 node_modules/mongoose/index.d.ts:645
 
-___
+---
 
 ### invalidate
 
-▸ **invalidate**(`path`, `errorMsg`, `value?`, `kind?`): ``null`` \| `NativeError`
+▸ **invalidate**(`path`, `errorMsg`, `value?`, `kind?`): `null` \| `NativeError`
 
 Marks a path as invalid, causing validation to fail.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `path` | `string` |
+| Name       | Type                      |
+| :--------- | :------------------------ |
+| `path`     | `string`                  |
 | `errorMsg` | `string` \| `NativeError` |
-| `value?` | `any` |
-| `kind?` | `string` |
+| `value?`   | `any`                     |
+| `kind?`    | `string`                  |
 
 #### Returns
 
-``null`` \| `NativeError`
+`null` \| `NativeError`
 
 #### Inherited from
 
@@ -993,7 +993,7 @@ Document.invalidate
 
 node_modules/mongoose/index.d.ts:648
 
-___
+---
 
 ### isDirectModified
 
@@ -1003,8 +1003,8 @@ Returns true if `path` was directly set and modified, else false.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -1019,7 +1019,7 @@ Document.isDirectModified
 
 node_modules/mongoose/index.d.ts:651
 
-___
+---
 
 ### isDirectSelected
 
@@ -1029,8 +1029,8 @@ Checks if `path` was explicitly selected. If no projection, always returns true.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -1045,7 +1045,7 @@ Document.isDirectSelected
 
 node_modules/mongoose/index.d.ts:654
 
-___
+---
 
 ### isInit
 
@@ -1055,8 +1055,8 @@ Checks if `path` is in the `init` state, that is, it was set by `Document#init()
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -1071,7 +1071,7 @@ Document.isInit
 
 node_modules/mongoose/index.d.ts:657
 
-___
+---
 
 ### isModified
 
@@ -1082,8 +1082,8 @@ in this document is modified.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type                   |
+| :------ | :--------------------- |
 | `path?` | `string` \| `string`[] |
 
 #### Returns
@@ -1098,7 +1098,7 @@ Document.isModified
 
 node_modules/mongoose/index.d.ts:663
 
-___
+---
 
 ### isSelected
 
@@ -1108,8 +1108,8 @@ Checks if `path` was selected in the source query which initialized this documen
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -1124,7 +1124,7 @@ Document.isSelected
 
 node_modules/mongoose/index.d.ts:669
 
-___
+---
 
 ### markModified
 
@@ -1134,10 +1134,10 @@ Marks the path as having pending changes to write to the db.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `path` | `string` |
-| `scope?` | `any` |
+| Name     | Type     |
+| :------- | :------- |
+| `path`   | `string` |
+| `scope?` | `any`    |
 
 #### Returns
 
@@ -1151,7 +1151,7 @@ Document.markModified
 
 node_modules/mongoose/index.d.ts:672
 
-___
+---
 
 ### model
 
@@ -1161,14 +1161,14 @@ Returns another Model instance.
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `T` | extends `Model`\<`any`, \{\}, \{\}\> |
+| Name | Type                                 |
+| :--- | :----------------------------------- |
+| `T`  | extends `Model`\<`any`, \{\}, \{\}\> |
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `name` | `string` |
 
 #### Returns
@@ -1183,7 +1183,7 @@ Document.model
 
 node_modules/mongoose/index.d.ts:678
 
-___
+---
 
 ### modifiedPaths
 
@@ -1193,9 +1193,9 @@ Returns the list of paths that have been modified.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `options?` | `Object` |
+| Name                       | Type      |
+| :------------------------- | :-------- |
+| `options?`                 | `Object`  |
 | `options.includeChildren?` | `boolean` |
 
 #### Returns
@@ -1210,7 +1210,7 @@ Document.modifiedPaths
 
 node_modules/mongoose/index.d.ts:675
 
-___
+---
 
 ### overwrite
 
@@ -1222,8 +1222,8 @@ unsets all properties that aren't in `obj`.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                                                                                   |
+| :---- | :----------------------------------------------------------------------------------------------------- |
 | `obj` | `DocumentDefinition`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
 
 #### Returns
@@ -1238,7 +1238,7 @@ Document.overwrite
 
 node_modules/mongoose/index.d.ts:688
 
-___
+---
 
 ### populate
 
@@ -1250,9 +1250,9 @@ If you want to use promises instead, use this function with
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `path` | `string` |
+| Name        | Type                                                                                         |
+| :---------- | :------------------------------------------------------------------------------------------- |
+| `path`      | `string`                                                                                     |
 | `callback?` | `Callback`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
 
 #### Returns
@@ -1271,10 +1271,10 @@ node_modules/mongoose/index.d.ts:701
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `path` | `string` |
-| `names` | `string` |
+| Name        | Type                                                                                         |
+| :---------- | :------------------------------------------------------------------------------------------- |
+| `path`      | `string`                                                                                     |
+| `names`     | `string`                                                                                     |
 | `callback?` | `Callback`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
 
 #### Returns
@@ -1293,9 +1293,9 @@ node_modules/mongoose/index.d.ts:702
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `opts` | `PopulateOptions` \| `PopulateOptions`[] |
+| Name        | Type                                                                                         |
+| :---------- | :------------------------------------------------------------------------------------------- |
+| `opts`      | `PopulateOptions` \| `PopulateOptions`[]                                                     |
 | `callback?` | `Callback`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
 
 #### Returns
@@ -1310,18 +1310,18 @@ Document.populate
 
 node_modules/mongoose/index.d.ts:703
 
-___
+---
 
 ### populated
 
 ▸ **populated**(`path`): `any`
 
-Gets _id(s) used during population of the given `path`. If the path was not populated, returns `undefined`.
+Gets \_id(s) used during population of the given `path`. If the path was not populated, returns `undefined`.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -1336,7 +1336,7 @@ Document.populated
 
 node_modules/mongoose/index.d.ts:706
 
-___
+---
 
 ### remove
 
@@ -1346,8 +1346,8 @@ Removes this document from the db.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type           |
+| :--------- | :------------- |
 | `options?` | `QueryOptions` |
 
 #### Returns
@@ -1366,10 +1366,10 @@ node_modules/mongoose/index.d.ts:709
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `options?` | `QueryOptions` |
-| `cb?` | `Callback`\<`any`\> |
+| Name       | Type                |
+| :--------- | :------------------ |
+| `options?` | `QueryOptions`      |
+| `cb?`      | `Callback`\<`any`\> |
 
 #### Returns
 
@@ -1383,7 +1383,7 @@ Document.remove
 
 node_modules/mongoose/index.d.ts:710
 
-___
+---
 
 ### replaceOne
 
@@ -1393,11 +1393,11 @@ Sends a replaceOne command with this document `_id` as the query selector.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name           | Type                                                                                                   |
+| :------------- | :----------------------------------------------------------------------------------------------------- |
 | `replacement?` | `DocumentDefinition`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
-| `options?` | ``null`` \| `QueryOptions` |
-| `callback?` | `Callback`\<`any`\> |
+| `options?`     | `null` \| `QueryOptions`                                                                               |
+| `callback?`    | `Callback`\<`any`\>                                                                                    |
 
 #### Returns
 
@@ -1415,11 +1415,11 @@ node_modules/mongoose/index.d.ts:713
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `replacement?` | `Object` |
-| `options?` | ``null`` \| `QueryOptions` |
-| `callback?` | `Callback`\<`any`\> |
+| Name           | Type                     |
+| :------------- | :----------------------- |
+| `replacement?` | `Object`                 |
+| `options?`     | `null` \| `QueryOptions` |
+| `callback?`    | `Callback`\<`any`\>      |
 
 #### Returns
 
@@ -1433,7 +1433,7 @@ Document.replaceOne
 
 node_modules/mongoose/index.d.ts:714
 
-___
+---
 
 ### save
 
@@ -1443,8 +1443,8 @@ Saves this document by inserting a new document into the database if [document.i
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type          |
+| :--------- | :------------ |
 | `options?` | `SaveOptions` |
 
 #### Returns
@@ -1463,10 +1463,10 @@ node_modules/mongoose/index.d.ts:717
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `options?` | `SaveOptions` |
-| `fn?` | `Callback`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
+| Name       | Type                                                                                         |
+| :--------- | :------------------------------------------------------------------------------------------- |
+| `options?` | `SaveOptions`                                                                                |
+| `fn?`      | `Callback`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
 
 #### Returns
 
@@ -1484,8 +1484,8 @@ node_modules/mongoose/index.d.ts:718
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type                                                                                         |
+| :---- | :------------------------------------------------------------------------------------------- |
 | `fn?` | `Callback`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
 
 #### Returns
@@ -1500,7 +1500,7 @@ Document.save
 
 node_modules/mongoose/index.d.ts:719
 
-___
+---
 
 ### set
 
@@ -1510,11 +1510,11 @@ Sets the value of a path, or many paths.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `path` | `string` |
-| `val` | `any` |
-| `options?` | `any` |
+| Name       | Type     |
+| :--------- | :------- |
+| `path`     | `string` |
+| `val`      | `any`    |
+| `options?` | `any`    |
 
 #### Returns
 
@@ -1532,12 +1532,12 @@ node_modules/mongoose/index.d.ts:725
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `path` | `string` |
-| `val` | `any` |
-| `type` | `any` |
-| `options?` | `any` |
+| Name       | Type     |
+| :--------- | :------- |
+| `path`     | `string` |
+| `val`      | `any`    |
+| `type`     | `any`    |
+| `options?` | `any`    |
 
 #### Returns
 
@@ -1555,8 +1555,8 @@ node_modules/mongoose/index.d.ts:726
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name    | Type  |
+| :------ | :---- |
 | `value` | `any` |
 
 #### Returns
@@ -1571,7 +1571,7 @@ Document.set
 
 node_modules/mongoose/index.d.ts:727
 
-___
+---
 
 ### toJSON
 
@@ -1581,8 +1581,8 @@ The return value of this method is used in calls to JSON.stringify(doc).
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type              |
+| :--------- | :---------------- |
 | `options?` | `ToObjectOptions` |
 
 #### Returns
@@ -1601,14 +1601,14 @@ node_modules/mongoose/index.d.ts:730
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `T` | `any` |
+| Name | Type  |
+| :--- | :---- |
+| `T`  | `any` |
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type              |
+| :--------- | :---------------- |
 | `options?` | `ToObjectOptions` |
 
 #### Returns
@@ -1623,7 +1623,7 @@ Document.toJSON
 
 node_modules/mongoose/index.d.ts:731
 
-___
+---
 
 ### toObject
 
@@ -1633,8 +1633,8 @@ Converts this document into a plain-old JavaScript object ([POJO](https://master
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type              |
+| :--------- | :---------------- |
 | `options?` | `ToObjectOptions` |
 
 #### Returns
@@ -1653,14 +1653,14 @@ node_modules/mongoose/index.d.ts:734
 
 #### Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `T` | `any` |
+| Name | Type  |
+| :--- | :---- |
+| `T`  | `any` |
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type              |
+| :--------- | :---------------- |
 | `options?` | `ToObjectOptions` |
 
 #### Returns
@@ -1675,7 +1675,7 @@ Document.toObject
 
 node_modules/mongoose/index.d.ts:735
 
-___
+---
 
 ### unmarkModified
 
@@ -1685,8 +1685,8 @@ Clears the modified state on the specified path.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type     |
+| :----- | :------- |
 | `path` | `string` |
 
 #### Returns
@@ -1701,7 +1701,7 @@ Document.unmarkModified
 
 node_modules/mongoose/index.d.ts:738
 
-___
+---
 
 ### update
 
@@ -1711,11 +1711,11 @@ Sends an update command with this document `_id` as the query selector.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `update?` | `UpdateWithAggregationPipeline` \| `UpdateQuery`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
-| `options?` | ``null`` \| `QueryOptions` |
-| `callback?` | `Callback`\<`any`\> |
+| Name        | Type                                                                                                                               |
+| :---------- | :--------------------------------------------------------------------------------------------------------------------------------- |
+| `update?`   | `UpdateWithAggregationPipeline` \| `UpdateQuery`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
+| `options?`  | `null` \| `QueryOptions`                                                                                                           |
+| `callback?` | `Callback`\<`any`\>                                                                                                                |
 
 #### Returns
 
@@ -1729,7 +1729,7 @@ Document.update
 
 node_modules/mongoose/index.d.ts:741
 
-___
+---
 
 ### updateOne
 
@@ -1739,11 +1739,11 @@ Sends an updateOne command with this document `_id` as the query selector.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `update?` | `UpdateWithAggregationPipeline` \| `UpdateQuery`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
-| `options?` | ``null`` \| `QueryOptions` |
-| `callback?` | `Callback`\<`any`\> |
+| Name        | Type                                                                                                                               |
+| :---------- | :--------------------------------------------------------------------------------------------------------------------------------- |
+| `update?`   | `UpdateWithAggregationPipeline` \| `UpdateQuery`\<[`InterfaceLoggableDocument`](libraries_dbLogger.InterfaceLoggableDocument.md)\> |
+| `options?`  | `null` \| `QueryOptions`                                                                                                           |
+| `callback?` | `Callback`\<`any`\>                                                                                                                |
 
 #### Returns
 
@@ -1757,7 +1757,7 @@ Document.updateOne
 
 node_modules/mongoose/index.d.ts:744
 
-___
+---
 
 ### validate
 
@@ -1767,9 +1767,9 @@ Executes registered validation rules for this document.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `options` | `Object` |
+| Name                   | Type          |
+| :--------------------- | :------------ |
+| `options`              | `Object`      |
 | `options.pathsToSkip?` | `pathsToSkip` |
 
 #### Returns
@@ -1788,10 +1788,10 @@ node_modules/mongoose/index.d.ts:747
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name               | Type              |
+| :----------------- | :---------------- |
 | `pathsToValidate?` | `pathsToValidate` |
-| `options?` | `any` |
+| `options?`         | `any`             |
 
 #### Returns
 
@@ -1809,8 +1809,8 @@ node_modules/mongoose/index.d.ts:748
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name       | Type                    |
+| :--------- | :---------------------- |
 | `callback` | `CallbackWithoutResult` |
 
 #### Returns
@@ -1829,10 +1829,10 @@ node_modules/mongoose/index.d.ts:749
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `pathsToValidate` | `pathsToValidate` |
-| `callback` | `CallbackWithoutResult` |
+| Name              | Type                    |
+| :---------------- | :---------------------- |
+| `pathsToValidate` | `pathsToValidate`       |
+| `callback`        | `CallbackWithoutResult` |
 
 #### Returns
 
@@ -1850,11 +1850,11 @@ node_modules/mongoose/index.d.ts:750
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `pathsToValidate` | `pathsToValidate` |
-| `options` | `any` |
-| `callback` | `CallbackWithoutResult` |
+| Name              | Type                    |
+| :---------------- | :---------------------- |
+| `pathsToValidate` | `pathsToValidate`       |
+| `options`         | `any`                   |
+| `callback`        | `CallbackWithoutResult` |
 
 #### Returns
 
@@ -1868,24 +1868,24 @@ Document.validate
 
 node_modules/mongoose/index.d.ts:751
 
-___
+---
 
 ### validateSync
 
-▸ **validateSync**(`options`): ``null`` \| `ValidationError`
+▸ **validateSync**(`options`): `null` \| `ValidationError`
 
 Executes registered validation rules (skipping asynchronous validators) for this document.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `options` | `Object` |
+| Name                   | Type          |
+| :--------------------- | :------------ |
+| `options`              | `Object`      |
 | `options.pathsToSkip?` | `pathsToSkip` |
 
 #### Returns
 
-``null`` \| `ValidationError`
+`null` \| `ValidationError`
 
 #### Inherited from
 
@@ -1895,18 +1895,18 @@ Document.validateSync
 
 node_modules/mongoose/index.d.ts:754
 
-▸ **validateSync**(`pathsToValidate?`, `options?`): ``null`` \| `ValidationError`
+▸ **validateSync**(`pathsToValidate?`, `options?`): `null` \| `ValidationError`
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name               | Type       |
+| :----------------- | :--------- |
 | `pathsToValidate?` | `string`[] |
-| `options?` | `any` |
+| `options?`         | `any`      |
 
 #### Returns
 
-``null`` \| `ValidationError`
+`null` \| `ValidationError`
 
 #### Inherited from
 

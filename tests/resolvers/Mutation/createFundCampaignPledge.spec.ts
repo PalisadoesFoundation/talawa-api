@@ -41,7 +41,8 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
       const args: MutationCreateFundraisingCampaignPledgeArgs = {
         data: {
           campaignId: testFundraisingCampaign._id.toString(),
-          userIds: [testUser?._id],
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          userIds: [testUser!._id.toString()],
           startDate: new Date(new Date().toDateString()),
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -49,7 +50,7 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
         },
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await createFundraisingCampaignPledge?.({}, args, context);
     } catch (error: unknown) {
@@ -61,8 +62,9 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
     try {
       const args: MutationCreateFundraisingCampaignPledgeArgs = {
         data: {
-          campaignId: Types.ObjectId().toString(),
-          userIds: [testUser?._id],
+          campaignId: new Types.ObjectId().toString(),
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          userIds: [testUser!._id.toString()],
           startDate: new Date(new Date().toDateString()),
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -85,7 +87,8 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
       const args: MutationCreateFundraisingCampaignPledgeArgs = {
         data: {
           campaignId: testFundraisingCampaign._id.toString(),
-          userIds: [testUser?._id],
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          userIds: [testUser!._id.toString()],
           startDate: "Tue Feb 13 2023",
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -108,7 +111,8 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
       const args: MutationCreateFundraisingCampaignPledgeArgs = {
         data: {
           campaignId: testFundraisingCampaign._id.toString(),
-          userIds: [testUser?._id],
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          userIds: [testUser!._id.toString()],
           startDate: new Date(new Date().toDateString()),
           endDate: "Tue Feb 13 2023",
           currency: "USD",
@@ -130,7 +134,8 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
     const args: MutationCreateFundraisingCampaignPledgeArgs = {
       data: {
         campaignId: testFundraisingCampaign._id.toString(),
-        userIds: [testUser?._id],
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        userIds: [testUser!._id.toString()],
         currency: "USD",
         amount: 1000,
       },
@@ -146,7 +151,8 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
     const args: MutationCreateFundraisingCampaignPledgeArgs = {
       data: {
         campaignId: testFundraisingCampaign._id.toString(),
-        userIds: [testUser?._id],
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        userIds: [testUser!._id.toString()],
         startDate: new Date(new Date().toDateString()),
         endDate: new Date(new Date().toDateString()),
         currency: "USD",

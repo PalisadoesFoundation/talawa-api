@@ -1,17 +1,17 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import {
+  LENGTH_VALIDATION_ERROR,
+  PLEASE_PROVIDE_TITLE,
+  POST_NEEDS_TO_BE_PINNED,
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+} from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import { isValidString } from "../../libraries/validators/validateString";
 import type { InterfacePost } from "../../models";
 import { Post } from "../../models";
-import {
-  USER_NOT_AUTHORIZED_ERROR,
-  POST_NOT_FOUND_ERROR,
-  LENGTH_VALIDATION_ERROR,
-  POST_NEEDS_TO_BE_PINNED,
-  PLEASE_PROVIDE_TITLE,
-} from "../../constants";
-import { isValidString } from "../../libraries/validators/validateString";
-import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
+import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 
@@ -107,7 +107,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
       _id: args.id,
     },
     {
-      ...(args.data as any),
+      ...(args.data as Record<string, unknown>),
     },
     {
       new: true,
@@ -118,5 +118,5 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     await cachePosts([updatedPost]);
   }
 
-  return updatedPost!;
+  return updatedPost as InterfacePost;
 };

@@ -67,8 +67,10 @@ describe("resolvers -> Mutation -> addLanguageTranslation", () => {
       const args: MutationAddLanguageTranslationArgs = testArgs[1];
 
       await addLanguageTranslationResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(`Translated translation.alreadyPresent`);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated translation.alreadyPresent`,
+      );
     }
   });
 

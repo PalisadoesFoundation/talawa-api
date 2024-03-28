@@ -1,11 +1,11 @@
-import type { InterfaceUser } from "../../src/models";
-import { User } from "../../src/models";
-import { nanoid } from "nanoid";
 import type { Document } from "mongoose";
+import { nanoid } from "nanoid";
+import type { InterfaceUser } from "../../src/models";
+import { AppUserProfile, User } from "../../src/models";
 
 export type TestUserType =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (InterfaceUser & Document<any, any, InterfaceUser>) | null;
+  | (InterfaceUser & Document<unknown, unknown, InterfaceUser>)
+  | null;
 
 export const createTestUser = async (): Promise<TestUserType> => {
   const testUser = await User.create({
@@ -13,10 +13,19 @@ export const createTestUser = async (): Promise<TestUserType> => {
     password: `pass${nanoid().toLowerCase()}`,
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
-    appLanguageCode: "en",
-    userType: "ADMIN",
   });
-
+  const testUserAppProfile = await AppUserProfile.create({
+    userId: testUser._id,
+    languageCode: "en",
+  });
+  await User.updateOne(
+    {
+      _id: testUser._id,
+    },
+    {
+      appUserProfileId: testUserAppProfile._id,
+    },
+  );
   return testUser;
 };
 

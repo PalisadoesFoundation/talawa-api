@@ -22,8 +22,10 @@ afterAll(async () => {
 
 describe("resolvers -> GroupChat -> messages", () => {
   it(`returns user objects for parent.messages`, async () => {
-    const parent = testGroupChat!.toObject();
-
+    const parent = testGroupChat?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
     const messagesPayload = await messagesResolver?.(parent, {}, {});
 
     const messages = await GroupChatMessage.find({

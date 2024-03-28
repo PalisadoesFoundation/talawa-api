@@ -1,16 +1,21 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { superAdminCheck } from "../../utilities";
-import type { InterfaceOrganization } from "../../models";
-import { User, Organization } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import { Types } from "mongoose";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_ORGANIZATION_ADMIN,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type {
+  InterfaceOrganization,
+  InterfaceAppUserProfile,
+} from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
+
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { Types } from "mongoose";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { superAdminCheck } from "../../utilities";
 /**
  * This function enables to remove an admin.
  * @param _parent - parent of current request
@@ -21,7 +26,8 @@ import { Types } from "mongoose";
  * 2. If the organization exists.
  * 3. If the user to be removed is an admin.
  * 4. If the user removing the admin is the creator of the organization
- * @returns Updated user.
+ * 5 .If the current user and user has appUserProfile or not
+ * @returns Updated appUserProfile.
  */
 export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   _parent,
@@ -35,11 +41,12 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   ]);
 
   if (organizationFoundInCache[0] === null) {
-    organization = await Organization.findOne({
+    organization = (await Organization.findOne({
       _id: args.data.organizationId,
-    }).lean();
-
-    await cacheOrganizations([organization!]);
+    }).lean()) as InterfaceOrganization;
+    if (organization != null) {
+      await cacheOrganizations([organization]);
+    }
   } else {
     organization = organizationFoundInCache[0];
   }
@@ -60,6 +67,13 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   const currentUser = await User.findOne({
     _id: context.userId,
   });
+  if (!currentUser) {
+    throw new errors.NotFoundError(
+      USER_NOT_FOUND_ERROR.MESSAGE,
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
 
   // Checks whether user exists.
   if (!user) {
@@ -69,10 +83,30 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const userAppProfile = await AppUserProfile.findOne({
+    userId: user._id,
+  }).lean();
+  if (!userAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
   // Checks whether user is an admin of the organization.
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
-    Types.ObjectId(admin).equals(user._id),
+    new Types.ObjectId(admin).equals(user._id),
   );
 
   if (!userIsOrganizationAdmin) {
@@ -84,7 +118,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   }
 
   // Checks whether the current user is a superadmin.
-  superAdminCheck(currentUser!);
+  superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
   // Removes user._id from admins list of the organization.
   const updatedOrganization = await Organization.findOneAndUpdate(
@@ -94,7 +128,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     {
       $set: {
         admins: organization.admins.filter(
-          (admin) => admin.toString() !== user!._id.toString(),
+          (admin) => admin.toString() !== user._id.toString(),
         ),
       },
     },
@@ -107,15 +141,16 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     await cacheOrganizations([updatedOrganization]);
   }
 
-  // Removes organization._id from adminFor list of the user and returns the updated user.
-  return await User.findOneAndUpdate(
+  // Removes organization._id from adminFor list of the appUserProfile and returns the updated userProfile.
+  return (await AppUserProfile.findOneAndUpdate(
     {
-      _id: user._id,
+      _id: userAppProfile._id,
     },
     {
       $set: {
-        adminFor: user.adminFor.filter(
+        adminFor: userAppProfile.adminFor.filter(
           (adminForOrganization) =>
+            adminForOrganization &&
             adminForOrganization.toString() !== organization._id.toString(),
         ),
       },
@@ -123,7 +158,5 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     {
       new: true,
     },
-  )
-    .select(["-password"])
-    .lean();
+  ).lean()) as InterfaceAppUserProfile;
 };

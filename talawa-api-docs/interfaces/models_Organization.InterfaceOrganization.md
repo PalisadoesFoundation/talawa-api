@@ -41,7 +41,7 @@ This is an interface that represents a database(MongoDB) document for Organizati
 
 [src/models/Organization.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L12)
 
-___
+---
 
 ### address
 
@@ -49,22 +49,22 @@ ___
 
 #### Type declaration
 
-| Name | Type |
-| :------ | :------ |
-| `city` | `string` |
-| `countryCode` | `string` |
+| Name                | Type     |
+| :------------------ | :------- |
+| `city`              | `string` |
+| `countryCode`       | `string` |
 | `dependentLocality` | `string` |
-| `line1` | `string` |
-| `line2` | `string` |
-| `postalCode` | `string` |
-| `sortingCode` | `string` |
-| `state` | `string` |
+| `line1`             | `string` |
+| `line2`             | `string` |
+| `postalCode`        | `string` |
+| `sortingCode`       | `string` |
+| `state`             | `string` |
 
 #### Defined in
 
 [src/models/Organization.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L17)
 
-___
+---
 
 ### admins
 
@@ -74,7 +74,7 @@ ___
 
 [src/models/Organization.ts:30](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L30)
 
-___
+---
 
 ### apiUrl
 
@@ -84,7 +84,7 @@ ___
 
 [src/models/Organization.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L13)
 
-___
+---
 
 ### blockedUsers
 
@@ -94,7 +94,7 @@ ___
 
 [src/models/Organization.ts:35](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L35)
 
-___
+---
 
 ### createdAt
 
@@ -104,7 +104,7 @@ ___
 
 [src/models/Organization.ts:37](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L37)
 
-___
+---
 
 ### creatorId
 
@@ -114,7 +114,7 @@ ___
 
 [src/models/Organization.ts:27](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L27)
 
-___
+---
 
 ### customFields
 
@@ -124,7 +124,7 @@ ___
 
 [src/models/Organization.ts:36](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L36)
 
-___
+---
 
 ### description
 
@@ -134,7 +134,7 @@ ___
 
 [src/models/Organization.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L16)
 
-___
+---
 
 ### groupChats
 
@@ -144,7 +144,7 @@ ___
 
 [src/models/Organization.ts:31](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L31)
 
-___
+---
 
 ### image
 
@@ -154,7 +154,7 @@ ___
 
 [src/models/Organization.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L14)
 
-___
+---
 
 ### members
 
@@ -164,7 +164,7 @@ ___
 
 [src/models/Organization.ts:29](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L29)
 
-___
+---
 
 ### membershipRequests
 
@@ -174,7 +174,7 @@ ___
 
 [src/models/Organization.ts:34](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L34)
 
-___
+---
 
 ### name
 
@@ -184,7 +184,7 @@ ___
 
 [src/models/Organization.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L15)
 
-___
+---
 
 ### pinnedPosts
 
@@ -194,7 +194,7 @@ ___
 
 [src/models/Organization.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L33)
 
-___
+---
 
 ### posts
 
@@ -204,7 +204,7 @@ ___
 
 [src/models/Organization.ts:32](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L32)
 
-___
+---
 
 ### status
 
@@ -214,7 +214,7 @@ ___
 
 [src/models/Organization.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L28)
 
-___
+---
 
 ### updatedAt
 
@@ -224,7 +224,7 @@ ___
 
 [src/models/Organization.ts:38](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L38)
 
-___
+---
 
 ### userRegistrationRequired
 
@@ -234,7 +234,7 @@ ___
 
 [src/models/Organization.ts:39](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Organization.ts#L39)
 
-___
+---
 
 ### visibleInSearch
 
