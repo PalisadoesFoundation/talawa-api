@@ -230,6 +230,7 @@ export const types = gql`
     endTime: Time
     allDay: Boolean!
     recurring: Boolean!
+    recurrenceRule: RecurrenceRule
     recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
@@ -293,6 +294,7 @@ export const types = gql`
     taxDeductible: Boolean!
     isDefault: Boolean!
     isArchived: Boolean!
+    creator: User
     campaigns: [FundraisingCampaign!]
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -519,6 +521,14 @@ export const types = gql`
     pinned: Boolean
   }
 
+  type RecurrenceRule {
+    frequency: Frequency
+    weekDays: [WeekDays]
+    interval: PositiveInt
+    count: PositiveInt
+    weekDayOccurenceInMonth: Int
+  }
+
   type SocialMediaUrls {
     facebook: String
     instagram: String
@@ -621,7 +631,7 @@ export const types = gql`
   }
   type UserData {
     user: User!
-    appUserProfile: AppUserProfile!
+    appUserProfile: AppUserProfile
   }
   type UserConnection {
     pageInfo: PageInfo!

@@ -30,3 +30,22 @@ export const convertToRRuleDateString = (date: Date): string => {
 
   return dateString;
 };
+
+/**
+ * This function counts the total number of mondays in a month.
+ * @param date - a date.
+ * @returns total number of mondays.
+ */
+
+export const countTotalMondaysInMonth = (date: Date): number => {
+  let count = 0;
+  const month = date.getMonth();
+
+  for (let i = 1; i <= 31; i++) {
+    const testDate = new Date(date.getFullYear(), month, i);
+    if (testDate.getMonth() !== month) break; // Month has ended
+    if (testDate.getDay() === 1) count++; // Monday
+  }
+
+  return count;
+};

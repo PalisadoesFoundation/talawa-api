@@ -118,13 +118,13 @@ export const enums = gql`
   }
 
   enum WeekDays {
-    MO
-    TU
-    WE
-    TH
-    FR
-    SA
-    SU
+    MONDAY
+    TUESDAY
+    WEDNESDAY
+    THURSDAY
+    FRIDAY
+    SATURDAY
+    SUNDAY
   }
 
   enum EducationGrade {
