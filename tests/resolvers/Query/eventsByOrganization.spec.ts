@@ -23,14 +23,12 @@ beforeAll(async () => {
     testUser?._id,
     testOrganization?._id,
     true,
-    "ONCE",
   );
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const testEvent2 = await createEventWithRegistrant(
     testUser?._id,
     testOrganization?._id,
     true,
-    "ONCE",
   );
 });
 
