@@ -135,7 +135,6 @@ export const inputs = gql`
     endTime: Time
     allDay: Boolean!
     recurring: Boolean!
-    recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
     images: [String]
@@ -394,7 +393,6 @@ export const inputs = gql`
     description: String
     recurring: Boolean
     isRecurringEventException: Boolean
-    recurrance: Recurrance
     isPublic: Boolean
     isRegisterable: Boolean
     startDate: Date

@@ -25,8 +25,6 @@ describe("getSort function", () => {
     ["startTime_DESC", { startTime: -1 }],
     ["endTime_ASC", { endTime: 1 }],
     ["endTime_DESC", { endTime: -1 }],
-    ["recurrance_ASC", { recurrance: 1 }],
-    ["recurrance_DESC", { recurrance: -1 }],
     ["location_ASC", { location: 1 }],
     ["location_DESC", { location: -1 }],
     ["createdAt_ASC", { createdAt: 1 }],

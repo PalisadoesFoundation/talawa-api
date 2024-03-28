@@ -483,64 +483,6 @@ describe("resolvers -> Query -> events", () => {
     expect(registeredEventsByUserPayload).toEqual(registeredEventsByUser);
   });
 
-  it(`returns list of all existing events sorted by ascending order of event.recurrance
-  if args.orderBy === 'recurrance_ASC where user with _id === args.id is a registrant'`, async () => {
-    const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser?._id,
-      orderBy: "recurrance_ASC",
-    };
-
-    const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
-      registrants: {
-        $elemMatch: {
-          userId: testUser?._id,
-          status: "ACTIVE",
-        },
-      },
-    })
-      .sort({
-        recurrance: 1,
-      })
-      .populate("creatorId", "-password")
-      .populate("admins", "-password")
-      .lean();
-
-    const registeredEventsByUserPayload =
-      await registeredEventsByUserResolver?.({}, args, {});
-
-    expect(registeredEventsByUserPayload).toEqual(registeredEventsByUser);
-  });
-
-  it(`returns list of all existing events sorted by descending order of event.recurrance
-  if args.orderBy === 'recurrance_DESC where user with _id === args.id is a registrant'`, async () => {
-    const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser?._id,
-      orderBy: "recurrance_DESC",
-    };
-
-    const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
-      registrants: {
-        $elemMatch: {
-          userId: testUser?._id,
-          status: "ACTIVE",
-        },
-      },
-    })
-      .sort({
-        recurrance: -1,
-      })
-      .populate("creatorId", "-password")
-      .populate("admins", "-password")
-      .lean();
-
-    const registeredEventsByUserPayload =
-      await registeredEventsByUserResolver?.({}, args, {});
-
-    expect(registeredEventsByUserPayload).toEqual(registeredEventsByUser);
-  });
-
   it(`returns list of all existing events sorted by ascending order of event.location
   if args.orderBy === 'location_ASC where user with _id === args.id is a registrant'`, async () => {
     const args: QueryRegisteredEventsByUserArgs = {
