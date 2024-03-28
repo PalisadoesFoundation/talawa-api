@@ -128,7 +128,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
       const args: MutationCreateEventVolunteerArgs = {
         data: {
           userId: testUser2?._id,
-          eventId: Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
           groupId: testGroup?._id,
         },
       };
@@ -157,7 +157,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
         data: {
           userId: testUser2?._id,
           eventId: testEvent?._id,
-          groupId: Types.ObjectId().toString(),
+          groupId: new Types.ObjectId().toString(),
         },
       };
 

@@ -72,7 +72,7 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
         id: testGroup?._id,
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const { removeEventVolunteerGroup: removeEventVolunteerGroupResolver } =
         await import(
@@ -97,7 +97,7 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
 
     try {
       const args: MutationUpdateEventVolunteerArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = { userId: testUser?._id };
