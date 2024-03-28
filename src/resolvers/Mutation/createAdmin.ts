@@ -137,11 +137,6 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
 
   // Checks whether user with _id === args.data.userId exists.
   if (userExists === false) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-    //   USER_NOT_FOUND_ERROR.CODE,
-    //   USER_NOT_FOUND_ERROR.PARAM,
-    // );
     return {
       user: new AppUserProfile(),
       userErrors: [

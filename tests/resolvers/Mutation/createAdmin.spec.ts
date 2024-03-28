@@ -338,4 +338,22 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     //   );
     // }
   });
+  it(`returns UserNotFoundError if user with _id === args.data.userId does not exist`, async () => {
+    const args: MutationCreateAdminArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        userId: new Types.ObjectId().toString(), // Providing a non-existing user ID
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const result = await createAdminResolver?.({}, args, context);
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "UserNotFoundError",
+      message: USER_NOT_FOUND_ERROR.MESSAGE,
+    });
+  });
 });

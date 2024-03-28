@@ -113,11 +113,6 @@ export const createMember: MutationResolvers["createMember"] = async (
       new Types.ObjectId(admin).equals(currentUser._id),
   );
   if (!userIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
-    // throw new errors.UnauthorizedError(
-    //   requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
-    //   USER_NOT_AUTHORIZED_ADMIN.CODE,
-    //   USER_NOT_AUTHORIZED_ADMIN.PARAM,
-    // );
     return {
       organization: new Organization(),
       userErrors: [

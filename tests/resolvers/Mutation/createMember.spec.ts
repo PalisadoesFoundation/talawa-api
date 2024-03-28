@@ -11,6 +11,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
 } from "../../../src/constants";
 import { createMember as createMemberResolver } from "../../../src/resolvers/Mutation/createMember";
 import type {
@@ -40,7 +41,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createAdmin", () => {
-  it(`throws UnauthorizedError if user with _id === args.input.userId is already an member
+  it(`throws MemberNotFoundError if user with _id === args.input.userId is already an member
   of organzation with _id === args.input.organizationId`, async () => {
     await Organization.updateOne(
       {
@@ -68,6 +69,35 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     expect(result?.userErrors[0]).toStrictEqual({
       __typename: "MemberNotFoundError",
       message: MEMBER_NOT_FOUND_ERROR.MESSAGE,
+    });
+  });
+  it(`throws UserNotAuthorizedAdminError if the current user is not authorized as an admin for the organization`, async () => {
+    const testOrganization2 = await Organization.create({
+      name: `orgName${nanoid().toLowerCase()}`,
+      description: `orgDesc${nanoid().toLowerCase()}`,
+      userRegistrationRequired: false,
+      creatorId: testUser?.id.toString(),
+      admins: [],
+      members: [],
+      visibleInSearch: false,
+    });
+
+    const args: MutationCreateMemberArgs = {
+      input: {
+        organizationId: testOrganization2?.id,
+        userId: testUser?.id,
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const result = await createMemberResolver?.({}, args, context);
+
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "UserNotAuthorizedAdminError",
+      message: USER_NOT_AUTHORIZED_ADMIN.MESSAGE,
     });
   });
   it(`throws User not found error if user with _id === context.userId does not exist`, async () => {
@@ -218,10 +248,5 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       __typename: "UserNotAuthorizedError",
       message: USER_NOT_AUTHORIZED_ERROR.MESSAGE,
     });
-    // } catch (error: unknown) {
-    //   expect((error as Error).message).toEqual(
-    //     USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-    //   );
-    // }
   });
 });
