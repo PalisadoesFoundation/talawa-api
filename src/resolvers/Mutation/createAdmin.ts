@@ -131,22 +131,22 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       ],
     };
   }
-  const userExists = !!(await User.exists({
-    _id: args.data.userId,
-  }));
+  // const userExists = !!(await User.exists({
+  //   _id: args.data.userId,
+  // }));
 
-  // Checks whether user with _id === args.data.userId exists.
-  if (userExists === false) {
-    return {
-      user: new AppUserProfile(),
-      userErrors: [
-        {
-          __typename: "UserNotFoundError",
-          message: requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        },
-      ],
-    };
-  }
+  // // Checks whether user with _id === args.data.userId exists.
+  // if (userExists === false) {
+  //   return {
+  //     user: new AppUserProfile(),
+  //     userErrors: [
+  //       {
+  //         __typename: "UserNotFoundError",
+  //         message: requestContext.translate("test"),
+  //       },
+  //     ],
+  //   };
+  // }
 
   const userIsOrganizationMember = organization.members.some((member) =>
     new Types.ObjectId(member).equals(args.data.userId),
