@@ -37,11 +37,11 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     })) as InterfaceUserFamily;
 
     const userIsMemberOfUserFamily = userFamily?.users.some((member) => {
-      return new Types.ObjectId(member).equals(user?._id);
+      return Types.ObjectId.createFromTime(member).equals(user?._id);
     });
 
     const userIdUserFamilyAdmin = userFamily?.admins.some((admin) => {
-      new Types.ObjectId(admin).equals(user?._id);
+      Types.ObjectId.createFromTime(admin).equals(user?._id);
     });
     //Check whether user family exists.
     if (!userFamily) {

@@ -70,7 +70,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     }
 
     const currentUserIsOrganizationMember = organization.members.some(
-      (member) => new Types.ObjectId(member).equals(context.userId),
+      (member) => Types.ObjectId.createFromTime(member).equals(context.userId),
     );
 
     // Checks whether currentUser with _id === context.userId is already a member of organzation.
@@ -87,7 +87,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     if (
       user !== null &&
       organization.blockedUsers.some((blockedUser) =>
-        new Types.ObjectId(blockedUser).equals(user._id),
+        Types.ObjectId.createFromTime(blockedUser).equals(user._id),
       )
     ) {
       throw new errors.UnauthorizedError(

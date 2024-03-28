@@ -40,15 +40,15 @@ export async function findCommentsByPostIdInCache(
       return {
         ...commentObj,
 
-        _id: new Types.ObjectId(commentObj._id),
+        _id: Types.ObjectId.createFromTime(commentObj._id),
 
         createdAt: new Date(commentObj.createdAt),
 
-        creatorId: new Types.ObjectId(commentObj.creatorId),
+        creatorId: Types.ObjectId.createFromTime(commentObj.creatorId),
 
         updatedAt: new Date(commentObj.updatedAt),
 
-        postId: new Types.ObjectId(commentObj.postId),
+        postId: Types.ObjectId.createFromTime(commentObj.postId),
 
         likedBy:
           commentObj?.likedBy.length !== 0

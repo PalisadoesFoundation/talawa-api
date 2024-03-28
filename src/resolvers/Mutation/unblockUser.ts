@@ -68,7 +68,8 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlockedFromOrganization = organization.blockedUsers.some(
-    (blockedUser) => new Types.ObjectId(blockedUser).equals(user._id),
+    (blockedUser) =>
+      Types.ObjectId.createFromTime(blockedUser).equals(user._id),
   );
 
   // checks if user with _id === args.userId is blocked by organzation with _id == args.organizationId

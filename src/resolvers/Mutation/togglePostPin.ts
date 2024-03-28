@@ -102,7 +102,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     }
   }
   const currentPostIsPinned = organization?.pinnedPosts.some((postID) =>
-    new Types.ObjectId(postID).equals(args.id),
+    Types.ObjectId.createFromTime(postID).equals(args.id),
   );
 
   if (currentPostIsPinned) {

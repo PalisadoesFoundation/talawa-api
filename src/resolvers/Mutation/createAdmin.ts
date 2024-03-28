@@ -107,7 +107,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   }
 
   const userIsOrganizationMember = organization.members.some((member) =>
-    new Types.ObjectId(member).equals(args.data.userId),
+    Types.ObjectId.createFromTime(member).equals(args.data.userId),
   );
 
   // Checks whether user with _id === args.data.userId is not a member of organization.
@@ -120,7 +120,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   }
 
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
-    new Types.ObjectId(admin).equals(args.data.userId),
+    Types.ObjectId.createFromTime(admin).equals(args.data.userId),
   );
 
   // Checks whether user with _id === args.data.userId is already an admin of organization.

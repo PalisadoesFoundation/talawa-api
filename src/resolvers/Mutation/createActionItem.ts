@@ -105,7 +105,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
     (organizationId) =>
       organizationId === actionItemCategory.organizationId ||
-      new Types.ObjectId(organizationId).equals(
+      Types.ObjectId.createFromTime(organizationId).equals(
         actionItemCategory.organizationId,
       ),
   );
@@ -151,7 +151,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        new Types.ObjectId(admin).equals(context.userId),
+        Types.ObjectId.createFromTime(admin).equals(context.userId),
     );
   }
 

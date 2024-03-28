@@ -16,7 +16,8 @@ export const adminCheck = async (
   userFamily: InterfaceUserFamily,
 ): Promise<void> => {
   const userIsUserFamilyAdmin = userFamily.admins.some(
-    (admin) => admin === userId || new Types.ObjectId(admin).equals(userId),
+    (admin) =>
+      admin === userId || Types.ObjectId.createFromTime(admin).equals(userId),
   );
 
   // const user = await User.findOne({
