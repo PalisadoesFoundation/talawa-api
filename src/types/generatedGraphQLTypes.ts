@@ -384,7 +384,7 @@ export type CreateCommentPayload = {
 
 export type CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError;
 
-export type CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError;
+export type CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError;
 
 export type CreateMemberPayload = {
   __typename?: 'CreateMemberPayload';
@@ -1031,8 +1031,8 @@ export type MaximumValueError = FieldError & {
   path: Array<Scalars['String']['output']>;
 };
 
-export type MemberAlreadyInOrganizationError = Error & {
-  __typename?: 'MemberAlreadyInOrganizationError';
+export type MemberNotFoundError = Error & {
+  __typename?: 'MemberNotFoundError';
   message: Scalars['String']['output'];
 };
 
@@ -1132,7 +1132,7 @@ export type Mutation = {
   createFundraisingCampaign: FundraisingCampaign;
   createFundraisingCampaignPledge: FundraisingCampaignPledge;
   createGroupChat: GroupChat;
-  createMember: Organization;
+  createMember: CreateMemberPayload;
   createMessageChat: MessageChat;
   createOrganization: Organization;
   createPlugin: Plugin;
@@ -2809,6 +2809,11 @@ export type UserInput = {
   password: Scalars['String']['input'];
 };
 
+export type UserNotAuthorizedAdminError = Error & {
+  __typename?: 'UserNotAuthorizedAdminError';
+  message: Scalars['String']['output'];
+};
+
 export type UserNotAuthorizedError = Error & {
   __typename?: 'UserNotAuthorizedError';
   message: Scalars['String']['output'];
@@ -3060,13 +3065,13 @@ export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
   CreateAdminError: ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   CreateCommentError: ( PostNotFoundError );
   CreateDirectChatError: ( OrganizationNotFoundError ) | ( UserNotFoundError );
-  CreateMemberError: ( MemberAlreadyInOrganizationError ) | ( OrganizationNotFoundError ) | ( UserNotFoundError );
+  CreateMemberError: ( MemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedAdminError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
 };
 
 /** Mapping of interface types */
 export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
   ConnectionPageInfo: ( DefaultConnectionPageInfo );
-  Error: ( MemberAlreadyInOrganizationError ) | ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( PostNotFoundError ) | ( UnauthenticatedError ) | ( UnauthorizedError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
+  Error: ( MemberNotFoundError ) | ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( PostNotFoundError ) | ( UnauthenticatedError ) | ( UnauthorizedError ) | ( UserNotAuthorizedAdminError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   FieldError: ( InvalidCursor ) | ( MaximumLengthError ) | ( MaximumValueError ) | ( MinimumLengthError ) | ( MinimumValueError );
 };
 
@@ -3171,7 +3176,7 @@ export type ResolversTypes = {
   MaritalStatus: MaritalStatus;
   MaximumLengthError: ResolverTypeWrapper<MaximumLengthError>;
   MaximumValueError: ResolverTypeWrapper<MaximumValueError>;
-  MemberAlreadyInOrganizationError: ResolverTypeWrapper<MemberAlreadyInOrganizationError>;
+  MemberNotFoundError: ResolverTypeWrapper<MemberNotFoundError>;
   MembershipRequest: ResolverTypeWrapper<InterfaceMembershipRequestModel>;
   MembershipRequestsWhereInput: MembershipRequestsWhereInput;
   Message: ResolverTypeWrapper<InterfaceMessageModel>;
@@ -3251,6 +3256,7 @@ export type ResolversTypes = {
   UserData: ResolverTypeWrapper<Omit<UserData, 'appUserProfile' | 'user'> & { appUserProfile?: Maybe<ResolversTypes['AppUserProfile']>, user: ResolversTypes['User'] }>;
   UserFamily: ResolverTypeWrapper<InterfaceUserFamilyModel>;
   UserInput: UserInput;
+  UserNotAuthorizedAdminError: ResolverTypeWrapper<UserNotAuthorizedAdminError>;
   UserNotAuthorizedError: ResolverTypeWrapper<UserNotAuthorizedError>;
   UserNotFoundError: ResolverTypeWrapper<UserNotFoundError>;
   UserOrderByInput: UserOrderByInput;
@@ -3362,7 +3368,7 @@ export type ResolversParentTypes = {
   Longitude: Scalars['Longitude']['output'];
   MaximumLengthError: MaximumLengthError;
   MaximumValueError: MaximumValueError;
-  MemberAlreadyInOrganizationError: MemberAlreadyInOrganizationError;
+  MemberNotFoundError: MemberNotFoundError;
   MembershipRequest: InterfaceMembershipRequestModel;
   MembershipRequestsWhereInput: MembershipRequestsWhereInput;
   Message: InterfaceMessageModel;
@@ -3434,6 +3440,7 @@ export type ResolversParentTypes = {
   UserData: Omit<UserData, 'appUserProfile' | 'user'> & { appUserProfile?: Maybe<ResolversParentTypes['AppUserProfile']>, user: ResolversParentTypes['User'] };
   UserFamily: InterfaceUserFamilyModel;
   UserInput: UserInput;
+  UserNotAuthorizedAdminError: UserNotAuthorizedAdminError;
   UserNotAuthorizedError: UserNotAuthorizedError;
   UserNotFoundError: UserNotFoundError;
   UserPhone: UserPhone;
@@ -3697,7 +3704,7 @@ export type CreateDirectChatErrorResolvers<ContextType = any, ParentType extends
 };
 
 export type CreateMemberErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateMemberError'] = ResolversParentTypes['CreateMemberError']> = {
-  __resolveType: TypeResolveFn<'MemberAlreadyInOrganizationError' | 'OrganizationNotFoundError' | 'UserNotFoundError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'MemberNotFoundError' | 'OrganizationNotFoundError' | 'UserNotAuthorizedAdminError' | 'UserNotAuthorizedError' | 'UserNotFoundError', ParentType, ContextType>;
 };
 
 export type CreateMemberPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateMemberPayload'] = ResolversParentTypes['CreateMemberPayload']> = {
@@ -3772,7 +3779,7 @@ export interface EmailAddressScalarConfig extends GraphQLScalarTypeConfig<Resolv
 }
 
 export type ErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Error'] = ResolversParentTypes['Error']> = {
-  __resolveType: TypeResolveFn<'MemberAlreadyInOrganizationError' | 'OrganizationMemberNotFoundError' | 'OrganizationNotFoundError' | 'PostNotFoundError' | 'UnauthenticatedError' | 'UnauthorizedError' | 'UserNotAuthorizedError' | 'UserNotFoundError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'MemberNotFoundError' | 'OrganizationMemberNotFoundError' | 'OrganizationNotFoundError' | 'PostNotFoundError' | 'UnauthenticatedError' | 'UnauthorizedError' | 'UserNotAuthorizedAdminError' | 'UserNotAuthorizedError' | 'UserNotFoundError', ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 };
 
@@ -3978,7 +3985,7 @@ export type MaximumValueErrorResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type MemberAlreadyInOrganizationErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MemberAlreadyInOrganizationError'] = ResolversParentTypes['MemberAlreadyInOrganizationError']> = {
+export type MemberNotFoundErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MemberNotFoundError'] = ResolversParentTypes['MemberNotFoundError']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -4063,7 +4070,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignArgs, 'data'>>;
   createFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignPledgeArgs, 'data'>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
-  createMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
+  createMember?: Resolver<ResolversTypes['CreateMemberPayload'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginName'>>;
@@ -4458,6 +4465,11 @@ export type UserFamilyResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserNotAuthorizedAdminErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotAuthorizedAdminError'] = ResolversParentTypes['UserNotAuthorizedAdminError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UserNotAuthorizedErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotAuthorizedError'] = ResolversParentTypes['UserNotAuthorizedError']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4585,7 +4597,7 @@ export type Resolvers<ContextType = any> = {
   Longitude?: GraphQLScalarType;
   MaximumLengthError?: MaximumLengthErrorResolvers<ContextType>;
   MaximumValueError?: MaximumValueErrorResolvers<ContextType>;
-  MemberAlreadyInOrganizationError?: MemberAlreadyInOrganizationErrorResolvers<ContextType>;
+  MemberNotFoundError?: MemberNotFoundErrorResolvers<ContextType>;
   MembershipRequest?: MembershipRequestResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   MessageChat?: MessageChatResolvers<ContextType>;
@@ -4623,6 +4635,7 @@ export type Resolvers<ContextType = any> = {
   UserCustomData?: UserCustomDataResolvers<ContextType>;
   UserData?: UserDataResolvers<ContextType>;
   UserFamily?: UserFamilyResolvers<ContextType>;
+  UserNotAuthorizedAdminError?: UserNotAuthorizedAdminErrorResolvers<ContextType>;
   UserNotAuthorizedError?: UserNotAuthorizedErrorResolvers<ContextType>;
   UserNotFoundError?: UserNotFoundErrorResolvers<ContextType>;
   UserPhone?: UserPhoneResolvers<ContextType>;

@@ -66,7 +66,7 @@ export const mutations = gql`
 
     checkIn(data: CheckInInput!): CheckIn! @auth
 
-    createMember(input: UserAndOrganizationInput!): Organization! @auth
+    createMember(input: UserAndOrganizationInput!): CreateMemberPayload! @auth
     # createAdmin(data: UserAndOrganizationInput!): AppUserProfile!
     #   @auth
     #   @role(requires: SUPERADMIN)

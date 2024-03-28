@@ -9,12 +9,20 @@ export const createMemberErrors = gql`
     message: String!
   }
 
-  type MemberAlreadyInOrganizationError implements Error {
+  type MemberNotFoundError implements Error {
+    message: String!
+  }
+  type UserNotAuthorizedAdminError implements Error {
+    message: String!
+  }
+  type UserNotAuthorizedError implements Error {
     message: String!
   }
 
   union CreateMemberError =
     | UserNotFoundError
     | OrganizationNotFoundError
-    | MemberAlreadyInOrganizationError
+    | MemberNotFoundError
+    | UserNotAuthorizedAdminError
+    | UserNotAuthorizedError
 `;

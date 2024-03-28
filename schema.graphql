@@ -309,7 +309,7 @@ type CreateCommentPayload {
 
 union CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError
 
-union CreateMemberError = MemberAlreadyInOrganizationError | OrganizationNotFoundError | UserNotFoundError
+union CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError
 
 type CreateMemberPayload {
   organization: Organization
@@ -949,7 +949,7 @@ type MaximumValueError implements FieldError {
   path: [String!]!
 }
 
-type MemberAlreadyInOrganizationError implements Error {
+type MemberNotFoundError implements Error {
   message: String!
 }
 
@@ -1043,7 +1043,7 @@ type Mutation {
   createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
   createFundraisingCampaignPledge(data: FundCampaignPledgeInput!): FundraisingCampaignPledge!
   createGroupChat(data: createGroupChatInput!): GroupChat!
-  createMember(input: UserAndOrganizationInput!): Organization!
+  createMember(input: UserAndOrganizationInput!): CreateMemberPayload!
   createMessageChat(data: MessageChatInput!): MessageChat!
   createOrganization(data: OrganizationInput, file: String): Organization!
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
@@ -1768,6 +1768,10 @@ input UserInput {
   lastName: String!
   organizationUserBelongsToId: ID
   password: String!
+}
+
+type UserNotAuthorizedAdminError implements Error {
+  message: String!
 }
 
 type UserNotAuthorizedError implements Error {
