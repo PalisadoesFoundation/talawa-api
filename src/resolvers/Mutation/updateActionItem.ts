@@ -82,9 +82,9 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
   let sameAssignedUser = false;
 
   if (args.data.assigneeId) {
-    sameAssignedUser = new Types.ObjectId(actionItem.assigneeId).equals(
-      args.data.assigneeId,
-    );
+    sameAssignedUser = Types.ObjectId.createFromTime(
+      actionItem.assigneeId,
+    ).equals(args.data.assigneeId);
 
     if (!sameAssignedUser) {
       const newAssignedUser = await User.findOne({
@@ -105,7 +105,9 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       userIsOrganizationMember = newAssignedUser.joinedOrganizations.some(
         (organizationId) =>
           organizationId === currorganizationId ||
-          new Types.ObjectId(organizationId).equals(currorganizationId),
+          Types.ObjectId.createFromTime(organizationId).equals(
+            currorganizationId,
+          ),
       );
 
       // Checks if the new asignee is a member of the organization
@@ -159,7 +161,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        new Types.ObjectId(admin).equals(context.userId),
+        Types.ObjectId.createFromTime(admin).equals(context.userId),
     );
   }
 

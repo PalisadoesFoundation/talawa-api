@@ -85,7 +85,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   const currentUserIsEventAdmin = event.admins.some(
     (admin) =>
       admin === context.userID ||
-      new Types.ObjectId(admin).equals(context.userId),
+      Types.ObjectId.createFromTime(admin).equals(context.userId),
   );
 
   // checks if current user is an admin of the event with _id === args.id

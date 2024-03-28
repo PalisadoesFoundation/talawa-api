@@ -108,7 +108,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        new Types.ObjectId(admin).equals(context.userId),
+        Types.ObjectId.createFromTime(admin).equals(context.userId),
     );
   }
 

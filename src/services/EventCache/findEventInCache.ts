@@ -33,7 +33,7 @@ export async function findEventsInCache(
       return {
         ...eventObj,
 
-        _id: new Types.ObjectId(eventObj._id),
+        _id: Types.ObjectId.createFromTime(eventObj._id),
 
         admins:
           eventObj?.admins?.length !== 0
@@ -42,7 +42,7 @@ export async function findEventsInCache(
               })
             : [],
 
-        organization: new Types.ObjectId(eventObj.organization),
+        organization: Types.ObjectId.createFromTime(eventObj.organization),
 
         startDate: new Date(eventObj.startDate),
 
@@ -54,7 +54,7 @@ export async function findEventsInCache(
 
         ...(eventObj?.endTime ? { endTime: new Date(eventObj.endTime) } : {}), // Conditional removal of endTime field
 
-        creatorId: new Types.ObjectId(eventObj.creatorId),
+        creatorId: Types.ObjectId.createFromTime(eventObj.creatorId),
 
         createdAt: new Date(eventObj.createdAt),
 

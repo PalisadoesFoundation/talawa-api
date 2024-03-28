@@ -87,7 +87,9 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   const currentUserIsOrganizationMember = organization.members.some(
     (memberId) =>
-      new Types.ObjectId(memberId?.toString()).equals(context.userId),
+      Types.ObjectId.createFromTime(memberId?.toString()).equals(
+        context.userId,
+      ),
   );
 
   if (!currentUserIsOrganizationMember) {

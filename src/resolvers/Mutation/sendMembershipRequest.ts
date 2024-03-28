@@ -65,7 +65,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
 
     // Checks if the user is already a member of the organization
     const isMember = organization.members.some((member) =>
-      new Types.ObjectId(member).equals(context.userId),
+      Types.ObjectId.createFromTime(member).equals(context.userId),
     );
 
     if (isMember === true) {
@@ -81,7 +81,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
     if (
       user !== null &&
       organization.blockedUsers.some((blockedUser) =>
-        new Types.ObjectId(blockedUser).equals(user._id),
+        Types.ObjectId.createFromTime(blockedUser).equals(user._id),
       )
     ) {
       throw new errors.UnauthorizedError(

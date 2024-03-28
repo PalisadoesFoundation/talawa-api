@@ -77,7 +77,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   }
 
   const currentUserIsOrganizationMember = organization.members.some((member) =>
-    new Types.ObjectId(member).equals(currentUser?._id),
+    Types.ObjectId.createFromTime(member).equals(currentUser?._id),
   );
 
   // Checks whether currentUser is not a member of organzation.
@@ -89,7 +89,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     );
   }
   const currentUserIsOrgAdmin = organization.admins.some((admin) =>
-    new Types.ObjectId(admin).equals(currentUser._id),
+    Types.ObjectId.createFromTime(admin).equals(currentUser._id),
   );
 
   // Removes currentUser._id from admins and members lists of organzation's document.

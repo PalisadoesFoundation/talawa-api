@@ -81,7 +81,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   const userIsOrganizationAdmin = organization.admins.some(
     (admin) =>
       admin === currentUser._id ||
-      new Types.ObjectId(admin).equals(currentUser._id),
+      Types.ObjectId.createFromTime(admin).equals(currentUser._id),
   );
   if (!userIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
     throw new errors.UnauthorizedError(

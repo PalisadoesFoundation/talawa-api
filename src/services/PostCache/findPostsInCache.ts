@@ -33,11 +33,11 @@ export async function findPostsInCache(
       return {
         ...postObj,
 
-        _id: new Types.ObjectId(postObj._id),
+        _id: Types.ObjectId.createFromTime(postObj._id),
 
         createdAt: new Date(postObj.createdAt),
 
-        organization: new Types.ObjectId(postObj.organization),
+        organization: Types.ObjectId.createFromTime(postObj.organization),
 
         likeCount: Number(postObj.likeCount),
 
@@ -50,7 +50,7 @@ export async function findPostsInCache(
               })
             : [],
 
-        creatorId: new Types.ObjectId(postObj.creatorId),
+        creatorId: Types.ObjectId.createFromTime(postObj.creatorId),
 
         updatedAt: new Date(postObj.updatedAt),
       };

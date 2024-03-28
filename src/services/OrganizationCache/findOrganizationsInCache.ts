@@ -35,7 +35,7 @@ export async function findOrganizationsInCache(
 
         createdAt: new Date(organization.createdAt),
 
-        _id: new Types.ObjectId(organization._id),
+        _id: Types.ObjectId.createFromTime(organization._id),
 
         admins: organization?.admins?.map((admin: string) => {
           return new Types.ObjectId(admin);
@@ -48,7 +48,7 @@ export async function findOrganizationsInCache(
               })
             : [],
 
-        creatorId: new Types.ObjectId(organization.creatorId),
+        creatorId: Types.ObjectId.createFromTime(organization.creatorId),
 
         updatedAt: new Date(organization.updatedAt),
 
