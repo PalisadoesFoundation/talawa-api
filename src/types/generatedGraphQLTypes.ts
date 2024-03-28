@@ -700,7 +700,6 @@ export type Event = {
   location?: Maybe<Scalars['String']['output']>;
   longitude?: Maybe<Scalars['Longitude']['output']>;
   organization?: Maybe<Organization>;
-  recurrance?: Maybe<Recurrance>;
   recurrenceRule?: Maybe<RecurrenceRule>;
   recurring: Scalars['Boolean']['output'];
   startDate: Scalars['Date']['output'];
@@ -746,7 +745,6 @@ export type EventInput = {
   location?: InputMaybe<Scalars['String']['input']>;
   longitude?: InputMaybe<Scalars['Longitude']['input']>;
   organizationId: Scalars['ID']['input'];
-  recurrance?: InputMaybe<Recurrance>;
   recurring: Scalars['Boolean']['input'];
   startDate: Scalars['Date']['input'];
   startTime?: InputMaybe<Scalars['Time']['input']>;
@@ -2464,13 +2462,6 @@ export type RecaptchaVerification = {
   recaptchaToken: Scalars['String']['input'];
 };
 
-export type Recurrance =
-  | 'DAILY'
-  | 'MONTHLY'
-  | 'ONCE'
-  | 'WEEKLY'
-  | 'YEARLY';
-
 export type RecurrenceRule = {
   __typename?: 'RecurrenceRule';
   count?: Maybe<Scalars['PositiveInt']['output']>;
@@ -2645,7 +2636,6 @@ export type UpdateEventInput = {
   latitude?: InputMaybe<Scalars['Latitude']['input']>;
   location?: InputMaybe<Scalars['String']['input']>;
   longitude?: InputMaybe<Scalars['Longitude']['input']>;
-  recurrance?: InputMaybe<Recurrance>;
   recurring?: InputMaybe<Scalars['Boolean']['input']>;
   startDate?: InputMaybe<Scalars['Date']['input']>;
   startTime?: InputMaybe<Scalars['Time']['input']>;
@@ -3213,7 +3203,6 @@ export type ResolversTypes = {
   PostsConnection: ResolverTypeWrapper<Omit<PostsConnection, 'edges'> & { edges: Array<ResolversTypes['PostEdge']> }>;
   Query: ResolverTypeWrapper<{}>;
   RecaptchaVerification: RecaptchaVerification;
-  Recurrance: Recurrance;
   RecurrenceRule: ResolverTypeWrapper<InterfaceRecurrenceRuleModel>;
   RecurrenceRuleInput: RecurrenceRuleInput;
   RecurringEventMutationType: RecurringEventMutationType;
@@ -3805,7 +3794,6 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Longitude']>, ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
-  recurrance?: Resolver<Maybe<ResolversTypes['Recurrance']>, ParentType, ContextType>;
   recurrenceRule?: Resolver<Maybe<ResolversTypes['RecurrenceRule']>, ParentType, ContextType>;
   recurring?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;

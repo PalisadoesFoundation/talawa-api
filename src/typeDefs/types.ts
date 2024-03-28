@@ -249,7 +249,6 @@ export const types = gql`
     allDay: Boolean!
     recurring: Boolean!
     recurrenceRule: RecurrenceRule
-    recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
     location: String

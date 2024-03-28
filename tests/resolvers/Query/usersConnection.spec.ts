@@ -24,7 +24,6 @@ beforeAll(async () => {
     testUsers[0]?._id,
     testOrganization?._id,
     true,
-    "ONCE",
   );
 });
 

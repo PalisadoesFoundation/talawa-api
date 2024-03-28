@@ -7,7 +7,6 @@ import {
   getRecurringInstanceDates,
 } from "../recurringEventHelpers";
 import { session } from "../../../db";
-import type { Recurrance } from "../../../types/generatedGraphQLTypes";
 import type { InterfaceRecurringEvent } from "../recurringEventHelpers/generateRecurringEventInstances";
 import { RECURRING_EVENT_INSTANCES_QUERY_LIMIT } from "../../../constants";
 
@@ -52,17 +51,12 @@ export const createRecurringEventInstancesDuringQuery = async (
       }).lean();
 
       // get the data from the baseRecurringEvent
-      const {
-        _id: baseRecurringEventId,
-        recurrance,
-        ...data
-      } = baseRecurringEvent[0];
+      const { _id: baseRecurringEventId, ...data } = baseRecurringEvent[0];
 
       // get the input data for the generateRecurringEventInstances function
       const currentInputData: InterfaceRecurringEvent = {
         ...data,
         organizationId: recurrenceRule.organizationId.toString(),
-        recurrance: recurrance as Recurrance,
       };
 
       // get the properties from recurrenceRule

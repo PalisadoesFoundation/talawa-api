@@ -28,7 +28,6 @@ export interface InterfaceEvent {
   endDate: string | undefined;
   startTime: string | undefined;
   endTime: string | undefined;
-  recurrance: string;
   isPublic: boolean;
   isRegisterable: boolean;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
@@ -59,7 +58,6 @@ export interface InterfaceEvent {
  * @param endDate - End date
  * @param startTime - Start Time
  * @param endTime - End Time
- * @param recurrance - Periodicity of recurrance of the event
  * @param isPublic - Is the event public
  * @param isRegisterable - Is the event Registrable
  * @param creatorId - Creator of the event
@@ -153,14 +151,6 @@ const eventSchema = new Schema(
       required: function (this: InterfaceEvent): boolean {
         return !this.allDay;
       },
-    },
-    recurrance: {
-      type: String,
-      required: function (this: InterfaceEvent): boolean {
-        return this.recurring;
-      },
-      enum: ["ONCE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
-      default: "ONCE",
     },
     isPublic: {
       type: Boolean,

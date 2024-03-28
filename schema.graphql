@@ -626,7 +626,6 @@ type Event {
   location: String
   longitude: Longitude
   organization: Organization
-  recurrance: Recurrance
   recurrenceRule: RecurrenceRule
   recurring: Boolean!
   startDate: Date!
@@ -666,7 +665,6 @@ input EventInput {
   location: String
   longitude: Longitude
   organizationId: ID!
-  recurrance: Recurrance
   recurring: Boolean!
   startDate: Date!
   startTime: Time
@@ -1442,14 +1440,6 @@ input RecaptchaVerification {
   recaptchaToken: String!
 }
 
-enum Recurrance {
-  DAILY
-  MONTHLY
-  ONCE
-  WEEKLY
-  YEARLY
-}
-
 type RecurrenceRule {
   count: PositiveInt
   frequency: Frequency
@@ -1626,7 +1616,6 @@ input UpdateEventInput {
   latitude: Latitude
   location: String
   longitude: Longitude
-  recurrance: Recurrance
   recurring: Boolean
   startDate: Date
   startTime: Time
