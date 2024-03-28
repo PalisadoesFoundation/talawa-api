@@ -328,7 +328,7 @@ export type CreateAdminError = OrganizationMemberNotFoundError | OrganizationNot
 
 export type CreateAdminPayload = {
   __typename?: 'CreateAdminPayload';
-  user?: Maybe<User>;
+  user?: Maybe<AppUserProfile>;
   userErrors: Array<CreateAdminError>;
 };
 
@@ -1118,7 +1118,7 @@ export type Mutation = {
   checkOutEventAttendee: EventAttendee;
   createActionItem: ActionItem;
   createActionItemCategory: ActionItemCategory;
-  createAdmin: AppUserProfile;
+  createAdmin: CreateAdminPayload;
   createAdvertisement?: Maybe<CreateAdvertisementPayload>;
   createAgendaCategory: AgendaCategory;
   createAgendaItem: AgendaItem;
@@ -3102,7 +3102,7 @@ export type ResolversTypes = {
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
   CreateActionItemInput: CreateActionItemInput;
   CreateAdminError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateAdminError']>;
-  CreateAdminPayload: ResolverTypeWrapper<Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversTypes['User']>, userErrors: Array<ResolversTypes['CreateAdminError']> }>;
+  CreateAdminPayload: ResolverTypeWrapper<Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversTypes['AppUserProfile']>, userErrors: Array<ResolversTypes['CreateAdminError']> }>;
   CreateAdvertisementInput: CreateAdvertisementInput;
   CreateAdvertisementPayload: ResolverTypeWrapper<Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   CreateAgendaCategoryInput: CreateAgendaCategoryInput;
@@ -3302,7 +3302,7 @@ export type ResolversParentTypes = {
   CountryCode: Scalars['CountryCode']['output'];
   CreateActionItemInput: CreateActionItemInput;
   CreateAdminError: ResolversUnionTypes<ResolversParentTypes>['CreateAdminError'];
-  CreateAdminPayload: Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversParentTypes['User']>, userErrors: Array<ResolversParentTypes['CreateAdminError']> };
+  CreateAdminPayload: Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversParentTypes['AppUserProfile']>, userErrors: Array<ResolversParentTypes['CreateAdminError']> };
   CreateAdvertisementInput: CreateAdvertisementInput;
   CreateAdvertisementPayload: Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   CreateAgendaCategoryInput: CreateAgendaCategoryInput;
@@ -3672,7 +3672,7 @@ export type CreateAdminErrorResolvers<ContextType = any, ParentType extends Reso
 };
 
 export type CreateAdminPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateAdminPayload'] = ResolversParentTypes['CreateAdminPayload']> = {
-  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['AppUserProfile']>, ParentType, ContextType>;
   userErrors?: Resolver<Array<ResolversTypes['CreateAdminError']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -4049,7 +4049,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   checkOutEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationCheckOutEventAttendeeArgs, 'data'>>;
   createActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationCreateActionItemArgs, 'actionItemCategoryId' | 'data'>>;
   createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'name' | 'organizationId'>>;
-  createAdmin?: Resolver<ResolversTypes['AppUserProfile'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
+  createAdmin?: Resolver<ResolversTypes['CreateAdminPayload'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createAdvertisement?: Resolver<Maybe<ResolversTypes['CreateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'input'>>;
   createAgendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<MutationCreateAgendaCategoryArgs, 'input'>>;
   createAgendaItem?: Resolver<ResolversTypes['AgendaItem'], ParentType, ContextType, RequireFields<MutationCreateAgendaItemArgs, 'input'>>;

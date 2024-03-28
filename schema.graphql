@@ -255,7 +255,7 @@ input CreateActionItemInput {
 union CreateAdminError = OrganizationMemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedError | UserNotFoundError
 
 type CreateAdminPayload {
-  user: User
+  user: AppUserProfile
   userErrors: [CreateAdminError!]!
 }
 
@@ -1029,7 +1029,7 @@ type Mutation {
   checkOutEventAttendee(data: EventAttendeeInput!): EventAttendee!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
-  createAdmin(data: UserAndOrganizationInput!): AppUserProfile!
+  createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
   createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!

@@ -43,208 +43,227 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> createAdmin", () => {
   it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
-    try {
-      const args: MutationCreateAdminArgs = {
-        data: {
-          organizationId: new Types.ObjectId().toString(),
-          userId: "",
-        },
-      };
+    const args: MutationCreateAdminArgs = {
+      data: {
+        organizationId: new Types.ObjectId().toString(),
+        userId: "",
+      },
+    };
 
-      const context = {
-        userId: testUser?.id,
-      };
+    const context = {
+      userId: testUser?.id,
+    };
 
-      await createAdminResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
-      );
-    }
+    const result = await createAdminResolver?.({}, args, context);
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "OrganizationNotFoundError",
+      message: ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+    });
+    // } catch (error: unknown) {
+    //   expect((error as Error).message).toEqual(
+    //     ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+    //   );
+    // }
   });
 
   it(`throws User not found error if user with _id === context.userId does not exist`, async () => {
-    try {
-      await Organization.updateOne(
-        {
-          _id: testOrganization?._id,
+    await Organization.updateOne(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $set: {
+          creatorId: new Types.ObjectId().toString(),
         },
-        {
-          $set: {
-            creatorId: new Types.ObjectId().toString(),
-          },
-        },
-      );
+      },
+    );
 
-      const args: MutationCreateAdminArgs = {
-        data: {
-          organizationId: testOrganization?.id,
-          userId: testUser?.id,
-        },
-      };
+    const args: MutationCreateAdminArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        userId: testUser?.id,
+      },
+    };
 
-      const context = {
-        userId: new Types.ObjectId().toString(),
-      };
+    const context = {
+      userId: new Types.ObjectId().toString(),
+    };
 
-      await createAdminResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
+    const result = await createAdminResolver?.({}, args, context);
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "UserNotFoundError",
+      message: USER_NOT_FOUND_ERROR.MESSAGE,
+    });
+    // } catch (error: unknown) {
+    //   expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    // }
   });
 
   it(`throws NotFoundError if no user exists with _id === args.data.userId`, async () => {
-    try {
-      await Organization.updateOne(
-        {
-          _id: testOrganization?._id,
+    await Organization.updateOne(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $set: {
+          creatorId: testUser?._id,
         },
-        {
-          $set: {
-            creatorId: testUser?._id,
-          },
-        },
-      );
+      },
+    );
 
-      await AppUserProfile.updateOne(
-        {
-          userId: testUser?._id,
+    await AppUserProfile.updateOne(
+      {
+        userId: testUser?._id,
+      },
+      {
+        $set: {
+          isSuperAdmin: true,
         },
-        {
-          $set: {
-            isSuperAdmin: true,
-          },
-        },
-      );
+      },
+    );
 
-      const args: MutationCreateAdminArgs = {
-        data: {
-          organizationId: testOrganization?.id,
-          userId: new Types.ObjectId().toString(),
-        },
-      };
+    const args: MutationCreateAdminArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        userId: new Types.ObjectId().toString(),
+      },
+    };
 
-      const context = {
-        userId: testUser?.id,
-      };
+    const context = {
+      userId: testUser?.id,
+    };
 
-      await createAdminResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
+    const result = await createAdminResolver?.({}, args, context);
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "UserNotFoundError",
+      message: USER_NOT_FOUND_ERROR.MESSAGE,
+    });
+    // } catch (error: unknown) {
+    //   expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    // }
   });
   it("throws error if user does not have AppUserProfile", async () => {
-    try {
-      const args: MutationCreateAdminArgs = {
-        data: {
-          organizationId: testOrganization?.id,
-          userId: new Types.ObjectId().toString(),
-        },
-      };
-      const newUser = await User.create({
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
-        password: `pass${nanoid().toLowerCase()}`,
-        firstName: `firstName${nanoid().toLowerCase()}`,
-        lastName: `lastName${nanoid().toLowerCase()}`,
-        image: null,
-      });
-      const context = {
-        userId: newUser?.id,
-      };
-      await createAdminResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
-      );
-    }
+    const args: MutationCreateAdminArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        userId: new Types.ObjectId().toString(),
+      },
+    };
+    const newUser = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: `pass${nanoid().toLowerCase()}`,
+      firstName: `firstName${nanoid().toLowerCase()}`,
+      lastName: `lastName${nanoid().toLowerCase()}`,
+      image: null,
+    });
+    const context = {
+      userId: newUser?.id,
+    };
+    const result = await createAdminResolver?.({}, args, context);
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "UserNotAuthorizedError",
+      message: USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+    });
+    // } catch (error: unknown) {
+    //   expect((error as Error).message).toEqual(
+    //     `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+    //   );
+    // }
   });
   it("throws error if user does not exists", async () => {
-    try {
-      const newUser = await User.create({
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
-        password: `pass${nanoid().toLowerCase()}`,
-        firstName: `firstName${nanoid().toLowerCase()}`,
-        lastName: `lastName${nanoid().toLowerCase()}`,
-        image: null,
-      });
-      const args: MutationCreateAdminArgs = {
-        data: {
-          organizationId: testOrganization?.id,
-          userId: newUser.id,
-        },
-      };
+    const newUser = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: `pass${nanoid().toLowerCase()}`,
+      firstName: `firstName${nanoid().toLowerCase()}`,
+      lastName: `lastName${nanoid().toLowerCase()}`,
+      image: null,
+    });
+    const args: MutationCreateAdminArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        userId: newUser.id,
+      },
+    };
 
-      const context = {
-        userId: testUser?.id,
-      };
-      await createAdminResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
+    const context = {
+      userId: testUser?.id,
+    };
+    const result = await createAdminResolver?.({}, args, context);
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "UserNotFoundError",
+      message: USER_NOT_FOUND_ERROR.MESSAGE,
+    });
+    // } catch (error: unknown) {
+    //   expect((error as Error).message).toEqual(
+    //     `${USER_NOT_FOUND_ERROR.MESSAGE}`,
+    //   );
+    // }
   });
 
   it(`throws NotFoundError if user with _id === args.data.userId is not a member
   of organzation with _id === args.data.organizationId`, async () => {
-    try {
-      const args: MutationCreateAdminArgs = {
-        data: {
-          organizationId: testOrganization?.id,
-          userId: testUser?.id,
-        },
-      };
-
-      const context = {
+    const args: MutationCreateAdminArgs = {
+      data: {
+        organizationId: testOrganization?.id,
         userId: testUser?.id,
-      };
+      },
+    };
 
-      await createAdminResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE,
-      );
-    }
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const result = await createAdminResolver?.({}, args, context);
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "OrganizationMemberNotFoundError",
+      message: ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE,
+    });
+    // } catch (error: any) {
+    //   expect(error.message).toEqual(
+    //     ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE
+    //   );
+    // }
   });
 
   it(`throws UnauthorizedError if user with _id === args.data.userId is already an admin
   of organzation with _id === args.data.organizationId`, async () => {
-    try {
-      const updatedOrganization = await Organization.findOneAndUpdate(
-        {
-          _id: testOrganization?._id,
+    const updatedOrganization = await Organization.findOneAndUpdate(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $push: {
+          members: testUser?._id,
         },
-        {
-          $push: {
-            members: testUser?._id,
-          },
-        },
-        {
-          new: true,
-        },
-      );
+      },
+      {
+        new: true,
+      },
+    );
 
-      if (updatedOrganization !== null) {
-        await cacheOrganizations([updatedOrganization]);
-      }
-
-      const args: MutationCreateAdminArgs = {
-        data: {
-          organizationId: testOrganization?.id,
-          userId: testUser?.id,
-        },
-      };
-
-      const context = {
-        userId: testUser?.id,
-      };
-
-      await createAdminResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
     }
+
+    const args: MutationCreateAdminArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        userId: testUser?.id,
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const result = await createAdminResolver?.({}, args, context);
+    // } catch (error: any) {
+    //   expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    // }
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "UserNotAuthorizedError",
+      message: USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+    });
   });
 
   it(`creates the admin and returns admin's user object`, async () => {
@@ -285,7 +304,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       .select(["-password"])
       .lean();
 
-    expect(createAdminPayload).toEqual(updatedTestUser);
+    expect(createAdminPayload?.user).toEqual(updatedTestUser);
 
     const updatedTestOrganization = await Organization.findOne({
       _id: testOrganization?._id,
@@ -295,24 +314,28 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
     expect(updatedTestOrganization?.admins).toEqual([testUser?._id]);
   });
-  it("throws error if user does not exists", async () => {
-    try {
-      const args: MutationCreateAdminArgs = {
-        data: {
-          organizationId: testOrganization?.id,
-          userId: new Types.ObjectId().toString(),
-        },
-      };
 
-      const context = {
-        userId: testUser?.id,
-      };
-      await createAdminResolver?.({}, args, context);
-    } catch (error: unknown) {
-      // console.log(error)
-      expect((error as Error).message).toEqual(
-        `${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
+  it("throws error if user does not exists", async () => {
+    const args: MutationCreateAdminArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        userId: new Types.ObjectId().toString(),
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+    const result = await createAdminResolver?.({}, args, context);
+    expect(result?.userErrors[0]).toStrictEqual({
+      __typename: "UserNotFoundError",
+      message: USER_NOT_FOUND_ERROR.MESSAGE,
+    });
+    // } catch (error: unknown) {
+    //   // console.log(error)
+    //   expect((error as Error).message).toEqual(
+    //     `${USER_NOT_FOUND_ERROR.MESSAGE}`,
+    //   );
+    // }
   });
 });

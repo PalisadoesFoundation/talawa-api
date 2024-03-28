@@ -123,7 +123,10 @@ export const types = gql`
     websiteLink: String
     socialMediaUrls: SocialMediaUrls
   }
-
+  type CreateAdminPayload {
+    user: AppUserProfile
+    userErrors: [CreateAdminError!]!
+  }
   type UserFamily {
     _id: ID!
     title: String
@@ -146,11 +149,6 @@ export const types = gql`
   type CreateMemberPayload {
     organization: Organization
     userErrors: [CreateMemberError!]!
-  }
-
-  type CreateAdminPayload {
-    user: User
-    userErrors: [CreateAdminError!]!
   }
 
   type CreateCommentPayload {
