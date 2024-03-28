@@ -69,57 +69,24 @@ afterAll(async () => {
 });
 
 describe("Remove Sample Organization Resolver - User Authorization", async () => {
-  it.skip("should NOT throw error when user is ADMIN", async () => {
+  it("should not throw an error when user is an admin for the organization", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
       (message) => message,
     );
 
-    const _id = faker.database.mongodbObjectId();
-    const creatorId = faker.database.mongodbObjectId();
-    const organization = new Organization({
-      _id,
-      name: faker.company.name(),
-      description: faker.lorem.sentences(),
-      userRegistrationRequired: false,
-      creatorId: creatorId,
-      status: "ACTIVE",
-      members: [creatorId],
-      admins: [creatorId],
-      groupChats: [],
-      posts: [],
-      pinnedPosts: [],
-      membershipRequests: [],
-      blockedUsers: [],
-      visibleInSearch: true,
-      createdAt: Date.now(),
-    });
-
-    organization.save();
-
-    const sampleDocument = new SampleData({
-      documentId: organization._id,
-      collectionName: "Organization",
-    });
-
-    sampleDocument.save();
-
     const userData = await generateUserData(
-      organization._id.toString(),
+      ORGANIZATION_ID.toString(),
       "ADMIN",
     );
     const admin = userData.user;
 
     const args = {};
-    const adminContext = { userId: admin._id };
+    const context = { userId: admin._id };
     const parent = {};
 
-    const adminResult = await removeSampleOrganization!(
-      parent,
-      args,
-      adminContext,
-    );
-    expect(adminResult).toBe(true);
+    const result = await removeSampleOrganization!(parent, args, context);
+    expect(result).toBe(true);
   });
 
   it("should not throw error when user is a SUPERADMIN", async () => {
@@ -266,35 +233,10 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
 
     try {
       await removeSampleOrganization!(parent, args, adminContext);
-    } catch (error) {
+    } catch (error: unknown) {
       expect((error as Error).message).toBe(
         ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
-    }
-  });
-
-  it("should NOT throw error when organization doesn't exist", async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message,
-    );
-
-    const userData = await generateUserData(
-      ORGANIZATION_ID.toString(),
-      "ADMIN",
-    );
-    const admin = userData.user;
-
-    const args = {};
-    const adminContext = { userId: admin._id };
-    const parent = {};
-
-    await SampleData.deleteMany({ collectionName: "Organization" });
-
-    try {
-      await removeSampleOrganization!(parent, args, adminContext);
-    } catch (error: any) {
-      expect(error.message).toBe(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
