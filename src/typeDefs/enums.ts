@@ -80,14 +80,6 @@ export const enums = gql`
     commentCount_DESC
   }
 
-  enum Recurrance {
-    DAILY
-    WEEKLY
-    MONTHLY
-    YEARLY
-    ONCE
-  }
-
   enum Status {
     ACTIVE
     BLOCKED
