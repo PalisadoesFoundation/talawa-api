@@ -31,6 +31,7 @@ import { createEvent } from "./createEvent";
 import { createEventVolunteer } from "./createEventVolunteer";
 import { createFund } from "./createFund";
 import { createFundraisingCampaign } from "./createFundraisingCampaign";
+import { createEventVolunteerGroup } from "./createEventVolunteerGroup";
 import { createFundraisingCampaignPledge } from "./createFundraisingCampaignPledge";
 import { createGroupChat } from "./createGroupChat";
 import { createMember } from "./createMember";
@@ -48,7 +49,6 @@ import { deleteDonationById } from "./deleteDonationById";
 import { deleteVenue } from "./deleteVenue";
 import { editVenue } from "./editVenue";
 import { forgotPassword } from "./forgotPassword";
-import { inviteEventAttendee } from "./inviteEventAttendee";
 import { joinPublicOrganization } from "./joinPublicOrganization";
 import { leaveOrganization } from "./leaveOrganization";
 import { likeComment } from "./likeComment";
@@ -72,6 +72,7 @@ import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
 import { removeEventVolunteer } from "./removeEventVolunteer";
 import { removeFund } from "./removeFund";
+import { removeEventVolunteerGroup } from "./removeEventVolunteerGroup";
 import { removeFundraisingCampaign } from "./removeFundraisingCampaign";
 import { removeFundraisingCampaignPledge } from "./removeFundraisingCampaingPledge";
 import { removeGroupChat } from "./removeGroupChat";
@@ -110,6 +111,7 @@ import { updateCommunity } from "./updateCommunity";
 import { updateEvent } from "./updateEvent";
 import { updateEventVolunteer } from "./updateEventVolunteer";
 import { updateFund } from "./updateFund";
+import { updateEventVolunteerGroup } from "./updateEventVolunteerGroup";
 import { updateFundraisingCampaignPledge } from "./updateFundCampaignPledge";
 import { updateFundraisingCampaign } from "./updateFundraisingCampaign";
 import { updateLanguage } from "./updateLanguage";
@@ -172,9 +174,9 @@ export const Mutation: MutationResolvers = {
   editVenue,
   deleteAgendaCategory,
   forgotPassword,
-  inviteEventAttendee,
   joinPublicOrganization,
   createEventVolunteer,
+  createEventVolunteerGroup,
   leaveOrganization,
   likeComment,
   likePost,
@@ -197,6 +199,7 @@ export const Mutation: MutationResolvers = {
   removeEventAttendee,
   removeEventVolunteer,
   removeFund,
+  removeEventVolunteerGroup,
   removeGroupChat,
   removeMember,
   removeOrganization,
@@ -230,6 +233,7 @@ export const Mutation: MutationResolvers = {
   updateEvent,
   updateEventVolunteer,
   updateFund,
+  updateEventVolunteerGroup,
   updateLanguage,
   updateOrganization,
   updatePluginStatus,

@@ -592,6 +592,13 @@ export const EVENT_VOLUNTEER_NOT_FOUND_ERROR = {
   PARAM: "eventVolunteers",
 };
 
+export const EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR = {
+  DESC: "Volunteer group not found",
+  CODE: "eventVolunteerGroup.notFound",
+  MESSAGE: "eventVolunteerGroup.notFound",
+  PARAM: "eventVolunteerGroup",
+};
+
 export const EVENT_VOLUNTEER_INVITE_USER_MISTMATCH = {
   DESC: "Current User is not the user of Event Volunteer",
   CODE: "eventVolunteer.userMismatch",

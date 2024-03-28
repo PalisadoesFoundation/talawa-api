@@ -29,7 +29,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> EventVolunteer -> user", () => {
+describe("resolvers -> EventVolunteer -> creator", () => {
   beforeEach(() => {
     vi.resetModules();
   });

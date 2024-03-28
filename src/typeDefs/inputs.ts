@@ -147,6 +147,13 @@ export const inputs = gql`
   input EventVolunteerInput {
     userId: ID!
     eventId: ID!
+    groupId: ID!
+  }
+
+  input EventVolunteerGroupInput {
+    name: String
+    eventId: ID!
+    volunteersRequired: Int
   }
 
   input UpdateEventVolunteerInput {
@@ -154,6 +161,12 @@ export const inputs = gql`
     isAssigned: Boolean
     isInvited: Boolean
     response: EventVolunteerResponse
+  }
+
+  input UpdateEventVolunteerGroupInput {
+    eventId: ID
+    name: String
+    volunteersRequired: Int
   }
 
   input EventWhereInput {

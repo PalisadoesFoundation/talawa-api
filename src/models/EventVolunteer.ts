@@ -3,12 +3,14 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
 
 export interface InterfaceEventVolunteer {
   _id: Types.ObjectId;
   createdAt: Date;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
   eventId: PopulatedDoc<InterfaceEvent & Document>;
+  groupId: PopulatedDoc<InterfaceEventVolunteerGroup & Document>;
   isAssigned: boolean;
   isInvited: boolean;
   response: string;
@@ -26,6 +28,10 @@ const eventVolunteerSchema = new Schema(
     eventId: {
       type: Schema.Types.ObjectId,
       ref: "Event",
+    },
+    groupId: {
+      type: Schema.Types.ObjectId,
+      ref: "EventVolunteerGroup",
     },
     response: {
       type: String,

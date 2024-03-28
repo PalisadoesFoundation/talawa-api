@@ -9,7 +9,7 @@ import type { InterfaceEventVolunteer } from "../../models";
 import { User, EventVolunteer } from "../../models";
 import { errors, requestContext } from "../../libraries";
 /**
- * This function accepts the Event Volunteer Invite sent to a user
+ * This function enables to update an Event Volunteer
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
