@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Request } from "express";
 import { isAuth } from "../../src/middleware/isAuth";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";

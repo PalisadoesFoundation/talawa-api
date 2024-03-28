@@ -43,7 +43,7 @@ This is an interface representing a document for an event in the database(MongoD
 
 [src/models/Event.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L10)
 
-___
+---
 
 ### admins
 
@@ -53,7 +53,7 @@ ___
 
 [src/models/Event.ts:27](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L27)
 
-___
+---
 
 ### allDay
 
@@ -63,7 +63,7 @@ ___
 
 [src/models/Event.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L18)
 
-___
+---
 
 ### attendees
 
@@ -73,7 +73,7 @@ ___
 
 [src/models/Event.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L13)
 
-___
+---
 
 ### createdAt
 
@@ -83,7 +83,7 @@ ___
 
 [src/models/Event.ts:30](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L30)
 
-___
+---
 
 ### creatorId
 
@@ -93,7 +93,7 @@ ___
 
 [src/models/Event.ts:26](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L26)
 
-___
+---
 
 ### description
 
@@ -103,7 +103,7 @@ ___
 
 [src/models/Event.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L12)
 
-___
+---
 
 ### endDate
 
@@ -113,7 +113,7 @@ ___
 
 [src/models/Event.ts:20](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L20)
 
-___
+---
 
 ### endTime
 
@@ -123,7 +123,7 @@ ___
 
 [src/models/Event.ts:22](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L22)
 
-___
+---
 
 ### isPublic
 
@@ -133,7 +133,7 @@ ___
 
 [src/models/Event.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L24)
 
-___
+---
 
 ### isRegisterable
 
@@ -143,7 +143,7 @@ ___
 
 [src/models/Event.ts:25](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L25)
 
-___
+---
 
 ### latitude
 
@@ -153,7 +153,7 @@ ___
 
 [src/models/Event.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L15)
 
-___
+---
 
 ### location
 
@@ -163,7 +163,7 @@ ___
 
 [src/models/Event.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L14)
 
-___
+---
 
 ### longitude
 
@@ -173,7 +173,7 @@ ___
 
 [src/models/Event.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L16)
 
-___
+---
 
 ### organization
 
@@ -183,7 +183,7 @@ ___
 
 [src/models/Event.ts:28](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L28)
 
-___
+---
 
 ### recurrance
 
@@ -193,7 +193,7 @@ ___
 
 [src/models/Event.ts:23](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L23)
 
-___
+---
 
 ### recurring
 
@@ -203,7 +203,7 @@ ___
 
 [src/models/Event.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L17)
 
-___
+---
 
 ### startDate
 
@@ -213,7 +213,7 @@ ___
 
 [src/models/Event.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L19)
 
-___
+---
 
 ### startTime
 
@@ -223,7 +223,7 @@ ___
 
 [src/models/Event.ts:21](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L21)
 
-___
+---
 
 ### status
 
@@ -233,7 +233,7 @@ ___
 
 [src/models/Event.ts:29](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L29)
 
-___
+---
 
 ### title
 
@@ -243,7 +243,7 @@ ___
 
 [src/models/Event.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Event.ts#L11)
 
-___
+---
 
 ### updatedAt
 

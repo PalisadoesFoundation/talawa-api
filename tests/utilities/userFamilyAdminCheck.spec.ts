@@ -1,4 +1,5 @@
 import "dotenv/config";
+import mongoose from "mongoose";
 import {
   afterAll,
   afterEach,
@@ -8,18 +9,17 @@ import {
   it,
   vi,
 } from "vitest";
-import { connect, disconnect } from "../helpers/db";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../../src/constants";
+import { AppUserProfile } from "../../src/models";
+import type { InterfaceUserFamily } from "../../src/models/userFamily";
+import { UserFamily } from "../../src/models/userFamily";
+import { connect, disconnect } from "../helpers/db";
+import { createTestUserFunc } from "../helpers/user";
 import type {
   TestUserFamilyType,
   TestUserType,
 } from "../helpers/userAndUserFamily";
 import { createTestUserAndUserFamily } from "../helpers/userAndUserFamily";
-import { createTestUserFunc } from "../helpers/user";
-import mongoose from "mongoose";
-import type { InterfaceUserFamily } from "../../src/models/userFamily";
-import { User } from "../../src/models";
-import { UserFamily } from "../../src/models/userFamily";
 
 let testUser: TestUserType;
 let testUserFamily: TestUserFamilyType;
@@ -65,12 +65,12 @@ describe("utilities -> userFamilyAdminCheck", () => {
   });
 
   it("throws no error if userIsUserFamilyAdmin === false and isUserSuperAdmin === true", async () => {
-    const updatedUser = await User.findOneAndUpdate(
+    const updatedUser = await AppUserProfile.findOneAndUpdate(
       {
-        _id: testUser?._id,
+        userId: testUser?._id,
       },
       {
-        userType: "SUPERADMIN",
+        isSuperAdmin: true,
       },
       {
         new: true,
@@ -84,26 +84,13 @@ describe("utilities -> userFamilyAdminCheck", () => {
 
     await expect(
       adminCheck(
-        updatedUser?._id,
+        updatedUser?.userId?.toString() ?? "",
         testUserFamily ?? ({} as InterfaceUserFamily),
       ),
     ).resolves.not.toThrowError();
   });
 
   it("throws no error if user is an admin in that user family but not super admin", async () => {
-    const updatedUser = await User.findOneAndUpdate(
-      {
-        _id: testUser?._id,
-      },
-      {
-        userType: "USER",
-      },
-      {
-        new: true,
-        upsert: true,
-      },
-    );
-
     const updatedUserFamily = await UserFamily.findOneAndUpdate(
       {
         _id: testUserFamily?._id,
@@ -125,7 +112,7 @@ describe("utilities -> userFamilyAdminCheck", () => {
 
     await expect(
       adminCheck(
-        updatedUser?._id,
+        testUser?._id,
         updatedUserFamily ?? ({} as InterfaceUserFamily),
       ),
     ).resolves.not.toThrowError();

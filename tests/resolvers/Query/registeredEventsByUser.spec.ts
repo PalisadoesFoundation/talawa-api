@@ -23,10 +23,6 @@ afterAll(async () => {
 describe("resolvers -> Query -> events", () => {
   it(`returns list of all existing events sorted by ascending order of event._id
   if args.orderBy === 'id_ASC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      _id: 1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "id_ASC",
@@ -41,8 +37,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        _id: 1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -54,10 +52,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by descending order of event._id
   if args.orderBy === 'id_DESC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      _id: -1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "id_DESC",
@@ -72,8 +66,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        _id: -1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -85,10 +81,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by ascending order of event.title
   if args.orderBy === 'title_ASC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      title: 1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "title_ASC",
@@ -103,8 +95,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        title: 1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -116,10 +110,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by descending order of event.title
   if args.orderBy === 'title_DESC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      title: -1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "title_DESC",
@@ -134,8 +124,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        title: -1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -147,10 +139,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by ascending order of event.description
   if args.orderBy === 'description_ASC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      description: 1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "description_ASC",
@@ -165,8 +153,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        description: 1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -178,10 +168,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by descending order of event.description
   if args.orderBy === 'description_DESC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      description: -1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "description_DESC",
@@ -196,8 +182,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        description: -1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -209,10 +197,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by ascending order of event.startDate
   if args.orderBy === 'startDate_ASC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      startDate: 1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "startDate_ASC",
@@ -227,8 +211,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        startDate: 1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -240,10 +226,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by descending order of event.startDate
   if args.orderBy === 'startDate_DESC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      startDate: -1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "startDate_DESC",
@@ -258,8 +240,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        startDate: -1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -271,10 +255,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by ascending order of event.endDate
   if args.orderBy === 'endDate_ASC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      endDate: 1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "endDate_ASC",
@@ -289,8 +269,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        endDate: 1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -302,10 +284,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by descending order of event.endDate
   if args.orderBy === 'endDate_DESC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      endDate: -1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "endDate_DESC",
@@ -320,8 +298,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        endDate: -1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -333,10 +313,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by ascending order of event.allDay
   if args.orderBy === 'allDay_ASC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      allDay: 1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "allDay_ASC",
@@ -351,8 +327,8 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({ allDay: 1 })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -364,10 +340,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by descending order of event.allDay
   if args.orderBy === 'allDay_DESC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      allDay: -1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "allDay_DESC",
@@ -382,8 +354,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        allDay: -1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -395,10 +369,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by ascending order of event.startTime
   if args.orderBy === 'startTime_ASC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      startTime: 1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "startTime_ASC",
@@ -413,8 +383,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        startTime: 1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -426,10 +398,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by descending order of event.startTime
   if args.orderBy === 'startTime_DESC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      startTime: -1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "startTime_DESC",
@@ -444,8 +412,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        startTime: -1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -457,10 +427,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by ascending order of event.endTime
   if args.orderBy === 'endTime_ASC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      endTime: 1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "endTime_ASC",
@@ -475,8 +441,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        endTime: 1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -488,10 +456,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by descending order of event.endTime
   if args.orderBy === 'endTime_DESC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      endTime: -1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "endTime_DESC",
@@ -506,8 +470,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        endTime: -1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -519,10 +485,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by ascending order of event.recurrance
   if args.orderBy === 'recurrance_ASC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      recurrance: 1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "recurrance_ASC",
@@ -537,8 +499,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        recurrance: 1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -550,10 +514,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by descending order of event.recurrance
   if args.orderBy === 'recurrance_DESC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      recurrance: -1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "recurrance_DESC",
@@ -568,8 +528,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        recurrance: -1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -581,10 +543,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by ascending order of event.location
   if args.orderBy === 'location_ASC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      location: 1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "location_ASC",
@@ -599,8 +557,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        location: 1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -612,10 +572,6 @@ describe("resolvers -> Query -> events", () => {
 
   it(`returns list of all existing events sorted by descending order of event.location
   if args.orderBy === 'location_DESC where user with _id === args.id is a registrant'`, async () => {
-    const sort = {
-      location: -1,
-    };
-
     const args: QueryRegisteredEventsByUserArgs = {
       id: testUser?._id,
       orderBy: "location_DESC",
@@ -630,8 +586,10 @@ describe("resolvers -> Query -> events", () => {
         },
       },
     })
-      .sort(sort)
-      .populate("creator", "-password")
+      .sort({
+        location: -1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 
@@ -658,7 +616,7 @@ describe("resolvers -> Query -> events", () => {
       },
     })
       .sort(sort)
-      .populate("creator", "-password")
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 

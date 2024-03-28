@@ -59,7 +59,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRejectMembershipRequestArgs = {
-        membershipRequestId: Types.ObjectId().toString(),
+        membershipRequestId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -70,9 +70,11 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/rejectMembershipRequest");
 
       await rejectMembershipRequestResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -89,7 +91,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
         },
       );
@@ -106,9 +108,11 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/rejectMembershipRequest");
 
       await rejectMembershipRequestResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -136,7 +140,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         },
         {
           $set: {
-            user: Types.ObjectId().toString(),
+            user: new Types.ObjectId().toString(),
           },
         },
       );
@@ -153,9 +157,9 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         await import("../../../src/resolvers/Mutation/rejectMembershipRequest");
 
       await rejectMembershipRequestResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -190,19 +194,8 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         },
       );
 
-      await User.findByIdAndUpdate(
-        {
-          _id: testUser?._id,
-        },
-        {
-          $set: {
-            userType: "USER",
-          },
-        },
-      );
-
       const args: MutationRejectMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest?._id,
+        membershipRequestId: testMembershipRequest?._id.toString() ?? "",
       };
 
       const context = {
@@ -216,9 +209,9 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
       );
 
       await rejectMembershipRequestResolverAdminError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
     }

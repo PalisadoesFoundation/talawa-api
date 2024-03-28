@@ -1,33 +1,36 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
-import { User, Organization } from "../../models";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
+  ORGANIZATION_NOT_AUTHORIZED_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { isValidString } from "../../libraries/validators/validateString";
-import { compareDates } from "../../libraries/validators/compareDates";
+
 import { session } from "../../db";
 import {
-  createSingleEvent,
   createRecurringEvent,
+  createSingleEvent,
 } from "../../helpers/event/createEventHelpers";
-import { compareTime } from "../../libraries/validators/compareTime";
+import { errors, requestContext } from "../../libraries";
+import { compareDates } from "../../libraries/validators/compareDates";
+import { isValidString } from "../../libraries/validators/validateString";
+import type { InterfaceEvent } from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables to create an event.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
- * @remarks The following steps are followed:
- * 1. Check if the user exists
- * 2. Check if the organization exists
- * 3. Check if the user is a part of the organization.
- * 4. If the event is recurring, create the recurring event instances.
- * 5. If the event is non-recurring, create a single event.
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2.If the user has appUserProfile
+ * 3. If the organization exists
+ * 4. If the user is a part of the organization.
+ * 5. If the event is recurring, create the recurring event instances.
+ * 6. If the event is non-recurring, create a single event.
  * @returns Created event
  */
 
@@ -48,6 +51,17 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
   const organization = await Organization.findOne({
     _id: args.data?.organizationId,
@@ -62,9 +76,12 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
-  const userCreatedOrganization = currentUser.createdOrganizations.some(
-    (createdOrganization) => createdOrganization.equals(organization._id),
-  );
+  const userCreatedOrganization =
+    currentUserAppProfile.createdOrganizations.some((createdOrganization) =>
+      new Types.ObjectId(createdOrganization?.toString()).equals(
+        organization._id,
+      ),
+    );
 
   const userJoinedOrganization = currentUser.joinedOrganizations.some(
     (joinedOrganization) => joinedOrganization.equals(organization._id),
@@ -75,7 +92,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     !(
       userCreatedOrganization ||
       userJoinedOrganization ||
-      currentUser.userType == "SUPERADMIN"
+      currentUserAppProfile.isSuperAdmin
     )
   ) {
     throw new errors.UnauthorizedError(
@@ -126,16 +143,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       compareDatesResult,
     );
   }
-  const compareTimeResult = compareTime(
-    args.data?.startTime,
-    args.data?.endTime,
-  );
-  if (compareTimeResult !== "") {
-    throw new errors.InputValidationError(
-      requestContext.translate(compareTimeResult),
-      compareTimeResult,
-    );
-  }
 
   /* c8 ignore start */
   if (session) {
@@ -143,27 +150,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     session.startTransaction();
   }
 
-  const uploadImages = async (imageDataURLs: unknown): Promise<string[]> => {
-    const uploadImageFileNames: string[] = [];
-    /*istanbul ignore next*/
-    if (!imageDataURLs || !Array.isArray(imageDataURLs)) {
-      throw new Error("Invalid or missing image data.");
-    }
-
-    for (const imageDataURL of imageDataURLs) {
-      /*istanbul ignore next*/
-      if (typeof imageDataURL !== "string") {
-        throw new Error("Unsupported file type.");
-      }
-      const uploadedFileName: string = imageDataURL;
-      uploadImageFileNames.push(uploadedFileName);
-    }
-
-    return uploadImageFileNames;
-  };
-  if (args.data?.images) {
-    uploadImages(args.data?.images);
-  }
   /* c8 ignore stop */
   try {
     let createdEvent: InterfaceEvent;

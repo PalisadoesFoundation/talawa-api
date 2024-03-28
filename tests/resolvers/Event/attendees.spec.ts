@@ -23,12 +23,14 @@ afterAll(async () => {
 
 describe("resolvers -> Event -> Attendees", () => {
   it(`returns the attendee user objects for parent event`, async () => {
-    const parent = testEvent!.toObject();
-
+    const parent = testEvent?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
     const attendeesPayload = await attendeesResolver?.(parent, {}, {});
 
     const attendeeObject = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     }).lean();
 
     expect(attendeesPayload).toEqual([attendeeObject]);

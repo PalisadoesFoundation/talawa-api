@@ -1,14 +1,18 @@
+import { Types } from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  PLEASE_PROVIDE_TITLE,
+  POST_NEEDS_TO_BE_PINNED,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
   USER_NOT_FOUND_ERROR,
-  POST_NEEDS_TO_BE_PINNED,
-  PLEASE_PROVIDE_TITLE,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { isValidString } from "../../libraries/validators/validateString";
-import { Organization, Post, User } from "../../models";
+import type { InterfaceOrganization } from "../../models";
+import { AppUserProfile, Organization, Post, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
@@ -23,6 +27,7 @@ import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEn
  * @remarks The following checks are done:
  * 1. If the user exists
  * 2. If the organization exists
+ * 3. If the user has appUserProfile
  * @returns Created Post
  */
 export const createPost: MutationResolvers["createPost"] = async (
@@ -44,6 +49,17 @@ export const createPost: MutationResolvers["createPost"] = async (
     );
   }
 
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
+
   let organization;
 
   const organizationFoundInCache = await findOrganizationsInCache([
@@ -57,9 +73,7 @@ export const createPost: MutationResolvers["createPost"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    if (organization) {
-      await cacheOrganizations([organization]);
-    }
+    await cacheOrganizations([organization as InterfaceOrganization]);
   }
 
   // Checks whether organization with _id == args.data.organizationId exists.
@@ -68,6 +82,19 @@ export const createPost: MutationResolvers["createPost"] = async (
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
       ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  const currentUserIsOrganizationMember = organization.members.some(
+    (memberId) =>
+      new Types.ObjectId(memberId?.toString()).equals(context.userId),
+  );
+
+  if (!currentUserIsOrganizationMember) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
+      USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
+      USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
     );
   }
 
@@ -122,20 +149,21 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   if (args.data.pinned) {
     // Check if the user has privileges to pin the post
-    const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-      (organizationId) => organizationId.equals(args.data.organizationId),
+    const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+      (organizationId) =>
+        new Types.ObjectId(organizationId?.toString()).equals(
+          args.data.organizationId,
+        ),
     );
-    if (currentUser?.userType) {
-      if (
-        !(currentUser?.userType === "SUPERADMIN") &&
-        !currentUserIsOrganizationAdmin
-      ) {
-        throw new errors.UnauthorizedError(
-          requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
-          USER_NOT_AUTHORIZED_TO_PIN.CODE,
-          USER_NOT_AUTHORIZED_TO_PIN.PARAM,
-        );
-      }
+
+    if (
+      !(currentUserAppProfile.isSuperAdmin || currentUserIsOrganizationAdmin)
+    ) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
+        USER_NOT_AUTHORIZED_TO_PIN.CODE,
+        USER_NOT_AUTHORIZED_TO_PIN.PARAM,
+      );
     }
   }
 
@@ -167,9 +195,7 @@ export const createPost: MutationResolvers["createPost"] = async (
       },
     );
 
-    if (updatedOrganizaiton) {
-      await cacheOrganizations([updatedOrganizaiton]);
-    }
+    await cacheOrganizations([updatedOrganizaiton as InterfaceOrganization]);
   }
 
   // Returns createdPost.

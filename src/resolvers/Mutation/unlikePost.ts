@@ -1,10 +1,10 @@
 import { POST_NOT_FOUND_ERROR } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfacePost } from "../../models";
 import { Post } from "../../models";
-import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
+import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to unlike a post.
  * @param _parent - parent of current request
@@ -69,7 +69,7 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
       await cachePosts([updatedPost]);
     }
 
-    return updatedPost!;
+    return updatedPost;
   }
 
   return post;

@@ -1,6 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Language } from "../../models";
+import type { InterfaceLanguage } from "../../models";
 import { TRANSLATION_ALREADY_PRESENT_ERROR } from "../../constants";
 /**
  * This function adds language translation.
@@ -31,7 +32,7 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
       });
 
       // Updates language with new translation and returns the updated language.
-      return await Language.findOneAndUpdate(
+      return (await Language.findOneAndUpdate(
         {
           en: args.data.en_value,
         },
@@ -46,7 +47,7 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
         {
           new: true,
         },
-      ).lean();
+      ).lean()) as InterfaceLanguage;
     }
 
     // Creates new language.

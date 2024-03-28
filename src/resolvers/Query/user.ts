@@ -1,7 +1,8 @@
 import { USER_NOT_FOUND_ERROR } from "../../constants";
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { errors } from "../../libraries";
-import { User } from "../../models";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import { AppUserProfile, User } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This query fetch the user from the database.
  * @param _parent-
@@ -10,9 +11,9 @@ import { User } from "../../models";
  * @returns An object that contains user data. If the user is not found then it throws a `NotFoundError` error.
  */
 export const user: QueryResolvers["user"] = async (_parent, args, context) => {
-  const currentUserExists = await User.exists({
+  const currentUserExists = !!(await User.exists({
     _id: context.userId,
-  });
+  }));
 
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
@@ -22,16 +23,27 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     );
   }
 
-  const user = await User.findOne({
+  const user: InterfaceUser = (await User.findOne({
     _id: args.id,
-  })
+  }).lean()) as InterfaceUser;
+  const userAppProfile: InterfaceAppUserProfile = (await AppUserProfile.findOne(
+    {
+      userId: user._id,
+    },
+  )
+    .populate("createdOrganizations")
+    .populate("createdEvents")
+    .populate("eventAdmin")
     .populate("adminFor")
-    .lean();
+    .lean()) as InterfaceAppUserProfile;
 
   // This Query field doesn't allow client to see organizations they are blocked by
   return {
-    ...user!,
-    image: user?.image ? `${context.apiRootUrl}${user.image}` : null,
-    organizationsBlockedBy: [],
+    user: {
+      ...user,
+      image: user?.image ? `${context.apiRootUrl}${user.image}` : null,
+      organizationsBlockedBy: [],
+    },
+    appUserProfile: userAppProfile,
   };
 };

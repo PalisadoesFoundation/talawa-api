@@ -39,9 +39,9 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creatorId: Types.ObjectId().toString(),
-    admins: [Types.ObjectId().toString()],
-    members: [Types.ObjectId().toString()],
+    creatorId: new Types.ObjectId().toString(),
+    admins: [new Types.ObjectId().toString()],
+    members: [new Types.ObjectId().toString()],
     visibleInSearch: true,
   });
 
@@ -74,7 +74,7 @@ describe("resolvers -> Mutation -> createVenue", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createVenue } = await import(
@@ -97,7 +97,7 @@ describe("resolvers -> Mutation -> createVenue", () => {
         data: {
           capacity: 10,
           name: "testVenue",
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
         },
       };
 
