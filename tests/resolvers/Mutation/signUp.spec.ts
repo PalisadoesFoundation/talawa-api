@@ -165,9 +165,9 @@ describe("resolvers -> Mutation -> signUp", () => {
       .select("-password")
       .lean();
 
-    expect(signedUpUserPayload?.user).toContain({
-      image: testImagePath,
-    });
+    const user = await signedUpUserPayload?.user;
+    const path = user?.image;
+    expect(path).toBe(testImagePath);
   });
 
   it(`Promotes the user to SUPER ADMIN if the email registering with is same that as provided in configuration file`, async () => {
@@ -217,7 +217,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     const createdAppUserProfile = await AppUserProfile.findOne({
       userId: createdUser?._id,
     });
-    expect(createdUser?.userType).not.to.toEqual("SUPERADMIN");
+    expect(createdAppUserProfile?.isSuperAdmin).toBeFalsy();
     expect(createdAppUserProfile?.adminApproved).toBeFalsy();
   });
 });

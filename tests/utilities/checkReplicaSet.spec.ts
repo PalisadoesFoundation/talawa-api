@@ -45,4 +45,14 @@ describe("checkReplicaSet", () => {
 
     expect(result).toBe(false);
   });
+
+  it("should return false if error occurs", async () => {
+    //@ts-expect-error cant find the right type
+    mongoose.connection.db.admin = (): object => {
+      throw new Error("Error");
+    };
+    const result = await checkReplicaSet();
+
+    expect(result).toBe(false);
+  });
 });

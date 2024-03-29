@@ -8,6 +8,7 @@ export interface InterfaceTagUser {
   _id: Types.ObjectId;
   userId: PopulatedDoc<InterfaceUser & Document>;
   tagId: PopulatedDoc<InterfaceOrganizationTagUser & Document>;
+  tagColor: PopulatedDoc<InterfaceOrganizationTagUser & Document>;
 }
 
 // Relational schema used to keep track of assigned tags to users
@@ -21,6 +22,11 @@ const tagUserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "OrganizationTagUser",
     required: true,
+  },
+  tagColor: {
+    type: String,
+    required: false,
+    defaultValue: "#000000",
   },
 });
 

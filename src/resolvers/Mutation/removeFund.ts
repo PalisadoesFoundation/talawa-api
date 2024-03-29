@@ -69,13 +69,16 @@ export const removeFund: MutationResolvers["removeFund"] = async (
 
   const currentOrgId = currentOrg?.organizationId?.toString() || "";
 
+  //checks whether the user is admin of organization or not
   const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
     (organizationId) =>
       new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
   );
 
-  //checks whether the user is admin of organization or not
-  if (!currentUserIsOrgAdmin || currentUserAppProfile.isSuperAdmin === false) {
+  const currentUserIsSuperAdmin = currentUserAppProfile.isSuperAdmin;
+
+  // checks if the user is either super admin or admin of the organization
+  if (!(currentUserIsOrgAdmin || currentUserIsSuperAdmin)) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,

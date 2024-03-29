@@ -23,7 +23,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * @returns Deleted fundraising campaign pledge.
  */
 
-export const removeFundraisingCampaingPledge: MutationResolvers["removeFundraisingCampaignPledge"] =
+export const removeFundraisingCampaignPledge: MutationResolvers["removeFundraisingCampaignPledge"] =
   async (
     _parent,
     args,

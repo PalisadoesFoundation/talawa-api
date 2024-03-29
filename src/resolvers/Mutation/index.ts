@@ -22,6 +22,8 @@ import { createActionItemCategory } from "./createActionItemCategory";
 import { createAdmin } from "./createAdmin";
 import { createAdvertisement } from "./createAdvertisement";
 import { createAgendaCategory } from "./createAgendaCategory";
+import { createAgendaItem } from "./createAgendaItem";
+import { createAgendaSection } from "./createAgendaSection";
 import { createComment } from "./createComment";
 import { createDirectChat } from "./createDirectChat";
 import { createDonation } from "./createDonation";
@@ -29,6 +31,7 @@ import { createEvent } from "./createEvent";
 import { createEventVolunteer } from "./createEventVolunteer";
 import { createFund } from "./createFund";
 import { createFundraisingCampaign } from "./createFundraisingCampaign";
+import { createFundraisingCampaignPledge } from "./createFundraisingCampaignPledge";
 import { createGroupChat } from "./createGroupChat";
 import { createMember } from "./createMember";
 import { createMessageChat } from "./createMessageChat";
@@ -39,10 +42,11 @@ import { createSampleOrganization } from "./createSampleOrganization";
 import { createUserFamily } from "./createUserFamily";
 import { createUserTag } from "./createUserTag";
 import { createVenue } from "./createVenue";
+import { deleteAdvertisement } from "./deleteAdvertisement";
+import { deleteAgendaCategory } from "./deleteAgendaCategory";
+import { deleteDonationById } from "./deleteDonationById";
 import { deleteVenue } from "./deleteVenue";
 import { editVenue } from "./editVenue";
-import { deleteDonationById } from "./deleteDonationById";
-import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { forgotPassword } from "./forgotPassword";
 import { inviteEventAttendee } from "./inviteEventAttendee";
 import { joinPublicOrganization } from "./joinPublicOrganization";
@@ -60,12 +64,16 @@ import { rejectAdmin } from "./rejectAdmin";
 import { rejectMembershipRequest } from "./rejectMembershipRequest";
 import { removeActionItem } from "./removeActionItem";
 import { removeAdmin } from "./removeAdmin";
+import { removeAgendaItem } from "./removeAgendaItem";
+import removeAgendaSection from "./removeAgendaSection";
 import { removeComment } from "./removeComment";
 import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
 import { removeEventVolunteer } from "./removeEventVolunteer";
 import { removeFund } from "./removeFund";
+import { removeFundraisingCampaign } from "./removeFundraisingCampaign";
+import { removeFundraisingCampaignPledge } from "./removeFundraisingCampaingPledge";
 import { removeGroupChat } from "./removeGroupChat";
 import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
@@ -96,10 +104,14 @@ import { updateActionItem } from "./updateActionItem";
 import { updateActionItemCategory } from "./updateActionItemCategory";
 import { updateAdvertisement } from "./updateAdvertisement";
 import { updateAgendaCategory } from "./updateAgendaCategory";
+import { updateAgendaItem } from "./updateAgendaItem";
+import { updateAgendaSection } from "./updateAgendaSection";
 import { updateCommunity } from "./updateCommunity";
 import { updateEvent } from "./updateEvent";
 import { updateEventVolunteer } from "./updateEventVolunteer";
 import { updateFund } from "./updateFund";
+import { updateFundraisingCampaignPledge } from "./updateFundCampaignPledge";
+import { updateFundraisingCampaign } from "./updateFundraisingCampaign";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
 import { updatePluginStatus } from "./updatePluginStatus";
@@ -108,13 +120,6 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
-import { deleteAdvertisement } from "./deleteAdvertisement";
-import { createAgendaItem } from "./createAgendaItem";
-import { removeAgendaItem } from "./removeAgendaItem";
-import { updateAgendaItem } from "./updateAgendaItem";
-import { createAgendaSection } from "./createAgendaSection";
-import removeAgendaSection from "./removeAgendaSection";
-import { updateAgendaSection } from "./updateAgendaSection";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -233,4 +238,9 @@ export const Mutation: MutationResolvers = {
   updateUserTag,
   updatePost,
   updateAdvertisement,
+  updateFundraisingCampaign,
+  updateFundraisingCampaignPledge,
+  createFundraisingCampaignPledge,
+  removeFundraisingCampaign,
+  removeFundraisingCampaignPledge,
 };

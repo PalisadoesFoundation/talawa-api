@@ -64,7 +64,6 @@ beforeAll(async () => {
     firstName: "firstName",
     lastName: "lastName",
     appLanguageCode: "en",
-    userType: "ADMIN",
   });
 });
 
@@ -81,7 +80,6 @@ it("throws NotFoundError if no user exists with _id === context.userId", async (
   `;
   const authenticatedContext = {
     userId: new Types.ObjectId().toString(),
-    userType: testUser?.userType,
   };
   let schema = makeExecutableSchema({
     typeDefs,

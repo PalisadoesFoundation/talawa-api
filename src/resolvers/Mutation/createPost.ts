@@ -7,8 +7,9 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
   USER_NOT_FOUND_ERROR,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
-import { errors, logger, requestContext } from "../../libraries";
+import { errors, requestContext } from "../../libraries";
 import { isValidString } from "../../libraries/validators/validateString";
 import type { InterfaceOrganization } from "../../models";
 import { AppUserProfile, Organization, Post, User } from "../../models";
@@ -41,7 +42,6 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   // Checks whether currentUser exists.
   if (!currentUser) {
-    logger.info("here");
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -82,6 +82,19 @@ export const createPost: MutationResolvers["createPost"] = async (
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
       ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  const currentUserIsOrganizationMember = organization.members.some(
+    (memberId) =>
+      new Types.ObjectId(memberId?.toString()).equals(context.userId),
+  );
+
+  if (!currentUserIsOrganizationMember) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
+      USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
+      USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
     );
   }
 

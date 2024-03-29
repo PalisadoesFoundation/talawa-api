@@ -71,17 +71,19 @@ export const createTestOrganizationWithAdmin = async (
       },
     },
   );
-  await AppUserProfile.updateOne(
-    {
-      userId: userID,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
+  if (isAdmin) {
+    await AppUserProfile.updateOne(
+      {
+        userId: userID,
       },
-    },
-  );
+      {
+        $push: {
+          createdOrganizations: testOrganization._id,
+          adminFor: testOrganization._id,
+        },
+      },
+    );
+  }
   return testOrganization;
 };
 
