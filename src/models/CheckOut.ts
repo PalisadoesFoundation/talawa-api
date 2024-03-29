@@ -10,7 +10,7 @@ import {
 import { type InterfaceEventAttendee } from "./EventAttendee";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
-export interface InterfaceCheckIn {
+export interface InterfaceCheckOut {
   _id: Types.ObjectId;
   eventAttendeeId: PopulatedDoc<InterfaceEventAttendee & Document>;
   time: Date;
@@ -18,7 +18,7 @@ export interface InterfaceCheckIn {
   updatedAt: Date;
 }
 
-const checkInSchema = new Schema(
+const checkOutSchema = new Schema(
   {
     eventAttendeeId: {
       type: Schema.Types.ObjectId,
@@ -37,17 +37,17 @@ const checkInSchema = new Schema(
 );
 
 // We will also create an index here for faster database querying
-checkInSchema.index({
+checkOutSchema.index({
   eventAttendeeId: 1,
 });
 
-createLoggingMiddleware(checkInSchema, "CheckIn");
+createLoggingMiddleware(checkOutSchema, "CheckOut");
 
-const checkInModel = (): Model<InterfaceCheckIn> =>
-  model<InterfaceCheckIn>("CheckIn", checkInSchema);
+const checkOutModel = (): Model<InterfaceCheckOut> =>
+  model<InterfaceCheckOut>("CheckOut", checkOutSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 
-export const CheckIn = (models.CheckIn || checkInModel()) as ReturnType<
-  typeof checkInModel
+export const CheckOut = (models.CheckOut || checkOutModel()) as ReturnType<
+  typeof checkOutModel
 >;

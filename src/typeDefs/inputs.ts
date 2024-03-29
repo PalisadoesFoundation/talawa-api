@@ -11,9 +11,9 @@ export const inputs = gql`
     eventId: ID!
   }
 
-  input CheckInInput {
-    userId: ID!
+  input CheckInCheckOutInput {
     eventId: ID!
+    userId: ID!
   }
 
   input createChatInput {

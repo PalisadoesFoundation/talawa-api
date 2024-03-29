@@ -1,22 +1,18 @@
-import { Types } from "mongoose";
 import {
   EVENT_NOT_FOUND_ERROR,
-  USER_ALREADY_CHECKED_IN,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
+  ATTENDEE_NOT_FOUND,
+  USER_NOT_CHECKED_IN,
+  USER_ALREADY_CHECKED_OUT,
 } from "../../constants";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import {
-  AppUserProfile,
-  CheckIn,
-  Event,
-  EventAttendee,
-  User,
-} from "../../models";
+import { User, Event, EventAttendee, CheckOut } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { Types } from "mongoose";
 
 /**
  * Handles the check-in process for event attendees.
@@ -38,9 +34,10 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * 2. Checks if the current user is authorized to perform the check-in operation.
  * 3. Checks if the attendee is already registered for the event. If so, updates the check-in status and isCheckedIn.
  * 4. Checks if the attendee is not already checked in for the event then creates a new check-in entry and create new eventAttendee with chechInId and isCheckedIn.
+
  */
 
-export const checkIn: MutationResolvers["checkIn"] = async (
+export const checkOut: MutationResolvers["checkOut"] = async (
   _parent,
   args,
   context,
@@ -56,16 +53,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
-  if (!currentUserAppProfile) {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-      USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM,
-    );
-  }
+
   let currentEvent: InterfaceEvent | null;
 
   const eventFoundInCache = await findEventsInCache([args.data.eventId]);
@@ -92,11 +80,10 @@ export const checkIn: MutationResolvers["checkIn"] = async (
 
   const isUserEventAdmin = currentEvent.admins.some(
     (admin) =>
-      admin === context.userID ||
-      new Types.ObjectId(admin).equals(context.userId),
+      admin === context.userID || Types.ObjectId(admin).equals(context.userId),
   );
 
-  if (!isUserEventAdmin && currentUserAppProfile.isSuperAdmin === false) {
+  if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -122,41 +109,42 @@ export const checkIn: MutationResolvers["checkIn"] = async (
   });
 
   if (attendeeData === null) {
-    const checkInAttendee = await EventAttendee.create({
-      eventId: args.data.eventId,
-      userId: args.data.userId,
-    });
-
-    const checkIn = await CheckIn.create({
-      eventAttendeeId: checkInAttendee._id,
-    });
-
-    checkInAttendee.checkInId = checkIn._id;
-    checkInAttendee.save();
-
-    return checkIn.toObject();
-  }
-
-  if (attendeeData.isCheckedIn) {
-    throw new errors.ConflictError(
-      requestContext.translate(USER_ALREADY_CHECKED_IN.MESSAGE),
-      USER_ALREADY_CHECKED_IN.CODE,
-      USER_ALREADY_CHECKED_IN.PARAM,
+    throw new errors.NotFoundError(
+      requestContext.translate(ATTENDEE_NOT_FOUND.MESSAGE),
+      ATTENDEE_NOT_FOUND.CODE,
+      ATTENDEE_NOT_FOUND.PARAM,
     );
   }
-  const checkIn = await CheckIn.create({
+
+  if (attendeeData.isCheckedIn === null) {
+    throw new errors.ConflictError(
+      requestContext.translate(USER_NOT_CHECKED_IN.MESSAGE),
+      USER_NOT_CHECKED_IN.CODE,
+      USER_NOT_CHECKED_IN.PARAM,
+    );
+  }
+
+  if (attendeeData.isCheckedOut) {
+    throw new errors.ConflictError(
+      requestContext.translate(USER_ALREADY_CHECKED_OUT.MESSAGE),
+      USER_ALREADY_CHECKED_OUT.CODE,
+      USER_ALREADY_CHECKED_OUT.PARAM,
+    );
+  }
+
+  const checkOut = await CheckOut.create({
     eventAttendeeId: attendeeData._id,
   });
 
   await EventAttendee.updateOne(
     {
       eventId: args.data.eventId,
-      userId: args.data.userId,
+      userId: currentEvent,
     },
     {
-      checkInId: checkIn._id,
+      checkInId: checkOut._id,
     },
   );
 
-  return checkIn.toObject();
+  return checkOut.toObject() as any;
 };

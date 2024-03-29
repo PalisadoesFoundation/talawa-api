@@ -250,7 +250,7 @@ export type CheckIn = {
   user: User;
 };
 
-export type CheckInInput = {
+export type CheckInCheckOutInput = {
   eventId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
 };
@@ -259,6 +259,16 @@ export type CheckInStatus = {
   __typename?: 'CheckInStatus';
   _id: Scalars['ID']['output'];
   checkIn?: Maybe<CheckIn>;
+  user: User;
+};
+
+export type CheckOut = {
+  __typename?: 'CheckOut';
+  _id: Scalars['ID']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  event: Event;
+  time: Scalars['DateTime']['output'];
+  updatedAt: Scalars['DateTime']['output'];
   user: User;
 };
 
@@ -692,6 +702,7 @@ export type EventAttendee = {
   __typename?: 'EventAttendee';
   _id: Scalars['ID']['output'];
   checkInId?: Maybe<Scalars['ID']['output']>;
+  checkOutId?: Maybe<Scalars['ID']['output']>;
   createdAt: Scalars['DateTime']['output'];
   eventId: Scalars['ID']['output'];
   isCheckedIn: Scalars['Boolean']['output'];
@@ -1081,8 +1092,7 @@ export type Mutation = {
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
   checkIn: CheckIn;
-  checkInEventAttendee: EventAttendee;
-  checkOutEventAttendee: EventAttendee;
+  checkOut: CheckOut;
   createActionItem: ActionItem;
   createActionItemCategory: ActionItemCategory;
   createAdmin: AppUserProfile;
@@ -1292,17 +1302,12 @@ export type MutationCancelMembershipRequestArgs = {
 
 
 export type MutationCheckInArgs = {
-  data: CheckInInput;
+  data: CheckInCheckOutInput;
 };
 
 
-export type MutationCheckInEventAttendeeArgs = {
-  data: EventAttendeeInput;
-};
-
-
-export type MutationCheckOutEventAttendeeArgs = {
-  data: EventAttendeeInput;
+export type MutationCheckOutArgs = {
+  data: CheckInCheckOutInput;
 };
 
 
@@ -3016,8 +3021,9 @@ export type ResolversTypes = {
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'appUserProfile' | 'user'> & { appUserProfile: ResolversTypes['AppUserProfile'], user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
-  CheckInInput: CheckInInput;
+  CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
+  CheckOut: ResolverTypeWrapper<Omit<CheckOut, 'event' | 'user'> & { event: ResolversTypes['Event'], user: ResolversTypes['User'] }>;
   Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
   Community: ResolverTypeWrapper<InterfaceCommunityModel>;
@@ -3201,8 +3207,9 @@ export type ResolversParentTypes = {
   AuthData: Omit<AuthData, 'appUserProfile' | 'user'> & { appUserProfile: ResolversParentTypes['AppUserProfile'], user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean']['output'];
   CheckIn: InterfaceCheckInModel;
-  CheckInInput: CheckInInput;
+  CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
+  CheckOut: Omit<CheckOut, 'event' | 'user'> & { event: ResolversParentTypes['Event'], user: ResolversParentTypes['User'] };
   Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
   Community: InterfaceCommunityModel;
@@ -3525,6 +3532,16 @@ export type CheckInStatusResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type CheckOutResolvers<ContextType = any, ParentType extends ResolversParentTypes['CheckOut'] = ResolversParentTypes['CheckOut']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
+  time?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type CommentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -3672,6 +3689,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
 export type EventAttendeeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventAttendee'] = ResolversParentTypes['EventAttendee']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   checkInId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  checkOutId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   eventId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isCheckedIn?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -3900,8 +3918,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
-  checkInEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationCheckInEventAttendeeArgs, 'data'>>;
-  checkOutEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationCheckOutEventAttendeeArgs, 'data'>>;
+  checkOut?: Resolver<ResolversTypes['CheckOut'], ParentType, ContextType, RequireFields<MutationCheckOutArgs, 'data'>>;
   createActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationCreateActionItemArgs, 'actionItemCategoryId' | 'data'>>;
   createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'name' | 'organizationId'>>;
   createAdmin?: Resolver<ResolversTypes['AppUserProfile'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
@@ -4366,6 +4383,7 @@ export type Resolvers<ContextType = any> = {
   AuthData?: AuthDataResolvers<ContextType>;
   CheckIn?: CheckInResolvers<ContextType>;
   CheckInStatus?: CheckInStatusResolvers<ContextType>;
+  CheckOut?: CheckOutResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
   Community?: CommunityResolvers<ContextType>;
   ConnectionError?: ConnectionErrorResolvers<ContextType>;

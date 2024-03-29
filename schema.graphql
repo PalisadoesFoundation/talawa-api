@@ -176,7 +176,16 @@ type CheckIn {
   user: User!
 }
 
-input CheckInInput {
+type CheckOut {
+  _id: ID!
+  createdAt: DateTime!
+  event: Event!
+  time: DateTime!
+  updatedAt: DateTime!
+  user: User!
+}
+
+input CheckInCheckOutInput {
   eventId: ID!
   userId: ID!
 }
@@ -615,6 +624,7 @@ type Event {
 type EventAttendee {
   _id: ID!
   checkInId: ID
+  checkOutId: ID
   createdAt: DateTime!
   eventId: ID!
   isCheckedIn: Boolean!
@@ -995,9 +1005,8 @@ type Mutation {
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): AppUserProfile!
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
-  checkIn(data: CheckInInput!): CheckIn!
-  checkInEventAttendee(data: EventAttendeeInput!): EventAttendee!
-  checkOutEventAttendee(data: EventAttendeeInput!): EventAttendee!
+  checkIn(data: CheckInCheckOutInput!): CheckIn!
+  checkOut(data: CheckInCheckOutInput!): CheckOut!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): AppUserProfile!
@@ -1367,6 +1376,8 @@ type Query {
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
+  getAllCheckInsForEvent(eventId: ID!): [CheckIn]
+  getAllCheckOutsForEvent(eventId: ID!): [CheckOut]
   getCommunityData: Community
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
