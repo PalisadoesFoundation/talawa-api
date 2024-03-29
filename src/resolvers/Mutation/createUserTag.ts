@@ -1,14 +1,21 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, OrganizationTagUser, Organization } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_TO_CREATE_TAG,
   INCORRECT_TAG_INPUT,
   ORGANIZATION_NOT_FOUND_ERROR,
-  TAG_NOT_FOUND,
   TAG_ALREADY_EXISTS,
+  TAG_NOT_FOUND,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_AUTHORIZED_TO_CREATE_TAG,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import {
+  AppUserProfile,
+  Organization,
+  OrganizationTagUser,
+  User,
+} from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const createUserTag: MutationResolvers["createUserTag"] = async (
   _parent,
@@ -28,6 +35,18 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+
+  //check whether current User has app profile or not
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
   // Checks if the provided organization exists
   const organizationExists = await Organization.exists({
@@ -43,14 +62,14 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
   }
 
   // Check if the user has privileges to create the tag
-  const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organizationId) => organizationId.equals(args.input.organizationId),
+  const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+    (organizationId) =>
+      new Types.ObjectId(organizationId?.toString()).equals(
+        args.input.organizationId,
+      ),
   );
 
-  if (
-    !((currentUser?.userType ?? "") === "SUPERADMIN") &&
-    !currentUserIsOrganizationAdmin
-  ) {
+  if (!currentUserAppProfile.isSuperAdmin && !currentUserIsOrganizationAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE),
       USER_NOT_AUTHORIZED_TO_CREATE_TAG.CODE,
@@ -58,7 +77,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
     );
   }
 
-  // Additonal checks if the parent folder is provided
+  // Additional checks if the parent folder is provided
   if (args.input.parentTagId) {
     const parentTag = await OrganizationTagUser.findOne({
       _id: args.input.parentTagId,

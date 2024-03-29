@@ -4,7 +4,6 @@ import { Types } from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import type { MutationSendMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-
 import { sendMembershipRequest as sendMembershipRequestResolver } from "../../../src/resolvers/Mutation/sendMembershipRequest";
 import {
   MEMBERSHIP_REQUEST_ALREADY_EXISTS,
@@ -47,7 +46,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMembershipRequestArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -77,7 +76,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { sendMembershipRequest: sendMembershipRequestResolver } =
@@ -90,7 +89,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
     }
   });
 
-  it(`throws ConflictError message if user with _id === context.userId is already a member of organization with _id === args.organizationId`, async () => {
+  it(`throws AlreadyMemberError message if user with _id === context.userId is already a member of organization with _id === args.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")

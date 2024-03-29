@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import {
   requestContextNamespace,

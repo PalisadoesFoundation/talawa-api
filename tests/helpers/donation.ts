@@ -7,7 +7,7 @@ import { nanoid } from "nanoid";
 import { createTestUser } from "./user";
 
 export type TestDonationType =
-  | (InterfaceDonation & Document<any, any, InterfaceDonation>)
+  | (InterfaceDonation & Document<unknown, unknown, InterfaceDonation>)
   | null;
 
 export const createTestDonation = async (): Promise<

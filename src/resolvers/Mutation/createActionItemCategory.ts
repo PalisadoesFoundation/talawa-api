@@ -1,15 +1,15 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, ActionItemCategory, Organization } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
   ACTION_ITEM_CATEGORY_ALREADY_EXISTS,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import { ActionItemCategory, Organization, User } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
-import { adminCheck } from "../../utilities";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { adminCheck } from "../../utilities";
 
 /**
  * This function enables to create an ActionItemCategory.
@@ -51,8 +51,9 @@ export const createActionItemCategory: MutationResolvers["createActionItemCatego
       organization = await Organization.findOne({
         _id: args.organizationId,
       }).lean();
-
-      await cacheOrganizations([organization!]);
+      if (organization) {
+        await cacheOrganizations([organization]);
+      }
     }
 
     // Checks whether the organization with _id === args.organizationId exists.

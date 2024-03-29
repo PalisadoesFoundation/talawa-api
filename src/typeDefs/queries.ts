@@ -51,6 +51,8 @@ export const queries = gql`
 
     eventVolunteersByEvent(id: ID!): [EventVolunteer]
 
+    fundsByOrganization(organizationId: ID!, where: FundWhereInput): [Fund]
+
     getDonationById(id: ID!): Donation!
 
     getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
@@ -84,11 +86,17 @@ export const queries = gql`
 
     joinedOrganizations(id: ID): [Organization]
 
-    me: User! @auth
+    me: UserData! @auth
 
     myLanguage: String @auth
 
-    organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
+    organizations(
+      id: ID
+      orderBy: OrganizationOrderByInput
+      first: Int
+      skip: Int
+      where: MembershipRequestsWhereInput
+    ): [Organization]
 
     organizationsConnection(
       where: OrganizationWhereInput
@@ -113,7 +121,7 @@ export const queries = gql`
 
     registrantsByEvent(id: ID!): [User]
 
-    user(id: ID!): User! @auth
+    user(id: ID!): UserData! @auth
 
     userLanguage(userId: ID!): String @auth
 
@@ -122,16 +130,16 @@ export const queries = gql`
       orderBy: UserOrderByInput
       first: Int
       skip: Int
-      userType: String
+
       adminApproved: Boolean
-    ): [User] @auth
+    ): [UserData] @auth
 
     usersConnection(
       where: UserWhereInput
       first: Int
       skip: Int
       orderBy: UserOrderByInput
-    ): [User]! @auth
+    ): [UserData]! @auth
 
     venue(id: ID!): Venue
   }

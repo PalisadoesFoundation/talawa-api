@@ -1,7 +1,11 @@
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
-import { errors } from "../../libraries";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { errors } from "../../libraries";
+import {
+  AppUserProfile,
+  User,
+  type InterfaceAppUserProfile,
+} from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This query fetch the current user from the database.
  * @param _parent-
@@ -15,12 +19,10 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
     _id: context.userId,
   })
     .select(["-password"])
-    .populate("createdOrganizations")
-    .populate("createdEvents")
+
     .populate("joinedOrganizations")
     .populate("registeredEvents")
-    .populate("eventAdmin")
-    .populate("adminFor")
+
     .lean();
 
   if (!currentUser) {
@@ -30,6 +32,23 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-
-  return currentUser;
+  const userAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  })
+    .populate("createdOrganizations")
+    .populate("createdEvents")
+    .populate("eventAdmin")
+    .populate("adminFor")
+    .lean();
+  if (!userAppProfile) {
+    throw new errors.NotFoundError(
+      USER_NOT_FOUND_ERROR.DESC,
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  return {
+    user: currentUser,
+    appUserProfile: userAppProfile as InterfaceAppUserProfile,
+  };
 };

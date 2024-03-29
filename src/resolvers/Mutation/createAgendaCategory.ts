@@ -1,9 +1,15 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { AgendaCategoryModel, Organization, User } from "../../models";
+import {
+  AgendaCategoryModel,
+  AppUserProfile,
+  Organization,
+  User,
+} from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import { adminCheck } from "../../utilities";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
@@ -27,6 +33,17 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
     const userId = context.userId;
 
     const currentUser = await User.findById(userId).lean();
+
+    const currentAppUserProfile = await AppUserProfile.findOne({
+      userId: currentUser?._id,
+    }).lean();
+    if (!currentAppUserProfile) {
+      throw new errors.UnauthenticatedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
 
     if (!currentUser) {
       throw new errors.NotFoundError(

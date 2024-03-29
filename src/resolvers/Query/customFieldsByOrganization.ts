@@ -13,7 +13,7 @@ import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
  */
 
 export const customFieldsByOrganization: QueryResolvers["customFieldsByOrganization"] =
-  async (_parent, args, context) => {
+  async (_parent, args) => {
     const organization = await Organization.findOne({
       _id: args.id,
     });
@@ -27,7 +27,7 @@ export const customFieldsByOrganization: QueryResolvers["customFieldsByOrganizat
     }
 
     const customFields = await OrganizationCustomField.find({
-      organizationId: organization._id,
+      organizationId: organization._id.toString(),
     });
 
     return customFields;

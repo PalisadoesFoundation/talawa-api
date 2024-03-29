@@ -1,21 +1,21 @@
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
+  EVENT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
-  EVENT_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { expect, vi, beforeAll, afterAll, describe, it } from "vitest";
+import { AppUserProfile, Event, Organization, User } from "../../../src/models";
 import type { MutationCreateAgendaItemArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import { createTestUser } from "../../helpers/userAndOrg";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
-import { Organization, Event, User } from "../../../src/models";
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
@@ -41,15 +41,14 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
-  testUserSuperAdmin = await User.findOneAndUpdate(
+  await AppUserProfile.updateOne(
     {
-      _id: testUserSuperAdmin?._id,
+      userId: testUserSuperAdmin?._id,
     },
     {
-      userType: "SUPERADMIN",
-    },
-    {
-      new: true,
+      $set: {
+        isSuperAdmin: true,
+      },
     },
   );
 
@@ -145,7 +144,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createAgendaItem: createAgendaItemResolver } = await import(
@@ -172,7 +171,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           relatedEventId: testEvent?._id,
           sequence: 1,
           itemType: "Regular",
-          organizationId: Types.ObjectId().toString(), // A random ID that does not exist in the database
+          organizationId: new Types.ObjectId().toString(), // A random ID that does not exist in the database
           isNote: false,
         },
       };
@@ -202,7 +201,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           title: "Regular Agenda Item",
           description: "Description for the regular agenda item",
           duration: "1 hour",
-          relatedEventId: Types.ObjectId().toString(),
+          relatedEventId: new Types.ObjectId().toString(),
           sequence: 1,
           itemType: "Regular",
           organizationId: testOrganization?._id,
@@ -313,5 +312,37 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
       context,
     );
     expect(createdAgendaItem).toBeDefined();
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+
+    const args: MutationCreateAgendaItemArgs = {
+      input: {
+        title: "Regular Agenda Item",
+        description: "Description for the regular agenda item",
+        duration: "1 hour",
+        relatedEventId: testEvent?._id,
+        sequence: 1,
+        itemType: "Regular",
+        organizationId: testOrganization?._id,
+        isNote: false,
+      },
+    };
+    const context = {
+      userId: testAdminUser?._id,
+    };
+    const { createAgendaItem: createAgendaItemResolver } = await import(
+      "../../../src/resolvers/Mutation/createAgendaItem"
+    );
+
+    try {
+      await createAgendaItemResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

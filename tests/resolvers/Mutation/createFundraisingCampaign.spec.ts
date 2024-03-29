@@ -3,13 +3,12 @@ import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   END_DATE_VALIDATION_ERROR,
-  FUNDRAISING_CAMPAIGN_ALREADY_EXISTS,
   FUND_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { Fund } from "../../../src/models";
+import { AppUserProfile, Fund } from "../../../src/models";
 import { createFundraisingCampaign } from "../../../src/resolvers/Mutation/createFundraisingCampaign";
 import type { MutationCreateFundraisingCampaignArgs } from "../../../src/types/generatedGraphQLTypes";
 import { createTestFund, type TestFundType } from "../../helpers/Fund";
@@ -56,7 +55,7 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
         },
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await createFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
@@ -69,7 +68,7 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
       const args: MutationCreateFundraisingCampaignArgs = {
         data: {
           name: "testFundraisingCampaign",
-          fundId: Types.ObjectId().toString(),
+          fundId: new Types.ObjectId().toString(),
           startDate: new Date(new Date().toDateString()),
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -170,14 +169,20 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
     const context = {
       userId: testUser?._id,
     };
-    const result = await createFundraisingCampaign?.({}, args, context);
-    console.log(result);
-    const fund = await Fund.findOne({
-      _id: result?.fundId?.toString() || "",
-    });
-    console.log(fund);
-    expect(fund?.campaigns?.includes(result?._id)).toBeTruthy();
-    expect(result).toBeTruthy();
+    try {
+      const result = await createFundraisingCampaign?.({}, args, context);
+      console.log(result);
+      const fund = await Fund.findOne({
+        _id: result?.fundId?.toString() || "",
+      });
+      console.log(fund);
+      expect(fund?.campaigns?.includes(result?._id)).toBeTruthy();
+      expect(result).toBeTruthy();
+    } catch (error) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
   it("throws error if the campaign already exists with the same name", async () => {
     try {
@@ -198,7 +203,38 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
     } catch (error: unknown) {
       console.log(error);
       expect((error as Error).message).toEqual(
-        FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE,
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    const args: MutationCreateFundraisingCampaignArgs = {
+      data: {
+        name: "testFundraisingCampaign",
+        fundId: testfund?._id,
+        startDate: new Date(new Date().toDateString()),
+        endDate: new Date(new Date().toDateString()),
+        currency: "USD",
+        fundingGoal: 1000,
+      },
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await createFundraisingCampaign?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

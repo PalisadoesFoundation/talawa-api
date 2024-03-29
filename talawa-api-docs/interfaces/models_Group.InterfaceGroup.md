@@ -29,7 +29,7 @@ This is an interface representing a document for a group in the database(MongoDB
 
 [src/models/Group.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Group.ts#L9)
 
-___
+---
 
 ### admins
 
@@ -39,7 +39,7 @@ ___
 
 [src/models/Group.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Group.ts#L14)
 
-___
+---
 
 ### createdAt
 
@@ -49,7 +49,7 @@ ___
 
 [src/models/Group.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Group.ts#L15)
 
-___
+---
 
 ### description
 
@@ -59,7 +59,7 @@ ___
 
 [src/models/Group.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Group.ts#L11)
 
-___
+---
 
 ### organization
 
@@ -69,7 +69,7 @@ ___
 
 [src/models/Group.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Group.ts#L12)
 
-___
+---
 
 ### status
 
@@ -79,7 +79,7 @@ ___
 
 [src/models/Group.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Group.ts#L13)
 
-___
+---
 
 ### title
 
@@ -89,7 +89,7 @@ ___
 
 [src/models/Group.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Group.ts#L10)
 
-___
+---
 
 ### updatedAt
 

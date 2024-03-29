@@ -11,6 +11,6 @@ export const fundId: FundraisingCampaignResolvers["fundId"] = async (
   parent,
 ) => {
   return (await Fund.findOne({
-    _id: Types.ObjectId(parent.fundId?.toString()),
+    _id: new Types.ObjectId(parent.fundId?.toString()),
   })) as InterfaceFund;
 };

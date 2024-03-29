@@ -1,11 +1,13 @@
-import { errors, requestContext } from "../../libraries";
-import { Community, User } from "../../models";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { superAdminCheck } from "../../utilities";
 import {
   USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   PRELOGIN_IMAGERY_FIELD_EMPTY,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import { AppUserProfile, Community, User } from "../../models";
+import type { InterfaceAppUserProfile } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { superAdminCheck } from "../../utilities";
 
 /**
  * This function enables to upload Pre login imagery.
@@ -31,7 +33,17 @@ export const updateCommunity: MutationResolvers["updateCommunity"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
 
-  superAdminCheck(user);
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: user?._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
+  superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
   // args.data should have logo, name and websiteLink
   if (!args.data.name || !args.data.logo || !args.data.websiteLink) {

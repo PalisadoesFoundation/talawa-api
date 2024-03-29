@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { withFilter } from "graphql-subscriptions";
 import type { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
 
@@ -24,15 +25,15 @@ export const filterFunction = async function (
 ): Promise<boolean> {
   return true;
 };
-
+export const createPluginUpdateResponse = (payload: any): any => {
+  return payload.Plugin;
+};
 export const onPluginUpdate: SubscriptionResolvers["onPluginUpdate"] = {
-  // @ts-ignorep
+  // @ts-expect-error-ts-ignore
   subscribe: withFilter(
     (_parent, _args, context) =>
       context.pubsub.asyncIterator([TALAWA_PLUGIN_UPDATED]),
     (payload, _variables, context) => filterFunction(payload, context),
   ),
-  resolve: (payload: any) => {
-    return payload.Plugin;
-  },
+  resolve: createPluginUpdateResponse,
 };

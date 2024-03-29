@@ -6,7 +6,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { InterfaceOrganization } from "../../models";
+import type { InterfaceOrganization, InterfaceUser } from "../../models";
 import { MembershipRequest, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
@@ -34,12 +34,10 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   ]);
 
   if (organizationFoundInCache[0] == null) {
-    organization = await Organization.findOne({
+    organization = (await Organization.findOne({
       _id: args.organizationId,
-    }).lean();
-    if (organization) {
-      await cacheOrganizations([organization]);
-    }
+    }).lean()) as InterfaceOrganization;
+    if (organization) await cacheOrganizations([organization]);
   } else {
     organization = organizationFoundInCache[0];
   }
@@ -70,7 +68,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlockedFromOrganization = organization.blockedUsers.some(
-    (blockedUser) => Types.ObjectId(blockedUser).equals(user._id),
+    (blockedUser) => new Types.ObjectId(blockedUser).equals(user._id),
   );
 
   // checks if user with _id === args.userId is blocked by organzation with _id == args.organizationId
@@ -161,7 +159,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     await cacheOrganizations([updatedOrganization]);
   }
   // remove the organization from the organizationsBlockedBy array inside the user record
-  return await User.findOneAndUpdate(
+  return (await User.findOneAndUpdate(
     {
       _id: user._id,
     },
@@ -169,7 +167,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
       $set: {
         organizationsBlockedBy: user.organizationsBlockedBy.filter(
           (organizationBlockedBy) =>
-            !Types.ObjectId(String(organization._id)).equals(
+            !new Types.ObjectId(String(organization._id)).equals(
               organizationBlockedBy,
             ),
         ),
@@ -180,5 +178,5 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     },
   )
     .select(["-password"])
-    .lean();
+    .lean()) as InterfaceUser;
 };

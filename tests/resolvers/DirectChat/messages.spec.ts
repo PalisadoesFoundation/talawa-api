@@ -22,13 +22,16 @@ afterAll(async () => {
 
 describe("resolvers -> DirectChat -> messages", () => {
   it(`returns user object for parent.messages`, async () => {
-    const parent = testDirectChat!.toObject();
+    const parent = testDirectChat?.toObject();
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
 
     const messagesPayload = await messagesResolver?.(parent, {}, {});
 
     const messages = await DirectChatMessage.find({
       _id: {
-        $in: testDirectChat!.messages,
+        $in: testDirectChat?.messages,
       },
     }).lean();
 

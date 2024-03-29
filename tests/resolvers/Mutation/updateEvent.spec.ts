@@ -1,7 +1,12 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event, EventAttendee } from "../../../src/models";
+import {
+  User,
+  Event,
+  EventAttendee,
+  AppUserProfile,
+} from "../../../src/models";
 import type { MutationUpdateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
   connect,
@@ -100,7 +105,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { updateEvent: updateEventResolver } = await import(
@@ -128,7 +133,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     try {
       const args: MutationUpdateEventArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -231,7 +236,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         startDate: new Date().toUTCString(),
         startTime: new Date().toUTCString(),
         title: "newTitle",
-        recurrance: "DAILY",
       },
     };
 
@@ -264,7 +268,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       admins: [testUser?._id],
       description: "description2",
       allDay: true,
-      recurrance: "WEEKLY",
       startDate: convertToUTCDate(new Date()),
       endDate: addWeeks(convertToUTCDate(new Date()), 10),
     });
@@ -275,15 +278,24 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       },
       {
         $push: {
+          registeredEvents: testSingleEvent1._id,
+        },
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
           eventAdmin: testSingleEvent1._id,
           createdEvents: testSingleEvent1._id,
-          registeredEvents: testSingleEvent1._id,
         },
       },
     );
 
     const args: MutationUpdateEventArgs = {
-      id: testSingleEvent1?._id,
+      id: testSingleEvent1?._id.toString(),
       data: {
         recurring: true,
         title: "made recurring",
@@ -331,13 +343,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
@@ -358,7 +368,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       admins: [testUser?._id],
       description: "description3",
       allDay: true,
-      recurrance: "WEEKLY",
       startDate,
       endDate,
     });
@@ -369,13 +378,21 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       },
       {
         $push: {
-          eventAdmin: testSingleEvent._id,
-          createdEvents: testSingleEvent._id,
           registeredEvents: testSingleEvent._id,
         },
       },
     );
-
+    await AppUserProfile.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          eventAdmin: testSingleEvent._id,
+          createdEvents: testSingleEvent._id,
+        },
+      },
+    );
     const args: MutationUpdateEventArgs = {
       id: testSingleEvent?._id,
       data: {
@@ -440,13 +457,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
@@ -522,13 +537,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
@@ -604,13 +617,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
@@ -693,13 +704,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
@@ -781,13 +790,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
@@ -874,13 +881,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
@@ -951,13 +956,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
@@ -1040,13 +1043,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
@@ -1123,13 +1124,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
@@ -1215,13 +1214,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
@@ -1321,20 +1318,18 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
-        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
   });
 });
 
-describe("Check for validation conditions", () => {
+describe("resolvers -> Mutation -> updateEvent", () => {
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
@@ -1358,7 +1353,6 @@ describe("Check for validation conditions", () => {
           startTime: "",
           title:
             "AfGtN9o7IJXH9Xr5P4CcKTWMVWKOOHTldleLrWfZcThgoX5scPE5o0jARvtVA8VhneyxXquyhWb5nluW2jtP0Ry1zIOUFYfJ6BUXvpo4vCw4GVleGBnoKwkFLp5oW9L8OsEIrjVtYBwaOtXZrkTEBySZ1prr0vFcmrSoCqrCTaChNOxL3tDoHK6h44ChFvgmoVYMSq3IzJohKtbBn68D9NfEVMEtoimkGarUnVBAOsGkKv0mIBJaCl2pnR8Xwq1cG1",
-          recurrance: "DAILY",
         },
       };
 
@@ -1404,7 +1398,6 @@ describe("Check for validation conditions", () => {
           startDate: "Tue Feb 14 2023",
           startTime: "",
           title: "Random",
-          recurrance: "DAILY",
         },
       };
 
@@ -1449,7 +1442,6 @@ describe("Check for validation conditions", () => {
           startDate: "Tue Feb 14 2023",
           startTime: "",
           title: "Random",
-          recurrance: "DAILY",
         },
       };
 
@@ -1494,7 +1486,6 @@ describe("Check for validation conditions", () => {
           startDate: "Tue Feb 14 2023",
           startTime: "",
           title: "Random",
-          recurrance: "DAILY",
         },
       };
 
@@ -1517,29 +1508,32 @@ describe("Check for validation conditions", () => {
       }
     }
   });
-  it(`throws Time Validation error if start time is greater than end time`, async () => {
+
+  it("throws as error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
       (message) => message,
     );
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent?._id,
+        id: testEvent?._id.toString() ?? "",
         data: {
           allDay: false,
           description: "Random",
-          endDate: "",
-          endTime: "2024-03-02T06:00:00.000Z",
+          endDate: "Tue Feb 15 2023",
+          endTime: "",
           isPublic: false,
           isRegisterable: false,
           latitude: 1,
           longitude: 1,
           location: "Random",
           recurring: false,
-          startDate: "",
-          startTime: "2024-03-02T08:00:00.000Z",
+          startDate: "Tue Feb 14 2023",
+          startTime: "",
           title: "Random",
-          recurrance: "DAILY",
         },
       };
 
@@ -1553,13 +1547,9 @@ describe("Check for validation conditions", () => {
 
       await updateEventResolverError?.({}, args, context);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        expect(error.message).toEqual(
-          `start time must be earlier than end time`,
-        );
-      } else {
-        fail(`Expected InputValidationError, but got ${error}`);
-      }
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 });

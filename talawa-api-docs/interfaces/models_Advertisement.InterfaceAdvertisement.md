@@ -31,7 +31,7 @@ This is an interface that represents a database(MongoDB) document for Advertisem
 
 [src/models/Advertisement.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Advertisement.ts#L8)
 
-___
+---
 
 ### createdAt
 
@@ -41,7 +41,7 @@ ___
 
 [src/models/Advertisement.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Advertisement.ts#L16)
 
-___
+---
 
 ### creatorId
 
@@ -51,7 +51,7 @@ ___
 
 [src/models/Advertisement.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Advertisement.ts#L11)
 
-___
+---
 
 ### endDate
 
@@ -61,7 +61,7 @@ ___
 
 [src/models/Advertisement.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Advertisement.ts#L15)
 
-___
+---
 
 ### link
 
@@ -71,7 +71,7 @@ ___
 
 [src/models/Advertisement.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Advertisement.ts#L12)
 
-___
+---
 
 ### name
 
@@ -81,7 +81,7 @@ ___
 
 [src/models/Advertisement.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Advertisement.ts#L10)
 
-___
+---
 
 ### orgId
 
@@ -91,7 +91,7 @@ ___
 
 [src/models/Advertisement.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Advertisement.ts#L9)
 
-___
+---
 
 ### startDate
 
@@ -101,17 +101,17 @@ ___
 
 [src/models/Advertisement.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Advertisement.ts#L14)
 
-___
+---
 
 ### type
 
-• **type**: ``"POPUP"`` \| ``"MENU"`` \| ``"BANNER"``
+• **type**: `"POPUP"` \| `"MENU"` \| `"BANNER"`
 
 #### Defined in
 
 [src/models/Advertisement.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Advertisement.ts#L13)
 
-___
+---
 
 ### updatedAt
 

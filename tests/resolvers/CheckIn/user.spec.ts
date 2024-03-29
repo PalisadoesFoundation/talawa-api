@@ -1,13 +1,13 @@
 import "dotenv/config";
-import { user as userResolver } from "../../../src/resolvers/CheckIn/user";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { User } from "../../../src/models";
+import { user as userResolver } from "../../../src/resolvers/CheckIn/user";
 import {
   createEventWithCheckedInUser,
   type TestCheckInType,
 } from "../../helpers/checkIn";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -25,12 +25,12 @@ afterAll(async () => {
 
 describe("resolvers -> CheckIn -> user", () => {
   it(`returns the user object for parent post`, async () => {
-    const parent = testCheckIn!.toObject();
-
-    const userPayload = await userResolver?.(parent, {}, {});
+    const parent = testCheckIn?.toObject();
+    let userPayload;
+    if (parent) userPayload = await userResolver?.(parent, {}, {});
 
     const userObject = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     }).lean();
 
     expect(userPayload).toEqual(userObject);

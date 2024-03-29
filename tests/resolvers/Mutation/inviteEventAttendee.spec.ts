@@ -2,7 +2,7 @@ import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import type { MutationInviteEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
-import { EventAttendee } from "../../../src/models";
+import { AppUserProfile, EventAttendee } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -42,12 +42,12 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
     try {
       const args: MutationInviteEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
-      const context = { userId: Types.ObjectId().toString() };
+      const context = { userId: new Types.ObjectId().toString() };
 
       const { inviteEventAttendee: inviteEventAttendeeResolver } = await import(
         "../../../src/resolvers/Mutation/inviteEventAttendee"
@@ -73,8 +73,8 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
     try {
       const args: MutationInviteEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
-          eventId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
+          eventId: new Types.ObjectId().toString(),
         },
       };
 
@@ -104,7 +104,7 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
     try {
       const args: MutationInviteEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           eventId: testEvent?._id,
         },
       };
@@ -134,7 +134,7 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
     try {
       const args: MutationInviteEventAttendeeArgs = {
         data: {
-          userId: Types.ObjectId().toString(),
+          userId: new Types.ObjectId().toString(),
           eventId: testEvent?._id,
         },
       };
@@ -164,22 +164,28 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
 
     const context = { userId: testUser?._id };
 
-    const { inviteEventAttendee: inviteEventAttendeeResolver } = await import(
-      "../../../src/resolvers/Mutation/inviteEventAttendee"
-    );
+    try {
+      const { inviteEventAttendee: inviteEventAttendeeResolver } = await import(
+        "../../../src/resolvers/Mutation/inviteEventAttendee"
+      );
 
-    const payload = await inviteEventAttendeeResolver?.({}, args, context);
+      const payload = await inviteEventAttendeeResolver?.({}, args, context);
 
-    const invitedUser = await EventAttendee.findOne({
-      ...args.data,
-    }).lean();
+      const invitedUser = await EventAttendee.findOne({
+        ...args.data,
+      }).lean();
 
-    const userAlreadyInvited = await EventAttendee.exists({
-      ...args.data,
-    });
+      const userAlreadyInvited = await EventAttendee.exists({
+        ...args.data,
+      });
 
-    expect(payload).toEqual(invitedUser);
-    expect(userAlreadyInvited).toBeTruthy();
+      expect(payload).toEqual(invitedUser);
+      expect(userAlreadyInvited).toBeTruthy();
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 
   it("throws error if the reqest user with _id = args.data.userId is already invited for the event", async () => {
@@ -210,6 +216,32 @@ describe("resolvers -> Mutations -> inviteEventAttendee", () => {
       );
       expect(spy).toHaveBeenLastCalledWith(
         USER_ALREADY_INVITED_FOR_EVENT.MESSAGE,
+      );
+    }
+  });
+
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationInviteEventAttendeeArgs = {
+      data: {
+        userId: testUser?.id,
+        eventId: testEvent?._id,
+      },
+    };
+
+    const context = { userId: testUser?._id };
+
+    const { inviteEventAttendee: inviteEventAttendeeResolver } = await import(
+      "../../../src/resolvers/Mutation/inviteEventAttendee"
+    );
+
+    try {
+      await inviteEventAttendeeResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        "i18n is not initialized, try app.use(i18n.init);",
       );
     }
   });

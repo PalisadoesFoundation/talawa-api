@@ -9,12 +9,12 @@ import { createTestUserAndOrganization } from "./userAndOrg";
 import type { Document } from "mongoose";
 
 export type TestDirectChatType =
-  | (InterfaceDirectChat & Document<any, any, InterfaceDirectChat>)
+  | (InterfaceDirectChat & Document<unknown, unknown, InterfaceDirectChat>)
   | null;
 
 export type TestDirectChatMessageType =
   | (InterfaceDirectChatMessage &
-      Document<any, any, InterfaceDirectChatMessage>)
+      Document<unknown, unknown, InterfaceDirectChatMessage>)
   | null;
 
 export const createTestDirectChat = async (): Promise<

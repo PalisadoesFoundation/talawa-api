@@ -17,9 +17,9 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creatorId: Types.ObjectId().toString(),
-    admins: [Types.ObjectId().toString()],
-    members: [Types.ObjectId().toString()],
+    creatorId: new Types.ObjectId().toString(),
+    admins: [new Types.ObjectId().toString()],
+    members: [new Types.ObjectId().toString()],
     visibleInSearch: true,
   });
   await createTestVenue(testOrganization?.id);

@@ -1,6 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
+import type { InterfaceUser } from "../../models/User";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
@@ -36,7 +37,7 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
   );
 
   // Updates the user with new image and returns the updated user.
-  return await User.findOneAndUpdate(
+  return (await User.findOneAndUpdate(
     {
       _id: currentUser._id,
     },
@@ -48,5 +49,5 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
     {
       new: true,
     },
-  ).lean();
+  ).lean()) as InterfaceUser;
 };

@@ -30,7 +30,7 @@ This is an interface representing a document for a group chat in the database(Mo
 
 [src/models/GroupChat.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/GroupChat.ts#L10)
 
-___
+---
 
 ### createdAt
 
@@ -40,7 +40,7 @@ ___
 
 [src/models/GroupChat.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/GroupChat.ts#L15)
 
-___
+---
 
 ### creatorId
 
@@ -50,7 +50,7 @@ ___
 
 [src/models/GroupChat.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/GroupChat.ts#L14)
 
-___
+---
 
 ### messages
 
@@ -60,7 +60,7 @@ ___
 
 [src/models/GroupChat.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/GroupChat.ts#L13)
 
-___
+---
 
 ### organization
 
@@ -70,7 +70,7 @@ ___
 
 [src/models/GroupChat.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/GroupChat.ts#L17)
 
-___
+---
 
 ### status
 
@@ -80,7 +80,7 @@ ___
 
 [src/models/GroupChat.ts:18](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/GroupChat.ts#L18)
 
-___
+---
 
 ### title
 
@@ -90,7 +90,7 @@ ___
 
 [src/models/GroupChat.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/GroupChat.ts#L11)
 
-___
+---
 
 ### updatedAt
 
@@ -100,7 +100,7 @@ ___
 
 [src/models/GroupChat.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/GroupChat.ts#L16)
 
-___
+---
 
 ### users
 

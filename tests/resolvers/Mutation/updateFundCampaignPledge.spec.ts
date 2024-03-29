@@ -51,7 +51,7 @@ describe("resolvers->Mutation->updateFundCampaignPledge", () => {
         },
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await updateFundraisingCampaignPledge?.({}, args, context);
     } catch (error: unknown) {
@@ -61,7 +61,7 @@ describe("resolvers->Mutation->updateFundCampaignPledge", () => {
   it("throw errpr if no plege exists with _id===args.id", async () => {
     try {
       const args: MutationUpdateFundraisingCampaignPledgeArgs = {
-        id: Types.ObjectId().toString() || "",
+        id: new Types.ObjectId().toString() || "",
         data: {
           startDate: new Date(new Date().toDateString()),
           endDate: new Date(new Date().toDateString()),

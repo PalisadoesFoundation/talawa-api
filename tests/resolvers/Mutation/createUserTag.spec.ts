@@ -65,13 +65,14 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     try {
       const args: MutationCreateUserTagArgs = {
         input: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           name: "TestUserTag",
+          tagColor: "#000000",
         },
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createUserTag: createUserTagResolver } = await import(
@@ -79,6 +80,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
@@ -96,8 +98,9 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     try {
       const args: MutationCreateUserTagArgs = {
         input: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           name: "TestUserTag",
+          tagColor: "#000000",
         },
       };
 
@@ -110,6 +113,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
@@ -129,7 +133,8 @@ describe("resolvers -> Mutation -> createUserTag", () => {
         input: {
           organizationId: testOrganization?._id,
           name: "TestUserTag",
-          parentTagId: Types.ObjectId().toString(),
+          parentTagId: new Types.ObjectId().toString(),
+          tagColor: "#000000",
         },
       };
 
@@ -142,6 +147,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(spy).toBeCalledWith(TAG_NOT_FOUND.MESSAGE);
       expect(error.message).toEqual(`Translated ${TAG_NOT_FOUND.MESSAGE}`);
@@ -160,6 +166,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
           organizationId: testOrganization?._id,
           name: "TestUserTag",
           parentTagId: randomTestTag?._id.toString(),
+          tagColor: "#000000",
         },
       };
 
@@ -172,6 +179,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(spy).toBeCalledWith(INCORRECT_TAG_INPUT.MESSAGE);
       expect(error.message).toEqual(
@@ -192,6 +200,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
           organizationId: testOrganization?._id,
           name: "TestUserTag",
           parentTagId: testTag?._id.toString(),
+          tagColor: "#000000",
         },
       };
 
@@ -204,6 +213,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE);
       expect(error.message).toEqual(
@@ -224,6 +234,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
           organizationId: testOrganization?._id,
           name: testTag?.name ?? "",
           parentTagId: testTag?.parentTagId,
+          tagColor: testTag?.tagColor ?? "",
         },
       };
 
@@ -236,6 +247,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     } catch (error: any) {
       expect(spy).toBeCalledWith(TAG_ALREADY_EXISTS.MESSAGE);
       expect(error.message).toEqual(`Translated ${TAG_ALREADY_EXISTS.MESSAGE}`);
@@ -253,6 +265,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
         organizationId: testOrganization?._id,
         name: "TestUserTag",
         parentTagId: testTag?._id.toString(),
+        tagColor: "#000000",
       },
     };
 

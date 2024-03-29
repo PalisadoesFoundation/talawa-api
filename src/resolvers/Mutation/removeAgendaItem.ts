@@ -1,11 +1,12 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceAgendaItem } from "../../models";
-import { User, AgendaItemModel } from "../../models";
+import { User, AgendaItemModel, AppUserProfile } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   AGENDA_ITEM_NOT_FOUND_ERROR,
   UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 /**
  * This function removes an agenda item.
@@ -29,6 +30,16 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  const currentAppUserProfile = await AppUserProfile.findOne({
+    userId: currentUser?._id,
+  }).lean();
+  if (!currentAppUserProfile) {
+    throw new errors.UnauthenticatedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
   const agendaItem = await AgendaItemModel.findOne({

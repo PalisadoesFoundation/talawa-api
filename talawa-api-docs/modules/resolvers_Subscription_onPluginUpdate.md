@@ -33,8 +33,8 @@ subscribe the `current_user` to get updates for Group chats.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name      | Type  |
+| :-------- | :---- |
 | `payload` | `any` |
 | `context` | `any` |
 
