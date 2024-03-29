@@ -44,21 +44,18 @@ beforeAll(async () => {
     testUser!._id.toString(),
     testOrganization?._id,
     true,
-    "ONCE",
   );
   const testEvent2 = await createEventWithRegistrant(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     testUser!._id.toString(),
     testOrganization?._id,
     false,
-    "DAILY",
   );
   const testEvent3 = await createEventWithRegistrant(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     testUser!._id.toString(),
     testOrganization?._id,
     false,
-    "DAILY",
   );
   testEvents = [testEvent1, testEvent2, testEvent3];
 });
@@ -441,7 +438,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         startDate,
         startTime: startDate.toUTCString(),
         title: "newTitle",
-        recurrance: "ONCE",
       },
       recurrenceRuleData: {
         frequency: "DAILY",
@@ -554,7 +550,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         startDate,
         startTime: startDate.toUTCString(),
         title: "newTitle",
-        recurrance: "ONCE",
       },
       recurrenceRuleData: {
         frequency: "WEEKLY",

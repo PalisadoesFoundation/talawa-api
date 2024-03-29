@@ -1,8 +1,5 @@
 import type { InterfaceEvent } from "../../../models";
-import type {
-  Recurrance,
-  UpdateEventInput,
-} from "../../../types/generatedGraphQLTypes";
+import type { UpdateEventInput } from "../../../types/generatedGraphQLTypes";
 import type { InterfaceRecurringEvent } from "../recurringEventHelpers/generateRecurringEventInstances";
 
 /**
@@ -29,7 +26,6 @@ export const getEventData = (
     endTime: event.endTime,
     allDay: event.allDay,
     recurring: event.recurring,
-    recurrance: event.recurrance,
     isPublic: event.isPublic,
     isRegisterable: event.isRegisterable,
     admins: event.admins,
@@ -44,7 +40,6 @@ export const getEventData = (
   const updatedEventData: InterfaceRecurringEvent = {
     ...eventCurrentData,
     ...(updateEventInputData as Partial<InterfaceRecurringEvent>),
-    recurrance: eventCurrentData.recurrance as Recurrance,
   };
 
   return updatedEventData;
