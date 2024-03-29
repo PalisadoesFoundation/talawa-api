@@ -3,6 +3,7 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
+  ACTION_ITEM_CATEGORY_ALREADY_EXISTS,
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
@@ -15,7 +16,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 
-import { AppUserProfile } from "../../../src/models";
+import { ActionItemCategory, AppUserProfile } from "../../../src/models";
 import { updateActionItemCategory as updateActionItemCategoryResolver } from "../../../src/resolvers/Mutation/updateActionItemCategory";
 import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { createTestCategory } from "../../helpers/actionItemCategory";
@@ -173,5 +174,36 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
         isDisabled: false,
       }),
     );
+  });
+
+  it(`throws ConflictError if an action item category already exists with the provided name`, async () => {
+    const newCategory = await ActionItemCategory.create({
+      name: "newCategory",
+      organizationId: testOrganization?._id,
+      isDisabled: false,
+      creatorId: testUser?._id,
+    });
+
+    await newCategory.save();
+
+    try {
+      const args: MutationUpdateActionItemCategoryArgs = {
+        id: testCategory?._id,
+        data: {
+          name: "newCategory",
+          isDisabled: false,
+        },
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      await updateActionItemCategoryResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ACTION_ITEM_CATEGORY_ALREADY_EXISTS.MESSAGE,
+      );
+    }
   });
 });
