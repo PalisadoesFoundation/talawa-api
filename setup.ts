@@ -199,6 +199,35 @@ async function askForTransactionLogPath(): Promise<string> {
   return logPath;
 }
 
+/**
+ * Configure colorized logs by updating the .env file.
+ * @returns A promise that resolves once the configuration is completed.
+ */
+export async function configureColorizedLogs(): Promise<void> {
+  const config = dotenv.parse(fs.readFileSync(".env"));
+
+  // Prompt user for colorize logs
+  const { enableColorizedLogs } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "enableColorizedLogs",
+      message: "Do you want to enable colorized logs?",
+      default: true, // Default value is true
+    },
+  ]);
+
+  // Update .env file with the chosen option
+  config.COLORIZE_LOGS = enableColorizedLogs ? "true" : "false";
+
+  // Convert config object to string
+  const configString = Object.entries(config)
+    .map(([key, value]) => `${key}=${value}`)
+    .join("\n");
+
+  // Save the configuration to .env file
+  fs.writeFileSync(".env", configString);
+}
+
 //Checks if the data exists and ask for deletion
 /**
  * The function `shouldWipeExistingData` checks if there is existing data in a MongoDB database and prompts the user to delete
@@ -726,6 +755,14 @@ async function main(): Promise<void> {
       logPath = await askForTransactionLogPath();
     }
     transactionLogPath(logPath);
+  }
+
+  try {
+    await configureColorizedLogs();
+
+    console.log("Colorized logs configured successfully.");
+  } catch (error) {
+    console.error("Error occurred while configuring colorized logs:", error);
   }
 
   const { isDockerInstallation } = await inquirer.prompt({
