@@ -15,7 +15,6 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let testPost: TestPostType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const resultsArray = await createTestPost();
