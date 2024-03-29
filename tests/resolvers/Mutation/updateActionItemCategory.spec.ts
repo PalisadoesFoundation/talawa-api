@@ -15,7 +15,6 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-
 import { ActionItemCategory, AppUserProfile } from "../../../src/models";
 import { updateActionItemCategory as updateActionItemCategoryResolver } from "../../../src/resolvers/Mutation/updateActionItemCategory";
 import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
