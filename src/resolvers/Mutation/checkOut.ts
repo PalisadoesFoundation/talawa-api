@@ -20,26 +20,25 @@ import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 
 /**
- * Handles the check-in process for event attendees.
- * 
- * This resolver function allows event admins or superadmins to check-in attendees for a specific event.
+ * Handles the check-out process for event attendees.
+ *
+ * This resolver function allows event admins or superadmins to check-out attendees from a specific event.
  * It verifies the existence of the current user, the event, and the attendee to be checked in,
  * and ensures proper authorization before performing the check-in operation.
- * 
+ *
  * @param _parent - The parent resolver.
  * @param args - Arguments containing data for the check-in, including the eventId, userId, allotedSeat, and allotedRoom.
  * @param context - Context object containing user authentication and request information.
  * @returns The check-in data if successful.
  * @throws NotFoundError if the current user, event, or attendee is not found.
- * @throws UnauthorizedError if the current user lacks authorization to perform the check-in operation.
- * @throws ConflictError if the attendee is already checked in for the event.
+ * @throws UnauthorizedError if the current user lacks authorization to perform the check-out operation.
+ * @throws ConflictError if the attendee is not checked in and if the user is already checked out from the event.
  * @remarks
  * The function performs the following checks and operations:
  * 1. Verifies the existence of the current user, event, and attendee.
- * 2. Checks if the current user is authorized to perform the check-in operation.
- * 3. Checks if the attendee is already registered for the event. If so, updates the check-in status and isCheckedIn.
- * 4. Checks if the attendee is not already checked in for the event then creates a new check-in entry and create new eventAttendee with chechInId and isCheckedIn.
-
+ * 2. Checks if the current user is authorized to perform the check-out operation.
+ * 3. Checks if the user is an event attendee.
+ * 4. Checks if the attendee is checkedIn and if the attendee is already checked out.
  */
 
 export const checkOut: MutationResolvers["checkOut"] = async (
