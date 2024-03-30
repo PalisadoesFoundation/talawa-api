@@ -642,7 +642,7 @@ export const CUSTOM_FIELD_TYPE_MISSING = {
   PARAM: "customField.isMissing",
 };
 
-export const  ATTENDEE_NOT_FOUND= {
+export const ATTENDEE_NOT_FOUND = {
   DESC: "Attendee not found",
   CODE: "attendee.notFound",
   MESSAGE: "attendee.notFound",

@@ -176,14 +176,6 @@ type CheckIn {
   user: User!
 }
 
-type CheckOut {
-  _id: ID!
-  eventAttendeeId: ID!
-  createdAt: DateTime!
-  time: DateTime!
-  updatedAt: DateTime!
-}
-
 input CheckInCheckOutInput {
   eventId: ID!
   userId: ID!
@@ -193,6 +185,14 @@ type CheckInStatus {
   _id: ID!
   checkIn: CheckIn
   user: User!
+}
+
+type CheckOut {
+  _id: ID!
+  createdAt: DateTime!
+  eventAttendeeId: ID!
+  time: DateTime!
+  updatedAt: DateTime!
 }
 
 type Comment {
@@ -1414,8 +1414,6 @@ type Query {
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
-  getAllCheckInsForEvent(eventId: ID!): [CheckIn]
-  getAllCheckOutsForEvent(eventId: ID!): [CheckOut]
   getCommunityData: Community
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]

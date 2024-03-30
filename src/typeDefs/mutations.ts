@@ -60,9 +60,9 @@ export const mutations = gql`
 
     cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    checkIn(data: CheckInCheckOutInput!): CheckIn!
+    checkIn(data: CheckInCheckOutInput!): CheckIn! @auth
 
-    checkOut(data: CheckInCheckOutInput!): CheckOut!
+    checkOut(data: CheckInCheckOutInput!): CheckOut! @auth
 
     createMember(input: UserAndOrganizationInput!): CreateMemberPayload! @auth
     # createAdmin(data: UserAndOrganizationInput!): AppUserProfile!
