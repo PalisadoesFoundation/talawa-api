@@ -45,10 +45,6 @@ export const mutations = gql`
 
     createUserFamily(data: createUserFamilyInput!): UserFamily! @auth
 
-    checkInEventAttendee(data: EventAttendeeInput!): EventAttendee!
-
-    checkOutEventAttendee(data: EventAttendeeInput!): EventAttendee!
-
     adminRemoveEvent(eventId: ID!): Event! @auth
 
     adminRemoveGroup(groupId: ID!): GroupChat! @auth
@@ -64,7 +60,9 @@ export const mutations = gql`
 
     cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    checkIn(data: CheckInInput!): CheckIn! @auth
+    checkIn(data: CheckInCheckOutInput!): CheckIn! @auth
+
+    checkOut(data: CheckInCheckOutInput!): CheckOut! @auth
 
     createMember(input: UserAndOrganizationInput!): CreateMemberPayload! @auth
     # createAdmin(data: UserAndOrganizationInput!): AppUserProfile!

@@ -607,9 +607,15 @@ export const EVENT_VOLUNTEER_INVITE_USER_MISTMATCH = {
 };
 
 export const USER_ALREADY_CHECKED_IN = {
-  MESSAGE: "The user has already been checked for this event.",
+  MESSAGE: "The user has already been checked in for this event.",
   CODE: "user.alreadyCheckedIn",
   PARAM: "user.alreadyCheckedIn",
+};
+
+export const USER_ALREADY_CHECKED_OUT = {
+  MESSAGE: "The user has already been checked out for this event.",
+  CODE: "user.alreadyCheckedOut",
+  PARAM: "user.alreadyCheckedOut",
 };
 
 export const SAMPLE_ORGANIZATION_ALREADY_EXISTS = {
@@ -641,6 +647,13 @@ export const CUSTOM_FIELD_TYPE_MISSING = {
   MESSAGE: "The type of the custom field is missing",
   CODE: "customField.isMissing",
   PARAM: "customField.isMissing",
+};
+
+export const ATTENDEE_NOT_FOUND = {
+  DESC: "Attendee not found",
+  CODE: "attendee.notFound",
+  MESSAGE: "attendee.notFound",
+  PARAM: "attendee",
 };
 
 export const PRELOGIN_IMAGERY_FIELD_EMPTY = {

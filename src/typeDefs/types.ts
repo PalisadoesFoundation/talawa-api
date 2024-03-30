@@ -90,11 +90,20 @@ export const types = gql`
   # Stores the detail of an check in of an user in an event
   type CheckIn {
     _id: ID!
-    time: DateTime!
-    user: User!
-    event: Event!
-    feedbackSubmitted: Boolean!
     createdAt: DateTime!
+    feedbackSubmitted: Boolean!
+    event: Event!
+    time: DateTime!
+    updatedAt: DateTime!
+    user: User!
+  }
+
+  # Stores the detail of an check out of an user in an event
+  type CheckOut {
+    _id: ID!
+    eventAttendeeId: ID!
+    createdAt: DateTime!
+    time: DateTime!
     updatedAt: DateTime!
   }
 
@@ -287,6 +296,7 @@ export const types = gql`
     userId: ID!
     eventId: ID!
     checkInId: ID
+    checkOutId: ID
     isInvited: Boolean!
     isRegistered: Boolean!
     isCheckedIn: Boolean!
