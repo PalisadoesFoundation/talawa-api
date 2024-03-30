@@ -18,7 +18,6 @@ import {
 } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import { Types } from "mongoose";
 
 /**
  * Handles the check-in process for event attendees.
@@ -62,6 +61,7 @@ export const checkOut: MutationResolvers["checkOut"] = async (
   const currentUserAppProfile = await AppUserProfile.findOne({
     userId: currentUser._id,
   }).lean();
+
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -95,8 +95,7 @@ export const checkOut: MutationResolvers["checkOut"] = async (
   }
 
   const isUserEventAdmin = currentEvent.admins.some(
-    (admin) =>
-      admin === context.userID || Types.ObjectId(admin).equals(context.userId),
+    (admin) => admin.toString() === context.userId.toString(),
   );
 
   if (!isUserEventAdmin && currentUserAppProfile.isSuperAdmin === false) {
@@ -123,7 +122,6 @@ export const checkOut: MutationResolvers["checkOut"] = async (
     eventId: args.data.eventId,
     userId: args.data.userId,
   });
-  console.log(attendeeData);
 
   if (attendeeData === null) {
     throw new errors.NotFoundError(
@@ -133,7 +131,7 @@ export const checkOut: MutationResolvers["checkOut"] = async (
     );
   }
 
-  if (attendeeData.isCheckedIn === null) {
+  if (!attendeeData.isCheckedIn) {
     throw new errors.ConflictError(
       requestContext.translate(USER_NOT_CHECKED_IN.MESSAGE),
       USER_NOT_CHECKED_IN.CODE,

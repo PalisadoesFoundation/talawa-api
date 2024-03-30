@@ -6,18 +6,17 @@
 # Change to the current directory
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Formats code using prettier.
+npm run format:fix
+
 # Checks code for typescript type errors and throws errors if found.
 npm run typecheck
 
-# Formats staged code using prettier
 # Checks and fixes all lint issues in code which don't require manual intervention.
 # Throws errors if lint issues requiring manual intervention are found in code.
-npm run lint-staged
+npm run lint:fix
 
 npm run gen:schema
-
-# Generate table of contents for markdown files in root directory
-npm run update:toc
 
 # Add the changes made to the stage
 git add .

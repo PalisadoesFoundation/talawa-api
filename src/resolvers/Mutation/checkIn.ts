@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_CHECKED_IN,
@@ -91,9 +90,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
   }
 
   const isUserEventAdmin = currentEvent.admins.some(
-    (admin) =>
-      admin === context.userID ||
-      new Types.ObjectId(admin).equals(context.userId),
+    (admin) => admin.toString() === context.userId.toString(),
   );
 
   if (!isUserEventAdmin && currentUserAppProfile.isSuperAdmin === false) {
