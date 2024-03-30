@@ -261,6 +261,13 @@ input CreateActionItemInput {
   preCompletionNotes: String
 }
 
+union CreateAdminError = OrganizationMemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedError | UserNotFoundError
+
+type CreateAdminPayload {
+  user: AppUserProfile
+  userErrors: [CreateAdminError!]!
+}
+
 input CreateAdvertisementInput {
   endDate: Date!
   mediaFile: String!
@@ -300,6 +307,22 @@ input CreateAgendaSectionInput {
   items: [CreateAgendaItemInput]
   relatedEvent: ID
   sequence: Int!
+}
+
+union CreateCommentError = PostNotFoundError
+
+type CreateCommentPayload {
+  comment: Comment
+  userErrors: [CreateCommentError!]!
+}
+
+union CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError
+
+union CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError
+
+type CreateMemberPayload {
+  organization: Organization
+  userErrors: [CreateMemberError!]!
 }
 
 input CreateUserTagInput {
@@ -934,6 +957,10 @@ type MaximumValueError implements FieldError {
   path: [String!]!
 }
 
+type MemberNotFoundError implements Error {
+  message: String!
+}
+
 type MembershipRequest {
   _id: ID!
   organization: Organization!
@@ -1009,7 +1036,7 @@ type Mutation {
   checkOut(data: CheckInCheckOutInput!): CheckOut!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
-  createAdmin(data: UserAndOrganizationInput!): AppUserProfile!
+  createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
   createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!
@@ -1023,7 +1050,7 @@ type Mutation {
   createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
   createFundraisingCampaignPledge(data: FundCampaignPledgeInput!): FundraisingCampaignPledge!
   createGroupChat(data: createGroupChatInput!): GroupChat!
-  createMember(input: UserAndOrganizationInput!): Organization!
+  createMember(input: UserAndOrganizationInput!): CreateMemberPayload!
   createMessageChat(data: MessageChatInput!): MessageChat!
   createOrganization(data: OrganizationInput, file: String): Organization!
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
@@ -1174,6 +1201,14 @@ input OrganizationInput {
   visibleInSearch: Boolean
 }
 
+type OrganizationMemberNotFoundError implements Error {
+  message: String!
+}
+
+type OrganizationNotFoundError implements Error {
+  message: String!
+}
+
 enum OrganizationOrderByInput {
   apiUrl_ASC
   apiUrl_DESC
@@ -1301,6 +1336,10 @@ input PostInput {
   text: String!
   title: String
   videoUrl: URL
+}
+
+type PostNotFoundError implements Error {
+  message: String!
 }
 
 enum PostOrderByInput {
@@ -1731,6 +1770,18 @@ input UserInput {
   password: String!
 }
 
+type UserNotAuthorizedAdminError implements Error {
+  message: String!
+}
+
+type UserNotAuthorizedError implements Error {
+  message: String!
+}
+
+type UserNotFoundError implements Error {
+  message: String!
+}
+
 enum UserOrderByInput {
   email_ASC
   email_DESC
@@ -1869,6 +1920,11 @@ enum WeekDays {
 input createChatInput {
   organizationId: ID!
   userIds: [ID!]!
+}
+
+type createDirectChatPayload {
+  directChat: DirectChat
+  userErrors: [CreateDirectChatError!]!
 }
 
 input createGroupChatInput {
