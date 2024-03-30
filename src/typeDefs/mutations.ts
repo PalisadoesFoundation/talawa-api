@@ -160,6 +160,10 @@ export const mutations = gql`
 
     createEventVolunteer(data: EventVolunteerInput!): EventVolunteer! @auth
 
+    createEventVolunteerGroup(
+      data: EventVolunteerGroupInput!
+    ): EventVolunteerGroup! @auth
+
     leaveOrganization(organizationId: ID!): User! @auth
 
     likeComment(id: ID!): Comment @auth
@@ -212,6 +216,8 @@ export const mutations = gql`
     removeFund(id: ID!): Fund! @auth
     removeFundraisingCampaign(id: ID!): FundraisingCampaign! @auth
     removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge! @auth
+
+    removeEventVolunteerGroup(id: ID!): EventVolunteerGroup! @auth
 
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
@@ -308,6 +314,12 @@ export const mutations = gql`
       data: UpdateEventVolunteerInput
     ): EventVolunteer! @auth
     updateFund(id: ID!, data: UpdateFundInput!): Fund! @auth
+
+    updateEventVolunteerGroup(
+      id: ID!
+      data: UpdateEventVolunteerGroupInput
+    ): EventVolunteerGroup! @auth
+
     updateFundraisingCampaign(
       id: ID!
       data: UpdateFundCampaignInput!

@@ -274,6 +274,7 @@ export const types = gql`
     createdAt: DateTime!
     creator: User
     event: Event
+    group: EventVolunteerGroup
     isAssigned: Boolean
     isInvited: Boolean
     response: String
@@ -292,6 +293,18 @@ export const types = gql`
     isCheckedOut: Boolean!
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  type EventVolunteerGroup {
+    _id: ID!
+    createdAt: DateTime!
+    creator: User
+    event: Event
+    leader: User!
+    name: String
+    updatedAt: DateTime!
+    volunteers: [EventVolunteer]
+    volunteersRequired: Int
   }
 
   type Feedback {
