@@ -17,6 +17,7 @@ import type { InterfaceEvent as InterfaceEventModel } from '../models/Event';
 import type { InterfaceEventAttendee as InterfaceEventAttendeeModel } from '../models/EventAttendee';
 import type { InterfaceUserFamily as InterfaceUserFamilyModel } from '../models/userFamily';
 import type { InterfaceEventVolunteer as InterfaceEventVolunteerModel } from '../models/EventVolunteer';
+import type { InterfaceEventVolunteerGroup as InterfaceEventVolunteerGroupModel } from '../models/EventVolunteerGroup';
 import type { InterfaceFeedback as InterfaceFeedbackModel } from '../models/Feedback';
 import type { InterfaceFund as InterfaceFundModel } from '../models/Fund';
 import type { InterfaceFundraisingCampaign as InterfaceFundraisingCampaignModel } from '../models/FundraisingCampaign';
@@ -324,6 +325,14 @@ export type CreateActionItemInput = {
   preCompletionNotes?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type CreateAdminError = OrganizationMemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedError | UserNotFoundError;
+
+export type CreateAdminPayload = {
+  __typename?: 'CreateAdminPayload';
+  user?: Maybe<AppUserProfile>;
+  userErrors: Array<CreateAdminError>;
+};
+
 export type CreateAdvertisementInput = {
   endDate: Scalars['Date']['input'];
   mediaFile: Scalars['String']['input'];
@@ -364,6 +373,24 @@ export type CreateAgendaSectionInput = {
   items?: InputMaybe<Array<InputMaybe<CreateAgendaItemInput>>>;
   relatedEvent?: InputMaybe<Scalars['ID']['input']>;
   sequence: Scalars['Int']['input'];
+};
+
+export type CreateCommentError = PostNotFoundError;
+
+export type CreateCommentPayload = {
+  __typename?: 'CreateCommentPayload';
+  comment?: Maybe<Comment>;
+  userErrors: Array<CreateCommentError>;
+};
+
+export type CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError;
+
+export type CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError;
+
+export type CreateMemberPayload = {
+  __typename?: 'CreateMemberPayload';
+  organization?: Maybe<Organization>;
+  userErrors: Array<CreateMemberError>;
 };
 
 export type CreateUserTagInput = {
@@ -753,6 +780,7 @@ export type EventVolunteer = {
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   event?: Maybe<Event>;
+  group?: Maybe<EventVolunteerGroup>;
   isAssigned?: Maybe<Scalars['Boolean']['output']>;
   isInvited?: Maybe<Scalars['Boolean']['output']>;
   response?: Maybe<Scalars['String']['output']>;
@@ -760,8 +788,28 @@ export type EventVolunteer = {
   user: User;
 };
 
+export type EventVolunteerGroup = {
+  __typename?: 'EventVolunteerGroup';
+  _id: Scalars['ID']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  creator?: Maybe<User>;
+  event?: Maybe<Event>;
+  leader: User;
+  name?: Maybe<Scalars['String']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
+  volunteers?: Maybe<Array<Maybe<EventVolunteer>>>;
+  volunteersRequired?: Maybe<Scalars['Int']['output']>;
+};
+
+export type EventVolunteerGroupInput = {
+  eventId: Scalars['ID']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  volunteersRequired?: InputMaybe<Scalars['Int']['input']>;
+};
+
 export type EventVolunteerInput = {
   eventId: Scalars['ID']['input'];
+  groupId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
 };
 
@@ -1003,6 +1051,11 @@ export type MaximumValueError = FieldError & {
   path: Array<Scalars['String']['output']>;
 };
 
+export type MemberNotFoundError = Error & {
+  __typename?: 'MemberNotFoundError';
+  message: Scalars['String']['output'];
+};
+
 export type MembershipRequest = {
   __typename?: 'MembershipRequest';
   _id: Scalars['ID']['output'];
@@ -1085,7 +1138,7 @@ export type Mutation = {
   checkOutEventAttendee: EventAttendee;
   createActionItem: ActionItem;
   createActionItemCategory: ActionItemCategory;
-  createAdmin: AppUserProfile;
+  createAdmin: CreateAdminPayload;
   createAdvertisement?: Maybe<CreateAdvertisementPayload>;
   createAgendaCategory: AgendaCategory;
   createAgendaItem: AgendaItem;
@@ -1095,11 +1148,12 @@ export type Mutation = {
   createDonation: Donation;
   createEvent: Event;
   createEventVolunteer: EventVolunteer;
+  createEventVolunteerGroup: EventVolunteerGroup;
   createFund: Fund;
   createFundraisingCampaign: FundraisingCampaign;
   createFundraisingCampaignPledge: FundraisingCampaignPledge;
   createGroupChat: GroupChat;
-  createMember: Organization;
+  createMember: CreateMemberPayload;
   createMessageChat: MessageChat;
   createOrganization: Organization;
   createPlugin: Plugin;
@@ -1138,6 +1192,7 @@ export type Mutation = {
   removeEvent: Event;
   removeEventAttendee: User;
   removeEventVolunteer: EventVolunteer;
+  removeEventVolunteerGroup: EventVolunteerGroup;
   removeFund: Fund;
   removeFundraisingCampaign: FundraisingCampaign;
   removeFundraisingCampaignPledge: FundraisingCampaignPledge;
@@ -1176,6 +1231,7 @@ export type Mutation = {
   updateCommunity: Scalars['Boolean']['output'];
   updateEvent: Event;
   updateEventVolunteer: EventVolunteer;
+  updateEventVolunteerGroup: EventVolunteerGroup;
   updateFund: Fund;
   updateFundraisingCampaign: FundraisingCampaign;
   updateFundraisingCampaignPledge: FundraisingCampaignPledge;
@@ -1372,6 +1428,11 @@ export type MutationCreateEventArgs = {
 
 export type MutationCreateEventVolunteerArgs = {
   data: EventVolunteerInput;
+};
+
+
+export type MutationCreateEventVolunteerGroupArgs = {
+  data: EventVolunteerGroupInput;
 };
 
 
@@ -1587,6 +1648,11 @@ export type MutationRemoveEventVolunteerArgs = {
 };
 
 
+export type MutationRemoveEventVolunteerGroupArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationRemoveFundArgs = {
   id: Scalars['ID']['input'];
 };
@@ -1774,6 +1840,12 @@ export type MutationUpdateEventVolunteerArgs = {
 };
 
 
+export type MutationUpdateEventVolunteerGroupArgs = {
+  data?: InputMaybe<UpdateEventVolunteerGroupInput>;
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationUpdateFundArgs = {
   data: UpdateFundInput;
   id: Scalars['ID']['input'];
@@ -1942,6 +2014,16 @@ export type OrganizationInput = {
   visibleInSearch?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+export type OrganizationMemberNotFoundError = Error & {
+  __typename?: 'OrganizationMemberNotFoundError';
+  message: Scalars['String']['output'];
+};
+
+export type OrganizationNotFoundError = Error & {
+  __typename?: 'OrganizationNotFoundError';
+  message: Scalars['String']['output'];
+};
+
 export type OrganizationOrderByInput =
   | 'apiUrl_ASC'
   | 'apiUrl_DESC'
@@ -2067,6 +2149,11 @@ export type PostInput = {
   text: Scalars['String']['input'];
   title?: InputMaybe<Scalars['String']['input']>;
   videoUrl?: InputMaybe<Scalars['URL']['input']>;
+};
+
+export type PostNotFoundError = Error & {
+  __typename?: 'PostNotFoundError';
+  message: Scalars['String']['output'];
 };
 
 export type PostOrderByInput =
@@ -2596,6 +2683,12 @@ export type UpdateEventInput = {
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type UpdateEventVolunteerGroupInput = {
+  eventId?: InputMaybe<Scalars['ID']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  volunteersRequired?: InputMaybe<Scalars['Int']['input']>;
+};
+
 export type UpdateEventVolunteerInput = {
   eventId?: InputMaybe<Scalars['ID']['input']>;
   isAssigned?: InputMaybe<Scalars['Boolean']['input']>;
@@ -2753,6 +2846,21 @@ export type UserInput = {
   password: Scalars['String']['input'];
 };
 
+export type UserNotAuthorizedAdminError = Error & {
+  __typename?: 'UserNotAuthorizedAdminError';
+  message: Scalars['String']['output'];
+};
+
+export type UserNotAuthorizedError = Error & {
+  __typename?: 'UserNotAuthorizedError';
+  message: Scalars['String']['output'];
+};
+
+export type UserNotFoundError = Error & {
+  __typename?: 'UserNotFoundError';
+  message: Scalars['String']['output'];
+};
+
 export type UserOrderByInput =
   | 'email_ASC'
   | 'email_DESC'
@@ -2908,6 +3016,12 @@ export type CreateChatInput = {
   userIds: Array<Scalars['ID']['input']>;
 };
 
+export type CreateDirectChatPayload = {
+  __typename?: 'createDirectChatPayload';
+  directChat?: Maybe<DirectChat>;
+  userErrors: Array<CreateDirectChatError>;
+};
+
 export type CreateGroupChatInput = {
   organizationId: Scalars['ID']['input'];
   title: Scalars['String']['input'];
@@ -2985,12 +3099,16 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping of union types */
 export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
   ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
+  CreateAdminError: ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
+  CreateCommentError: ( PostNotFoundError );
+  CreateDirectChatError: ( OrganizationNotFoundError ) | ( UserNotFoundError );
+  CreateMemberError: ( MemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedAdminError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
 };
 
 /** Mapping of interface types */
 export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
   ConnectionPageInfo: ( DefaultConnectionPageInfo );
-  Error: ( UnauthenticatedError ) | ( UnauthorizedError );
+  Error: ( MemberNotFoundError ) | ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( PostNotFoundError ) | ( UnauthenticatedError ) | ( UnauthorizedError ) | ( UserNotAuthorizedAdminError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   FieldError: ( InvalidCursor ) | ( MaximumLengthError ) | ( MaximumValueError ) | ( MinimumLengthError ) | ( MinimumValueError );
 };
 
@@ -3025,11 +3143,18 @@ export type ResolversTypes = {
   ConnectionPageInfo: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['ConnectionPageInfo']>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
   CreateActionItemInput: CreateActionItemInput;
+  CreateAdminError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateAdminError']>;
+  CreateAdminPayload: ResolverTypeWrapper<Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversTypes['AppUserProfile']>, userErrors: Array<ResolversTypes['CreateAdminError']> }>;
   CreateAdvertisementInput: CreateAdvertisementInput;
   CreateAdvertisementPayload: ResolverTypeWrapper<Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   CreateAgendaCategoryInput: CreateAgendaCategoryInput;
   CreateAgendaItemInput: CreateAgendaItemInput;
   CreateAgendaSectionInput: CreateAgendaSectionInput;
+  CreateCommentError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateCommentError']>;
+  CreateCommentPayload: ResolverTypeWrapper<Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversTypes['Comment']>, userErrors: Array<ResolversTypes['CreateCommentError']> }>;
+  CreateDirectChatError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateDirectChatError']>;
+  CreateMemberError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateMemberError']>;
+  CreateMemberPayload: ResolverTypeWrapper<Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversTypes['Organization']>, userErrors: Array<ResolversTypes['CreateMemberError']> }>;
   CreateUserTagInput: CreateUserTagInput;
   Currency: Currency;
   CursorPaginationInput: CursorPaginationInput;
@@ -3053,6 +3178,8 @@ export type ResolversTypes = {
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
   EventVolunteer: ResolverTypeWrapper<InterfaceEventVolunteerModel>;
+  EventVolunteerGroup: ResolverTypeWrapper<InterfaceEventVolunteerGroupModel>;
+  EventVolunteerGroupInput: EventVolunteerGroupInput;
   EventVolunteerInput: EventVolunteerInput;
   EventVolunteerResponse: EventVolunteerResponse;
   EventWhereInput: EventWhereInput;
@@ -3088,6 +3215,7 @@ export type ResolversTypes = {
   MaritalStatus: MaritalStatus;
   MaximumLengthError: ResolverTypeWrapper<MaximumLengthError>;
   MaximumValueError: ResolverTypeWrapper<MaximumValueError>;
+  MemberNotFoundError: ResolverTypeWrapper<MemberNotFoundError>;
   MembershipRequest: ResolverTypeWrapper<InterfaceMembershipRequestModel>;
   MembershipRequestsWhereInput: MembershipRequestsWhereInput;
   Message: ResolverTypeWrapper<InterfaceMessageModel>;
@@ -3101,6 +3229,8 @@ export type ResolversTypes = {
   OrganizationCustomField: ResolverTypeWrapper<OrganizationCustomField>;
   OrganizationInfoNode: ResolverTypeWrapper<Omit<OrganizationInfoNode, 'creator'> & { creator?: Maybe<ResolversTypes['User']> }>;
   OrganizationInput: OrganizationInput;
+  OrganizationMemberNotFoundError: ResolverTypeWrapper<OrganizationMemberNotFoundError>;
+  OrganizationNotFoundError: ResolverTypeWrapper<OrganizationNotFoundError>;
   OrganizationOrderByInput: OrganizationOrderByInput;
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: ResolverTypeWrapper<OtpData>;
@@ -3115,6 +3245,7 @@ export type ResolversTypes = {
   Post: ResolverTypeWrapper<InterfacePostModel>;
   PostEdge: ResolverTypeWrapper<Omit<PostEdge, 'node'> & { node: ResolversTypes['Post'] }>;
   PostInput: PostInput;
+  PostNotFoundError: ResolverTypeWrapper<PostNotFoundError>;
   PostOrderByInput: PostOrderByInput;
   PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
@@ -3146,6 +3277,7 @@ export type ResolversTypes = {
   UpdateAgendaSectionInput: UpdateAgendaSectionInput;
   UpdateCommunityInput: UpdateCommunityInput;
   UpdateEventInput: UpdateEventInput;
+  UpdateEventVolunteerGroupInput: UpdateEventVolunteerGroupInput;
   UpdateEventVolunteerInput: UpdateEventVolunteerInput;
   UpdateFundCampaignInput: UpdateFundCampaignInput;
   UpdateFundCampaignPledgeInput: UpdateFundCampaignPledgeInput;
@@ -3163,6 +3295,9 @@ export type ResolversTypes = {
   UserData: ResolverTypeWrapper<Omit<UserData, 'appUserProfile' | 'user'> & { appUserProfile?: Maybe<ResolversTypes['AppUserProfile']>, user: ResolversTypes['User'] }>;
   UserFamily: ResolverTypeWrapper<InterfaceUserFamilyModel>;
   UserInput: UserInput;
+  UserNotAuthorizedAdminError: ResolverTypeWrapper<UserNotAuthorizedAdminError>;
+  UserNotAuthorizedError: ResolverTypeWrapper<UserNotAuthorizedError>;
+  UserNotFoundError: ResolverTypeWrapper<UserNotFoundError>;
   UserOrderByInput: UserOrderByInput;
   UserPhone: ResolverTypeWrapper<UserPhone>;
   UserPhoneInput: UserPhoneInput;
@@ -3177,6 +3312,7 @@ export type ResolversTypes = {
   VenueInput: VenueInput;
   WeekDays: WeekDays;
   createChatInput: CreateChatInput;
+  createDirectChatPayload: ResolverTypeWrapper<Omit<CreateDirectChatPayload, 'directChat' | 'userErrors'> & { directChat?: Maybe<ResolversTypes['DirectChat']>, userErrors: Array<ResolversTypes['CreateDirectChatError']> }>;
   createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
 };
@@ -3210,11 +3346,18 @@ export type ResolversParentTypes = {
   ConnectionPageInfo: ResolversInterfaceTypes<ResolversParentTypes>['ConnectionPageInfo'];
   CountryCode: Scalars['CountryCode']['output'];
   CreateActionItemInput: CreateActionItemInput;
+  CreateAdminError: ResolversUnionTypes<ResolversParentTypes>['CreateAdminError'];
+  CreateAdminPayload: Omit<CreateAdminPayload, 'user' | 'userErrors'> & { user?: Maybe<ResolversParentTypes['AppUserProfile']>, userErrors: Array<ResolversParentTypes['CreateAdminError']> };
   CreateAdvertisementInput: CreateAdvertisementInput;
   CreateAdvertisementPayload: Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   CreateAgendaCategoryInput: CreateAgendaCategoryInput;
   CreateAgendaItemInput: CreateAgendaItemInput;
   CreateAgendaSectionInput: CreateAgendaSectionInput;
+  CreateCommentError: ResolversUnionTypes<ResolversParentTypes>['CreateCommentError'];
+  CreateCommentPayload: Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversParentTypes['Comment']>, userErrors: Array<ResolversParentTypes['CreateCommentError']> };
+  CreateDirectChatError: ResolversUnionTypes<ResolversParentTypes>['CreateDirectChatError'];
+  CreateMemberError: ResolversUnionTypes<ResolversParentTypes>['CreateMemberError'];
+  CreateMemberPayload: Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversParentTypes['Organization']>, userErrors: Array<ResolversParentTypes['CreateMemberError']> };
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
@@ -3234,6 +3377,8 @@ export type ResolversParentTypes = {
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
   EventVolunteer: InterfaceEventVolunteerModel;
+  EventVolunteerGroup: InterfaceEventVolunteerGroupModel;
+  EventVolunteerGroupInput: EventVolunteerGroupInput;
   EventVolunteerInput: EventVolunteerInput;
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
@@ -3264,6 +3409,7 @@ export type ResolversParentTypes = {
   Longitude: Scalars['Longitude']['output'];
   MaximumLengthError: MaximumLengthError;
   MaximumValueError: MaximumValueError;
+  MemberNotFoundError: MemberNotFoundError;
   MembershipRequest: InterfaceMembershipRequestModel;
   MembershipRequestsWhereInput: MembershipRequestsWhereInput;
   Message: InterfaceMessageModel;
@@ -3277,6 +3423,8 @@ export type ResolversParentTypes = {
   OrganizationCustomField: OrganizationCustomField;
   OrganizationInfoNode: Omit<OrganizationInfoNode, 'creator'> & { creator?: Maybe<ResolversParentTypes['User']> };
   OrganizationInput: OrganizationInput;
+  OrganizationMemberNotFoundError: OrganizationMemberNotFoundError;
+  OrganizationNotFoundError: OrganizationNotFoundError;
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: OtpData;
   PageInfo: PageInfo;
@@ -3289,6 +3437,7 @@ export type ResolversParentTypes = {
   Post: InterfacePostModel;
   PostEdge: Omit<PostEdge, 'node'> & { node: ResolversParentTypes['Post'] };
   PostInput: PostInput;
+  PostNotFoundError: PostNotFoundError;
   PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
   PostsConnection: Omit<PostsConnection, 'edges'> & { edges: Array<ResolversParentTypes['PostEdge']> };
@@ -3315,6 +3464,7 @@ export type ResolversParentTypes = {
   UpdateAgendaSectionInput: UpdateAgendaSectionInput;
   UpdateCommunityInput: UpdateCommunityInput;
   UpdateEventInput: UpdateEventInput;
+  UpdateEventVolunteerGroupInput: UpdateEventVolunteerGroupInput;
   UpdateEventVolunteerInput: UpdateEventVolunteerInput;
   UpdateFundCampaignInput: UpdateFundCampaignInput;
   UpdateFundCampaignPledgeInput: UpdateFundCampaignPledgeInput;
@@ -3332,6 +3482,9 @@ export type ResolversParentTypes = {
   UserData: Omit<UserData, 'appUserProfile' | 'user'> & { appUserProfile?: Maybe<ResolversParentTypes['AppUserProfile']>, user: ResolversParentTypes['User'] };
   UserFamily: InterfaceUserFamilyModel;
   UserInput: UserInput;
+  UserNotAuthorizedAdminError: UserNotAuthorizedAdminError;
+  UserNotAuthorizedError: UserNotAuthorizedError;
+  UserNotFoundError: UserNotFoundError;
   UserPhone: UserPhone;
   UserPhoneInput: UserPhoneInput;
   UserTag: InterfaceOrganizationTagUserModel;
@@ -3343,6 +3496,7 @@ export type ResolversParentTypes = {
   Venue: InterfaceVenueModel;
   VenueInput: VenueInput;
   createChatInput: CreateChatInput;
+  createDirectChatPayload: Omit<CreateDirectChatPayload, 'directChat' | 'userErrors'> & { directChat?: Maybe<ResolversParentTypes['DirectChat']>, userErrors: Array<ResolversParentTypes['CreateDirectChatError']> };
   createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
 };
@@ -3562,8 +3716,42 @@ export interface CountryCodeScalarConfig extends GraphQLScalarTypeConfig<Resolve
   name: 'CountryCode';
 }
 
+export type CreateAdminErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateAdminError'] = ResolversParentTypes['CreateAdminError']> = {
+  __resolveType: TypeResolveFn<'OrganizationMemberNotFoundError' | 'OrganizationNotFoundError' | 'UserNotAuthorizedError' | 'UserNotFoundError', ParentType, ContextType>;
+};
+
+export type CreateAdminPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateAdminPayload'] = ResolversParentTypes['CreateAdminPayload']> = {
+  user?: Resolver<Maybe<ResolversTypes['AppUserProfile']>, ParentType, ContextType>;
+  userErrors?: Resolver<Array<ResolversTypes['CreateAdminError']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type CreateAdvertisementPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateAdvertisementPayload'] = ResolversParentTypes['CreateAdvertisementPayload']> = {
   advertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CreateCommentErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateCommentError'] = ResolversParentTypes['CreateCommentError']> = {
+  __resolveType: TypeResolveFn<'PostNotFoundError', ParentType, ContextType>;
+};
+
+export type CreateCommentPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateCommentPayload'] = ResolversParentTypes['CreateCommentPayload']> = {
+  comment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType>;
+  userErrors?: Resolver<Array<ResolversTypes['CreateCommentError']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CreateDirectChatErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateDirectChatError'] = ResolversParentTypes['CreateDirectChatError']> = {
+  __resolveType: TypeResolveFn<'OrganizationNotFoundError' | 'UserNotFoundError', ParentType, ContextType>;
+};
+
+export type CreateMemberErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateMemberError'] = ResolversParentTypes['CreateMemberError']> = {
+  __resolveType: TypeResolveFn<'MemberNotFoundError' | 'OrganizationNotFoundError' | 'UserNotAuthorizedAdminError' | 'UserNotAuthorizedError' | 'UserNotFoundError', ParentType, ContextType>;
+};
+
+export type CreateMemberPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateMemberPayload'] = ResolversParentTypes['CreateMemberPayload']> = {
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  userErrors?: Resolver<Array<ResolversTypes['CreateMemberError']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3633,7 +3821,7 @@ export interface EmailAddressScalarConfig extends GraphQLScalarTypeConfig<Resolv
 }
 
 export type ErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Error'] = ResolversParentTypes['Error']> = {
-  __resolveType: TypeResolveFn<'UnauthenticatedError' | 'UnauthorizedError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'MemberNotFoundError' | 'OrganizationMemberNotFoundError' | 'OrganizationNotFoundError' | 'PostNotFoundError' | 'UnauthenticatedError' | 'UnauthorizedError' | 'UserNotAuthorizedAdminError' | 'UserNotAuthorizedError' | 'UserNotFoundError', ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 };
 
@@ -3688,11 +3876,25 @@ export type EventVolunteerResolvers<ContextType = any, ParentType extends Resolv
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
+  group?: Resolver<Maybe<ResolversTypes['EventVolunteerGroup']>, ParentType, ContextType>;
   isAssigned?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   isInvited?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   response?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EventVolunteerGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventVolunteerGroup'] = ResolversParentTypes['EventVolunteerGroup']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
+  leader?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  volunteers?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventVolunteer']>>>, ParentType, ContextType>;
+  volunteersRequired?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3838,6 +4040,11 @@ export type MaximumValueErrorResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type MemberNotFoundErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MemberNotFoundError'] = ResolversParentTypes['MemberNotFoundError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MembershipRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['MembershipRequest'] = ResolversParentTypes['MembershipRequest']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
@@ -3904,7 +4111,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   checkOutEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationCheckOutEventAttendeeArgs, 'data'>>;
   createActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationCreateActionItemArgs, 'actionItemCategoryId' | 'data'>>;
   createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'name' | 'organizationId'>>;
-  createAdmin?: Resolver<ResolversTypes['AppUserProfile'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
+  createAdmin?: Resolver<ResolversTypes['CreateAdminPayload'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createAdvertisement?: Resolver<Maybe<ResolversTypes['CreateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'input'>>;
   createAgendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<MutationCreateAgendaCategoryArgs, 'input'>>;
   createAgendaItem?: Resolver<ResolversTypes['AgendaItem'], ParentType, ContextType, RequireFields<MutationCreateAgendaItemArgs, 'input'>>;
@@ -3914,11 +4121,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
   createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationCreateEventArgs, 'data'>>;
   createEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationCreateEventVolunteerArgs, 'data'>>;
+  createEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationCreateEventVolunteerGroupArgs, 'data'>>;
   createFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationCreateFundArgs, 'data'>>;
   createFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignArgs, 'data'>>;
   createFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignPledgeArgs, 'data'>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
-  createMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
+  createMember?: Resolver<ResolversTypes['CreateMemberPayload'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginName'>>;
@@ -3957,6 +4165,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRemoveEventArgs, 'id'>>;
   removeEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveEventAttendeeArgs, 'data'>>;
   removeEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerArgs, 'id'>>;
+  removeEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerGroupArgs, 'id'>>;
   removeFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationRemoveFundArgs, 'id'>>;
   removeFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignArgs, 'id'>>;
   removeFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignPledgeArgs, 'id'>>;
@@ -3995,6 +4204,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCommunity?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateCommunityArgs, 'data'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerArgs, 'id'>>;
+  updateEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerGroupArgs, 'id'>>;
   updateFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationUpdateFundArgs, 'data' | 'id'>>;
   updateFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationUpdateFundraisingCampaignArgs, 'data' | 'id'>>;
   updateFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationUpdateFundraisingCampaignPledgeArgs, 'data' | 'id'>>;
@@ -4054,6 +4264,16 @@ export type OrganizationInfoNodeResolvers<ContextType = any, ParentType extends 
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   userRegistrationRequired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type OrganizationMemberNotFoundErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationMemberNotFoundError'] = ResolversParentTypes['OrganizationMemberNotFoundError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type OrganizationNotFoundErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationNotFoundError'] = ResolversParentTypes['OrganizationNotFoundError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4118,6 +4338,11 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
 export type PostEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostEdge'] = ResolversParentTypes['PostEdge']> = {
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type PostNotFoundErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostNotFoundError'] = ResolversParentTypes['PostNotFoundError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4298,6 +4523,21 @@ export type UserFamilyResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserNotAuthorizedAdminErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotAuthorizedAdminError'] = ResolversParentTypes['UserNotAuthorizedAdminError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserNotAuthorizedErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotAuthorizedError'] = ResolversParentTypes['UserNotAuthorizedError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserNotFoundErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotFoundError'] = ResolversParentTypes['UserNotFoundError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UserPhoneResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserPhone'] = ResolversParentTypes['UserPhone']> = {
   home?: Resolver<Maybe<ResolversTypes['PhoneNumber']>, ParentType, ContextType>;
   mobile?: Resolver<Maybe<ResolversTypes['PhoneNumber']>, ParentType, ContextType>;
@@ -4349,6 +4589,12 @@ export type VenueResolvers<ContextType = any, ParentType extends ResolversParent
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type CreateDirectChatPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['createDirectChatPayload'] = ResolversParentTypes['createDirectChatPayload']> = {
+  directChat?: Resolver<Maybe<ResolversTypes['DirectChat']>, ParentType, ContextType>;
+  userErrors?: Resolver<Array<ResolversTypes['CreateDirectChatError']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
   ActionItem?: ActionItemResolvers<ContextType>;
   ActionItemCategory?: ActionItemCategoryResolvers<ContextType>;
@@ -4371,7 +4617,14 @@ export type Resolvers<ContextType = any> = {
   ConnectionError?: ConnectionErrorResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
   CountryCode?: GraphQLScalarType;
+  CreateAdminError?: CreateAdminErrorResolvers<ContextType>;
+  CreateAdminPayload?: CreateAdminPayloadResolvers<ContextType>;
   CreateAdvertisementPayload?: CreateAdvertisementPayloadResolvers<ContextType>;
+  CreateCommentError?: CreateCommentErrorResolvers<ContextType>;
+  CreateCommentPayload?: CreateCommentPayloadResolvers<ContextType>;
+  CreateDirectChatError?: CreateDirectChatErrorResolvers<ContextType>;
+  CreateMemberError?: CreateMemberErrorResolvers<ContextType>;
+  CreateMemberPayload?: CreateMemberPayloadResolvers<ContextType>;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
   DefaultConnectionPageInfo?: DefaultConnectionPageInfoResolvers<ContextType>;
@@ -4385,6 +4638,7 @@ export type Resolvers<ContextType = any> = {
   Event?: EventResolvers<ContextType>;
   EventAttendee?: EventAttendeeResolvers<ContextType>;
   EventVolunteer?: EventVolunteerResolvers<ContextType>;
+  EventVolunteerGroup?: EventVolunteerGroupResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Feedback?: FeedbackResolvers<ContextType>;
   FieldError?: FieldErrorResolvers<ContextType>;
@@ -4402,6 +4656,7 @@ export type Resolvers<ContextType = any> = {
   Longitude?: GraphQLScalarType;
   MaximumLengthError?: MaximumLengthErrorResolvers<ContextType>;
   MaximumValueError?: MaximumValueErrorResolvers<ContextType>;
+  MemberNotFoundError?: MemberNotFoundErrorResolvers<ContextType>;
   MembershipRequest?: MembershipRequestResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   MessageChat?: MessageChatResolvers<ContextType>;
@@ -4411,6 +4666,8 @@ export type Resolvers<ContextType = any> = {
   Organization?: OrganizationResolvers<ContextType>;
   OrganizationCustomField?: OrganizationCustomFieldResolvers<ContextType>;
   OrganizationInfoNode?: OrganizationInfoNodeResolvers<ContextType>;
+  OrganizationMemberNotFoundError?: OrganizationMemberNotFoundErrorResolvers<ContextType>;
+  OrganizationNotFoundError?: OrganizationNotFoundErrorResolvers<ContextType>;
   OtpData?: OtpDataResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   PhoneNumber?: GraphQLScalarType;
@@ -4419,6 +4676,7 @@ export type Resolvers<ContextType = any> = {
   PositiveInt?: GraphQLScalarType;
   Post?: PostResolvers<ContextType>;
   PostEdge?: PostEdgeResolvers<ContextType>;
+  PostNotFoundError?: PostNotFoundErrorResolvers<ContextType>;
   PostsConnection?: PostsConnectionResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   RecurrenceRule?: RecurrenceRuleResolvers<ContextType>;
@@ -4436,6 +4694,9 @@ export type Resolvers<ContextType = any> = {
   UserCustomData?: UserCustomDataResolvers<ContextType>;
   UserData?: UserDataResolvers<ContextType>;
   UserFamily?: UserFamilyResolvers<ContextType>;
+  UserNotAuthorizedAdminError?: UserNotAuthorizedAdminErrorResolvers<ContextType>;
+  UserNotAuthorizedError?: UserNotAuthorizedErrorResolvers<ContextType>;
+  UserNotFoundError?: UserNotFoundErrorResolvers<ContextType>;
   UserPhone?: UserPhoneResolvers<ContextType>;
   UserTag?: UserTagResolvers<ContextType>;
   UserTagsConnection?: UserTagsConnectionResolvers<ContextType>;
@@ -4443,6 +4704,7 @@ export type Resolvers<ContextType = any> = {
   UsersConnection?: UsersConnectionResolvers<ContextType>;
   UsersConnectionEdge?: UsersConnectionEdgeResolvers<ContextType>;
   Venue?: VenueResolvers<ContextType>;
+  createDirectChatPayload?: CreateDirectChatPayloadResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {
