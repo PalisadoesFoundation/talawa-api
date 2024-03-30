@@ -708,6 +708,7 @@ type EventVolunteer {
   createdAt: DateTime!
   creator: User
   event: Event
+  group: EventVolunteerGroup
   isAssigned: Boolean
   isInvited: Boolean
   response: String
@@ -715,8 +716,27 @@ type EventVolunteer {
   user: User!
 }
 
+type EventVolunteerGroup {
+  _id: ID!
+  createdAt: DateTime!
+  creator: User
+  event: Event
+  leader: User!
+  name: String
+  updatedAt: DateTime!
+  volunteers: [EventVolunteer]
+  volunteersRequired: Int
+}
+
+input EventVolunteerGroupInput {
+  eventId: ID!
+  name: String
+  volunteersRequired: Int
+}
+
 input EventVolunteerInput {
   eventId: ID!
+  groupId: ID!
   userId: ID!
 }
 
@@ -1045,6 +1065,7 @@ type Mutation {
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
+  createEventVolunteerGroup(data: EventVolunteerGroupInput!): EventVolunteerGroup!
   createFund(data: FundInput!): Fund!
   createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
   createFundraisingCampaignPledge(data: FundCampaignPledgeInput!): FundraisingCampaignPledge!
@@ -1088,6 +1109,7 @@ type Mutation {
   removeEvent(id: ID!, recurringEventDeleteType: RecurringEventMutationType): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
+  removeEventVolunteerGroup(id: ID!): EventVolunteerGroup!
   removeFund(id: ID!): Fund!
   removeFundraisingCampaign(id: ID!): FundraisingCampaign!
   removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge!
@@ -1126,6 +1148,7 @@ type Mutation {
   updateCommunity(data: UpdateCommunityInput!): Boolean!
   updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
+  updateEventVolunteerGroup(data: UpdateEventVolunteerGroupInput, id: ID!): EventVolunteerGroup!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
   updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
   updateFundraisingCampaignPledge(data: UpdateFundCampaignPledgeInput!, id: ID!): FundraisingCampaignPledge!
@@ -1630,6 +1653,12 @@ input UpdateEventInput {
   startDate: Date
   startTime: Time
   title: String
+}
+
+input UpdateEventVolunteerGroupInput {
+  eventId: ID
+  name: String
+  volunteersRequired: Int
 }
 
 input UpdateEventVolunteerInput {

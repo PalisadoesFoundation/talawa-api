@@ -15,6 +15,7 @@ export * from "./Donation";
 export * from "./Event";
 export * from "./EventAttendee";
 export * from "./EventVolunteer";
+export * from "./EventVolunteerGroup";
 export * from "./Feedback";
 export * from "./File";
 export * from "./Fund";
