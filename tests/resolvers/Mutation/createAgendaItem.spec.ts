@@ -1,5 +1,4 @@
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
@@ -41,6 +40,8 @@ beforeAll(async () => {
     creatorId: testUser?._id,
   });
 
+  const orgId = new mongoose.Types.ObjectId();
+
   await AppUserProfile.updateOne(
     {
       userId: testUserSuperAdmin?._id,
@@ -48,6 +49,17 @@ beforeAll(async () => {
     {
       $set: {
         isSuperAdmin: true,
+      },
+    },
+  );
+
+  await AppUserProfile.updateOne(
+    {
+      userId: testAdminUser?._id,
+    },
+    {
+      $set: {
+        adminFor: [orgId],
       },
     },
   );
@@ -313,7 +325,8 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
     );
     expect(createdAgendaItem).toBeDefined();
   });
-  it("throws an error if user does not have appUserProfile", async () => {
+
+  it("throws an error if currentAppUserProfile is not found", async () => {
     await AppUserProfile.deleteOne({
       userId: testUser?._id,
     });
@@ -331,7 +344,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
       },
     };
     const context = {
-      userId: testAdminUser?._id,
+      userId: testUser?._id,
     };
     const { createAgendaItem: createAgendaItemResolver } = await import(
       "../../../src/resolvers/Mutation/createAgendaItem"
