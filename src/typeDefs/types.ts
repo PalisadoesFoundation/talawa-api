@@ -132,7 +132,10 @@ export const types = gql`
     websiteLink: String
     socialMediaUrls: SocialMediaUrls
   }
-
+  type CreateAdminPayload {
+    user: AppUserProfile
+    userErrors: [CreateAdminError!]!
+  }
   type UserFamily {
     _id: ID!
     title: String
@@ -150,6 +153,21 @@ export const types = gql`
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
     startCursor: String
+  }
+
+  type CreateMemberPayload {
+    organization: Organization
+    userErrors: [CreateMemberError!]!
+  }
+
+  type CreateCommentPayload {
+    comment: Comment
+    userErrors: [CreateCommentError!]!
+  }
+
+  type createDirectChatPayload {
+    directChat: DirectChat
+    userErrors: [CreateDirectChatError!]!
   }
 
   type DeletePayload {
