@@ -14,6 +14,7 @@ export interface InterfaceCheckIn {
   _id: Types.ObjectId;
   eventAttendeeId: PopulatedDoc<InterfaceEventAttendee & Document>;
   time: Date;
+  feedbackSubmitted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +30,11 @@ const checkInSchema = new Schema(
       type: Date,
       required: true,
       default: Date.now,
+    },
+    feedbackSubmitted: {
+      type: Boolean,
+      required: true,
+      default: false,
     },
   },
   {

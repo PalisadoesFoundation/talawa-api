@@ -20,11 +20,11 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * Handles the check-in process for event attendees.
- * 
+ *
  * This resolver function allows event admins or superadmins to check-in attendees for a specific event.
  * It verifies the existence of the current user, the event, and the attendee to be checked in,
  * and ensures proper authorization before performing the check-in operation.
- * 
+ *
  * @param _parent - The parent resolver.
  * @param args - Arguments containing data for the check-in, including the eventId, userId, allotedSeat, and allotedRoom.
  * @param context - Context object containing user authentication and request information.
@@ -132,6 +132,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
     });
 
     checkInAttendee.checkInId = checkIn._id;
+    checkInAttendee.isCheckedIn = true;
     checkInAttendee.save();
 
     return checkIn.toObject();
@@ -155,6 +156,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
     },
     {
       checkInId: checkIn._id,
+      isCheckedIn: true,
     },
   );
 

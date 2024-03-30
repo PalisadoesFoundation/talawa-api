@@ -266,10 +266,9 @@ export type CheckOut = {
   __typename?: 'CheckOut';
   _id: Scalars['ID']['output'];
   createdAt: Scalars['DateTime']['output'];
-  event: Event;
+  eventAttendeeId: Scalars['ID']['output'];
   time: Scalars['DateTime']['output'];
   updatedAt: Scalars['DateTime']['output'];
-  user: User;
 };
 
 export type Comment = {
@@ -3023,7 +3022,7 @@ export type ResolversTypes = {
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
   CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
-  CheckOut: ResolverTypeWrapper<Omit<CheckOut, 'event' | 'user'> & { event: ResolversTypes['Event'], user: ResolversTypes['User'] }>;
+  CheckOut: ResolverTypeWrapper<CheckOut>;
   Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
   Community: ResolverTypeWrapper<InterfaceCommunityModel>;
@@ -3209,7 +3208,7 @@ export type ResolversParentTypes = {
   CheckIn: InterfaceCheckInModel;
   CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
-  CheckOut: Omit<CheckOut, 'event' | 'user'> & { event: ResolversParentTypes['Event'], user: ResolversParentTypes['User'] };
+  CheckOut: CheckOut;
   Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
   Community: InterfaceCommunityModel;
@@ -3535,10 +3534,9 @@ export type CheckInStatusResolvers<ContextType = any, ParentType extends Resolve
 export type CheckOutResolvers<ContextType = any, ParentType extends ResolversParentTypes['CheckOut'] = ResolversParentTypes['CheckOut']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
+  eventAttendeeId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   time?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

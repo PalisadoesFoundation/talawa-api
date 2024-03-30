@@ -178,11 +178,10 @@ type CheckIn {
 
 type CheckOut {
   _id: ID!
+  eventAttendeeId: ID!
   createdAt: DateTime!
-  event: Event!
   time: DateTime!
   updatedAt: DateTime!
-  user: User!
 }
 
 input CheckInCheckOutInput {

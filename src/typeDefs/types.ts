@@ -101,11 +101,10 @@ export const types = gql`
   # Stores the detail of an check out of an user in an event
   type CheckOut {
     _id: ID!
+    eventAttendeeId: ID!
     createdAt: DateTime!
-    event: Event!
     time: DateTime!
     updatedAt: DateTime!
-    user: User!
   }
 
   # Used to show whether an user has checked in for an event

@@ -9,7 +9,13 @@ import {
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event, EventAttendee, CheckOut } from "../../models";
+import {
+  User,
+  Event,
+  EventAttendee,
+  CheckOut,
+  AppUserProfile,
+} from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
@@ -53,6 +59,16 @@ export const checkOut: MutationResolvers["checkOut"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
 
   let currentEvent: InterfaceEvent | null;
 
@@ -83,7 +99,7 @@ export const checkOut: MutationResolvers["checkOut"] = async (
       admin === context.userID || Types.ObjectId(admin).equals(context.userId),
   );
 
-  if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {
+  if (!isUserEventAdmin && currentUserAppProfile.isSuperAdmin === false) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -107,6 +123,7 @@ export const checkOut: MutationResolvers["checkOut"] = async (
     eventId: args.data.eventId,
     userId: args.data.userId,
   });
+  console.log(attendeeData);
 
   if (attendeeData === null) {
     throw new errors.NotFoundError(
@@ -139,12 +156,13 @@ export const checkOut: MutationResolvers["checkOut"] = async (
   await EventAttendee.updateOne(
     {
       eventId: args.data.eventId,
-      userId: currentEvent,
+      userId: args.data.userId,
     },
     {
-      checkInId: checkOut._id,
+      checkOutId: checkOut._id,
+      isCheckedOut: true,
     },
   );
 
-  return checkOut.toObject() as any;
+  return checkOut.toObject();
 };
