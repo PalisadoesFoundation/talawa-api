@@ -199,17 +199,13 @@ async function askForTransactionLogPath(): Promise<string> {
   return logPath;
 }
 
-//Checks if the data exists and ask for deletion
+//Wipes the existing data in the database
 /**
- * The function `shouldWipeExistingData` checks if there is existing data in a MongoDB database and prompts the user to delete
- * it before importing new data.
- * @param url - The `url` parameter is a string that represents the connection URL for the
- * MongoDB database. It is used to establish a connection to the database using the `MongoClient` class
- * from the `mongodb` package.
- * @returns The function returns a Promise<boolean>.
+ * The function `wipeExistingData` deletes all existing data in a MongoDB database if the database URL is provided.
+ * @param url - A string representing the URL of the MongoDB database.
+ * @returns The function returns a Promise that resolves to `void`.
  */
-export async function shouldWipeExistingData(url: string): Promise<boolean> {
-  let shouldImport = false;
+export async function wipeExistingData(url: string): Promise<void> {
   const client = new MongoClient(`${url}`);
   try {
     await client.connect();
@@ -217,30 +213,43 @@ export async function shouldWipeExistingData(url: string): Promise<boolean> {
     const collections = await db.listCollections().toArray();
 
     if (collections.length > 0) {
-      const { confirmDelete } = await inquirer.prompt({
-        type: "confirm",
-        name: "confirmDelete",
-        message:
-          "We found data in the database. Do you want to delete the existing data before importing?",
-      });
-
-      if (confirmDelete) {
-        for (const collection of collections) {
-          await db.collection(collection.name).deleteMany({});
-        }
-        console.log("All existing data has been deleted.");
-        shouldImport = true;
-      } else {
-        console.log("Deletion & import operation cancelled.");
+      for (const collection of collections) {
+        await db.collection(collection.name).deleteMany({});
       }
-    } else {
-      shouldImport = true;
+      console.log("All existing data has been deleted.");
     }
   } catch (error) {
     console.error("Could not connect to database to check for data");
   }
   client.close();
-  return shouldImport;
+  // return shouldImport;
+}
+
+//Check if the database is empty
+/**
+ * The function `checkDb` checks if a MongoDB database is empty by connecting to the database and checking if any
+ * collections exist.
+ * @param url - A string representing the URL of the MongoDB database.
+ * @returns The function returns a Promise that resolves to a boolean value.
+ */
+export async function checkDb(url: string): Promise<boolean> {
+  let dbEmpty = false;
+  const client = new MongoClient(`${url}`);
+  try {
+    await client.connect();
+    const db = client.db();
+    const collections = await db.listCollections().toArray();
+    if (collections.length > 0) {
+      console.log("Existing data found in the database");
+      dbEmpty = false;
+    } else {
+      dbEmpty = true;
+    }
+  } catch (error) {
+    console.error("Could not connect to database to check for data");
+  }
+  client.close();
+  return dbEmpty;
 }
 //Import sample data
 /**
@@ -253,26 +262,23 @@ export async function importData(): Promise<void> {
     console.log("Couldn't find mongodb url");
     return;
   }
-  const shouldImport = await shouldWipeExistingData(process.env.MONGO_DB_URL);
 
-  if (shouldImport) {
-    console.log("Importing sample data...");
-    if (process.env.NODE_ENV !== "test") {
-      await exec(
-        "npm run import:sample-data",
-        (error: ExecException | null, stdout: string, stderr: string) => {
-          if (error) {
-            console.error(`Error: ${error.message}`);
-            abort();
-          }
-          if (stderr) {
-            console.error(`Error: ${stderr}`);
-            abort();
-          }
-          console.log(`Output: ${stdout}`);
-        },
-      );
-    }
+  console.log("Importing sample data...");
+  if (process.env.NODE_ENV !== "test") {
+    await exec(
+      "npm run import:sample-data",
+      (error: ExecException | null, stdout: string, stderr: string) => {
+        if (error) {
+          console.error(`Error: ${error.message}`);
+          abort();
+        }
+        if (stderr) {
+          console.error(`Error: ${stderr}`);
+          abort();
+        }
+        console.log(`Output: ${stdout}`);
+      },
+    );
   }
 }
 
@@ -987,32 +993,53 @@ async function main(): Promise<void> {
   await setImageUploadSize(imageSizeLimit * 1000);
 
   if (!isDockerInstallation) {
-    const { shouldRunDataImport } = await inquirer.prompt([
-      {
+    if (!process.env.MONGO_DB_URL) {
+      console.log("Couldn't find mongodb url");
+      return;
+    }
+    const isDbEmpty = await checkDb(process.env.MONGO_DB_URL);
+    if (!isDbEmpty) {
+      const { shouldOverwriteData } = await inquirer.prompt({
         type: "confirm",
-        name: "shouldRunDataImport",
-        message: "Do you want to import sample data?",
+        name: "shouldOverwriteData",
+        message: "Do you want to overwrite the existing data?",
         default: false,
-      },
-    ]);
-
-    if (shouldRunDataImport) {
-      const { choice } = await inquirer.prompt([
-        {
-          type: "list",
-          name: "choice",
-          message: "Choose the data you want to import",
-          choices: ["Sample data", "Default data"],
-          default: "Default data",
-        },
-      ]);
-      if (choice === "Sample data") {
+      });
+      if (shouldOverwriteData) {
+        const { overwriteDefaultData } = await inquirer.prompt({
+          type: "confirm",
+          name: "overwriteDefaultData",
+          message: "Do you want to import default data?",
+          default: false,
+        });
+        if (overwriteDefaultData) {
+          await wipeExistingData(process.env.MONGO_DB_URL);
+          await importDefaultData();
+        } else {
+          const { overwriteSampleData } = await inquirer.prompt({
+            type: "confirm",
+            name: "overwriteSampleData",
+            message: "Do you want to import sample data?",
+            default: false,
+          });
+          if (overwriteSampleData) {
+            await wipeExistingData(process.env.MONGO_DB_URL);
+            await importData();
+          }
+        }
+      }
+    } else {
+      const { importData } = await inquirer.prompt({
+        type: "confirm",
+        name: "importData",
+        message: "Do you want to import Sample data?",
+        default: false,
+      });
+      if (importData) {
         await importData();
       } else {
         await importDefaultData();
       }
-    } else {
-      await loadDefaultData();
     }
   }
 

@@ -1,33 +1,11 @@
 import fs from "fs/promises";
 import path from "path";
-import { connect } from "../db";
-import {
-  ActionItemCategory,
-  AppUserProfile,
-  Community,
-  Event,
-  Organization,
-  Post,
-  User,
-} from "../models";
+import { connect, disconnect } from "../db";
+import { AppUserProfile, Organization, User } from "../models";
 
-async function formatDatabase(): Promise<void> {
-  // Clear all collections
-  await Promise.all([
-    Community.deleteMany({}),
-    User.deleteMany({}),
-    Organization.deleteMany({}),
-    ActionItemCategory.deleteMany({}),
-    Event.deleteMany({}),
-    Post.deleteMany({}),
-    AppUserProfile.deleteMany({}),
-  ]);
-  console.log("Cleared all collections\n");
-}
 export async function loadDefaultOrganiation(): Promise<void> {
   try {
     await connect();
-    await formatDatabase();
     const userData = await fs.readFile(
       path.join(__dirname, `../../sample_data/defaultUser.json`),
       "utf8",
@@ -49,9 +27,12 @@ export async function loadDefaultOrganiation(): Promise<void> {
       unknown
     >[];
     await Organization.insertMany(organizationDocs);
+
     console.log("Default organization loaded");
   } catch (error) {
     console.log(error);
+  } finally {
+    await disconnect(); // Close the database connection
   }
 }
 (async (): Promise<void> => {
