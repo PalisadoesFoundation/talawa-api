@@ -1,26 +1,28 @@
 import {
   EVENT_NOT_FOUND_ERROR,
-  USER_ALREADY_CHECKED_IN,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
+  ATTENDEE_NOT_FOUND,
+  USER_NOT_CHECKED_IN,
+  USER_ALREADY_CHECKED_OUT,
 } from "../../constants";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
 import {
-  AppUserProfile,
-  CheckIn,
+  User,
   Event,
   EventAttendee,
-  User,
+  CheckOut,
+  AppUserProfile,
 } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
- * Handles the check-in process for event attendees.
+ * Handles the check-out process for event attendees.
  *
- * This resolver function allows event admins or superadmins to check-in attendees for a specific event.
+ * This resolver function allows event admins or superadmins to check-out attendees from a specific event.
  * It verifies the existence of the current user, the event, and the attendee to be checked in,
  * and ensures proper authorization before performing the check-in operation.
  *
@@ -29,17 +31,17 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * @param context - Context object containing user authentication and request information.
  * @returns The check-in data if successful.
  * @throws NotFoundError if the current user, event, or attendee is not found.
- * @throws UnauthorizedError if the current user lacks authorization to perform the check-in operation.
- * @throws ConflictError if the attendee is already checked in for the event.
+ * @throws UnauthorizedError if the current user lacks authorization to perform the check-out operation.
+ * @throws ConflictError if the attendee is not checked in and if the user is already checked out from the event.
  * @remarks
  * The function performs the following checks and operations:
  * 1. Verifies the existence of the current user, event, and attendee.
- * 2. Checks if the current user is authorized to perform the check-in operation.
- * 3. Checks if the attendee is already registered for the event. If so, updates the check-in status and isCheckedIn.
- * 4. Checks if the attendee is not already checked in for the event then creates a new check-in entry and create new eventAttendee with chechInId and isCheckedIn.
+ * 2. Checks if the current user is authorized to perform the check-out operation.
+ * 3. Checks if the user is an event attendee.
+ * 4. Checks if the attendee is checkedIn and if the attendee is already checked out.
  */
 
-export const checkIn: MutationResolvers["checkIn"] = async (
+export const checkOut: MutationResolvers["checkOut"] = async (
   _parent,
   args,
   context,
@@ -58,6 +60,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
   const currentUserAppProfile = await AppUserProfile.findOne({
     userId: currentUser._id,
   }).lean();
+
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -65,6 +68,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
       USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
+
   let currentEvent: InterfaceEvent | null;
 
   const eventFoundInCache = await findEventsInCache([args.data.eventId]);
@@ -119,30 +123,30 @@ export const checkIn: MutationResolvers["checkIn"] = async (
   });
 
   if (attendeeData === null) {
-    const checkInAttendee = await EventAttendee.create({
-      eventId: args.data.eventId,
-      userId: args.data.userId,
-    });
-
-    const checkIn = await CheckIn.create({
-      eventAttendeeId: checkInAttendee._id,
-    });
-
-    checkInAttendee.checkInId = checkIn._id;
-    checkInAttendee.isCheckedIn = true;
-    checkInAttendee.save();
-
-    return checkIn.toObject();
-  }
-
-  if (attendeeData.isCheckedIn) {
-    throw new errors.ConflictError(
-      requestContext.translate(USER_ALREADY_CHECKED_IN.MESSAGE),
-      USER_ALREADY_CHECKED_IN.CODE,
-      USER_ALREADY_CHECKED_IN.PARAM,
+    throw new errors.NotFoundError(
+      requestContext.translate(ATTENDEE_NOT_FOUND.MESSAGE),
+      ATTENDEE_NOT_FOUND.CODE,
+      ATTENDEE_NOT_FOUND.PARAM,
     );
   }
-  const checkIn = await CheckIn.create({
+
+  if (!attendeeData.isCheckedIn) {
+    throw new errors.ConflictError(
+      requestContext.translate(USER_NOT_CHECKED_IN.MESSAGE),
+      USER_NOT_CHECKED_IN.CODE,
+      USER_NOT_CHECKED_IN.PARAM,
+    );
+  }
+
+  if (attendeeData.isCheckedOut) {
+    throw new errors.ConflictError(
+      requestContext.translate(USER_ALREADY_CHECKED_OUT.MESSAGE),
+      USER_ALREADY_CHECKED_OUT.CODE,
+      USER_ALREADY_CHECKED_OUT.PARAM,
+    );
+  }
+
+  const checkOut = await CheckOut.create({
     eventAttendeeId: attendeeData._id,
   });
 
@@ -152,10 +156,10 @@ export const checkIn: MutationResolvers["checkIn"] = async (
       userId: args.data.userId,
     },
     {
-      checkInId: checkIn._id,
-      isCheckedIn: true,
+      checkOutId: checkOut._id,
+      isCheckedOut: true,
     },
   );
 
-  return checkIn.toObject();
+  return checkOut.toObject();
 };

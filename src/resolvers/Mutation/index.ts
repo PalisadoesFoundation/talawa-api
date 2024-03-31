@@ -17,6 +17,7 @@ import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadm
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
 import { checkIn } from "./checkIn";
+import { checkOut } from "./checkOut";
 import { createActionItem } from "./createActionItem";
 import { createActionItemCategory } from "./createActionItemCategory";
 import { createAdmin } from "./createAdmin";
@@ -146,6 +147,7 @@ export const Mutation: MutationResolvers = {
   cancelMembershipRequest,
   updateUserRoleInOrganization,
   checkIn,
+  checkOut,
   createMember,
   createAdmin,
   createActionItem,

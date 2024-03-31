@@ -3,11 +3,12 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
+  ATTENDEE_NOT_FOUND,
   EVENT_NOT_FOUND_ERROR,
-  USER_ALREADY_CHECKED_IN,
+  USER_ALREADY_CHECKED_OUT,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_CHECKED_IN,
   USER_NOT_FOUND_ERROR,
-  USER_NOT_REGISTERED_FOR_EVENT,
 } from "../../../src/constants";
 import { AppUserProfile, EventAttendee } from "../../../src/models";
 import type { MutationCheckInArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -49,11 +50,11 @@ describe("resolvers -> Mutation -> checkIn", () => {
 
       const context = { userId: new Types.ObjectId().toString() };
 
-      const { checkIn: checkInResolver } = await import(
-        "../../../src/resolvers/Mutation/checkIn"
+      const { checkOut: checkOutResolver } = await import(
+        "../../../src/resolvers/Mutation/checkOut"
       );
 
-      await checkInResolver?.({}, args, context);
+      await checkOutResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
@@ -79,11 +80,11 @@ describe("resolvers -> Mutation -> checkIn", () => {
 
       const context = { userId: randomTestUser?._id };
 
-      const { checkIn: checkInResolver } = await import(
-        "../../../src/resolvers/Mutation/checkIn"
+      const { checkOut: checkOutResolver } = await import(
+        "../../../src/resolvers/Mutation/checkOut"
       );
 
-      await checkInResolver?.({}, args, context);
+      await checkOutResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`,
@@ -109,11 +110,11 @@ describe("resolvers -> Mutation -> checkIn", () => {
 
       const context = { userId: randomTestUser?._id };
 
-      const { checkIn: checkInResolver } = await import(
-        "../../../src/resolvers/Mutation/checkIn"
+      const { checkOut: checkOutResolver } = await import(
+        "../../../src/resolvers/Mutation/checkOut"
       );
 
-      await checkInResolver?.({}, args, context);
+      await checkOutResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
@@ -133,17 +134,17 @@ describe("resolvers -> Mutation -> checkIn", () => {
       const args: MutationCheckInArgs = {
         data: {
           userId: new Types.ObjectId().toString(),
-          eventId: testEvent?._id.toString() ?? "",
+          eventId: testEvent?._id.toString(),
         },
       };
 
       const context = { userId: testUser?._id };
 
-      const { checkIn: checkInResolver } = await import(
-        "../../../src/resolvers/Mutation/checkIn"
+      const { checkOut: checkOutResolver } = await import(
+        "../../../src/resolvers/Mutation/checkOut"
       );
 
-      await checkInResolver?.({}, args, context);
+      await checkOutResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
@@ -152,67 +153,13 @@ describe("resolvers -> Mutation -> checkIn", () => {
     }
   });
 
-  it(`throws Conflict Error if the request user with _id = args.data.userId is not an attendee of the event with _id = args.data.eventId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationCheckInArgs = {
-        data: {
-          userId: randomTestUser?._id,
-          eventId: testEvent?._id.toString() ?? "",
-        },
-      };
-
-      const context = { userId: testUser?._id };
-
-      const { checkIn: checkInResolver } = await import(
-        "../../../src/resolvers/Mutation/checkIn"
-      );
-
-      await checkInResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_REGISTERED_FOR_EVENT.MESSAGE}`,
-      );
-      expect(spy).toHaveBeenLastCalledWith(
-        USER_NOT_REGISTERED_FOR_EVENT.MESSAGE,
-      );
-    }
-  });
-
-  it(`Checks the user in successfully`, async () => {
-    const args: MutationCheckInArgs = {
-      data: {
-        userId: testUser?._id,
-        eventId: testEvent?._id.toString() ?? "",
+  it(`throws Conflict Error if the request user with _id = args.data.userId is not checked in to the event`, async () => {
+    await EventAttendee.findOneAndUpdate(
+      { userId: testUser?._id },
+      {
+        isCheckedIn: false,
       },
-    };
-
-    const context = { userId: testUser?._id };
-
-    const { checkIn: checkInResolver } = await import(
-      "../../../src/resolvers/Mutation/checkIn"
     );
-
-    const payload = await checkInResolver?.({}, args, context);
-
-    const eventAttendee = await EventAttendee.findOne({
-      eventId: testEvent?._id,
-      userId: testUser?._id,
-    }).lean();
-
-    expect(eventAttendee?.checkInId).not.toBeNull();
-    expect(eventAttendee?.isCheckedIn).toBeTruthy();
-    expect(payload).toMatchObject({
-      eventAttendeeId: eventAttendee?._id,
-    });
-  });
-
-  it(`throws error if the request user with _id = args.data.userId is already checkedIn for the event`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -223,24 +170,129 @@ describe("resolvers -> Mutation -> checkIn", () => {
       const args: MutationCheckInArgs = {
         data: {
           userId: testUser?._id,
-          eventId: testEvent?._id.toString() ?? "",
+          eventId: testEvent?._id.toString(),
         },
       };
 
       const context = { userId: testUser?._id };
 
-      const { checkIn: checkInResolver } = await import(
-        "../../../src/resolvers/Mutation/checkIn"
+      const { checkOut: checkOutResolver } = await import(
+        "../../../src/resolvers/Mutation/checkOut"
       );
 
-      await checkInResolver?.({}, args, context);
+      await checkOutResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_ALREADY_CHECKED_IN.MESSAGE}`,
+        `Translated ${USER_NOT_CHECKED_IN.MESSAGE}`,
       );
-      expect(spy).toHaveBeenLastCalledWith(USER_ALREADY_CHECKED_IN.MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_CHECKED_IN.MESSAGE);
     }
   });
+
+  it(`Check out the user successfully`, async () => {
+    await EventAttendee.findOneAndUpdate(
+      { userId: testUser?._id },
+      {
+        isCheckedIn: true,
+        isCheckedOut: false,
+      },
+    );
+    const args: MutationCheckInArgs = {
+      data: {
+        userId: testUser?._id,
+        eventId: testEvent?._id.toString() ?? "",
+      },
+    };
+
+    const context = { userId: testUser?._id };
+
+    const { checkOut: checkOutResolver } = await import(
+      "../../../src/resolvers/Mutation/checkOut"
+    );
+
+    const payload = await checkOutResolver?.({}, args, context);
+
+    const eventAttendee = await EventAttendee.findOne({
+      eventId: testEvent?._id,
+      userId: testUser?._id,
+    }).lean();
+
+    expect(eventAttendee?.isCheckedOut).not.toBeNull();
+    expect(eventAttendee?.isCheckedOut).toBeTruthy();
+    expect(payload).toMatchObject({
+      eventAttendeeId: eventAttendee?._id,
+    });
+  });
+
+  it(`throws Conflict Error if the request user with _id = args.data.userId is already checked out from the event`, async () => {
+    await EventAttendee.findOneAndUpdate(
+      { userId: testUser?._id },
+      {
+        isCheckedOut: true,
+      },
+    );
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationCheckInArgs = {
+        data: {
+          userId: testUser?._id,
+          eventId: testEvent?._id.toString(),
+        },
+      };
+
+      const context = { userId: testUser?._id };
+
+      const { checkOut: checkOutResolver } = await import(
+        "../../../src/resolvers/Mutation/checkOut"
+      );
+
+      await checkOutResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_ALREADY_CHECKED_OUT.MESSAGE}`,
+      );
+      expect(spy).toHaveBeenLastCalledWith(USER_ALREADY_CHECKED_OUT.MESSAGE);
+    }
+  });
+
+  it(`throws NotFoundError if the request user with _id = args.data.userId is not an event attendee of the event with _id = args.data.eventId`, async () => {
+    await EventAttendee.deleteOne({
+      userId: testUser?._id,
+    });
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationCheckInArgs = {
+        data: {
+          userId: testUser?._id,
+          eventId: testEvent?._id.toString(),
+        },
+      };
+
+      const context = { userId: testUser?._id };
+
+      const { checkOut: checkOutResolver } = await import(
+        "../../../src/resolvers/Mutation/checkOut"
+      );
+
+      await checkOutResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${ATTENDEE_NOT_FOUND.MESSAGE}`,
+      );
+      expect(spy).toHaveBeenLastCalledWith(ATTENDEE_NOT_FOUND.MESSAGE);
+    }
+  });
+
   it("throws an error if user does not have appUserProfile", async () => {
     await AppUserProfile.deleteOne({
       userId: testUser?._id,
@@ -256,11 +308,11 @@ describe("resolvers -> Mutation -> checkIn", () => {
       },
     };
     const context = { userId: testUser?._id };
-    const { checkIn: checkInResolver } = await import(
-      "../../../src/resolvers/Mutation/checkIn"
+    const { checkOut: checkOutResolver } = await import(
+      "../../../src/resolvers/Mutation/checkOut"
     );
     try {
-      await checkInResolver?.({}, args, context);
+      await checkOutResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(

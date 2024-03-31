@@ -176,7 +176,7 @@ type CheckIn {
   user: User!
 }
 
-input CheckInInput {
+input CheckInCheckOutInput {
   eventId: ID!
   userId: ID!
 }
@@ -185,6 +185,14 @@ type CheckInStatus {
   _id: ID!
   checkIn: CheckIn
   user: User!
+}
+
+type CheckOut {
+  _id: ID!
+  createdAt: DateTime!
+  eventAttendeeId: ID!
+  time: DateTime!
+  updatedAt: DateTime!
 }
 
 type Comment {
@@ -638,6 +646,7 @@ type Event {
 type EventAttendee {
   _id: ID!
   checkInId: ID
+  checkOutId: ID
   createdAt: DateTime!
   eventId: ID!
   isCheckedIn: Boolean!
@@ -1042,9 +1051,8 @@ type Mutation {
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): AppUserProfile!
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
-  checkIn(data: CheckInInput!): CheckIn!
-  checkInEventAttendee(data: EventAttendeeInput!): EventAttendee!
-  checkOutEventAttendee(data: EventAttendeeInput!): EventAttendee!
+  checkIn(data: CheckInCheckOutInput!): CheckIn!
+  checkOut(data: CheckInCheckOutInput!): CheckOut!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
