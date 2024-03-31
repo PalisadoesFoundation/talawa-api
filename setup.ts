@@ -1029,13 +1029,13 @@ async function main(): Promise<void> {
         }
       }
     } else {
-      const { importData } = await inquirer.prompt({
+      const { shouldImportSampleData } = await inquirer.prompt({
         type: "confirm",
-        name: "importData",
+        name: "shouldImportSampleData",
         message: "Do you want to import Sample data?",
         default: false,
       });
-      if (importData) {
+      if (shouldImportSampleData) {
         await importData();
       } else {
         await importDefaultData();
