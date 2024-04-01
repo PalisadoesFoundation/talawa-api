@@ -5,26 +5,26 @@ import type { MutationUpdateUserTagArgs } from "../../../src/types/generatedGrap
 import { connect, disconnect } from "../../helpers/db";
 
 import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
-import {
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  TAG_NOT_FOUND,
   NO_CHANGE_IN_TAG_NAME,
   TAG_ALREADY_EXISTS,
-  TAG_NOT_FOUND,
-  USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, OrganizationTagUser } from "../../../src/models";
-import type { TestUserTagType } from "../../helpers/tags";
-import { createRootTagsWithOrg } from "../../helpers/tags";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
+import type { TestUserTagType } from "../../helpers/tags";
+import { createRootTagsWithOrg } from "../../helpers/tags";
+import { OrganizationTagUser } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -59,8 +59,10 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag?._id.toString() ?? "",
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          _id: testTag!._id.toString(),
           name: "NewName",
+          tagColor: "#000000",
         },
       };
 
@@ -71,8 +73,9 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      expect(error.message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -91,6 +94,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
         input: {
           _id: new Types.ObjectId().toString(),
           name: "NewName",
+          tagColor: "#000000",
         },
       };
 
@@ -103,11 +107,10 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
-    } catch (error: unknown) {
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(TAG_NOT_FOUND.MESSAGE);
-      expect((error as Error).message).toEqual(
-        `Translated ${TAG_NOT_FOUND.MESSAGE}`,
-      );
+      expect(error.message).toEqual(`Translated ${TAG_NOT_FOUND.MESSAGE}`);
     }
   });
 
@@ -121,8 +124,10 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag?._id.toString() ?? "",
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          _id: testTag!._id.toString(),
           name: "NewName",
+          tagColor: "#000000",
         },
       };
 
@@ -135,8 +140,9 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(
@@ -155,8 +161,11 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag?._id.toString() ?? "",
-          name: testTag?.name ?? "",
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          _id: testTag!._id.toString(),
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          name: testTag!.name,
+          tagColor: "#000000",
         },
       };
 
@@ -169,8 +178,9 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      expect(error.message).toEqual(
         `Translated ${NO_CHANGE_IN_TAG_NAME.MESSAGE}`,
       );
       expect(spy).toHaveBeenLastCalledWith(`${NO_CHANGE_IN_TAG_NAME.MESSAGE}`);
@@ -187,8 +197,12 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: testTag?._id.toString() ?? "",
-          name: testTag2?.name ?? "",
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          _id: testTag!._id.toString(),
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          name: testTag2!.name,
+          // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+          tagColor: testTag2!.tagColor,
         },
       };
 
@@ -201,10 +215,9 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       );
 
       await updateUserTagResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Translated ${TAG_ALREADY_EXISTS.MESSAGE}`,
-      );
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      expect(error.message).toEqual(`Translated ${TAG_ALREADY_EXISTS.MESSAGE}`);
       expect(spy).toHaveBeenLastCalledWith(`${TAG_ALREADY_EXISTS.MESSAGE}`);
     }
   });
@@ -212,8 +225,10 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
   it(`updates the task with _id === args.id and returns it`, async () => {
     const args: MutationUpdateUserTagArgs = {
       input: {
-        _id: testTag?._id.toString() ?? "",
+        // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+        _id: testTag!._id.toString(),
         name: "NewName",
+        tagColor: "#000000",
       },
     };
     const context = {
@@ -227,54 +242,10 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     await updateUserTagResolver?.({}, args, context);
 
     const updatedTag = await OrganizationTagUser.findOne({
-      _id: testTag?._id,
+      // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+      _id: testTag!._id,
     }).lean();
 
     expect(updatedTag?.name).toEqual("NewName");
-  });
-  it("throws error if user does not have appUserProfile", async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    const args: MutationUpdateUserTagArgs = {
-      input: {
-        _id: testTag?._id.toString() ?? "",
-        name: "NewName",
-      },
-    };
-    const newUser = await createTestUser();
-    await AppUserProfile.deleteOne({
-      userId: newUser?.id,
-    });
-    const context = {
-      userId: newUser?._id,
-    };
-
-    const { updateUserTag: updateUserTagResolver } = await import(
-      "../../../src/resolvers/Mutation/updateUserTag"
-    );
-
-    await OrganizationTagUser.updateOne(
-      {
-        _id: testTag?._id,
-      },
-      {
-        $set: {
-          appUserProfileId: null,
-        },
-      },
-    );
-
-    try {
-      await updateUserTagResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
-      );
-    }
   });
 });

@@ -8,6 +8,7 @@ export interface InterfaceOrganizationTagUser {
   organizationId: PopulatedDoc<InterfaceOrganization & Document>;
   parentTagId: PopulatedDoc<InterfaceOrganizationTagUser & Document>;
   name: string;
+  tagColor: string;
 }
 
 // A User Tag is used for the categorization and the grouping of related users
@@ -28,6 +29,11 @@ const organizationTagUserSchema = new Schema({
     ref: "OrganizationTagUser",
     required: false,
     default: null, // A null parent corresponds to a root tag in the organization
+  },
+  tagColor: {
+    type: String,
+    required: false,
+    default: "#000000",
   },
 });
 

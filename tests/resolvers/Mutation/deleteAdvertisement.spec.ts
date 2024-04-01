@@ -4,27 +4,14 @@ import type { MutationCreateAdvertisementArgs } from "../../../src/types/generat
 import { connect, disconnect } from "../../helpers/db";
 
 import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
   vi,
 } from "vitest";
-import type {
-  TestOrganizationType,
-  TestUserType,
-} from "../../helpers/userAndOrg";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import {
-  createTestSuperAdmin,
-  createTestAdvertisement,
-} from "../../helpers/advertisement";
-import type {
-  TestAdvertisementType,
-  TestSuperAdminType,
-} from "../../helpers/advertisement";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -32,7 +19,23 @@ import {
 } from "../../../src/constants";
 import { requestContext } from "../../../src/libraries";
 import { ApplicationError } from "../../../src/libraries/errors";
-import type { InterfaceAdvertisement } from "../../../src/models";
+import {
+  AppUserProfile,
+  type InterfaceAdvertisement,
+} from "../../../src/models";
+import type {
+  TestAdvertisementType,
+  TestSuperAdminType,
+} from "../../helpers/advertisement";
+import {
+  createTestAdvertisement,
+  createTestSuperAdmin,
+} from "../../helpers/advertisement";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -227,6 +230,30 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
       expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
+  });
+  it("should throw error if user does not have appUserProfile", async () => {
+    // deleting
+    const { deleteAdvertisement } = await import(
+      "../../../src/resolvers/Mutation/deleteAdvertisement"
+    );
+    await AppUserProfile.deleteOne({ userId: testUser?._id });
+    const context = {
+      userId: testUser?.id,
+    };
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message: string) => `Translated ${message}`);
+
+    try {
+      await deleteAdvertisement?.({}, { id: testAdvertisement._id }, context);
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });

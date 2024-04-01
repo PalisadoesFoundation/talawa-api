@@ -87,6 +87,7 @@ describe("resolvers-> Mutation-> updateFund", () => {
         taxDeductible: true,
         isDefault: true,
         isArchived: false,
+        creatorId: testUser?._id,
         campaign: [],
       });
       const args = {
@@ -156,6 +157,7 @@ describe("resolvers-> Mutation-> updateFund", () => {
         taxDeductible: true,
         isDefault: true,
         isArchived: false,
+        creatorId: testUser?._id,
         campaign: [],
       });
       const args = {
