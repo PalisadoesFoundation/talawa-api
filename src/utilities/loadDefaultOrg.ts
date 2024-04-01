@@ -3,9 +3,9 @@ import path from "path";
 import { connect, disconnect } from "../db";
 import { AppUserProfile, Organization, User } from "../models";
 
-export async function loadDefaultOrganiation(): Promise<void> {
+export async function loadDefaultOrganiation(dbName?: string): Promise<void> {
   try {
-    await connect();
+    await connect(dbName);
     const userData = await fs.readFile(
       path.join(__dirname, `../../sample_data/defaultUser.json`),
       "utf8",
@@ -35,6 +35,3 @@ export async function loadDefaultOrganiation(): Promise<void> {
     await disconnect(); // Close the database connection
   }
 }
-(async (): Promise<void> => {
-  await loadDefaultOrganiation();
-})();

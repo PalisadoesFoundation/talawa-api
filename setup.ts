@@ -30,6 +30,7 @@ import {
 import { askForSuperAdminEmail } from "./src/setup/superAdmin";
 import { updateEnvVariable } from "./src/setup/updateEnvVariable";
 import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
+import { loadDefaultOrganiation } from "./src/utilities/loadDefaultOrg";
 /* eslint-enable */
 
 dotenv.config();
@@ -282,52 +283,6 @@ export async function importData(): Promise<void> {
   }
 }
 
-//Import default data
-/**
- * The function `loadDefaultData` imports default data into a MongoDB database if the database URL is provided and if
- * there is no existing data in the database.
- * @returns The function returns a Promise that resolves to `void`.
- */
-export async function loadDefaultData(): Promise<void> {
-  if (!process.env.MONGO_DB_URL) {
-    console.log("Couldn't find mongodb url");
-    return;
-  }
-  const client = new MongoClient(`${process.env.MONGO_DB_URL}`);
-  try {
-    await client.connect();
-    const db = client.db();
-    const collection = await db.listCollections().toArray();
-    if (collection.length > 0) {
-      console.log(
-        "Existing data found in the database,skipping default data import",
-      );
-    } else {
-      console.log("Importing default data...");
-      if (process.env.NODE_ENV !== "test") {
-        await exec(
-          "npm run import:default-data",
-          (error: ExecException | null, stdout: string, stderr: string) => {
-            if (error) {
-              console.error(`Error: ${error.message}`);
-              abort();
-            }
-            if (stderr) {
-              console.error(`Error: ${stderr}`);
-              abort();
-            }
-            console.log(`Output: ${stdout}`);
-          },
-        );
-      }
-    }
-  } catch (error) {
-    console.error("Could not connect to database to check for data");
-  } finally {
-    await client.close();
-  }
-}
-
 //Import Default data
 /**
  * The function `importDefaultData` imports default data into a MongoDB database if the database URL is provided.
@@ -340,20 +295,7 @@ export async function importDefaultData(): Promise<void> {
   }
   console.log("Importing default data...");
   if (process.env.NODE_ENV !== "test") {
-    await exec(
-      "npm run import:default-data",
-      (error: ExecException | null, stdout: string, stderr: string) => {
-        if (error) {
-          console.error(`Error: ${error.message}`);
-          abort();
-        }
-        if (stderr) {
-          console.error(`Error: ${stderr}`);
-          abort();
-        }
-        console.log(`Output: ${stdout}`);
-      },
-    );
+    await loadDefaultOrganiation();
   }
 }
 // get the redis url
