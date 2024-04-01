@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { connect, disconnect } from "../db";
+import { connect } from "../db";
 import { AppUserProfile, Organization, User } from "../models";
 
 export async function loadDefaultOrganiation(dbName?: string): Promise<void> {
@@ -32,6 +32,6 @@ export async function loadDefaultOrganiation(dbName?: string): Promise<void> {
   } catch (error) {
     console.log(error);
   } finally {
-    await disconnect(); // Close the database connection
+    // await disconnect(); // Close the database connection
   }
 }
