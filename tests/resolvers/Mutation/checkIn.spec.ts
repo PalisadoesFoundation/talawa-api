@@ -206,6 +206,7 @@ describe("resolvers -> Mutation -> checkIn", () => {
     }).lean();
 
     expect(eventAttendee?.checkInId).not.toBeNull();
+    expect(eventAttendee?.isCheckedIn).toBeTruthy();
     expect(payload).toMatchObject({
       eventAttendeeId: eventAttendee?._id,
     });
