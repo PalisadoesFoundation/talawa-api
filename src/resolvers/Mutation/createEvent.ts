@@ -43,10 +43,11 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     _id: context.userId,
   }).lean();
 
-  if(args && args.data && args.data.organizationId) {
-    console.log(args.data.organizationId);
-    if(args.data.organizationId.startsWith("id=")) {
-      args.data.organizationId = args.data.organizationId.toString().substring(3);
+  if (args && args.data && args.data.organizationId) {
+    if (args.data.organizationId.startsWith("id=")) {
+      args.data.organizationId = args.data.organizationId
+        .toString()
+        .substring(3);
     }
   }
 
