@@ -121,7 +121,7 @@
     "@types/nodemailer": "^6.4.14",
     "@types/uuid": "^9.0.7",
     "@types/validator": "^13.11.9",
-    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/eslint-plugin": "^7.4.0",
     "@typescript-eslint/parser": "^7.4.0",
     "@vitest/coverage-v8": "^1.4.0",
     "cls-bluebird": "^2.1.0",
