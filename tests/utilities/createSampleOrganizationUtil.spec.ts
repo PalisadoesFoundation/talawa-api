@@ -86,9 +86,6 @@ describe("generateUserData function", () => {
     expect(event.endDate).toEqual(expect.any(Date));
     expect(event.startTime).toEqual(expect.any(Date));
     expect(event.endTime).toEqual(expect.any(Date));
-    expect(event.recurrance).toEqual(
-      expect.stringMatching(/^(ONCE|DAILY|WEEKLY|MONTHLY|YEARLY)$/),
-    );
     expect(event.isPublic).toEqual(expect.any(Boolean));
     expect(event.isRegisterable).toEqual(expect.any(Boolean));
     expect(event.creatorId.toString()).toEqual(expect.any(String));

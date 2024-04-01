@@ -1,10 +1,11 @@
 import {
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, EventVolunteer } from "../../models";
+import { User, EventVolunteer, EventVolunteerGroup } from "../../models";
 
 /**
  * This function enables to remove an Event Volunteer.
@@ -14,6 +15,7 @@ import { User, EventVolunteer } from "../../models";
  * @remarks The following checks are done:
  * 1. If the current user exists
  * 2. If the Event volunteer to be removed exists.
+ * 3. If the current user is leader of the corresponding event volunteer group.
  * @returns Event Volunteer.
  */
 
@@ -43,9 +45,33 @@ export const removeEventVolunteer: MutationResolvers["removeEventVolunteer"] =
       );
     }
 
+    const group = await EventVolunteerGroup.findById(volunteer.groupId);
+
+    const userIsLeader =
+      group?.leaderId.toString() === currentUser._id.toString();
+
+    if (!userIsLeader) {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+
     await EventVolunteer.deleteOne({
       _id: args.id,
     });
+
+    await EventVolunteerGroup.updateOne(
+      {
+        _id: volunteer.groupId,
+      },
+      {
+        $pull: {
+          volunteers: volunteer._id,
+        },
+      },
+    );
 
     return volunteer;
   };

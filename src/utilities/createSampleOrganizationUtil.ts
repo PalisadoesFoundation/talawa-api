@@ -122,13 +122,6 @@ export const generateEventData = async (
     endDate,
     startTime: faker.date.future(),
     endTime: faker.date.future(),
-    recurrance: faker.helpers.arrayElement([
-      "ONCE",
-      "DAILY",
-      "WEEKLY",
-      "MONTHLY",
-      "YEARLY",
-    ]),
     isPublic: faker.datatype.boolean({ probability: 0.9 }),
     isRegisterable: faker.datatype.boolean(),
     creatorId: faker.helpers.arrayElement(users)._id,

@@ -11,9 +11,9 @@ export const inputs = gql`
     eventId: ID!
   }
 
-  input CheckInInput {
-    userId: ID!
+  input CheckInCheckOutInput {
     eventId: ID!
+    userId: ID!
   }
 
   input createChatInput {
@@ -135,7 +135,6 @@ export const inputs = gql`
     endTime: Time
     allDay: Boolean!
     recurring: Boolean!
-    recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
     images: [String]
@@ -148,6 +147,13 @@ export const inputs = gql`
   input EventVolunteerInput {
     userId: ID!
     eventId: ID!
+    groupId: ID!
+  }
+
+  input EventVolunteerGroupInput {
+    name: String
+    eventId: ID!
+    volunteersRequired: Int
   }
 
   input UpdateEventVolunteerInput {
@@ -155,6 +161,12 @@ export const inputs = gql`
     isAssigned: Boolean
     isInvited: Boolean
     response: EventVolunteerResponse
+  }
+
+  input UpdateEventVolunteerGroupInput {
+    eventId: ID
+    name: String
+    volunteersRequired: Int
   }
 
   input EventWhereInput {
@@ -398,7 +410,6 @@ export const inputs = gql`
     description: String
     recurring: Boolean
     isRecurringEventException: Boolean
-    recurrance: Recurrance
     isPublic: Boolean
     isRegisterable: Boolean
     startDate: Date

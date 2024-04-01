@@ -1,7 +1,12 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, Venue, type InterfaceVenue } from "../../../src/models";
+import {
+  Organization,
+  Venue,
+  type InterfaceVenue,
+  AppUserProfile,
+} from "../../../src/models";
 import type { MutationDeleteVenueArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -10,6 +15,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   VENUE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -198,5 +204,33 @@ describe("resolvers -> Mutation -> deleteVenue", () => {
     await deleteVenue?.({}, args, context);
     const expectedVenue = await Venue.findById(testVenue?._id);
     expect(expectedVenue).toEqual(null);
+  });
+
+  it("throws user not authorized error if current user app profile is not found", async () => {
+    try {
+      const args: MutationDeleteVenueArgs = {
+        id: testVenue2?._id.toString(),
+      };
+
+      await AppUserProfile.deleteOne({
+        userId: testUser?._id,
+      });
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      const { deleteVenue } = await import(
+        "../../../src/resolvers/Mutation/deleteVenue"
+      );
+
+      await deleteVenue?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
   });
 });

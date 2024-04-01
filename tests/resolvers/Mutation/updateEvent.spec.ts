@@ -236,7 +236,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         startDate: new Date().toUTCString(),
         startTime: new Date().toUTCString(),
         title: "newTitle",
-        recurrance: "DAILY",
       },
     };
 
@@ -269,7 +268,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       admins: [testUser?._id],
       description: "description2",
       allDay: true,
-      recurrance: "WEEKLY",
       startDate: convertToUTCDate(new Date()),
       endDate: addWeeks(convertToUTCDate(new Date()), 10),
     });
@@ -370,7 +368,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       admins: [testUser?._id],
       description: "description3",
       allDay: true,
-      recurrance: "WEEKLY",
       startDate,
       endDate,
     });
@@ -1356,7 +1353,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
           startTime: "",
           title:
             "AfGtN9o7IJXH9Xr5P4CcKTWMVWKOOHTldleLrWfZcThgoX5scPE5o0jARvtVA8VhneyxXquyhWb5nluW2jtP0Ry1zIOUFYfJ6BUXvpo4vCw4GVleGBnoKwkFLp5oW9L8OsEIrjVtYBwaOtXZrkTEBySZ1prr0vFcmrSoCqrCTaChNOxL3tDoHK6h44ChFvgmoVYMSq3IzJohKtbBn68D9NfEVMEtoimkGarUnVBAOsGkKv0mIBJaCl2pnR8Xwq1cG1",
-          recurrance: "DAILY",
         },
       };
 
@@ -1402,7 +1398,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
           startDate: "Tue Feb 14 2023",
           startTime: "",
           title: "Random",
-          recurrance: "DAILY",
         },
       };
 
@@ -1447,7 +1442,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
           startDate: "Tue Feb 14 2023",
           startTime: "",
           title: "Random",
-          recurrance: "DAILY",
         },
       };
 
@@ -1492,7 +1486,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
           startDate: "Tue Feb 14 2023",
           startTime: "",
           title: "Random",
-          recurrance: "DAILY",
         },
       };
 
@@ -1541,7 +1534,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
           startDate: "Tue Feb 14 2023",
           startTime: "",
           title: "Random",
-          recurrance: "DAILY",
         },
       };
 
