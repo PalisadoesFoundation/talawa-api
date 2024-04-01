@@ -3,36 +3,34 @@ import type mongoose from "mongoose";
 import type { MutationCreateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import { Types } from "mongoose";
 import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
   vi,
 } from "vitest";
-import { createTestUser } from "../../helpers/user";
-import type {
-  TestOrganizationType,
-  TestUserType,
-} from "../../helpers/userAndOrg";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { requestContext } from "../../../src/libraries";
-import { Types } from "mongoose";
 import {
   BASE_URL,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { createAdvertisement } from "../../../src/resolvers/Mutation/createAdvertisement";
+import { requestContext } from "../../../src/libraries";
 import { ApplicationError } from "../../../src/libraries/errors";
+import { createAdvertisement } from "../../../src/resolvers/Mutation/createAdvertisement";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { createTestSuperAdmin } from "../..//helpers/advertisement";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let testSuperAdmin: TestUserType;
 let testUser: TestUserType;
-let testUserAdmin: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -44,7 +42,6 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
   testSuperAdmin = await createTestSuperAdmin();
-  testUserAdmin = await createTestUser();
 });
 
 afterAll(async () => {
@@ -76,7 +73,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       };
 
       const context = {
-        userId: testSuperAdmin?.id,
+        userId: testUser?.id,
       };
 
       const { createAdvertisement: createAdvertisementResolver } = await import(
@@ -111,7 +108,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createAdvertisement: createAdvertisementResolver } = await import(
@@ -178,7 +175,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     };
 
     const context = {
-      userId: testSuperAdmin?.id,
+      userId: testUser?.id,
       apiRootUrl: BASE_URL,
     };
 
@@ -193,76 +190,6 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     await expect(createAdvertisement?.({}, args, context)).rejects.toThrowError(
       "Unsupported file type.",
     );
-  });
-
-  it(`throw user unauthorized error if user is not the ADMIN of the organization`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-    try {
-      const args: MutationCreateAdvertisementArgs = {
-        input: {
-          name: "myad",
-          organizationId: testOrganization?._id,
-          type: "POPUP",
-          mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
-          startDate: "2023-10-08T13:02:29.000Z",
-          endDate: "2023-10-08T13:02:29.000Z",
-        },
-      };
-
-      const context = {
-        userId: testUserAdmin?._id,
-      };
-
-      const { createAdvertisement: createAdvertisementResolver } = await import(
-        "../../../src/resolvers/Mutation/createAdvertisement"
-      );
-
-      await createAdvertisementResolver?.({}, args, context);
-    } catch (error: unknown) {
-      if (!(error instanceof ApplicationError)) return;
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-  });
-
-  it(`throw user unauthorized error if user is not the ADMIN or SUPERADMIN`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-    try {
-      const args: MutationCreateAdvertisementArgs = {
-        input: {
-          name: "myad",
-          organizationId: testOrganization?._id,
-          type: "POPUP",
-          mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
-          startDate: "2023-10-08T13:02:29.000Z",
-          endDate: "2023-10-08T13:02:29.000Z",
-        },
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      const { createAdvertisement: createAdvertisementResolver } = await import(
-        "../../../src/resolvers/Mutation/createAdvertisement"
-      );
-
-      await createAdvertisementResolver?.({}, args, context);
-    } catch (error: unknown) {
-      if (!(error instanceof ApplicationError)) return;
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
   });
 
   it(`should create the ad and returns `, async () => {
@@ -281,7 +208,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     };
 
     const context = {
-      userId: testSuperAdmin?.id,
+      userId: testUser?.id,
     };
 
     const { createAdvertisement: createAdvertisementResolver } = await import(

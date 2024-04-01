@@ -1,36 +1,36 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
+import type { Document } from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceComment } from "../../../src/models";
-import { Comment, Post, User } from "../../../src/models";
-import type { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
-import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   COMMENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  afterEach,
-  vi,
-} from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
+import type { InterfaceComment } from "../../../src/models";
+import { AppUserProfile, Comment, Post, User } from "../../../src/models";
+import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
+import { cacheComments } from "../../../src/services/CommentCache/cacheComments";
+import type { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
-import { cacheComments } from "../../../src/services/CommentCache/cacheComments";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testPost: TestPostType;
 let testComment:
-  | (InterfaceComment & Document<any, any, InterfaceComment>)
+  | (InterfaceComment & Document<unknown, unknown, InterfaceComment>)
   | null;
 
 beforeAll(async () => {
@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removeComment: removeCommentResolver } = await import(
@@ -89,9 +89,9 @@ describe("resolvers -> Mutation -> removeComment", () => {
       );
 
       await removeCommentResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -102,7 +102,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveCommentArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -114,9 +114,9 @@ describe("resolvers -> Mutation -> removeComment", () => {
       );
 
       await removeCommentResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(COMMENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(COMMENT_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(COMMENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -133,7 +133,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
         },
         {
           $set: {
-            creatorId: Types.ObjectId().toString(),
+            creatorId: new Types.ObjectId().toString(),
           },
         },
         {
@@ -170,9 +170,11 @@ describe("resolvers -> Mutation -> removeComment", () => {
       );
 
       await removeCommentResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -184,7 +186,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       },
       {
         $set: {
-          creatorId: testUser!._id,
+          creatorId: testUser?._id,
         },
       },
       {
@@ -236,5 +238,32 @@ describe("resolvers -> Mutation -> removeComment", () => {
     });
     expect(commentExists).toBeFalsy();
     expect(testUpdatedPost?.commentCount).toEqual(0);
+  });
+  it("throws an error if the user does not have AppUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationRemoveCommentArgs = {
+      id: testComment?._id.toString() ?? "",
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+    try {
+      const { removeComment: removeCommentResolver } = await import(
+        "../../../src/resolvers/Mutation/removeComment"
+      );
+
+      await removeCommentResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

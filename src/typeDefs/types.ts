@@ -12,6 +12,7 @@ export const types = gql`
 
   type AuthData {
     user: User!
+    appUserProfile: AppUserProfile!
     accessToken: String!
     refreshToken: String!
   }
@@ -89,11 +90,20 @@ export const types = gql`
   # Stores the detail of an check in of an user in an event
   type CheckIn {
     _id: ID!
-    time: DateTime!
-    user: User!
-    event: Event!
-    feedbackSubmitted: Boolean!
     createdAt: DateTime!
+    feedbackSubmitted: Boolean!
+    event: Event!
+    time: DateTime!
+    updatedAt: DateTime!
+    user: User!
+  }
+
+  # Stores the detail of an check out of an user in an event
+  type CheckOut {
+    _id: ID!
+    eventAttendeeId: ID!
+    createdAt: DateTime!
+    time: DateTime!
     updatedAt: DateTime!
   }
 
@@ -119,14 +129,13 @@ export const types = gql`
     _id: ID!
     name: String!
     logoUrl: String
-    description: String!
     websiteLink: String
     socialMediaUrls: SocialMediaUrls
-    timeout: Int
-    createdAt: DateTime
-    updatedAt: DateTime
   }
-
+  type CreateAdminPayload {
+    user: AppUserProfile
+    userErrors: [CreateAdminError!]!
+  }
   type UserFamily {
     _id: ID!
     title: String
@@ -144,6 +153,21 @@ export const types = gql`
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
     startCursor: String
+  }
+
+  type CreateMemberPayload {
+    organization: Organization
+    userErrors: [CreateMemberError!]!
+  }
+
+  type CreateCommentPayload {
+    comment: Comment
+    userErrors: [CreateCommentError!]!
+  }
+
+  type createDirectChatPayload {
+    directChat: DirectChat
+    userErrors: [CreateDirectChatError!]!
   }
 
   type DeletePayload {
@@ -233,7 +257,7 @@ export const types = gql`
     endTime: Time
     allDay: Boolean!
     recurring: Boolean!
-    recurrance: Recurrance
+    recurrenceRule: RecurrenceRule
     isPublic: Boolean!
     isRegisterable: Boolean!
     location: String
@@ -259,6 +283,7 @@ export const types = gql`
     createdAt: DateTime!
     creator: User
     event: Event
+    group: EventVolunteerGroup
     isAssigned: Boolean
     isInvited: Boolean
     response: String
@@ -271,12 +296,25 @@ export const types = gql`
     userId: ID!
     eventId: ID!
     checkInId: ID
+    checkOutId: ID
     isInvited: Boolean!
     isRegistered: Boolean!
     isCheckedIn: Boolean!
     isCheckedOut: Boolean!
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  type EventVolunteerGroup {
+    _id: ID!
+    createdAt: DateTime!
+    creator: User
+    event: Event
+    leader: User!
+    name: String
+    updatedAt: DateTime!
+    volunteers: [EventVolunteer]
+    volunteersRequired: Int
   }
 
   type Feedback {
@@ -296,6 +334,7 @@ export const types = gql`
     taxDeductible: Boolean!
     isDefault: Boolean!
     isArchived: Boolean!
+    creator: User
     campaigns: [FundraisingCampaign!]
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -411,7 +450,11 @@ export const types = gql`
     actionItemCategories: [ActionItemCategory]
     agendaCategories: [AgendaCategory]
     admins(adminId: ID): [User!]
-    membershipRequests: [MembershipRequest]
+    membershipRequests(
+      first: Int
+      skip: Int
+      where: MembershipRequestsWhereInput
+    ): [MembershipRequest]
     userRegistrationRequired: Boolean!
     visibleInSearch: Boolean!
     blockedUsers: [User]
@@ -518,6 +561,14 @@ export const types = gql`
     pinned: Boolean
   }
 
+  type RecurrenceRule {
+    frequency: Frequency
+    weekDays: [WeekDays]
+    interval: PositiveInt
+    count: PositiveInt
+    weekDayOccurenceInMonth: Int
+  }
+
   type SocialMediaUrls {
     facebook: String
     instagram: String
@@ -555,14 +606,10 @@ export const types = gql`
 
   type User {
     _id: ID!
+    appUserProfileId: AppUserProfile
     address: Address
-    adminApproved: Boolean
-    adminFor: [Organization]
-    appLanguageCode: String!
     birthDate: Date
     createdAt: DateTime!
-    createdEvents: [Event]
-    createdOrganizations: [Organization]
     educationGrade: EducationGrade
     email: EmailAddress!
     employmentStatus: EmploymentStatus
@@ -579,11 +626,11 @@ export const types = gql`
     joinedOrganizations: [Organization]
     lastName: String!
     maritalStatus: MaritalStatus
-    membershipRequests: [MembershipRequest]
     organizationsBlockedBy: [Organization]
     phone: UserPhone
-    pluginCreationAllowed: Boolean!
+    membershipRequests: [MembershipRequest]
     registeredEvents: [Event]
+    pluginCreationAllowed: Boolean!
     tagsAssignedWith(
       after: String
       before: String
@@ -591,10 +638,21 @@ export const types = gql`
       last: PositiveInt
       organizationId: ID
     ): UserTagsConnection
-    tokenVersion: Int!
     updatedAt: DateTime!
-    userType: UserType!
   }
+  type AppUserProfile {
+    _id: ID!
+    userId: User!
+    adminFor: [Organization]
+    adminApproved: Boolean
+    createdEvents: [Event]
+    createdOrganizations: [Organization]
+    eventAdmin: [Event]
+    pluginCreationAllowed: Boolean!
+    isSuperAdmin: Boolean!
+    appLanguageCode: String!
+  }
+
   type PostsConnection {
     edges: [PostEdge!]!
     pageInfo: DefaultConnectionPageInfo!
@@ -611,7 +669,10 @@ export const types = gql`
     userId: ID!
     values: JSON!
   }
-
+  type UserData {
+    user: User!
+    appUserProfile: AppUserProfile
+  }
   type UserConnection {
     pageInfo: PageInfo!
     edges: [User]!

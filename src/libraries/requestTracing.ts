@@ -1,6 +1,6 @@
 import cls from "cls-hooked";
 // No type defintions available for package 'cls-bluebird'
-// @ts-ignore
+// @ts-expect-error--ts-ignore
 import clsBluebird from "cls-bluebird";
 import { customAlphabet } from "nanoid";
 import type { NextFunction, Request, Response } from "express";

@@ -4,7 +4,8 @@
 
 In order to give everyone a chance to submit a issues reports and contribute to the Talawa project, we have put restrictions in place. This section outlines the guidelines that should be imposed upon issue reports in the Talawa project.
 
-___
+---
+
 ## Table of Contents
 
 <!-- toc -->
@@ -18,15 +19,17 @@ ___
 
 <!-- tocstop -->
 
-___
+---
+
 ## Issue Management
 
 In all cases please use the [GitHub open issue search](https://github.com/PalisadoesFoundation/talawa-api/issues) to check whether the issue has already been reported.
 
 ### New Issues
+
 To create new issues follow these steps:
 
-1. Your issue may have already been created. Search for duplicate open issues before submitting yours.for similar deficiencies in the code.duplicate issues are created. 
+1. Your issue may have already been created. Search for duplicate open issues before submitting yours.for similar deficiencies in the code.duplicate issues are created.
 1. Verify whether the issue has been fixed by trying to reproduce it using the latest master or development branch in the repository.
 1. Click on the [`New Issue`](https://github.com/PalisadoesFoundation/talawa-api/issues/new/choose) button
 1. Use the templates to create a standardized report of what needs to be done and why.
@@ -49,11 +52,12 @@ Working on these types of existing issues is a good way of getting started with 
 
 Feature requests are welcome. But take a moment to find out whether your idea fits with the scope and aims of the project. It's up to you to make a strong case to convince the mentors of the merits of this feature. Please provide as much detail and context as possible.
 
-### Monitoring the Creation of New Issues 
+### Monitoring the Creation of New Issues
+
 1. Join our `#talawa-github` slack channel for automatic issue and pull request updates
 
 ## General Guidelines
 
 1. Discuss issues in our various slack channels when necessary
-2. Please do not derail or troll issues. 
+2. Please do not derail or troll issues.
 3. Keep the discussion on topic and respect the opinions of others.

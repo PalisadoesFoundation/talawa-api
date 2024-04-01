@@ -11,7 +11,7 @@ export type TestFundType = (InterfaceFund & Document) | null;
 export const createTestFund = async (): Promise<
   [TestUserType, TestOrganizationType, TestFundType]
 > => {
-  const userAndOrg = await createTestUserAndOrganization();
+  const userAndOrg = await createTestUserAndOrganization(true, true);
   const testUser = userAndOrg[0];
   const testOrganization = userAndOrg[1];
   if (testUser && testOrganization) {
@@ -22,6 +22,7 @@ export const createTestFund = async (): Promise<
       taxDeductible: true,
       isDefault: true,
       isArchived: false,
+      creatorId: testUser._id,
       campaigns: [],
     });
     return [testUser, testOrganization, testFund];

@@ -25,9 +25,9 @@ It signs the given payload(user data) into a JSON Web Token string payload.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `user` | [`InterfaceUser`](../interfaces/models_User.InterfaceUser.md) | User data |
+| Name   | Type                                                          | Description |
+| :----- | :------------------------------------------------------------ | :---------- |
+| `user` | [`InterfaceUser`](../interfaces/models_User.InterfaceUser.md) | User data   |
 
 #### Returns
 
@@ -39,7 +39,7 @@ JSON Web Token string payload
 
 [src/utilities/auth.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/auth.ts#L19)
 
-___
+---
 
 ### createRefreshToken
 
@@ -47,8 +47,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name   | Type                                                          |
+| :----- | :------------------------------------------------------------ |
 | `user` | [`InterfaceUser`](../interfaces/models_User.InterfaceUser.md) |
 
 #### Returns
@@ -59,7 +59,7 @@ ___
 
 [src/utilities/auth.ts:35](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/utilities/auth.ts#L35)
 
-___
+---
 
 ### revokeRefreshToken
 
@@ -67,8 +67,8 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name     | Type     |
+| :------- | :------- |
 | `userId` | `string` |
 
 #### Returns

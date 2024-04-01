@@ -3,6 +3,7 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceCheckIn } from "./CheckIn";
+import type { InterfaceCheckOut } from "./CheckOut";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 export interface InterfaceEventAttendee {
@@ -10,6 +11,7 @@ export interface InterfaceEventAttendee {
   userId: PopulatedDoc<InterfaceUser & Document>;
   eventId: PopulatedDoc<InterfaceEvent & Document>;
   checkInId: PopulatedDoc<InterfaceCheckIn & Document> | null;
+  checkOutId: PopulatedDoc<InterfaceCheckOut & Document> | null;
   isInvited: boolean;
   isRegistered: boolean;
   isCheckedIn: boolean;
@@ -32,6 +34,12 @@ const eventAttendeeSchema = new Schema({
     required: false,
     default: null,
     ref: "CheckIn",
+  },
+  checkOutId: {
+    type: Schema.Types.ObjectId,
+    required: false,
+    default: null,
+    ref: "CheckOut",
   },
 
   isInvited: {

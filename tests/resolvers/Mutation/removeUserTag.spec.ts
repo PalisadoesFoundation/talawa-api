@@ -5,24 +5,28 @@ import type { MutationRemoveUserTagArgs } from "../../../src/types/generatedGrap
 import { connect, disconnect } from "../../helpers/db";
 
 import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-  TAG_NOT_FOUND,
-} from "../../../src/constants";
-import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
   vi,
 } from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
-import { createTestUser } from "../../helpers/userAndOrg";
-import { OrganizationTagUser, TagUser } from "../../../src/models";
+import {
+  TAG_NOT_FOUND,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
+import {
+  AppUserProfile,
+  OrganizationTagUser,
+  TagUser,
+} from "../../../src/models";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let randomUser: TestUserType;
@@ -80,7 +84,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removeUserTag: removeUserTagResolver } = await import(
@@ -88,9 +92,9 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
       );
 
       await removeUserTagResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
@@ -104,7 +108,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
 
     try {
       const args: MutationRemoveUserTagArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -116,9 +120,11 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
       );
 
       await removeUserTagResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(TAG_NOT_FOUND.MESSAGE);
-      expect(error.message).toEqual(`Translated ${TAG_NOT_FOUND.MESSAGE}`);
+      expect((error as Error).message).toEqual(
+        `Translated ${TAG_NOT_FOUND.MESSAGE}`,
+      );
     }
   });
 
@@ -142,9 +148,9 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
       );
 
       await removeUserTagResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(
+      expect((error as Error).message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
@@ -191,5 +197,34 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     });
 
     expect(userTagExists).toBeFalsy();
+  });
+  it("throws error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationRemoveUserTagArgs = {
+        id: rootTag ? rootTag._id.toString() : "",
+      };
+      const newUser = await createTestUser();
+      await AppUserProfile.deleteOne({
+        userId: newUser?.id,
+      });
+      const context = {
+        userId: newUser?.id,
+      };
+
+      const { removeUserTag: removeUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/removeUserTag"
+      );
+
+      await removeUserTagResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+      );
+    }
   });
 });

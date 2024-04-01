@@ -1,20 +1,21 @@
+import { Types } from "mongoose";
 import {
-  POST_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_TO_PIN,
-  PLEASE_PROVIDE_TITLE,
   LENGTH_VALIDATION_ERROR,
+  PLEASE_PROVIDE_TITLE,
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_AUTHORIZED_TO_PIN,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import { isValidString } from "../../libraries/validators/validateString";
 import type { InterfacePost } from "../../models";
-import { User, Post, Organization } from "../../models";
+import { AppUserProfile, Organization, Post, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { Types } from "mongoose";
-import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
-import { isValidString } from "../../libraries/validators/validateString";
+import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   _parent,
@@ -34,7 +35,16 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
   // Check if the post object exists
   let post: InterfacePost | null;
 
@@ -60,14 +70,13 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   }
 
   // Check if the current user is authorized to perform the operation
-  const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organizationId) => organizationId.equals(post?.organization),
+  const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+    (organizationId) =>
+      organizationId &&
+      new Types.ObjectId(organizationId.toString()).equals(post?.organization),
   );
 
-  if (
-    !((currentUser?.userType ?? "") === "SUPERADMIN") &&
-    !currentUserIsOrganizationAdmin
-  ) {
+  if (!currentUserAppProfile.isSuperAdmin && !currentUserIsOrganizationAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
       USER_NOT_AUTHORIZED_TO_PIN.CODE,
@@ -88,11 +97,12 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     organization = await Organization.findOne({
       _id: post.organization,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization !== null) {
+      await cacheOrganizations([organization]);
+    }
   }
   const currentPostIsPinned = organization?.pinnedPosts.some((postID) =>
-    Types.ObjectId(postID).equals(args.id),
+    new Types.ObjectId(postID).equals(args.id),
   );
 
   if (currentPostIsPinned) {
@@ -130,7 +140,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       await cachePosts([updatedPost]);
     }
 
-    return updatedPost!;
+    return updatedPost as InterfacePost;
   } else {
     if (!args.title) {
       throw new errors.InputValidationError(
@@ -184,6 +194,6 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       await cachePosts([updatedPost]);
     }
 
-    return updatedPost!;
+    return updatedPost as InterfacePost;
   }
 };

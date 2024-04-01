@@ -68,19 +68,16 @@ export const COMMENT_NOT_FOUND_ERROR = {
   MESSAGE: "comment.notFound",
   PARAM: "comment",
 };
-export const COMMUNITY_NOT_FOUND_ERROR = {
-  DESC: "Community not found",
-  CODE: "community.notFound",
-  MESSAGE: "community.notFound",
-  PARAM: "community",
-};
+
 export const COMMUNITY_LOGO_NOT_MISSING_IN_ARGS = {
   DESC: "Community logo was not provided",
   CODE: "community.logoMissing",
   MESSAGE: "community.logoMissing",
   PARAM: "community",
 };
+
 export const ERROR_IN_SENDING_MAIL = "Error in sending mail";
+
 export const EVENT_NOT_FOUND_ERROR = {
   DESC: "Event not found",
   CODE: "event.notFound",
@@ -595,6 +592,13 @@ export const EVENT_VOLUNTEER_NOT_FOUND_ERROR = {
   PARAM: "eventVolunteers",
 };
 
+export const EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR = {
+  DESC: "Volunteer group not found",
+  CODE: "eventVolunteerGroup.notFound",
+  MESSAGE: "eventVolunteerGroup.notFound",
+  PARAM: "eventVolunteerGroup",
+};
+
 export const EVENT_VOLUNTEER_INVITE_USER_MISTMATCH = {
   DESC: "Current User is not the user of Event Volunteer",
   CODE: "eventVolunteer.userMismatch",
@@ -603,9 +607,15 @@ export const EVENT_VOLUNTEER_INVITE_USER_MISTMATCH = {
 };
 
 export const USER_ALREADY_CHECKED_IN = {
-  MESSAGE: "The user has already been checked for this event.",
+  MESSAGE: "The user has already been checked in for this event.",
   CODE: "user.alreadyCheckedIn",
   PARAM: "user.alreadyCheckedIn",
+};
+
+export const USER_ALREADY_CHECKED_OUT = {
+  MESSAGE: "The user has already been checked out for this event.",
+  CODE: "user.alreadyCheckedOut",
+  PARAM: "user.alreadyCheckedOut",
 };
 
 export const SAMPLE_ORGANIZATION_ALREADY_EXISTS = {
@@ -637,6 +647,19 @@ export const CUSTOM_FIELD_TYPE_MISSING = {
   MESSAGE: "The type of the custom field is missing",
   CODE: "customField.isMissing",
   PARAM: "customField.isMissing",
+};
+
+export const ATTENDEE_NOT_FOUND = {
+  DESC: "Attendee not found",
+  CODE: "attendee.notFound",
+  MESSAGE: "attendee.notFound",
+  PARAM: "attendee",
+};
+
+export const PRELOGIN_IMAGERY_FIELD_EMPTY = {
+  MESSAGE: "Website name, website link and the website logo cannot be empty",
+  CODE: "preLoginImagery.empty",
+  PARAM: "preLoginImagery.empty",
 };
 
 export const MAXIMUM_FETCH_LIMIT = 100;
@@ -699,6 +722,16 @@ export const RECURRENCE_WEEKDAYS = [
   "SATURDAY",
   "SUNDAY",
 ];
+
+export const RECURRENCE_WEEKDAYS_MAPPING = {
+  MONDAY: "MO",
+  TUESDAY: "TU",
+  WEDNESDAY: "WE",
+  THURSDAY: "TH",
+  FRIDAY: "FR",
+  SATURDAY: "SA",
+  SUNDAY: "SU",
+};
 
 export const key = ENV.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");

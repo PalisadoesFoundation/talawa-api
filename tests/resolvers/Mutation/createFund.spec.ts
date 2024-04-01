@@ -5,9 +5,10 @@ import {
   FUND_ALREADY_EXISTS,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { Fund, Organization } from "../../../src/models";
+import { AppUserProfile, Fund, Organization } from "../../../src/models";
 import { createFund } from "../../../src/resolvers/Mutation/createFund";
 import type { MutationCreateFundArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -53,7 +54,7 @@ describe("resolvers-> Mutation-> createFund", () => {
         },
       };
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
       await createFund?.({}, args, context);
     } catch (error: unknown) {
@@ -64,7 +65,7 @@ describe("resolvers-> Mutation-> createFund", () => {
     try {
       const args: MutationCreateFundArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           name: "testFund",
           taxDeductible: true,
           isDefault: true,
@@ -139,6 +140,7 @@ describe("resolvers-> Mutation-> createFund", () => {
         taxDeductible: true,
         isDefault: true,
         isArchived: false,
+        creatorId: testUser?._id,
       });
       const args: MutationCreateFundArgs = {
         data: {
@@ -155,6 +157,36 @@ describe("resolvers-> Mutation-> createFund", () => {
       await createFund?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(FUND_ALREADY_EXISTS.MESSAGE);
+    }
+  });
+  it("throws an error if user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    const args: MutationCreateFundArgs = {
+      data: {
+        organizationId: testOrganization?._id,
+        name: "testFund",
+        taxDeductible: true,
+        isDefault: true,
+        isArchived: false,
+      },
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await createFund?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 });

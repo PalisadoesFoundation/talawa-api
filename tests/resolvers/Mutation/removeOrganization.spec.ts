@@ -19,6 +19,7 @@ import {
   Organization,
   Post,
   User,
+  AppUserProfile,
 } from "../../../src/models";
 import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -35,6 +36,7 @@ import {
 } from "vitest";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -70,7 +72,7 @@ beforeAll(async () => {
       sortingCode: "ABC-123",
       state: "Delhi",
     },
-    isPublic: true,
+    userRegistrationRequired: true,
     creatorId: testUsers[0]?._id,
     admins: [testUsers[0]?._id],
     members: [testUsers[1]?._id],
@@ -84,10 +86,19 @@ beforeAll(async () => {
     },
     {
       $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
         joinedOrganizations: [testOrganization._id],
         organizationsBlockedBy: [testOrganization._id],
+      },
+    },
+  );
+  await AppUserProfile.updateOne(
+    {
+      user: testUsers[0]?._id,
+    },
+    {
+      $set: {
+        createdOrganizations: [testOrganization._id],
+        adminFor: [testOrganization._id],
       },
     },
   );
@@ -162,6 +173,7 @@ beforeAll(async () => {
     taxDeductible: true,
     isDefault: true,
     isArchived: false,
+    creatorId: testUsers[0]?._id,
     campaigns: [],
   });
   await Organization.updateOne(
@@ -209,7 +221,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removeOrganization: removeOrganizationResolver } = await import(
@@ -233,7 +245,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
 
     try {
       const args: MutationRemoveOrganizationArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -267,7 +279,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         },
         {
           $set: {
-            creatorId: Types.ObjectId().toString(),
+            creatorId: new Types.ObjectId().toString(),
           },
         },
         {
@@ -318,15 +330,13 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       await cacheOrganizations([updatedOrganization]);
     }
 
-    await User.updateOne(
+    await AppUserProfile.updateOne(
       {
-        _id: testUsers[0]?.id,
+        userId: testUsers[0]?._id,
       },
       {
-        $set: {
-          adminApproved: true,
-          userType: "SUPERADMIN",
-        },
+        isSuperAdmin: true,
+        adminApproved: true,
       },
     );
 
@@ -350,7 +360,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       .select(["-password"])
       .lean();
 
-    expect(removeOrganizationPayload).toEqual(updatedTestUser);
+    expect(removeOrganizationPayload?.user).toEqual(updatedTestUser);
 
     const updatedTestUser1 = await User.findOne({
       _id: testUsers[1]?._id,
@@ -408,7 +418,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         sortingCode: "ABC-123",
         state: "Delhi",
       },
-      isPublic: true,
+      userRegistrationRequired: true,
       creatorId: testUsers[0]?._id,
       admins: [testUsers[0]?._id],
       members: [testUsers[1]?._id],
@@ -418,7 +428,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     });
 
     const args: MutationRemoveOrganizationArgs = {
-      id: newTestOrganization._id,
+      id: newTestOrganization._id.toString(),
     };
 
     const context = {
@@ -450,10 +460,39 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       context,
     );
 
-    expect(removeOrganizationPayload).toEqual({
+    expect(removeOrganizationPayload?.user).toEqual({
       ...updatedTestUser,
       updatedAt: expect.anything(),
     });
     expect(deleteImageSpy).toBeCalledWith("images/fake-image-path.png");
+  });
+  it(`throws error if  user does not have appUserProfile`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+    await AppUserProfile.deleteOne({
+      userId: testUsers[0]?._id,
+    });
+    try {
+      const args: MutationRemoveOrganizationArgs = {
+        id: "",
+      };
+
+      const context = {
+        userId: testUsers[0]?._id,
+      };
+
+      const { removeOrganization: removeOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/removeOrganization"
+      );
+
+      await removeOrganizationResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+      );
+    }
   });
 });

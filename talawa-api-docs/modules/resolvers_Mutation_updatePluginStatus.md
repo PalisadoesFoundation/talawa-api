@@ -22,7 +22,7 @@ parent of current request
 
 **`Param`**
 
-payload provided with the request contains _id of the plugin and orgID of the org that wants to change it's status.
+payload provided with the request contains \_id of the plugin and orgID of the org that wants to change it's status.
 
 **`Param`**
 

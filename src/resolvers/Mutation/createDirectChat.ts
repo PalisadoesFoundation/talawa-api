@@ -34,8 +34,7 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
     organization = await Organization.findOne({
       _id: args.data.organizationId,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) await cacheOrganizations([organization]);
   }
 
   // Checks whether organization with _id === args.data.organizationId exists.
@@ -52,9 +51,9 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
 
   // Loops over each item in args.data.userIds list.
   for await (const userId of args.data.userIds) {
-    const userExists = await User.exists({
+    const userExists = !!(await User.exists({
       _id: userId,
-    });
+    }));
 
     // Checks whether user with _id === userId exists.
     if (userExists === false) {

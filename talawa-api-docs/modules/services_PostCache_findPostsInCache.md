@@ -12,17 +12,17 @@
 
 ### findPostsInCache
 
-▸ **findPostsInCache**(`ids`): `Promise`\<([`InterfacePost`](../interfaces/models_Post.InterfacePost.md) \| ``null``)[]\>
+▸ **findPostsInCache**(`ids`): `Promise`\<([`InterfacePost`](../interfaces/models_Post.InterfacePost.md) \| `null`)[]\>
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
+| Name  | Type       |
+| :---- | :--------- |
 | `ids` | `string`[] |
 
 #### Returns
 
-`Promise`\<([`InterfacePost`](../interfaces/models_Post.InterfacePost.md) \| ``null``)[]\>
+`Promise`\<([`InterfacePost`](../interfaces/models_Post.InterfacePost.md) \| `null`)[]\>
 
 #### Defined in
 

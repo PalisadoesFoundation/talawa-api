@@ -1,19 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import cls from "cls-hooked";
 // No type defintions available for package 'cls-bluebird'
-// @ts-ignore
-import clsBluebird from "cls-bluebird";
-import i18n from "i18n";
+
+// import clsBluebird from "cls-bluebird";
 import type { NextFunction, Request, Response } from "express";
+import i18n from "i18n";
 
 export const requestContextNamespace = cls.createNamespace(
   "talawa-request-context",
 );
 
-clsBluebird(requestContextNamespace);
+// clsBluebird(requestContextNamespace);
 
 export const setRequestContextValue = <T>(key: string, value: T): T => {
-  //@ts-ignore
-  return requestContextNamespace.set<T>(key, value);
+  return requestContextNamespace.set<string>(key, value);
 };
 
 export const getRequestContextValue = <T>(key: string): T => {
@@ -44,7 +44,7 @@ interface InterfaceInitOptions<T> extends Record<any, any> {
 // Invalid code. Currently ignored by typescript. Needs fix.
 export const init = <T>(options: InterfaceInitOptions<T> = {}): T => {
   const obj: any = {};
-  // @ts-ignore
+  //@ts-expect-errorts-ignore
   i18n.init(obj);
   obj.setLocale(options.lang);
   return requestContextNamespace.runAndReturn<T>(() => {

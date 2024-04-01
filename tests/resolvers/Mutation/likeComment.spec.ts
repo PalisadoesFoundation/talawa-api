@@ -22,7 +22,8 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
 let testUser: TestUserType;
-let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
+let testComment: InterfaceComment &
+  Document<unknown, unknown, InterfaceComment>;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
@@ -70,7 +71,7 @@ describe("resolvers -> Mutation -> likeComment", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationLikeCommentArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -82,9 +83,9 @@ describe("resolvers -> Mutation -> likeComment", () => {
       );
 
       await likeCommentResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(COMMENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(COMMENT_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(COMMENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

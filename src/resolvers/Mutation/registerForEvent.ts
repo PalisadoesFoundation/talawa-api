@@ -77,7 +77,6 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
     currentUserIsEventRegistrant.save();
 
     // Adds event._id to registeredEvents list of currentUser with _id === context.userId.
-
     await User.updateOne(
       {
         _id: context.userId,

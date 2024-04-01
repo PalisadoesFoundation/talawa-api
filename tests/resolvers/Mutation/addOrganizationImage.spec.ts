@@ -57,7 +57,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationAddOrganizationImageArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
         file: "",
       };
       const context = {
@@ -68,9 +68,11 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
         "../../../src/resolvers/Mutation/addOrganizationImage"
       );
       await addOrganizationImage?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
   it(`updates organization's image with the old image and returns the updated organization`, async () => {

@@ -30,7 +30,7 @@ This is an interface that represents a database(MongoDB) document for Message.
 
 [src/models/Message.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Message.ts#L9)
 
-___
+---
 
 ### createdAt
 
@@ -40,7 +40,7 @@ ___
 
 [src/models/Message.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Message.ts#L13)
 
-___
+---
 
 ### creatorId
 
@@ -50,7 +50,7 @@ ___
 
 [src/models/Message.ts:15](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Message.ts#L15)
 
-___
+---
 
 ### group
 
@@ -60,7 +60,7 @@ ___
 
 [src/models/Message.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Message.ts#L16)
 
-___
+---
 
 ### imageUrl
 
@@ -70,7 +70,7 @@ ___
 
 [src/models/Message.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Message.ts#L11)
 
-___
+---
 
 ### status
 
@@ -80,7 +80,7 @@ ___
 
 [src/models/Message.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Message.ts#L17)
 
-___
+---
 
 ### text
 
@@ -90,7 +90,7 @@ ___
 
 [src/models/Message.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Message.ts#L10)
 
-___
+---
 
 ### updatedAt
 
@@ -100,7 +100,7 @@ ___
 
 [src/models/Message.ts:14](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/Message.ts#L14)
 
-___
+---
 
 ### videoUrl
 

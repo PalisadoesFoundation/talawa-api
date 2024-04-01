@@ -11,9 +11,9 @@ export const inputs = gql`
     eventId: ID!
   }
 
-  input CheckInInput {
-    userId: ID!
+  input CheckInCheckOutInput {
     eventId: ID!
+    userId: ID!
   }
 
   input createChatInput {
@@ -34,6 +34,7 @@ export const inputs = gql`
 
   input CreateUserTagInput {
     name: String!
+    tagColor: String!
     parentTagId: ID
     organizationId: ID!
   }
@@ -134,7 +135,6 @@ export const inputs = gql`
     endTime: Time
     allDay: Boolean!
     recurring: Boolean!
-    recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
     images: [String]
@@ -147,6 +147,13 @@ export const inputs = gql`
   input EventVolunteerInput {
     userId: ID!
     eventId: ID!
+    groupId: ID!
+  }
+
+  input EventVolunteerGroupInput {
+    name: String
+    eventId: ID!
+    volunteersRequired: Int
   }
 
   input UpdateEventVolunteerInput {
@@ -154,6 +161,12 @@ export const inputs = gql`
     isAssigned: Boolean
     isInvited: Boolean
     response: EventVolunteerResponse
+  }
+
+  input UpdateEventVolunteerGroupInput {
+    eventId: ID
+    name: String
+    volunteersRequired: Int
   }
 
   input EventWhereInput {
@@ -224,6 +237,10 @@ export const inputs = gql`
     currency: Currency!
   }
 
+  input FundWhereInput {
+    name_contains: String
+  }
+
   input LanguageInput {
     en_value: String!
     translation_lang_code: String!
@@ -233,6 +250,17 @@ export const inputs = gql`
   input LoginInput {
     email: EmailAddress!
     password: String!
+  }
+
+  input MembershipRequestsWhereInput {
+    id: ID
+    id_not: ID
+    id_in: [ID!]
+    id_not_in: [ID!]
+    id_contains: ID
+    id_starts_with: ID
+
+    user: UserWhereInput
   }
 
   input MessageChatInput {
@@ -340,18 +368,20 @@ export const inputs = gql`
   input RecurrenceRuleInput {
     frequency: Frequency
     weekDays: [WeekDays]
-    count: Int
+    interval: PositiveInt
+    count: PositiveInt
+    weekDayOccurenceInMonth: Int
   }
 
   input SocialMediaUrlsInput {
     facebook: String
-    instagram: String
-    twitter: String
-    linkedIn: String
     gitHub: String
-    youTube: String
-    slack: String
+    instagram: String
+    linkedIn: String
     reddit: String
+    slack: String
+    twitter: String
+    youTube: String
   }
 
   input ToggleUserTagAssignInput {
@@ -369,10 +399,10 @@ export const inputs = gql`
   }
 
   input UpdateCommunityInput {
-    name: String
-    description: String
-    websiteLink: String
-    socialMediaUrls: SocialMediaUrlsInput
+    name: String!
+    socialMediaUrls: SocialMediaUrlsInput!
+    websiteLink: String!
+    logo: String!
   }
 
   input UpdateEventInput {
@@ -380,7 +410,6 @@ export const inputs = gql`
     description: String
     recurring: Boolean
     isRecurringEventException: Boolean
-    recurrance: Recurrance
     isPublic: Boolean
     isRegisterable: Boolean
     startDate: Date
@@ -398,6 +427,7 @@ export const inputs = gql`
     taxDeductible: Boolean
     isDefault: Boolean
     isArchived: Boolean
+    refrenceNumber: String
   }
   input UpdateFundCampaignInput {
     name: String
@@ -432,6 +462,7 @@ export const inputs = gql`
 
   input UpdateUserTagInput {
     _id: ID!
+    tagColor: String!
     name: String!
   }
 
@@ -478,6 +509,7 @@ export const inputs = gql`
     lastName: String
     maritalStatus: MaritalStatus
     phone: UserPhoneInput
+    appLanguageCode: String
   }
 
   input UpdateUserPasswordInput {
@@ -533,15 +565,6 @@ export const inputs = gql`
     email_not_in: [EmailAddress!]
     email_contains: EmailAddress
     email_starts_with: EmailAddress
-
-    appLanguageCode: String
-    appLanguageCode_not: String
-    appLanguageCode_in: [String!]
-    appLanguageCode_not_in: [String!]
-    appLanguageCode_contains: String
-    appLanguageCode_starts_with: String
-
-    admin_for: ID
 
     event_title_contains: String
   }

@@ -1,26 +1,28 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, Event } from "../../../src/models";
+import { AppUserProfile, Event, Organization, User } from "../../../src/models";
 import type { MutationAdminRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { adminRemoveEvent as adminRemoveEventResolver } from "../../../src/resolvers/Mutation/adminRemoveEvent";
+import { nanoid } from "nanoid";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
+import { adminRemoveEvent as adminRemoveEventResolver } from "../../../src/resolvers/Mutation/adminRemoveEvent";
+import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
-import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -52,7 +54,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
     );
     try {
       const args: MutationAdminRemoveEventArgs = {
-        eventId: Types.ObjectId().toString(),
+        eventId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -60,8 +62,8 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       };
 
       await adminRemoveEventResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -74,7 +76,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
         },
         {
@@ -87,12 +89,14 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await adminRemoveEventResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -120,12 +124,12 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await adminRemoveEventResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -159,11 +163,37 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       };
 
       await adminRemoveEventResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ADMIN.MESSAGE,
+      );
     }
   });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    try {
+      const args: MutationAdminRemoveEventArgs = {
+        eventId: testEvent?.id,
+      };
 
+      const newUser = await User.create({
+        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        password: `pass${nanoid().toLowerCase()}`,
+        firstName: `firstName${nanoid().toLowerCase()}`,
+        lastName: `lastName${nanoid().toLowerCase()}`,
+        image: null,
+      });
+
+      const context = {
+        userId: newUser.id,
+      };
+
+      await adminRemoveEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
+  });
   it(`removes event with _id === args.eventId and returns it`, async () => {
     const updatedOrganization = await Organization.findOneAndUpdate(
       {
@@ -205,14 +235,23 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
     const testUpdatedUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["createdEvents", "eventAdmin", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
+    const testUpdatedAppUser = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents", "eventAdmin"])
+      .lean();
     expect(testUpdatedUser).toEqual(
+      expect.objectContaining({
+        registeredEvents: expect.arrayContaining([]),
+      }),
+    );
+    expect(testUpdatedAppUser).toEqual(
       expect.objectContaining({
         createdEvents: expect.arrayContaining([]),
         eventAdmin: expect.arrayContaining([]),
-        registeredEvents: expect.arrayContaining([]),
       }),
     );
   });

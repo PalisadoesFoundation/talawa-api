@@ -1,33 +1,31 @@
 import "dotenv/config";
-import { connect, disconnect } from "../../helpers/db";
-import { updatedBy as updatedByResolver } from "../../../src/resolvers/AgendaItem/updatedBy";
 import type mongoose from "mongoose";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   AgendaItemModel,
   Event,
   Organization,
   User,
 } from "../../../src/models";
+import { updatedBy as updatedByResolver } from "../../../src/resolvers/AgendaItem/updatedBy";
+import type { TestAgendaItemType } from "../../helpers/agendaItem";
+import { connect, disconnect } from "../../helpers/db";
+import type { TestEventType } from "../../helpers/events";
 import {
   createTestUser,
   type TestOrganizationType,
   type TestUserType,
 } from "../../helpers/userAndOrg";
-import type { TestEventType } from "../../helpers/events";
-import type { TestAgendaItemType } from "../../helpers/agendaItem";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
-let testSuperAdmin: TestUserType;
 let testAdminUser: TestUserType;
 let testAgendaItem: TestAgendaItemType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
-  testSuperAdmin = await createTestUser();
   testAdminUser = await createTestUser();
   testOrganization = await Organization.create({
     name: "name",
@@ -38,18 +36,6 @@ beforeAll(async () => {
     members: [testUser?._id, testAdminUser?._id],
     creatorId: testUser?._id,
   });
-
-  testSuperAdmin = await User.findOneAndUpdate(
-    {
-      _id: testSuperAdmin?._id,
-    },
-    {
-      userType: "SUPERADMIN",
-    },
-    {
-      new: true,
-    },
-  );
 
   testEvent = await Event.create({
     title: "title",

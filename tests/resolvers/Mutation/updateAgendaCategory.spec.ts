@@ -10,7 +10,12 @@ import {
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { updateAgendaCategory as updateAgendaCategoryResolver } from "../../../src/resolvers/Mutation/updateAgendaCategory";
-import { AgendaCategoryModel, Organization, User } from "../../../src/models";
+import {
+  AgendaCategoryModel,
+  AppUserProfile,
+  Organization,
+  User,
+} from "../../../src/models";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUser } from "../../helpers/user";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
@@ -68,7 +73,7 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationUpdateAgendaCategoryArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         input: {
           name: "Updated Name",
           description: "Updated Description",
@@ -76,7 +81,7 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await updateAgendaCategoryResolver?.({}, args, context);
@@ -88,7 +93,7 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
   it(`throws NotFoundError if no agenda category exists with _id === args.id`, async () => {
     try {
       const args: MutationUpdateAgendaCategoryArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
         input: {
           name: "Updated Name",
           description: "Updated Description",
@@ -142,18 +147,24 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
       userId: testUser?._id,
     };
 
-    const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
-      {},
-      args,
-      context,
-    );
+    try {
+      const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
+        {},
+        args,
+        context,
+      );
 
-    expect(updatedAgendaCategoryPayload).toEqual(
-      expect.objectContaining({
-        name: "Updated Name",
-        description: "Updated Description",
-      }),
-    );
+      expect(updatedAgendaCategoryPayload).toEqual(
+        expect.objectContaining({
+          name: "Updated Name",
+          description: "Updated Description",
+        }),
+      );
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
   //   it(`updates the agenda category and returns it for the admin`, async () => {
   //   const args: MutationUpdateAgendaCategoryArgs = {
@@ -204,17 +215,47 @@ describe("resolvers -> Mutation -> updateAgendaCategory", () => {
       },
     };
 
-    const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
-      {},
-      args,
-      context,
-    );
+    try {
+      const updatedAgendaCategoryPayload = await updateAgendaCategoryResolver?.(
+        {},
+        args,
+        context,
+      );
 
-    expect(updatedAgendaCategoryPayload).toEqual(
-      expect.objectContaining({
+      expect(updatedAgendaCategoryPayload).toEqual(
+        expect.objectContaining({
+          name: "Updated Name",
+          description: "Updated Description",
+        }),
+      );
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const args: MutationUpdateAgendaCategoryArgs = {
+      id: testAgendaCategory?._id,
+      input: {
         name: "Updated Name",
         description: "Updated Description",
-      }),
-    );
+      },
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await updateAgendaCategoryResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

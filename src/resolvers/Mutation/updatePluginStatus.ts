@@ -1,8 +1,9 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { Plugin } from "../../models";
 import mongoose from "mongoose";
-import { errors, requestContext } from "../../libraries";
 import { PLUGIN_NOT_FOUND } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type { InterfacePlugin } from "../../models";
+import { Plugin } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables to update plugin install status.
@@ -11,10 +12,8 @@ import { PLUGIN_NOT_FOUND } from "../../constants";
  * @param _context - context of entire application
  * @returns Updated PLugin status.
  */
-
-// @ts-ignore
 export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
-  async (_parent, args, context) => {
+  async (_parent, args, context): Promise<InterfacePlugin> => {
     const uid = args.id;
     // const currOrgID = mongoose.Types.ObjectId(args.orgId) ;
     const currOrgID = args.orgId;
@@ -30,21 +29,21 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
     }
 
     let uninstalledOrgsList = plugin.uninstalledOrgs;
-    // @ts-ignore
-    if (uninstalledOrgsList.includes(currOrgID)) {
+
+    if (uninstalledOrgsList.includes(new mongoose.Types.ObjectId(currOrgID))) {
       //if already uninstalled then install it by removing from array
       uninstalledOrgsList = uninstalledOrgsList.filter(
-        (oid: any) => oid != currOrgID,
+        (oid: unknown) => oid != currOrgID,
       );
     } else {
       //not already present then uninstall plugin on that org by adding it to the list
-      uninstalledOrgsList.push(mongoose.Types.ObjectId(currOrgID));
+      uninstalledOrgsList.push(new mongoose.Types.ObjectId(currOrgID));
     }
     plugin.uninstalledOrgs = uninstalledOrgsList;
 
     const res = await Plugin.findOneAndUpdate(
       {
-        _id: mongoose.Types.ObjectId(uid),
+        _id: new mongoose.Types.ObjectId(uid),
       },
       {
         ...plugin,
@@ -58,5 +57,5 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
     context.pubsub.publish("TALAWA_PLUGIN_UPDATED", {
       onPluginUpdate: res,
     });
-    return res;
+    return res as InterfacePlugin;
   };
