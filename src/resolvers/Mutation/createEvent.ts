@@ -43,14 +43,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     _id: context.userId,
   }).lean();
 
-  if (args && args.data && args.data.organizationId) {
-    if (args.data.organizationId.startsWith("id=")) {
-      args.data.organizationId = args.data.organizationId
-        .toString()
-        .substring(3);
-    }
-  }
-
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
@@ -72,7 +64,9 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   }
 
   const organization = await Organization.findOne({
-    _id: args.data?.organizationId,
+    _id: args.data.organizationId.startsWith("id=")
+      ? args.data.organizationId.toString().substring(3)
+      : args.data.organizationId,
   }).lean();
 
   // Checks whether organization exists.
