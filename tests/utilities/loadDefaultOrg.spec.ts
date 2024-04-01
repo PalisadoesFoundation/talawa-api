@@ -21,4 +21,11 @@ describe("load default data", () => {
     expect(appUserProfileCount).toBeGreaterThan(0);
     await disconnect(MONGOOSE_INSTANCE);
   });
+  it("should throw error if database name is undefined", async () => {
+    try {
+      await loadDefaultOrganiation(undefined);
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+    }
+  });
 });
