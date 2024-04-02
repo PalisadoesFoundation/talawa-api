@@ -164,6 +164,46 @@ describe("resolvers -> Mutation -> createEvent", () => {
     }
   });
 
+  it(`throws NotFoundError if no organization exists with _id === id=args.data.organizationId`, async () => {
+    try {
+      const args: MutationCreateEventArgs = {
+        data: {
+          organizationId: "id=" + new Types.ObjectId().toString(),
+          allDay: false,
+          description: "",
+          endDate: "",
+          endTime: "",
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "",
+          recurring: false,
+          startDate: "",
+          startTime: "",
+          title: "",
+          images: null,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { createEvent: createEventResolverError } = await import(
+        "../../../src/resolvers/Mutation/createEvent"
+      );
+
+      await createEventResolverError?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
+  });
+
   it(`throws UnauthorizedError if user with _id === context.userId is neither the creator
   nor a member of the organization with _id === args.organizationId`, async () => {
     try {
