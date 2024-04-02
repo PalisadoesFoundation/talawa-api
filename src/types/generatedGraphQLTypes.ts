@@ -2433,6 +2433,10 @@ export type QueryOrganizationsArgs = {
   where?: InputMaybe<MembershipRequestsWhereInput>;
 };
 
+export type QueryInviteArgs = {
+  id?: InputMaybe<Scalars['ID']['input']>;
+}
+
 
 export type QueryOrganizationsConnectionArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -3231,6 +3235,7 @@ export type ResolversTypes = {
   Mutation: ResolverTypeWrapper<{}>;
   OTPInput: OtpInput;
   Organization: ResolverTypeWrapper<InterfaceOrganizationModel>;
+  getEventInvitesByUserId: ResolverTypeWrapper<InterfaceEventAttendeeModel>;
   OrganizationCustomField: ResolverTypeWrapper<OrganizationCustomField>;
   OrganizationInfoNode: ResolverTypeWrapper<Omit<OrganizationInfoNode, 'creator'> & { creator?: Maybe<ResolversTypes['User']> }>;
   OrganizationInput: OrganizationInput;
@@ -4394,6 +4399,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
   getEventAttendee?: Resolver<Maybe<ResolversTypes['EventAttendee']>, ParentType, ContextType, RequireFields<QueryGetEventAttendeeArgs, 'eventId' | 'userId'>>;
   getEventAttendeesByEventId?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventAttendee']>>>, ParentType, ContextType, RequireFields<QueryGetEventAttendeesByEventIdArgs, 'eventId'>>;
+  getEventInvitesByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['getEventInvitesByUserId']>>>, ParentType, ContextType, Partial<QueryInviteArgs>>;
   getFundById?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<QueryGetFundByIdArgs, 'id'>>;
   getFundraisingCampaignById?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignByIdArgs, 'id'>>;
   getFundraisingCampaignPledgeById?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignPledgeByIdArgs, 'id'>>;
