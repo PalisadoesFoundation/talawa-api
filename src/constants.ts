@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { envSchema, getEnvIssues } from "./env";
+import "dotenv/config";
 
 const issues = getEnvIssues();
 let ENV = process.env;
