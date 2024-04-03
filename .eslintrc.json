@@ -10,18 +10,74 @@
   ],
   "overrides": [
     {
+      "files": ["*.ts"], // Specify that the following rules apply only to TypeScript files
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "project": "./tsconfig.json",
+        "tsconfigRootDir": ".",
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+      },
+      "rules": {
+        // Typescript additional rules
+        "@typescript-eslint/array-type": "error",
+        "@typescript-eslint/consistent-type-assertions": "error",
+        "@typescript-eslint/consistent-type-imports": "error",
+        "@typescript-eslint/explicit-function-return-type": "error",
+
+        // Interfaces must begin with Interface or TestInterface followed by a PascalCase name
+        "@typescript-eslint/naming-convention": [
+          "error",
+          {
+            "selector": "interface",
+            "format": ["PascalCase"],
+            "prefix": ["Interface", "TestInterface"]
+          },
+          {
+            "selector": ["typeAlias", "typeLike", "enum"],
+            "format": ["PascalCase"]
+          },
+          {
+            "selector": "typeParameter",
+            "format": ["PascalCase"],
+            "prefix": ["T"]
+          },
+          {
+            "selector": "variable",
+            "format": ["camelCase", "UPPER_CASE"],
+            "leadingUnderscore": "allow"
+          },
+          {
+            "selector": "parameter",
+            "format": ["camelCase"],
+            "leadingUnderscore": "allow"
+          },
+          {
+            "selector": "function",
+            "format": ["camelCase"]
+          },
+          {
+            "selector": "memberLike",
+            "modifiers": ["private"],
+            "format": ["camelCase"],
+            "leadingUnderscore": "require"
+          },
+          {
+            "selector": "variable",
+            "modifiers": ["exported"],
+            "format": null
+          }
+        ]
+      }
+    },
+    {
       "files": ["./src/typeDefs/**/*.ts"],
       "processor": "@graphql-eslint/graphql"
     },
     {
       "files": ["./src/typeDefs/**/*.graphql"],
       "parser": "@graphql-eslint/eslint-plugin",
-      "plugins": ["@graphql-eslint"],
-      // Do not apply naming conventions to .graphql files
-      "rules": {
-        "@typescript-eslint/naming-convention": "off",
-        "@typescript-eslint/consistent-type-assertions": "off"
-      }
+      "plugins": ["@graphql-eslint"]
     },
     {
       "files": ["tests/**/*"],
@@ -39,14 +95,7 @@
       }
     }
   ],
-
   "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "project": "./tsconfig.json",
-    "tsconfigRootDir": ".",
-    "ecmaVersion": "latest",
-    "sourceType": "module"
-  },
   "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc", "import"],
   "root": true,
   "rules": {
@@ -56,7 +105,6 @@
         "patterns": ["**/src/**"]
       }
     ],
-
     // restrict the use of same package in multiple import statements
     "import/no-duplicates": "error",
 
@@ -70,54 +118,6 @@
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
     "@typescript-eslint/no-non-null-assertion": "error",
-    "@typescript-eslint/no-var-requires": "error",
-
-    // Typescript rule to enforce PascalCase naming convention for types and interfaces
-    "@typescript-eslint/naming-convention": [
-      "error",
-      // Interfaces must begin with Interface or TestInterface followed by a PascalCase name
-      {
-        "selector": "interface",
-        "format": ["PascalCase"],
-        "prefix": ["Interface", "TestInterface"]
-      },
-      // Type Aliases must be in PascalCase
-      {
-        "selector": ["typeAlias", "typeLike", "enum"],
-        "format": ["PascalCase"]
-      },
-      {
-        "selector": "typeParameter",
-        "format": ["PascalCase"],
-        "prefix": ["T"]
-      },
-      {
-        "selector": "variable",
-        "format": ["camelCase", "UPPER_CASE"],
-        "leadingUnderscore": "allow"
-      },
-      {
-        "selector": "parameter",
-        "format": ["camelCase"],
-        "leadingUnderscore": "allow"
-      },
-      {
-        "selector": "function",
-        "format": ["camelCase"]
-      },
-      {
-        "selector": "memberLike",
-        "modifiers": ["private"],
-        "format": ["camelCase"],
-        "leadingUnderscore": "require"
-      },
-      { "selector": "variable", "modifiers": ["exported"], "format": null }
-    ],
-
-    // Typescript additional rules
-    "@typescript-eslint/array-type": "error",
-    "@typescript-eslint/consistent-type-assertions": "error",
-    "@typescript-eslint/consistent-type-imports": "error",
-    "@typescript-eslint/explicit-function-return-type": "error"
+    "@typescript-eslint/no-var-requires": "error"
   }
 }
