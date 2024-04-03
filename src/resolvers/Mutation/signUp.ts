@@ -134,7 +134,6 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     userId: createdUser._id,
     appLanguageCode: args.data.appLanguageCode || "en",
     isSuperAdmin: isLastResortSuperAdmin,
-    adminApproved: isLastResortSuperAdmin,
   });
 
   const updatedUser = await User.findOneAndUpdate(

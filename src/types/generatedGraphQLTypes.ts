@@ -221,7 +221,6 @@ export type AggregateUser = {
 export type AppUserProfile = {
   __typename?: 'AppUserProfile';
   _id: Scalars['ID']['output'];
-  adminApproved?: Maybe<Scalars['Boolean']['output']>;
   adminFor?: Maybe<Array<Maybe<Organization>>>;
   appLanguageCode: Scalars['String']['output'];
   createdEvents?: Maybe<Array<Maybe<Event>>>;
@@ -2483,7 +2482,6 @@ export type QueryUserLanguageArgs = {
 
 
 export type QueryUsersArgs = {
-  adminApproved?: InputMaybe<Scalars['Boolean']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<UserOrderByInput>;
   skip?: InputMaybe<Scalars['Int']['input']>;
@@ -3647,7 +3645,6 @@ export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
 
 export type AppUserProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppUserProfile'] = ResolversParentTypes['AppUserProfile']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
