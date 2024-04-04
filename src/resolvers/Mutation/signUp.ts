@@ -75,7 +75,8 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   }
 
   const isLastResortSuperAdmin =
-    args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
+    args.data.email.toLowerCase() ===
+    LAST_RESORT_SUPERADMIN_EMAIL?.toLowerCase();
 
   let createdUser:
     | (InterfaceUser & Document<unknown, unknown, InterfaceUser>)
