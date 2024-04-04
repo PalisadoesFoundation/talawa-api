@@ -308,6 +308,8 @@ input CreateAgendaSectionInput {
   sequence: Int!
 }
 
+getEventInvitesByUserId(id: ID!) [EventAttendee!]!
+
 union CreateCommentError = PostNotFoundError
 
 type CreateCommentPayload {

@@ -7,7 +7,7 @@ import { EventAttendee } from "../../models";
  * @param context-
  * @returns An object that contains list of all events.
  */
-export const getEventInvitesByUserId: QueryResolvers["getEventAttendeesByEventId"] =
+export const getEventInvitesByUserId: QueryResolvers["getEventInvitesByUserId"] =
   async (_parent, args, context) => {
     const eventAttendees = await EventAttendee.find({
       userId: context.userId,
