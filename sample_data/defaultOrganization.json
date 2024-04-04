@@ -1,0 +1,31 @@
+[
+  {
+    "_id": "65ecb98712e5d1c5a4504ce4",
+    "status": "ACTIVE",
+    "members": ["65ecb93989225c818f784821"],
+    "admins": ["65ecb93989225c818f784821"],
+    "groupChats": [],
+    "posts": [],
+    "pinnedPosts": [],
+    "membershipRequests": [],
+    "blockedUsers": [],
+    "name": "Default Organization",
+    "description": "Default description. Needs to be changed.",
+    "address": {
+      "city": "Default Address. Needs to be changed",
+      "countryCode": "IN",
+      "dependentLocality": "Default Address. Needs to be changed",
+      "line1": "default1",
+      "line2": "default2",
+      "postalCode": "711205",
+      "sortingCode": "default sorting code",
+      "state": "default state"
+    },
+    "userRegistrationRequired": false,
+    "visibleInSearch": true,
+    "image": null,
+    "creatorId": "65ecb93989225c818f784821",
+    "createdAt": "2023-04-13T05:16:52.827Z",
+    "__v": 0
+  }
+]

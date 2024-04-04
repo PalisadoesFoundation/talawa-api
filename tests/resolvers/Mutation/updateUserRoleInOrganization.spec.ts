@@ -14,6 +14,7 @@ import {
 } from "vitest";
 import {
   ADMIN_CANNOT_CHANGE_ITS_ROLE,
+  ADMIN_CHANGING_ROLE_OF_CREATOR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_AUTHORIZED_ERROR,
@@ -57,7 +58,6 @@ beforeAll(async () => {
     userId: testUserSuperAdmin._id,
     appLanguageCode: "en",
     isSuperAdmin: true,
-    adminApproved: true,
   });
   await User.updateOne(
     {
@@ -79,7 +79,6 @@ beforeAll(async () => {
   testAdminUserAppProfile = await AppUserProfile.create({
     userId: testAdminUser._id,
     appLanguageCode: "en",
-    adminApproved: true,
   });
   await User.updateOne(
     {
@@ -98,7 +97,6 @@ beforeAll(async () => {
   });
   testMemberUserAppProfile = await AppUserProfile.create({
     userId: testMemberUser._id,
-    adminApproved: true,
   });
   await User.updateOne(
     { _id: testMemberUser._id },
@@ -115,7 +113,6 @@ beforeAll(async () => {
   });
   testBlockedMemberUserAppProfile = await AppUserProfile.create({
     userId: testBlockedMemberUser._id,
-    adminApproved: true,
   });
   await User.updateOne(
     { _id: testBlockedMemberUser._id },
@@ -134,7 +131,6 @@ beforeAll(async () => {
   testNonMemberAdminAppProfile = await AppUserProfile.create({
     userId: testNonMemberAdmin._id,
     appLanguageCode: "en",
-    adminApproved: true,
   });
   await User.updateOne(
     {
@@ -413,7 +409,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         role: "USER",
       };
       const context = {
-        userId: testUserSuperAdmin?._id,
+        userId: testAdminUser?._id.toString(),
       };
 
       const {
@@ -422,6 +418,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
         "../../../src/resolvers/Mutation/updateUserRoleInOrganization"
       );
       await updateUserRoleInOrganizationResolver?.({}, args, context);
+      expect.fail();
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         ADMIN_CANNOT_CHANGE_ITS_ROLE.MESSAGE,
@@ -451,7 +448,7 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
       await updateUserRoleInOrganizationResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        "Error: Current user must be an ADMIN or a SUPERADMIN",
+        ADMIN_CHANGING_ROLE_OF_CREATOR.MESSAGE,
       );
     }
   });
