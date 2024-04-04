@@ -58,7 +58,6 @@ beforeAll(async () => {
     userId: testUserSuperAdmin._id,
     appLanguageCode: "en",
     isSuperAdmin: true,
-    adminApproved: true,
   });
   await User.updateOne(
     {
@@ -80,7 +79,6 @@ beforeAll(async () => {
   testAdminUserAppProfile = await AppUserProfile.create({
     userId: testAdminUser._id,
     appLanguageCode: "en",
-    adminApproved: true,
   });
   await User.updateOne(
     {
@@ -99,7 +97,6 @@ beforeAll(async () => {
   });
   testMemberUserAppProfile = await AppUserProfile.create({
     userId: testMemberUser._id,
-    adminApproved: true,
   });
   await User.updateOne(
     { _id: testMemberUser._id },
@@ -116,7 +113,6 @@ beforeAll(async () => {
   });
   testBlockedMemberUserAppProfile = await AppUserProfile.create({
     userId: testBlockedMemberUser._id,
-    adminApproved: true,
   });
   await User.updateOne(
     { _id: testBlockedMemberUser._id },
@@ -135,7 +131,6 @@ beforeAll(async () => {
   testNonMemberAdminAppProfile = await AppUserProfile.create({
     userId: testNonMemberAdmin._id,
     appLanguageCode: "en",
-    adminApproved: true,
   });
   await User.updateOne(
     {
