@@ -137,7 +137,6 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     userId: createdUser._id,
     appLanguageCode: args.data.appLanguageCode || "en",
     isSuperAdmin: isLastResortSuperAdmin,
-    adminApproved: isLastResortSuperAdmin,
   });
   const accessToken = await createAccessToken(createdUser, appUserProfile);
   const refreshToken = await createRefreshToken(createdUser, appUserProfile);

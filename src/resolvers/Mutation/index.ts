@@ -1,5 +1,4 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { acceptAdmin } from "./acceptAdmin";
 import { acceptMembershipRequest } from "./acceptMembershipRequest";
 import { addEventAttendee } from "./addEventAttendee";
 import { addFeedback } from "./addFeedback";
@@ -61,7 +60,6 @@ import { recaptcha } from "./recaptcha";
 import { refreshToken } from "./refreshToken";
 import { registerEventAttendee } from "./registerEventAttendee";
 import { registerForEvent } from "./registerForEvent";
-import { rejectAdmin } from "./rejectAdmin";
 import { rejectMembershipRequest } from "./rejectMembershipRequest";
 import { removeActionItem } from "./removeActionItem";
 import { removeAdmin } from "./removeAdmin";
@@ -125,7 +123,6 @@ import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
 
 export const Mutation: MutationResolvers = {
-  acceptAdmin,
   acceptMembershipRequest,
   addEventAttendee,
   addFeedback,
@@ -189,7 +186,6 @@ export const Mutation: MutationResolvers = {
   refreshToken,
   registerForEvent,
   registerEventAttendee,
-  rejectAdmin,
   rejectMembershipRequest,
   removeAdmin,
   removeActionItem,
