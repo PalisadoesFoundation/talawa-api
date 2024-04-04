@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { Document } from "mongoose";
+import type { Document } from "mongoose";
 import {
   EMAIL_ALREADY_EXISTS_ERROR,
   LAST_RESORT_SUPERADMIN_EMAIL,
