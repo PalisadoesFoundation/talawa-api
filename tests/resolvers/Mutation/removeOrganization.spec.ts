@@ -336,7 +336,6 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       },
       {
         isSuperAdmin: true,
-        adminApproved: true,
       },
     );
 

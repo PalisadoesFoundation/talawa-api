@@ -110,7 +110,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       {
         $set: {
           isSuperAdmin: true,
-          adminApproved: true,
         },
       },
     );

@@ -132,8 +132,6 @@ export const queries = gql`
       orderBy: UserOrderByInput
       first: Int
       skip: Int
-
-      adminApproved: Boolean
     ): [UserData] @auth
 
     usersConnection(

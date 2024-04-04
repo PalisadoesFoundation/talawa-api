@@ -357,7 +357,6 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       {
         $set: {
           isSuperAdmin: true,
-          adminApproved: true,
         },
       },
     );

@@ -35,7 +35,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
 
   if (args.data?.email && args.data?.email !== currentUser?.email) {
     const userWithEmailExists = await User.findOne({
-      email: args.data?.email,
+      email: args.data?.email.toLowerCase(),
     });
 
     if (userWithEmailExists) {
@@ -95,7 +95,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         educationGrade: args.data?.educationGrade
           ? args.data.educationGrade
           : currentUser?.educationGrade,
-        email: args.data?.email ? args.data.email : currentUser?.email,
+        email: args.data?.email
+          ? args.data.email.toLowerCase()
+          : currentUser?.email.toLowerCase(),
         employmentStatus: args.data?.employmentStatus
           ? args.data.employmentStatus
           : currentUser?.employmentStatus,

@@ -216,10 +216,10 @@ Talawa-api makes use of `Redis` for caching frequently accessed data items in th
      ```bash
      redis-cli
      ```
-   - **Step 6**: 
+   - **Step 6**:
      - Use these parameters when running the setup script if you have configured the server on your local machine:
-        - Redis Host: `localhost`
-        - Redis Port: `6379` (default Redis port)
+       - Redis Host: `localhost`
+       - Redis Port: `6379` (default Redis port)
 
 2. `For Windows Users using WSL`:
 
@@ -253,7 +253,7 @@ If you'd rather not deal with the hassle of setting up WSL on your computer, the
   redis-cli
   ```
 
-- **Step 7**: 
+- **Step 7**:
   - Use these parameters when running the setup script if you have configured the server on your local machine:
     - Redis Host: `localhost`
     - Redis Port: `6379` (default Redis port)
@@ -740,30 +740,32 @@ You can skip these instructions for now if you don't have running instance of Ta
 
 1. Open MongoDB Compass and click on `Connect`.
 
-2. Select `user` collections and edit the data. Change:
-   1. `userType` from `USER` to `SUPERADMIN`
-   2. `adminApproved` from `false` to `true`
-   - ![Illustration for user edit ](public/markdown/images/mongodb_compass_user_edit.png)
+2. Select your database.
+
+3. Elevate the user status:
+   1. Find the `AppUserProfile` document of the user that you want to elevate to superadmin.
+   2. In that `AppUserProfile` document, update the value of `isSuperAdmin` field to be `true`.
+   - ![Illustration for user edit ](public/markdown/images/mongodb_compass_user_elevation.png)
 
 ## Using Mongo Shell
 
 1. Open a terminal and run `mongosh` command to open interactive command line interface to work with MongoDB database.
 
-2. In the `mongosh` terminal use the following command to edit the `users` collections data:
-   1.Find the login credentials in the database through following command:
+2. In the `mongosh` terminal use the following commands to edit the `appuserprofiles` collections data:
+   1. Find the user:
    ```
-   db.users.find({userType: 'USER', firstName: '<user's first name>'})
+   const currentUser = db.users.findOne({ firstName: '<user's first name>'})
    ```
-   2. Elevate permission from `USER` to `SUPERADMIN` and set `adminApproved` to `true`:
+   2. Elevate permission of this user in its `AppUserProfile`, i.e. set `isSuperAdmin` to `true`:
    ```
-   db.users.updateOne({ firstName: '<user's first name>' },{ $set: { userType: 'SUPERADMIN', adminApproved: true }})
+   db.appuserprofiles.updateOne({ _id_: currentUser.appUserProfileId },{ $set: { isSuperAdmin: true }})
    ```
    3. To verify the details were updated correctly use:
    ```
-   db.users.find({firstName:'<user's first name>' })
+   db.appuserprofiles.findOne({ _id_: currentUser.appUserProfileId })
    ```
 
-**Note**: You can do the edits via any of the two methods.
+**Note**: You can make the edit via any of these two methods.
 
 # Other
 
