@@ -4,7 +4,7 @@ import { EventAttendee } from "../../models";
  * This query will fetch all the Event Invites in specified order from the database.
  * @param _parent-
  * @param args - An object containing `orderBy` and `id` of the Organization.
- * @param context- 
+ * @param context-
  * @returns An object that contains list of all events.
  */
 export const getEventInvitesByUserId: QueryResolvers["getEventAttendeesByEventId"] =
