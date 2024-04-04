@@ -2844,8 +2844,8 @@ export type UserInput = {
   email: Scalars['EmailAddress']['input'];
   firstName: Scalars['String']['input'];
   lastName: Scalars['String']['input'];
-  organizationUserBelongsToId?: InputMaybe<Scalars['ID']['input']>;
   password: Scalars['String']['input'];
+  selectedOrganization: Scalars['ID']['input'];
 };
 
 export type UserNotAuthorizedAdminError = Error & {
