@@ -1,8 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type {
-  InterfaceEvent} from "../../../src/models";
+import type { InterfaceEvent } from "../../../src/models";
 import {
   ActionItem,
   AppUserProfile,
