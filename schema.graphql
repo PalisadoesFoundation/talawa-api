@@ -308,7 +308,7 @@ input CreateAgendaSectionInput {
   sequence: Int!
 }
 
-getEventInvitesByUserId(id: ID!) [EventAttendee!]!
+getEventInvitesByUserId(userId: ID!) [EventAttendee!]!
 
 union CreateCommentError = PostNotFoundError
 

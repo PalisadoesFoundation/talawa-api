@@ -3,15 +3,16 @@ import { EventAttendee } from "../../models";
 /**
  * This query will fetch all the Event Invites in specified order from the database.
  * @param _parent-
- * @param args - An object containing `orderBy` and `id` of the Organization.
+ * @param args - An object containing userId.
  * @param context-
- * @returns An object that contains list of all events.
+ * @returns An object that contains list of all Event Attendees.
  */
 export const getEventInvitesByUserId: QueryResolvers["getEventInvitesByUserId"] =
   async (_parent, args, context) => {
-    const eventAttendees = await EventAttendee.find({
-      userId: context.userId,
+    const eventAttendee = await EventAttendee.find({
+      userId: args.userId,
+      isInvited: true,
     }).lean();
 
-    return eventAttendees;
+    return eventAttendee;
   };

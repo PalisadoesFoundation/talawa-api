@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { EventAttendee } from "../../../src/models";
-import type { QueryGetEventAttendeesByEventIdArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryGetEventInvitesByUserIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import type { TestEventType } from "../../helpers/events";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { connect, disconnect } from "../../helpers/db";
@@ -39,22 +39,23 @@ describe(`resolvers -> Query -> getEventAttendeeByEventId `, () => {
       eventId: testEvent?._id,
     });
 
-    const args: QueryGetEventAttendeesByEventIdArgs = {
-      eventId: testEvent?._id,
+    const args: QueryGetEventInvitesByUserIdArgs = {
+      userId: testUser1?.id,
     };
 
-    const { getEventAttendeesByEventId } = await import(
-      "../../../src/resolvers/Query/getEventAttendeesByEventId"
+    const { getEventInvitesByUserId } = await import(
+      "../../../src/resolvers/Query/getEventInvitesByUserId"
     );
 
-    const getEventAttendeeByEventIdPayload = await getEventAttendeesByEventId?.(
+    const getEventAttendeeByEventIdPayload = await getEventInvitesByUserId?.(
       {},
       args,
       {},
     );
 
     const eventAttendeesPayload = await EventAttendee.find({
-      eventId: testEvent?._id,
+      userId: testUser1?._id,
+      isInvited: true,
     }).lean();
 
     expect(getEventAttendeeByEventIdPayload).toMatchObject(
