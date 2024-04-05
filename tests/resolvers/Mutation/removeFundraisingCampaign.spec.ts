@@ -92,6 +92,23 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
     }
   });
 
+  it("throws an error if the user is not admin of the organization or superadmin", async () => {
+    try {
+      const args = {
+        id: testCampaign?._id.toString(),
+      };
+      const randomUser = await createTestUser();
+      const context = {
+        userId: randomUser?._id,
+      };
+      await removeFundraisingCampaign?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
+  });
+
   it("deletes the fundraising campaign", async () => {
     const args = {
       id: testCampaign?._id.toString() || "",
@@ -144,23 +161,6 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
     };
 
     try {
-      await removeFundraisingCampaign?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
-    }
-  });
-
-  it("throws an error if the user is not admin of the organization or superadmin", async () => {
-    try {
-      const args = {
-        id: testCampaign?._id.toString(),
-      };
-      const randomUser = await createTestUser();
-      const context = {
-        userId: randomUser?._id,
-      };
       await removeFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
