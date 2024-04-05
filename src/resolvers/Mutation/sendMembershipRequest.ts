@@ -64,8 +64,8 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
     }
 
     // Checks if the user is already a member of the organization
-    const isMember = organization.members.some(
-      (member) => new mongoose.Schema.Types.ObjectId(member) === context.userId,
+    const isMember = organization.members.some((member) =>
+      new mongoose.Types.ObjectId(member.toString()).equals(context.userId),
     );
 
     if (isMember === true) {
@@ -80,10 +80,8 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
     const user = await User.findById(context.userId).lean();
     if (
       user !== null &&
-      organization.blockedUsers.some(
-        (blockedUser) =>
-          new mongoose.Schema.Types.ObjectId(blockedUser).toString() ===
-          user._id.toString(),
+      organization.blockedUsers.some((blockedUser) =>
+        new mongoose.Types.ObjectId(blockedUser.toString()).equals(user._id),
       )
     ) {
       throw new errors.UnauthorizedError(

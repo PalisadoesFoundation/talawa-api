@@ -75,10 +75,8 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     );
   }
 
-  const userIsOrganizationMember = organization?.members.some(
-    (member) =>
-      new mongoose.Schema.Types.ObjectId(member).toString() ===
-      user._id.toString(),
+  const userIsOrganizationMember = organization?.members.some((member) =>
+    new mongoose.Types.ObjectId(member.toString()).equals(user._id),
   );
 
   if (!userIsOrganizationMember) {
@@ -98,10 +96,8 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     );
   }
 
-  const userIsOrganizationAdmin = organization?.admins.some(
-    (admin) =>
-      new mongoose.Schema.Types.ObjectId(admin).toString() ===
-      user._id.toString(),
+  const userIsOrganizationAdmin = organization?.admins.some((admin) =>
+    new mongoose.Types.ObjectId(admin.toString()).equals(user._id),
   );
 
   /*
@@ -124,8 +120,9 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     and breaks out of loop.
     */
   if (
-    new mongoose.Schema.Types.ObjectId(organization?.creatorId).toString() ===
-    user._id.toString()
+    new mongoose.Types.ObjectId(organization?.creatorId.toString()).equals(
+      user._id,
+    )
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),

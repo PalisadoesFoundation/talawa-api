@@ -73,7 +73,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   const userIsOrganizationMember = organization?.members.some(
     (member) =>
       member === args.userId ||
-      new mongoose.Schema.Types.ObjectId(member).toString() === args.userId,
+      new mongoose.Types.ObjectId(member.toString()).equals(args.userId),
   );
 
   if (!userIsOrganizationMember) {
@@ -95,10 +95,8 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   // Checks whether currentUser with _id === context.userId is an admin of organization.
   await adminCheck(context.userId, organization);
 
-  const userIsBlocked = organization.blockedUsers.some(
-    (blockedUser) =>
-      new mongoose.Schema.Types.ObjectId(blockedUser).toString() ===
-      args.userId,
+  const userIsBlocked = organization.blockedUsers.some((blockedUser) =>
+    new mongoose.Types.ObjectId(blockedUser.toString()).equals(args.userId),
   );
 
   // Checks whether user with _id === args.userId is already blocked from organization.

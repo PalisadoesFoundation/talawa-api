@@ -105,10 +105,8 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     );
   }
   // Checks whether user is an admin of the organization.
-  const userIsOrganizationAdmin = organization.admins.some(
-    (admin) =>
-      new mongoose.Schema.Types.ObjectId(admin).toString() ===
-      user._id.toString(),
+  const userIsOrganizationAdmin = organization.admins.some((admin) =>
+    new mongoose.Types.ObjectId(admin.toString()).equals(user._id),
   );
 
   if (!userIsOrganizationAdmin) {

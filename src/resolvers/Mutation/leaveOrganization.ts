@@ -76,10 +76,8 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     );
   }
 
-  const currentUserIsOrganizationMember = organization.members.some(
-    (member) =>
-      new mongoose.Schema.Types.ObjectId(member).toString() ===
-      currentUser?._id.toString(),
+  const currentUserIsOrganizationMember = organization.members.some((member) =>
+    new mongoose.Types.ObjectId(member.toString()).equals(currentUser?._id),
   );
 
   // Checks whether currentUser is not a member of organzation.
@@ -90,10 +88,8 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
       MEMBER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentUserIsOrgAdmin = organization.admins.some(
-    (admin) =>
-      new mongoose.Schema.Types.ObjectId(admin).toString() ===
-      currentUser._id.toString(),
+  const currentUserIsOrgAdmin = organization.admins.some((admin) =>
+    new mongoose.Types.ObjectId(admin.toString()).equals(currentUser._id),
   );
 
   // Removes currentUser._id from admins and members lists of organzation's document.

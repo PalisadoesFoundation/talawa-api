@@ -89,10 +89,10 @@ export const checkIn: MutationResolvers["checkIn"] = async (
     );
   }
 
-  const isUserEventAdmin = currentEvent.admins.some(
-    (admin) =>
-      new mongoose.Schema.Types.ObjectId(admin).toString() ===
+  const isUserEventAdmin = currentEvent.admins.some((admin) =>
+    new mongoose.Types.ObjectId(admin.toString()).equals(
       context.userId.toString(),
+    ),
   );
 
   if (!isUserEventAdmin && currentUserAppProfile.isSuperAdmin === false) {

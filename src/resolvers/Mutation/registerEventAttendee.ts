@@ -79,7 +79,7 @@ export const registerEventAttendee: MutationResolvers["registerEventAttendee"] =
     const isUserEventAdmin = event.admins.some(
       (admin) =>
         admin === context.userID ||
-        new mongoose.Schema.Types.ObjectId(admin) === context.userId,
+        new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
     );
 
     if (!isUserEventAdmin && currentAppUserProfile.isSuperAdmin === false) {

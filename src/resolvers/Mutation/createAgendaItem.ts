@@ -1,4 +1,4 @@
-import mongoose, { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   EVENT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -111,7 +111,7 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        new mongoose.Schema.Types.ObjectId(admin).toString() === context.userId,
+        new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
     );
   }
 
@@ -120,7 +120,7 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
     (organizationId) =>
       (organizationId &&
         organizationId.toString() === args.input.organizationId.toString()) ||
-      new Types.ObjectId(organizationId?.toString()).equals(
+      new mongoose.Types.ObjectId(organizationId?.toString()).equals(
         args.input.organizationId,
       ),
   );

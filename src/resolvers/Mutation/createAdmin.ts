@@ -148,10 +148,8 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   //   };
   // }
 
-  const userIsOrganizationMember = organization.members.some(
-    (member) =>
-      new mongoose.Schema.Types.ObjectId(member).toString() ===
-      args.data.userId,
+  const userIsOrganizationMember = organization.members.some((member) =>
+    new mongoose.Types.ObjectId(member.toString()).equals(args.data.userId),
   );
 
   // Checks whether user with _id === args.data.userId is not a member of organization.
@@ -174,9 +172,8 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     };
   }
 
-  const userIsOrganizationAdmin = organization.admins.some(
-    (admin) =>
-      new mongoose.Schema.Types.ObjectId(admin).toString() === args.data.userId,
+  const userIsOrganizationAdmin = organization.admins.some((admin) =>
+    new mongoose.Types.ObjectId(admin.toString()).equals(args.data.userId),
   );
 
   // Checks whether user with _id === args.data.userId is already an admin of organization.

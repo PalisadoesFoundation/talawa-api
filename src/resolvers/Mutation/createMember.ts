@@ -110,8 +110,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   const userIsOrganizationAdmin = organization.admins.some(
     (admin) =>
       admin === currentUser._id ||
-      new mongoose.Schema.Types.ObjectId(admin).toString() ===
-        currentUser._id.toString(),
+      new mongoose.Types.ObjectId(admin.toString()).equals(currentUser._id),
   );
   if (!userIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
     return {

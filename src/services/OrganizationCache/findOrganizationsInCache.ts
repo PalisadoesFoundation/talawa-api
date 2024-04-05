@@ -1,6 +1,6 @@
 import OrganizationCache from "../redisCache";
 import type { InterfaceOrganization } from "../../models";
-import mongoose, { Types } from "mongoose";
+import mongoose from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findOrganizationsInCache(
@@ -35,41 +35,41 @@ export async function findOrganizationsInCache(
 
         createdAt: new Date(organization.createdAt),
 
-        _id: new mongoose.Schema.Types.ObjectId(organization._id),
+        _id: new mongoose.Types.ObjectId(organization._id),
 
         admins: organization?.admins?.map((admin: string) => {
-          return new Types.ObjectId(admin);
+          return new mongoose.Types.ObjectId(admin);
         }),
 
         members:
           organization.members.length !== 0
             ? organization.members?.map((member: string) => {
-                return new Types.ObjectId(member);
+                return new mongoose.Types.ObjectId(member);
               })
             : [],
 
-        creatorId: new mongoose.Schema.Types.ObjectId(organization.creatorId),
+        creatorId: new mongoose.Types.ObjectId(organization.creatorId),
 
         updatedAt: new Date(organization.updatedAt),
 
         groupChats:
           organization.groupChats.length !== 0
             ? organization.groupChat.map((groupChat: string) => {
-                return new Types.ObjectId(groupChat);
+                return new mongoose.Types.ObjectId(groupChat);
               })
             : [],
 
         posts:
           organization.posts.length !== 0
             ? organization.posts?.map((post: string) => {
-                return new Types.ObjectId(post);
+                return new mongoose.Types.ObjectId(post);
               })
             : [],
 
         pinnedPosts:
           organization.pinnedPosts.length !== 0
             ? organization.pinnedPosts?.map((pinnedPost: string) => {
-                return new Types.ObjectId(pinnedPost);
+                return new mongoose.Types.ObjectId(pinnedPost);
               })
             : [],
 
@@ -77,7 +77,7 @@ export async function findOrganizationsInCache(
           organization.membershipRequests.length !== 0
             ? organization.membershipRequests.map(
                 (membershipRequest: string) => {
-                  return new Types.ObjectId(membershipRequest);
+                  return new mongoose.Types.ObjectId(membershipRequest);
                 },
               )
             : [],
@@ -85,7 +85,7 @@ export async function findOrganizationsInCache(
         blockedUsers:
           organization.blockedUsers.length !== 0
             ? organization.blockedUsers.map((blockedUser: string) => {
-                return new Types.ObjectId(blockedUser);
+                return new mongoose.Types.ObjectId(blockedUser);
               })
             : [],
       };

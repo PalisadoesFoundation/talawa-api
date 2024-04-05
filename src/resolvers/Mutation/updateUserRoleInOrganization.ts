@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   ADMIN_CANNOT_CHANGE_ITS_ROLE,
   ADMIN_CHANGING_ROLE_OF_CREATOR,
@@ -49,7 +49,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
 
     // Checks whether user to be removed is a member of the organization.
     const userIsOrganizationMember = organization?.members.some((member) =>
-      Types.ObjectId.createFromTime(member).equals(user._id),
+      new mongoose.Types.ObjectId(member.toString()).equals(user._id),
     );
 
     if (!userIsOrganizationMember) {
@@ -81,7 +81,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
     }
     // Check whether loggedIn user is admin of the organization.
     const loggedInUserIsOrganizationAdmin = organization?.admins.some((admin) =>
-      Types.ObjectId.createFromTime(admin).equals(loggedInUser._id),
+      new mongoose.Types.ObjectId(admin.toString()).equals(loggedInUser._id),
     );
 
     if (
@@ -108,7 +108,9 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
     }
     // ADMIN cannot change the role of itself
     if (
-      Types.ObjectId.createFromTime(context?.userId).equals(user._id) &&
+      new mongoose.Types.ObjectId(context?.userId.toString()).equals(
+        user._id,
+      ) &&
       loggedInUserIsOrganizationAdmin
     ) {
       throw new errors.ConflictError(
@@ -120,7 +122,9 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
 
     // ADMIN cannot change the role of the creator of the organization.
     if (
-      Types.ObjectId.createFromTime(organization?.creatorId).equals(user._id)
+      new mongoose.Types.ObjectId(organization?.creatorId.toString()).equals(
+        user._id,
+      )
     ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(ADMIN_CHANGING_ROLE_OF_CREATOR.MESSAGE),

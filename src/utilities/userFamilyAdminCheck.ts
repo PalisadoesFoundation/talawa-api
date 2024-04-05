@@ -19,8 +19,7 @@ export const adminCheck = async (
   const userIsUserFamilyAdmin = userFamily.admins.some(
     (admin) =>
       admin === userId ||
-      new mongoose.Schema.Types.ObjectId(admin).toString() ===
-        userId.toString(),
+      new mongoose.Types.ObjectId(admin.toString()).equals(userId),
   );
 
   // const user = await User.findOne({

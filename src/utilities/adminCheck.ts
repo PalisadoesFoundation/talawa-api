@@ -19,8 +19,7 @@ export const adminCheck = async (
   const userIsOrganizationAdmin = organization.admins.some(
     (admin) =>
       admin === userId ||
-      new mongoose.Schema.Types.ObjectId(admin).toString() ===
-        userId.toString(),
+      new mongoose.Types.ObjectId(admin).toString() === userId.toString(),
   );
 
   const userAppProfile = await AppUserProfile.findOne({

@@ -87,8 +87,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   const currentUserIsEventAdmin = event.admins.some(
     (admin) =>
       admin === context.userID ||
-      new mongoose.Schema.Types.ObjectId(admin).toString() ===
-        context.userId.toString(),
+      new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
   );
 
   // checks if current user is an admin of the event with _id === args.id

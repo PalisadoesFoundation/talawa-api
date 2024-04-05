@@ -87,8 +87,7 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   const currentUserIsOrganizationMember = organization.members.some(
     (memberId) =>
-      new mongoose.Schema.Types.ObjectId(memberId?.toString()) ===
-      context.userId,
+      new mongoose.Types.ObjectId(memberId?.toString()).equals(context.userId),
   );
 
   if (!currentUserIsOrganizationMember) {
