@@ -30,8 +30,9 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCampaign"] =
   async (_parent, args, context): Promise<InterfaceFundraisingCampaign> => {
+    const { userId, isAuthorized } = context;
     const currentUser = await User.findOne({
-      _id: context.userId,
+      _id: userId,
     }).lean();
 
     // Checks whether currentUser exists.
@@ -78,24 +79,26 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
         FUND_NOT_FOUND_ERROR.PARAM,
       );
     }
-    const currentOrg = await Fund.findById(fund._id)
-      .select("organizationId")
-      .lean();
+    if (!isAuthorized) {
+      const currentOrg = await Fund.findById(fund._id)
+        .select("organizationId")
+        .lean();
 
-    const currentOrgId = currentOrg?.organizationId?.toString() || "";
+      const currentOrgId = currentOrg?.organizationId?.toString() || "";
 
-    const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
-      (organizationId) =>
-        new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
-    );
-
-    // Checks whether the user is admin of the organization or not.
-    if (!currentUserIsOrgAdmin || !currentUserAppProfile.isSuperAdmin) {
-      throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-        USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
+        (organizationId) =>
+          new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
       );
+
+      // Checks whether the user is admin of the organization or not.
+      if (!currentUserIsOrgAdmin || !currentUserAppProfile.isSuperAdmin) {
+        throw new errors.UnauthorizedError(
+          requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+          USER_NOT_AUTHORIZED_ERROR.CODE,
+          USER_NOT_AUTHORIZED_ERROR.PARAM,
+        );
+      }
     }
 
     // Deletes the fundraising campaign.
