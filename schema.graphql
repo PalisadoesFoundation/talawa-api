@@ -148,7 +148,6 @@ scalar Any
 
 type AppUserProfile {
   _id: ID!
-  adminApproved: Boolean
   adminFor: [Organization]
   appLanguageCode: String!
   createdEvents: [Event]
@@ -1443,6 +1442,7 @@ type Query {
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
+  getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
   getFundById(id: ID!): Fund!
   getFundraisingCampaignById(id: ID!): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
@@ -1462,7 +1462,7 @@ type Query {
   registrantsByEvent(id: ID!): [User]
   user(id: ID!): UserData!
   userLanguage(userId: ID!): String
-  users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]
+  users(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]!
   venue(id: ID!): Venue
 }
@@ -1792,8 +1792,8 @@ input UserInput {
   email: EmailAddress!
   firstName: String!
   lastName: String!
-  organizationUserBelongsToId: ID
   password: String!
+  selectedOrganization: ID!
 }
 
 type UserNotAuthorizedAdminError implements Error {
