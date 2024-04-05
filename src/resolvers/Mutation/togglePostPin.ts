@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
   PLEASE_PROVIDE_TITLE,
@@ -101,8 +101,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       await cacheOrganizations([organization]);
     }
   }
-  const currentPostIsPinned = organization?.pinnedPosts.some((postID) =>
-    Types.ObjectId.createFromTime(postID).equals(args.id),
+  const currentPostIsPinned = organization?.pinnedPosts.some(
+    (postID) =>
+      new mongoose.Schema.Types.ObjectId(postID).toString() === args.id,
   );
 
   if (currentPostIsPinned) {

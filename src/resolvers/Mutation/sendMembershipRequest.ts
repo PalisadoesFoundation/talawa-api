@@ -10,7 +10,7 @@ import { errors, requestContext } from "../../libraries";
 import { User, MembershipRequest, Organization } from "../../models";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 /**
  * This function enables to send membership request.
  * @param _parent - parent of current request
@@ -64,8 +64,8 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
     }
 
     // Checks if the user is already a member of the organization
-    const isMember = organization.members.some((member) =>
-      Types.ObjectId.createFromTime(member).equals(context.userId),
+    const isMember = organization.members.some(
+      (member) => new mongoose.Schema.Types.ObjectId(member) === context.userId,
     );
 
     if (isMember === true) {
@@ -80,8 +80,10 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
     const user = await User.findById(context.userId).lean();
     if (
       user !== null &&
-      organization.blockedUsers.some((blockedUser) =>
-        Types.ObjectId.createFromTime(blockedUser).equals(user._id),
+      organization.blockedUsers.some(
+        (blockedUser) =>
+          new mongoose.Schema.Types.ObjectId(blockedUser).toString() ===
+          user._id.toString(),
       )
     ) {
       throw new errors.UnauthorizedError(

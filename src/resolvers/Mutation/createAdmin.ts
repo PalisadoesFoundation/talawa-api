@@ -1,11 +1,11 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   ORGANIZATION_MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { errors, requestContext } from "../../libraries";
+import { requestContext } from "../../libraries";
 import type {
   InterfaceOrganization,
   InterfaceAppUserProfile,
@@ -52,33 +52,62 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
 
   // Checks whether organization exists.
   if (!organization) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+    //   ORGANIZATION_NOT_FOUND_ERROR.CODE,
+    //   ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+    // );
+    return {
+      user: new AppUserProfile(),
+      userErrors: [
+        {
+          __typename: "OrganizationNotFoundError",
+          message: requestContext.translate(
+            ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+          ),
+        },
+      ],
+    };
   }
   // Checks whether the current user is a superAdmin
   const currentUser = await User.findById({
     _id: context.userId,
   });
   if (!currentUser) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+    //   USER_NOT_FOUND_ERROR.CODE,
+    //   USER_NOT_FOUND_ERROR.PARAM,
+    // );
+    return {
+      user: new AppUserProfile(),
+      userErrors: [
+        {
+          __typename: "UserNotFoundError",
+          message: requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
   const currentUserAppProfile = await AppUserProfile.findOne({
     userId: currentUser._id,
   }).lean();
 
   if (!currentUserAppProfile) {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-      USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM,
-    );
+    // throw new errors.UnauthorizedError(
+    //   requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+    //   USER_NOT_AUTHORIZED_ERROR.CODE,
+    //   USER_NOT_AUTHORIZED_ERROR.PARAM,
+    // );
+    return {
+      user: new AppUserProfile(),
+      userErrors: [
+        {
+          __typename: "UserNotAuthorizedError",
+          message: requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
 
   superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
@@ -87,49 +116,85 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   }).lean();
   1;
   if (!userAppProfile) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+    //   USER_NOT_FOUND_ERROR.CODE,
+    //   USER_NOT_FOUND_ERROR.PARAM,
+    // );
+    return {
+      user: new AppUserProfile(),
+      userErrors: [
+        {
+          __typename: "UserNotFoundError",
+          message: requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
-  const userExists = !!(await User.exists({
-    _id: args.data.userId,
-  }));
+  // const userExists = !!(await User.exists({
+  //   _id: args.data.userId,
+  // }));
 
-  // Checks whether user with _id === args.data.userId exists.
-  if (userExists === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
-    );
-  }
+  // // Checks whether user with _id === args.data.userId exists.
+  // if (userExists === false) {
+  //   return {
+  //     user: new AppUserProfile(),
+  //     userErrors: [
+  //       {
+  //         __typename: "UserNotFoundError",
+  //         message: requestContext.translate("test"),
+  //       },
+  //     ],
+  //   };
+  // }
 
-  const userIsOrganizationMember = organization.members.some((member) =>
-    Types.ObjectId.createFromTime(member).equals(args.data.userId),
+  const userIsOrganizationMember = organization.members.some(
+    (member) =>
+      new mongoose.Schema.Types.ObjectId(member).toString() ===
+      args.data.userId,
   );
 
   // Checks whether user with _id === args.data.userId is not a member of organization.
   if (userIsOrganizationMember === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_MEMBER_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_MEMBER_NOT_FOUND_ERROR.PARAM,
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE),
+    //   ORGANIZATION_MEMBER_NOT_FOUND_ERROR.CODE,
+    //   ORGANIZATION_MEMBER_NOT_FOUND_ERROR.PARAM,
+    // );
+    return {
+      user: new AppUserProfile(),
+      userErrors: [
+        {
+          __typename: "OrganizationMemberNotFoundError",
+          message: requestContext.translate(
+            ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE,
+          ),
+        },
+      ],
+    };
   }
 
-  const userIsOrganizationAdmin = organization.admins.some((admin) =>
-    Types.ObjectId.createFromTime(admin).equals(args.data.userId),
+  const userIsOrganizationAdmin = organization.admins.some(
+    (admin) =>
+      new mongoose.Schema.Types.ObjectId(admin).toString() === args.data.userId,
   );
 
   // Checks whether user with _id === args.data.userId is already an admin of organization.
   if (userIsOrganizationAdmin === true) {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-      USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM,
-    );
+    // throw new errors.UnauthorizedError(
+    //   requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+    //   USER_NOT_AUTHORIZED_ERROR.CODE,
+    //   USER_NOT_AUTHORIZED_ERROR.PARAM,
+    // );
+    return {
+      user: new AppUserProfile(),
+      userErrors: [
+        {
+          __typename: "UserNotAuthorizedError",
+          message: requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
 
   // Adds args.data.userId to admins list of organization's document.
@@ -155,19 +220,22 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   Adds organization._id to adminFor list on appUserProfile's document with userId === args.data.userId
   and returns the updated appUserProfile of the user.
   */
-  return (await AppUserProfile.findOneAndUpdate(
-    {
-      _id: userAppProfile._id,
-    },
-    {
-      $push: {
-        adminFor: organization._id,
+  return {
+    user: await AppUserProfile.findOneAndUpdate(
+      {
+        _id: userAppProfile._id,
       },
-    },
-    {
-      new: true,
-    },
-  )
-    .select(["-password"])
-    .lean()) as InterfaceAppUserProfile;
+      {
+        $push: {
+          adminFor: organization._id,
+        },
+      },
+      {
+        new: true,
+      },
+    )
+      .select(["-password"])
+      .lean(),
+    userErrors: [],
+  };
 };

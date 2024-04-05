@@ -23,6 +23,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndUserFamily";
 import { createTestUserFunc } from "../../helpers/userAndUserFamily";
+import { AppUserProfile } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -133,6 +134,38 @@ describe("resolvers -> Mutation -> removeUserFamily", () => {
       expect(spy).toHaveBeenCalledWith(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
         `${USER_FAMILY_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
+  });
+
+  it("throws user not found error if current user profile is not found", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => message);
+
+    try {
+      const args: MutationRemoveUserFamilyArgs = {
+        familyId: testUserFamily?.id,
+      };
+
+      await AppUserProfile.deleteOne({
+        userId: testUsers[0]?.id,
+      });
+
+      const context = {
+        userId: testUsers[0]?.id,
+      };
+
+      const { removeUserFamily: removeUserFamilyResolver } = await import(
+        "../../../src/resolvers/Mutation/removeUserFamily"
+      );
+
+      await removeUserFamilyResolver?.({}, args, context);
+    } catch (error) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });

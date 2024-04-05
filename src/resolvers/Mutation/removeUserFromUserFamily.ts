@@ -11,7 +11,7 @@ import { User } from "../../models";
 import type { InterfaceUserFamily } from "../../models/userFamily";
 import { UserFamily } from "../../models/userFamily";
 import { adminCheck } from "../../utilities/userFamilyAdminCheck";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 /**
  * This function enables to remove a user from group chat.
  * @param _parent - parent of current request
@@ -37,11 +37,15 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     })) as InterfaceUserFamily;
 
     const userIsMemberOfUserFamily = userFamily?.users.some((member) => {
-      return Types.ObjectId.createFromTime(member).equals(user?._id);
+      return (
+        new mongoose.Schema.Types.ObjectId(member).toString() ===
+        user?._id.toString()
+      );
     });
 
     const userIdUserFamilyAdmin = userFamily?.admins.some((admin) => {
-      Types.ObjectId.createFromTime(admin).equals(user?._id);
+      new mongoose.Schema.Types.ObjectId(admin).toString() ===
+        user?._id.toString();
     });
     //Check whether user family exists.
     if (!userFamily) {

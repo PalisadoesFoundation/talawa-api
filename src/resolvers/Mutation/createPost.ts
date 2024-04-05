@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -87,9 +87,8 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   const currentUserIsOrganizationMember = organization.members.some(
     (memberId) =>
-      Types.ObjectId.createFromTime(memberId?.toString()).equals(
-        context.userId,
-      ),
+      new mongoose.Schema.Types.ObjectId(memberId?.toString()) ===
+      context.userId,
   );
 
   if (!currentUserIsOrganizationMember) {
@@ -153,7 +152,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     // Check if the user has privileges to pin the post
     const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
-        new Types.ObjectId(organizationId?.toString()).equals(
+        new mongoose.Types.ObjectId(organizationId?.toString()).equals(
           args.data.organizationId,
         ),
     );

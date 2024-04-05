@@ -121,18 +121,6 @@ export const getSort = (
       };
       break;
 
-    case "recurrance_ASC":
-      sortPayload = {
-        recurrance: 1,
-      };
-      break;
-
-    case "recurrance_DESC":
-      sortPayload = {
-        recurrance: -1,
-      };
-      break;
-
     case "location_ASC":
       sortPayload = {
         location: 1,

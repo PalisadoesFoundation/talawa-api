@@ -148,7 +148,6 @@ scalar Any
 
 type AppUserProfile {
   _id: ID!
-  adminApproved: Boolean
   adminFor: [Organization]
   appLanguageCode: String!
   createdEvents: [Event]
@@ -176,7 +175,7 @@ type CheckIn {
   user: User!
 }
 
-input CheckInInput {
+input CheckInCheckOutInput {
   eventId: ID!
   userId: ID!
 }
@@ -185,6 +184,14 @@ type CheckInStatus {
   _id: ID!
   checkIn: CheckIn
   user: User!
+}
+
+type CheckOut {
+  _id: ID!
+  createdAt: DateTime!
+  eventAttendeeId: ID!
+  time: DateTime!
+  updatedAt: DateTime!
 }
 
 type Comment {
@@ -252,6 +259,13 @@ input CreateActionItemInput {
   preCompletionNotes: String
 }
 
+union CreateAdminError = OrganizationMemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedError | UserNotFoundError
+
+type CreateAdminPayload {
+  user: AppUserProfile
+  userErrors: [CreateAdminError!]!
+}
+
 input CreateAdvertisementInput {
   endDate: Date!
   mediaFile: String!
@@ -291,6 +305,22 @@ input CreateAgendaSectionInput {
   items: [CreateAgendaItemInput]
   relatedEvent: ID
   sequence: Int!
+}
+
+union CreateCommentError = PostNotFoundError
+
+type CreateCommentPayload {
+  comment: Comment
+  userErrors: [CreateCommentError!]!
+}
+
+union CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError
+
+union CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError
+
+type CreateMemberPayload {
+  organization: Organization
+  userErrors: [CreateMemberError!]!
 }
 
 input CreateUserTagInput {
@@ -603,7 +633,6 @@ type Event {
   location: String
   longitude: Longitude
   organization: Organization
-  recurrance: Recurrance
   recurrenceRule: RecurrenceRule
   recurring: Boolean!
   startDate: Date!
@@ -616,6 +645,7 @@ type Event {
 type EventAttendee {
   _id: ID!
   checkInId: ID
+  checkOutId: ID
   createdAt: DateTime!
   eventId: ID!
   isCheckedIn: Boolean!
@@ -643,7 +673,6 @@ input EventInput {
   location: String
   longitude: Longitude
   organizationId: ID!
-  recurrance: Recurrance
   recurring: Boolean!
   startDate: Date!
   startTime: Time
@@ -678,6 +707,7 @@ type EventVolunteer {
   createdAt: DateTime!
   creator: User
   event: Event
+  group: EventVolunteerGroup
   isAssigned: Boolean
   isInvited: Boolean
   response: String
@@ -685,8 +715,27 @@ type EventVolunteer {
   user: User!
 }
 
+type EventVolunteerGroup {
+  _id: ID!
+  createdAt: DateTime!
+  creator: User
+  event: Event
+  leader: User!
+  name: String
+  updatedAt: DateTime!
+  volunteers: [EventVolunteer]
+  volunteersRequired: Int
+}
+
+input EventVolunteerGroupInput {
+  eventId: ID!
+  name: String
+  volunteersRequired: Int
+}
+
 input EventVolunteerInput {
   eventId: ID!
+  groupId: ID!
   userId: ID!
 }
 
@@ -926,6 +975,10 @@ type MaximumValueError implements FieldError {
   path: [String!]!
 }
 
+type MemberNotFoundError implements Error {
+  message: String!
+}
+
 type MembershipRequest {
   _id: ID!
   organization: Organization!
@@ -997,12 +1050,11 @@ type Mutation {
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): AppUserProfile!
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
-  checkIn(data: CheckInInput!): CheckIn!
-  checkInEventAttendee(data: EventAttendeeInput!): EventAttendee!
-  checkOutEventAttendee(data: EventAttendeeInput!): EventAttendee!
+  checkIn(data: CheckInCheckOutInput!): CheckIn!
+  checkOut(data: CheckInCheckOutInput!): CheckOut!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
-  createAdmin(data: UserAndOrganizationInput!): AppUserProfile!
+  createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
   createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!
@@ -1012,11 +1064,12 @@ type Mutation {
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
+  createEventVolunteerGroup(data: EventVolunteerGroupInput!): EventVolunteerGroup!
   createFund(data: FundInput!): Fund!
   createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
   createFundraisingCampaignPledge(data: FundCampaignPledgeInput!): FundraisingCampaignPledge!
   createGroupChat(data: createGroupChatInput!): GroupChat!
-  createMember(input: UserAndOrganizationInput!): Organization!
+  createMember(input: UserAndOrganizationInput!): CreateMemberPayload!
   createMessageChat(data: MessageChatInput!): MessageChat!
   createOrganization(data: OrganizationInput, file: String): Organization!
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
@@ -1055,6 +1108,7 @@ type Mutation {
   removeEvent(id: ID!, recurringEventDeleteType: RecurringEventMutationType): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
+  removeEventVolunteerGroup(id: ID!): EventVolunteerGroup!
   removeFund(id: ID!): Fund!
   removeFundraisingCampaign(id: ID!): FundraisingCampaign!
   removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge!
@@ -1093,6 +1147,7 @@ type Mutation {
   updateCommunity(data: UpdateCommunityInput!): Boolean!
   updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
+  updateEventVolunteerGroup(data: UpdateEventVolunteerGroupInput, id: ID!): EventVolunteerGroup!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
   updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
   updateFundraisingCampaignPledge(data: UpdateFundCampaignPledgeInput!, id: ID!): FundraisingCampaignPledge!
@@ -1165,6 +1220,14 @@ input OrganizationInput {
   name: String!
   userRegistrationRequired: Boolean
   visibleInSearch: Boolean
+}
+
+type OrganizationMemberNotFoundError implements Error {
+  message: String!
+}
+
+type OrganizationNotFoundError implements Error {
+  message: String!
 }
 
 enum OrganizationOrderByInput {
@@ -1296,6 +1359,10 @@ input PostInput {
   videoUrl: URL
 }
 
+type PostNotFoundError implements Error {
+  message: String!
+}
+
 enum PostOrderByInput {
   commentCount_ASC
   commentCount_DESC
@@ -1375,6 +1442,7 @@ type Query {
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
+  getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
   getFundById(id: ID!): Fund!
   getFundraisingCampaignById(id: ID!): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
@@ -1394,21 +1462,13 @@ type Query {
   registrantsByEvent(id: ID!): [User]
   user(id: ID!): UserData!
   userLanguage(userId: ID!): String
-  users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]
+  users(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]!
   venue(id: ID!): Venue
 }
 
 input RecaptchaVerification {
   recaptchaToken: String!
-}
-
-enum Recurrance {
-  DAILY
-  MONTHLY
-  ONCE
-  WEEKLY
-  YEARLY
 }
 
 type RecurrenceRule {
@@ -1587,11 +1647,16 @@ input UpdateEventInput {
   latitude: Latitude
   location: String
   longitude: Longitude
-  recurrance: Recurrance
   recurring: Boolean
   startDate: Date
   startTime: Time
   title: String
+}
+
+input UpdateEventVolunteerGroupInput {
+  eventId: ID
+  name: String
+  volunteersRequired: Int
 }
 
 input UpdateEventVolunteerInput {
@@ -1727,8 +1792,20 @@ input UserInput {
   email: EmailAddress!
   firstName: String!
   lastName: String!
-  organizationUserBelongsToId: ID
   password: String!
+  selectedOrganization: ID!
+}
+
+type UserNotAuthorizedAdminError implements Error {
+  message: String!
+}
+
+type UserNotAuthorizedError implements Error {
+  message: String!
+}
+
+type UserNotFoundError implements Error {
+  message: String!
 }
 
 enum UserOrderByInput {
@@ -1869,6 +1946,11 @@ enum WeekDays {
 input createChatInput {
   organizationId: ID!
   userIds: [ID!]!
+}
+
+type createDirectChatPayload {
+  directChat: DirectChat
+  userErrors: [CreateDirectChatError!]!
 }
 
 input createGroupChatInput {

@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import {
   ACTION_ITEM_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -82,9 +82,9 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
   let sameAssignedUser = false;
 
   if (args.data.assigneeId) {
-    sameAssignedUser = Types.ObjectId.createFromTime(
-      actionItem.assigneeId,
-    ).equals(args.data.assigneeId);
+    sameAssignedUser =
+      new mongoose.Schema.Types.ObjectId(actionItem.assigneeId).toString() ===
+      args.data.assigneeId;
 
     if (!sameAssignedUser) {
       const newAssignedUser = await User.findOne({
@@ -105,9 +105,8 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       userIsOrganizationMember = newAssignedUser.joinedOrganizations.some(
         (organizationId) =>
           organizationId === currorganizationId ||
-          Types.ObjectId.createFromTime(organizationId).equals(
+          new mongoose.Schema.Types.ObjectId(organizationId) ===
             currorganizationId,
-          ),
       );
 
       // Checks if the new asignee is a member of the organization
@@ -161,7 +160,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        Types.ObjectId.createFromTime(admin).equals(context.userId),
+        new mongoose.Schema.Types.ObjectId(admin) === context.userId,
     );
   }
 

@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import {
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -105,9 +105,8 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
     (organizationId) =>
       organizationId === actionItemCategory.organizationId ||
-      Types.ObjectId.createFromTime(organizationId).equals(
+      new mongoose.Schema.Types.ObjectId(organizationId).toString() ===
         actionItemCategory.organizationId,
-      ),
   );
 
   // Checks if the asignee is a member of the organization
@@ -151,7 +150,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        Types.ObjectId.createFromTime(admin).equals(context.userId),
+        new mongoose.Schema.Types.ObjectId(admin) === context.userId,
     );
   }
 

@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_REGISTERED_FOR_EVENT,
@@ -66,7 +66,7 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   const isUserEventAdmin = event.admins.some(
     (admin) =>
       admin === context.userID ||
-      Types.ObjectId.createFromTime(admin).equals(context.userId),
+      new mongoose.Schema.Types.ObjectId(admin).toString() === context.userId,
   );
 
   if (!isUserEventAdmin && !currentUserAppProfile.isSuperAdmin) {

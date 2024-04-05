@@ -11,7 +11,7 @@ import {
 import { isValidString } from "../../libraries/validators/validateString";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import { session } from "../../db";
 import {
   updateRecurringEvent,
@@ -85,7 +85,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   const currentUserIsEventAdmin = event.admins.some(
     (admin) =>
       admin === context.userID ||
-      Types.ObjectId.createFromTime(admin).equals(context.userId),
+      new mongoose.Schema.Types.ObjectId(admin) === context.userId,
   );
 
   // checks if current user is an admin of the event with _id === args.id

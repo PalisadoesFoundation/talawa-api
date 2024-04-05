@@ -25,7 +25,9 @@ export const filterFunction = async function (
 ): Promise<boolean> {
   return true;
 };
-
+export const createPluginUpdateResponse = (payload: any): any => {
+  return payload.Plugin;
+};
 export const onPluginUpdate: SubscriptionResolvers["onPluginUpdate"] = {
   // @ts-expect-error-ts-ignore
   subscribe: withFilter(
@@ -33,7 +35,5 @@ export const onPluginUpdate: SubscriptionResolvers["onPluginUpdate"] = {
       context.pubsub.asyncIterator([TALAWA_PLUGIN_UPDATED]),
     (payload, _variables, context) => filterFunction(payload, context),
   ),
-  resolve: (payload: any) => {
-    return payload.Plugin;
-  },
+  resolve: createPluginUpdateResponse,
 };

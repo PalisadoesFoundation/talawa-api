@@ -10,7 +10,7 @@ import type { InterfaceOrganization, InterfaceUser } from "../../models";
 import { MembershipRequest, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 /**
  * This function enables to unblock user.
  * @param _parent - parent of current request
@@ -69,7 +69,8 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
 
   const userIsBlockedFromOrganization = organization.blockedUsers.some(
     (blockedUser) =>
-      Types.ObjectId.createFromTime(blockedUser).equals(user._id),
+      new mongoose.Schema.Types.ObjectId(blockedUser).toString() ===
+      user._id.toString(),
   );
 
   // checks if user with _id === args.userId is blocked by organzation with _id == args.organizationId

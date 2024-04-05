@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
@@ -75,8 +75,10 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     );
   }
 
-  const userIsOrganizationMember = organization?.members.some((member) =>
-    Types.ObjectId.createFromTime(member).equals(user._id),
+  const userIsOrganizationMember = organization?.members.some(
+    (member) =>
+      new mongoose.Schema.Types.ObjectId(member).toString() ===
+      user._id.toString(),
   );
 
   if (!userIsOrganizationMember) {
@@ -96,8 +98,10 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     );
   }
 
-  const userIsOrganizationAdmin = organization?.admins.some((admin) =>
-    Types.ObjectId.createFromTime(admin).equals(user._id),
+  const userIsOrganizationAdmin = organization?.admins.some(
+    (admin) =>
+      new mongoose.Schema.Types.ObjectId(admin).toString() ===
+      user._id.toString(),
   );
 
   /*
@@ -119,7 +123,10 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     of organization. If match is true assigns error message to errors list
     and breaks out of loop.
     */
-  if (Types.ObjectId.createFromTime(organization?.creatorId).equals(user._id)) {
+  if (
+    new mongoose.Schema.Types.ObjectId(organization?.creatorId).toString() ===
+    user._id.toString()
+  ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
       ADMIN_REMOVING_CREATOR.CODE,

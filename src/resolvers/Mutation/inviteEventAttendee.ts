@@ -11,7 +11,7 @@ import type { InterfaceEvent } from "../../models";
 import { User, Event, EventAttendee, AppUserProfile } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 
 /**
  * Invites an attendee to an event.
@@ -81,7 +81,7 @@ export const inviteEventAttendee: MutationResolvers["inviteEventAttendee"] =
     const isUserEventAdmin = event.admins.some(
       (admin) =>
         admin === context.userID ||
-        Types.ObjectId.createFromTime(admin).equals(context.userId),
+        new mongoose.Schema.Types.ObjectId(admin) === context.userId,
     );
 
     if (!isUserEventAdmin && !currentUserAppProfile.isSuperAdmin) {

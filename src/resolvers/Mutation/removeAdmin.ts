@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -105,8 +105,10 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     );
   }
   // Checks whether user is an admin of the organization.
-  const userIsOrganizationAdmin = organization.admins.some((admin) =>
-    Types.ObjectId.createFromTime(admin).equals(user._id),
+  const userIsOrganizationAdmin = organization.admins.some(
+    (admin) =>
+      new mongoose.Schema.Types.ObjectId(admin).toString() ===
+      user._id.toString(),
   );
 
   if (!userIsOrganizationAdmin) {

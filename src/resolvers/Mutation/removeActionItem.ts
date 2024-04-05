@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import {
   ACTION_ITEM_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -108,7 +108,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        Types.ObjectId.createFromTime(admin).equals(context.userId),
+        new mongoose.Schema.Types.ObjectId(admin) === context.userId,
     );
   }
 

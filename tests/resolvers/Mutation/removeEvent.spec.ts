@@ -1,8 +1,19 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { ActionItem, AppUserProfile, Event } from "../../../src/models";
-import type { MutationRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { InterfaceEvent } from "../../../src/models";
+import {
+  ActionItem,
+  AppUserProfile,
+  Event,
+  EventAttendee,
+  User,
+} from "../../../src/models";
+import type {
+  MutationCreateEventArgs,
+  MutationRemoveEventArgs,
+  MutationUpdateEventArgs,
+} from "../../../src/types/generatedGraphQLTypes";
 import {
   connect,
   disconnect,
@@ -25,6 +36,10 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { fail } from "assert";
+import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
+import { addMonths } from "date-fns";
+import { Frequency, RecurrenceRule } from "../../../src/models/RecurrenceRule";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -34,6 +49,7 @@ let newTestUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testEvent: TestEventType;
 let newTestEvent: TestEventType;
+let testRecurringEvent: InterfaceEvent;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -72,7 +88,11 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       await removeEventResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      if (error instanceof Error) {
+        expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
     }
   });
 
@@ -97,7 +117,11 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       await removeEventResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
+      if (error instanceof Error) {
+        EVENT_NOT_FOUND_ERROR.MESSAGE;
+      } else {
+        fail(`Expected NotDoundError, but got ${error}`);
+      }
     }
   });
 
@@ -146,9 +170,11 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       await removeEventResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
+      if (error instanceof Error) {
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE;
+      } else {
+        fail(`Expected UnauthorizedError, but got ${error}`);
+      }
     }
   });
 
@@ -235,6 +261,564 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
     expect(deletedActionItems).toEqual([]);
   });
+
+  it(`removes a single instance of a recurring event`, async () => {
+    let startDate = new Date();
+    startDate = convertToUTCDate(startDate);
+
+    const endDate = addMonths(startDate, 6);
+
+    const createEventArgs: MutationCreateEventArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        allDay: true,
+        description: "newDescription",
+        endDate,
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        startDate,
+        title: "newTitle",
+      },
+    };
+
+    const createEventContext = {
+      userId: testUser?.id,
+    };
+
+    const { createEvent: createEventResolver } = await import(
+      "../../../src/resolvers/Mutation/createEvent"
+    );
+
+    testRecurringEvent = (await createEventResolver?.(
+      {},
+      createEventArgs,
+      createEventContext,
+    )) as InterfaceEvent;
+
+    const recurrenceRule = await RecurrenceRule.findOne({
+      startDate,
+      endDate,
+      frequency: Frequency.WEEKLY,
+    });
+
+    const baseRecurringEvent = await Event.findOne({
+      isBaseRecurringEvent: true,
+      startDate: startDate.toUTCString(),
+    });
+
+    // find an event one week ahead of the testRecurringEvent and delete it
+    const recurringInstances = await Event.find({
+      recurrenceRuleId: testRecurringEvent?.recurrenceRuleId,
+    });
+
+    const recurringEventInstance = recurringInstances[1];
+
+    let attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: recurringEventInstance?._id,
+    });
+
+    expect(attendeeExists).toBeTruthy();
+
+    let updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["registeredEvents"])
+      .lean();
+
+    let updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        registeredEvents: expect.arrayContaining([recurringEventInstance?._id]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.arrayContaining([recurringEventInstance?._id]),
+        createdEvents: expect.arrayContaining([recurringEventInstance?._id]),
+      }),
+    );
+
+    const args: MutationRemoveEventArgs = {
+      id: recurringEventInstance?._id.toString(),
+      recurringEventDeleteType: "ThisInstance",
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const removeEventPayload = await removeEventResolver?.({}, args, context);
+
+    expect(removeEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        description: "newDescription",
+        isPublic: false,
+        recurrenceRuleId: recurrenceRule?._id.toString(),
+        baseRecurringEventId: baseRecurringEvent?._id.toString(),
+        startDate: recurringEventInstance.startDate,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        title: "newTitle",
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
+    attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: recurringEventInstance?._id,
+    });
+
+    expect(attendeeExists).toBeFalsy();
+
+    updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["registeredEvents"])
+      .lean();
+
+    updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        registeredEvents: expect.not.arrayContaining([
+          recurringEventInstance?._id,
+        ]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.not.arrayContaining([recurringEventInstance?._id]),
+        createdEvents: expect.not.arrayContaining([
+          recurringEventInstance?._id,
+        ]),
+      }),
+    );
+  });
+
+  it(`removes this and following instances of the recurring event`, async () => {
+    // find an event 10 weeks ahead of the testRecurringEvent
+    const recurringInstances = await Event.find({
+      recurrenceRuleId: testRecurringEvent?.recurrenceRuleId,
+    });
+
+    const recurringEventInstance = recurringInstances[10];
+
+    let attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: recurringEventInstance?._id,
+    });
+
+    expect(attendeeExists).toBeTruthy();
+
+    let updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["registeredEvents"])
+      .lean();
+
+    let updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        registeredEvents: expect.arrayContaining([recurringEventInstance?._id]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.arrayContaining([recurringEventInstance?._id]),
+        createdEvents: expect.arrayContaining([recurringEventInstance?._id]),
+      }),
+    );
+
+    const args: MutationRemoveEventArgs = {
+      id: recurringEventInstance?._id.toString(),
+      recurringEventDeleteType: "ThisAndFollowingInstances",
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const removeEventPayload = await removeEventResolver?.({}, args, context);
+
+    expect(removeEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        description: "newDescription",
+        isPublic: false,
+        recurrenceRuleId: recurringEventInstance.recurrenceRuleId.toString(),
+        baseRecurringEventId:
+          recurringEventInstance.baseRecurringEventId.toString(),
+        startDate: recurringEventInstance.startDate,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        title: "newTitle",
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
+    attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: recurringEventInstance?._id,
+    });
+
+    expect(attendeeExists).toBeFalsy();
+
+    updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["registeredEvents"])
+      .lean();
+
+    updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        registeredEvents: expect.not.arrayContaining([
+          recurringEventInstance?._id,
+        ]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.not.arrayContaining([recurringEventInstance?._id]),
+        createdEvents: expect.not.arrayContaining([
+          recurringEventInstance?._id,
+        ]),
+      }),
+    );
+  });
+
+  it(`changes the recurrencerule and deletes the new series`, async () => {
+    // find an event 7 weeks ahead of the testRecurringEvent
+    // and update it to follow a new recurrence series
+    const recurringInstances = await Event.find({
+      recurrenceRuleId: testRecurringEvent?.recurrenceRuleId,
+    });
+
+    let recurringEventInstance = recurringInstances[7] as InterfaceEvent;
+
+    let attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: recurringEventInstance?._id,
+    });
+
+    expect(attendeeExists).toBeTruthy();
+
+    let updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["registeredEvents"])
+      .lean();
+
+    let updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        registeredEvents: expect.arrayContaining([recurringEventInstance?._id]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.arrayContaining([recurringEventInstance?._id]),
+        createdEvents: expect.arrayContaining([recurringEventInstance?._id]),
+      }),
+    );
+
+    const updateEventArgs: MutationUpdateEventArgs = {
+      id: recurringEventInstance?._id.toString(),
+      data: {
+        title: "update the recurrence rule of this and following instances",
+      },
+      recurrenceRuleData: {
+        frequency: "DAILY",
+      },
+      recurringEventUpdateType: "ThisAndFollowingInstances",
+    };
+
+    const updateEventContext = {
+      userId: testUser?._id,
+    };
+
+    const { updateEvent: updateEventResolver } = await import(
+      "../../../src/resolvers/Mutation/updateEvent"
+    );
+
+    recurringEventInstance = (await updateEventResolver?.(
+      {},
+      updateEventArgs,
+      updateEventContext,
+    )) as InterfaceEvent;
+
+    const args: MutationRemoveEventArgs = {
+      id: recurringEventInstance?._id.toString(),
+      recurringEventDeleteType: "ThisAndFollowingInstances",
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const removeEventPayload = await removeEventResolver?.({}, args, context);
+
+    expect(removeEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        description: "newDescription",
+        isPublic: false,
+        recurrenceRuleId: recurringEventInstance.recurrenceRuleId.toString(),
+        baseRecurringEventId:
+          recurringEventInstance.baseRecurringEventId.toString(),
+        startDate: recurringEventInstance.startDate,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        title: "update the recurrence rule of this and following instances",
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
+    attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: recurringEventInstance?._id,
+    });
+
+    expect(attendeeExists).toBeFalsy();
+
+    updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["registeredEvents"])
+      .lean();
+
+    updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        registeredEvents: expect.not.arrayContaining([
+          recurringEventInstance?._id,
+        ]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.not.arrayContaining([recurringEventInstance?._id]),
+        createdEvents: expect.not.arrayContaining([
+          recurringEventInstance?._id,
+        ]),
+      }),
+    );
+  });
+
+  it(`removes all the instances of a recurring event except the exception instance`, async () => {
+    // find an event 6 weeks ahead of the testRecurringEvent
+    // and make it an exception
+    const recurringInstances = await Event.find({
+      recurrenceRuleId: testRecurringEvent?.recurrenceRuleId,
+    });
+
+    const recurringEventExceptionInstance =
+      recurringInstances[6] as InterfaceEvent;
+
+    const exceptionInstanceAttendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: recurringEventExceptionInstance?._id,
+    });
+
+    expect(exceptionInstanceAttendeeExists).toBeTruthy();
+
+    let attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: testRecurringEvent?._id,
+    });
+
+    expect(attendeeExists).toBeTruthy();
+
+    let updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .lean();
+
+    let updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        registeredEvents: expect.arrayContaining([
+          testRecurringEvent?._id,
+          recurringEventExceptionInstance?._id,
+        ]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.arrayContaining([
+          testRecurringEvent?._id,
+          recurringEventExceptionInstance?._id,
+        ]),
+        createdEvents: expect.arrayContaining([
+          testRecurringEvent?._id,
+          recurringEventExceptionInstance?._id,
+        ]),
+      }),
+    );
+
+    await Event.updateOne(
+      {
+        _id: recurringEventExceptionInstance?._id,
+      },
+      {
+        isRecurringEventException: true,
+      },
+    );
+
+    const args: MutationRemoveEventArgs = {
+      id: testRecurringEvent?._id.toString(),
+      recurringEventDeleteType: "AllInstances",
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const removeEventPayload = await removeEventResolver?.({}, args, context);
+
+    expect(removeEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        description: "newDescription",
+        isPublic: false,
+        recurrenceRuleId: testRecurringEvent.recurrenceRuleId.toString(),
+        baseRecurringEventId:
+          testRecurringEvent.baseRecurringEventId.toString(),
+        startDate: testRecurringEvent.startDate,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        title: "newTitle",
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
+    attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: testRecurringEvent?._id,
+    });
+
+    expect(attendeeExists).toBeFalsy();
+
+    attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: recurringEventExceptionInstance?._id,
+    });
+
+    expect(attendeeExists).toBeTruthy();
+
+    updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["registeredEvents"])
+      .lean();
+
+    updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        registeredEvents: expect.not.arrayContaining([testRecurringEvent?._id]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.not.arrayContaining([testRecurringEvent?._id]),
+        createdEvents: expect.not.arrayContaining([testRecurringEvent?._id]),
+      }),
+    );
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        registeredEvents: expect.arrayContaining([
+          recurringEventExceptionInstance?._id,
+        ]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.arrayContaining([
+          recurringEventExceptionInstance?._id,
+        ]),
+        createdEvents: expect.arrayContaining([
+          recurringEventExceptionInstance?._id,
+        ]),
+      }),
+    );
+  });
+
   it("throws an error if user does not have appUserProfile", async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
