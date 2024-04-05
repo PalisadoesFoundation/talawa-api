@@ -1,4 +1,5 @@
-import { Types } from "mongoose";
+import type { Types } from "mongoose";
+import mongoose from "mongoose";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../constants";
 import { errors, requestContext } from "../libraries";
 import { AppUserProfile } from "../models";
@@ -17,7 +18,9 @@ export const adminCheck = async (
 ): Promise<void> => {
   const userIsUserFamilyAdmin = userFamily.admins.some(
     (admin) =>
-      admin === userId || Types.ObjectId.createFromTime(admin).equals(userId),
+      admin === userId ||
+      new mongoose.Schema.Types.ObjectId(admin).toString() ===
+        userId.toString(),
   );
 
   // const user = await User.findOne({

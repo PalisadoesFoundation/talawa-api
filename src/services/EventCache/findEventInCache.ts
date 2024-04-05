@@ -1,6 +1,6 @@
 import EventCache from "../redisCache";
 import type { InterfaceEvent } from "../../models";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findEventsInCache(
@@ -33,7 +33,7 @@ export async function findEventsInCache(
       return {
         ...eventObj,
 
-        _id: Types.ObjectId.createFromTime(eventObj._id),
+        _id: new mongoose.Schema.Types.ObjectId(eventObj._id),
 
         admins:
           eventObj?.admins?.length !== 0
@@ -42,7 +42,7 @@ export async function findEventsInCache(
               })
             : [],
 
-        organization: Types.ObjectId.createFromTime(eventObj.organization),
+        organization: new mongoose.Schema.Types.ObjectId(eventObj.organization),
 
         startDate: new Date(eventObj.startDate),
 
@@ -54,7 +54,7 @@ export async function findEventsInCache(
 
         ...(eventObj?.endTime ? { endTime: new Date(eventObj.endTime) } : {}), // Conditional removal of endTime field
 
-        creatorId: Types.ObjectId.createFromTime(eventObj.creatorId),
+        creatorId: new mongoose.Schema.Types.ObjectId(eventObj.creatorId),
 
         createdAt: new Date(eventObj.createdAt),
 

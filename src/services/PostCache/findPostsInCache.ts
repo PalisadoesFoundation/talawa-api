@@ -1,6 +1,6 @@
 import PostCache from "../redisCache";
 import type { InterfacePost } from "../../models";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findPostsInCache(
@@ -33,11 +33,11 @@ export async function findPostsInCache(
       return {
         ...postObj,
 
-        _id: Types.ObjectId.createFromTime(postObj._id),
+        _id: new mongoose.Schema.Types.ObjectId(postObj._id),
 
         createdAt: new Date(postObj.createdAt),
 
-        organization: Types.ObjectId.createFromTime(postObj.organization),
+        organization: new mongoose.Schema.Types.ObjectId(postObj.organization),
 
         likeCount: Number(postObj.likeCount),
 
@@ -50,7 +50,7 @@ export async function findPostsInCache(
               })
             : [],
 
-        creatorId: Types.ObjectId.createFromTime(postObj.creatorId),
+        creatorId: new mongoose.Schema.Types.ObjectId(postObj.creatorId),
 
         updatedAt: new Date(postObj.updatedAt),
       };

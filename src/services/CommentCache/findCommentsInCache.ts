@@ -1,6 +1,6 @@
 import CommentCache from "../redisCache";
 import type { InterfaceComment } from "../../models";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findCommentsInCache(
@@ -33,15 +33,15 @@ export async function findCommentsInCache(
       return {
         ...commentObj,
 
-        _id: Types.ObjectId.createFromTime(commentObj._id),
+        _id: new mongoose.Schema.Types.ObjectId(commentObj._id),
 
         createdAt: new Date(commentObj.createdAt),
 
-        creatorId: Types.ObjectId.createFromTime(commentObj.creatorId),
+        creatorId: new mongoose.Schema.Types.ObjectId(commentObj.creatorId),
 
         updatedAt: new Date(commentObj.updatedAt),
 
-        postId: Types.ObjectId.createFromTime(commentObj.postId),
+        postId: new mongoose.Schema.Types.ObjectId(commentObj.postId),
 
         likedBy:
           commentObj?.likedBy.length !== 0

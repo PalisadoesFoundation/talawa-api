@@ -1,6 +1,6 @@
 import OrganizationCache from "../redisCache";
 import type { InterfaceOrganization } from "../../models";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findOrganizationsInCache(
@@ -35,7 +35,7 @@ export async function findOrganizationsInCache(
 
         createdAt: new Date(organization.createdAt),
 
-        _id: Types.ObjectId.createFromTime(organization._id),
+        _id: new mongoose.Schema.Types.ObjectId(organization._id),
 
         admins: organization?.admins?.map((admin: string) => {
           return new Types.ObjectId(admin);
@@ -48,7 +48,7 @@ export async function findOrganizationsInCache(
               })
             : [],
 
-        creatorId: Types.ObjectId.createFromTime(organization.creatorId),
+        creatorId: new mongoose.Schema.Types.ObjectId(organization.creatorId),
 
         updatedAt: new Date(organization.updatedAt),
 

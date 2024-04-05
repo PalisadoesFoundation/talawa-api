@@ -11,12 +11,13 @@ import {
 import { isValidString } from "../../libraries/validators/validateString";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import mongoose from "mongoose";
 import { session } from "../../db";
 import {
   updateRecurringEvent,
   updateSingleEvent,
 } from "../../helpers/event/updateEventHelpers";
+import mongoose from "mongoose";
+
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -28,6 +29,7 @@ import {
  * 3. The the user is an admin of the event.
  * @returns Updated event.
  */
+
 export const updateEvent: MutationResolvers["updateEvent"] = async (
   _parent,
   args,
@@ -85,7 +87,8 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   const currentUserIsEventAdmin = event.admins.some(
     (admin) =>
       admin === context.userID ||
-      new mongoose.Schema.Types.ObjectId(admin) === context.userId,
+      new mongoose.Schema.Types.ObjectId(admin).toString() ===
+        context.userId.toString(),
   );
 
   // checks if current user is an admin of the event with _id === args.id
