@@ -82,7 +82,7 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
       .select("organizationId")
       .lean();
 
-    const currentOrgId = currentOrg?.organizationId?.toString() || "";
+    const currentOrgId = currentOrg?.organizationId?.toString();
 
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
@@ -97,7 +97,6 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
         USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
-
     // Deletes the fundraising campaign.
     await FundraisingCampaign.deleteOne({
       _id: args.id,
