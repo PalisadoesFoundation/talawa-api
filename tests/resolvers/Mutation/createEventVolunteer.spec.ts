@@ -1,5 +1,6 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
+import type { Document } from "mongoose";
 import { Types } from "mongoose";
 import type { MutationCreateEventVolunteerArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -15,23 +16,40 @@ import {
 } from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
+  EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent } from "../../helpers/events";
 import type { TestEventType } from "../../helpers/events";
 import { createTestUser } from "../../helpers/user";
+import type { InterfaceEventVolunteerGroup } from "../../../src/models";
+import { EventVolunteerGroup } from "../../../src/models";
+
+export type TestEventVolunteerGroupType =
+  | (InterfaceEventVolunteerGroup & Document)
+  | null;
 
 let testUser1: TestUserType, testUser2: TestUserType;
 let testEvent: TestEventType;
+let eventAdminUser: TestUserType;
+let testGroup: TestEventVolunteerGroupType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser2 = await createTestUser();
   testUser1 = await createTestUser();
-  [, , testEvent] = await createTestEvent();
+  [eventAdminUser, , testEvent] = await createTestEvent();
+
+  testGroup = await EventVolunteerGroup.create({
+    creatorId: eventAdminUser?._id,
+    eventId: testEvent?._id,
+    leaderId: eventAdminUser?._id,
+    name: "Test group",
+  });
 });
 
 afterAll(async () => {
@@ -54,6 +72,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
         data: {
           userId: testUser2?._id,
           eventId: testEvent?._id,
+          groupId: testGroup?._id,
         },
       };
 
@@ -80,6 +99,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
         data: {
           userId: new Types.ObjectId().toString(),
           eventId: testEvent?._id,
+          groupId: testGroup?._id,
         },
       };
 
@@ -109,6 +129,7 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
         data: {
           userId: testUser2?._id,
           eventId: new Types.ObjectId().toString(),
+          groupId: testGroup?._id,
         },
       };
 
@@ -126,16 +147,77 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
     }
   });
 
-  it(`returns EventVolunteer object if valid userId and eventId in args`, async () => {
+  it(`throws NotFoundError if no event volunteer group exists with _id === args.groupId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    try {
+      const args: MutationCreateEventVolunteerArgs = {
+        data: {
+          userId: testUser2?._id,
+          eventId: testEvent?._id,
+          groupId: new Types.ObjectId().toString(),
+        },
+      };
+
+      const context = {
+        userId: eventAdminUser?._id,
+      };
+
+      const { createEventVolunteer: createEventVolunteerResolver } =
+        await import("../../../src/resolvers/Mutation/createEventVolunteer");
+
+      await createEventVolunteerResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE,
+      );
+    }
+  });
+
+  it(`throws UnauthorizedError if current user is not group leader`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    try {
+      const args: MutationCreateEventVolunteerArgs = {
+        data: {
+          userId: testUser2?._id,
+          eventId: testEvent?._id,
+          groupId: testGroup?._id,
+        },
+      };
+
+      const context = {
+        userId: testUser1?._id,
+      };
+
+      const { createEventVolunteer: createEventVolunteerResolver } =
+        await import("../../../src/resolvers/Mutation/createEventVolunteer");
+
+      await createEventVolunteerResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
+  });
+
+  it(`returns EventVolunteer object if valid userId, eventId, and groupId in args`, async () => {
     const args: MutationCreateEventVolunteerArgs = {
       data: {
         userId: testUser2?._id,
         eventId: testEvent?._id,
+        groupId: testGroup?._id,
       },
     };
 
     const context = {
-      userId: testUser1?.id,
+      userId: eventAdminUser?._id,
     };
 
     const { createEventVolunteer: createEventVolunteerResolver } = await import(
@@ -148,11 +230,20 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
       context,
     );
 
+    const updatedGroup = await EventVolunteerGroup.findOne({
+      _id: testGroup?._id,
+    });
+
+    expect(updatedGroup?.volunteers.toString()).toEqual(
+      [createdVolunteer?._id.toString()].toString(),
+    );
+
     expect(createdVolunteer).toEqual(
       expect.objectContaining({
         eventId: new Types.ObjectId(testEvent?.id),
         userId: testUser2?._id,
-        creatorId: testUser1?._id,
+        groupId: testGroup?._id,
+        creatorId: eventAdminUser?._id,
         isInvited: true,
         isAssigned: false,
       }),

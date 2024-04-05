@@ -1,7 +1,12 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, Venue, type InterfaceVenue } from "../../../src/models";
+import {
+  Organization,
+  Venue,
+  type InterfaceVenue,
+  AppUserProfile,
+} from "../../../src/models";
 import type { MutationEditVenueArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { ConflictError } from "./../../../src/libraries/errors/conflictError";
@@ -13,6 +18,7 @@ import {
   INVALID_FILE_TYPE,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   VENUE_ALREADY_EXISTS_ERROR,
   VENUE_NAME_MISSING_ERROR,
@@ -315,5 +321,59 @@ describe("resolvers -> Mutation -> editVenue", () => {
       .populate("organization")
       .lean();
     expect(venue).toEqual(expectedVenue);
+  });
+
+  it("uploads file succesfully if the file is valid", async () => {
+    const args: MutationEditVenueArgs = {
+      data: {
+        id: testVenue?._id.toString(),
+        file: "data:image/png;base64,",
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const { editVenue } = await import(
+      "../../../src/resolvers/Mutation/editVenue"
+    );
+    const venue = await editVenue?.({}, args, context);
+    const expectedVenue = await Venue.findById(testVenue?._id)
+      .populate("organization")
+      .lean();
+    expect(venue).toEqual(expectedVenue);
+  });
+
+  it("throws user not found error if current user profile is not found", async () => {
+    try {
+      const args: MutationEditVenueArgs = {
+        data: {
+          id: testVenue?._id.toString(),
+          capacity: 90,
+          name: "newTestVenue",
+          description: "newDescription",
+        },
+      };
+
+      await AppUserProfile.deleteOne({
+        userId: testUser?.id,
+      });
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { editVenue } = await import(
+        "../../../src/resolvers/Mutation/editVenue"
+      );
+      await editVenue?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
   });
 });

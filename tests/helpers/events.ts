@@ -72,7 +72,6 @@ export const createEventWithRegistrant = async (
   userId: string,
   organizationId: string,
   allDay: boolean,
-  recurrance: string,
 ): Promise<TestEventType> => {
   const testEvent = await Event.create({
     creatorId: userId,
@@ -87,7 +86,6 @@ export const createEventWithRegistrant = async (
     endDate: new Date().toString(),
     startTime: new Date().toString(),
     endTime: new Date().toString(),
-    recurrance: recurrance,
     location: `location${nanoid()}`,
   });
 

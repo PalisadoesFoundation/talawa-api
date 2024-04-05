@@ -5,9 +5,11 @@ import { checkReplicaSet } from "./utilities/checkReplicaSet";
 
 let session!: mongoose.ClientSession;
 
-export const connect = async (): Promise<void> => {
+export const connect = async (dbName?: string): Promise<void> => {
   try {
-    await mongoose.connect(MONGO_DB_URL as string);
+    await mongoose.connect(MONGO_DB_URL as string, {
+      dbName,
+    });
     const replicaSet = await checkReplicaSet();
     if (replicaSet) {
       logger.info("Session started --> Connected to a replica set!");

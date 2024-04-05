@@ -2,8 +2,9 @@ import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
-import type { InterfaceRecurrenceRule } from "./RecurrenceRule";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
+import type { InterfaceRecurrenceRule } from "./RecurrenceRule";
 import type { InterfaceAgendaItem } from "./AgendaItem";
 
 /**
@@ -11,63 +12,65 @@ import type { InterfaceAgendaItem } from "./AgendaItem";
  */
 export interface InterfaceEvent {
   _id: Types.ObjectId;
-  title: string;
-  description: string;
-  attendees: string | undefined;
-  images: string[];
-  location: string | undefined;
-  latitude: number | undefined;
-  longitude: number;
-  recurring: boolean;
-  isRecurringEventException: boolean;
-  isBaseRecurringEvent: boolean;
-  recurrenceRuleId: PopulatedDoc<InterfaceRecurrenceRule & Document>;
-  baseRecurringEventId: PopulatedDoc<InterfaceEvent & Document>;
-  allDay: boolean;
-  startDate: string;
-  endDate: string | undefined;
-  startTime: string | undefined;
-  endTime: string | undefined;
-  recurrance: string;
-  isPublic: boolean;
-  isRegisterable: boolean;
-  creatorId: PopulatedDoc<InterfaceUser & Document>;
   admins: PopulatedDoc<InterfaceUser & Document>[];
-  organization: PopulatedDoc<InterfaceOrganization & Document>;
-  status: string;
+  allDay: boolean;
+  attendees: string | undefined;
+  baseRecurringEventId: PopulatedDoc<InterfaceEvent & Document>;
   createdAt: Date;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
+  description: string;
+  endDate: string | undefined;
+  endTime: string | undefined;
+  images: string[];
+  isBaseRecurringEvent: boolean;
+  isPublic: boolean;
+  isRecurringEventException: boolean;
+  isRegisterable: boolean;
+  latitude: number | undefined;
+  location: string | undefined;
+  longitude: number;
+  organization: PopulatedDoc<InterfaceOrganization & Document>;
+  recurrance: string;
+  recurrenceRuleId: PopulatedDoc<InterfaceRecurrenceRule & Document>;
+  recurring: boolean;
+  startDate: string;
+  startTime: string | undefined;
+  status: string;
+  title: string;
   updatedAt: Date;
+  volunteerGroups: PopulatedDoc<InterfaceEventVolunteerGroup & Document>[];
   agendaItems: PopulatedDoc<InterfaceAgendaItem & Document>[];
 }
 
 /**
  * This is the Structure of the Event
- * @param title - Title of the event
- * @param description - Description of the event
- * @param attendees - Attendees
- * @param images -Event Flyer
- * @param location - Location of the event
- * @param latitude - Latitude
- * @param longitude - Longitude
- * @param recurring - Is the event recurring
- * @param isRecurringEventException - Is the event an exception to the recurring pattern it was following
- * @param isBaseRecurringEvent - Is the event a true recurring event that is used for generating new instances
- * @param recurrenceRuleId - Id of the recurrence rule document containing the recurrence pattern for the event
- * @param baseRecurringEventId - Id of the true recurring event used for generating this instance
- * @param allDay - Is the event occuring all day
- * @param startDate - Start Date
- * @param endDate - End date
- * @param startTime - Start Time
- * @param endTime - End Time
- * @param recurrance - Periodicity of recurrance of the event
- * @param isPublic - Is the event public
- * @param isRegisterable - Is the event Registrable
- * @param creatorId - Creator of the event
  * @param admins - Admins
- * @param organization - Organization
- * @param status - whether the event is active, blocked, or deleted.
+ * @param allDay - Is the event occuring all day
+ * @param attendees - Attendees
+ * @param baseRecurringEventId - Id of the true recurring event used for generating this instance
  * @param createdAt - Timestamp of event creation
+ * @param creatorId - Creator of the event
+ * @param description - Description of the event
+ * @param endDate - End date
+ * @param endTime - End Time
+ * @param images -Event Flyer
+ * @param isBaseRecurringEvent - Is the event a true recurring event that is used for generating new instances
+ * @param isPublic - Is the event public
+ * @param isRecurringEventException - Is the event an exception to the recurring pattern it was following
+ * @param isRegisterable - Is the event Registrable
+ * @param latitude - Latitude
+ * @param location - Location of the event
+ * @param longitude - Longitude
+ * @param organization - Organization
+ * @param recurrance - Periodicity of recurrance of the event
+ * @param recurrenceRuleId - Id of the recurrence rule document containing the recurrence pattern for the event
+ * @param recurring - Is the event recurring
+ * @param startDate - Start Date
+ * @param startTime - Start Time
+ * @param status - whether the event is active, blocked, or deleted.
+ * @param title - Title of the event
  * @param updatedAt - Timestamp of event updation
+ * @param volunteerGroups - event volunteer groups for the event
  */
 
 const eventSchema = new Schema(
@@ -154,14 +157,6 @@ const eventSchema = new Schema(
         return !this.allDay;
       },
     },
-    recurrance: {
-      type: String,
-      required: function (this: InterfaceEvent): boolean {
-        return this.recurring;
-      },
-      enum: ["ONCE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
-      default: "ONCE",
-    },
     isPublic: {
       type: Boolean,
       required: true,
@@ -193,6 +188,14 @@ const eventSchema = new Schema(
       enum: ["ACTIVE", "BLOCKED", "DELETED"],
       default: "ACTIVE",
     },
+    volunteerGroups: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "EventVolunteerGroup",
+        required: true,
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true,

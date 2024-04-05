@@ -103,7 +103,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startDate: "",
           startTime: "",
           title: "",
-          recurrance: "ONCE",
         },
       };
 
@@ -143,7 +142,46 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startDate: "",
           startTime: "",
           title: "",
-          recurrance: "DAILY",
+          images: null,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { createEvent: createEventResolverError } = await import(
+        "../../../src/resolvers/Mutation/createEvent"
+      );
+
+      await createEventResolverError?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
+  });
+
+  it(`throws NotFoundError if no organization exists with _id === id=args.data.organizationId`, async () => {
+    try {
+      const args: MutationCreateEventArgs = {
+        data: {
+          organizationId: "id=" + new Types.ObjectId().toString(),
+          allDay: false,
+          description: "",
+          endDate: "",
+          endTime: "",
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "",
+          recurring: false,
+          startDate: "",
+          startTime: "",
+          title: "",
           images: null,
         },
       };
@@ -186,7 +224,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startTime: "",
           title: "",
           images: ["image_url_1", "image_url_2", "image_url_3", "image_url_4"],
-          recurrance: "ONCE",
         },
       };
 
@@ -249,7 +286,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate: new Date("2023-01-01T00:00:00Z"),
         startTime: new Date().toUTCString(),
         title: "singleEventTitle",
-        recurrance: "ONCE",
       },
     };
 
@@ -282,7 +318,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const recurringEvents = await Event.find({
       title: "singleEventTitle",
       recurring: false,
-      recurrance: "ONCE",
     }).lean();
 
     expect(recurringEvents).toBeDefined();
@@ -331,7 +366,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startTime: startDate.toUTCString(),
         title: "newTitle",
         images: ["image_url_1", "image_url_2", "image_url_3", "image_url_4"],
-        recurrance: "WEEKLY",
       },
     };
 
@@ -425,7 +459,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         endDate,
         endTime: endDate.toUTCString(),
         title: "newTitle",
-        recurrance: "ONCE",
       },
       recurrenceRuleData: {
         frequency: "DAILY",
@@ -519,7 +552,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate,
         startTime: startDate.toUTCString(),
         title: "newTitle",
-        recurrance: "ONCE",
       },
       recurrenceRuleData: {
         frequency: "DAILY",
@@ -613,7 +645,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate,
         startTime: startDate.toUTCString(),
         title: "newTitle",
-        recurrance: "ONCE",
       },
       recurrenceRuleData: {
         frequency: "WEEKLY",
@@ -708,7 +739,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate,
         startTime: startDate.toUTCString(),
         title: "newTitle",
-        recurrance: "ONCE",
       },
       recurrenceRuleData: {
         frequency: "MONTHLY",
@@ -802,7 +832,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate,
         startTime: startDate.toUTCString(),
         title: "newTitle",
-        recurrance: "ONCE",
       },
       recurrenceRuleData: {
         frequency: "YEARLY",
@@ -896,7 +925,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate,
         startTime: startDate.toUTCString(),
         title: "newTitle",
-        recurrance: "ONCE",
       },
       recurrenceRuleData: {
         frequency: "WEEKLY",
@@ -999,7 +1027,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate,
         startTime: startDate.toUTCString(),
         title: "newTitle",
-        recurrance: "ONCE",
       },
       recurrenceRuleData: {
         frequency: "MONTHLY",
@@ -1118,7 +1145,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate,
         startTime: startDate.toUTCString(),
         title: "newTitle",
-        recurrance: "ONCE",
       },
       recurrenceRuleData: {
         frequency: "MONTHLY",
@@ -1246,7 +1272,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate: new Date().toUTCString(),
         startTime: new Date().toUTCString(),
         title: "newTitle",
-        recurrance: "DAILY",
       },
     };
 
@@ -1304,7 +1329,6 @@ describe("Check for validation conditions", () => {
           ],
           title:
             "AfGtN9o7IJXH9Xr5P4CcKTWMVWKOOHTldleLrWfZcThgoX5scPE5o0jARvtVA8VhneyxXquyhWb5nluW2jtP0Ry1zIOUFYfJ6BUXvpo4vCw4GVleGBnoKwkFLp5oW9L8OsEIrjVtYBwaOtXZrkTEBySZ1prr0vFcmrSoCqrCTaChNOxL3tDoHK6h44ChFvgmoVYMSq3IzJohKtbBn68D9NfEVMEtoimkGarUnVBAOsGkKv0mIBJaCl2pnR8Xwq1cG1",
-          recurrance: "DAILY",
         },
       };
 
@@ -1357,7 +1381,6 @@ describe("Check for validation conditions", () => {
             "image_url_5",
           ],
           title: "Random",
-          recurrance: "DAILY",
         },
       };
 
@@ -1409,7 +1432,6 @@ describe("Check for validation conditions", () => {
             "image_url_5",
           ],
           title: "Random",
-          recurrance: "DAILY",
         },
       };
 
@@ -1461,7 +1483,6 @@ describe("Check for validation conditions", () => {
             "image_url_4.jpg",
             "image_url_5.jpg",
           ],
-          recurrance: "DAILY",
         },
       };
 
@@ -1502,7 +1523,6 @@ describe("Check for validation conditions", () => {
           startDate: new Date().toUTCString(),
           startTime: new Date().toUTCString(),
           title: "newTitle",
-          recurrance: "DAILY",
         },
       };
       await AppUserProfile.deleteOne({

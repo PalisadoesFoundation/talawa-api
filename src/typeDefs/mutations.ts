@@ -45,10 +45,6 @@ export const mutations = gql`
 
     createUserFamily(data: createUserFamilyInput!): UserFamily! @auth
 
-    checkInEventAttendee(data: EventAttendeeInput!): EventAttendee!
-
-    checkOutEventAttendee(data: EventAttendeeInput!): EventAttendee!
-
     adminRemoveEvent(eventId: ID!): Event! @auth
 
     adminRemoveGroup(groupId: ID!): GroupChat! @auth
@@ -64,14 +60,19 @@ export const mutations = gql`
 
     cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    checkIn(data: CheckInInput!): CheckIn! @auth
+    checkIn(data: CheckInCheckOutInput!): CheckIn! @auth
 
-    createMember(input: UserAndOrganizationInput!): Organization! @auth
+    checkOut(data: CheckInCheckOutInput!): CheckOut! @auth
 
-    createAdmin(data: UserAndOrganizationInput!): AppUserProfile!
+    createMember(input: UserAndOrganizationInput!): CreateMemberPayload! @auth
+    # createAdmin(data: UserAndOrganizationInput!): AppUserProfile!
+    #   @auth
+    #   @role(requires: SUPERADMIN)
+    createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
       @auth
       @role(requires: SUPERADMIN)
 
+    #createComment(postId: ID!, data: CommentInput!): CreateCommentPayload! @auth
     createActionItem(
       data: CreateActionItemInput!
       actionItemCategoryId: ID!
@@ -157,6 +158,10 @@ export const mutations = gql`
 
     createEventVolunteer(data: EventVolunteerInput!): EventVolunteer! @auth
 
+    createEventVolunteerGroup(
+      data: EventVolunteerGroupInput!
+    ): EventVolunteerGroup! @auth
+
     leaveOrganization(organizationId: ID!): User! @auth
 
     likeComment(id: ID!): Comment @auth
@@ -209,6 +214,8 @@ export const mutations = gql`
     removeFund(id: ID!): Fund! @auth
     removeFundraisingCampaign(id: ID!): FundraisingCampaign! @auth
     removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge! @auth
+
+    removeEventVolunteerGroup(id: ID!): EventVolunteerGroup! @auth
 
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
@@ -305,6 +312,12 @@ export const mutations = gql`
       data: UpdateEventVolunteerInput
     ): EventVolunteer! @auth
     updateFund(id: ID!, data: UpdateFundInput!): Fund! @auth
+
+    updateEventVolunteerGroup(
+      id: ID!
+      data: UpdateEventVolunteerGroupInput
+    ): EventVolunteerGroup! @auth
+
     updateFundraisingCampaign(
       id: ID!
       data: UpdateFundCampaignInput!
