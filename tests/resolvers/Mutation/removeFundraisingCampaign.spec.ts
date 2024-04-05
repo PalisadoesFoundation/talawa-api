@@ -110,46 +110,45 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
   });
 
   it("deletes the fundraising campaign", async () => {
-    const args = {
-      id: testCampaign?._id.toString() || "",
-    };
+    await AppUserProfile.findOneAndUpdate(
+      { userId: testUser?._id },
+      {
+        $set: {
+          adminFor: [testFund?.organizationId.toString()],
+          isSuperAdmin: true,
+        },
+      },
+      { new: true, upsert: true },
+    );
+    const args = { id: testCampaign._id.toString() };
+    const context = { userId: testUser?._id.toString() };
 
-    try {
-      const contextWithAuthorization = {
-        userId: testUser?._id.toString() || "",
-        isAuthorized: true,
-      };
-      await removeFundraisingCampaign?.({}, args, contextWithAuthorization);
-      const fund = await FundraisingCampaign.findOne({ _id: testFund?._id });
-      expect(fund).toBeNull();
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
-    }
+    await removeFundraisingCampaign?.({}, args, context);
+    const deletedCampaign = await FundraisingCampaign.findById(args.id);
+    expect(deletedCampaign).toBeNull();
   });
 
   it("removes the campaign from the fund", async () => {
-    testCampaign = await createTestFundraisingCampaign(testFund?._id);
-    const args = {
-      id: testCampaign?._id.toString() || "",
-    };
-    // Assuming testUser has permissions to perform this action
-    try {
-      const contextWithAuthorization = {
-        userId: testUser?._id.toString() || "",
-        isAuthorized: true,
-      };
-      await removeFundraisingCampaign?.({}, args, contextWithAuthorization);
-      const fund = await Fund.findOne({ _id: testFund?._id });
-      expect(fund?.campaigns).not.toContainEqual(testCampaign?._id);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
-    }
-  });
+    await AppUserProfile.findOneAndUpdate(
+      { userId: testUser?._id },
+      {
+        $set: {
+          adminFor: [testFund?.organizationId.toString()],
+          isSuperAdmin: true,
+        },
+      },
+      { new: true, upsert: true },
+    );
+    const newCampaign = await createTestFundraisingCampaign(testFund?._id); // Ensuring a fresh campaign for this test
+    const args = { id: newCampaign._id.toString() };
+    const context = { userId: testUser?._id.toString() };
 
+    await removeFundraisingCampaign?.({}, args, context);
+    const fundAfterDeletion = await Fund.findById(testFund?._id);
+    expect(fundAfterDeletion?.campaigns).not.toContainEqual(
+      new Types.ObjectId(args.id),
+    );
+  });
   it("throws an error if the user does not have appUserProfile", async () => {
     await AppUserProfile.deleteOne({ userId: testUser?._id });
     testCampaign = await createTestFundraisingCampaign(testFund?._id);
