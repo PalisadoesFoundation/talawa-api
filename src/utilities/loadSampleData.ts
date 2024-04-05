@@ -99,9 +99,6 @@ async function insertCollections(collections: string[]): Promise<void> {
       const docs = JSON.parse(data) as Record<string, unknown>[];
 
       switch (collection) {
-        case "communities":
-          await Community.insertMany(docs);
-          break;
         case "users":
           await User.insertMany(docs);
           break;
@@ -145,7 +142,6 @@ async function checkCountAfterImport(): Promise<void> {
     await connect();
 
     const collections = [
-      { name: "communities", model: Community },
       { name: "users", model: User },
       { name: "organizations", model: Organization },
       { name: "actionItemCategories", model: ActionItemCategory },
@@ -182,7 +178,6 @@ const collections = [
   "events",
   "appUserProfiles",
   "actionItemCategories",
-  "communities",
 ];
 
 // Check if specific collections need to be inserted
