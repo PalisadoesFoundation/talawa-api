@@ -307,8 +307,6 @@ input CreateAgendaSectionInput {
   sequence: Int!
 }
 
-getEventInvitesByUserId(userId: ID!) [EventAttendee!]!
-
 union CreateCommentError = PostNotFoundError
 
 type CreateCommentPayload {
@@ -1444,6 +1442,7 @@ type Query {
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
+  getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
   getFundById(id: ID!): Fund!
   getFundraisingCampaignById(id: ID!): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
