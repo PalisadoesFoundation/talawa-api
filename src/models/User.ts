@@ -142,6 +142,7 @@ const userSchema = new Schema(
     },
     email: {
       type: String,
+      lowercase: true,
       required: true,
       validate: [validator.isEmail, "invalid email"],
     },

@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import {
   FUNDRAISING_CAMPAIGN_ALREADY_EXISTS,
   FUND_NOT_FOUND_ERROR,
@@ -81,14 +80,15 @@ export const createFundraisingCampaign: MutationResolvers["createFundraisingCamp
       .select("organizationId")
       .lean();
 
-    const currentOrgId = currentOrg?.organizationId?.toString() || "";
+    const currentOrgId = currentOrg?.organizationId?.toString();
 
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
-        new Types.ObjectId(organizationId?.toString()).equals(currentOrgId),
+        organizationId?.toString() === currentOrgId?.toString(),
     );
+    console.log(currentUserIsOrgAdmin);
     if (
-      !currentUserIsOrgAdmin ||
+      !currentUserIsOrgAdmin &&
       currentUserAppProfile.isSuperAdmin === false
     ) {
       throw new errors.UnauthorizedError(
@@ -97,6 +97,7 @@ export const createFundraisingCampaign: MutationResolvers["createFundraisingCamp
         USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
+    console.log("here");
     // Creates a fundraisingCampaign.
     const campaign = await FundraisingCampaign.create({
       name: args.data.name,
