@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc --pretty --project tsconfig.build.json",
     "dev": "concurrently  \"tsx --watch ./src/index.ts\" \"graphql-codegen --watch\"",
+    "glen": "\"tsx ./src/index.ts\"",
     "prebuild": "graphql-codegen && rimraf ./build",
     "prod": "cross-env NODE_ENV=production pm2-runtime start ./build/server.js",
     "start": "cross-env pm2-runtime start ./build/server.js --watch",
