@@ -3014,19 +3014,10 @@ export type VenueOrderByInput =
   | 'capacity_DESC';
 
 export type VenueWhereInput = {
-  id?: InputMaybe<Scalars['ID']['input']>;
-  id_contains?: InputMaybe<Scalars['ID']['input']>;
-  id_in?: InputMaybe<Array<Scalars['ID']['input']>>;
-  id_not?: InputMaybe<Scalars['ID']['input']>;
-  id_not_in?: InputMaybe<Array<Scalars['ID']['input']>>;
-  id_starts_with?: InputMaybe<Scalars['ID']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
+  description_contains?: InputMaybe<Scalars['String']['input']>;
+  description_starts_with?: InputMaybe<Scalars['String']['input']>;
   name_contains?: InputMaybe<Scalars['String']['input']>;
-  name_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  name_not?: InputMaybe<Scalars['String']['input']>;
-  name_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
   name_starts_with?: InputMaybe<Scalars['String']['input']>;
-  organization_id?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type WeekDays =

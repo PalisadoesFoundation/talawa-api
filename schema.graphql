@@ -1934,19 +1934,10 @@ enum VenueOrderByInput {
 }
 
 input VenueWhereInput {
-  id: ID
-  id_contains: ID
-  id_in: [ID!]
-  id_not: ID
-  id_not_in: [ID!]
-  id_starts_with: ID
-  name: String
+  description_contains: String
+  description_starts_with: String
   name_contains: String
-  name_in: [String!]
-  name_not: String
-  name_not_in: [String!]
   name_starts_with: String
-  organization_id: ID
 }
 
 enum WeekDays {
