@@ -1251,7 +1251,6 @@ export type Mutation = {
   updateUserProfile: User;
   updateUserRoleInOrganization: Organization;
   updateUserTag?: Maybe<UserTag>;
-  updateUserType: Scalars['Boolean']['output'];
 };
 
 
@@ -1911,11 +1910,6 @@ export type MutationUpdateUserRoleInOrganizationArgs = {
 
 export type MutationUpdateUserTagArgs = {
   input: UpdateUserTagInput;
-};
-
-
-export type MutationUpdateUserTypeArgs = {
-  data: UpdateUserTypeInput;
 };
 
 export type OtpInput = {
@@ -2761,11 +2755,6 @@ export type UpdateUserTagInput = {
   tagColor: Scalars['String']['input'];
 };
 
-export type UpdateUserTypeInput = {
-  id?: InputMaybe<Scalars['ID']['input']>;
-  userType?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type User = {
   __typename?: 'User';
   _id: Scalars['ID']['output'];
@@ -3295,7 +3284,6 @@ export type ResolversTypes = {
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTagInput: UpdateUserTagInput;
-  UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   User: ResolverTypeWrapper<InterfaceUserModel>;
   UserAndOrganizationInput: UserAndOrganizationInput;
@@ -3483,7 +3471,6 @@ export type ResolversParentTypes = {
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTagInput: UpdateUserTagInput;
-  UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: Scalars['Upload']['output'];
   User: InterfaceUserModel;
   UserAndOrganizationInput: UserAndOrganizationInput;
@@ -4234,7 +4221,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
   updateUserRoleInOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateUserRoleInOrganizationArgs, 'organizationId' | 'role' | 'userId'>>;
   updateUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationUpdateUserTagArgs, 'input'>>;
-  updateUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateUserTypeArgs, 'data'>>;
 };
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
