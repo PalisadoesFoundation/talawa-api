@@ -108,10 +108,7 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
 
   const requestUserIsOrganizationMember = joinedOrgs.includes(eventOrgId);
 
-  if (
-    process.env.SKIP_ORG_MEMBER_CHECK_TEST !== "true" &&
-    !requestUserIsOrganizationMember
-  ) {
+  if (!requestUserIsOrganizationMember) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
       USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
