@@ -642,6 +642,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         employmentStatus: "FULL_TIME",
         gender: "FEMALE",
         maritalStatus: "SINGLE",
+        appLanguageCode: "fr",
         address: {
           city: "CityName",
           countryCode: "123",
