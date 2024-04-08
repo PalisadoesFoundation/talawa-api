@@ -1,5 +1,4 @@
 import type { Document } from "mongoose";
-import { nanoid } from "nanoid";
 import type { InterfaceCheckIn, InterfaceEvent } from "../../src/models";
 import { CheckIn, EventAttendee } from "../../src/models";
 import { createTestEventWithRegistrants } from "./eventsWithRegistrants";
@@ -23,8 +22,6 @@ export const createEventWithCheckedInUser = async (): Promise<
 
   const checkIn = await CheckIn.create({
     eventAttendeeId: eventAttendee?._id,
-    allotedRoom: nanoid(),
-    allotedSeat: nanoid(),
     time: new Date(),
   });
 
