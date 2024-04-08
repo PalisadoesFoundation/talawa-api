@@ -518,11 +518,6 @@ export const inputs = gql`
     confirmNewPassword: String!
   }
 
-  input UpdateUserTypeInput {
-    userType: String
-    id: ID
-  }
-
   input UserAndOrganizationInput {
     organizationId: ID!
     userId: ID!
