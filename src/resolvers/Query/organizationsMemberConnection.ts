@@ -1,3 +1,4 @@
+import type { SortOrder } from "mongoose";
 import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
@@ -22,11 +23,20 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
 
     // Pagination based Options
     interface InterfacePaginateOptions {
-      lean?: boolean | undefined;
-      sort?: object | string | undefined;
-      pagination?: boolean | undefined;
-      page?: number | undefined;
-      limit?: number | undefined;
+      lean?: boolean;
+      sort?: object | string | [string, SortOrder][];
+      pagination?: boolean;
+      page?: number;
+      limit?: number;
+      populate?: {
+        path: string;
+        populate?: {
+          path: string;
+          model: string;
+          select?: string[];
+        };
+        select?: string[];
+      }[];
     }
     let paginateOptions: InterfacePaginateOptions =
       {} as InterfacePaginateOptions;
@@ -41,6 +51,18 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         pagination: true,
         page: args.skip,
         limit: args.first,
+        populate: [
+          {
+            path: "appUserProfileId",
+            populate: {
+              path: "adminFor",
+              model: "Organization",
+              select: ["_id", "name"],
+            },
+            select: ["_id", "isSuperAdmin", "appLanguageCode"],
+          },
+          "registeredEvents",
+        ],
       } as InterfacePaginateOptions;
     } else {
       paginateOptions = {
@@ -58,8 +80,6 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       },
       {
         ...paginateOptions,
-        populate: ["registeredEvents"],
-        select: ["-password"],
       },
     );
 
@@ -68,7 +88,12 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
     if (paginateOptions.pagination) {
       users = usersModel.docs.map((user) => ({
         _id: user._id,
-        appUserProfileId: user.appUserProfileId,
+        appUserProfileId: {
+          _id: user.appUserProfileId?._id,
+          adminFor: user.appUserProfileId?.adminFor,
+          isSuperAdmin: user.appUserProfileId?.isSuperAdmin,
+          appLanguageCode: user.appUserProfileId?.appLanguageCode,
+        },
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
@@ -92,7 +117,12 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
     } else {
       users = usersModel.docs.map((user) => ({
         _id: user._id,
-        appUserProfileId: user.appUserProfileId,
+        appUserProfileId: {
+          _id: user.appUserProfileId?._id,
+          adminFor: user.appUserProfileId?.adminFor,
+          isSuperAdmin: user.appUserProfileId?.isSuperAdmin,
+          appLanguageCode: user.appUserProfileId?.appLanguageCode,
+        },
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
