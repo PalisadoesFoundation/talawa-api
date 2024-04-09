@@ -1,5 +1,5 @@
 import type { SortOrder } from "mongoose";
-import type { InterfaceUser } from "../../models";
+import type { InterfaceUser} from "../../models";
 import { User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getSort } from "./helperFunctions/getSort";
@@ -54,14 +54,37 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         populate: [
           {
             path: "appUserProfileId",
-            populate: {
-              path: "adminFor",
-              model: "Organization",
-              select: ["_id", "name"],
-            },
-            select: ["_id", "isSuperAdmin", "appLanguageCode"],
+            populate: [
+              {
+                path: "adminFor",
+                model: "Organization",
+              },
+              {
+                path: "createdOrganizations",
+                model: "Organization",
+              },
+              {
+                path: "createdEvents",
+                model: "Organization",
+              },
+              {
+                path: "eventAdmin",
+                model: "Organization",
+              },
+            ],
           },
-          "registeredEvents",
+          {
+            path: "registeredEvents",
+          },
+          {
+            path: "joinedOrganizations",
+          },
+          {
+            path: "membershipRequests",
+          },
+          {
+            path: "organizationsBlockedBy",
+          },
         ],
       } as InterfacePaginateOptions;
     } else {
@@ -88,13 +111,17 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
     if (paginateOptions.pagination) {
       users = usersModel.docs.map((user) => ({
         _id: user._id,
-        appUserProfileId: {
-          _id: user.appUserProfileId?._id,
-          adminFor: user.appUserProfileId?.adminFor,
-          isSuperAdmin: user.appUserProfileId?.isSuperAdmin,
-          appLanguageCode: user.appUserProfileId?.appLanguageCode,
+        appUserProfileId: user.appUserProfileId,
+        address: {
+          city: user.address?.city,
+          countryCode: user.address?.countryCode,
+          postalCode: user.address?.postalCode,
+          dependentLocality: user.address?.dependentLocality,
+          sortingCode: user.address?.sortingCode,
+          line1: user.address?.line1,
+          line2: user.address?.line2,
+          state: user.address?.state,
         },
-        address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
@@ -117,13 +144,17 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
     } else {
       users = usersModel.docs.map((user) => ({
         _id: user._id,
-        appUserProfileId: {
-          _id: user.appUserProfileId?._id,
-          adminFor: user.appUserProfileId?.adminFor,
-          isSuperAdmin: user.appUserProfileId?.isSuperAdmin,
-          appLanguageCode: user.appUserProfileId?.appLanguageCode,
+        appUserProfileId: user.appUserProfileId,
+        address: {
+          city: user.address?.city,
+          countryCode: user.address?.countryCode,
+          postalCode: user.address?.postalCode,
+          dependentLocality: user.address?.dependentLocality,
+          sortingCode: user.address?.sortingCode,
+          line1: user.address?.line1,
+          line2: user.address?.line2,
+          state: user.address?.state,
         },
-        address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
