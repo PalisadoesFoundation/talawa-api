@@ -1,5 +1,5 @@
 import type { SortOrder } from "mongoose";
-import type { InterfaceUser} from "../../models";
+import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getSort } from "./helperFunctions/getSort";
