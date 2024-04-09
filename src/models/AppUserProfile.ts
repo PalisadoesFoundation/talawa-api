@@ -9,7 +9,6 @@ export interface InterfaceAppUserProfile {
   _id: Types.ObjectId;
   userId: PopulatedDoc<InterfaceUser & Document>;
   adminFor: PopulatedDoc<InterfaceOrganization & Document>[];
-  adminApproved: boolean;
   appLanguageCode: string;
   createdEvents: PopulatedDoc<InterfaceEvent & Document>[];
   createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
@@ -24,7 +23,6 @@ export interface InterfaceAppUserProfile {
  * @param user - User id of the AppUserProfile
  * @param adminFor - Collection of organization where appuser is admin, each object refer to `Organization` model.
  * @param appLanguageCode - AppUser's app language code.
- * @param adminApproved - Boolean indicating if the User is approved by the admin to be part of the Organisation
  * @param createdEvents - Collection of all events created by the user, each object refer to `Event` model.
  * @param createdOrganizations - Collection of all organization created by the user, each object refer to `Organization` model.
  * @param eventAdmin - Collection of the event admins, each object refer to `Event` model.
@@ -47,11 +45,6 @@ const appUserSchema = new Schema(
         ref: "Organization",
       },
     ],
-    adminApproved: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
     appLanguageCode: {
       type: String,
       required: true,

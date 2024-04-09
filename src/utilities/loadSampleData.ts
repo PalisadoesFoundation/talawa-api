@@ -11,6 +11,7 @@ import {
   Post,
   User,
 } from "../models";
+import { RecurrenceRule } from "../models/RecurrenceRule";
 
 interface InterfaceArgs {
   items?: string;
@@ -59,6 +60,7 @@ async function formatDatabase(): Promise<void> {
     Event.deleteMany({}),
     Post.deleteMany({}),
     AppUserProfile.deleteMany({}),
+    RecurrenceRule.deleteMany({}),
   ]);
   console.log("Cleared all collections\n");
 }
@@ -99,9 +101,6 @@ async function insertCollections(collections: string[]): Promise<void> {
       const docs = JSON.parse(data) as Record<string, unknown>[];
 
       switch (collection) {
-        case "communities":
-          await Community.insertMany(docs);
-          break;
         case "users":
           await User.insertMany(docs);
           break;
@@ -113,6 +112,9 @@ async function insertCollections(collections: string[]): Promise<void> {
           break;
         case "events":
           await Event.insertMany(docs);
+          break;
+        case "recurrenceRules":
+          await RecurrenceRule.insertMany(docs);
           break;
         case "posts":
           await Post.insertMany(docs);
@@ -145,11 +147,11 @@ async function checkCountAfterImport(): Promise<void> {
     await connect();
 
     const collections = [
-      { name: "communities", model: Community },
       { name: "users", model: User },
       { name: "organizations", model: Organization },
       { name: "actionItemCategories", model: ActionItemCategory },
       { name: "events", model: Event },
+      { name: "recurrenceRules", model: RecurrenceRule },
       { name: "posts", model: Post },
       { name: "appUserProfiles", model: AppUserProfile },
     ];
@@ -180,9 +182,9 @@ const collections = [
   "organizations",
   "posts",
   "events",
+  "recurrenceRules",
   "appUserProfiles",
   "actionItemCategories",
-  "communities",
 ];
 
 // Check if specific collections need to be inserted

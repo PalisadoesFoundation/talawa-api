@@ -221,7 +221,6 @@ export type AggregateUser = {
 export type AppUserProfile = {
   __typename?: 'AppUserProfile';
   _id: Scalars['ID']['output'];
-  adminApproved?: Maybe<Scalars['Boolean']['output']>;
   adminFor?: Maybe<Array<Maybe<Organization>>>;
   appLanguageCode: Scalars['String']['output'];
   createdEvents?: Maybe<Array<Maybe<Event>>>;
@@ -1252,7 +1251,6 @@ export type Mutation = {
   updateUserProfile: User;
   updateUserRoleInOrganization: Organization;
   updateUserTag?: Maybe<UserTag>;
-  updateUserType: Scalars['Boolean']['output'];
 };
 
 
@@ -1914,11 +1912,6 @@ export type MutationUpdateUserTagArgs = {
   input: UpdateUserTagInput;
 };
 
-
-export type MutationUpdateUserTypeArgs = {
-  data: UpdateUserTypeInput;
-};
-
 export type OtpInput = {
   email: Scalars['EmailAddress']['input'];
 };
@@ -2240,6 +2233,7 @@ export type Query = {
   getDonationByOrgIdConnection: Array<Donation>;
   getEventAttendee?: Maybe<EventAttendee>;
   getEventAttendeesByEventId?: Maybe<Array<Maybe<EventAttendee>>>;
+  getEventInvitesByUserId: Array<EventAttendee>;
   getFundById: Fund;
   getFundraisingCampaignById: FundraisingCampaign;
   getFundraisingCampaignPledgeById: FundraisingCampaignPledge;
@@ -2389,6 +2383,11 @@ export type QueryGetEventAttendeesByEventIdArgs = {
 };
 
 
+export type QueryGetEventInvitesByUserIdArgs = {
+  userId: Scalars['ID']['input'];
+};
+
+
 export type QueryGetFundByIdArgs = {
   id: Scalars['ID']['input'];
 };
@@ -2483,7 +2482,6 @@ export type QueryUserLanguageArgs = {
 
 
 export type QueryUsersArgs = {
-  adminApproved?: InputMaybe<Scalars['Boolean']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<UserOrderByInput>;
   skip?: InputMaybe<Scalars['Int']['input']>;
@@ -2757,11 +2755,6 @@ export type UpdateUserTagInput = {
   tagColor: Scalars['String']['input'];
 };
 
-export type UpdateUserTypeInput = {
-  id?: InputMaybe<Scalars['ID']['input']>;
-  userType?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type User = {
   __typename?: 'User';
   _id: Scalars['ID']['output'];
@@ -2846,8 +2839,8 @@ export type UserInput = {
   email: Scalars['EmailAddress']['input'];
   firstName: Scalars['String']['input'];
   lastName: Scalars['String']['input'];
-  organizationUserBelongsToId?: InputMaybe<Scalars['ID']['input']>;
   password: Scalars['String']['input'];
+  selectedOrganization: Scalars['ID']['input'];
 };
 
 export type UserNotAuthorizedAdminError = Error & {
@@ -3291,7 +3284,6 @@ export type ResolversTypes = {
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTagInput: UpdateUserTagInput;
-  UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   User: ResolverTypeWrapper<InterfaceUserModel>;
   UserAndOrganizationInput: UserAndOrganizationInput;
@@ -3479,7 +3471,6 @@ export type ResolversParentTypes = {
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTagInput: UpdateUserTagInput;
-  UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: Scalars['Upload']['output'];
   User: InterfaceUserModel;
   UserAndOrganizationInput: UserAndOrganizationInput;
@@ -3647,7 +3638,6 @@ export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
 
 export type AppUserProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppUserProfile'] = ResolversParentTypes['AppUserProfile']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
@@ -4231,7 +4221,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
   updateUserRoleInOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateUserRoleInOrganizationArgs, 'organizationId' | 'role' | 'userId'>>;
   updateUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationUpdateUserTagArgs, 'input'>>;
-  updateUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateUserTypeArgs, 'data'>>;
 };
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
@@ -4394,6 +4383,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
   getEventAttendee?: Resolver<Maybe<ResolversTypes['EventAttendee']>, ParentType, ContextType, RequireFields<QueryGetEventAttendeeArgs, 'eventId' | 'userId'>>;
   getEventAttendeesByEventId?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventAttendee']>>>, ParentType, ContextType, RequireFields<QueryGetEventAttendeesByEventIdArgs, 'eventId'>>;
+  getEventInvitesByUserId?: Resolver<Array<ResolversTypes['EventAttendee']>, ParentType, ContextType, RequireFields<QueryGetEventInvitesByUserIdArgs, 'userId'>>;
   getFundById?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<QueryGetFundByIdArgs, 'id'>>;
   getFundraisingCampaignById?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignByIdArgs, 'id'>>;
   getFundraisingCampaignPledgeById?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignPledgeByIdArgs, 'id'>>;

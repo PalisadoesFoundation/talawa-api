@@ -48,13 +48,7 @@ export const users: QueryResolvers["users"] = async (
     ...where,
   };
 
-  // if (args.adminApproved === true) {
-  //   filterCriteria.adminApproved = true;
-  // } else if (args.adminApproved === false) {
-  //   filterCriteria.adminApproved = false;
-  // }
-
-  let users = await User.find(filterCriteria)
+  const users = await User.find(filterCriteria)
     .sort(sort)
     .limit(args.first ?? 0)
     .skip(args.skip ?? 0)
@@ -64,15 +58,6 @@ export const users: QueryResolvers["users"] = async (
     .populate("registeredEvents")
     .populate("organizationsBlockedBy")
     .lean();
-
-  users = await Promise.all(
-    users.filter(async (user) => {
-      const appUserProfile = await AppUserProfile.findOne({
-        userId: user._id,
-      });
-      return args.adminApproved == appUserProfile?.adminApproved;
-    }),
-  );
 
   return await Promise.all(
     users.map(async (user) => {
@@ -94,7 +79,6 @@ export const users: QueryResolvers["users"] = async (
         },
         appUserProfile: (appUserProfile as InterfaceAppUserProfile) || {
           _id: "",
-          adminApproved: false,
           adminFor: [],
           isSuperAdmin: false,
           createdOrganizations: [],
