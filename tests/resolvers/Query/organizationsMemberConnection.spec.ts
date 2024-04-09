@@ -26,18 +26,48 @@ beforeAll(async () => {
       password: "password",
       firstName: `1firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
+      address: {
+        city: "CityName",
+        countryCode: "CountryCode",
+        postalCode: "PostalCode",
+        dependentLocality: "DependentLocality",
+        sortingCode: "SortingCode",
+        line1: "Line1",
+        line2: "Line2",
+        state: "State",
+      },
     },
     {
       email: `email${nanoid().toLowerCase()}@gmail.com`,
       password: "password",
       firstName: `2firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
+      address: {
+        city: "CityName",
+        countryCode: "CountryCode",
+        postalCode: "PostalCode",
+        dependentLocality: "DependentLocality",
+        sortingCode: "SortingCode",
+        line1: "Line1",
+        line2: "Line2",
+        state: "State",
+      },
     },
     {
       email: `email${nanoid().toLowerCase()}@gmail.com`,
       password: "password",
       firstName: `3firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
+      address: {
+        city: "CityName",
+        countryCode: "CountryCode",
+        postalCode: "PostalCode",
+        dependentLocality: "DependentLocality",
+        sortingCode: "SortingCode",
+        line1: "Line1",
+        line2: "Line2",
+        state: "State",
+      },
     },
   ]);
   const appUserProfiles = testUsers.map((user) => ({
@@ -191,6 +221,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       })
       .select(["-password"])
       .populate(["registeredEvents"])
+      .populate(["joinedOrganizations"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -282,6 +313,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       })
       .select(["-password"])
       .populate(["registeredEvents"])
+      .populate(["joinedOrganizations"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -372,6 +404,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       })
       .select(["-password"])
       .populate(["registeredEvents"])
+      .populate(["joinedOrganizations"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -465,6 +498,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       })
       .select(["-password"])
       .populate(["registeredEvents"])
+      .populate(["joinedOrganizations"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -558,6 +592,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       })
       .select(["-password"])
       .populate(["registeredEvents"])
+      .populate(["joinedOrganizations"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -639,6 +674,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       })
       .select(["-password"])
       .populate(["registeredEvents"])
+      .populate(["joinedOrganizations"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -819,6 +855,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .limit(2)
       .select(["-password"])
       .populate(["registeredEvents"])
+      .populate(["joinedOrganizations"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -889,6 +926,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .limit(2)
       .select(["-password"])
       .populate(["registeredEvents"])
+      .populate(["joinedOrganizations"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -1069,6 +1107,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .limit(2)
       .select(["-password"])
       .populate(["registeredEvents"])
+      .populate(["joinedOrganizations"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
