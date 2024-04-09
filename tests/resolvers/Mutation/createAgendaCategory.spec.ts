@@ -1,6 +1,7 @@
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { expect, vi, beforeAll, afterAll, describe, it } from "vitest";
 import type { MutationCreateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -135,9 +136,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
     } catch (error: unknown) {
       // The resolver should throw a NotFoundError with the appropriate message, code, and parameter
 
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
