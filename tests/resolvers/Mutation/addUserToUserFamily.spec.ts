@@ -78,7 +78,7 @@ describe("resolver -> mutation -> addUserToUserFamily", () => {
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: new Types.ObjectId().toString(), //this is a random value which does not exist in the database
       };
 
       const { addUserToUserFamily } = await import(
