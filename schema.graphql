@@ -1159,7 +1159,6 @@ type Mutation {
   updateUserProfile(data: UpdateUserInput, file: String): User!
   updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
   updateUserTag(input: UpdateUserTagInput!): UserTag
-  updateUserType(data: UpdateUserTypeInput!): Boolean!
 }
 
 input OTPInput {
@@ -1721,11 +1720,6 @@ input UpdateUserTagInput {
   _id: ID!
   name: String!
   tagColor: String!
-}
-
-input UpdateUserTypeInput {
-  id: ID
-  userType: String
 }
 
 scalar Upload
