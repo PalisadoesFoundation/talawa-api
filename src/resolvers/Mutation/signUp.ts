@@ -69,7 +69,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
   // Upload file
-  let uploadImageFileName;
+  let uploadImageFileName = null;
   if (args.file) {
     uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
@@ -92,7 +92,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     createdUser = await User.create({
       ...args.data,
       email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
-      image: uploadImageFileName ? uploadImageFileName : null,
+      image: uploadImageFileName,
       password: hashedPassword,
       joinedOrganizations: [organization._id],
     });
@@ -112,7 +112,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     createdUser = await User.create({
       ...args.data,
       email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
-      image: uploadImageFileName ? uploadImageFileName : null,
+      image: uploadImageFileName,
       password: hashedPassword,
     });
 

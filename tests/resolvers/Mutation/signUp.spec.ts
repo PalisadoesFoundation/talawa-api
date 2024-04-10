@@ -153,7 +153,6 @@ describe("resolvers -> Mutation -> signUp", () => {
         firstName: "firstName",
         lastName: "lastName",
         password: "password",
-        appLanguageCode: "en",
         selectedOrganization: testOrganization?.id,
       },
       file: testImagePath,
