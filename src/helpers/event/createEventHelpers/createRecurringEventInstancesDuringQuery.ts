@@ -1,7 +1,6 @@
 import { addDays, addYears } from "date-fns";
-import { RecurrenceRule } from "../../../models/RecurrenceRule";
 import { convertToUTCDate } from "../../../utilities/recurrenceDatesUtil";
-import { Event } from "../../../models";
+import { Event, RecurrenceRule } from "../../../models";
 import {
   generateRecurringEventInstances,
   getRecurringInstanceDates,

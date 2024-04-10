@@ -1472,9 +1472,15 @@ input RecaptchaVerification {
 }
 
 type RecurrenceRule {
+  baseRecurringEvent: Event
   count: PositiveInt
+  endDate: Date
   frequency: Frequency
   interval: PositiveInt
+  latestInstanceDate: Date
+  organization: Organization
+  recurrenceRuleString: String
+  startDate: Date
   weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }

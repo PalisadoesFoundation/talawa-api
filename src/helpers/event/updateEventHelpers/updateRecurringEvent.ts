@@ -1,11 +1,11 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
-import { Event } from "../../../models";
+import { Event , RecurrenceRule } from "../../../models";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import { updateThisInstance } from "./updateThisInstance";
 import { updateAllInstances } from "./updateAllInstances";
 import { updateThisAndFollowingInstances } from "./updateThisAndFollowingInstances";
-import { RecurrenceRule } from "../../../models/RecurrenceRule";
+
 
 /**
  * This function updates the recurring event.

@@ -2513,9 +2513,15 @@ export type RecaptchaVerification = {
 
 export type RecurrenceRule = {
   __typename?: 'RecurrenceRule';
+  baseRecurringEvent?: Maybe<Event>;
   count?: Maybe<Scalars['PositiveInt']['output']>;
+  endDate?: Maybe<Scalars['Date']['output']>;
   frequency?: Maybe<Frequency>;
   interval?: Maybe<Scalars['PositiveInt']['output']>;
+  latestInstanceDate?: Maybe<Scalars['Date']['output']>;
+  organization?: Maybe<Organization>;
+  recurrenceRuleString?: Maybe<Scalars['String']['output']>;
+  startDate?: Maybe<Scalars['Date']['output']>;
   weekDayOccurenceInMonth?: Maybe<Scalars['Int']['output']>;
   weekDays?: Maybe<Array<Maybe<WeekDays>>>;
 };
@@ -4423,9 +4429,15 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type RecurrenceRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['RecurrenceRule'] = ResolversParentTypes['RecurrenceRule']> = {
+  baseRecurringEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   count?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
+  endDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   frequency?: Resolver<Maybe<ResolversTypes['Frequency']>, ParentType, ContextType>;
   interval?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
+  latestInstanceDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  recurrenceRuleString?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  startDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   weekDayOccurenceInMonth?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   weekDays?: Resolver<Maybe<Array<Maybe<ResolversTypes['WeekDays']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

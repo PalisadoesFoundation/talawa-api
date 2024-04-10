@@ -1,15 +1,14 @@
 import type mongoose from "mongoose";
 import type { Types } from "mongoose";
-import type { InterfaceEvent } from "../../../models";
+import type { InterfaceEvent, InterfaceRecurrenceRule } from "../../../models";
 import {
   ActionItem,
   AppUserProfile,
   Event,
   EventAttendee,
   User,
+  RecurrenceRule,
 } from "../../../models";
-import type { InterfaceRecurrenceRule } from "../../../models/RecurrenceRule";
-import { RecurrenceRule } from "../../../models/RecurrenceRule";
 import { shouldUpdateBaseRecurringEvent } from "../updateEventHelpers";
 
 /**

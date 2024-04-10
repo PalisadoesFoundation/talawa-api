@@ -1,7 +1,7 @@
 import type mongoose from "mongoose";
 import { rrulestr } from "rrule";
-import type { InterfaceRecurrenceRule } from "../../../models/RecurrenceRule";
-import { RecurrenceRule } from "../../../models/RecurrenceRule";
+import type { InterfaceRecurrenceRule } from "../../../models";
+import { RecurrenceRule } from "../../../models";
 import {
   RECURRENCE_FREQUENCIES,
   RECURRENCE_WEEKDAYS,

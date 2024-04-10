@@ -1,6 +1,7 @@
 import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceEvent } from "./Event";
+import type { InterfaceOrganization } from "./Organization";
 
 /**
  * This is an interface representing a document for a recurrence rule in the database(MongoDB).
@@ -25,7 +26,7 @@ export enum WeekDays {
 
 export interface InterfaceRecurrenceRule {
   _id: Types.ObjectId;
-  organizationId: Types.ObjectId;
+  organizationId: PopulatedDoc<InterfaceOrganization & Document>;
   baseRecurringEventId: PopulatedDoc<InterfaceEvent & Document>;
   recurrenceRuleString: string;
   startDate: Date;
