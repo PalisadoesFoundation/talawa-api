@@ -6,7 +6,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { AgendaSectionModel, User } from "../../../src/models";
+import { AgendaSectionModel, AppUserProfile, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { updateAgendaSection } from "../../../src/resolvers/Mutation/updateAgendaSection";
@@ -136,5 +136,25 @@ describe("resolvers -> Mutation -> updateAgendaSection", () => {
     // }).lean();
 
     expect(updateAgendaSectionPayload).toBeDefined();
+  });
+
+  it("throws UnauthorizedError if the user does not have an app profile", async () => {
+    await AppUserProfile.deleteOne({ userId: testAdminUser?._id });
+
+    try {
+      const args: MutationUpdateAgendaSectionArgs = {
+        id: testAgendaSection._id.toString(),
+        input: {},
+      };
+
+      const context = {
+        userId: testAdminUser?._id,
+      };
+      await updateAgendaSection?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });
