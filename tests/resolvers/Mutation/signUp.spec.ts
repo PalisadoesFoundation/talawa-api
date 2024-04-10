@@ -74,6 +74,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         appLanguageCode: "en",
         selectedOrganization: testOrganization?._id,
       },
+      file: "data:image/png;base64,test",
     };
     const { signUp: signUpResolver } = await import(
       "../../../src/resolvers/Mutation/signUp"
