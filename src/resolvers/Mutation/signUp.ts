@@ -145,7 +145,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   copyToClipboard(`{
     "Authorization": "Bearer ${accessToken}"
   }`);
-  const updatedUser = await User.findOneAndUpdate(
+  const updatedUser = (await User.findOneAndUpdate(
     {
       _id: createdUser._id,
     },
@@ -155,12 +155,11 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     {
       new: true,
     },
-  );
+  )) as InterfaceUser & Document<unknown, unknown, InterfaceUser>;
   if (updatedUser) {
     createdUser = updatedUser;
-  } else {
-    throw new Error("Failed to update user.");
   }
+
   const filteredCreatedUser = updatedUser.toObject();
   appUserProfile = await AppUserProfile.findOne({
     userId: updatedUser?._id.toString(),
