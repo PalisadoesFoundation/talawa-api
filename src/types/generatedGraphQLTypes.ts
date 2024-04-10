@@ -696,6 +696,7 @@ export type Event = {
   attendees?: Maybe<Array<Maybe<User>>>;
   attendeesCheckInStatus: Array<CheckInStatus>;
   averageFeedbackScore?: Maybe<Scalars['Float']['output']>;
+  baseRecurringEvent?: Maybe<Event>;
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   description: Scalars['String']['output'];
@@ -704,6 +705,7 @@ export type Event = {
   feedback: Array<Feedback>;
   images?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   isPublic: Scalars['Boolean']['output'];
+  isRecurringEventException: Scalars['Boolean']['output'];
   isRegisterable: Scalars['Boolean']['output'];
   latitude?: Maybe<Scalars['Latitude']['output']>;
   location?: Maybe<Scalars['String']['output']>;
@@ -2516,12 +2518,12 @@ export type RecurrenceRule = {
   baseRecurringEvent?: Maybe<Event>;
   count?: Maybe<Scalars['PositiveInt']['output']>;
   endDate?: Maybe<Scalars['Date']['output']>;
-  frequency?: Maybe<Frequency>;
-  interval?: Maybe<Scalars['PositiveInt']['output']>;
+  frequency: Frequency;
+  interval: Scalars['PositiveInt']['output'];
   latestInstanceDate?: Maybe<Scalars['Date']['output']>;
   organization?: Maybe<Organization>;
-  recurrenceRuleString?: Maybe<Scalars['String']['output']>;
-  startDate?: Maybe<Scalars['Date']['output']>;
+  recurrenceRuleString: Scalars['String']['output'];
+  startDate: Scalars['Date']['output'];
   weekDayOccurenceInMonth?: Maybe<Scalars['Int']['output']>;
   weekDays?: Maybe<Array<Maybe<WeekDays>>>;
 };
@@ -3858,6 +3860,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   attendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   attendeesCheckInStatus?: Resolver<Array<ResolversTypes['CheckInStatus']>, ParentType, ContextType>;
   averageFeedbackScore?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  baseRecurringEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -3866,6 +3869,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   feedback?: Resolver<Array<ResolversTypes['Feedback']>, ParentType, ContextType>;
   images?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isRecurringEventException?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isRegisterable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Latitude']>, ParentType, ContextType>;
   location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -4432,12 +4436,12 @@ export type RecurrenceRuleResolvers<ContextType = any, ParentType extends Resolv
   baseRecurringEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   count?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
   endDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  frequency?: Resolver<Maybe<ResolversTypes['Frequency']>, ParentType, ContextType>;
-  interval?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
+  frequency?: Resolver<ResolversTypes['Frequency'], ParentType, ContextType>;
+  interval?: Resolver<ResolversTypes['PositiveInt'], ParentType, ContextType>;
   latestInstanceDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
-  recurrenceRuleString?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  startDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  recurrenceRuleString?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   weekDayOccurenceInMonth?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   weekDays?: Resolver<Maybe<Array<Maybe<ResolversTypes['WeekDays']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

@@ -620,6 +620,7 @@ type Event {
   attendees: [User]
   attendeesCheckInStatus: [CheckInStatus!]!
   averageFeedbackScore: Float
+  baseRecurringEvent: Event
   createdAt: DateTime!
   creator: User
   description: String!
@@ -628,6 +629,7 @@ type Event {
   feedback: [Feedback!]!
   images: [String]
   isPublic: Boolean!
+  isRecurringEventException: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
   location: String
@@ -1475,12 +1477,12 @@ type RecurrenceRule {
   baseRecurringEvent: Event
   count: PositiveInt
   endDate: Date
-  frequency: Frequency
-  interval: PositiveInt
+  frequency: Frequency!
+  interval: PositiveInt!
   latestInstanceDate: Date
   organization: Organization
-  recurrenceRuleString: String
-  startDate: Date
+  recurrenceRuleString: String!
+  startDate: Date!
   weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }
