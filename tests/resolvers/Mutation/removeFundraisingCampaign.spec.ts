@@ -20,6 +20,7 @@ import { createTestFundraisingCampaign } from "../../helpers/FundraisingCampaign
 import { connect, disconnect } from "../../helpers/db";
 import { createTestUser } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
+
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testCampaign: InterfaceFundraisingCampaign;
@@ -38,12 +39,13 @@ beforeAll(async () => {
   testFund = temp[2];
   testCampaign = await createTestFundraisingCampaign(testFund?._id);
 });
+
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers->Mutation->removeFundraisingCampaign", () => {
-  it("throw error if no user exists with _id===context.userId", async () => {
+  it("throws an error if no user exists with _id===context.userId", async () => {
     try {
       const args = {
         id: testFund?._id,
@@ -56,7 +58,8 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
-  it("throw error if no fund campaign exists with _id===args.id", async () => {
+
+  it("throws an error if no fund campaign exists with _id===args.id", async () => {
     try {
       const args = {
         id: new Types.ObjectId().toString(),
@@ -71,7 +74,8 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
       );
     }
   });
-  it("throws error if no fund exists with _id===campaign.fundId", async () => {
+
+  it("throws an error if no fund exists with _id===campaign.fundId", async () => {
     try {
       const campaign = await createTestFundraisingCampaign(
         new Types.ObjectId().toString(),
@@ -87,45 +91,66 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
       expect((error as Error).message).toEqual(FUND_NOT_FOUND_ERROR.MESSAGE);
     }
   });
-  it("deletes the fundraising campaing", async () => {
-    const args = {
-      id: testCampaign?._id.toString() || "",
-    };
-    const context = {
-      userId: testUser?._id.toString() || "",
-    };
+
+  it("throws an error if the user is not admin of the organization or superadmin", async () => {
     try {
+      const args = {
+        id: testCampaign?._id.toString(),
+      };
+      const randomUser = await createTestUser();
+      const context = {
+        userId: randomUser?._id,
+      };
       await removeFundraisingCampaign?.({}, args, context);
-      const fund = await FundraisingCampaign.findOne({ _id: testFund?._id });
-      expect(fund).toBeNull();
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });
+
+  it("deletes the fundraising campaign", async () => {
+    await AppUserProfile.findOneAndUpdate(
+      { userId: testUser?._id },
+      {
+        $set: {
+          adminFor: [testFund?.organizationId.toString()],
+          isSuperAdmin: true,
+        },
+      },
+      { new: true, upsert: true },
+    );
+    const args = { id: testCampaign._id.toString() };
+    const context = { userId: testUser?._id.toString() };
+
+    await removeFundraisingCampaign?.({}, args, context);
+    const deletedCampaign = await FundraisingCampaign.findById(args.id);
+    expect(deletedCampaign).toBeNull();
+  });
+
   it("removes the campaign from the fund", async () => {
-    testCampaign = await createTestFundraisingCampaign(testFund?._id);
-    const args = {
-      id: testCampaign?._id.toString() || "",
-    };
-    const context = {
-      userId: testUser?._id.toString() || "",
-    };
-    try {
-      await removeFundraisingCampaign?.({}, args, context);
-      const fund = await Fund.findOne({ _id: testFund?._id });
-      expect(fund?.campaigns).not.toContainEqual(testCampaign?._id);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
-    }
+    await AppUserProfile.findOneAndUpdate(
+      { userId: testUser?._id },
+      {
+        $set: {
+          adminFor: [testFund?.organizationId.toString()],
+          isSuperAdmin: true,
+        },
+      },
+      { new: true, upsert: true },
+    );
+    const newCampaign = await createTestFundraisingCampaign(testFund?._id); // Ensuring a fresh campaign for this test
+    const args = { id: newCampaign._id.toString() };
+    const context = { userId: testUser?._id.toString() };
+
+    await removeFundraisingCampaign?.({}, args, context);
+    const fundAfterDeletion = await Fund.findById(testFund?._id);
+    expect(fundAfterDeletion?.campaigns).not.toContainEqual(
+      new Types.ObjectId(args.id),
+    );
   });
   it("throws an error if the user does not have appUserProfile", async () => {
-    await AppUserProfile.deleteOne({
-      userId: testUser?._id,
-    });
+    await AppUserProfile.deleteOne({ userId: testUser?._id });
     testCampaign = await createTestFundraisingCampaign(testFund?._id);
     const args = {
       id: testCampaign?._id.toString() || "",
@@ -135,22 +160,6 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
     };
 
     try {
-      await removeFundraisingCampaign?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
-    }
-  });
-  it("throw error if user is not admin of the organization or superadmin", async () => {
-    try {
-      const args = {
-        id: testCampaign?._id.toString(),
-      };
-      const randomUser = await createTestUser();
-      const context = {
-        userId: randomUser?._id,
-      };
       await removeFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(

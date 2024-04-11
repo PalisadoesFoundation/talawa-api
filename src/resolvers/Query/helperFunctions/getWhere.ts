@@ -8,6 +8,7 @@ import type {
   OrganizationWhereInput,
   PostWhereInput,
   UserWhereInput,
+  VenueWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
 /**
@@ -33,7 +34,8 @@ export const getWhere = <T = unknown>(
             UserWhereInput &
             DonationWhereInput &
             ActionItemWhereInput &
-            FundWhereInput
+            FundWhereInput &
+            VenueWhereInput
         >
       >
     | undefined,
@@ -735,6 +737,24 @@ export const getWhere = <T = unknown>(
     wherePayload = {
       ...wherePayload,
       text: regexp,
+    };
+  }
+
+  if (where.name_starts_with) {
+    const regexp = new RegExp("^" + where.name_starts_with);
+    wherePayload = {
+      ...wherePayload,
+      name: regexp,
+    };
+  }
+
+  if (where.name_contains) {
+    wherePayload = {
+      ...wherePayload,
+      name: {
+        $regex: where.name_contains,
+        $options: "i",
+      },
     };
   }
 

@@ -108,42 +108,10 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     );
   }
 
-  await AppUserProfile.updateMany(
-    {
-      createdEvents: event._id,
-    },
-    {
-      $pull: {
-        createdEvents: event._id,
-      },
-    },
-  );
-
-  await AppUserProfile.updateMany(
-    {
-      eventAdmin: event._id,
-    },
-    {
-      $pull: {
-        eventAdmin: event._id,
-      },
-    },
-  );
-
-  const updatedEvent = await Event.findOneAndUpdate(
-    {
-      _id: event._id,
-    },
-    {
-      status: "DELETED",
-    },
-    {
-      new: true,
-    },
-  );
-
-  if (updatedEvent !== null) {
-    await cacheEvents([updatedEvent]);
+  /* c8 ignore start */
+  if (session) {
+    // start a transaction
+    session.startTransaction();
   }
 
   /* c8 ignore stop */

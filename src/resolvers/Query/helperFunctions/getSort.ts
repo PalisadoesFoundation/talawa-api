@@ -5,6 +5,7 @@ import type {
   OrganizationOrderByInput,
   PostOrderByInput,
   UserOrderByInput,
+  VenueOrderByInput,
 } from "../../../types/generatedGraphQLTypes";
 
 export const getSort = (
@@ -14,6 +15,7 @@ export const getSort = (
         | OrganizationOrderByInput
         | PostOrderByInput
         | UserOrderByInput
+        | VenueOrderByInput
       >
     | undefined,
 ):
@@ -34,6 +36,18 @@ export const getSort = (
     case "id_DESC":
       sortPayload = {
         _id: -1,
+      };
+      break;
+
+    case "capacity_ASC":
+      sortPayload = {
+        capacity: 1,
+      };
+      break;
+
+    case "capacity_DESC":
+      sortPayload = {
+        capacity: -1,
       };
       break;
 

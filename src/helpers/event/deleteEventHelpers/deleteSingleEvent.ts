@@ -27,6 +27,7 @@ export const deleteSingleEvent = async (
       },
       { session },
     ),
+
     User.updateMany(
       { registeredEvents: eventId },
       {
@@ -36,6 +37,7 @@ export const deleteSingleEvent = async (
       },
       { session },
     ),
+
     AppUserProfile.updateMany(
       {
         $or: [{ createdEvents: eventId }, { eventAdmin: eventId }],
@@ -48,16 +50,16 @@ export const deleteSingleEvent = async (
       },
       { session },
     ),
-    ActionItem.deleteMany({ eventId }, { session }),
-  ]);
 
-  // delete the event
-  await Event.deleteOne(
-    {
-      _id: eventId,
-    },
-    {
-      session,
-    },
-  );
+    ActionItem.deleteMany({ eventId }, { session }),
+
+    Event.deleteOne(
+      {
+        _id: eventId,
+      },
+      {
+        session,
+      },
+    ),
+  ]);
 };

@@ -644,7 +644,6 @@ export const types = gql`
     _id: ID!
     userId: User!
     adminFor: [Organization]
-    adminApproved: Boolean
     createdEvents: [Event]
     createdOrganizations: [Organization]
     eventAdmin: [Event]

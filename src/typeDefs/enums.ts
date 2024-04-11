@@ -109,6 +109,11 @@ export const enums = gql`
     NON_USER
   }
 
+  enum VenueOrderByInput {
+    capacity_ASC
+    capacity_DESC
+  }
+
   enum WeekDays {
     MONDAY
     TUESDAY

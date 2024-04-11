@@ -1,8 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
-import { User } from "../../../src/models";
+import {
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+} from "../../../src/constants";
+import { AppUserProfile, User } from "../../../src/models";
 import { me as meResolver } from "../../../src/resolvers/Query/me";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -55,5 +58,19 @@ describe("resolvers -> Query -> me", () => {
       .lean();
 
     expect(mePayload?.user).toEqual(user);
+  });
+
+  it("throws an error if user does not have appUserProfile", async () => {
+    try {
+      const context = {
+        userId: testUser?._id,
+      };
+      await AppUserProfile.deleteOne({
+        userId: testUser?._id,
+      });
+      await meResolver?.({}, {}, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_AUTHORIZED_ERROR.DESC);
+    }
   });
 });

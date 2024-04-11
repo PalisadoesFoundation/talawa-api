@@ -34,22 +34,23 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
 
     const currentUser = await User.findById(userId).lean();
 
-    const currentAppUserProfile = await AppUserProfile.findOne({
-      userId: currentUser?._id,
-    }).lean();
-    if (!currentAppUserProfile) {
-      throw new errors.UnauthenticatedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-        USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
-      );
-    }
-
     if (!currentUser) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    const currentAppUserProfile = await AppUserProfile.findOne({
+      userId: currentUser?._id,
+    }).lean();
+
+    if (!currentAppUserProfile) {
+      throw new errors.UnauthenticatedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
