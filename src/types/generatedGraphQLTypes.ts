@@ -1126,7 +1126,6 @@ export type MinimumValueError = FieldError & {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  acceptAdmin: Scalars['Boolean']['output'];
   acceptMembershipRequest: MembershipRequest;
   addEventAttendee: User;
   addFeedback: Feedback;
@@ -1190,7 +1189,6 @@ export type Mutation = {
   refreshToken: ExtendSession;
   registerEventAttendee: EventAttendee;
   registerForEvent: EventAttendee;
-  rejectAdmin: Scalars['Boolean']['output'];
   rejectMembershipRequest: MembershipRequest;
   removeActionItem: ActionItem;
   removeAdmin: AppUserProfile;
@@ -1254,11 +1252,6 @@ export type Mutation = {
   updateUserRoleInOrganization: Organization;
   updateUserTag?: Maybe<UserTag>;
   updateUserType: Scalars['Boolean']['output'];
-};
-
-
-export type MutationAcceptAdminArgs = {
-  id: Scalars['ID']['input'];
 };
 
 
@@ -1587,11 +1580,6 @@ export type MutationRegisterEventAttendeeArgs = {
 
 
 export type MutationRegisterForEventArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationRejectAdminArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -4117,7 +4105,6 @@ export type MinimumValueErrorResolvers<ContextType = any, ParentType extends Res
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  acceptAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationAcceptAdminArgs, 'id'>>;
   acceptMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationAcceptMembershipRequestArgs, 'membershipRequestId'>>;
   addEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddEventAttendeeArgs, 'data'>>;
   addFeedback?: Resolver<ResolversTypes['Feedback'], ParentType, ContextType, RequireFields<MutationAddFeedbackArgs, 'data'>>;
@@ -4181,7 +4168,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
   registerEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationRegisterEventAttendeeArgs, 'data'>>;
   registerForEvent?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
-  rejectAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectAdminArgs, 'id'>>;
   rejectMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationRejectMembershipRequestArgs, 'membershipRequestId'>>;
   removeActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationRemoveActionItemArgs, 'id'>>;
   removeAdmin?: Resolver<ResolversTypes['AppUserProfile'], ParentType, ContextType, RequireFields<MutationRemoveAdminArgs, 'data'>>;

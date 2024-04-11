@@ -1,8 +1,7 @@
 import type mongoose from "mongoose";
-import type { InterfaceEvent } from "../../../models";
 import { Event } from "../../../models";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
-import type { InterfaceRecurrenceRule } from "../../../models/RecurrenceRule";
+import type { InterfaceEvent, InterfaceRecurrenceRule } from "../../../models";
 import { shouldUpdateBaseRecurringEvent } from "./index";
 
 /**

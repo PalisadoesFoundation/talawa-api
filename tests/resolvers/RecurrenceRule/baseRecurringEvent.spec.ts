@@ -7,7 +7,7 @@ import {
 } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { Event } from "../../../src/models";
+import { Event, RecurrenceRule } from "../../../src/models";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type {
   TestOrganizationType,
@@ -16,11 +16,8 @@ import type {
 
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
-import type {
-  InterfaceRecurrenceRule} from "../../../src/models/RecurrenceRule";
-import {
-  RecurrenceRule,
-} from "../../../src/models/RecurrenceRule";
+
+import type { InterfaceRecurrenceRule } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;

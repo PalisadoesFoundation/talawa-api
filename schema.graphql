@@ -1034,7 +1034,6 @@ type MinimumValueError implements FieldError {
 }
 
 type Mutation {
-  acceptAdmin(id: ID!): Boolean!
   acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   addEventAttendee(data: EventAttendeeInput!): User!
   addFeedback(data: FeedbackInput!): Feedback!
@@ -1098,7 +1097,6 @@ type Mutation {
   refreshToken(refreshToken: String!): ExtendSession!
   registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
   registerForEvent(id: ID!): EventAttendee!
-  rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): AppUserProfile!

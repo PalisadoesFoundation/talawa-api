@@ -15,11 +15,8 @@ import type {
 
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
-import type {
-  InterfaceRecurrenceRule} from "../../../src/models/RecurrenceRule";
-import {
-  RecurrenceRule,
-} from "../../../src/models/RecurrenceRule";
+import { RecurrenceRule } from "../../../src/models";
+import type { InterfaceRecurrenceRule } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;

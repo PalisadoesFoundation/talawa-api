@@ -11,7 +11,7 @@ import type {
   QueryEventsByOrganizationConnectionArgs,
 } from "../../../src/types/generatedGraphQLTypes";
 import type { InterfaceEvent } from "../../../src/models";
-import { Event } from "../../../src/models";
+import { Event, Frequency, RecurrenceRule } from "../../../src/models";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
@@ -20,8 +20,8 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { addDays, addYears } from "date-fns";
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import type { TestUserType } from "../../helpers/user";
-import type { InterfaceRecurrenceRule } from "../../../src/models/RecurrenceRule";
-import { Frequency, RecurrenceRule } from "../../../src/models/RecurrenceRule";
+import type { InterfaceRecurrenceRule } from "../../../src/models/";
+
 import {
   RECURRING_EVENT_INSTANCES_DAILY_LIMIT,
   RECURRING_EVENT_INSTANCES_QUERY_LIMIT,

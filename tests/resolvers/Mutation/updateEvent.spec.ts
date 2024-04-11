@@ -6,6 +6,7 @@ import {
   Event,
   EventAttendee,
   AppUserProfile,
+  RecurrenceRule,
 } from "../../../src/models";
 import type { MutationUpdateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
@@ -38,7 +39,7 @@ import type { TestEventType } from "../../helpers/events";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import { addWeeks } from "date-fns";
-import { RecurrenceRule } from "../../../src/models/RecurrenceRule";
+
 import { fail } from "assert";
 
 let MONGOOSE_INSTANCE: typeof mongoose;

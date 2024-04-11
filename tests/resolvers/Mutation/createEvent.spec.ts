@@ -7,6 +7,7 @@ import {
   EventAttendee,
   Organization,
   User,
+  RecurrenceRule,
 } from "../../../src/models";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
@@ -30,7 +31,7 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from "../../../src/libraries/errors";
-import { Frequency, RecurrenceRule } from "../../../src/models/RecurrenceRule";
+
 import {
   convertToUTCDate,
   countTotalMondaysInMonth,
@@ -396,14 +397,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      startDate,
-      endDate,
-      frequency: Frequency.WEEKLY,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -438,7 +436,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
   it(`creates the daily recurring event upto an end date based on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 1);
     startDate = convertToUTCDate(startDate);
 
     const endDate = addMonths(startDate, 5);
@@ -492,15 +489,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.DAILY,
-      startDate,
-      endDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
-      endDate: endDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -534,8 +527,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
   it(`creates the daily recurring event with no end date based on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 2);
-
     startDate = convertToUTCDate(startDate);
 
     const args: MutationCreateEventArgs = {
@@ -586,13 +577,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.DAILY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -627,8 +616,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
   it(`creates the weekly recurring event with no end date based on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 3);
-
     startDate = convertToUTCDate(startDate);
 
     const args: MutationCreateEventArgs = {
@@ -680,13 +667,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.WEEKLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -721,8 +706,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
   it(`creates the monthly recurring event with no end date based on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 4);
-
     startDate = convertToUTCDate(startDate);
 
     const args: MutationCreateEventArgs = {
@@ -773,13 +756,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.MONTHLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -814,8 +795,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
   it(`creates the yearly recurring event with no end date based on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 5);
-
     startDate = convertToUTCDate(startDate);
 
     const args: MutationCreateEventArgs = {
@@ -866,13 +845,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.YEARLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -907,8 +884,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
   it(`creates a biweekly recurring event with no end date based on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 6);
-
     startDate = convertToUTCDate(startDate);
 
     const args: MutationCreateEventArgs = {
@@ -960,13 +935,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.WEEKLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -1001,7 +974,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
   it(`creates a monthly recurring event that occurs on every first Monday of the month`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 7);
     startDate = convertToUTCDate(startDate);
 
     startDate.setDate(1);
@@ -1063,13 +1035,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.MONTHLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -1120,7 +1090,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
   it(`creates a monthly recurring event that occurs on every last Monday of the month`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 9);
     startDate = convertToUTCDate(startDate);
 
     startDate.setDate(0);
@@ -1181,13 +1150,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.MONTHLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({

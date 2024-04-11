@@ -5,8 +5,6 @@ import { gql } from "graphql-tag";
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const mutations = gql`
   type Mutation {
-    acceptAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
-
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
     addOrganizationCustomField(
@@ -179,8 +177,6 @@ export const mutations = gql`
     refreshToken(refreshToken: String!): ExtendSession!
 
     registerForEvent(id: ID!): EventAttendee! @auth
-
-    rejectAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
 
     registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
 

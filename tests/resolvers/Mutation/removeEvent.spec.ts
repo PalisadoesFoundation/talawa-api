@@ -8,6 +8,7 @@ import {
   Event,
   EventAttendee,
   User,
+  RecurrenceRule,
 } from "../../../src/models";
 import type {
   MutationCreateEventArgs,
@@ -39,7 +40,6 @@ import type {
 import { fail } from "assert";
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import { addMonths } from "date-fns";
-import { Frequency, RecurrenceRule } from "../../../src/models/RecurrenceRule";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -300,14 +300,11 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     )) as InterfaceEvent;
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      startDate,
-      endDate,
-      frequency: Frequency.WEEKLY,
+      _id: testRecurringEvent.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: testRecurringEvent.baseRecurringEventId,
     });
 
     // find an event one week ahead of the testRecurringEvent and delete it
