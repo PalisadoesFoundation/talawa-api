@@ -38,6 +38,7 @@ import { usersConnection } from "./usersConnection";
 import { venue } from "./venue";
 import { getEventAttendee } from "./getEventAttendee";
 import { getEventAttendeesByEventId } from "./getEventAttendeesByEventId";
+import { getVenueByOrgId } from "./getVenueByOrgId";
 
 export const Query: QueryResolvers = {
   actionItemsByEvent,
@@ -79,4 +80,5 @@ export const Query: QueryResolvers = {
   fundsByOrganization,
   getEventAttendee,
   getEventAttendeesByEventId,
+  getVenueByOrgId,
 };
