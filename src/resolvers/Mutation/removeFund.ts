@@ -5,13 +5,13 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceAppUserProfile,
-  InterfaceUser,
+import {
   AppUserProfile,
   Fund,
   User,
+  type InterfaceAppUserProfile,
   type InterfaceFund,
+  type InterfaceUser,
 } from "../../models";
 
 import { FundraisingCampaign } from "../../models/FundraisingCampaign";
@@ -97,7 +97,7 @@ export const removeFund: MutationResolvers["removeFund"] = async (
     .select("organizationId")
     .lean();
 
-  const currentOrgId = currentOrg?.organizationId?.toString() || "";
+  const currentOrgId = currentOrg?.organizationId?.toString();
 
   //checks whether the user is admin of organization or not
   const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(

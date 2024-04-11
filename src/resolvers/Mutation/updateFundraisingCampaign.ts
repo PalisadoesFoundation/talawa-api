@@ -7,14 +7,14 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceAppUserProfile,
-  InterfaceUser,
+import {
   AppUserProfile,
   Fund,
   FundraisingCampaign,
   User,
+  type InterfaceAppUserProfile,
   type InterfaceFundraisingCampaign,
+  type InterfaceUser,
 } from "../../models";
 
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";

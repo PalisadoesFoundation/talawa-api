@@ -2,7 +2,7 @@ import "dotenv/config";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities/userFamilyAdminCheck";
-import type { InterfaceUser} from "../../models";
+import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import { UserFamily } from "../../models/userFamily";
 import type { InterfaceUserFamily } from "../../models/userFamily";
@@ -63,9 +63,9 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
     //check whether user is admin of the family
     await adminCheck(currentUser?._id, userFamily);
 
-    const isUserMemberOfUserFamily = userFamily.users.some((user) => {
-      user.equals(args.userId);
-    });
+    const isUserMemberOfUserFamily = userFamily.users.some((user) =>
+      user.equals(args.userId),
+    );
 
     // Checks whether user with _id === args.userId is already a member of Family.
     if (isUserMemberOfUserFamily) {

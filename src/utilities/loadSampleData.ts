@@ -11,6 +11,7 @@ import {
   Post,
   User,
 } from "../models";
+import { RecurrenceRule } from "../models/RecurrenceRule";
 
 interface InterfaceArgs {
   items?: string;
@@ -59,6 +60,7 @@ async function formatDatabase(): Promise<void> {
     Event.deleteMany({}),
     Post.deleteMany({}),
     AppUserProfile.deleteMany({}),
+    RecurrenceRule.deleteMany({}),
   ]);
   console.log("Cleared all collections\n");
 }
@@ -111,6 +113,9 @@ async function insertCollections(collections: string[]): Promise<void> {
         case "events":
           await Event.insertMany(docs);
           break;
+        case "recurrenceRules":
+          await RecurrenceRule.insertMany(docs);
+          break;
         case "posts":
           await Post.insertMany(docs);
           break;
@@ -146,6 +151,7 @@ async function checkCountAfterImport(): Promise<void> {
       { name: "organizations", model: Organization },
       { name: "actionItemCategories", model: ActionItemCategory },
       { name: "events", model: Event },
+      { name: "recurrenceRules", model: RecurrenceRule },
       { name: "posts", model: Post },
       { name: "appUserProfiles", model: AppUserProfile },
     ];
@@ -176,6 +182,7 @@ const collections = [
   "organizations",
   "posts",
   "events",
+  "recurrenceRules",
   "appUserProfiles",
   "actionItemCategories",
 ];

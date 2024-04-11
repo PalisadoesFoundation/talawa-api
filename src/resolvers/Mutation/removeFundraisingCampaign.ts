@@ -6,21 +6,21 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceUser,
-  InterfaceAppUserProfile,
+import {
+  AppUserProfile,
   Fund,
   FundraisingCampaign,
   User,
+  type InterfaceAppUserProfile,
   type InterfaceFundraisingCampaign,
-  AppUserProfile
+  type InterfaceUser,
 } from "../../models";
 
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
-import { cacheUsers } from "../../services/UserCache/cacheUser";
-import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables to remove fundraising campaign .
