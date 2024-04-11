@@ -586,4 +586,11 @@ export const inputs = gql`
     description: String
     file: String
   }
+
+  input VenueWhereInput {
+    name_contains: String
+    name_starts_with: String
+    description_starts_with: String
+    description_contains: String
+  }
 `;

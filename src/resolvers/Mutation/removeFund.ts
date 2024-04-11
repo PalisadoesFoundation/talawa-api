@@ -67,7 +67,7 @@ export const removeFund: MutationResolvers["removeFund"] = async (
     .select("organizationId")
     .lean();
 
-  const currentOrgId = currentOrg?.organizationId?.toString() || "";
+  const currentOrgId = currentOrg?.organizationId?.toString();
 
   //checks whether the user is admin of organization or not
   const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
