@@ -155,13 +155,9 @@ export const createOrganization: MutationResolvers["createOrganization"] =
  * @param address - The address object to validate
  * @returns An object containing the validation result: isAddressValid (true if the address is valid, false otherwise)
  */
-function validateAddress(address: Address | undefined): {
+function validateAddress(address: Address): {
   isAddressValid: boolean;
 } {
-  if (!address) {
-    return { isAddressValid: false };
-  }
-
   const {
     city,
     countryCode,
