@@ -1,13 +1,21 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import type { InterfaceAgendaItem } from "../../models";
-import { User, AgendaItemModel, AppUserProfile } from "../../models";
 import {
-  USER_NOT_FOUND_ERROR,
   AGENDA_ITEM_NOT_FOUND_ERROR,
   UNAUTHORIZED_UPDATE_AGENDA_ITEM_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type {
+  InterfaceAgendaItem,
+  InterfaceAppUserProfile,
+  InterfaceUser,
+} from "../../models";
+import { AgendaItemModel, AppUserProfile, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function allows the user who created an agenda item to update it.
@@ -23,8 +31,19 @@ export const updateAgendaItem: MutationResolvers["updateAgendaItem"] = async (
 ) => {
   const userId = args.input.updatedBy;
   console.log(context);
+
   // Fetch the current user based on the provided ID
-  const currentUser = await User.findById(userId);
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   if (!currentUser) {
     throw new errors.NotFoundError(
@@ -34,9 +53,19 @@ export const updateAgendaItem: MutationResolvers["updateAgendaItem"] = async (
     );
   }
 
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),

@@ -1,11 +1,22 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, AgendaSectionModel, AppUserProfile } from "../../models";
+import type {
+  InterfaceUser,
+  InterfaceAppUserProfile} from "../../models";
+import {
+  User,
+  AgendaSectionModel,
+  AppUserProfile
+} from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   AGENDA_SECTION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 
 /**
  * Resolver function for the GraphQL mutation 'removeAgendaSection'.
@@ -20,9 +31,17 @@ import {
 export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
   async (_parent, args, context) => {
     // Fetch the current user
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     // If the user is not found, throw a NotFoundError
     if (!currentUser) {
@@ -32,10 +51,20 @@ export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
-    const currentAppUserProfile = await AppUserProfile.findOne({
-      userId: currentUser?._id,
-    }).lean();
-    if (!currentAppUserProfile) {
+    let currentUserAppProfile: InterfaceAppUserProfile | null;
+    const appUserProfileFoundInCache = await findAppUserProfileCache([
+      currentUser.appUserProfileId?.toString(),
+    ]);
+    currentUserAppProfile = appUserProfileFoundInCache[0];
+    if (currentUserAppProfile === null) {
+      currentUserAppProfile = await AppUserProfile.findOne({
+        userId: currentUser._id,
+      }).lean();
+      if (currentUserAppProfile !== null) {
+        await cacheAppUserProfile([currentUserAppProfile]);
+      }
+    }
+    if (!currentUserAppProfile) {
       throw new errors.UnauthenticatedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -60,7 +89,7 @@ export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
     // Check if the current user is the creator of the agenda section or is a superadmin
     if (
       !agendaSection.createdBy.equals(currentUser._id) &&
-      !currentAppUserProfile.isSuperAdmin
+      !currentUserAppProfile.isSuperAdmin
     ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),

@@ -5,7 +5,16 @@ import {
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, EventVolunteer, EventVolunteerGroup, Event } from "../../models";
+import type {
+  InterfaceUser} from "../../models";
+import {
+  User,
+  EventVolunteer,
+  EventVolunteerGroup,
+  Event
+} from "../../models";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
 
 /**
  * This function enables to remove an Event Volunteer Group.
@@ -21,9 +30,17 @@ import { User, EventVolunteer, EventVolunteerGroup, Event } from "../../models";
 
 export const removeEventVolunteerGroup: MutationResolvers["removeEventVolunteerGroup"] =
   async (_parent, args, context) => {
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     if (!currentUser) {
       throw new errors.NotFoundError(
@@ -48,7 +65,7 @@ export const removeEventVolunteerGroup: MutationResolvers["removeEventVolunteerG
     const event = await Event.findById(volunteerGroup.eventId);
 
     const userIsEventAdmin = event?.admins.some(
-      (admin) => admin._id.toString() === currentUser._id.toString(),
+      (admin) => admin._id.toString() === currentUser?._id.toString(),
     );
 
     if (!userIsEventAdmin) {

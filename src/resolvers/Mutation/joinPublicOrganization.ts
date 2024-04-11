@@ -10,6 +10,8 @@ import { Organization, User } from "../../models";
 import type { InterfaceUser } from "../../models/User";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { deleteUserFromCache } from "../../services/UserCache/deleteUserFromCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to join a public organization.
@@ -120,7 +122,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     Adds organization._id to joinedOrganizations list of currentUser's document
     with _id === context.userId and returns the updated currentUser.
     */
-    return (await User.findOneAndUpdate(
+    const updatedUser = (await User.findOneAndUpdate(
       {
         _id: context.userId,
       },
@@ -136,4 +138,9 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       .select(["-password"])
       .populate("joinedOrganizations")
       .lean()) as InterfaceUser;
+    if (updatedUser) {
+      await deleteUserFromCache(updatedUser._id.toString());
+      await cacheUsers([updatedUser]);
+    }
+    return updatedUser;
   };

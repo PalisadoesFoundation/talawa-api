@@ -5,8 +5,20 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { AgendaSectionModel, AppUserProfile, Event, User } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceUser} from "../../models";
+import {
+  AgendaSectionModel,
+  AppUserProfile,
+  Event,
+  User,
+} from "../../models";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 
 /**
  * Resolver function for the GraphQL mutation 'createAgendaSection'.
@@ -22,10 +34,17 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
   async (_parent, args, context) => {
     // Verify that args and args.input exist
     const userId = context.userId;
-    const currentUser = await User.findOne({
-      _id: userId,
-    }).lean();
-
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
     // If the user is not found, throw a NotFoundError
     if (!currentUser) {
       throw new errors.NotFoundError(
@@ -34,9 +53,19 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
-    const currentAppUserProfile = await AppUserProfile.findOne({
-      userId: currentUser?._id,
-    }).lean();
+    let currentAppUserProfile: InterfaceAppUserProfile | null;
+    const appUserProfileFoundInCache = await findAppUserProfileCache([
+      currentUser.appUserProfileId?.toString(),
+    ]);
+    currentAppUserProfile = appUserProfileFoundInCache[0];
+    if (currentAppUserProfile === null) {
+      currentAppUserProfile = await AppUserProfile.findOne({
+        userId: currentUser._id,
+      }).lean();
+      if (currentAppUserProfile !== null) {
+        await cacheAppUserProfile([currentAppUserProfile]);
+      }
+    }
     if (!currentAppUserProfile) {
       throw new errors.UnauthenticatedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),

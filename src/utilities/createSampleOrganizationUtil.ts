@@ -240,6 +240,7 @@ export const createSampleOrganization = async (): Promise<void> => {
   const _id = faker.database.mongodbObjectId();
   const userData = await generateUserData(_id, "ADMIN");
   const creator = userData.user;
+
   const creatorAppProfile = userData.appUserProfile;
 
   interface Address {

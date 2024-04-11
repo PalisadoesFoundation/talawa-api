@@ -1,4 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceUser} from "../../models";
 import { Advertisement, Organization, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -7,13 +8,23 @@ import {
 } from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
 
 export const createAdvertisement: MutationResolvers["createAdvertisement"] =
   async (_parent, args, context) => {
     // Get the current user
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     // Checks whether currentUser exists.
     if (!currentUser) {

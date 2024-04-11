@@ -5,18 +5,19 @@ import { User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import {
   USER_NOT_FOUND_ERROR,
   USER_PROFILE_IMAGE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  afterEach,
-  vi,
-} from "vitest";
+import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
 
@@ -27,6 +28,7 @@ const testImage = "testImage";
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUserFunc();
+  await deleteUserFromCache(testUser?._id?.toString() ?? "");
 });
 
 afterAll(async () => {
@@ -108,6 +110,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
         },
       },
     );
+    deleteUserFromCache(testUser?._id?.toString() ?? "");
 
     const context = {
       userId: testUser?._id,

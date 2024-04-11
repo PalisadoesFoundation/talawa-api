@@ -6,14 +6,21 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import {
+import type {
+  InterfaceUser,
+  InterfaceAppUserProfile,
   Fund,
   FundraisingCampaign,
   User,
   type InterfaceFundraisingCampaign,
-  AppUserProfile,
+  AppUserProfile
 } from "../../models";
+
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 
 /**
  * This function enables to remove fundraising campaign .
@@ -30,9 +37,17 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCampaign"] =
   async (_parent, args, context): Promise<InterfaceFundraisingCampaign> => {
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     // Checks whether currentUser exists.
     if (!currentUser) {
@@ -43,9 +58,19 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
       );
     }
 
-    const currentUserAppProfile = await AppUserProfile.findOne({
-      userId: currentUser._id,
-    }).lean();
+    let currentUserAppProfile: InterfaceAppUserProfile | null;
+    const appUserProfileFoundInCache = await findAppUserProfileCache([
+      currentUser.appUserProfileId?.toString(),
+    ]);
+    currentUserAppProfile = appUserProfileFoundInCache[0];
+    if (currentUserAppProfile === null) {
+      currentUserAppProfile = await AppUserProfile.findOne({
+        userId: currentUser._id,
+      }).lean();
+      if (currentUserAppProfile !== null) {
+        await cacheAppUserProfile([currentUserAppProfile]);
+      }
+    }
     if (!currentUserAppProfile) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),

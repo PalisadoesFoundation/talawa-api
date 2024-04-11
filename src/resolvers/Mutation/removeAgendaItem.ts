@@ -1,13 +1,21 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import type { InterfaceAgendaItem } from "../../models";
-import { User, AgendaItemModel, AppUserProfile } from "../../models";
 import {
-  USER_NOT_FOUND_ERROR,
   AGENDA_ITEM_NOT_FOUND_ERROR,
   UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type {
+  InterfaceAgendaItem,
+  InterfaceAppUserProfile,
+  InterfaceUser,
+} from "../../models";
+import { AgendaItemModel, AppUserProfile, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function removes an agenda item.
  * @param _parent - parent of the current request
@@ -22,9 +30,17 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
   args,
   context,
 ): Promise<InterfaceAgendaItem> => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -32,10 +48,20 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentAppUserProfile = await AppUserProfile.findOne({
-    userId: currentUser?._id,
-  }).lean();
-  if (!currentAppUserProfile) {
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
+  if (!currentUserAppProfile) {
     throw new errors.UnauthenticatedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
