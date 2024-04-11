@@ -9,9 +9,10 @@ import {
   middleware,
   tracingIdHeaderName,
 } from "../../src/libraries/requestTracing";
-import type { NextFunction, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { customAlphabet } from "nanoid";
+import { FastifyReply, FastifyRequest } from "fastify";
+import { NextFunction } from "@fastify/middie";
 
 describe("middleware -> requestContext", () => {
   let context: any;
@@ -19,8 +20,12 @@ describe("middleware -> requestContext", () => {
   const alphabets = "0123456789abcdefghijklmnopqrstuvwxyz";
   const nanoid = customAlphabet(alphabets, 10);
 
-  const mockRequest = new EventEmitter();
-  const mockResponse = new EventEmitter();
+  const mockRequest: FastifyRequest = {
+    raw: new EventEmitter(),
+  } as FastifyRequest;
+  const mockResponse: FastifyReply = {
+    raw: new EventEmitter(),
+  } as FastifyReply;
   const nextFunction = vi.fn();
 
   beforeEach(() => {
@@ -59,8 +64,8 @@ describe("middleware -> requestContext", () => {
     // @ts-expect-error-ignore
     mockResponse.header = resHeaderMethod;
     middleware()(
-      mockRequest as Request,
-      mockResponse as Response,
+      mockRequest as FastifyRequest,
+      mockResponse as FastifyReply,
       nextFunction as NextFunction,
     );
     expect(tracingIdHeaderName).toBe("X-Tracing-Id");

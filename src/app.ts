@@ -1,43 +1,65 @@
-import cors from "cors";
-import express from "express";
+import cors from "@fastify/cors";
+import Fastify from "fastify";
+import fastifyStatic from "@fastify/static";
 import mongoSanitize from "express-mongo-sanitize";
-import rateLimit from "express-rate-limit";
+import fastifyFormbody from "@fastify/formbody";
+import FastifyRateLimit from '@fastify/rate-limit';
 import { express as voyagerMiddleware } from "graphql-voyager/middleware";
-import helmet from "helmet";
+import helmet from "@fastify/helmet";
 import i18n from "i18n";
+import middie from "@fastify/middie"
 import requestLogger from "morgan";
 import path from "path";
+import qs from "qs";
 import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
-const app = express();
 
-app.use(requestTracing.middleware());
-app.use(i18n.init);
+const fastifyApp = Fastify({
+  logger: true,
+  bodyLimit: 50 * 1024 * 1024 // 50mb in bytes
 
-const apiLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 50000,
-  message: "Too many requests from this IP, please try again after 15 minutes",
 });
 
+fastifyApp.register(middie);
+
+fastifyApp.addHook('onRequest', (request, reply) => {
+  requestTracing.middleware();
+});
+
+fastifyApp.addHook('onRequest', (request, reply) => {
+  i18n.init;
+});
+
+const rateLimitOptions = {
+  max: 50000, // Maximum number of requests a single client can perform inside a time window
+  timeWindow: 60 * 60 * 1000, // Time window in milliseconds
+  errorResponseBuilder: (request: any, context: any) => ({
+    statusCode: 429,
+    error: 'Too Many Requests',
+    message: 'Rate limit exceeded, retry after ' + context.after / 1000 + ' seconds',
+    retryAfter: context.after / 1000 
+  })
+};
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const corsOptions: cors.CorsOptions = {
-  origin: (origin, next) => {
+fastifyApp.register(cors, {
+    origin: (origin, cb) => {
     if (process.env.NODE_ENV === "development") {
-      next(null, true);
+    //  Request from localhost will pass
+      cb(null, true);
       return;
     } else if (process.env.NODE_ENV === "production") {
       const talawaAdmin = process.env.TALAWA_ADMIN_URL;
       if (origin === talawaAdmin) {
-        next(null, true);
+        cb(null, true);
         return;
       }
     }
-
-    next(new Error("Unauthorized"));
+    // Generate an error on other origins, disabling access
+    cb(new Error("Unauthorized"), false);
   },
-};
+});
 
 i18n.configure({
   directory: `${__dirname}/../locales`,
@@ -56,49 +78,80 @@ i18n.configure({
   syncFiles: process.env.NODE_ENV !== "production",
 });
 
-app.use(i18n.init);
-app.use(apiLimiter);
-app.use(
-  helmet({
-    contentSecurityPolicy:
-      process.env.NODE_ENV === "production" ? undefined : false,
-  }),
-);
-app.use(mongoSanitize());
-app.use(cors());
+// Register the rate-limit plugin
+fastifyApp.register(FastifyRateLimit, rateLimitOptions);
 
-app.use("/images", (req, res, next) => {
-  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-  next();
+fastifyApp.register(
+  helmet,
+  {
+    // Disabling the contentSecurityPolicy middleware in non-production environments
+    contentSecurityPolicy: 
+      process.env.NODE_ENV === "production" ? undefined : false,
+  }
+);
+
+fastifyApp.addHook('preHandler', (request, reply, done) => {
+  mongoSanitize();
+  done();
 });
 
-app.use(express.json({ limit: "50mb" }));
-app.use(graphqlUploadExpress());
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// Fix added to stream
-app.use(
+fastifyApp.addHook('onRequest', (request, reply, done) => {
+  reply.header("Cross-Origin-Resource-Policy", "cross-origin");
+  done();
+});
+
+
+fastifyApp.addHook('preHandler', (request, reply, done) => {
+  graphqlUploadExpress();
+  done();
+});
+
+fastifyApp.register(fastifyFormbody, {
+  bodyLimit: 50 * 1024 * 1024, // 50mb in bytes
+  parser: str => qs.parse(str),
+});
+
+fastifyApp.addHook('preHandler', (request, reply, done) => {
   requestLogger(
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
-    {
-      stream: stream,
-    },
-  ),
-);
+    { stream: stream }
+  )(request.raw, reply.raw, done);
+});
 
-app.use("/images", express.static(path.join(__dirname, "./../images")));
-app.use("/videos", express.static(path.join(__dirname, "./../videos")));
+fastifyApp.register(fastifyStatic, {
+  root: path.join(__dirname, "./../images") ,
+  prefix: "/images"
+});
 
-app.use(requestContext.middleware());
+fastifyApp.register(fastifyStatic, {
+  root: path.join(__dirname, "./../videos"),
+  prefix: "/videos"
+});
+
+
+fastifyApp.addHook('onRequest', (request, reply) => {
+  requestContext.middleware();
+});
+
 
 if (process.env.NODE_ENV !== "production")
-  app.use("/voyager", voyagerMiddleware({ endpointUrl: "/graphql" }));
+fastifyApp.addHook("onRequest", (request, reply, done) => {
+  if (request.url === "/voyager") {
+    voyagerMiddleware({ endpointUrl: "/graphql" })(request.raw, reply.raw);
+  } else {
+    done();
+  }
+});
 
-app.get("/", (req, res) =>
-  res.json({
+fastifyApp.get("/", async (request, reply) => {
+  return{
     "talawa-version": "v1",
     status: "healthy",
-  }),
-);
+  };
+});
 
-export default app;
+
+export default fastifyApp;
+
+

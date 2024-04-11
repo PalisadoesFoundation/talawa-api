@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { NextFunction } from "@fastify/middie";
 import cls from "cls-hooked";
 // No type defintions available for package 'cls-bluebird'
 
 // import clsBluebird from "cls-bluebird";
-import type { NextFunction, Request, Response } from "express";
+// import type { NextFunction, Request, Response } from "express";
+import { FastifyRequest, FastifyReply } from "fastify";
+
 import i18n from "i18n";
 
 export const requestContextNamespace = cls.createNamespace(
@@ -26,12 +29,12 @@ export const setRequestContext = (obj: any): void => {
 };
 
 export const middleware = () => {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    requestContextNamespace.bindEmitter(req);
-    requestContextNamespace.bindEmitter(res);
+  return async (request: FastifyRequest, reply: FastifyReply, next: NextFunction): Promise<void> => {
+    requestContextNamespace.bindEmitter(request.raw);
+    requestContextNamespace.bindEmitter(reply.raw);
 
     requestContextNamespace.run(() => {
-      setRequestContext(req);
+      setRequestContext(reply);
       next();
     });
   };

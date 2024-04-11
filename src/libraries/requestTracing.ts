@@ -3,7 +3,9 @@ import cls from "cls-hooked";
 // @ts-expect-error--ts-ignore
 import clsBluebird from "cls-bluebird";
 import { customAlphabet } from "nanoid";
-import type { NextFunction, Request, Response } from "express";
+// import type { NextFunction, Request, Response } from "express";
+import { FastifyRequest, FastifyReply } from "fastify";
+import { NextFunction } from "@fastify/middie";
 
 // Alphabets used in the custom nanoid function
 const alphabets = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -31,28 +33,33 @@ export const getTracingId = (): string => {
 };
 
 export const middleware = () => {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    requestTracingNamespace.bindEmitter(req);
-    requestTracingNamespace.bindEmitter(res);
-
-    const tracingId = req.header(tracingIdHeaderName) || nanoid();
-    // We need to set header to ensure API gateway which proxies request, forwards the header as well
-    req.headers[tracingIdHeaderName] = tracingId;
-    res.header(tracingIdHeaderName, tracingId); // Adding tracing ID to response headers
-
-    requestTracingNamespace.run(() => {
-      setTracingId(tracingId);
-      next();
+    return async (request: FastifyRequest, reply: FastifyReply, next: NextFunction): Promise<void> => {
+      requestTracingNamespace.bindEmitter(request.raw);
+      requestTracingNamespace.bindEmitter(reply.raw);
+  
+      // const tracingId = req.headers[tracingIdHeaderName] || nanoid();
+          const tracingId = Array.isArray(request.headers[tracingIdHeaderName])
+        ? (request.headers[tracingIdHeaderName] as string[])[0]
+        : request.headers[tracingIdHeaderName] || nanoid();
+  
+      // We need to set header to ensure API gateway which proxies request, forwards the header as well
+      request.headers[tracingIdHeaderName] = tracingId;
+      reply.header(tracingIdHeaderName, tracingId); // Adding tracing ID to response headers
+  
+      requestTracingNamespace.run(() => {
+        setTracingId(tracingId); 
+        next();
+      });
+    };
+  };
+  
+  export const trace = async <T>(
+    tracingId: string,
+    method: () => T,
+  ): Promise<void> => {
+    await requestTracingNamespace.runAndReturn<T>(() => {
+      setTracingId(tracingId || nanoid());
+      return method();
     });
   };
-};
 
-export const trace = async <T>(
-  tracingId: string,
-  method: () => T,
-): Promise<void> => {
-  await requestTracingNamespace.runAndReturn<T>(() => {
-    setTracingId(tracingId || nanoid());
-    return method();
-  });
-};

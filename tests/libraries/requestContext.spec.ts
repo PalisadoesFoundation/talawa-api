@@ -10,15 +10,22 @@ import {
   translate,
   translatePlural,
 } from "../../src/libraries/requestContext";
-import type { NextFunction, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { EventEmitter } from "stream";
+import { FastifyRequest, FastifyReply } from "fastify";
+import { NextFunction } from "@fastify/middie";
+
+
 
 describe("middleware -> requestContext", () => {
   const value = uuidv4();
   let context: any;
-  const mockRequest = new EventEmitter();
-  const mockResponse = new EventEmitter();
+  const mockRequest: FastifyRequest = {
+    raw: new EventEmitter(),
+  } as FastifyRequest;
+  const mockResponse: FastifyReply = {
+    raw: new EventEmitter(),
+  } as FastifyReply;
   const nextFunction = vi.fn();
 
   interface InterfaceInitOptions<T> extends Record<any, any> {
@@ -53,8 +60,8 @@ describe("middleware -> requestContext", () => {
 
   it("test requestContext Middleware", () => {
     middleware()(
-      mockRequest as Request,
-      mockResponse as Response,
+      mockRequest as FastifyRequest,
+      mockResponse as FastifyReply,
       nextFunction as NextFunction,
     );
     expect(nextFunction).toBeCalledTimes(1);
