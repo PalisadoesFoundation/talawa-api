@@ -1,22 +1,16 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceUser,
-  InterfaceAppUserProfile} from "../../models";
 import {
-  User,
-  AgendaSectionModel,
-  AppUserProfile
-} from "../../models";
-import {
-  USER_NOT_FOUND_ERROR,
   AGENDA_SECTION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
-import { cacheUsers } from "../../services/UserCache/cacheUser";
-import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import { AgendaSectionModel, AppUserProfile, User } from "../../models";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * Resolver function for the GraphQL mutation 'removeAgendaSection'.

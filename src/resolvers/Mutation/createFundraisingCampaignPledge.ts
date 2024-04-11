@@ -3,7 +3,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceUser} from "../../models";
+import type { InterfaceUser } from "../../models";
 import { FundraisingCampaign, User } from "../../models";
 import {
   FundraisingCampaignPledge,

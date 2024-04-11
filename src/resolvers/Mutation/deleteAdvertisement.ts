@@ -4,14 +4,8 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceAppUserProfile,
-  InterfaceUser} from "../../models";
-import {
-  Advertisement,
-  AppUserProfile,
-  User,
-} from "../../models";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import { Advertisement, AppUserProfile, User } from "../../models";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";

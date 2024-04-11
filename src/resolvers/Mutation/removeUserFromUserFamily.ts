@@ -7,7 +7,7 @@ import {
   USER_REMOVING_SELF,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceUser} from "../../models";
+import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import type { InterfaceUserFamily } from "../../models/userFamily";
 import { UserFamily } from "../../models/userFamily";

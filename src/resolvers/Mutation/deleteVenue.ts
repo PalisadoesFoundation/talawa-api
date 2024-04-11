@@ -6,14 +6,8 @@ import {
   VENUE_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceAppUserProfile,
-  InterfaceUser} from "../../models";
-import {
-  AppUserProfile,
-  Organization,
-  User,
-} from "../../models";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
 import { Venue } from "../../models/Venue";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";

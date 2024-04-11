@@ -4,7 +4,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceUser} from "../../models";
+import type { InterfaceUser } from "../../models";
 import { ActionItemCategory, User } from "../../models";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";

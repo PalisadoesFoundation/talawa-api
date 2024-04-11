@@ -5,13 +5,8 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceUser} from "../../models";
-import {
-  MembershipRequest,
-  Organization,
-  User,
-} from "../../models";
+import type { InterfaceUser } from "../../models";
+import { MembershipRequest, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";

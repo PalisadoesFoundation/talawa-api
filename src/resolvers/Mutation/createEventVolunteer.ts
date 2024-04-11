@@ -6,7 +6,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceUser} from "../../models";
+import type { InterfaceUser } from "../../models";
 import { Event, EventVolunteerGroup, User } from "../../models";
 import { EventVolunteer } from "../../models/EventVolunteer";
 import { cacheUsers } from "../../services/UserCache/cacheUser";

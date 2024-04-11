@@ -7,9 +7,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceAppUserProfile,
-  InterfaceUser} from "../../models";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
 import {
   AppUserProfile,
   OrganizationTagUser,

@@ -1,15 +1,15 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import type { InterfaceUser} from "../../models";
-import { Advertisement, Organization, User } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceUser } from "../../models";
+import { Advertisement, Organization, User } from "../../models";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
-import { cacheUsers } from "../../services/UserCache/cacheUser";
 
 export const createAdvertisement: MutationResolvers["createAdvertisement"] =
   async (_parent, args, context) => {

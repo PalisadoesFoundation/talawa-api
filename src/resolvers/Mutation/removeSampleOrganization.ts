@@ -5,20 +5,14 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceAppUserProfile,
-  InterfaceUser} from "../../models";
-import {
-  AppUserProfile,
-  SampleData,
-  User,
-} from "../../models";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import { AppUserProfile, SampleData, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { removeSampleOrganization as removeSampleOrgUtil } from "../../utilities/removeSampleOrganizationUtil";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
-import { cacheUsers } from "../../services/UserCache/cacheUser";
-import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
-import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 
 export const removeSampleOrganization: MutationResolvers["removeSampleOrganization"] =
   async (_parent, _args, _context) => {

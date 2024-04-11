@@ -3,18 +3,12 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceUser} from "../../models";
-import {
-  User,
-  EventVolunteer,
-  EventVolunteerGroup,
-  Event
-} from "../../models";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { InterfaceUser } from "../../models";
+import { Event, EventVolunteer, EventVolunteerGroup, User } from "../../models";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables to remove an Event Volunteer Group.

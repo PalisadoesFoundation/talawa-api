@@ -116,7 +116,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   );
 
   // Checks whether currentUser neither created nor joined the organization.
-  console.log(currentUserAppProfile);
+
   if (
     !(
       userCreatedOrganization ||

@@ -5,20 +5,13 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceAppUserProfile,
-  InterfaceUser} from "../../models";
-import {
-  AgendaSectionModel,
-  AppUserProfile,
-  Event,
-  User,
-} from "../../models";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import { AgendaSectionModel, AppUserProfile, Event, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
-import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 
 /**
  * Resolver function for the GraphQL mutation 'createAgendaSection'.
@@ -94,7 +87,7 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
             ),
         );
       const currentUserIsEventAdmin = event.admins.some((admin) =>
-        admin.equals(currentUser._id),
+        admin.equals(currentUser?._id),
       );
       if (
         !(
