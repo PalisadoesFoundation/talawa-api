@@ -27,7 +27,7 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
  * and ensures proper authorization before performing the check-in operation.
  *
  * @param _parent - The parent resolver.
- * @param args - Arguments containing data for the check-in, including the eventId, userId, allotedSeat, and allotedRoom.
+ * @param args - Arguments containing data for the check-in, including the eventId, userId
  * @param context - Context object containing user authentication and request information.
  * @returns The check-in data if successful.
  * @throws NotFoundError if the current user, event, or attendee is not found.
