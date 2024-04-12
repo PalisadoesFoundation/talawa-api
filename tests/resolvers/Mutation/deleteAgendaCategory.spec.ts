@@ -14,7 +14,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser } from "../../helpers/userAndOrg";
 import type {
   TestOrganizationType,
@@ -50,6 +50,18 @@ beforeAll(async () => {
     },
     {
       $set: {
+        joinedOrganizations: [testOrganization._id],
+        adminFor: [testOrganization._id],
+      },
+    },
+  );
+
+  await AppUserProfile.updateOne(
+    {
+      userId: testAdminUser?._id,
+    },
+    {
+      $set: {
         createdOrganizations: [testOrganization._id],
         adminFor: [testOrganization._id],
       },
@@ -61,6 +73,10 @@ beforeAll(async () => {
     createdBy: testAdminUser?._id,
     createdAt: new Date(),
   });
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message,
+  );
 });
 
 afterAll(async () => {
@@ -207,7 +223,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
       id: sampleAgendaCategory?._id,
     };
     const context = {
-      userId: testAdminUser?._id,
+      userId: testUser?._id,
     };
 
     try {
@@ -218,16 +234,4 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
       );
     }
   });
-  // it("deletes an agenda category successfully", async () => {
-  //   const args = {
-  //     id: sampleAgendaCategory?._id,
-  //   };
-  //   const context = {
-  //     userId: testAdminUser?._id,
-  //   };
-  //   const result = await deleteAgendaCategory?.({}, args, context);
-  //   expect(result).toEqual(args.id);
-  //   // Verify that the agenda category is deleted from the database
-
-  // });
 });
