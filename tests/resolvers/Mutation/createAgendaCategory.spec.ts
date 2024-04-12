@@ -110,7 +110,6 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
   });
 
   it(`throws an error if the user is not found`, async () => {
-    const userId = new Types.ObjectId().toString();
     try {
       const args: MutationCreateAgendaCategoryArgs = {
         input: {
@@ -121,7 +120,7 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       };
 
       const context = {
-        userId: userId, // A random ID that does not exist in the database
+        userId: new Types.ObjectId().toString(), // A random ID that does not exist in the database
       };
 
       const { createAgendaCategory: createAgendaCategoryResolver } =
