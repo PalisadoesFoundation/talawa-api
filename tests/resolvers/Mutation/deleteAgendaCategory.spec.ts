@@ -10,6 +10,7 @@ import {
 } from "../../../src/models";
 import {
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -56,7 +57,7 @@ beforeAll(async () => {
   );
   sampleAgendaCategory = await AgendaCategoryModel.create({
     name: "Sample Agenda Category",
-    organization: testOrganization?._id,
+    organizationId: testOrganization?._id,
     createdBy: testAdminUser?._id,
     createdAt: new Date(),
   });
@@ -112,6 +113,28 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
       );
     }
   });
+
+  it("throws UnauthorizedError if organizationId not found", async () => {
+    const newSampleAgendaCategory = await AgendaCategoryModel.create({
+      name: "Sample Agenda Categoryyyy",
+      createdBy: testAdminUser?._id,
+      createdAt: new Date(),
+    });
+    try {
+      const args = {
+        id: newSampleAgendaCategory?._id.toString(),
+      };
+      const context = {
+        userId: testAdminUser?._id,
+      };
+      await deleteAgendaCategory?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
+    }
+  });
+
   it(`removes the agenda category and returns it as superadmin`, async () => {
     const superAdminTestUser = await User.findOneAndUpdate(
       {
@@ -126,7 +149,7 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
     );
     const newTestAgendaCategory = await AgendaCategoryModel.create({
       name: "Sample Agenda Category",
-      organization: testOrganization?._id,
+      organizationId: testOrganization?._id,
       createdBy: superAdminTestUser?._id,
       createdAt: Date.now(),
     });

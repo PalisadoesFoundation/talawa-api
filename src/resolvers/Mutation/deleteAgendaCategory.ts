@@ -3,6 +3,7 @@ import { errors, requestContext } from "../../libraries";
 import { AgendaCategoryModel, AppUserProfile, User } from "../../models";
 import {
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
@@ -62,7 +63,15 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
       .select("organizationId")
       .lean();
 
-    const currentOrgId = currentOrg?.organizationId?.toString() || "";
+    if (!currentOrg || !currentOrg.organizationId) {
+      throw new errors.NotFoundError(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    const currentOrgId = currentOrg.organizationId?.toString();
 
     const currentUserIsOrgAdmin = currentAppUserProfile.adminFor.some(
       (organizationId) =>
