@@ -12,7 +12,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { ApplicationError } from "../../../src/libraries/errors";
-import { Advertisement } from "../../../src/models";
+import { Advertisement, AppUserProfile } from "../../../src/models";
 import { updateAdvertisement as updateAdvertisementResolver } from "../../../src/resolvers/Mutation/updateAdvertisement";
 import type { MutationUpdateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
@@ -29,10 +29,12 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdvertisement: TestAdvertisementType;
 let testSuperAdmin: TestSuperAdminType;
+let testAdminUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
+  testAdminUser = await createTestUser();
   testSuperAdmin = await createTestSuperAdmin();
   testAdvertisement = await createTestAdvertisement();
 });
@@ -136,7 +138,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     }
   });
 
-  it.skip(`updates the advertisement with _id === args.id and returns it`, async () => {
+  it(`updates the advertisement with _id === args.id and returns it`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
@@ -191,7 +193,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     expect(advertisement).toEqual({ advertisement: expectedAdvertisement });
   });
 
-  it.skip(`updates the advertisement media and returns it`, async () => {
+  it(`updates the advertisement media and returns it`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
@@ -392,6 +394,39 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       expect(spy).toHaveBeenLastCalledWith(FIELD_NON_EMPTY_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${FIELD_NON_EMPTY_ERROR.MESSAGE}`,
+      );
+    }
+  });
+  it("throws UnauthorizedError if the user does not have an app profile", async () => {
+    await AppUserProfile.deleteOne({ userId: testAdminUser?._id });
+
+    try {
+      const { requestContext } = await import("../../../src/libraries");
+
+      vi.spyOn(requestContext, "translate").mockImplementationOnce(
+        (message: string) => `Translated ${message}`,
+      );
+      const args: MutationUpdateAdvertisementArgs = {
+        input: {
+          _id: testAdvertisement._id,
+          name: "New Advertisement Name",
+          mediaFile: "data:image/png;base64,bWaWEgY29udGVudA==",
+          type: "POPUP",
+          startDate: new Date(new Date().getFullYear() + 0, 11, 31)
+            .toISOString()
+            .split("T")[0],
+          endDate: new Date(new Date().getFullYear() + 1, 11, 31)
+            .toISOString()
+            .split("T")[0],
+        },
+      };
+
+      const context = { userId: testAdminUser?._id };
+
+      await updateAdvertisementResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
