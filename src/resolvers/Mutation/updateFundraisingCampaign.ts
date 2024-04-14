@@ -97,7 +97,7 @@ export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCamp
       .select("organizationId")
       .lean();
 
-    const currentOrgId = currentOrg?.organizationId?.toString() || "";
+    const currentOrgId = currentOrg?.organizationId?.toString();
 
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
@@ -105,10 +105,7 @@ export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCamp
     );
 
     //Checks if the user is authorized to update the fundraising campaign
-    if (
-      !currentUserIsOrgAdmin ||
-      currentUserAppProfile.isSuperAdmin === false
-    ) {
+    if (!(currentUserIsOrgAdmin || currentUserAppProfile.isSuperAdmin)) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -121,6 +118,7 @@ export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCamp
       const exisitingCampaign = await FundraisingCampaign.findOne({
         name: args.data.name,
       });
+
       if (exisitingCampaign) {
         throw new errors.ConflictError(
           requestContext.translate(FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE),
