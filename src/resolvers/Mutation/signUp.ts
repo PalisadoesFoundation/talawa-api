@@ -56,7 +56,6 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     await cacheOrganizations([organization]);
   }
   if (!organization) {
-    console.log("here");
     throw new errors.NotFoundError(
       requestContext.translate(
         ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
@@ -145,7 +144,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   copyToClipboard(`{
     "Authorization": "Bearer ${accessToken}"
   }`);
-  const updatedUser = (await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: createdUser._id,
     },
@@ -155,24 +154,30 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     {
       new: true,
     },
-  )) as InterfaceUser & Document<unknown, unknown, InterfaceUser>;
+  )
+    .populate("joinedOrganizations")
+    .populate("registeredEvents")
+    .populate("membershipRequests")
+    .populate("organizationsBlockedBy");
+
   if (updatedUser) {
     createdUser = updatedUser;
   }
 
-  const filteredCreatedUser = updatedUser.toObject();
+  const filteredCreatedUser = updatedUser?.toObject();
   appUserProfile = await AppUserProfile.findOne({
     userId: updatedUser?._id.toString(),
   })
     .populate("createdOrganizations")
     .populate("createdEvents")
     .populate("eventAdmin")
-    .populate("adminFor");
+    .populate("adminFor")
+    .lean();
 
-  delete filteredCreatedUser.password;
+  delete filteredCreatedUser?.password;
 
   return {
-    user: filteredCreatedUser,
+    user: filteredCreatedUser as InterfaceUser,
     appUserProfile: appUserProfile as InterfaceAppUserProfile,
     accessToken,
     refreshToken,

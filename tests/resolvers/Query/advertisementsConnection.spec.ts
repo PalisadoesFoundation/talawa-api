@@ -9,7 +9,11 @@ import {
 } from "../../../src/resolvers/Query/advertisementsConnection";
 import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
 import { type TestAdvertisementType } from "../../helpers/advertisement";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import type {
   TestOrganizationType,
   TestUserType,
@@ -25,6 +29,7 @@ let testUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
   testUserAndOrganization = await createTestUserAndOrganization();
   testOrganization = testUserAndOrganization[1];
   testUser = testUserAndOrganization[0];
@@ -105,7 +110,7 @@ describe("resolvers -> Organization -> Advertisement", () => {
       ],
       pageInfo: {
         endCursor: testAdvertisement1?._id.toString(),
-        hasNextPage: true,
+        hasNextPage: false,
         hasPreviousPage: false,
         startCursor: testAdvertisement2?._id.toString(),
       },

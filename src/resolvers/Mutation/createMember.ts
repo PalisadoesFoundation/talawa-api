@@ -7,10 +7,18 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { requestContext } from "../../libraries";
-import type { InterfaceOrganization } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceOrganization,
+  InterfaceUser,
+} from "../../models";
 import { AppUserProfile, Organization, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to add a member.
@@ -32,9 +40,17 @@ export const createMember: MutationResolvers["createMember"] = async (
   context,
 ) => {
   // Checks whether the current user is a superAdmin
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   if (!currentUser) {
     // throw new errors.NotFoundError(
@@ -52,9 +68,20 @@ export const createMember: MutationResolvers["createMember"] = async (
       ],
     };
   }
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
+
   if (!currentUserAppProfile) {
     // throw new errors.UnauthorizedError(
     //   requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -109,8 +136,8 @@ export const createMember: MutationResolvers["createMember"] = async (
   }
   const userIsOrganizationAdmin = organization.admins.some(
     (admin) =>
-      admin === currentUser._id ||
-      new Types.ObjectId(admin).equals(currentUser._id),
+      admin === currentUser?._id ||
+      new Types.ObjectId(admin).equals(currentUser?._id),
   );
   if (!userIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
     return {

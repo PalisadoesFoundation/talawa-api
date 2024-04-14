@@ -1,12 +1,14 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import {
   EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { InterfaceEventVolunteerGroup } from "../../models";
-import { EventVolunteerGroup, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceEventVolunteerGroup, InterfaceUser } from "../../models";
+import { EventVolunteerGroup, User } from "../../models";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to update the Event Volunteer Group
  * @param _parent - parent of current request
@@ -19,9 +21,17 @@ import { errors, requestContext } from "../../libraries";
  */
 export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerGroup"] =
   async (_parent, args, context) => {
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     if (!currentUser) {
       throw new errors.NotFoundError(
