@@ -3,9 +3,12 @@ import {
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, ActionItemCategory } from "../../models";
+import type { InterfaceUser } from "../../models";
+import { ActionItemCategory, User } from "../../models";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { adminCheck } from "../../utilities";
 /**
  * This function enables to update a actionItemCategory.
@@ -27,9 +30,17 @@ type UpdateActionItemCategoryInputType = {
 
 export const updateActionItemCategory: MutationResolvers["updateActionItemCategory"] =
   async (_parent, args, context) => {
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    });
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     // Checks if the user exists
     if (currentUser === null) {

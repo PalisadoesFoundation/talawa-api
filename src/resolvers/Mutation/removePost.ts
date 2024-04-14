@@ -5,15 +5,23 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfacePost } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfacePost,
+  InterfaceUser,
+} from "../../models";
 import { AppUserProfile, Organization, Post, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { cachePosts } from "../../services/PostCache/cachePosts";
 import { deletePostFromCache } from "../../services/PostCache/deletePostFromCache";
 import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { deletePreviousImage as deleteImage } from "../../utilities/encodedImageStorage/deletePreviousImage";
 import { deletePreviousVideo as deleteVideo } from "../../utilities/encodedVideoStorage/deletePreviousVideo";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 /**
  * This function enables to remove a post.
  * @param _parent - parent of current request
@@ -33,9 +41,17 @@ export const removePost: MutationResolvers["removePost"] = async (
   context,
 ) => {
   // Get the currentUser with _id === context.userId exists.
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   // Get the currentUser with _id === context.userId exists.
   if (!currentUser) {
@@ -45,9 +61,19 @@ export const removePost: MutationResolvers["removePost"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),

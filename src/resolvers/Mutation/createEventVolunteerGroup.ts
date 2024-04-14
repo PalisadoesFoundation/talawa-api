@@ -1,11 +1,14 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { Event, User, EventVolunteerGroup } from "../../models";
 import {
   EVENT_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceUser } from "../../models";
+import { Event, EventVolunteerGroup, User } from "../../models";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables to create an event volunteer group
@@ -21,7 +24,17 @@ import { errors, requestContext } from "../../libraries";
 
 export const createEventVolunteerGroup: MutationResolvers["createEventVolunteerGroup"] =
   async (_parent, args, context) => {
-    const currentUser = await User.findOne({ _id: context.userId }).lean();
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
     if (!currentUser) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -39,7 +52,7 @@ export const createEventVolunteerGroup: MutationResolvers["createEventVolunteerG
     }
 
     const userIsEventAdmin = event.admins.some(
-      (admin) => admin.toString() === currentUser._id.toString(),
+      (admin) => admin.toString() === currentUser?._id.toString(),
     );
 
     if (!userIsEventAdmin) {
