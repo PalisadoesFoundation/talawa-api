@@ -1,23 +1,31 @@
 import {
-  EVENT_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
   ATTENDEE_NOT_FOUND,
-  USER_NOT_CHECKED_IN,
+  EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_CHECKED_OUT,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_CHECKED_IN,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceEvent,
+  InterfaceUser,
+} from "../../models";
 import {
-  User,
+  AppUserProfile,
+  CheckOut,
   Event,
   EventAttendee,
-  CheckOut,
-  AppUserProfile,
+  User,
 } from "../../models";
-import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * Handles the check-out process for event attendees.
@@ -46,9 +54,17 @@ export const checkOut: MutationResolvers["checkOut"] = async (
   args,
   context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   if (currentUser === null) {
     throw new errors.NotFoundError(
@@ -57,9 +73,19 @@ export const checkOut: MutationResolvers["checkOut"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
 
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(

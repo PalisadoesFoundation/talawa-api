@@ -2,6 +2,7 @@ import "dotenv/config";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities/userFamilyAdminCheck";
+import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import { UserFamily } from "../../models/userFamily";
 import type { InterfaceUserFamily } from "../../models/userFamily";
@@ -10,6 +11,8 @@ import {
   USER_ALREADY_MEMBER_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
 /**
  * This function adds user to the family.
  * @param _parent - parent of current request
@@ -28,10 +31,17 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
       _id: args.familyId,
     }).lean();
 
-    const currentUser = await User.findById({
-      _id: context.userId,
-    });
-
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
     // Checks whether user with _id === args.userId exists.
     if (currentUser === null) {
       throw new errors.NotFoundError(

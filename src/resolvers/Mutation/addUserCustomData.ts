@@ -1,11 +1,14 @@
-import { UserCustomData } from "../../models/UserCustomData";
-import { Organization, User } from "../../models";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceUser } from "../../models";
+import { Organization, User } from "../../models";
+import { UserCustomData } from "../../models/UserCustomData";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables a user to add data for a custom field for a joined organization.
@@ -24,7 +27,17 @@ export const addUserCustomData: MutationResolvers["addUserCustomData"] = async (
 ) => {
   const { organizationId, dataName, dataValue } = args;
 
-  const currentUser = await User.findOne({ _id: context.userId });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),

@@ -4,11 +4,14 @@ import {
   USER_NOT_MADE_PLEDGE_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import {
   FundraisingCampaignPledge,
   type InterfaceFundraisingCampaignPledges,
 } from "../../models/FundraisingCampaignPledge";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { validateDate } from "../../utilities/dateValidator";
 
@@ -32,9 +35,17 @@ export const updateFundraisingCampaignPledge: MutationResolvers["updateFundraisi
     args,
     context,
   ): Promise<InterfaceFundraisingCampaignPledges> => {
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     // Checks whether currentUser exists.
     if (!currentUser) {

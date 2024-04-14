@@ -12,6 +12,7 @@ import { connect, disconnect } from "../../helpers/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createTestEvent } from "../../helpers/events";
 import type { TestUserType } from "../../helpers/userAndOrg";
+import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -19,6 +20,7 @@ let testUser: TestUserType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = (await createTestEvent())[0];
+  await deleteUserFromCache(testUser?._id);
 });
 
 afterAll(async () => {
