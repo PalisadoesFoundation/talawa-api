@@ -1,6 +1,6 @@
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -59,39 +59,36 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> createAgendaSection", () => {
   it("throws NotFoundError if no user exists with _id === userId", async () => {
+    const args: MutationCreateAgendaSectionArgs = {
+      input: {
+        relatedEvent: testEvent?._id.toString(),
+        description: "Sample Description",
+        sequence: 1,
+      },
+    };
+
+    const context = { userId: new Types.ObjectId().toString() };
+
+    const { createAgendaSection: createAgendaSectionResolverError } =
+      await import("../../../src/resolvers/Mutation/createAgendaSection");
     try {
-      const args: MutationCreateAgendaSectionArgs = {
-        input: {
-          relatedEvent: testEvent?._id,
-          description: "Sample Description",
-          sequence: 1,
-        },
-      };
-
-      const context = {
-        userId: new Types.ObjectId().toString(),
-      };
-      const { createAgendaSection: createAgendaSectionResolverError } =
-        await import("../../../src/resolvers/Mutation/createAgendaSection");
-
       await createAgendaSectionResolverError?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
-  it("Should throw an error if the event is not found", async () => {
+  it("should throw an error if the event is not found", async () => {
     const args: MutationCreateAgendaSectionArgs = {
       input: {
-        relatedEvent: testEvent?._id,
-        description: "Description1",
-        sequence: 3,
+        relatedEvent: new Types.ObjectId().toString(),
+        description: "Description for non-existent event",
+        sequence: 2,
       },
     };
 
-    const context = {
-      userId: testAdminUser?._id,
-    };
+    const context = { userId: testAdminUser?._id };
+
     const { createAgendaSection: createAgendaSectionResolverError } =
       await import("../../../src/resolvers/Mutation/createAgendaSection");
     try {
@@ -101,23 +98,31 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
     }
   });
 
-  it("throws UnauthorizedError if user is not an admin for the related organization", async () => {
+  it("throws UnauthorizedError if user is not an admin for the related organization or event and not a super admin", async () => {
+    const args: MutationCreateAgendaSectionArgs = {
+      input: {
+        relatedEvent: testEvent?._id.toString(),
+        description: "Description requiring admin rights",
+        sequence: 3,
+      },
+    };
+    await AppUserProfile.create({
+      userId: testUser?._id,
+      adminFor: [],
+      isSuperAdmin: false,
+    });
+
+    await Event.findByIdAndUpdate(
+      testEvent?._id,
+      { $pull: { admins: testUser?._id } },
+      { new: true },
+    );
+
+    const context = { userId: testUser?._id };
+
+    const { createAgendaSection: createAgendaSectionResolverError } =
+      await import("../../../src/resolvers/Mutation/createAgendaSection");
     try {
-      const args: MutationCreateAgendaSectionArgs = {
-        input: {
-          relatedEvent: testEvent?._id,
-          description: "Description!",
-          sequence: 2,
-        },
-      };
-
-      const context = {
-        userId: testUser2?._id,
-      };
-
-      const { createAgendaSection: createAgendaSectionResolverError } =
-        await import("../../../src/resolvers/Mutation/createAgendaSection");
-
       await createAgendaSectionResolverError?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
@@ -125,80 +130,31 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
       );
     }
   });
+  it("throws UnauthorizedError if user's organization ID does not match event's organization ID", async () => {
+    await AppUserProfile.findOneAndUpdate(
+      { userId: testUser?._id },
+      { $set: { adminFor: [new Types.ObjectId()], isSuperAdmin: false } },
+      { new: true, upsert: true },
+    );
 
-  it("throws UnauthorizedError if user is not an admin for the related organization (SUPERADMIN check)", async () => {
+    const args = {
+      input: {
+        relatedEvent: testEvent?._id.toString(),
+        description: "Org ID Mismatch",
+        sequence: 4,
+      },
+    };
+
+    const context = { userId: testUser?._id };
+
+    const { createAgendaSection: createAgendaSectionResolverError } =
+      await import("../../../src/resolvers/Mutation/createAgendaSection");
     try {
-      // Create a new user without organization admin permissions
-      const anotherUser = await createTestUser();
-
-      const args: MutationCreateAgendaSectionArgs = {
-        input: {
-          relatedEvent: testEvent?._id?.toString(),
-          description: "Sample desc2",
-          sequence: 2,
-        },
-      };
-
-      const context = {
-        userId: anotherUser?._id,
-      };
-
-      const { createAgendaSection: createAgendaSectionResolverError } =
-        await import("../../../src/resolvers/Mutation/createAgendaSection");
-
       await createAgendaSectionResolverError?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
-    }
-  });
-
-  it("throws UnauthorizedError if user is not an event admin", async () => {
-    try {
-      const args: MutationCreateAgendaSectionArgs = {
-        input: {
-          relatedEvent: testEvent?._id?.toString(),
-          description: "sample desc",
-          sequence: 0,
-        },
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      const { createAgendaSection: createAgendaSectionResolverError } =
-        await import("../../../src/resolvers/Mutation/createAgendaSection");
-
-      await createAgendaSectionResolverError?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
-    }
-  });
-
-  it("throws UnauthorizedError if related event is not found", async () => {
-    try {
-      const args: MutationCreateAgendaSectionArgs = {
-        input: {
-          relatedEvent: new Types.ObjectId().toString(),
-          description: "sample desc 2",
-          sequence: 0,
-        },
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      const { createAgendaSection: createAgendaSectionResolverError } =
-        await import("../../../src/resolvers/Mutation/createAgendaSection");
-
-      await createAgendaSectionResolverError?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -207,9 +163,14 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
       input: {
         relatedEvent: testEvent?._id?.toString(),
         description: "samp desc",
-        sequence: 1,
+        sequence: 5,
       },
     };
+    await AppUserProfile.create({
+      userId: testAdminUser?._id,
+      adminFor: [testOrganization?._id],
+      isSuperAdmin: false,
+    });
 
     const context = {
       userId: testAdminUser?._id,
@@ -222,33 +183,25 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
     const result = await createAgendaSectionResolver?.({}, args, context);
     expect(result).toBeDefined();
   });
+
   it("throws an error if user does not have appUserProfile", async () => {
-    await AppUserProfile.deleteOne({
-      userId: testUser?._id,
-    });
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+    await AppUserProfile.deleteMany({ userId: testUser2?._id });
+
     const args: MutationCreateAgendaSectionArgs = {
       input: {
-        relatedEvent: testEvent?._id?.toString(),
-        description: "desc",
-        sequence: 1,
+        relatedEvent: testEvent?._id.toString(),
+        description: "Trying to create without user profile",
+        sequence: 6,
       },
     };
 
-    const context = {
-      userId: testAdminUser?._id,
-    };
+    const context = { userId: testUser2?._id };
 
-    const { createAgendaSection: createAgendaSectionResolver } = await import(
-      "../../../src/resolvers/Mutation/createAgendaSection"
-    );
+    const { createAgendaSection: createAgendaSectionResolverError } =
+      await import("../../../src/resolvers/Mutation/createAgendaSection");
     try {
-      await createAgendaSectionResolver?.({}, args, context);
+      await createAgendaSectionResolverError?.({}, args, context);
     } catch (error: unknown) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );

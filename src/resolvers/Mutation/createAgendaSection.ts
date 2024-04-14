@@ -1,10 +1,9 @@
-import { Types } from "mongoose";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { errors, requestContext } from "../../libraries";
+import { errors } from "../../libraries";
 import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
 import { AgendaSectionModel, AppUserProfile, Event, User } from "../../models";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
@@ -61,7 +60,7 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
     }
     if (!currentAppUserProfile) {
       throw new errors.UnauthenticatedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
         USER_NOT_AUTHORIZED_ERROR.CODE,
         USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
@@ -81,20 +80,15 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
       const currentUserIsOrganizationAdmin =
         currentAppUserProfile.adminFor.some(
           (organizationId) =>
-            (organizationId && organizationId === event?.organization) ||
-            new Types.ObjectId(organizationId?.toString()).equals(
-              event?.organization,
-            ),
+            organizationId && organizationId === event?.organization,
         );
       const currentUserIsEventAdmin = event.admins.some((admin) =>
         admin.equals(currentUser?._id),
       );
       if (
-        !(
-          currentUserIsOrganizationAdmin ||
-          currentUserIsEventAdmin ||
-          !currentAppUserProfile.isSuperAdmin
-        )
+        !currentUserIsOrganizationAdmin &&
+        !currentUserIsEventAdmin &&
+        !currentAppUserProfile.isSuperAdmin
       ) {
         throw new errors.UnauthorizedError(
           USER_NOT_AUTHORIZED_ERROR.MESSAGE,
