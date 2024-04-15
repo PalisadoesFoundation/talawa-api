@@ -52,7 +52,7 @@ describe("resolvers -> Query -> event", () => {
       .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
-
+    console.log(event, eventPayload);
     expect(eventPayload).toEqual(event);
   });
 });

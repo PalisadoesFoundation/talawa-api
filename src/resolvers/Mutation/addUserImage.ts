@@ -1,8 +1,10 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import type { InterfaceUser } from "../../models/User";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function adds User Image.
@@ -18,10 +20,17 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
   args,
   context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
-
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(

@@ -1251,7 +1251,6 @@ export type Mutation = {
   updateUserProfile: User;
   updateUserRoleInOrganization: Organization;
   updateUserTag?: Maybe<UserTag>;
-  updateUserType: Scalars['Boolean']['output'];
 };
 
 
@@ -1903,11 +1902,6 @@ export type MutationUpdateUserTagArgs = {
   input: UpdateUserTagInput;
 };
 
-
-export type MutationUpdateUserTypeArgs = {
-  data: UpdateUserTypeInput;
-};
-
 export type OtpInput = {
   email: Scalars['EmailAddress']['input'];
 };
@@ -2234,6 +2228,7 @@ export type Query = {
   getFundraisingCampaignById: FundraisingCampaign;
   getFundraisingCampaignPledgeById: FundraisingCampaignPledge;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
+  getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']['output']>;
   isSampleOrganization: Scalars['Boolean']['output'];
@@ -2396,6 +2391,15 @@ export type QueryGetFundraisingCampaignByIdArgs = {
 
 export type QueryGetFundraisingCampaignPledgeByIdArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetVenueByOrgIdArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<VenueOrderByInput>;
+  orgId: Scalars['ID']['input'];
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  where?: InputMaybe<VenueWhereInput>;
 };
 
 
@@ -2759,11 +2763,6 @@ export type UpdateUserTagInput = {
   tagColor: Scalars['String']['input'];
 };
 
-export type UpdateUserTypeInput = {
-  id?: InputMaybe<Scalars['ID']['input']>;
-  userType?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type User = {
   __typename?: 'User';
   _id: Scalars['ID']['output'];
@@ -3006,6 +3005,17 @@ export type VenueInput = {
   file?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   organizationId: Scalars['ID']['input'];
+};
+
+export type VenueOrderByInput =
+  | 'capacity_ASC'
+  | 'capacity_DESC';
+
+export type VenueWhereInput = {
+  description_contains?: InputMaybe<Scalars['String']['input']>;
+  description_starts_with?: InputMaybe<Scalars['String']['input']>;
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+  name_starts_with?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type WeekDays =
@@ -3293,7 +3303,6 @@ export type ResolversTypes = {
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTagInput: UpdateUserTagInput;
-  UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   User: ResolverTypeWrapper<InterfaceUserModel>;
   UserAndOrganizationInput: UserAndOrganizationInput;
@@ -3317,6 +3326,8 @@ export type ResolversTypes = {
   UsersConnectionEdge: ResolverTypeWrapper<Omit<UsersConnectionEdge, 'node'> & { node: ResolversTypes['User'] }>;
   Venue: ResolverTypeWrapper<InterfaceVenueModel>;
   VenueInput: VenueInput;
+  VenueOrderByInput: VenueOrderByInput;
+  VenueWhereInput: VenueWhereInput;
   WeekDays: WeekDays;
   createChatInput: CreateChatInput;
   createDirectChatPayload: ResolverTypeWrapper<Omit<CreateDirectChatPayload, 'directChat' | 'userErrors'> & { directChat?: Maybe<ResolversTypes['DirectChat']>, userErrors: Array<ResolversTypes['CreateDirectChatError']> }>;
@@ -3481,7 +3492,6 @@ export type ResolversParentTypes = {
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTagInput: UpdateUserTagInput;
-  UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: Scalars['Upload']['output'];
   User: InterfaceUserModel;
   UserAndOrganizationInput: UserAndOrganizationInput;
@@ -3503,6 +3513,7 @@ export type ResolversParentTypes = {
   UsersConnectionEdge: Omit<UsersConnectionEdge, 'node'> & { node: ResolversParentTypes['User'] };
   Venue: InterfaceVenueModel;
   VenueInput: VenueInput;
+  VenueWhereInput: VenueWhereInput;
   createChatInput: CreateChatInput;
   createDirectChatPayload: Omit<CreateDirectChatPayload, 'directChat' | 'userErrors'> & { directChat?: Maybe<ResolversParentTypes['DirectChat']>, userErrors: Array<ResolversParentTypes['CreateDirectChatError']> };
   createGroupChatInput: CreateGroupChatInput;
@@ -4232,7 +4243,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
   updateUserRoleInOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateUserRoleInOrganizationArgs, 'organizationId' | 'role' | 'userId'>>;
   updateUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationUpdateUserTagArgs, 'input'>>;
-  updateUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateUserTypeArgs, 'data'>>;
 };
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
@@ -4400,6 +4410,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getFundraisingCampaignById?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignByIdArgs, 'id'>>;
   getFundraisingCampaignPledgeById?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignPledgeByIdArgs, 'id'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
+  getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
   isSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<QueryIsSampleOrganizationArgs, 'id'>>;

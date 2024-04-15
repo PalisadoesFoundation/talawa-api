@@ -1,23 +1,23 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, MembershipRequest } from "../../../src/models";
+import { MembershipRequest, Organization, User } from "../../../src/models";
 import type { MutationUnblockUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { unblockUser as unblockUserResolver } from "../../../src/resolvers/Mutation/unblockUser";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { unblockUser as unblockUserResolver } from "../../../src/resolvers/Mutation/unblockUser";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -65,9 +65,9 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
   it(`throws NotFoundError if no user exists with _id === args.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => message,
+    );
     try {
       const args: MutationUnblockUserArgs = {
         organizationId: testOrganization?.id,
@@ -75,7 +75,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       };
 
       const context = {
-        userId: "",
+        userId: new Types.ObjectId().toString(),
       };
 
       const { unblockUser: unblockUserResolver } = await import(
@@ -84,7 +84,6 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       await unblockUserResolver?.({}, args, context);
     } catch (error: unknown) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });

@@ -70,6 +70,7 @@ beforeAll(async () => {
     {
       $push: {
         adminFor: testOrganization?._id,
+        createdOrganizations: testOrganization?._id,
       },
     },
   );

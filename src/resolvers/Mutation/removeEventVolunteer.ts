@@ -3,9 +3,12 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, EventVolunteer, EventVolunteerGroup } from "../../models";
+import type { InterfaceUser } from "../../models";
+import { EventVolunteer, EventVolunteerGroup, User } from "../../models";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables to remove an Event Volunteer.
@@ -21,9 +24,17 @@ import { User, EventVolunteer, EventVolunteerGroup } from "../../models";
 
 export const removeEventVolunteer: MutationResolvers["removeEventVolunteer"] =
   async (_parent, args, context) => {
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     if (!currentUser) {
       throw new errors.NotFoundError(

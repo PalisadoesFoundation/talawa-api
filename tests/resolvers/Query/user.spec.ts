@@ -7,6 +7,7 @@ import { user as userResolver } from "../../../src/resolvers/Query/user";
 import { connect, disconnect } from "../../helpers/db";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
 import type { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
@@ -17,6 +18,7 @@ let testUser: TestUserType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = (await createTestUserAndOrganization())[0];
+  await deleteUserFromCache(testUser?.id);
 });
 
 afterAll(async () => {

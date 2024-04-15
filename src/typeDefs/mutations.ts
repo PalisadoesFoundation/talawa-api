@@ -345,9 +345,5 @@ export const mutations = gql`
       userId: ID!
       role: String!
     ): Organization! @auth
-
-    updateUserType(data: UpdateUserTypeInput!): Boolean!
-      @auth
-      @role(requires: SUPERADMIN)
   }
 `;

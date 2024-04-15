@@ -5,9 +5,11 @@ import {
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { InterfaceEventVolunteer } from "../../models";
+import type { InterfaceEventVolunteer, InterfaceUser } from "../../models";
 import { User, EventVolunteer } from "../../models";
 import { errors, requestContext } from "../../libraries";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
 /**
  * This function enables to update an Event Volunteer
  * @param _parent - parent of current request
@@ -21,9 +23,17 @@ import { errors, requestContext } from "../../libraries";
  */
 export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
   async (_parent, args, context) => {
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     if (!currentUser) {
       throw new errors.NotFoundError(
