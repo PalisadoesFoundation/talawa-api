@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import {
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -96,16 +95,11 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
     )
       .select("organizationId")
       .lean();
-    // console.log(currentOrg);
 
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
-      (organizationId) =>
-        new Types.ObjectId(organizationId?.toString()).equals(
-          currentOrg?.organizationId?.toString() || "",
-        ),
+      (organizationId) => organizationId?.toString() === currentOrg?.toString(),
     );
-    // console.log(currentUserIsOrgAdmin, currentUserAppProfile.isSuperAdmin);
-    // If the user is a normal user, throw an error
+
     if (
       currentUserIsOrgAdmin === false &&
       !currentUserAppProfile.isSuperAdmin
