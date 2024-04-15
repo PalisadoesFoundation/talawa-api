@@ -445,7 +445,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.endDate).toBe(null);
+    expect(recurrenceRule?.recurrenceEndDate).toBe(null);
     expect(baseRecurringEvent?.endDate).toBe(null);
 
     const attendeeExists = await EventAttendee.exists({
@@ -474,7 +474,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       data: {
         title: "updated this instance",
       },
-      recurringEventUpdateType: "ThisInstance",
+      recurringEventUpdateType: "thisInstance",
     };
 
     const context = {
@@ -510,7 +510,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.endDate).toBe(null);
+    expect(recurrenceRule?.recurrenceEndDate).toBe(null);
     expect(baseRecurringEvent?.endDate).toBe(null);
 
     expect(baseRecurringEvent).toEqual(
@@ -554,7 +554,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       data: {
         title: "updated all instance",
       },
-      recurringEventUpdateType: "AllInstances",
+      recurringEventUpdateType: "allInstances",
     };
 
     const context = {
@@ -590,7 +590,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.endDate).toBe(null);
+    expect(recurrenceRule?.recurrenceEndDate).toBe(null);
     expect(baseRecurringEvent?.endDate).toBe(null);
 
     expect(baseRecurringEvent).toEqual(
@@ -641,7 +641,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       data: {
         title: "updated this and following instances",
       },
-      recurringEventUpdateType: "ThisAndFollowingInstances",
+      recurringEventUpdateType: "thisAndFollowingInstances",
     };
 
     const context = {
@@ -677,7 +677,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.endDate).toBe(null);
+    expect(recurrenceRule?.recurrenceEndDate).toBe(null);
     expect(baseRecurringEvent?.endDate).toBe(null);
 
     expect(baseRecurringEvent).toEqual(
@@ -724,7 +724,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       recurrenceRuleData: {
         frequency: "DAILY",
       },
-      recurringEventUpdateType: "ThisAndFollowingInstances",
+      recurringEventUpdateType: "thisAndFollowingInstances",
     };
 
     const context = {
@@ -762,7 +762,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.endDate).toBe(null);
+    expect(recurrenceRule?.recurrenceEndDate).toBe(null);
     expect(recurrenceRule?.frequency).toEqual("DAILY");
     expect(baseRecurringEvent?.endDate).toBe(null);
 
@@ -815,7 +815,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       recurrenceRuleData: {
         frequency: "WEEKLY",
       },
-      recurringEventUpdateType: "ThisAndFollowingInstances",
+      recurringEventUpdateType: "thisAndFollowingInstances",
     };
 
     const context = {
@@ -853,7 +853,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.endDate).toEqual(newEndDate);
+    expect(recurrenceRule?.recurrenceEndDate).toEqual(newEndDate);
     expect(recurrenceRule?.frequency).toEqual("WEEKLY");
     expect(baseRecurringEvent?.endDate).toEqual(newEndDate);
 
@@ -898,7 +898,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       data: {
         title: "updated all instances again",
       },
-      recurringEventUpdateType: "AllInstances",
+      recurringEventUpdateType: "allInstances",
     };
 
     const context = {
@@ -977,7 +977,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       recurrenceRuleData: {
         frequency: "DAILY",
       },
-      recurringEventUpdateType: "ThisAndFollowingInstances",
+      recurringEventUpdateType: "thisAndFollowingInstances",
     };
 
     const context = {
@@ -1015,7 +1015,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.endDate).toEqual(null);
+    expect(recurrenceRule?.recurrenceEndDate).toEqual(null);
     expect(recurrenceRule?.frequency).toEqual("DAILY");
     expect(baseRecurringEvent?.endDate).toEqual(null);
 
@@ -1060,7 +1060,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       data: {
         title: "instances following the old recurrence rule",
       },
-      recurringEventUpdateType: "ThisAndFollowingInstances",
+      recurringEventUpdateType: "thisAndFollowingInstances",
     };
 
     const context = {
@@ -1096,7 +1096,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.endDate).not.toEqual(null);
+    expect(recurrenceRule?.recurrenceEndDate).not.toEqual(null);
     expect(recurrenceRule?.frequency).toEqual("WEEKLY");
     expect(baseRecurringEvent?.endDate).toEqual(null);
 
@@ -1149,7 +1149,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         title: "exception instance",
         isRecurringEventException: true,
       },
-      recurringEventUpdateType: "ThisInstance",
+      recurringEventUpdateType: "thisInstance",
     };
 
     const context = {
@@ -1186,7 +1186,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.endDate).not.toEqual(null);
+    expect(recurrenceRule?.recurrenceEndDate).not.toEqual(null);
     expect(recurrenceRule?.frequency).toEqual("WEEKLY");
     expect(baseRecurringEvent?.endDate).toEqual(null);
 
@@ -1231,7 +1231,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       data: {
         title: "update all but the exception",
       },
-      recurringEventUpdateType: "AllInstances",
+      recurringEventUpdateType: "allInstances",
     };
 
     const context = {
@@ -1270,7 +1270,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.endDate).not.toEqual(null);
+    expect(recurrenceRule?.recurrenceEndDate).not.toEqual(null);
     expect(recurrenceRule?.frequency).toEqual("WEEKLY");
     expect(baseRecurringEvent?.endDate).toEqual(null);
 

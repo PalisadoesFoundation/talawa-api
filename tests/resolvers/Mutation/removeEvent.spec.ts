@@ -348,7 +348,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
     const args: MutationRemoveEventArgs = {
       id: recurringEventInstance?._id.toString(),
-      recurringEventDeleteType: "ThisInstance",
+      recurringEventDeleteType: "thisInstance",
     };
 
     const context = {
@@ -456,7 +456,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
     const args: MutationRemoveEventArgs = {
       id: recurringEventInstance?._id.toString(),
-      recurringEventDeleteType: "ThisAndFollowingInstances",
+      recurringEventDeleteType: "thisAndFollowingInstances",
     };
 
     const context = {
@@ -572,7 +572,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       recurrenceRuleData: {
         frequency: "DAILY",
       },
-      recurringEventUpdateType: "ThisAndFollowingInstances",
+      recurringEventUpdateType: "thisAndFollowingInstances",
     };
 
     const updateEventContext = {
@@ -591,7 +591,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
     const args: MutationRemoveEventArgs = {
       id: recurringEventInstance?._id.toString(),
-      recurringEventDeleteType: "ThisAndFollowingInstances",
+      recurringEventDeleteType: "thisAndFollowingInstances",
     };
 
     const context = {
@@ -727,7 +727,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
     const args: MutationRemoveEventArgs = {
       id: testRecurringEvent?._id.toString(),
-      recurringEventDeleteType: "AllInstances",
+      recurringEventDeleteType: "allInstances",
     };
 
     const context = {

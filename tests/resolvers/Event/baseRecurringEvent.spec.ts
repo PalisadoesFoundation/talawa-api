@@ -37,6 +37,7 @@ describe("resolvers -> Event -> baseRecurringEvent", () => {
   it(`returns the base recurring event object for parent event`, async () => {
     let startDate = new Date();
     startDate = convertToUTCDate(startDate);
+    const endDate = startDate;
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -50,9 +51,11 @@ describe("resolvers -> Event -> baseRecurringEvent", () => {
         location: "newLocation",
         recurring: true,
         startDate,
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "WEEKLY",
         weekDays: ["MONDAY", "TUESDAY", "WEDNESDAY"],
         count: 10,

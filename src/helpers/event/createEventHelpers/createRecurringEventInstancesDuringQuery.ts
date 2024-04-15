@@ -61,9 +61,9 @@ export const createRecurringEventInstancesDuringQuery = async (
       // get the properties from recurrenceRule
       const {
         _id: recurrenceRuleId,
-        latestInstanceDate,
+        recurrenceEndDate,
         recurrenceRuleString,
-        endDate: recurrenceEndDate,
+        latestInstanceDate,
         count: totalInstancesCount,
       } = recurrenceRule;
 

@@ -423,6 +423,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     vi.useFakeTimers();
 
     const startDate = convertToUTCDate(new Date());
+    const endDate = startDate;
 
     const eventArgs: MutationCreateEventArgs = {
       data: {
@@ -436,10 +437,11 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         location: "newLocation",
         recurring: true,
         startDate,
-        startTime: startDate.toUTCString(),
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "DAILY",
       },
     };
@@ -476,7 +478,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     let recurrenceRule = await RecurrenceRule.findOne({
       frequency: Frequency.DAILY,
-      startDate,
+      recurrenceStartDate: startDate,
     });
 
     const { recurrenceRuleString } = recurrenceRule as InterfaceRecurrenceRule;
@@ -509,7 +511,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     recurrenceRule = await RecurrenceRule.findOne({
       frequency: Frequency.DAILY,
-      startDate,
+      recurrenceStartDate: startDate,
     });
 
     const queryUptoDate = addYears(
@@ -535,6 +537,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     vi.useFakeTimers();
 
     const startDate = convertToUTCDate(new Date());
+    const endDate = startDate;
 
     const eventArgs: MutationCreateEventArgs = {
       data: {
@@ -548,10 +551,11 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         location: "newLocation",
         recurring: true,
         startDate,
-        startTime: startDate.toUTCString(),
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "WEEKLY",
         count: 150,
       },
@@ -589,7 +593,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     let recurrenceRule = await RecurrenceRule.findOne({
       frequency: Frequency.WEEKLY,
-      startDate,
+      recurrenceStartDate: startDate,
     });
 
     const { recurrenceRuleString } = recurrenceRule as InterfaceRecurrenceRule;
@@ -628,7 +632,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     recurrenceRule = await RecurrenceRule.findOne({
       frequency: Frequency.WEEKLY,
-      startDate,
+      recurrenceStartDate: startDate,
     });
 
     const queryUptoDate = addYears(

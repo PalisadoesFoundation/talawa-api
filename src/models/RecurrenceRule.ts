@@ -29,8 +29,8 @@ export interface InterfaceRecurrenceRule {
   organizationId: PopulatedDoc<InterfaceOrganization & Document>;
   baseRecurringEventId: PopulatedDoc<InterfaceEvent & Document>;
   recurrenceRuleString: string;
-  startDate: Date;
-  endDate: Date;
+  recurrenceStartDate: Date;
+  recurrenceEndDate: Date;
   frequency: Frequency;
   weekDays: WeekDays[];
   interval: number;
@@ -44,14 +44,14 @@ export interface InterfaceRecurrenceRule {
  * @param organizationId - _id of the organization the evevnts following this recurrence rule belong to
  * @param baseRecurringEventId - _id of the base event common to the recurrence pattern
  * @param recurrenceRuleString - An rrule string representing the recurrence pattern
- * @param startDate - Start date of the recurrence pattern (not necessarily the startDate of the first recurring instance)
- * @param endDate - Start date of the recurrence pattern (not necessarily the startDate of the last recurring instance)
+ * @param recurrenceStartDate - Start date of the recurrence pattern (not necessarily the startDate of the first recurring instance)
+ * @param recurrenceEndDate - Start date of the recurrence pattern (not necessarily the startDate of the last recurring instance)
  * @param frequency - Frequency of recurrence
  * @param weekDays - Array containing the days of the week the recurring instance occurs
  * @param interval - Interval of recurrence (i.e. 1 = every week, 2 = every other week, etc.)
  * @param count - Number of recurring instances
  * @param weekDayOccurenceInMonth - Occurence of week day in the month (i.e. 1 = first monday, 3 = third monday, -1 = last monday)
- * @param latestInstanceDate - The startDate of the last recurring instance generated using this recurrence rule
+ * @param latestInstanceDate - The startDate of the lastest recurring instance generated using this recurrence rule
  */
 
 const recurrenceRuleSchema = new Schema(
@@ -70,11 +70,11 @@ const recurrenceRuleSchema = new Schema(
       type: String,
       required: true,
     },
-    startDate: {
+    recurrenceStartDate: {
       type: Date,
       required: true,
     },
-    endDate: {
+    recurrenceEndDate: {
       type: Date,
       required: false,
     },

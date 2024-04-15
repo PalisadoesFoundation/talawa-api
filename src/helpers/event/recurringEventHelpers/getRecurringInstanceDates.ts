@@ -23,7 +23,7 @@ import {
 export function getRecurringInstanceDates(
   recurrenceRuleString: string,
   recurrenceStartDate: Date,
-  eventEndDate: Date | null,
+  recurrenceEndDate: Date | null,
   queryUptoDate: Date = recurrenceStartDate,
 ): Date[] {
   // get the rrule object
@@ -58,11 +58,11 @@ export function getRecurringInstanceDates(
   }
 
   // if the event has no endDate
-  eventEndDate = eventEndDate || limitEndDate;
+  recurrenceEndDate = recurrenceEndDate || limitEndDate;
 
   // the date upto which we would generate the instances in this operation
   const generateUptoDate = new Date(
-    Math.min(eventEndDate.getTime(), limitEndDate.getTime()),
+    Math.min(recurrenceEndDate.getTime(), limitEndDate.getTime()),
   );
 
   // get the dates of recurrence

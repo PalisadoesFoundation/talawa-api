@@ -1,5 +1,5 @@
 import type mongoose from "mongoose";
-import type { InterfaceEvent , InterfaceRecurrenceRule } from "../../../models";
+import type { InterfaceEvent, InterfaceRecurrenceRule } from "../../../models";
 import {
   AppUserProfile,
   Event,
@@ -51,19 +51,16 @@ export const updateThisAndFollowingInstances = async (
   const { data: updateEventInputData, recurrenceRuleData } = args;
 
   // get the start and end dates for the recurrence
-  const startDate = updateEventInputData?.startDate || recurrenceRule.startDate;
+  // const startDate =
+  //   updateEventInputData?.startDate || recurrenceRule.recurrenceEndDate;
   const endDate =
     updateEventInputData?.endDate || updateEventInputData?.endDate === null
       ? updateEventInputData.endDate
-      : recurrenceRule.endDate;
+      : recurrenceRule.recurrenceEndDate;
 
   // check if the recurrence rule has changed
   if (recurrenceRuleData) {
-    newRecurrenceRuleString = generateRecurrenceRuleString(
-      recurrenceRuleData,
-      startDate,
-      endDate ?? undefined,
-    );
+    newRecurrenceRuleString = generateRecurrenceRuleString(recurrenceRuleData);
   }
 
   if (newRecurrenceRuleString !== recurrenceRule.recurrenceRuleString) {
@@ -213,7 +210,7 @@ export const updateThisAndFollowingInstances = async (
   // update the baseRecurringEvent if it is the latest recurrence rule that the instances are following
   if (
     shouldUpdateBaseRecurringEvent(
-      recurrenceRule?.endDate?.toString(),
+      recurrenceRule?.recurrenceEndDate?.toString(),
       baseRecurringEvent?.endDate?.toString(),
     )
   ) {

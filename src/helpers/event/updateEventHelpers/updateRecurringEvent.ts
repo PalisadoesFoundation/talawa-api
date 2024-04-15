@@ -1,11 +1,10 @@
 import type mongoose from "mongoose";
 import type { InterfaceEvent } from "../../../models";
-import { Event , RecurrenceRule } from "../../../models";
+import { Event, RecurrenceRule } from "../../../models";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import { updateThisInstance } from "./updateThisInstance";
 import { updateAllInstances } from "./updateAllInstances";
 import { updateThisAndFollowingInstances } from "./updateThisAndFollowingInstances";
-
 
 /**
  * This function updates the recurring event.
@@ -39,11 +38,11 @@ export const updateRecurringEvent = async (
     (args.data?.isRecurringEventException !== undefined &&
       args.data?.isRecurringEventException !==
         event.isRecurringEventException) ||
-    args.recurringEventUpdateType === "ThisInstance"
+    args.recurringEventUpdateType === "thisInstance"
   ) {
     // if this is a single update or if the event's exception status has changed
     updatedEvent = await updateThisInstance(args, event, session);
-  } else if (args.recurringEventUpdateType === "AllInstances") {
+  } else if (args.recurringEventUpdateType === "allInstances") {
     // perform a regular bulk update on all the instances
     updatedEvent = await updateAllInstances(
       args,

@@ -53,11 +53,8 @@ export const updateSingleEvent = async (
     const endDate = eventData.endDate ? new Date(eventData.endDate) : null;
 
     // generate a recurrence rule string which would be used to generate rrule object
-    const recurrenceRuleString = generateRecurrenceRuleString(
-      recurrenceRuleData,
-      startDate,
-      endDate ? endDate : undefined,
-    );
+    const recurrenceRuleString =
+      generateRecurrenceRuleString(recurrenceRuleData);
 
     // create a baseRecurringEvent
     const baseRecurringEvent = await Event.create(

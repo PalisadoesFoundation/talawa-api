@@ -25,7 +25,7 @@ export const updateAllInstances = async (
 ): Promise<InterfaceEvent> => {
   if (
     shouldUpdateBaseRecurringEvent(
-      recurrenceRule?.endDate?.toString(),
+      recurrenceRule?.recurrenceEndDate?.toString(),
       baseRecurringEvent?.endDate?.toString(),
     )
   ) {

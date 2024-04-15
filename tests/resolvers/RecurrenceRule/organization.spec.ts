@@ -38,6 +38,7 @@ describe("resolvers -> RecurrenceRule -> organization", () => {
   it(`returns the organization object for parent recurrence rule`, async () => {
     let startDate = new Date();
     startDate = convertToUTCDate(startDate);
+    const endDate = startDate;
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -51,9 +52,11 @@ describe("resolvers -> RecurrenceRule -> organization", () => {
         location: "newLocation",
         recurring: true,
         startDate,
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "WEEKLY",
         weekDays: ["MONDAY", "TUESDAY", "WEDNESDAY"],
         count: 10,

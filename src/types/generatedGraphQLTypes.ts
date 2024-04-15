@@ -748,7 +748,7 @@ export type EventAttendeeInput = {
 export type EventInput = {
   allDay: Scalars['Boolean']['input'];
   description: Scalars['String']['input'];
-  endDate?: InputMaybe<Scalars['Date']['input']>;
+  endDate: Scalars['Date']['input'];
   endTime?: InputMaybe<Scalars['Time']['input']>;
   images?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   isPublic: Scalars['Boolean']['input'];
@@ -2505,13 +2505,13 @@ export type RecurrenceRule = {
   __typename?: 'RecurrenceRule';
   baseRecurringEvent?: Maybe<Event>;
   count?: Maybe<Scalars['PositiveInt']['output']>;
-  endDate?: Maybe<Scalars['Date']['output']>;
   frequency: Frequency;
   interval: Scalars['PositiveInt']['output'];
   latestInstanceDate?: Maybe<Scalars['Date']['output']>;
   organization?: Maybe<Organization>;
+  recurrenceEndDate?: Maybe<Scalars['Date']['output']>;
   recurrenceRuleString: Scalars['String']['output'];
-  startDate: Scalars['Date']['output'];
+  recurrenceStartDate: Scalars['Date']['output'];
   weekDayOccurenceInMonth?: Maybe<Scalars['Int']['output']>;
   weekDays?: Maybe<Array<Maybe<WeekDays>>>;
 };
@@ -2520,14 +2520,16 @@ export type RecurrenceRuleInput = {
   count?: InputMaybe<Scalars['PositiveInt']['input']>;
   frequency?: InputMaybe<Frequency>;
   interval?: InputMaybe<Scalars['PositiveInt']['input']>;
+  recurrenceEndDate?: InputMaybe<Scalars['Date']['input']>;
+  recurrenceStartDate?: InputMaybe<Scalars['Date']['input']>;
   weekDayOccurenceInMonth?: InputMaybe<Scalars['Int']['input']>;
   weekDays?: InputMaybe<Array<InputMaybe<WeekDays>>>;
 };
 
 export type RecurringEventMutationType =
-  | 'AllInstances'
-  | 'ThisAndFollowingInstances'
-  | 'ThisInstance';
+  | 'allInstances'
+  | 'thisAndFollowingInstances'
+  | 'thisInstance';
 
 export type SocialMediaUrls = {
   __typename?: 'SocialMediaUrls';
@@ -4421,13 +4423,13 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 export type RecurrenceRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['RecurrenceRule'] = ResolversParentTypes['RecurrenceRule']> = {
   baseRecurringEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   count?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
-  endDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   frequency?: Resolver<ResolversTypes['Frequency'], ParentType, ContextType>;
   interval?: Resolver<ResolversTypes['PositiveInt'], ParentType, ContextType>;
   latestInstanceDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  recurrenceEndDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   recurrenceRuleString?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  recurrenceStartDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   weekDayOccurenceInMonth?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   weekDays?: Resolver<Maybe<Array<Maybe<ResolversTypes['WeekDays']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

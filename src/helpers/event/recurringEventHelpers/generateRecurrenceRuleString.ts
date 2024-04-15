@@ -15,9 +15,20 @@ import { convertToRRuleDateString } from "../../../utilities/recurrenceDatesUtil
 
 export const generateRecurrenceRuleString = (
   recurrenceRuleData: RecurrenceRuleInput,
-  recurrenceStartDate: Date,
-  recurrenceEndDate?: Date,
+  // recurrenceStartDate: Date,
+  // recurrenceEndDate?: Date,
 ): string => {
+  // destructure the recurrence rules
+  const {
+    recurrenceStartDate,
+    recurrenceEndDate,
+    frequency,
+    weekDays,
+    interval,
+    count,
+    weekDayOccurenceInMonth,
+  } = recurrenceRuleData;
+
   // get the start date string for rrule's "DTSTART" property
   const recurrenceStartDateString =
     convertToRRuleDateString(recurrenceStartDate);
@@ -27,10 +38,6 @@ export const generateRecurrenceRuleString = (
   if (recurrenceEndDate) {
     recurrenceEndDateString = convertToRRuleDateString(recurrenceEndDate);
   }
-
-  // destructure the recurrence rules
-  const { frequency, weekDays, interval, count, weekDayOccurenceInMonth } =
-    recurrenceRuleData;
 
   // get weekdays for recurrence rule string, i.e. "MO", "TU", etc.
   const recurrenceWeekDays = weekDays?.map((weekDay) => {

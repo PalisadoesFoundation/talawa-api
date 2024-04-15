@@ -36,10 +36,14 @@ export const deleteRecurringEventInstances = async (
   // if we're deleting allInstances, it would find all the instances
   const query: {
     recurrenceRuleId: Types.ObjectId;
+    baseRecurringEventId: Types.ObjectId;
+    isBaseRecurringEvent: boolean;
     isRecurringEventException: boolean;
     startDate?: { $gte: string };
   } = {
     recurrenceRuleId: recurrenceRule._id,
+    baseRecurringEventId: baseRecurringEvent._id,
+    isBaseRecurringEvent: false,
     isRecurringEventException: false,
   };
 
@@ -128,14 +132,14 @@ export const deleteRecurringEventInstances = async (
       instancesFollowingCurrentRecurrence[0].startDate;
     const updatedEndDate = new Date(updatedEndDateString);
 
-    // update the latestInstanceDate and endDate of the current recurrenceRule
+    // update the latestInstanceDate and recurrenceEndDate of the current recurrenceRule
     await RecurrenceRule.findOneAndUpdate(
       {
         _id: recurrenceRule._id,
       },
       {
         latestInstanceDate: updatedEndDate,
-        endDate: updatedEndDate,
+        recurrenceEndDate: updatedEndDate,
       },
       { session },
     ).lean();
@@ -143,7 +147,7 @@ export const deleteRecurringEventInstances = async (
     // update the baseRecurringEvent if it is the latest recurrence rule that the instances were following
     if (
       shouldUpdateBaseRecurringEvent(
-        recurrenceRule.endDate?.toString(),
+        recurrenceRule.recurrenceEndDate?.toString(),
         baseRecurringEvent.endDate?.toString(),
       )
     ) {
@@ -165,12 +169,12 @@ export const deleteRecurringEventInstances = async (
     const previousRecurrenceRules = await RecurrenceRule.find(
       {
         baseRecurringEventId: baseRecurringEvent._id,
-        endDate: { $lt: recurrenceRule.startDate },
+        recurrenceEndDate: { $lt: recurrenceRule.recurrenceStartDate },
       },
       null,
       { session },
     )
-      .sort({ endDate: -1 })
+      .sort({ recurrenceEndDate: -1 })
       .lean();
 
     const previousRecurrenceRulesExist =
@@ -179,7 +183,7 @@ export const deleteRecurringEventInstances = async (
       // update the baseRecurringEvent if it is the latest recurrence rule that the instances were following
       if (
         shouldUpdateBaseRecurringEvent(
-          recurrenceRule.endDate?.toString(),
+          recurrenceRule.recurrenceEndDate?.toString(),
           baseRecurringEvent.endDate?.toString(),
         )
       ) {
@@ -187,7 +191,9 @@ export const deleteRecurringEventInstances = async (
           {
             _id: baseRecurringEvent._id,
           },
-          { endDate: previousRecurrenceRules[0].endDate.toISOString() },
+          {
+            endDate: previousRecurrenceRules[0].recurrenceEndDate.toISOString(),
+          },
           { session },
         );
       }

@@ -130,7 +130,7 @@ export const inputs = gql`
     title: String!
     description: String!
     startDate: Date!
-    endDate: Date
+    endDate: Date!
     startTime: Time
     endTime: Time
     allDay: Boolean!
@@ -366,6 +366,8 @@ export const inputs = gql`
   }
 
   input RecurrenceRuleInput {
+    recurrenceStartDate: Date
+    recurrenceEndDate: Date
     frequency: Frequency
     weekDays: [WeekDays]
     interval: PositiveInt

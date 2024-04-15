@@ -566,8 +566,8 @@ export const types = gql`
   type RecurrenceRule {
     organization: Organization
     baseRecurringEvent: Event
-    startDate: Date!
-    endDate: Date
+    recurrenceStartDate: Date!
+    recurrenceEndDate: Date
     recurrenceRuleString: String!
     frequency: Frequency!
     weekDays: [WeekDays]
