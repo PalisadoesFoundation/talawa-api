@@ -1137,7 +1137,6 @@ export type Mutation = {
   addUserImage: User;
   addUserToGroupChat: GroupChat;
   addUserToUserFamily: UserFamily;
-  adminRemoveEvent: Event;
   adminRemoveGroup: GroupChat;
   assignUserTag?: Maybe<User>;
   blockPluginCreationBySuperadmin: AppUserProfile;
@@ -1314,11 +1313,6 @@ export type MutationAddUserToGroupChatArgs = {
 export type MutationAddUserToUserFamilyArgs = {
   familyId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
-};
-
-
-export type MutationAdminRemoveEventArgs = {
-  eventId: Scalars['ID']['input'];
 };
 
 
@@ -4129,7 +4123,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
   addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;
   addUserToUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationAddUserToUserFamilyArgs, 'familyId' | 'userId'>>;
-  adminRemoveEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationAdminRemoveEventArgs, 'eventId'>>;
   adminRemoveGroup?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAdminRemoveGroupArgs, 'groupId'>>;
   assignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAssignUserTagArgs, 'input'>>;
   blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['AppUserProfile'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'blockUser' | 'userId'>>;

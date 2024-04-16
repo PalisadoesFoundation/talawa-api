@@ -1045,7 +1045,6 @@ type Mutation {
   addUserImage(file: String!): User!
   addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
   addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
-  adminRemoveEvent(eventId: ID!): Event!
   adminRemoveGroup(groupId: ID!): GroupChat!
   assignUserTag(input: ToggleUserTagAssignInput!): User
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): AppUserProfile!

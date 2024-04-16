@@ -43,8 +43,6 @@ export const mutations = gql`
 
     createUserFamily(data: createUserFamilyInput!): UserFamily! @auth
 
-    adminRemoveEvent(eventId: ID!): Event! @auth
-
     adminRemoveGroup(groupId: ID!): GroupChat! @auth
 
     assignUserTag(input: ToggleUserTagAssignInput!): User @auth
