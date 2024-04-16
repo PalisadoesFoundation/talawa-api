@@ -44,13 +44,13 @@ export const updateSingleEvent = async (
       // create a default weekly recurrence rule
       recurrenceRuleData = {
         frequency: "WEEKLY",
+        recurrenceStartDate: eventData.startDate,
+        recurrenceEndDate: null,
       };
     }
 
-    // get the recurrence startDate, if provided, else, use event startDate
-    const startDate = new Date(eventData.startDate);
-    // get the recurrence endDate, if provided or made null (infinitely recurring)
-    const endDate = eventData.endDate ? new Date(eventData.endDate) : null;
+    // get recurrence start and end dates
+    const { recurrenceStartDate, recurrenceEndDate } = recurrenceRuleData;
 
     // generate a recurrence rule string which would be used to generate rrule object
     const recurrenceRuleString =
@@ -61,9 +61,13 @@ export const updateSingleEvent = async (
       [
         {
           ...eventData,
-          organization: eventData.organizationId,
           recurring: true,
           isBaseRecurringEvent: true,
+          startDate: recurrenceStartDate,
+          endDate: recurrenceEndDate,
+          creatorId: event.creatorId,
+          admins: [event.creatorId],
+          organization: eventData.organizationId,
         },
       ],
       { session },
@@ -72,8 +76,8 @@ export const updateSingleEvent = async (
     // get recurrence dates
     const recurringInstanceDates = getRecurringInstanceDates(
       recurrenceRuleString,
-      startDate,
-      endDate,
+      recurrenceStartDate,
+      recurrenceEndDate,
     );
 
     // get the startDate of the latest instance following the recurrence
@@ -83,8 +87,8 @@ export const updateSingleEvent = async (
     // create the recurrencerule
     const recurrenceRule = await createRecurrenceRule(
       recurrenceRuleString,
-      startDate,
-      endDate,
+      recurrenceStartDate,
+      recurrenceEndDate,
       eventData.organizationId,
       baseRecurringEvent[0]._id.toString(),
       latestInstanceDate,

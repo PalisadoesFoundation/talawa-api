@@ -666,7 +666,7 @@ input EventAttendeeInput {
 input EventInput {
   allDay: Boolean!
   description: String!
-  endDate: Date
+  endDate: Date!
   endTime: Time
   images: [String]
   isPublic: Boolean!
@@ -1474,13 +1474,13 @@ input RecaptchaVerification {
 type RecurrenceRule {
   baseRecurringEvent: Event
   count: PositiveInt
-  endDate: Date
   frequency: Frequency!
   interval: PositiveInt!
   latestInstanceDate: Date
   organization: Organization
+  recurrenceEndDate: Date
   recurrenceRuleString: String!
-  startDate: Date!
+  recurrenceStartDate: Date!
   weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }
@@ -1489,14 +1489,16 @@ input RecurrenceRuleInput {
   count: PositiveInt
   frequency: Frequency
   interval: PositiveInt
+  recurrenceEndDate: Date
+  recurrenceStartDate: Date
   weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }
 
 enum RecurringEventMutationType {
-  AllInstances
-  ThisAndFollowingInstances
-  ThisInstance
+  allInstances
+  thisAndFollowingInstances
+  thisInstance
 }
 
 type SocialMediaUrls {

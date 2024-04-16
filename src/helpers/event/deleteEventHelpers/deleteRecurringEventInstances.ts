@@ -31,10 +31,10 @@ export const deleteRecurringEventInstances = async (
   baseRecurringEvent: InterfaceEvent,
   session: mongoose.ClientSession,
 ): Promise<void> => {
-  // get the query object:
-  // if we're deleting thisAndFollowingInstance, it would find all the instances after(and including) this one
-  // if we're deleting allInstances, it would find all the instances
-  const query: {
+  // get the query object to filter events to be deleted:
+  //   - if we're deleting thisAndFollowingInstance, it will find all the instances after(and including) this one
+  //   - if we're deleting allInstances, it will find all the instances
+  const eventsQueryObject: {
     recurrenceRuleId: Types.ObjectId;
     baseRecurringEventId: Types.ObjectId;
     isBaseRecurringEvent: boolean;
@@ -48,11 +48,17 @@ export const deleteRecurringEventInstances = async (
   };
 
   if (event) {
-    query.startDate = { $gte: event.startDate };
+    eventsQueryObject.startDate = { $gte: event.startDate };
   }
 
   // get all the instances to be deleted
-  const recurringEventInstances = await Event.find(query);
+  const recurringEventInstances = await Event.find(
+    {
+      ...eventsQueryObject,
+    },
+    null,
+    { session },
+  );
 
   // get the ids of those instances
   const recurringEventInstancesIds = recurringEventInstances.map(

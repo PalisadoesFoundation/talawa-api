@@ -183,7 +183,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     }
 
     /* c8 ignore stop */
-    return updatedEvent as InterfaceEvent;
+    return updatedEvent;
     /* c8 ignore start */
   } catch (error) {
     if (session) {

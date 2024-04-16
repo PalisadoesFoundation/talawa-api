@@ -3,8 +3,7 @@ import type { InterfaceEvent } from "../../../models";
 import { Event, RecurrenceRule } from "../../../models";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import { updateThisInstance } from "./updateThisInstance";
-import { updateAllInstances } from "./updateAllInstances";
-import { updateThisAndFollowingInstances } from "./updateThisAndFollowingInstances";
+import { updateRecurringEventInstances } from "./updateRecurringEventInstances";
 
 /**
  * This function updates the recurring event.
@@ -44,20 +43,22 @@ export const updateRecurringEvent = async (
     updatedEvent = await updateThisInstance(args, event, session);
   } else if (args.recurringEventUpdateType === "allInstances") {
     // perform a regular bulk update on all the instances
-    updatedEvent = await updateAllInstances(
+    updatedEvent = await updateRecurringEventInstances(
       args,
       event,
       recurrenceRule[0],
       baseRecurringEvent[0],
+      "allInstances",
       session,
     );
   } else {
     // update current and following events
-    updatedEvent = await updateThisAndFollowingInstances(
+    updatedEvent = await updateRecurringEventInstances(
       args,
       event,
       recurrenceRule[0],
       baseRecurringEvent[0],
+      "thisAndFollowingInstances",
       session,
     );
   }

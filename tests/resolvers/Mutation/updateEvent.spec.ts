@@ -38,14 +38,13 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
-import { addWeeks } from "date-fns";
+import { addDays, addWeeks } from "date-fns";
 
 import { fail } from "assert";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testEvent: TestEventType;
-let testSingleEvent: TestEventType;
 let testRecurringEvent: TestEventType;
 let testRecurringEventInstance: TestEventType;
 let testRecurringEventException: TestEventType;
@@ -257,7 +256,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     expect(updateEventPayload).toEqual(testUpdateEventPayload);
   });
 
-  it(`updates the single event with _id === args.id to be recurring and returns a recurring instance`, async () => {
+  it(`updates a single event with _id === args.id to be recurring with default weekly infinite recurrence`, async () => {
     const testSingleEvent1 = await Event.create({
       creatorId: testUser?._id,
       registrants: [{ userId: testUser?._id, user: testUser?._id }],
@@ -270,7 +269,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       description: "description2",
       allDay: true,
       startDate: convertToUTCDate(new Date()),
-      endDate: addWeeks(convertToUTCDate(new Date()), 10),
+      endDate: convertToUTCDate(addDays(new Date(), 2)),
     });
 
     await User.updateOne(
@@ -334,106 +333,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       }),
     );
 
-    const attendeeExists = await EventAttendee.exists({
-      userId: testUser?._id,
-      eventId: updateEventPayload?._id,
-    });
-
-    expect(attendeeExists).toBeTruthy();
-
-    const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
-    })
-      .select(["registeredEvents"])
-      .lean();
-
-    expect(updatedTestUser).toEqual(
-      expect.objectContaining({
-        registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
-      }),
-    );
-  });
-
-  it(`updates the single event with _id === args.id to be infinitely recurring`, async () => {
-    const startDate = convertToUTCDate(new Date());
-    const endDate = convertToUTCDate(addWeeks(startDate, 4));
-
-    testSingleEvent = await Event.create({
-      creatorId: testUser?._id,
-      registrants: [{ userId: testUser?._id, user: testUser?._id }],
-      organization: testOrganization?._id,
-      isRegisterable: true,
-      isPublic: true,
-      location: "location3",
-      title: "title3",
-      admins: [testUser?._id],
-      description: "description3",
-      allDay: true,
-      startDate,
-      endDate,
-    });
-
-    await User.updateOne(
-      {
-        _id: testUser?._id,
-      },
-      {
-        $push: {
-          registeredEvents: testSingleEvent._id,
-        },
-      },
-    );
-    await AppUserProfile.updateOne(
-      {
-        _id: testUser?._id,
-      },
-      {
-        $push: {
-          eventAdmin: testSingleEvent._id,
-          createdEvents: testSingleEvent._id,
-        },
-      },
-    );
-    const args: MutationUpdateEventArgs = {
-      id: testSingleEvent?._id,
-      data: {
-        recurring: true,
-        endDate: null,
-        title: "infinitely recurring",
-      },
-    };
-
-    const context = {
-      userId: testUser?._id,
-    };
-
-    const { updateEvent: updateEventResolver } = await import(
-      "../../../src/resolvers/Mutation/updateEvent"
-    );
-
-    const updateEventPayload = await updateEventResolver?.({}, args, context);
-
-    const testSingleEventExists = await Event.exists({
-      _id: testSingleEvent?._id,
-    });
-
-    expect(testSingleEventExists).toBeFalsy();
-
-    expect(updateEventPayload).toEqual(
-      expect.objectContaining({
-        allDay: true,
-        title: "infinitely recurring",
-        description: "description3",
-        isPublic: true,
-        isRegisterable: true,
-        location: "location3",
-        recurring: true,
-        creatorId: testUser?._id,
-        admins: expect.arrayContaining([testUser?._id]),
-        organization: testOrganization?._id,
-      }),
-    );
-
     // assign the returned recurring event instance to the testRecurringEvent
     testRecurringEvent = updateEventPayload as TestEventType;
 
@@ -445,8 +344,15 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.recurrenceEndDate).toBe(null);
-    expect(baseRecurringEvent?.endDate).toBe(null);
+    expect(recurrenceRule?.recurrenceStartDate).toEqual(
+      updateEventPayload?.startDate,
+    );
+    expect(baseRecurringEvent?.startDate).toEqual(
+      updateEventPayload?.startDate,
+    );
+
+    expect(recurrenceRule?.recurrenceEndDate).toBeNull();
+    expect(baseRecurringEvent?.endDate).toBeNull();
 
     const attendeeExists = await EventAttendee.exists({
       userId: testUser?._id,
@@ -464,6 +370,20 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
+      }),
+    );
+
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
   });
@@ -487,21 +407,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
-    expect(updateEventPayload).toEqual(
-      expect.objectContaining({
-        allDay: true,
-        title: "updated this instance",
-        description: "description3",
-        isPublic: true,
-        isRegisterable: true,
-        location: "location3",
-        recurring: true,
-        creatorId: testUser?._id,
-        admins: expect.arrayContaining([testUser?._id]),
-        organization: testOrganization?._id,
-      }),
-    );
-
     const recurrenceRule = await RecurrenceRule.findOne({
       _id: updateEventPayload?.recurrenceRuleId,
     });
@@ -510,40 +415,36 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.recurrenceEndDate).toBe(null);
-    expect(baseRecurringEvent?.endDate).toBe(null);
-
-    expect(baseRecurringEvent).toEqual(
+    expect(updateEventPayload).toEqual(
       expect.objectContaining({
         allDay: true,
-        title: "infinitely recurring",
-        description: "description3",
+        title: "updated this instance",
+        description: "description2",
         isPublic: true,
         isRegisterable: true,
-        location: "location3",
+        location: "location2",
         recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: false,
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
       }),
     );
 
-    const attendeeExists = await EventAttendee.exists({
-      userId: testUser?._id,
-      eventId: updateEventPayload?._id,
-    });
-
-    expect(attendeeExists).toBeTruthy();
-
-    const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
-    })
-      .select(["registeredEvents"])
-      .lean();
-
-    expect(updatedTestUser).toEqual(
+    expect(baseRecurringEvent).toEqual(
       expect.objectContaining({
-        registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
+        allDay: true,
+        title: "made recurring",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
       }),
     );
   });
@@ -567,21 +468,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
-    expect(updateEventPayload).toEqual(
-      expect.objectContaining({
-        allDay: true,
-        title: "updated all instance",
-        description: "description3",
-        isPublic: true,
-        isRegisterable: true,
-        location: "location3",
-        recurring: true,
-        creatorId: testUser?._id,
-        admins: expect.arrayContaining([testUser?._id]),
-        organization: testOrganization?._id,
-      }),
-    );
-
     const recurrenceRule = await RecurrenceRule.findOne({
       _id: updateEventPayload?.recurrenceRuleId,
     });
@@ -590,6 +476,24 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
+    expect(updateEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        title: "updated all instance",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: false,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
     expect(recurrenceRule?.recurrenceEndDate).toBe(null);
     expect(baseRecurringEvent?.endDate).toBe(null);
 
@@ -597,33 +501,14 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       expect.objectContaining({
         allDay: true,
         title: "updated all instance",
-        description: "description3",
+        description: "description2",
         isPublic: true,
         isRegisterable: true,
-        location: "location3",
+        location: "location2",
         recurring: true,
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
-      }),
-    );
-
-    const attendeeExists = await EventAttendee.exists({
-      userId: testUser?._id,
-      eventId: updateEventPayload?._id,
-    });
-
-    expect(attendeeExists).toBeTruthy();
-
-    const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
-    })
-      .select(["registeredEvents"])
-      .lean();
-
-    expect(updatedTestUser).toEqual(
-      expect.objectContaining({
-        registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
   });
@@ -633,7 +518,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const recurringInstances = await Event.find({
       recurrenceRuleId: testRecurringEvent?.recurrenceRuleId,
     });
-
     testRecurringEventInstance = recurringInstances[4];
 
     const args: MutationUpdateEventArgs = {
@@ -654,21 +538,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
-    expect(updateEventPayload).toEqual(
-      expect.objectContaining({
-        allDay: true,
-        title: "updated this and following instances",
-        description: "description3",
-        isPublic: true,
-        isRegisterable: true,
-        location: "location3",
-        recurring: true,
-        creatorId: testUser?._id,
-        admins: expect.arrayContaining([testUser?._id]),
-        organization: testOrganization?._id,
-      }),
-    );
-
     const recurrenceRule = await RecurrenceRule.findOne({
       _id: updateEventPayload?.recurrenceRuleId,
     });
@@ -677,6 +546,24 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
+    expect(updateEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        title: "updated this and following instances",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: false,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
     expect(recurrenceRule?.recurrenceEndDate).toBe(null);
     expect(baseRecurringEvent?.endDate).toBe(null);
 
@@ -684,33 +571,14 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       expect.objectContaining({
         allDay: true,
         title: "updated this and following instances",
-        description: "description3",
+        description: "description2",
         isPublic: true,
         isRegisterable: true,
-        location: "location3",
+        location: "location2",
         recurring: true,
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
-      }),
-    );
-
-    const attendeeExists = await EventAttendee.exists({
-      userId: testUser?._id,
-      eventId: updateEventPayload?._id,
-    });
-
-    expect(attendeeExists).toBeTruthy();
-
-    const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
-    })
-      .select(["registeredEvents"])
-      .lean();
-
-    expect(updatedTestUser).toEqual(
-      expect.objectContaining({
-        registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
   });
@@ -722,6 +590,8 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         title: "updated the recurrence rule of this and following instances",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: testRecurringEventInstance?.startDate,
+        recurrenceEndDate: null,
         frequency: "DAILY",
       },
       recurringEventUpdateType: "thisAndFollowingInstances",
@@ -737,23 +607,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
-    expect(updateEventPayload).toEqual(
-      expect.objectContaining({
-        allDay: true,
-        title: "updated the recurrence rule of this and following instances",
-        description: "description3",
-        isPublic: true,
-        isRegisterable: true,
-        location: "location3",
-        recurring: true,
-        creatorId: testUser?._id,
-        admins: expect.arrayContaining([testUser?._id]),
-        organization: testOrganization?._id,
-      }),
-    );
-
-    testRecurringEventInstance = updateEventPayload as TestEventType;
-
     const recurrenceRule = await RecurrenceRule.findOne({
       _id: updateEventPayload?.recurrenceRuleId,
     });
@@ -761,6 +614,27 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const baseRecurringEvent = await Event.findOne({
       _id: updateEventPayload?.baseRecurringEventId,
     });
+
+    expect(updateEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        title: "updated the recurrence rule of this and following instances",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: false,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
+    // update the testRecurringEventInstance to this new updated event
+    testRecurringEventInstance = updateEventPayload as TestEventType;
 
     expect(recurrenceRule?.recurrenceEndDate).toBe(null);
     expect(recurrenceRule?.frequency).toEqual("DAILY");
@@ -770,10 +644,10 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       expect.objectContaining({
         allDay: true,
         title: "updated the recurrence rule of this and following instances",
-        description: "description3",
+        description: "description2",
         isPublic: true,
         isRegisterable: true,
-        location: "location3",
+        location: "location2",
         recurring: true,
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
@@ -799,10 +673,24 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
+
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
+      }),
+    );
   });
 
   it(`updates this and following instances of recurring event to follow a new recurrence rule and have a specified endDate`, async () => {
-    const newEndDate = convertToUTCDate(
+    const newRecurrenceEndDate = convertToUTCDate(
       addWeeks(testRecurringEventInstance?.startDate as string, 30),
     );
 
@@ -810,9 +698,10 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       id: testRecurringEventInstance?._id,
       data: {
         title: "updated the recurrence rule of this and following instances",
-        endDate: newEndDate,
       },
       recurrenceRuleData: {
+        recurrenceStartDate: testRecurringEventInstance?.startDate,
+        recurrenceEndDate: newRecurrenceEndDate,
         frequency: "WEEKLY",
       },
       recurringEventUpdateType: "thisAndFollowingInstances",
@@ -828,23 +717,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
-    expect(updateEventPayload).toEqual(
-      expect.objectContaining({
-        allDay: true,
-        title: "updated the recurrence rule of this and following instances",
-        description: "description3",
-        isPublic: true,
-        isRegisterable: true,
-        location: "location3",
-        recurring: true,
-        creatorId: testUser?._id,
-        admins: expect.arrayContaining([testUser?._id]),
-        organization: testOrganization?._id,
-      }),
-    );
-
-    testRecurringEventInstance = updateEventPayload as TestEventType;
-
     const recurrenceRule = await RecurrenceRule.findOne({
       _id: updateEventPayload?.recurrenceRuleId,
     });
@@ -853,18 +725,39 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.recurrenceEndDate).toEqual(newEndDate);
+    expect(updateEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        title: "updated the recurrence rule of this and following instances",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: false,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
+    // update the testRecurringEventInstance to this new updated event
+    testRecurringEventInstance = updateEventPayload as TestEventType;
+
+    expect(recurrenceRule?.recurrenceEndDate).toEqual(newRecurrenceEndDate);
     expect(recurrenceRule?.frequency).toEqual("WEEKLY");
-    expect(baseRecurringEvent?.endDate).toEqual(newEndDate);
+    expect(baseRecurringEvent?.endDate).toEqual(newRecurrenceEndDate);
 
     expect(baseRecurringEvent).toEqual(
       expect.objectContaining({
         allDay: true,
         title: "updated the recurrence rule of this and following instances",
-        description: "description3",
+        description: "description2",
         isPublic: true,
         isRegisterable: true,
-        location: "location3",
+        location: "location2",
         recurring: true,
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
@@ -888,6 +781,20 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
+      }),
+    );
+
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
   });
@@ -911,58 +818,47 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
-    expect(updateEventPayload).toEqual(
-      expect.objectContaining({
-        allDay: true,
-        title: "updated all instances again",
-        description: "description3",
-        isPublic: true,
-        isRegisterable: true,
-        location: "location3",
-        recurring: true,
-        creatorId: testUser?._id,
-        admins: expect.arrayContaining([testUser?._id]),
-        organization: testOrganization?._id,
-      }),
-    );
-
-    testRecurringEventInstance = updateEventPayload as TestEventType;
+    const recurrenceRule = await RecurrenceRule.findOne({
+      _id: updateEventPayload?.recurrenceRuleId,
+    });
 
     const baseRecurringEvent = await Event.findOne({
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(baseRecurringEvent).toEqual(
+    expect(updateEventPayload).toEqual(
       expect.objectContaining({
         allDay: true,
         title: "updated all instances again",
-        description: "description3",
+        description: "description2",
         isPublic: true,
         isRegisterable: true,
-        location: "location3",
+        location: "location2",
         recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: false,
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
       }),
     );
 
-    const attendeeExists = await EventAttendee.exists({
-      userId: testUser?._id,
-      eventId: updateEventPayload?._id,
-    });
+    // update the testRecurringEventInstance to this new updated event
+    testRecurringEventInstance = updateEventPayload as TestEventType;
 
-    expect(attendeeExists).toBeTruthy();
-
-    const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
-    })
-      .select(["registeredEvents"])
-      .lean();
-
-    expect(updatedTestUser).toEqual(
+    expect(baseRecurringEvent).toEqual(
       expect.objectContaining({
-        registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
+        allDay: true,
+        title: "updated all instances again",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
       }),
     );
   });
@@ -972,9 +868,10 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       id: testRecurringEventInstance?._id,
       data: {
         title: "updated the recurrence rule of this and following instances",
-        endDate: null,
       },
       recurrenceRuleData: {
+        recurrenceStartDate: testRecurringEventInstance?.startDate,
+        recurrenceEndDate: null,
         frequency: "DAILY",
       },
       recurringEventUpdateType: "thisAndFollowingInstances",
@@ -990,23 +887,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
-    expect(updateEventPayload).toEqual(
-      expect.objectContaining({
-        allDay: true,
-        title: "updated the recurrence rule of this and following instances",
-        description: "description3",
-        isPublic: true,
-        isRegisterable: true,
-        location: "location3",
-        recurring: true,
-        creatorId: testUser?._id,
-        admins: expect.arrayContaining([testUser?._id]),
-        organization: testOrganization?._id,
-      }),
-    );
-
-    testRecurringEventInstance = updateEventPayload as TestEventType;
-
     const recurrenceRule = await RecurrenceRule.findOne({
       _id: updateEventPayload?.recurrenceRuleId,
     });
@@ -1014,6 +894,27 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const baseRecurringEvent = await Event.findOne({
       _id: updateEventPayload?.baseRecurringEventId,
     });
+
+    expect(updateEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        title: "updated the recurrence rule of this and following instances",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: false,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
+    // update the testRecurringEventInstance to this new updated event
+    testRecurringEventInstance = updateEventPayload as TestEventType;
 
     expect(recurrenceRule?.recurrenceEndDate).toEqual(null);
     expect(recurrenceRule?.frequency).toEqual("DAILY");
@@ -1023,10 +924,10 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       expect.objectContaining({
         allDay: true,
         title: "updated the recurrence rule of this and following instances",
-        description: "description3",
+        description: "description2",
         isPublic: true,
         isRegisterable: true,
-        location: "location3",
+        location: "location2",
         recurring: true,
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
@@ -1050,6 +951,129 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
+      }),
+    );
+
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
+      }),
+    );
+  });
+
+  it(`updates all instances of the recurring event to follow a new recurrence rule`, async () => {
+    // find an instance 5 days ahead of the testRecurringEventInstance
+    const recurringInstances = await Event.find({
+      recurrenceRuleId: testRecurringEventInstance?.recurrenceRuleId,
+    });
+    const ramdomRecurringEventInstance = recurringInstances[5] as TestEventType;
+
+    const args: MutationUpdateEventArgs = {
+      id: ramdomRecurringEventInstance?._id,
+      data: {
+        title: "updated all the instances to be weekly recurring",
+      },
+      recurrenceRuleData: {
+        recurrenceStartDate: testRecurringEventInstance?.startDate,
+        recurrenceEndDate: null,
+        frequency: "WEEKLY",
+      },
+      recurringEventUpdateType: "allInstances",
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    const { updateEvent: updateEventResolver } = await import(
+      "../../../src/resolvers/Mutation/updateEvent"
+    );
+
+    const updateEventPayload = await updateEventResolver?.({}, args, context);
+
+    const recurrenceRule = await RecurrenceRule.findOne({
+      _id: updateEventPayload?.recurrenceRuleId,
+    });
+
+    const baseRecurringEvent = await Event.findOne({
+      _id: updateEventPayload?.baseRecurringEventId,
+    });
+
+    expect(updateEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        title: "updated all the instances to be weekly recurring",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: false,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
+    expect(recurrenceRule?.recurrenceEndDate).toEqual(null);
+    expect(recurrenceRule?.frequency).toEqual("WEEKLY");
+    expect(baseRecurringEvent?.endDate).toEqual(null);
+
+    expect(baseRecurringEvent).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        title: "updated all the instances to be weekly recurring",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
+    const attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: updateEventPayload?._id,
+    });
+
+    expect(attendeeExists).toBeTruthy();
+
+    const updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["registeredEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
+      }),
+    );
+
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([updateEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
   });
@@ -1073,21 +1097,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
-    expect(updateEventPayload).toEqual(
-      expect.objectContaining({
-        allDay: true,
-        title: "instances following the old recurrence rule",
-        description: "description3",
-        isPublic: true,
-        isRegisterable: true,
-        location: "location3",
-        recurring: true,
-        creatorId: testUser?._id,
-        admins: expect.arrayContaining([testUser?._id]),
-        organization: testOrganization?._id,
-      }),
-    );
-
     const recurrenceRule = await RecurrenceRule.findOne({
       _id: updateEventPayload?.recurrenceRuleId,
     });
@@ -1096,6 +1105,24 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
+    expect(updateEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        title: "instances following the old recurrence rule",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: false,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
     expect(recurrenceRule?.recurrenceEndDate).not.toEqual(null);
     expect(recurrenceRule?.frequency).toEqual("WEEKLY");
     expect(baseRecurringEvent?.endDate).toEqual(null);
@@ -1103,34 +1130,15 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     expect(baseRecurringEvent).toEqual(
       expect.objectContaining({
         allDay: true,
-        title: "updated the recurrence rule of this and following instances",
-        description: "description3",
+        title: "updated all the instances to be weekly recurring",
+        description: "description2",
         isPublic: true,
         isRegisterable: true,
-        location: "location3",
+        location: "location2",
         recurring: true,
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
-      }),
-    );
-
-    const attendeeExists = await EventAttendee.exists({
-      userId: testUser?._id,
-      eventId: updateEventPayload?._id,
-    });
-
-    expect(attendeeExists).toBeTruthy();
-
-    const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
-    })
-      .select(["registeredEvents"])
-      .lean();
-
-    expect(updatedTestUser).toEqual(
-      expect.objectContaining({
-        registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
   });
@@ -1140,7 +1148,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const recurringInstances = await Event.find({
       recurrenceRuleId: testRecurringEvent?.recurrenceRuleId,
     });
-
     testRecurringEventException = recurringInstances[2];
 
     const args: MutationUpdateEventArgs = {
@@ -1162,22 +1169,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
-    expect(updateEventPayload).toEqual(
-      expect.objectContaining({
-        allDay: true,
-        title: "exception instance",
-        description: "description3",
-        isPublic: true,
-        isRegisterable: true,
-        isRecurringEventException: true,
-        location: "location3",
-        recurring: true,
-        creatorId: testUser?._id,
-        admins: expect.arrayContaining([testUser?._id]),
-        organization: testOrganization?._id,
-      }),
-    );
-
     const recurrenceRule = await RecurrenceRule.findOne({
       _id: updateEventPayload?.recurrenceRuleId,
     });
@@ -1186,41 +1177,39 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
-    expect(recurrenceRule?.recurrenceEndDate).not.toEqual(null);
-    expect(recurrenceRule?.frequency).toEqual("WEEKLY");
-    expect(baseRecurringEvent?.endDate).toEqual(null);
-
-    expect(baseRecurringEvent).toEqual(
+    expect(updateEventPayload).toEqual(
       expect.objectContaining({
         allDay: true,
-        title: "updated the recurrence rule of this and following instances",
-        description: "description3",
+        title: "exception instance",
+        description: "description2",
         isPublic: true,
         isRegisterable: true,
-        location: "location3",
+        location: "location2",
         recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: true,
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
       }),
     );
 
-    const attendeeExists = await EventAttendee.exists({
-      userId: testUser?._id,
-      eventId: updateEventPayload?._id,
-    });
+    expect(recurrenceRule?.recurrenceEndDate).not.toEqual(null);
+    expect(baseRecurringEvent?.endDate).toEqual(null);
 
-    expect(attendeeExists).toBeTruthy();
-
-    const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
-    })
-      .select(["registeredEvents"])
-      .lean();
-
-    expect(updatedTestUser).toEqual(
+    expect(baseRecurringEvent).toEqual(
       expect.objectContaining({
-        registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
+        allDay: true,
+        title: "updated all the instances to be weekly recurring",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
       }),
     );
   });
@@ -1244,24 +1233,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
-    expect(updateEventPayload).toEqual(
-      expect.objectContaining({
-        allDay: true,
-        title: "update all but the exception",
-        description: "description3",
-        isPublic: true,
-        isRegisterable: true,
-        isRecurringEventException: false,
-        location: "location3",
-        recurring: true,
-        creatorId: testUser?._id,
-        admins: expect.arrayContaining([testUser?._id]),
-        organization: testOrganization?._id,
-      }),
-    );
-
-    testRecurringEventInstance = updateEventPayload as TestEventType;
-
     const recurrenceRule = await RecurrenceRule.findOne({
       _id: updateEventPayload?.recurrenceRuleId,
     });
@@ -1270,6 +1241,24 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       _id: updateEventPayload?.baseRecurringEventId,
     });
 
+    expect(updateEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        title: "update all but the exception",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: false,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
     expect(recurrenceRule?.recurrenceEndDate).not.toEqual(null);
     expect(recurrenceRule?.frequency).toEqual("WEEKLY");
     expect(baseRecurringEvent?.endDate).toEqual(null);
@@ -1277,11 +1266,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     expect(baseRecurringEvent).toEqual(
       expect.objectContaining({
         allDay: true,
-        title: "updated the recurrence rule of this and following instances",
-        description: "description3",
+        title: "updated all the instances to be weekly recurring",
+        description: "description2",
         isPublic: true,
         isRegisterable: true,
-        location: "location3",
+        location: "location2",
         recurring: true,
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
@@ -1297,34 +1286,15 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       expect.objectContaining({
         allDay: true,
         title: "exception instance",
-        description: "description3",
+        description: "description2",
         isPublic: true,
         isRegisterable: true,
         isRecurringEventException: true,
-        location: "location3",
+        location: "location2",
         recurring: true,
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
-      }),
-    );
-
-    const attendeeExists = await EventAttendee.exists({
-      userId: testUser?._id,
-      eventId: updateEventPayload?._id,
-    });
-
-    expect(attendeeExists).toBeTruthy();
-
-    const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
-    })
-      .select(["registeredEvents"])
-      .lean();
-
-    expect(updatedTestUser).toEqual(
-      expect.objectContaining({
-        registeredEvents: expect.arrayContaining([updateEventPayload?._id]),
       }),
     );
   });

@@ -1,4 +1,5 @@
 import type mongoose from "mongoose";
+import type { Types } from "mongoose";
 import type { InterfaceEvent, InterfaceRecurrenceRule } from "../../../models";
 import {
   AppUserProfile,
@@ -7,7 +8,11 @@ import {
   RecurrenceRule,
   User,
 } from "../../../models";
-import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
+import type {
+  MutationUpdateEventArgs,
+  RecurrenceRuleInput,
+  RecurringEventMutationType,
+} from "../../../types/generatedGraphQLTypes";
 
 import {
   createRecurrenceRule,
@@ -24,59 +29,84 @@ import { getEventData, shouldUpdateBaseRecurringEvent } from "./index";
  * @param recurrenceRule - the recurrence rule followed by the instances.
  * @param baseRecurringEvent - the base recurring event.
  * @remarks The following steps are followed:
- * 1. Check if the recurrence rule has been changed.
- * 2. If the recurrence rule has been changed.
- *   - get the appropriate data to create the baseRecurringEvent and recurring event instances.
- *   - generate the instances with createRecurringEvent function.
- *   - remove the current event and its associations as a new series has been created.
- * 3. If the recurrence rule hasn't changed:
- *   - just perform a bulk regular update.
- * 4. Update the base recurring event if required.
- * @returns The updated first instance of the recurrence rule.
+ * 1. Check if the recurrence rule has changed.
+ * 2. If the recurrence rule has changed:
+ *      - get the appropriate data to create new recurring event instances and update the baseRecurringEvent.
+ *      - get the recurrence dates and generate new instances.
+ *      - remove the current instances and their associations as a new series has been created.
+ *    If the recurrence rule hasn't changed:
+ *      - just perform a regular bulk update.
+ * 3. Update the base recurring event if required.
+ * @returns The updated first instance following the recurrence rule.
  */
 
-export const updateThisAndFollowingInstances = async (
+export const updateRecurringEventInstances = async (
   args: MutationUpdateEventArgs,
   event: InterfaceEvent,
   recurrenceRule: InterfaceRecurrenceRule,
   baseRecurringEvent: InterfaceEvent,
+  recurringEventUpdateType: RecurringEventMutationType,
   session: mongoose.ClientSession,
 ): Promise<InterfaceEvent> => {
   let updatedEvent: InterfaceEvent = event;
 
-  // initiate the new recurrence rule string
-  let newRecurrenceRuleString = recurrenceRule.recurrenceRuleString;
-
   // get the data from the args
   const { data: updateEventInputData, recurrenceRuleData } = args;
 
-  // get the start and end dates for the recurrence
-  // const startDate =
-  //   updateEventInputData?.startDate || recurrenceRule.recurrenceEndDate;
-  const endDate =
-    updateEventInputData?.endDate || updateEventInputData?.endDate === null
-      ? updateEventInputData.endDate
-      : recurrenceRule.recurrenceEndDate;
+  // get the start and end dates of recurrence
+  let { recurrenceStartDate, recurrenceEndDate } = recurrenceRule;
 
-  // check if the recurrence rule has changed
+  // get the current recurrence rule string
+  const { recurrenceRuleString: currentRecurrenceRuleString } = recurrenceRule;
+
+  // whether the recurrence rule has changed
+  let hasRecurrenceRuleChanged = false;
+
+  // check if the new recurrence rule is different from the current one
+  let newRecurrenceRuleString = "";
   if (recurrenceRuleData) {
     newRecurrenceRuleString = generateRecurrenceRuleString(recurrenceRuleData);
+
+    hasRecurrenceRuleChanged =
+      currentRecurrenceRuleString !== newRecurrenceRuleString;
   }
 
-  if (newRecurrenceRuleString !== recurrenceRule.recurrenceRuleString) {
-    // if the recurrence rule has changed, delete the currenct recurrence series, and generate a new one
+  // get the query object to filter events to be updated:
+  //   - if we're updating thisAndFollowingInstance, it will find all the instances after(and including) this one
+  //   - if we're updating allInstances, it will find all the instances
+  const eventsQueryObject: {
+    recurrenceRuleId: Types.ObjectId;
+    baseRecurringEventId: Types.ObjectId;
+    isBaseRecurringEvent: boolean;
+    isRecurringEventException: boolean;
+    startDate?: { $gte: string };
+  } = {
+    recurrenceRuleId: recurrenceRule._id,
+    baseRecurringEventId: baseRecurringEvent._id,
+    isBaseRecurringEvent: false,
+    isRecurringEventException: false,
+  };
 
-    // get latest eventData to be used for baseRecurringEvent and recurring instances
+  if (recurringEventUpdateType === "thisAndFollowingInstances") {
+    eventsQueryObject.startDate = { $gte: event.startDate };
+  }
+
+  if (hasRecurrenceRuleChanged) {
+    // if the recurrence rule has changed, delete the current series
+    // and generate a new one starting from the current instance
+
+    // get latest eventData to be used for new recurring instances and base recurring event
     const eventData = getEventData(updateEventInputData, event);
 
-    // get the recurrence startDate
-    const recurrenceStartDate = new Date(eventData.startDate);
+    // get the recurrence start and end dates
+    ({ recurrenceStartDate, recurrenceEndDate } =
+      recurrenceRuleData as RecurrenceRuleInput);
 
     // get recurrence dates
     const recurringInstanceDates = getRecurringInstanceDates(
       newRecurrenceRuleString,
       recurrenceStartDate,
-      endDate,
+      recurrenceEndDate,
     );
 
     // get the startDate of the latest instance following the recurrence
@@ -87,7 +117,7 @@ export const updateThisAndFollowingInstances = async (
     const newRecurrenceRule = await createRecurrenceRule(
       newRecurrenceRuleString,
       recurrenceStartDate,
-      endDate,
+      recurrenceEndDate,
       eventData.organizationId,
       baseRecurringEvent._id.toString(),
       latestInstanceDate,
@@ -108,13 +138,12 @@ export const updateThisAndFollowingInstances = async (
     // remove the events conforming to the current recurrence rule and their associations
     const recurringEventInstances = await Event.find(
       {
-        recurrenceRuleId: event.recurrenceRuleId,
-        startDate: { $gte: event.startDate },
-        isRecurringEventException: false,
+        ...eventsQueryObject,
       },
       null,
       { session },
     );
+
     const recurringEventInstancesIds = recurringEventInstances.map(
       (recurringEventInstance) => recurringEventInstance._id,
     );
@@ -181,18 +210,18 @@ export const updateThisAndFollowingInstances = async (
         },
         {
           latestInstanceDate: updatedLatestRecurringInstanceDate,
-          endDate: updatedLatestRecurringInstanceDate,
+          recurrenceEndDate: updatedLatestRecurringInstanceDate,
         },
         { session },
       ).lean();
     }
   } else {
-    // perform bulk update on the events following the current event's recurrence rule
+    // i.e. recurrence rule has not changed
+    // perform bulk update on all the events starting from this event,
+    // that are following the current recurrence rule and are not exceptions
     await Event.updateMany(
       {
-        recurrenceRuleId: event.recurrenceRuleId,
-        startDate: { $gte: event.startDate },
-        isRecurringEventException: false,
+        ...eventsQueryObject,
       },
       {
         ...(args.data as Partial<InterfaceEvent>),
@@ -207,7 +236,7 @@ export const updateThisAndFollowingInstances = async (
     }).lean()) as InterfaceEvent;
   }
 
-  // update the baseRecurringEvent if it is the latest recurrence rule that the instances are following
+  // update the baseRecurringEvent if it is the latest recurrence rule that the instances were following
   if (
     shouldUpdateBaseRecurringEvent(
       recurrenceRule?.recurrenceEndDate?.toString(),
@@ -220,6 +249,7 @@ export const updateThisAndFollowingInstances = async (
       },
       {
         ...(args.data as Partial<InterfaceEvent>),
+        endDate: recurrenceEndDate,
       },
       {
         session,
