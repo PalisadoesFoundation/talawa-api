@@ -19,6 +19,7 @@ import {
   generateRecurrenceRuleString,
   generateRecurringEventInstances,
   getRecurringInstanceDates,
+  removeDanglingDocuments,
 } from "../recurringEventHelpers";
 import { getEventData, shouldUpdateBaseRecurringEvent } from "./index";
 
@@ -37,6 +38,7 @@ import { getEventData, shouldUpdateBaseRecurringEvent } from "./index";
  *    If the recurrence rule hasn't changed:
  *      - just perform a regular bulk update.
  * 3. Update the base recurring event if required.
+ * 4. Removes any dangling recurrence rule and base recurrence rule documents.
  * @returns The updated first instance following the recurrence rule.
  */
 
@@ -256,6 +258,12 @@ export const updateRecurringEventInstances = async (
       },
     );
   }
+
+  // remove any dangling recurrence rule and base recurring event documents
+  await removeDanglingDocuments(
+    recurrenceRule._id.toString(),
+    baseRecurringEvent._id.toString(),
+  );
 
   return updatedEvent;
 };

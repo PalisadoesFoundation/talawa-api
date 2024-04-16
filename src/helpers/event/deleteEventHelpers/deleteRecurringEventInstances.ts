@@ -10,6 +10,7 @@ import {
   RecurrenceRule,
 } from "../../../models";
 import { shouldUpdateBaseRecurringEvent } from "../updateEventHelpers";
+import { removeDanglingDocuments } from "../recurringEventHelpers";
 
 /**
  * This function deletes allInstances / thisAndFollowingInstances of a recurring event.
@@ -23,6 +24,7 @@ import { shouldUpdateBaseRecurringEvent } from "../updateEventHelpers";
  * 2. remove the associations of the instances.
  * 3. delete the instances.
  * 4. update the recurrenceRule and baseRecurringEvent accordingly.
+ * 5. remove any dangling recurrence rule and base recurring event documents.
  */
 
 export const deleteRecurringEventInstances = async (
@@ -205,4 +207,10 @@ export const deleteRecurringEventInstances = async (
       }
     }
   }
+
+  // remove any dangling recurrence rule and base recurring event documents
+  await removeDanglingDocuments(
+    recurrenceRule._id.toString(),
+    baseRecurringEvent._id.toString(),
+  );
 };
