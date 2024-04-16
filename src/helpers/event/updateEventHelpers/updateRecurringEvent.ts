@@ -4,6 +4,11 @@ import { Event, RecurrenceRule } from "../../../models";
 import type { MutationUpdateEventArgs } from "../../../types/generatedGraphQLTypes";
 import { updateThisInstance } from "./updateThisInstance";
 import { updateRecurringEventInstances } from "./updateRecurringEventInstances";
+import { errors, requestContext } from "../../../libraries";
+import {
+  BASE_RECURRING_EVENT_NOT_FOUND,
+  RECURRENCE_RULE_NOT_FOUND,
+} from "../../../constants";
 
 /**
  * This function updates the recurring event.
@@ -24,14 +29,32 @@ export const updateRecurringEvent = async (
   let updatedEvent: InterfaceEvent = event;
 
   // get the recurrenceRule
-  const recurrenceRule = await RecurrenceRule.find({
+  const recurrenceRule = await RecurrenceRule.findOne({
     _id: event.recurrenceRuleId,
   });
 
+  // throws error if the recurrence rule doesn't exist
+  if (recurrenceRule === null) {
+    throw new errors.NotFoundError(
+      requestContext.translate(RECURRENCE_RULE_NOT_FOUND.MESSAGE),
+      RECURRENCE_RULE_NOT_FOUND.CODE,
+      RECURRENCE_RULE_NOT_FOUND.PARAM,
+    );
+  }
+
   // get the baseRecurringEvent
-  const baseRecurringEvent = await Event.find({
+  const baseRecurringEvent = await Event.findOne({
     _id: event.baseRecurringEventId,
   });
+
+  // throws error if the base recurring event doesn't exist
+  if (baseRecurringEvent === null) {
+    throw new errors.NotFoundError(
+      requestContext.translate(BASE_RECURRING_EVENT_NOT_FOUND.MESSAGE),
+      BASE_RECURRING_EVENT_NOT_FOUND.CODE,
+      BASE_RECURRING_EVENT_NOT_FOUND.PARAM,
+    );
+  }
 
   if (
     (args.data?.isRecurringEventException !== undefined &&
@@ -46,8 +69,8 @@ export const updateRecurringEvent = async (
     updatedEvent = await updateRecurringEventInstances(
       args,
       event,
-      recurrenceRule[0],
-      baseRecurringEvent[0],
+      recurrenceRule,
+      baseRecurringEvent,
       "allInstances",
       session,
     );
@@ -56,8 +79,8 @@ export const updateRecurringEvent = async (
     updatedEvent = await updateRecurringEventInstances(
       args,
       event,
-      recurrenceRule[0],
-      baseRecurringEvent[0],
+      recurrenceRule,
+      baseRecurringEvent,
       "thisAndFollowingInstances",
       session,
     );

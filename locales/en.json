@@ -10,6 +10,8 @@
   "actionItem.notFound": "Action Item not found",
   "advertisement.notFound": "Advertisement not found",
   "event.notFound": "Event not found",
+  "baseRecurringEvent.notFound": "Base Recurring Event not found",
+  "recurrenceRule.notFound": "Recurrence Rule not found",
   "organization.notFound": "Organization not found",
   "organization.profileImage.notFound": "Organization profile image not found",
   "organization.member.notFound": "Organization's user is not a member",

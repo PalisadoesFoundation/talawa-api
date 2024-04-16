@@ -23,7 +23,9 @@ import {
 
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
+  BASE_RECURRING_EVENT_NOT_FOUND,
   EVENT_NOT_FOUND_ERROR,
+  RECURRENCE_RULE_NOT_FOUND,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -888,6 +890,114 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         ]),
       }),
     );
+  });
+
+  it(`throws not found error if the base recurring event doesn't exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      let startDate = new Date();
+      startDate = convertToUTCDate(startDate);
+      const endDate = startDate;
+
+      const createEventArgs: MutationCreateEventArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          allDay: true,
+          description: "newDescription",
+          endDate,
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "newLocation",
+          recurring: true,
+          startDate,
+          title: "newTitle",
+        },
+        recurrenceRuleData: {
+          recurrenceStartDate: startDate,
+          recurrenceEndDate: convertToUTCDate(addMonths(startDate, 6)),
+          frequency: "WEEKLY",
+        },
+      };
+
+      const createEventContext = {
+        userId: testUser?.id,
+      };
+
+      const { createEvent: createEventResolver } = await import(
+        "../../../src/resolvers/Mutation/createEvent"
+      );
+
+      testRecurringEvent = (await createEventResolver?.(
+        {},
+        createEventArgs,
+        createEventContext,
+      )) as InterfaceEvent;
+
+      // delete the base recurring event
+      await Event.deleteOne({
+        _id: testRecurringEvent.baseRecurringEventId,
+      });
+
+      const args: MutationRemoveEventArgs = {
+        id: testRecurringEvent?._id.toString(),
+        recurringEventDeleteType: "thisInstance",
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      await removeEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenCalledWith(BASE_RECURRING_EVENT_NOT_FOUND.MESSAGE);
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `Translated ${BASE_RECURRING_EVENT_NOT_FOUND.MESSAGE}`,
+        );
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
+  });
+
+  it(`throws not found error if the recurrence rule  doesn't exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      // delete the base recurrence rule
+      await RecurrenceRule.deleteOne({
+        _id: testRecurringEvent.recurrenceRuleId,
+      });
+
+      const args: MutationRemoveEventArgs = {
+        id: testRecurringEvent?._id.toString(),
+        recurringEventDeleteType: "thisInstance",
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      await removeEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenCalledWith(RECURRENCE_RULE_NOT_FOUND.MESSAGE);
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `Translated ${RECURRENCE_RULE_NOT_FOUND.MESSAGE}`,
+        );
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
   });
 
   it("throws an error if user does not have appUserProfile", async () => {

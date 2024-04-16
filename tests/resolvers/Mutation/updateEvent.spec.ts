@@ -16,8 +16,10 @@ import {
 } from "../../helpers/db";
 
 import {
+  BASE_RECURRING_EVENT_NOT_FOUND,
   EVENT_NOT_FOUND_ERROR,
   LENGTH_VALIDATION_ERROR,
+  RECURRENCE_RULE_NOT_FOUND,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -1297,6 +1299,86 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         organization: testOrganization?._id,
       }),
     );
+  });
+
+  it(`throws not found error if the base recurring event doesn't exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      await Event.deleteOne({
+        _id: testRecurringEvent?.baseRecurringEventId,
+      });
+
+      const args: MutationUpdateEventArgs = {
+        id: testRecurringEvent?._id,
+        data: {
+          title: "update without base recurring event",
+        },
+        recurringEventUpdateType: "allInstances",
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      const { updateEvent: updateEventResolver } = await import(
+        "../../../src/resolvers/Mutation/updateEvent"
+      );
+
+      await updateEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenCalledWith(BASE_RECURRING_EVENT_NOT_FOUND.MESSAGE);
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `Translated ${BASE_RECURRING_EVENT_NOT_FOUND.MESSAGE}`,
+        );
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
+  });
+
+  it(`throws not found error if the recurrence rule doesn't exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      await RecurrenceRule.deleteOne({
+        _id: testRecurringEvent?.recurrenceRuleId,
+      });
+
+      const args: MutationUpdateEventArgs = {
+        id: testRecurringEvent?._id,
+        data: {
+          title: "update without base recurring event",
+        },
+        recurringEventUpdateType: "allInstances",
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      const { updateEvent: updateEventResolver } = await import(
+        "../../../src/resolvers/Mutation/updateEvent"
+      );
+
+      await updateEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenCalledWith(RECURRENCE_RULE_NOT_FOUND.MESSAGE);
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `Translated ${RECURRENCE_RULE_NOT_FOUND.MESSAGE}`,
+        );
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
   });
 });
 
