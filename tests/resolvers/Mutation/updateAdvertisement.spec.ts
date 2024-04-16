@@ -29,11 +29,9 @@ import {
 import { connect, disconnect } from "../../helpers/db";
 import type {
   TestOrganizationType,
-   TestUserType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
-import {
-  createTestUser
-}  from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdvertisement: TestAdvertisementType;
