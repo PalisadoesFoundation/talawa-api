@@ -78,8 +78,7 @@ jobs:
 
       - name: Run Typescript Type-Checker
         run: npm run typecheck
-
-
+        
       - name: Check if the source and target branches are different
         if: ${{ github.event.pull_request.base.ref == github.event.pull_request.head.ref }}
         run: |
