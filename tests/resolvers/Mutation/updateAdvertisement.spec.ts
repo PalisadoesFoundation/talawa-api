@@ -27,12 +27,11 @@ import {
   type TestSuperAdminType,
 } from "../../helpers/advertisement";
 import { connect, disconnect } from "../../helpers/db";
-import type {
+import {
   TestOrganizationType,
   createTestUser,
   type TestUserType,
 } from "../../helpers/userAndOrg";
-
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
