@@ -70,6 +70,7 @@ beforeAll(async () => {
     {
       $push: {
         adminFor: testOrganization?._id,
+        createdOrganizations: testOrganization?._id,
       },
     },
   );
@@ -226,9 +227,10 @@ describe("resolvers -> Mutation -> createEvent", () => {
           images: ["image_url_1", "image_url_2", "image_url_3", "image_url_4"],
         },
       };
+      const newUser = await createTestUser();
 
       const context = {
-        userId: testUser?.id,
+        userId: newUser?.id,
       };
 
       const { createEvent: createEventResolverError } = await import(

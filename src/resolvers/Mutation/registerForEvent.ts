@@ -1,13 +1,15 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
-import { User, Event, EventAttendee } from "../../models";
 import {
   EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_ERROR,
 } from "../../constants";
-import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceEvent } from "../../models";
+import { Event, EventAttendee, User } from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { deleteUserFromCache } from "../../services/UserCache/deleteUserFromCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * Enables a user to register for an event.
@@ -87,6 +89,8 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
         },
       },
     );
+    await deleteUserFromCache(context.userId);
+    await cacheUsers([context.userId]);
 
     return currentUserIsEventRegistrant;
   } else {

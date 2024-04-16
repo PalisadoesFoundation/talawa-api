@@ -2,10 +2,13 @@ import {
   EMAIL_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceUser } from "../../models";
 import { AppUserProfile, User } from "../../models";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { deleteUserFromCache } from "../../services/UserCache/deleteUserFromCache";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to update user profile.
@@ -21,9 +24,17 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   args,
   context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   if (!currentUser) {
     throw new errors.NotFoundError(
@@ -130,6 +141,10 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       runValidators: true,
     },
   ).lean();
+  if (updatedUser != null) {
+    await deleteUserFromCache(updatedUser?._id.toString() || "");
+    await cacheUsers([updatedUser]);
+  }
 
   if (args.data?.appLanguageCode) {
     await AppUserProfile.findOneAndUpdate(

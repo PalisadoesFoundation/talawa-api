@@ -10,16 +10,22 @@ import {
   ActionItemCategory,
   AppUserProfile,
   Comment,
+  Fund,
   MembershipRequest,
   Organization,
   Post,
   User,
-  Fund,
 } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { deleteAppUserFromCache } from "../../services/AppUserProfileCache/deleteAppUserFromCache";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { deleteOrganizationFromCache } from "../../services/OrganizationCache/deleteOrganizationFromCache";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { deleteUserFromCache } from "../../services/UserCache/deleteUserFromCache";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
@@ -38,9 +44,17 @@ import { deletePreviousImage as deleteImage } from "../../utilities/encodedImage
  */
 export const removeOrganization: MutationResolvers["removeOrganization"] =
   async (_parent, args, context) => {
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     // Checks whether currentUser exists.
     if (!currentUser) {
@@ -50,9 +64,19 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
-    const currentUserAppProfile = await AppUserProfile.findOne({
-      userId: currentUser._id,
-    }).lean();
+    let currentUserAppProfile: InterfaceAppUserProfile | null;
+    const appUserProfileFoundInCache = await findAppUserProfileCache([
+      currentUser.appUserProfileId?.toString(),
+    ]);
+    currentUserAppProfile = appUserProfileFoundInCache[0];
+    if (currentUserAppProfile === null) {
+      currentUserAppProfile = await AppUserProfile.findOne({
+        userId: currentUser._id,
+      }).lean();
+      if (currentUserAppProfile !== null) {
+        await cacheAppUserProfile([currentUserAppProfile]);
+      }
+    }
 
     if (!currentUserAppProfile) {
       throw new errors.UnauthorizedError(
@@ -191,6 +215,16 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
         .populate("eventAdmin")
         .populate("adminFor")
         .lean()) as InterfaceAppUserProfile;
+
+    if (updatedUser) {
+      await deleteUserFromCache(updatedUser._id.toString());
+      await cacheUsers([updatedUser]);
+    }
+    if (updatedAppUserProfile) {
+      await deleteAppUserFromCache(updatedAppUserProfile._id.toString());
+      await cacheAppUserProfile([updatedAppUserProfile]);
+    }
+
     // Returns updated currentUser.
     return {
       user: updatedUser,
