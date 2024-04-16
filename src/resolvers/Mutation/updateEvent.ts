@@ -108,16 +108,25 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  const currentUserIsEventAdmin = event.admins.some(
-    (admin) =>
-      admin === context.userID ||
-      new Types.ObjectId(admin).equals(context.userId),
+  // Boolean to determine whether user is an admin of organization.
+  const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+    (organization) =>
+      organization &&
+      new Types.ObjectId(organization.toString()).equals(event?.organization),
   );
 
-  // checks if current user is an admin of the event with _id === args.id
+  // Boolean to determine whether user is an admin of event.
+  const currentUserIsEventAdmin = event.admins.some((admin) =>
+    admin.equals(currentUser?._id),
+  );
+
+  // Checks whether currentUser cannot update event.
   if (
-    currentUserIsEventAdmin === false &&
-    currentUserAppProfile.isSuperAdmin === false
+    !(
+      currentUserIsOrganizationAdmin ||
+      currentUserIsEventAdmin ||
+      currentUserAppProfile.isSuperAdmin
+    )
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
