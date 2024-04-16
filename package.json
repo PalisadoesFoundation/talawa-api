@@ -123,7 +123,7 @@
     "@types/validator": "^13.11.9",
     "@typescript-eslint/eslint-plugin": "^7.6.0",
     "@typescript-eslint/parser": "^7.6.0",
-    "@vitest/coverage-v8": "^1.4.0",
+    "@vitest/coverage-v8": "^1.5.0",
     "cls-bluebird": "^2.1.0",
     "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
@@ -137,7 +137,7 @@
     "prettier": "^3.2.5",
     "rimraf": "^5.0.5",
     "tsx": "^4.7.2",
-    "typescript": "^5.4.4",
+    "typescript": "^5.4.5",
     "vitest": "^1.2.1"
   },
   "overrides": {
