@@ -265,8 +265,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
   it(`removes a single instance of a recurring event`, async () => {
     let startDate = new Date();
     startDate = convertToUTCDate(startDate);
-
-    const endDate = addMonths(startDate, 6);
+    const endDate = startDate;
 
     const createEventArgs: MutationCreateEventArgs = {
       data: {
@@ -282,6 +281,11 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         recurring: true,
         startDate,
         title: "newTitle",
+      },
+      recurrenceRuleData: {
+        recurrenceStartDate: startDate,
+        recurrenceEndDate: convertToUTCDate(addMonths(startDate, 6)),
+        frequency: "WEEKLY",
       },
     };
 
@@ -416,11 +420,30 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
   it(`removes this and following instances of the recurring event`, async () => {
     // find an event 10 weeks ahead of the testRecurringEvent
+    // and delete the instances ahead from there
     const recurringInstances = await Event.find({
       recurrenceRuleId: testRecurringEvent?.recurrenceRuleId,
     });
-
     const recurringEventInstance = recurringInstances[10];
+
+    // find the instance 9 weeks ahead of the testRecurringEvent that wouldn't be deleted
+    // i.e. it would be the latest instance remaining for that recurrence rule
+    const latestRecurringEventInstance = recurringInstances[9];
+
+    let recurrenceRule = await RecurrenceRule.findOne({
+      _id: testRecurringEvent.recurrenceRuleId,
+    });
+
+    let baseRecurringEvent = await Event.findOne({
+      _id: testRecurringEvent.baseRecurringEventId,
+    });
+
+    expect(recurrenceRule?.recurrenceEndDate).not.toEqual(
+      latestRecurringEventInstance.endDate,
+    );
+    expect(baseRecurringEvent?.endDate).not.toEqual(
+      latestRecurringEventInstance.endDate,
+    );
 
     let attendeeExists = await EventAttendee.exists({
       userId: testUser?._id,
@@ -486,6 +509,21 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       }),
     );
 
+    recurrenceRule = await RecurrenceRule.findOne({
+      _id: testRecurringEvent.recurrenceRuleId,
+    });
+
+    baseRecurringEvent = await Event.findOne({
+      _id: testRecurringEvent.baseRecurringEventId,
+    });
+
+    expect(recurrenceRule?.recurrenceEndDate).toEqual(
+      latestRecurringEventInstance.endDate,
+    );
+    expect(baseRecurringEvent?.endDate).toEqual(
+      latestRecurringEventInstance.endDate,
+    );
+
     attendeeExists = await EventAttendee.exists({
       userId: testUser?._id,
       eventId: recurringEventInstance?._id,
@@ -525,12 +563,29 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
   it(`changes the recurrencerule and deletes the new series`, async () => {
     // find an event 7 weeks ahead of the testRecurringEvent
-    // and update it to follow a new recurrence series
+    // and update this and following instance to follow a new recurrence series
     const recurringInstances = await Event.find({
       recurrenceRuleId: testRecurringEvent?.recurrenceRuleId,
     });
-
     let recurringEventInstance = recurringInstances[7] as InterfaceEvent;
+
+    // find the new latestInstance of for the current recurrence rule
+    const latestRecurringEventInstance = recurringInstances[6];
+
+    let recurrenceRule = await RecurrenceRule.findOne({
+      _id: testRecurringEvent.recurrenceRuleId,
+    });
+
+    let baseRecurringEvent = await Event.findOne({
+      _id: testRecurringEvent.baseRecurringEventId,
+    });
+
+    expect(recurrenceRule?.recurrenceEndDate).not.toEqual(
+      latestRecurringEventInstance.endDate,
+    );
+    expect(baseRecurringEvent?.endDate).not.toEqual(
+      latestRecurringEventInstance.endDate,
+    );
 
     let attendeeExists = await EventAttendee.exists({
       userId: testUser?._id,
@@ -570,6 +625,10 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         title: "update the recurrence rule of this and following instances",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: recurringEventInstance.startDate,
+        recurrenceEndDate: convertToUTCDate(
+          addMonths(recurringEventInstance.startDate, 6),
+        ),
         frequency: "DAILY",
       },
       recurringEventUpdateType: "thisAndFollowingInstances",
@@ -619,6 +678,21 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
       }),
+    );
+
+    recurrenceRule = await RecurrenceRule.findOne({
+      _id: testRecurringEvent.recurrenceRuleId,
+    });
+
+    baseRecurringEvent = await Event.findOne({
+      _id: testRecurringEvent.baseRecurringEventId,
+    });
+
+    expect(recurrenceRule?.recurrenceEndDate).toEqual(
+      latestRecurringEventInstance.endDate,
+    );
+    expect(baseRecurringEvent?.endDate).toEqual(
+      latestRecurringEventInstance.endDate,
     );
 
     attendeeExists = await EventAttendee.exists({
@@ -685,7 +759,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     let updatedTestUser = await User.findOne({
       _id: testUser?._id,
     })
-      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .select(["registeredEvents"])
       .lean();
 
     let updatedTestUserAppProfile = await AppUserProfile.findOne({
