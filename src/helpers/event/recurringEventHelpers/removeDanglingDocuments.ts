@@ -1,3 +1,4 @@
+import type mongoose from "mongoose";
 import { Event, RecurrenceRule } from "../../../models";
 
 /**
@@ -15,35 +16,44 @@ import { Event, RecurrenceRule } from "../../../models";
 export const removeDanglingDocuments = async (
   recurrenceRuleId: string,
   baseRecurringEventId: string,
+  session: mongoose.ClientSession,
 ): Promise<void> => {
-  await removeRecurrenceRule(recurrenceRuleId);
-  await removeBaseRecurringEvent(baseRecurringEventId);
+  await removeRecurrenceRule(recurrenceRuleId, session);
+  await removeBaseRecurringEvent(baseRecurringEventId, session);
 };
 
 const removeRecurrenceRule = async (
   recurrenceRuleId: string,
+  session: mongoose.ClientSession,
 ): Promise<void> => {
   const eventsFollowingRecurrenceRule = await Event.exists({
     recurrenceRuleId,
   });
 
   if (!eventsFollowingRecurrenceRule) {
-    await RecurrenceRule.deleteOne({
-      _id: recurrenceRuleId,
-    });
+    await RecurrenceRule.deleteOne(
+      {
+        _id: recurrenceRuleId,
+      },
+      { session },
+    );
   }
 };
 
 const removeBaseRecurringEvent = async (
   baseRecurringEventId: string,
+  session: mongoose.ClientSession,
 ): Promise<void> => {
   const eventsHavingBaseRecurringEvent = await Event.exists({
     baseRecurringEventId,
   });
 
   if (!eventsHavingBaseRecurringEvent) {
-    await Event.deleteOne({
-      _id: baseRecurringEventId,
-    });
+    await Event.deleteOne(
+      {
+        _id: baseRecurringEventId,
+      },
+      { session },
+    );
   }
 };

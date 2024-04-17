@@ -212,5 +212,6 @@ export const deleteRecurringEventInstances = async (
   await removeDanglingDocuments(
     recurrenceRule._id.toString(),
     baseRecurringEvent._id.toString(),
+    session,
   );
 };
