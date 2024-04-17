@@ -307,7 +307,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message: string) => `Translated ${message}`,
     );
-    
+
     const args: MutationUpdateAdvertisementArgs = {
       input: {
         _id: testAdvertisement._id,
@@ -317,7 +317,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       },
     };
 
-    const context = { userId:  testSuperAdmin?.id};
+    const context = { userId: testSuperAdmin?.id };
 
     const updateAdvertisementPayload = await updateAdvertisementResolver?.(
       {},
