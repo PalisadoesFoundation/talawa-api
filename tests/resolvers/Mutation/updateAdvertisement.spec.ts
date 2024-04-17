@@ -12,7 +12,11 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { ApplicationError } from "../../../src/libraries/errors";
-import { Advertisement } from "../../../src/models";
+import {
+  Advertisement,
+  AppUserProfile,
+  Organization,
+} from "../../../src/models";
 import { updateAdvertisement as updateAdvertisementResolver } from "../../../src/resolvers/Mutation/updateAdvertisement";
 import type { MutationUpdateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
@@ -23,18 +27,49 @@ import {
   type TestSuperAdminType,
 } from "../../helpers/advertisement";
 import { connect, disconnect } from "../../helpers/db";
-import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
-
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdvertisement: TestAdvertisementType;
 let testSuperAdmin: TestSuperAdminType;
+let testAdminUser: TestUserType;
+let randomUser: TestUserType;
+let testAdminUser2: TestUserType;
+let testOrganization: TestOrganizationType;
+let testAdvertisement2: TestAdvertisementType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
+  randomUser = await createTestUser();
+  testAdminUser = await createTestUser();
   testSuperAdmin = await createTestSuperAdmin();
   testAdvertisement = await createTestAdvertisement();
+  testAdminUser2 = await createTestUser();
+  testOrganization = await Organization.create({
+    name: "name",
+    description: "description",
+    isPublic: true,
+    creator: testAdminUser?._id,
+    admins: [testAdminUser?._id],
+    members: [testUser?._id, testAdminUser?._id],
+    creatorId: testAdminUser?._id,
+  });
+  testAdvertisement2 = await Advertisement.create({
+    name: "Test Advertisement",
+    mediaUrl: "data:image/png;base64,bWVkaWEgY29udG",
+    type: "POPUP",
+    startDate: "2023-01-01",
+    endDate: "2023-01-31",
+    organizationId: testOrganization?._id,
+    createdAt: "2024-01-13T18:23:00.316Z",
+    updatedAt: "2024-01-13T20:28:21.292Z",
+    creatorId: testUser?._id,
+  });
 });
 
 afterAll(async () => {
@@ -101,7 +136,6 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
-
   it(`throws NotFoundError if no advertisement exists with _id === args.id `, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -136,11 +170,22 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     }
   });
 
-  it.skip(`updates the advertisement with _id === args.id and returns it`, async () => {
+  it(`updates the advertisement with _id === args.id and returns it`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message: string) => `Translated ${message}`,
+    );
+    const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
+      {
+        userId: randomUser?._id,
+      },
+      {
+        isSuperAdmin: true,
+      },
+      {
+        new: true,
+      },
     );
     const args: MutationUpdateAdvertisementArgs = {
       input: {
@@ -157,7 +202,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       },
     };
 
-    const context = { userId: testSuperAdmin?._id };
+    const context = { userId: superAdminTestUser?.userId };
 
     const updateAdvertisementPayload = await updateAdvertisementResolver?.(
       {},
@@ -190,13 +235,79 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     }
     expect(advertisement).toEqual({ advertisement: expectedAdvertisement });
   });
-
-  it.skip(`updates the advertisement media and returns it`, async () => {
+  it(`updates the advertisement with _id === args.id and returns it as an org admin`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message: string) => `Translated ${message}`,
     );
+
+    await AppUserProfile.findOneAndUpdate(
+      {
+        userId: testAdminUser?._id,
+      },
+      {
+        adminFor: [testOrganization?._id],
+      },
+      {
+        new: true,
+      },
+    );
+    const args: MutationUpdateAdvertisementArgs = {
+      input: {
+        _id: testAdvertisement2._id,
+        name: "New Advertisement Name",
+        mediaFile: "data:image/png;base64,bWaWEgY29udGVudA==",
+        type: "POPUP",
+        startDate: new Date(new Date().getFullYear() + 0, 11, 31)
+          .toISOString()
+          .split("T")[0],
+        endDate: new Date(new Date().getFullYear() + 1, 11, 31)
+          .toISOString()
+          .split("T")[0],
+      },
+    };
+
+    const context = { userId: testAdminUser?.id };
+
+    const updateAdvertisementPayload = await updateAdvertisementResolver?.(
+      {},
+      args,
+      context,
+    );
+    const advertisement = updateAdvertisementPayload || {};
+
+    const updatedTestAdvertisement = await Advertisement.findOne({
+      _id: testAdvertisement2._id,
+    }).lean();
+
+    let expectedAdvertisement;
+
+    if (!updatedTestAdvertisement) {
+      console.error("Updated advertisement not found in the database");
+    } else {
+      expectedAdvertisement = {
+        _id: updatedTestAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
+        name: updatedTestAdvertisement.name,
+        organizationId: updatedTestAdvertisement.organizationId,
+        mediaUrl: updatedTestAdvertisement.mediaUrl,
+        type: updatedTestAdvertisement.type,
+        startDate: updatedTestAdvertisement.startDate,
+        endDate: updatedTestAdvertisement.endDate,
+        createdAt: updatedTestAdvertisement.createdAt,
+        updatedAt: updatedTestAdvertisement.updatedAt,
+        creatorId: updatedTestAdvertisement.creatorId,
+      };
+    }
+    expect(advertisement).toEqual({ advertisement: expectedAdvertisement });
+  });
+  it(`updates the advertisement media and returns it`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message: string) => `Translated ${message}`,
+    );
+
     const args: MutationUpdateAdvertisementArgs = {
       input: {
         _id: testAdvertisement._id,
@@ -206,7 +317,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       },
     };
 
-    const context = { userId: testSuperAdmin?._id };
+    const context = { userId: testSuperAdmin?.id };
 
     const updateAdvertisementPayload = await updateAdvertisementResolver?.(
       {},
@@ -392,6 +503,39 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       expect(spy).toHaveBeenLastCalledWith(FIELD_NON_EMPTY_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${FIELD_NON_EMPTY_ERROR.MESSAGE}`,
+      );
+    }
+  });
+  it("throws UnauthorizedError if the user does not have an app profile", async () => {
+    await AppUserProfile.deleteOne({ userId: testAdminUser2?._id });
+
+    try {
+      const { requestContext } = await import("../../../src/libraries");
+
+      vi.spyOn(requestContext, "translate").mockImplementationOnce(
+        (message: string) => `Translated ${message}`,
+      );
+      const args: MutationUpdateAdvertisementArgs = {
+        input: {
+          _id: testAdvertisement._id,
+          name: "New Advertisement Name",
+          mediaFile: "data:image/png;base64,bWaWEgY29udGVudA==",
+          type: "POPUP",
+          startDate: new Date(new Date().getFullYear() + 0, 11, 31)
+            .toISOString()
+            .split("T")[0],
+          endDate: new Date(new Date().getFullYear() + 1, 11, 31)
+            .toISOString()
+            .split("T")[0],
+        },
+      };
+
+      const context = { userId: testAdminUser2?._id };
+
+      await updateAdvertisementResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });

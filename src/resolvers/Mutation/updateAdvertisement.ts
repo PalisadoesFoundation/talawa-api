@@ -9,7 +9,11 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import type {
+  InterfaceAdvertisement,
+  InterfaceAppUserProfile,
+  InterfaceUser,
+} from "../../models";
 import { Advertisement, AppUserProfile, User } from "../../models";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
@@ -163,27 +167,21 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       },
     ).lean();
 
-    if (!updatedAdvertisement) {
-      throw new errors.NotFoundError(
-        requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
-        ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
-        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM,
-      );
-    }
-
     const updatedAdvertisementPayload = {
-      _id: updatedAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
-      name: updatedAdvertisement.name,
-      organizationId: updatedAdvertisement.organizationId,
-      mediaUrl: updatedAdvertisement.mediaUrl,
-      type: updatedAdvertisement.type,
-      startDate: updatedAdvertisement.startDate,
-      endDate: updatedAdvertisement.endDate,
-      createdAt: updatedAdvertisement.createdAt,
-      updatedAt: updatedAdvertisement.updatedAt,
-      creatorId: updatedAdvertisement.creatorId,
+      _id: updatedAdvertisement?._id?.toString(), // Ensure _id is converted to String as per GraphQL schema
+      name: updatedAdvertisement?.name,
+      organizationId: updatedAdvertisement?.organizationId,
+      mediaUrl: updatedAdvertisement?.mediaUrl,
+      type: updatedAdvertisement?.type,
+      startDate: updatedAdvertisement?.startDate,
+      endDate: updatedAdvertisement?.endDate,
+      createdAt: updatedAdvertisement?.createdAt,
+      updatedAt: updatedAdvertisement?.updatedAt,
+      creatorId: updatedAdvertisement?.creatorId,
     };
     return {
-      advertisement: { ...updatedAdvertisementPayload },
+      advertisement: {
+        ...updatedAdvertisementPayload,
+      } as InterfaceAdvertisement,
     };
   };
