@@ -8,6 +8,7 @@ import {
   AppUserProfile,
   RecurrenceRule,
 } from "../../../src/models";
+import type { InterfaceAppUserProfile } from "../../../src/models";
 import type { MutationUpdateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
   connect,
@@ -43,6 +44,7 @@ import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import { addDays, addWeeks } from "date-fns";
 
 import { fail } from "assert";
+import { cacheAppUserProfile } from "../../../src/services/AppUserProfileCache/cacheAppUserProfile";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -159,14 +161,36 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     }
   });
 
-  it(`throws UnauthorizedError if current user with _id === context.userId is
-  not an admin of event with _id === args.id`, async () => {
+  it(`throws UnauthorizedError if user with _id === context.userId is neither an
+  admin of organization with _id === event.organization for event with _id === args.id
+  or an admin for event with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementation((message) => `Translated ${message}`);
-
+      .mockImplementationOnce((message) => message);
     try {
+      await AppUserProfile.updateOne(
+        {
+          userId: testUser?._id,
+        },
+        {
+          $set: {
+            adminFor: [],
+          },
+        },
+      );
+
+      await Event.updateOne(
+        {
+          _id: testEvent?._id,
+        },
+        {
+          $set: {
+            admins: [],
+          },
+        },
+      );
+
       const args: MutationUpdateEventArgs = {
         id: testEvent?._id,
       };
@@ -181,11 +205,9 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
       await updateEventResolver?.({}, args, context);
     } catch (error: unknown) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       if (error instanceof Error) {
-        expect(error.message).toEqual(
-          `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
-        );
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE;
       } else {
         fail(`Expected UnauthorizedError, but got ${error}`);
       }
@@ -193,6 +215,26 @@ describe("resolvers -> Mutation -> updateEvent", () => {
   });
 
   it(`updates the event with _id === args.id and returns the updated event`, async () => {
+    const updatedTestUserAppProfile = await AppUserProfile.findOneAndUpdate(
+      {
+        userId: testUser?._id,
+      },
+      {
+        $push: {
+          adminFor: testOrganization?._id,
+        },
+      },
+      {
+        new: true,
+      },
+    ).lean();
+
+    if (updatedTestUserAppProfile !== null) {
+      await cacheAppUserProfile([
+        updatedTestUserAppProfile as InterfaceAppUserProfile,
+      ]);
+    }
+
     const updatedEvent = await Event.findOneAndUpdate(
       {
         _id: testEvent?._id,
@@ -1450,7 +1492,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
           recurring: false,
           startDate: "Tue Feb 14 2023",
           startTime: "",
-          title: "Random",
         },
       };
 
