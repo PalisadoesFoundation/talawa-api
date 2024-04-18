@@ -221,12 +221,21 @@ export const updateRecurringEventInstances = async (
     // i.e. recurrence rule has not changed
     // perform bulk update on all the events starting from this event,
     // that are following the current recurrence rule and are not exceptions
+
+    // get the generic data to be updated
+    const updateData = { ...args.data };
+
+    // remove the dates from this data because that would change the recurrence pattern
+    // and would be covered in the if block above where "hasRecurrenceRuleChanged: true"
+    delete updateData.startDate;
+    delete updateData.endDate;
+
     await Event.updateMany(
       {
         ...eventsQueryObject,
       },
       {
-        ...(args.data as Partial<InterfaceEvent>),
+        ...updateData,
       },
       {
         session,

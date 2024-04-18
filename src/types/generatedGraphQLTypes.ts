@@ -1813,7 +1813,7 @@ export type MutationUpdateCommunityArgs = {
 
 
 export type MutationUpdateEventArgs = {
-  data?: InputMaybe<UpdateEventInput>;
+  data: UpdateEventInput;
   id: Scalars['ID']['input'];
   recurrenceRuleData?: InputMaybe<RecurrenceRuleInput>;
   recurringEventUpdateType?: InputMaybe<RecurringEventMutationType>;
@@ -4222,7 +4222,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateAgendaItem?: Resolver<Maybe<ResolversTypes['AgendaItem']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaItemArgs, 'id' | 'input'>>;
   updateAgendaSection?: Resolver<Maybe<ResolversTypes['AgendaSection']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaSectionArgs, 'id' | 'input'>>;
   updateCommunity?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateCommunityArgs, 'data'>>;
-  updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
+  updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'data' | 'id'>>;
   updateEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerArgs, 'id'>>;
   updateEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerGroupArgs, 'id'>>;
   updateFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationUpdateFundArgs, 'data' | 'id'>>;

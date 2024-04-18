@@ -1144,7 +1144,7 @@ type Mutation {
   updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
   updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
   updateCommunity(data: UpdateCommunityInput!): Boolean!
-  updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
+  updateEvent(data: UpdateEventInput!, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateEventVolunteerGroup(data: UpdateEventVolunteerGroupInput, id: ID!): EventVolunteerGroup!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!

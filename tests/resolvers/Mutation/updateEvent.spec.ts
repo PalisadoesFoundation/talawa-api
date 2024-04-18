@@ -106,6 +106,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     try {
       const args: MutationUpdateEventArgs = {
         id: "",
+        data: {},
       };
 
       const context = {
@@ -138,6 +139,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     try {
       const args: MutationUpdateEventArgs = {
         id: new Types.ObjectId().toString(),
+        data: {},
       };
 
       const context = {
@@ -193,6 +195,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
       const args: MutationUpdateEventArgs = {
         id: testEvent?._id,
+        data: {},
       };
 
       const context = {

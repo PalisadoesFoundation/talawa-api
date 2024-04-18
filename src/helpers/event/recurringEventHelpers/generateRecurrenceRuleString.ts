@@ -15,8 +15,6 @@ import { convertToRRuleDateString } from "../../../utilities/recurrenceDatesUtil
 
 export const generateRecurrenceRuleString = (
   recurrenceRuleData: RecurrenceRuleInput,
-  // recurrenceStartDate: Date,
-  // recurrenceEndDate?: Date,
 ): string => {
   // destructure the recurrence rules
   const {

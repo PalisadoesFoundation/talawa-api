@@ -296,7 +296,7 @@ export const mutations = gql`
 
     updateEvent(
       id: ID!
-      data: UpdateEventInput
+      data: UpdateEventInput!
       recurrenceRuleData: RecurrenceRuleInput
       recurringEventUpdateType: RecurringEventMutationType
     ): Event! @auth

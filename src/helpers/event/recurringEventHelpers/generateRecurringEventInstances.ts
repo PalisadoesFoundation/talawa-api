@@ -72,6 +72,7 @@ export const generateRecurringEventInstances = async ({
   const latestGeneratedInstance = await Event.findOne({
     recurrenceRuleId,
     baseRecurringEventId,
+    isRecurringEventException: false,
   }).sort({ startDate: -1 });
 
   if (latestGeneratedInstance) {

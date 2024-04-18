@@ -32,7 +32,7 @@ export const updateSingleEvent = async (
 ): Promise<InterfaceEvent> => {
   let updatedEvent: InterfaceEvent = event;
 
-  if (args.data?.recurring) {
+  if (args.data.recurring) {
     // get the data from args
     const { data: updateEventInputData } = args;
     let { recurrenceRuleData } = args;
