@@ -435,11 +435,72 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     );
   });
 
-  it(`updates this instance of a recurring event with _id === args.id`, async () => {
+  it(`updates this instance of a recurring event with _id === args.id, making it an exception`, async () => {
     const args: MutationUpdateEventArgs = {
       id: testRecurringEvent?._id,
       data: {
         title: "updated this instance",
+      },
+      recurringEventUpdateType: "thisInstance",
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    const { updateEvent: updateEventResolver } = await import(
+      "../../../src/resolvers/Mutation/updateEvent"
+    );
+
+    const updateEventPayload = await updateEventResolver?.({}, args, context);
+
+    const recurrenceRule = await RecurrenceRule.findOne({
+      _id: updateEventPayload?.recurrenceRuleId,
+    });
+
+    const baseRecurringEvent = await Event.findOne({
+      _id: updateEventPayload?.baseRecurringEventId,
+    });
+
+    expect(updateEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        title: "updated this instance",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        recurrenceRuleId: recurrenceRule?._id,
+        baseRecurringEventId: baseRecurringEvent?._id,
+        isRecurringEventException: true,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+
+    expect(baseRecurringEvent).toEqual(
+      expect.objectContaining({
+        allDay: true,
+        title: "made recurring",
+        description: "description2",
+        isPublic: true,
+        isRegisterable: true,
+        location: "location2",
+        recurring: true,
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      }),
+    );
+  });
+
+  it(`updates this instance of a recurring event with _id === args.id to not be an exception`, async () => {
+    const args: MutationUpdateEventArgs = {
+      id: testRecurringEvent?._id,
+      data: {
+        isRecurringEventException: false,
       },
       recurringEventUpdateType: "thisInstance",
     };
