@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Types } from "mongoose";
-import { Post } from "../../../src/models";
+import { AppUserProfile, Post } from "../../../src/models";
 import type { MutationUpdatePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updatePost as updatePostResolver } from "../../../src/resolvers/Mutation/updatePost";
@@ -8,11 +8,14 @@ import {
   LENGTH_VALIDATION_ERROR,
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
-import type {
-  TestOrganizationType,
-  TestUserType,
+import {
+  createTestOrganizationWithAdmin,
+  createTestUser,
+  type TestOrganizationType,
+  type TestUserType,
 } from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost, createTestSinglePost } from "../../helpers/posts";
@@ -40,6 +43,32 @@ afterEach(async () => {
 });
 
 describe("resolvers -> Mutation -> updatePost", () => {
+  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationUpdatePostArgs = {
+        id: testPost?._id.toString() || "",
+        data: {
+          title: "newTitle",
+        },
+      };
+
+      const context = {
+        userId: new Types.ObjectId().toString(),
+      };
+
+      await updatePostResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
+  });
+
   it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
     try {
       const args: MutationUpdatePostArgs = {
@@ -58,17 +87,28 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
   it(`throws UnauthorizedError as current user with _id === context.userId is
   not an creator of post with _id === args.id`, async () => {
+    const testUser1 = await createTestUser();
+    const testOrg1 = await createTestOrganizationWithAdmin(
+      testUser1?._id,
+      false,
+      false,
+    );
+    const testPost1 = await createTestSinglePost(testUser1?._id, testOrg1?._id);
+
     try {
       const args: MutationUpdatePostArgs = {
-        id: testPost?._id.toString() ?? "",
+        id: testPost1?._id.toString() ?? "",
+        data: {
+          title: "newTitle",
+        },
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: testUser1?._id,
       };
 
       await Post.updateOne(
-        { _id: testPost?._id },
+        { _id: testPost1?._id },
         { $set: { creatorId: new Types.ObjectId().toString() } },
       );
 
@@ -265,6 +305,36 @@ describe("resolvers -> Mutation -> updatePost", () => {
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         `Please provide a title to pin post`,
+      );
+    }
+  });
+
+  it("throws error if AppUserProfile is not found", async () => {
+    const userWithoutProfileId = await createTestUser();
+    await AppUserProfile.findByIdAndDelete(
+      userWithoutProfileId?.appUserProfileId,
+    );
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationUpdatePostArgs = {
+        id: testPost?._id.toString() || "",
+        data: {
+          title: "newTitle",
+        },
+      };
+
+      const context = {
+        userId: userWithoutProfileId?._id,
+      };
+
+      await updatePostResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
