@@ -307,17 +307,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message: string) => `Translated ${message}`,
     );
-    const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
-      {
-        userId: randomUser?._id,
-      },
-      {
-        isSuperAdmin: true,
-      },
-      {
-        new: true,
-      },
-    );
+
     const args: MutationUpdateAdvertisementArgs = {
       input: {
         _id: testAdvertisement._id,
@@ -327,7 +317,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       },
     };
 
-    const context = { userId: superAdminTestUser?.userId };
+    const context = { userId: testSuperAdmin?.id };
 
     const updateAdvertisementPayload = await updateAdvertisementResolver?.(
       {},
