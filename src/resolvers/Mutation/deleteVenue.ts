@@ -6,8 +6,13 @@ import {
   VENUE_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
 import { AppUserProfile, Organization, User } from "../../models";
 import { Venue } from "../../models/Venue";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to create a venue in an organization.
@@ -27,9 +32,17 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
   args,
   context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   // Checks whether currentUser with _id == context.userId exists.
   if (currentUser === null) {
@@ -39,10 +52,20 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentAppProfile = await AppUserProfile.findOne({
-    userId: context.userId,
-  });
-  if (!currentAppProfile) {
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
+  if (!currentUserAppProfile) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -79,7 +102,7 @@ export const deleteVenue: MutationResolvers["deleteVenue"] = async (
   if (
     !(
       organization.admins?.some((admin) => admin._id.equals(context.userId)) ||
-      currentAppProfile?.isSuperAdmin
+      currentUserAppProfile?.isSuperAdmin
     )
   ) {
     throw new errors.UnauthorizedError(

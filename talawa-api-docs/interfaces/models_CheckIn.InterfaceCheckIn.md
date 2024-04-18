@@ -9,8 +9,6 @@
 ### Properties
 
 - [\_id](models_CheckIn.InterfaceCheckIn.md#_id)
-- [allotedRoom](models_CheckIn.InterfaceCheckIn.md#allotedroom)
-- [allotedSeat](models_CheckIn.InterfaceCheckIn.md#allotedseat)
 - [createdAt](models_CheckIn.InterfaceCheckIn.md#createdat)
 - [eventAttendeeId](models_CheckIn.InterfaceCheckIn.md#eventattendeeid)
 - [feedbackSubmitted](models_CheckIn.InterfaceCheckIn.md#feedbacksubmitted)
@@ -26,26 +24,6 @@
 #### Defined in
 
 [src/models/CheckIn.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/CheckIn.ts#L13)
-
----
-
-### allotedRoom
-
-• **allotedRoom**: `string`
-
-#### Defined in
-
-[src/models/CheckIn.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/CheckIn.ts#L16)
-
----
-
-### allotedSeat
-
-• **allotedSeat**: `string`
-
-#### Defined in
-
-[src/models/CheckIn.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/models/CheckIn.ts#L17)
 
 ---
 

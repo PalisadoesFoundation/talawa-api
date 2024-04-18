@@ -1,4 +1,7 @@
-import { USER_NOT_FOUND_ERROR } from "../../constants";
+import {
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+} from "../../constants";
 import { errors } from "../../libraries";
 import {
   AppUserProfile,
@@ -42,9 +45,9 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
     .lean();
   if (!userAppProfile) {
     throw new errors.NotFoundError(
-      USER_NOT_FOUND_ERROR.DESC,
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      USER_NOT_AUTHORIZED_ERROR.DESC,
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
   return {

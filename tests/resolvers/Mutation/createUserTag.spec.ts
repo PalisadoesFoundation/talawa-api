@@ -11,6 +11,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   TAG_NOT_FOUND,
   TAG_ALREADY_EXISTS,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -26,7 +27,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { OrganizationTagUser } from "../../../src/models";
+import { AppUserProfile, OrganizationTagUser } from "../../../src/models";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createRootTagWithOrg } from "../../helpers/tags";
 
@@ -80,8 +81,10 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof Error)) {
+        throw new Error("Expected an error to be thrown");
+      }
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
@@ -113,8 +116,10 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof Error)) {
+        throw new Error("Expected an error to be thrown");
+      }
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
@@ -147,8 +152,10 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof Error)) {
+        throw new Error("Expected an error to be thrown");
+      }
       expect(spy).toBeCalledWith(TAG_NOT_FOUND.MESSAGE);
       expect(error.message).toEqual(`Translated ${TAG_NOT_FOUND.MESSAGE}`);
     }
@@ -179,8 +186,10 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof Error)) {
+        throw new Error("Expected an error to be thrown");
+      }
       expect(spy).toBeCalledWith(INCORRECT_TAG_INPUT.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${INCORRECT_TAG_INPUT.MESSAGE}`,
@@ -213,8 +222,10 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof Error)) {
+        throw new Error("Expected an error to be thrown");
+      }
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE}`,
@@ -247,8 +258,10 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       );
 
       await createUserTagResolver?.({}, args, context);
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof Error)) {
+        throw new Error("Expected an error to be thrown");
+      }
       expect(spy).toBeCalledWith(TAG_ALREADY_EXISTS.MESSAGE);
       expect(error.message).toEqual(`Translated ${TAG_ALREADY_EXISTS.MESSAGE}`);
     }
@@ -292,5 +305,42 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     });
 
     expect(createdTagExists).toBeTruthy();
+  });
+
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({
+      userId: testUser?._id,
+    });
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationCreateUserTagArgs = {
+        input: {
+          organizationId: new Types.ObjectId().toString(),
+          name: "TestUserTag",
+          tagColor: "#000000",
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { createUserTag: createUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/createUserTag"
+      );
+
+      await createUserTagResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      if (!(error instanceof Error)) {
+        throw new Error("Expected an error to be thrown");
+      }
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+      );
+    }
   });
 });

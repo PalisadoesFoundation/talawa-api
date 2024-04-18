@@ -1,8 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import type { MutationCreateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
+import { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
-
 import {
   afterAll,
   afterEach,
@@ -12,6 +11,11 @@ import {
   it,
   vi,
 } from "vitest";
+
+import type {
+  MutationCreateAdvertisementArgs,
+  MutationDeleteAdvertisementArgs,
+} from "../../../src/types/generatedGraphQLTypes";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -68,20 +72,22 @@ describe("resolvers -> Mutation -> deleteAdvertisement", () => {
   });
 
   it(`throws NotFoundError if no user exists with _id === context.userId `, async () => {
-    // deleting
-    const { deleteAdvertisement } = await import(
-      "../../../src/resolvers/Mutation/deleteAdvertisement"
-    );
-    const context = {
-      userId: "123456789sdfghjk",
-    };
     const { requestContext } = await import("../../../src/libraries");
+
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message: string) => `Translated ${message}`);
 
     try {
-      await deleteAdvertisement?.({}, { id: testAdvertisement._id }, context);
+      const args: MutationDeleteAdvertisementArgs = {
+        id: "",
+      };
+      const context = { userId: new Types.ObjectId().toString() };
+
+      const { deleteAdvertisement } = await import(
+        "../../../src/resolvers/Mutation/deleteAdvertisement"
+      );
+      await deleteAdvertisement?.({}, args, context);
     } catch (error: unknown) {
       if (!(error instanceof ApplicationError)) return;
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);

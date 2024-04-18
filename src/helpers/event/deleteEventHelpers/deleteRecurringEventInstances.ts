@@ -62,6 +62,7 @@ export const deleteRecurringEventInstances = async (
       { eventId: { $in: recurringEventInstancesIds } },
       { session },
     ),
+
     User.updateMany(
       {
         registeredEvents: { $in: recurringEventInstancesIds },
@@ -90,21 +91,22 @@ export const deleteRecurringEventInstances = async (
       { session },
     ),
 
+    // delete action items associated to the instances
     ActionItem.deleteMany(
       { eventId: { $in: recurringEventInstancesIds } },
       { session },
     ),
-  ]);
 
-  // delete the instances
-  await Event.deleteMany(
-    {
-      _id: { $in: recurringEventInstancesIds },
-    },
-    {
-      session,
-    },
-  );
+    // delete the instances
+    Event.deleteMany(
+      {
+        _id: { $in: recurringEventInstancesIds },
+      },
+      {
+        session,
+      },
+    ),
+  ]);
 
   // get the instances following the current recurrence rule (if any)
   const instancesFollowingCurrentRecurrence = await Event.find(

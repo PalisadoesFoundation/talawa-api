@@ -1,6 +1,10 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceEvent,
+  InterfaceUser,
+} from "../../models";
 import { User, Event, AppUserProfile } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
@@ -17,6 +21,10 @@ import {
   updateRecurringEvent,
   updateSingleEvent,
 } from "../../helpers/event/updateEventHelpers";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -33,9 +41,17 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   args,
   context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   // checks if current user exists
   if (currentUser === null) {
@@ -46,9 +62,19 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -82,16 +108,25 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  const currentUserIsEventAdmin = event.admins.some(
-    (admin) =>
-      admin === context.userID ||
-      new Types.ObjectId(admin).equals(context.userId),
+  // Boolean to determine whether user is an admin of organization.
+  const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+    (organization) =>
+      organization &&
+      new Types.ObjectId(organization.toString()).equals(event?.organization),
   );
 
-  // checks if current user is an admin of the event with _id === args.id
+  // Boolean to determine whether user is an admin of event.
+  const currentUserIsEventAdmin = event.admins.some((admin) =>
+    admin.equals(currentUser?._id),
+  );
+
+  // Checks whether currentUser cannot update event.
   if (
-    currentUserIsEventAdmin === false &&
-    currentUserAppProfile.isSuperAdmin === false
+    !(
+      currentUserIsOrganizationAdmin ||
+      currentUserIsEventAdmin ||
+      currentUserAppProfile.isSuperAdmin
+    )
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),

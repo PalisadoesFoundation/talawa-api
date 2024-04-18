@@ -4,11 +4,14 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceUser } from "../../models";
 import { ActionItemCategory, Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import { adminCheck } from "../../utilities";
 
 /**
@@ -26,10 +29,17 @@ import { adminCheck } from "../../utilities";
 
 export const createActionItemCategory: MutationResolvers["createActionItemCategory"] =
   async (_parent, args, context) => {
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    });
-
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
     // Checks whether currentUser with _id == context.userId exists.
     if (currentUser === null) {
       throw new errors.NotFoundError(

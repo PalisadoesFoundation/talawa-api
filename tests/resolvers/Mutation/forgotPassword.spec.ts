@@ -1,19 +1,20 @@
+import bcrypt from "bcryptjs";
 import "dotenv/config";
-import type { MutationForgotPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import jwt from "jsonwebtoken";
 import type mongoose from "mongoose";
-import { forgotPassword as forgotPasswordResolver } from "../../../src/resolvers/Mutation/forgotPassword";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
-  INVALID_OTP,
   ACCESS_TOKEN_SECRET,
+  INVALID_OTP,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
-import { createTestUserFunc } from "../../helpers/user";
 import { User } from "../../../src/models";
+import { forgotPassword as forgotPasswordResolver } from "../../../src/resolvers/Mutation/forgotPassword";
+import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
+import type { MutationForgotPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
+import { createTestUserFunc } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -21,6 +22,7 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUserFunc();
+  await deleteUserFromCache(testUser?._id);
 });
 
 afterAll(async () => {

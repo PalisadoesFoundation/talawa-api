@@ -6,20 +6,24 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { isValidString } from "../../libraries/validators/validateString";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
 import {
   ActionItemCategory,
   AppUserProfile,
   Organization,
   User,
 } from "../../models";
-import type { InterfaceAppUserProfile } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type {
   Address,
   MutationResolvers,
 } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 /**
  * This function enables to create an organization.
  * @param _parent - parent of current request
@@ -32,9 +36,17 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
  */
 export const createOrganization: MutationResolvers["createOrganization"] =
   async (_parent, args, context) => {
-    const currentUser = await User.findById({
-      _id: context.userId,
-    });
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     if (!currentUser) {
       throw new errors.NotFoundError(
@@ -43,9 +55,19 @@ export const createOrganization: MutationResolvers["createOrganization"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
-    const currentUserAppProfile = await AppUserProfile.findOne({
-      userId: currentUser._id,
-    }).lean();
+    let currentUserAppProfile: InterfaceAppUserProfile | null;
+    const appUserProfileFoundInCache = await findAppUserProfileCache([
+      currentUser.appUserProfileId?.toString(),
+    ]);
+    currentUserAppProfile = appUserProfileFoundInCache[0];
+    if (currentUserAppProfile === null) {
+      currentUserAppProfile = await AppUserProfile.findOne({
+        userId: currentUser._id,
+      }).lean();
+      if (currentUserAppProfile !== null) {
+        await cacheAppUserProfile([currentUserAppProfile]);
+      }
+    }
     if (!currentUserAppProfile) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -155,13 +177,9 @@ export const createOrganization: MutationResolvers["createOrganization"] =
  * @param address - The address object to validate
  * @returns An object containing the validation result: isAddressValid (true if the address is valid, false otherwise)
  */
-function validateAddress(address: Address | undefined): {
+function validateAddress(address: Address): {
   isAddressValid: boolean;
 } {
-  if (!address) {
-    return { isAddressValid: false };
-  }
-
   const {
     city,
     countryCode,

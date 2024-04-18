@@ -5,7 +5,11 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceEvent,
+  InterfaceUser,
+} from "../../models";
 import {
   AppUserProfile,
   CheckIn,
@@ -13,8 +17,12 @@ import {
   EventAttendee,
   User,
 } from "../../models";
-import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
@@ -25,7 +33,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * and ensures proper authorization before performing the check-in operation.
  *
  * @param _parent - The parent resolver.
- * @param args - Arguments containing data for the check-in, including the eventId, userId, allotedSeat, and allotedRoom.
+ * @param args - Arguments containing data for the check-in, including the eventId, userId.
  * @param context - Context object containing user authentication and request information.
  * @returns The check-in data if successful.
  * @throws NotFoundError if the current user, event, or attendee is not found.
@@ -44,9 +52,17 @@ export const checkIn: MutationResolvers["checkIn"] = async (
   args,
   context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   if (currentUser === null) {
     throw new errors.NotFoundError(
@@ -55,9 +71,19 @@ export const checkIn: MutationResolvers["checkIn"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
