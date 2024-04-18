@@ -125,15 +125,16 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       }
     }
 
+    const fieldsToUpdate = args.input.mediaFile
+      ? { ...args.input, mediaUrl: uploadMediaFile }
+      : { ...args.input };
+
     const updatedAdvertisement = await Advertisement.findOneAndUpdate(
       {
         _id: _id,
       },
       {
-        $set: {
-          ...args.input,
-          mediaUrl: uploadMediaFile,
-        },
+        $set: fieldsToUpdate,
       },
       {
         new: true,
