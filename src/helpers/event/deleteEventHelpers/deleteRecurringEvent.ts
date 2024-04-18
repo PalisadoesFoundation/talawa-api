@@ -58,7 +58,12 @@ export const deleteRecurringEvent = async (
   ) {
     // if the event is an exception or if it's deleting thisInstance only,
     // just delete this single instance
-    await deleteSingleEvent(event._id.toString(), session);
+    await deleteSingleEvent(
+      event._id.toString(),
+      session,
+      recurrenceRule._id.toString(),
+      baseRecurringEvent._id.toString(),
+    );
   } else if (args.recurringEventDeleteType === "allInstances") {
     // delete all the instances
     // and update the recurrenceRule and baseRecurringEvent accordingly

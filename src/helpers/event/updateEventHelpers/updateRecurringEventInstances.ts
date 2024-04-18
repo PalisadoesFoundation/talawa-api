@@ -73,6 +73,22 @@ export const updateRecurringEventInstances = async (
       currentRecurrenceRuleString !== newRecurrenceRuleString;
   }
 
+  // whether instance duration has changed
+  let hasEventInstanceDurationChanged = false;
+
+  if (updateEventInputData.startDate && updateEventInputData.endDate) {
+    const { startDate: newStartDate, endDate: newEndDate } =
+      updateEventInputData;
+    const { startDate: originalStartDate, endDate: originalEndDate } = event;
+
+    hasEventInstanceDurationChanged =
+      newStartDate.toString() !== originalStartDate.toString() ||
+      newEndDate.toString() !== originalEndDate?.toString();
+  }
+
+  const shouldCreateNewSeries =
+    hasRecurrenceRuleChanged || hasEventInstanceDurationChanged;
+
   // get the query object to filter events to be updated:
   //   - if we're updating thisAndFollowingInstance, it will find all the instances after(and including) this one
   //   - if we're updating allInstances, it will find all the instances
@@ -93,51 +109,10 @@ export const updateRecurringEventInstances = async (
     eventsQueryObject.startDate = { $gte: event.startDate };
   }
 
-  if (hasRecurrenceRuleChanged) {
-    // if the recurrence rule has changed, delete the current series
-    // and generate a new one starting from the current instance
+  if (shouldCreateNewSeries) {
+    // delete the current series, remove their associations, and generate a new one
 
-    // get latest eventData to be used for new recurring instances and base recurring event
-    const eventData = getEventData(updateEventInputData, event);
-
-    // get the recurrence start and end dates
-    ({ recurrenceStartDate, recurrenceEndDate } =
-      recurrenceRuleData as RecurrenceRuleInput);
-
-    // get recurrence dates
-    const recurringInstanceDates = getRecurringInstanceDates(
-      newRecurrenceRuleString,
-      recurrenceStartDate,
-      recurrenceEndDate,
-    );
-
-    // get the startDate of the latest instance following the recurrence
-    const latestInstanceDate =
-      recurringInstanceDates[recurringInstanceDates.length - 1];
-
-    // create the recurrencerule
-    const newRecurrenceRule = await createRecurrenceRule(
-      newRecurrenceRuleString,
-      recurrenceStartDate,
-      recurrenceEndDate,
-      eventData.organizationId,
-      baseRecurringEvent._id.toString(),
-      latestInstanceDate,
-      session,
-    );
-
-    // generate the recurring instances and get an instance back
-    updatedEvent = await generateRecurringEventInstances({
-      data: eventData,
-      baseRecurringEventId: baseRecurringEvent._id.toString(),
-      recurrenceRuleId: newRecurrenceRule?._id.toString(),
-      recurringInstanceDates,
-      creatorId: event.creatorId,
-      organizationId: eventData.organizationId,
-      session,
-    });
-
-    // remove the events conforming to the current recurrence rule and their associations
+    // first, remove the events conforming to the current recurrence rule and their associations
     const recurringEventInstances = await Event.find(
       {
         ...eventsQueryObject,
@@ -217,10 +192,49 @@ export const updateRecurringEventInstances = async (
         { session },
       ).lean();
     }
+
+    // now generate a new series
+    // get latest eventData to be used for new recurring instances and base recurring event
+    const eventData = getEventData(updateEventInputData, event);
+
+    // get the recurrence start and end dates
+    ({ recurrenceStartDate, recurrenceEndDate } =
+      recurrenceRuleData as RecurrenceRuleInput);
+
+    // get recurrence dates
+    const recurringInstanceDates = getRecurringInstanceDates(
+      newRecurrenceRuleString,
+      recurrenceStartDate,
+      recurrenceEndDate,
+    );
+
+    // get the startDate of the latest instance following the recurrence
+    const latestInstanceDate =
+      recurringInstanceDates[recurringInstanceDates.length - 1];
+
+    // create the recurrencerule
+    const newRecurrenceRule = await createRecurrenceRule(
+      newRecurrenceRuleString,
+      recurrenceStartDate,
+      recurrenceEndDate,
+      eventData.organizationId,
+      baseRecurringEvent._id.toString(),
+      latestInstanceDate,
+      session,
+    );
+
+    // generate the recurring instances and get an instance back
+    updatedEvent = await generateRecurringEventInstances({
+      data: eventData,
+      baseRecurringEventId: baseRecurringEvent._id.toString(),
+      recurrenceRuleId: newRecurrenceRule?._id.toString(),
+      recurringInstanceDates,
+      creatorId: event.creatorId,
+      organizationId: eventData.organizationId,
+      session,
+    });
   } else {
-    // i.e. recurrence rule has not changed
-    // perform bulk update on all the events starting from this event,
-    // that are following the current recurrence rule and are not exceptions
+    // perform bulk update on all the events that are queried according to the eventsQueryObject,
 
     // get the generic data to be updated
     const updateData = { ...args.data };
