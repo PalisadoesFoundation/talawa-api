@@ -192,7 +192,7 @@ export type AgendaItem = {
   updatedAt: Scalars['Date']['output'];
   updatedBy: User;
   urls?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  user: Scalars['String']['output'];
+  users?: Maybe<Array<Maybe<User>>>;
 };
 
 export type AgendaSection = {
@@ -373,7 +373,7 @@ export type CreateAgendaItemInput = {
   sequence: Scalars['Int']['input'];
   title: Scalars['String']['input'];
   urls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  user?: InputMaybe<Scalars['String']['input']>;
+  users?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
 };
 
 export type CreateAgendaSectionInput = {
@@ -2661,7 +2661,7 @@ export type UpdateAgendaItemInput = {
   title?: InputMaybe<Scalars['String']['input']>;
   updatedBy: Scalars['ID']['input'];
   urls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  user?: InputMaybe<Scalars['String']['input']>;
+  users?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
 };
 
 export type UpdateAgendaSectionInput = {
@@ -3629,7 +3629,7 @@ export type AgendaItemResolvers<ContextType = any, ParentType extends ResolversP
   updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   updatedBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   urls?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

@@ -53,7 +53,7 @@ export const inputs = gql`
     attachments: [String]
     relatedEventId: ID
     urls: [String]
-    user: String
+    users: [ID]
     categories: [ID]
     sequence: Int!
     itemType: ItemType!
@@ -69,7 +69,7 @@ export const inputs = gql`
     relatedEvent: ID
     updatedBy: ID!
     urls: [String]
-    user: String
+    users: [ID]
     categories: [ID]
     sequence: Int
     itemType: ItemType

@@ -36,7 +36,7 @@ export const types = gql`
     createdBy: User!
     updatedBy: User!
     urls: [String]
-    user: String!
+    users: [User]
     categories: [AgendaCategory]
     sequence: Int!
     itemType: ItemType!

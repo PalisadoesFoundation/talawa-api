@@ -121,7 +121,7 @@ type AgendaItem {
   updatedAt: Date!
   updatedBy: User!
   urls: [String]
-  user: String!
+  users: [User]
 }
 
 type AgendaSection {
@@ -297,7 +297,7 @@ input CreateAgendaItemInput {
   sequence: Int!
   title: String!
   urls: [String]
-  user: String
+  users: [ID]
 }
 
 input CreateAgendaSectionInput {
@@ -1619,7 +1619,7 @@ input UpdateAgendaItemInput {
   title: String
   updatedBy: ID!
   urls: [String]
-  user: String
+  users: [ID]
 }
 
 input UpdateAgendaSectionInput {

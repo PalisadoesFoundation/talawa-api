@@ -17,7 +17,7 @@ export interface InterfaceAgendaItem {
   createdBy: PopulatedDoc<InterfaceUser & Document>; // Reference to the user who created the agenda item.
   updatedBy: PopulatedDoc<InterfaceUser & Document>; // Reference to the user who last updated the agenda item.
   urls?: string[]; // Optional array of URLs related to the agenda item.
-  user?: string; // Optional user associated with the agenda item.
+  users?: PopulatedDoc<InterfaceUser & Document>[]; // Optional users array indicating key note users for the agenda item.
   relatedEvent: PopulatedDoc<InterfaceEvent & Document>; // Reference to the event associated with the agenda item.
   categories?: PopulatedDoc<InterfaceAgendaCategory & Document>[]; // Optional array of agenda categories associated with the agenda item.
   sequence: number; // Sequence number of the agenda item.
@@ -85,9 +85,12 @@ export const AgendaItemSchema = new Schema({
   urls: {
     type: [String],
   },
-  user: {
-    type: String,
-  },
+  users: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   categories: [
     {
       type: Schema.Types.ObjectId,
