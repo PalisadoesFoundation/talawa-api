@@ -5,10 +5,9 @@ import { getEnvIssues } from "./env";
 import { logger } from "./libraries";
 import { connect } from "./db";
 
-// Connect to the database
-
 // Function to log warnings for super admin environment variable
 const logWarningForSuperAdminEnvVariable = async (): Promise<void> => {
+  // Connect to the database
   await connect();
   try {
     const superAdminExist = await AppUserProfile.exists({ isSuperAdmin: true });
