@@ -29,6 +29,7 @@ import { MembershipRequest } from "./MembershipRequest";
 import { Mutation } from "./Mutation";
 import { Organization } from "./Organization";
 import { Post } from "./Post";
+import { RecurrenceRule } from "./RecurrenceRule";
 
 import { Query } from "./Query";
 import { Subscription } from "./Subscription";
@@ -60,6 +61,7 @@ const resolvers: Resolvers = {
   Mutation,
   Organization,
   Post,
+  RecurrenceRule,
   Query,
   Subscription,
   User,

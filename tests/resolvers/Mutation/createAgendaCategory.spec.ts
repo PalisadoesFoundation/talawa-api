@@ -1,19 +1,19 @@
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { expect, vi, beforeAll, afterAll, describe, it } from "vitest";
+import { AppUserProfile, Organization, User } from "../../../src/models";
 import type { MutationCreateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import { createTestUser } from "../../helpers/userAndOrg";
 import type {
-  TestUserType,
   TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
-import { AppUserProfile, Organization, User } from "../../../src/models";
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;

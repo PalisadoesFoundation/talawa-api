@@ -1,16 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import cls from "cls-hooked";
-// No type defintions available for package 'cls-bluebird'
-
-// import clsBluebird from "cls-bluebird";
 import type { NextFunction, Request, Response } from "express";
 import i18n from "i18n";
 
 export const requestContextNamespace = cls.createNamespace(
   "talawa-request-context",
 );
-
-// clsBluebird(requestContextNamespace);
 
 export const setRequestContextValue = <T>(key: string, value: T): T => {
   return requestContextNamespace.set<string>(key, value);
@@ -29,7 +24,6 @@ export const middleware = () => {
   return (req: Request, res: Response, next: NextFunction): void => {
     requestContextNamespace.bindEmitter(req);
     requestContextNamespace.bindEmitter(res);
-
     requestContextNamespace.run(() => {
       setRequestContext(req);
       next();
@@ -37,42 +31,52 @@ export const middleware = () => {
   };
 };
 
-interface InterfaceInitOptions<T> extends Record<any, any> {
+interface InterfaceInitOptions<T> extends Record<string, any> {
   requestHandler?: () => T;
 }
 
-// Invalid code. Currently ignored by typescript. Needs fix.
 export const init = <T>(options: InterfaceInitOptions<T> = {}): T => {
   const obj: any = {};
+
+  if (!options.lang) {
+    // Handle the case where the locale is missing
+    return {} as T;
+  }
+
+  // Initialize i18n with the provided options
   //@ts-expect-errorts-ignore
+
   i18n.init(obj);
   obj.setLocale(options.lang);
+
   return requestContextNamespace.runAndReturn<T>(() => {
     setRequestContext({
       __: obj.__,
       __n: obj.__n,
     });
-    // return options.requestHandler?.()!;
-    return options.requestHandler != null
-      ? options.requestHandler()
-      : ({} as T);
+
+    // Check if the requestHandler is provided
+    if (options.requestHandler) {
+      return options.requestHandler();
+    } else {
+      // Handle the case where the requestHandler is missing
+      return {} as T;
+    }
   });
 };
 
 export const translate = (...args: any): any => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const __ = getRequestContextValue("translate");
-  if (typeof __ !== "function") {
+  const _ = getRequestContextValue("translate");
+  if (typeof _ !== "function") {
     throw new Error("i18n is not initialized, try app.use(i18n.init);");
   }
-  return __(...args);
+  return _(args);
 };
 
 export const translatePlural = (...args: any): any => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const __n = getRequestContextValue("translatePlural");
-  if (typeof __n !== "function") {
+  const _n = getRequestContextValue("translatePlural");
+  if (typeof _n !== "function") {
     throw new Error("i18n is not initialized, try app.use(i18n.init);");
   }
-  return __n(...args);
+  return _n(args);
 };

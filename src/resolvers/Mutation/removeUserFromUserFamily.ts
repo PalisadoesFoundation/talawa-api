@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import {
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
@@ -5,11 +6,14 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_REMOVING_SELF,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import type { InterfaceUserFamily } from "../../models/userFamily";
 import { UserFamily } from "../../models/userFamily";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { adminCheck } from "../../utilities/userFamilyAdminCheck";
 import mongoose from "mongoose";
 /**
@@ -28,9 +32,17 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     const userFamily = await UserFamily.findById({
       _id: args.familyId,
     }).lean();
-    const currentUser = await User.findById({
-      _id: context.userId,
-    });
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     const user = (await User.findById({
       _id: args.userId,

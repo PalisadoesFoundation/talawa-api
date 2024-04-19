@@ -2,10 +2,10 @@ import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import {
+  AppUserProfile,
   Organization,
   Venue,
   type InterfaceVenue,
-  AppUserProfile,
 } from "../../../src/models";
 import type { MutationDeleteVenueArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -23,6 +23,7 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from "../../../src/libraries/errors";
+import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
 import type {
   TestOrganizationType,
   TestUserType,
@@ -37,6 +38,7 @@ let testVenue2: InterfaceVenue;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
+  await deleteUserFromCache(testUser?._id);
 
   testOrganization = await Organization.create({
     name: "name",

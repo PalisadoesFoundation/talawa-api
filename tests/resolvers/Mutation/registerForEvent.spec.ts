@@ -3,7 +3,11 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { EventAttendee, User } from "../../../src/models";
 import type { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 
 import {
   afterAll,
@@ -29,6 +33,7 @@ let testEvent: TestEventType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
   [testUser, , testEvent] = await createTestEventWithRegistrants();
 });
 
