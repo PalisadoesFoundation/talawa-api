@@ -183,7 +183,6 @@ export type AgendaItem = {
   createdBy: User;
   description?: Maybe<Scalars['String']['output']>;
   duration: Scalars['String']['output'];
-  isNote: Scalars['Boolean']['output'];
   itemType: ItemType;
   organization: Organization;
   relatedEvent?: Maybe<Event>;
@@ -366,7 +365,6 @@ export type CreateAgendaItemInput = {
   categories?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   description?: InputMaybe<Scalars['String']['input']>;
   duration: Scalars['String']['input'];
-  isNote: Scalars['Boolean']['input'];
   itemType: ItemType;
   organizationId: Scalars['ID']['input'];
   relatedEventId?: InputMaybe<Scalars['ID']['input']>;
@@ -3620,7 +3618,6 @@ export type AgendaItemResolvers<ContextType = any, ParentType extends ResolversP
   createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   duration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  isNote?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   itemType?: Resolver<ResolversTypes['ItemType'], ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   relatedEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;

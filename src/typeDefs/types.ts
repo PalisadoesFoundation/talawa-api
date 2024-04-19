@@ -42,7 +42,6 @@ export const types = gql`
     itemType: ItemType!
     createdAt: Date!
     updatedAt: Date!
-    isNote: Boolean!
     organization: Organization!
     relatedEvent: Event
   }

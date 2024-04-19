@@ -58,7 +58,6 @@ export const inputs = gql`
     sequence: Int!
     itemType: ItemType!
     organizationId: ID!
-    isNote: Boolean!
   }
 
   input UpdateAgendaItemInput {

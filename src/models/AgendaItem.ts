@@ -24,7 +24,6 @@ export interface InterfaceAgendaItem {
   itemType: ItemType; // Type of the agenda item (Regular or Note).
   createdAt: Date; // Date when the agenda item was created.
   updatedAt: Date; // Date when the agenda item was last updated.
-  isNote: boolean; // Indicates whether the agenda item is a note.
   organization: PopulatedDoc<InterfaceOrganization & Document>; // Reference to the organization associated with the agenda item.
 }
 
@@ -45,8 +44,8 @@ export enum ItemType {
  * @param attachments - Optional array of attachment URLs.
  * @param createdBy - Reference to the user who created the agenda item.
  * @param updatedBy - Reference to the user who last updated the agenda item.
- * @param urls - Optional array of URLs related to the agenda item.
- * @param user - Optional user associated with the agenda item.
+ * @param urls - Optional users array indicating key note users for the agenda item.
+ * @param users - Optional user associated with the agenda item.
  * @param categories - Optional array of agenda categories associated with the agenda item.
  * @param sequence - Sequence number of the agenda item.
  * @param itemType - Type of the agenda item (Regular or Note).
@@ -111,10 +110,6 @@ export const AgendaItemSchema = new Schema({
   updatedAt: {
     type: Date,
     // required: true,
-  },
-  isNote: {
-    type: Boolean,
-    default: false,
   },
   organization: {
     type: Schema.Types.ObjectId,

@@ -112,7 +112,6 @@ type AgendaItem {
   createdBy: User!
   description: String
   duration: String!
-  isNote: Boolean!
   itemType: ItemType!
   organization: Organization!
   relatedEvent: Event
@@ -290,7 +289,6 @@ input CreateAgendaItemInput {
   categories: [ID]
   description: String
   duration: String!
-  isNote: Boolean!
   itemType: ItemType!
   organizationId: ID!
   relatedEventId: ID

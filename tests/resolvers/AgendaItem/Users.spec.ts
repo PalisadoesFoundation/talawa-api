@@ -68,7 +68,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("AgendaItem.Users", () => {
+describe("resolvers -> AgendaItem -> Users", () => {
   it("Should return the users of the agenda item", async () => {
     const users = await usersResolver?.(testAgendaItem, {}, {});
     expect(users).toEqual([testUser1, testUser2]);

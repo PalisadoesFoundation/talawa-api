@@ -112,7 +112,6 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           sequence: 1,
           itemType: "Regular",
           organizationId: testOrganization?._id,
-          isNote: false,
         },
       };
 
@@ -151,7 +150,6 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           sequence: 1,
           itemType: "Regular",
           organizationId: testOrganization?._id, // A random ID that does not exist in the database,
-          isNote: false,
         },
       };
 
@@ -184,7 +182,6 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           sequence: 1,
           itemType: "Regular",
           organizationId: new Types.ObjectId().toString(), // A random ID that does not exist in the database
-          isNote: false,
         },
       };
 
@@ -217,7 +214,6 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           sequence: 1,
           itemType: "Regular",
           organizationId: testOrganization?._id,
-          isNote: false,
         },
       };
 
@@ -250,7 +246,6 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           sequence: 1,
           itemType: "Regular",
           organizationId: testOrganization?._id,
-          isNote: false,
         },
       };
 
@@ -282,7 +277,6 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
         sequence: 1,
         itemType: "Regular",
         organizationId: testOrganization?._id,
-        isNote: false,
       },
     };
     const context = {
@@ -309,7 +303,6 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
         sequence: 1,
         itemType: "Regular",
         organizationId: testOrganization?._id,
-        isNote: false,
       },
     };
     const context = {
@@ -340,7 +333,6 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
         sequence: 1,
         itemType: "Regular",
         organizationId: testOrganization?._id,
-        isNote: false,
       },
     };
     const context = {
