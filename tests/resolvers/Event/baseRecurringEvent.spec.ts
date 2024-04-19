@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { recurrenceRule as recurrenceRuleResolver } from "../../../src/resolvers/Event/recurrenceRule";
+import { baseRecurringEvent as baseRecurringEventResolver } from "../../../src/resolvers/Event/baseRecurringEvent";
 import {
   connect,
   disconnect,
@@ -7,8 +7,7 @@ import {
 } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { RecurrenceRule } from "../../../src/models";
-import type { InterfaceEvent } from "../../../src/models";
+import { Event, type InterfaceEvent } from "../../../src/models";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type {
   TestOrganizationType,
@@ -34,8 +33,8 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Event -> recurrenceRule", () => {
-  it(`returns the recurrence rule object for parent event`, async () => {
+describe("resolvers -> Event -> baseRecurringEvent", () => {
+  it(`returns the base recurring event object for parent event`, async () => {
     let startDate = new Date();
     startDate = convertToUTCDate(startDate);
     const endDate = startDate;
@@ -72,17 +71,17 @@ describe("resolvers -> Event -> recurrenceRule", () => {
 
     const createEventPayload = await createEventResolver?.({}, args, context);
 
-    const recurrenceRule = await RecurrenceRule.findOne({
-      _id: createEventPayload?.recurrenceRuleId,
+    const baseRecurringEvent = await Event.findOne({
+      _id: createEventPayload?.baseRecurringEventId,
     }).lean();
 
     const parent = createEventPayload as InterfaceEvent;
-    const recurrenceRulePayload = await recurrenceRuleResolver?.(
+    const baseRecurringEventPayload = await baseRecurringEventResolver?.(
       parent,
       {},
       {},
     );
 
-    expect(recurrenceRule).toEqual(recurrenceRulePayload);
+    expect(baseRecurringEvent).toEqual(baseRecurringEventPayload);
   });
 });
