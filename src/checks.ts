@@ -1,5 +1,5 @@
 import { LAST_RESORT_SUPERADMIN_EMAIL } from "./constants";
-import { User } from "./models";
+import { AppUserProfile } from "./models";
 import { generateErrorMessage } from "zod-error";
 import { getEnvIssues } from "./env";
 import { logger } from "./libraries";
@@ -11,7 +11,7 @@ import { connect } from "./db";
 const logWarningForSuperAdminEnvVariable = async (): Promise<void> => {
   await connect();
   try {
-    const superAdminExist = await User.exists({ userType: "SUPERADMIN" });
+    const superAdminExist = await AppUserProfile.exists({ isSuperAdmin: true });
     const isVariablePresentInEnvFile = !!LAST_RESORT_SUPERADMIN_EMAIL;
 
     if (superAdminExist && isVariablePresentInEnvFile) {
