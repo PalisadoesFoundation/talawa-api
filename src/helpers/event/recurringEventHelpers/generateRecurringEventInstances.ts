@@ -83,6 +83,7 @@ export const generateRecurringEventInstances = async ({
     );
   }
 
+  // get the recurring event instances
   const recurringInstances: InterfaceRecurringEvent[] = [];
   recurringInstanceDates.map((date): void => {
     // get the start date for the instance
@@ -107,7 +108,7 @@ export const generateRecurringEventInstances = async ({
     recurringInstances.push(createdEventInstance);
   });
 
-  //Bulk insertion in database
+  // Bulk insertion in database
   const recurringEventInstances = await Event.insertMany(recurringInstances, {
     session,
   });

@@ -44,6 +44,9 @@ export const generateRecurrenceRuleString = (
     }
   });
 
+  // sort the weekDays array
+  recurrenceWeekDays?.sort();
+
   // string representing the days of the week the event would recur
   const weekDaysString = recurrenceWeekDays?.length
     ? recurrenceWeekDays.join(",")
