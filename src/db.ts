@@ -3,9 +3,14 @@ import { MONGO_DB_URL } from "./constants";
 import { logger } from "./libraries";
 import { checkReplicaSet } from "./utilities/checkReplicaSet";
 
+let isConnected = false;
 let session!: mongoose.ClientSession;
 
 export const connect = async (dbName?: string): Promise<void> => {
+  if (isConnected) {
+    return;
+  }
+
   try {
     await mongoose.connect(MONGO_DB_URL as string, {
       dbName,
@@ -17,6 +22,7 @@ export const connect = async (dbName?: string): Promise<void> => {
     } else {
       logger.info("Session not started --> Not Connected to a replica set!");
     }
+    isConnected = true;
   } catch (error: unknown) {
     if (error instanceof Error) {
       const errorMessage = error.toString();
@@ -52,8 +58,13 @@ export const connect = async (dbName?: string): Promise<void> => {
 };
 
 export const disconnect = async (): Promise<void> => {
+  if (!isConnected) {
+    logger.warn("No active database connection to disconnect.");
+    return;
+  }
   session?.endSession();
   await mongoose.connection.close();
+  isConnected = false;
 };
 
 export { session };
