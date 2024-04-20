@@ -9,6 +9,8 @@
   "actionItemCategory.isDisabled": "操作项类别已禁用",
   "actionItem.notFound": "找不到操作项",
   "event.notFound": "未找到事件",
+  "baseRecurringEvent.notFound": "未找到基本重复事件",
+  "recurrenceRule.notFound": "未找到重复规则",
   "organization.notFound": "未找到組織",
   "organization.profileImage.notFound": "未找到組織檔案圖像",
   "organization.member.notFound": "組織的用戶不是成員",

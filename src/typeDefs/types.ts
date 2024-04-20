@@ -258,6 +258,8 @@ export const types = gql`
     allDay: Boolean!
     recurring: Boolean!
     recurrenceRule: RecurrenceRule
+    baseRecurringEvent: Event
+    isRecurringEventException: Boolean!
     isPublic: Boolean!
     isRegisterable: Boolean!
     location: String
@@ -562,11 +564,17 @@ export const types = gql`
   }
 
   type RecurrenceRule {
-    frequency: Frequency
+    organization: Organization
+    baseRecurringEvent: Event
+    recurrenceStartDate: Date!
+    recurrenceEndDate: Date
+    recurrenceRuleString: String!
+    frequency: Frequency!
     weekDays: [WeekDays]
-    interval: PositiveInt
+    interval: PositiveInt!
     count: PositiveInt
     weekDayOccurenceInMonth: Int
+    latestInstanceDate: Date
   }
 
   type SocialMediaUrls {
