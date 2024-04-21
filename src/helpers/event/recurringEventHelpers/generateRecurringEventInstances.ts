@@ -29,7 +29,6 @@ interface InterfaceGenerateRecurringInstances {
   recurringInstanceDates: Date[];
   creatorId: string;
   organizationId: string;
-  status?: string;
   session: mongoose.ClientSession;
 }
 
@@ -40,7 +39,6 @@ export interface InterfaceRecurringEvent extends EventInput {
   creatorId?: string;
   admins?: string[];
   organization?: string;
-  status?: string;
 }
 
 export const generateRecurringEventInstances = async ({
@@ -102,7 +100,6 @@ export const generateRecurringEventInstances = async ({
       creatorId,
       admins: data.admins && data.admins.length ? data.admins : [creatorId],
       organization: organizationId,
-      status: data.status,
     };
 
     recurringInstances.push(createdEventInstance);

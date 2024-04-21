@@ -91,7 +91,6 @@ describe("generateUserData function", () => {
     expect(event.creatorId.toString()).toEqual(expect.any(String));
     expect(event.admins).toEqual(expect.any(Array));
     expect(event.organization.toString()).toEqual(expect.any(String));
-    expect(event.status).toEqual(expect.any(String));
   });
 });
 

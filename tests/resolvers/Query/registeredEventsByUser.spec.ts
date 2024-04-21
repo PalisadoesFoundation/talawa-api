@@ -29,7 +29,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -58,7 +57,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -87,7 +85,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -116,7 +113,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -145,7 +141,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -174,7 +169,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -203,7 +197,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -232,7 +225,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -261,7 +253,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -290,7 +281,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -319,7 +309,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -346,7 +335,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -375,7 +363,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -404,7 +391,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -433,7 +419,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -462,7 +447,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -491,7 +475,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -520,7 +503,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
@@ -549,7 +531,6 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: testUser?._id,
