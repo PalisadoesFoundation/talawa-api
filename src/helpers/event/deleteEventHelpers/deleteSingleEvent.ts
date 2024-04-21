@@ -6,6 +6,7 @@ import {
   EventAttendee,
   User,
 } from "../../../models";
+import { removeDanglingDocuments } from "../recurringEventHelpers";
 
 /**
  * This function deletes a single event.
@@ -18,6 +19,8 @@ import {
 export const deleteSingleEvent = async (
   eventId: string,
   session: mongoose.ClientSession,
+  recurrenceRule?: string,
+  baseRecurringEvent?: string,
 ): Promise<void> => {
   // remove the associations of the current event
   await Promise.all([
@@ -62,4 +65,10 @@ export const deleteSingleEvent = async (
       },
     ),
   ]);
+
+  if (recurrenceRule && baseRecurringEvent) {
+    // they would exist while we're deleting a recurring event
+    // remove any dangling recurrence rule and base recurring event documents
+    await removeDanglingDocuments(recurrenceRule, baseRecurringEvent, session);
+  }
 };

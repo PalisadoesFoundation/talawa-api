@@ -9,6 +9,8 @@
   "actionItemCategory.isDisabled": "La categoría de elemento de acción está deshabilitada",
   "actionItem.notFound": "Elemento de acción no encontrado",
   "event.notFound": "Evento no encontrado",
+  "baseRecurringEvent.notFound": "Evento recurrente base no encontrado",
+  "recurrenceRule.notFound": "Regla de recurrencia no encontrada",
   "organization.notFound": "Organización no encontrada",
   "organization.profileImage.notFound": "No se encontró la imagen del perfil de la organización",
   "organization.member.notFound": "El usuario de la organización no es miembro",

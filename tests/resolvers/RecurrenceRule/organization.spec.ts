@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { recurrenceRule as recurrenceRuleResolver } from "../../../src/resolvers/Event/recurrenceRule";
+import { organization as organizationResolver } from "../../../src/resolvers/RecurrenceRule/organization";
 import {
   connect,
   disconnect,
@@ -7,8 +7,6 @@ import {
 } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { RecurrenceRule } from "../../../src/models";
-import type { InterfaceEvent } from "../../../src/models";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type {
   TestOrganizationType,
@@ -17,6 +15,8 @@ import type {
 
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
+import { RecurrenceRule } from "../../../src/models";
+import type { InterfaceRecurrenceRule } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
@@ -34,8 +34,8 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Event -> recurrenceRule", () => {
-  it(`returns the recurrence rule object for parent event`, async () => {
+describe("resolvers -> RecurrenceRule -> organization", () => {
+  it(`returns the organization object for parent recurrence rule`, async () => {
     let startDate = new Date();
     startDate = convertToUTCDate(startDate);
     const endDate = startDate;
@@ -76,13 +76,9 @@ describe("resolvers -> Event -> recurrenceRule", () => {
       _id: createEventPayload?.recurrenceRuleId,
     }).lean();
 
-    const parent = createEventPayload as InterfaceEvent;
-    const recurrenceRulePayload = await recurrenceRuleResolver?.(
-      parent,
-      {},
-      {},
-    );
+    const parent = recurrenceRule as InterfaceRecurrenceRule;
+    const organizationPayload = await organizationResolver?.(parent, {}, {});
 
-    expect(recurrenceRule).toEqual(recurrenceRulePayload);
+    expect(testOrganization?.toObject()).toEqual(organizationPayload);
   });
 });
