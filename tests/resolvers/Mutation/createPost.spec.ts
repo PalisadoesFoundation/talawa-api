@@ -209,7 +209,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     }
   });
 
-  it("throws error if user is not member of the organization", async () => {
+  it("throws error if user is not member of the organization and is not superadmin", async () => {
     const organizationWithNoMember = await createTestUserAndOrganization(false);
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi

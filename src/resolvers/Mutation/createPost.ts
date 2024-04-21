@@ -111,12 +111,13 @@ export const createPost: MutationResolvers["createPost"] = async (
     );
   }
 
+  const isSuperAdmin = currentUserAppProfile.isSuperAdmin;
   const currentUserIsOrganizationMember = organization.members.some(
     (memberId) =>
       new mongoose.Types.ObjectId(memberId?.toString()).equals(context.userId),
   );
 
-  if (!currentUserIsOrganizationMember) {
+  if (!currentUserIsOrganizationMember && !isSuperAdmin) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
       USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
