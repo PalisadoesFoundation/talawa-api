@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -136,8 +136,8 @@ export const createMember: MutationResolvers["createMember"] = async (
   }
   const userIsOrganizationAdmin = organization.admins.some(
     (admin) =>
-      admin === currentUser?._id ||
-      new Types.ObjectId(admin).equals(currentUser?._id),
+      admin === currentUser._id ||
+      new mongoose.Types.ObjectId(admin.toString()).equals(currentUser._id),
   );
   if (!userIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
     return {
