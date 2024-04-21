@@ -47,7 +47,7 @@ export const inputs = gql`
   }
 
   input CreateAgendaItemInput {
-    title: String!
+    title: String
     description: String
     duration: String!
     attachments: [String]
@@ -72,7 +72,6 @@ export const inputs = gql`
     categories: [ID]
     sequence: Int
     itemType: ItemType
-    isNote: Boolean
   }
 
   input ActionItemWhereInput {
@@ -265,6 +264,16 @@ export const inputs = gql`
   input MessageChatInput {
     message: String!
     receiver: ID!
+  }
+
+  input NoteInput {
+    content: String!
+    agendaItemId: ID!
+  }
+
+  input UpdateNoteInput {
+    content: String
+    updatedBy: ID!
   }
 
   input OrganizationInput {

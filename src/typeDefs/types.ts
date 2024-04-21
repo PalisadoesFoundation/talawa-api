@@ -430,6 +430,16 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
+  type Note {
+    _id: ID!
+    content: String!
+    createdBy: User!
+    updatedBy: User!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    agendaItemId: ID!
+  }
+
   type Organization {
     image: String
     _id: ID!

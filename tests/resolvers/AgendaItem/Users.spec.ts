@@ -6,8 +6,9 @@ import type { TestAgendaItemType } from "../../helpers/agendaItem";
 import { connect, disconnect } from "../../helpers/db";
 import type {
   TestOrganizationType,
-  createTestUser,
-  type TestUserType,
+  TestUserType} from "../../helpers/userAndOrg";
+import {
+  createTestUser
 } from "../../helpers/userAndOrg";
 
 import type { TestEventType } from "../../helpers/events";

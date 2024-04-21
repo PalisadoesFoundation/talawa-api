@@ -293,7 +293,7 @@ input CreateAgendaItemInput {
   organizationId: ID!
   relatedEventId: ID
   sequence: Int!
-  title: String!
+  title: String
   urls: [String]
   users: [ID]
 }
@@ -1069,6 +1069,7 @@ type Mutation {
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): CreateMemberPayload!
   createMessageChat(data: MessageChatInput!): MessageChat!
+  createNote(data: NoteInput!): Note!
   createOrganization(data: OrganizationInput, file: String): Organization!
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
   createPost(data: PostInput!, file: String): Post
@@ -1079,6 +1080,7 @@ type Mutation {
   deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
   deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
+  deleteNote(id: ID!): ID!
   deleteVenue(id: ID!): Venue
   editVenue(data: EditVenueInput!): Venue
   forgotPassword(data: ForgotPasswordData!): Boolean!
@@ -1150,6 +1152,7 @@ type Mutation {
   updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
   updateFundraisingCampaignPledge(data: UpdateFundCampaignPledgeInput!, id: ID!): FundraisingCampaignPledge!
   updateLanguage(languageCode: String!): User!
+  updateNote(data: UpdateNoteInput!, id: ID!): Note!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
@@ -1157,6 +1160,21 @@ type Mutation {
   updateUserProfile(data: UpdateUserInput, file: String): User!
   updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
   updateUserTag(input: UpdateUserTagInput!): UserTag
+}
+
+type Note {
+  _id: ID!
+  agendaItemId: ID!
+  content: String!
+  createdAt: DateTime!
+  createdBy: User!
+  updatedAt: DateTime!
+  updatedBy: User!
+}
+
+input NoteInput {
+  agendaItemId: ID!
+  content: String!
 }
 
 input OTPInput {
@@ -1433,6 +1451,7 @@ type Query {
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
+  getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
   getCommunityData: Community
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
@@ -1443,6 +1462,7 @@ type Query {
   getFundById(id: ID!): Fund!
   getFundraisingCampaignById(id: ID!): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
+  getNoteById(id: ID!): Note!
   getPlugins: [Plugin]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getlanguage(lang_code: String!): [Translation]
@@ -1610,7 +1630,6 @@ input UpdateAgendaItemInput {
   categories: [ID]
   description: String
   duration: String
-  isNote: Boolean
   itemType: ItemType
   relatedEvent: ID
   sequence: Int
@@ -1685,6 +1704,11 @@ input UpdateFundInput {
   name: String
   refrenceNumber: String
   taxDeductible: Boolean
+}
+
+input UpdateNoteInput {
+  content: String
+  updatedBy: ID!
 }
 
 input UpdateOrganizationInput {

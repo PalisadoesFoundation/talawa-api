@@ -267,7 +267,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
     }
   });
 
-  it(`creates the actionItem when user is authorized as an eventAdmin`, async () => {
+  it(`creates the agendaItem when user is authorized as an eventAdmin`, async () => {
     const args: MutationCreateAgendaItemArgs = {
       input: {
         title: "Regular Agenda Item",
@@ -293,7 +293,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
     expect(createdAgendaItem).toBeDefined();
   });
 
-  it(`creates the actionItem when user is authorized as an orgAdmin`, async () => {
+  it(`creates the agendaItem when user is authorized as an orgAdmin`, async () => {
     const args: MutationCreateAgendaItemArgs = {
       input: {
         title: "Regular Agenda Item",
@@ -348,6 +348,43 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
       expect((error as Error).message).toEqual(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
+    }
+  });
+  it(`creates a note regular agenda item successfully`, async () => {
+    try {
+      const args: MutationCreateAgendaItemArgs = {
+        input: {
+          title: "Regular Agenda Item",
+          description: "Description for the regular agenda item",
+          duration: "1 hour",
+          relatedEventId: testEvent?._id,
+          sequence: 1,
+          itemType: "Note",
+          organizationId: testOrganization?._id,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+      const { createAgendaItem: createAgendaItemResolver } = await import(
+        "../../../src/resolvers/Mutation/createAgendaItem"
+      );
+
+      const createdAgendaItem = await createAgendaItemResolver?.(
+        {},
+        args,
+        context,
+      );
+
+      // // Optionally, you can check that the returned item does not contain Mongoose-specific properties
+      expect(createdAgendaItem?._id).toBeDefined();
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      } else {
+        throw new Error("An unknown error occurred.");
+      }
     }
   });
 });

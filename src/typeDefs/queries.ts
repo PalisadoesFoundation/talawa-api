@@ -85,6 +85,10 @@ export const queries = gql`
       orderBy: VenueOrderByInput
     ): [Venue]
 
+    getNoteById(id: ID!): Note!
+
+    getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
+
     advertisementsConnection(
       after: String
       before: String

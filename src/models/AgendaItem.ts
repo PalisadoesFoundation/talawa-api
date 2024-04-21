@@ -4,6 +4,7 @@ import type { InterfaceUser } from "./User";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceAgendaCategory } from "./AgendaCategory";
 import type { InterfaceEvent } from "./Event";
+import type { InterfaceNote } from "./Note";
 
 /**
  * This is an interface representing a document for an agenda item in the database (MongoDB).
@@ -25,6 +26,7 @@ export interface InterfaceAgendaItem {
   createdAt: Date; // Date when the agenda item was created.
   updatedAt: Date; // Date when the agenda item was last updated.
   organization: PopulatedDoc<InterfaceOrganization & Document>; // Reference to the organization associated with the agenda item.
+  notes: PopulatedDoc<InterfaceNote & Document>[]; // Reference to the notes associated with the agenda item.
 }
 
 /**
@@ -53,6 +55,7 @@ export enum ItemType {
  * @param updatedAt - Date when the agenda item was last updated.
  * @param isNote - Indicates whether the agenda item is a note.
  * @param organization - Reference to the organization associated with the agenda item.
+ * @param notes - Reference to the notes associated with the agenda item.
  */
 export const AgendaItemSchema = new Schema({
   title: {
@@ -115,6 +118,12 @@ export const AgendaItemSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Organization",
   },
+  notes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Note",
+    },
+  ],
 });
 
 const agendaItemModel = (): Model<InterfaceAgendaItem> =>
