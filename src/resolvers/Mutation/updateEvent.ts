@@ -110,20 +110,20 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  const currentUserIsEventAdmin = event.admins.some(
-    (admin) =>
-      admin === context.userID ||
-      new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
   // Boolean to determine whether user is an admin of organization.
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (organization) =>
       organization &&
-      new Types.ObjectId(organization.toString()).equals(event?.organization),
+      new mongoose.Types.ObjectId(organization.toString()).equals(
+        event?.organization,
+      ),
   );
 
   // Boolean to determine whether user is an admin of event.
-  const currentUserIsEventAdmin = event.admins.some((admin) =>
-    admin.equals(currentUser?._id),
+  let currentUserIsEventAdmin = event.admins.some(
+    (admin) =>
+      admin === context.userID ||
+      new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
   );
 
   // Checks whether currentUser cannot update event.
