@@ -1,46 +1,41 @@
 import {
-  AGENDA_ITEM_NOT_FOUND_ERROR,
-  UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR,
+  NOTE_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
-} from "../../constants";
+ UNAUTHORIZED_UPDATE_NOTE_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type {
-  InterfaceAgendaItem,
+  InterfaceNote,
   InterfaceAppUserProfile,
   InterfaceUser,
 } from "../../models";
-import { AgendaItemModel, AppUserProfile, NoteModel, User } from "../../models";
+import { NoteModel, AppUserProfile, User } from "../../models";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-/**
- * This function removes an agenda item.
- * @param _parent - parent of the current request
- * @param args - payload provided with the request
- * @param context - context of the entire application
- * @returns ID of the removed agenda item
- * @throws NotFoundError if the user or agenda item is not found
- * @throws UnauthorizedError if the user is not the creator of the agenda item
- */
-export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
+
+
+export const updateNote: MutationResolvers["updateNote"] = async (
   _parent,
   args,
   context,
-): Promise<InterfaceAgendaItem> => {
+): Promise<InterfaceNote> => {
+  const userId = context.userId;
+
   let currentUser: InterfaceUser | null;
-  const userFoundInCache = await findUserInCache([context.userId]);
+  const userFoundInCache = await findUserInCache([userId]);
   currentUser = userFoundInCache[0];
   if (currentUser === null) {
     currentUser = await User.findOne({
-      _id: context.userId,
+      _id: userId,
     }).lean();
     if (currentUser !== null) {
       await cacheUsers([currentUser]);
     }
   }
+
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -48,6 +43,7 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+
   let currentUserAppProfile: InterfaceAppUserProfile | null;
   const appUserProfileFoundInCache = await findAppUserProfileCache([
     currentUser.appUserProfileId?.toString(),
@@ -62,52 +58,43 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
     }
   }
   if (!currentUserAppProfile) {
-    throw new errors.UnauthenticatedError(
+    throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
       USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
-  const agendaItem = await AgendaItemModel.findOne({
+
+  const note: InterfaceNote | null = await NoteModel.findOne({
     _id: args.id,
   }).lean();
-  if (!agendaItem) {
+
+  if (!note) {
     throw new errors.NotFoundError(
-      requestContext.translate(AGENDA_ITEM_NOT_FOUND_ERROR.MESSAGE),
-      AGENDA_ITEM_NOT_FOUND_ERROR.CODE,
-      AGENDA_ITEM_NOT_FOUND_ERROR.PARAM,
+      requestContext.translate(NOTE_NOT_FOUND_ERROR.MESSAGE),
+      NOTE_NOT_FOUND_ERROR.CODE,
+      NOTE_NOT_FOUND_ERROR.PARAM,
     );
   }
-
-  if (!agendaItem.createdBy.equals(currentUser._id)) {
+  if (note.createdBy?.toString() !== currentUser._id.toString()) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.MESSAGE),
-      UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.CODE,
-      UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.PARAM,
+      requestContext.translate(UNAUTHORIZED_UPDATE_NOTE_ERROR.MESSAGE),
+      UNAUTHORIZED_UPDATE_NOTE_ERROR.CODE,
+      UNAUTHORIZED_UPDATE_NOTE_ERROR.PARAM,
     );
   }
 
-  // Delete the agenda item from the database
-  await AgendaItemModel.deleteOne({ _id: args.id });
-
-  // Delete all related notes
-  await NoteModel.deleteMany({ agendaItemId: args.id });
-
-  /*
-  Remove agendaItem._id from appropriate lists
-  on currentUser's document.
-  */
-  await User.updateOne(
+  const updatedNote = await NoteModel.findOneAndUpdate(
     {
-      _id: currentUser._id,
+      _id: args.id,
     },
     {
-      $pull: {
-        // Add relevant lists here based on your schema
-        createdAgendaItems: agendaItem._id,
-      },
+      ...(args.data as unknown as InterfaceNote),
     },
-  );
+    {
+      new: true,
+    },
+  ).lean();
 
-  return agendaItem;
+  return updatedNote as InterfaceNote;
 };
