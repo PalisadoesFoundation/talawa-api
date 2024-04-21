@@ -56,7 +56,6 @@ export const inputs = gql`
     users: [ID]
     categories: [ID]
     sequence: Int!
-    itemType: ItemType!
     organizationId: ID!
   }
 
@@ -71,7 +70,6 @@ export const inputs = gql`
     users: [ID]
     categories: [ID]
     sequence: Int
-    itemType: ItemType
   }
 
   input ActionItemWhereInput {

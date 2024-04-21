@@ -112,7 +112,6 @@ type AgendaItem {
   createdBy: User!
   description: String
   duration: String!
-  itemType: ItemType!
   organization: Organization!
   relatedEvent: Event
   sequence: Int!
@@ -289,7 +288,6 @@ input CreateAgendaItemInput {
   categories: [ID]
   description: String
   duration: String!
-  itemType: ItemType!
   organizationId: ID!
   relatedEventId: ID
   sequence: Int!
@@ -1630,7 +1628,6 @@ input UpdateAgendaItemInput {
   categories: [ID]
   description: String
   duration: String
-  itemType: ItemType
   relatedEvent: ID
   sequence: Int
   title: String

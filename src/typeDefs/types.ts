@@ -39,7 +39,6 @@ export const types = gql`
     users: [User]
     categories: [AgendaCategory]
     sequence: Int!
-    itemType: ItemType!
     createdAt: Date!
     updatedAt: Date!
     organization: Organization!

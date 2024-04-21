@@ -184,7 +184,6 @@ export type AgendaItem = {
   createdBy: User;
   description?: Maybe<Scalars['String']['output']>;
   duration: Scalars['String']['output'];
-  itemType: ItemType;
   organization: Organization;
   relatedEvent?: Maybe<Event>;
   sequence: Scalars['Int']['output'];
@@ -366,7 +365,6 @@ export type CreateAgendaItemInput = {
   categories?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   description?: InputMaybe<Scalars['String']['input']>;
   duration: Scalars['String']['input'];
-  itemType: ItemType;
   organizationId: Scalars['ID']['input'];
   relatedEventId?: InputMaybe<Scalars['ID']['input']>;
   sequence: Scalars['Int']['input'];
@@ -2700,7 +2698,6 @@ export type UpdateAgendaItemInput = {
   categories?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   description?: InputMaybe<Scalars['String']['input']>;
   duration?: InputMaybe<Scalars['String']['input']>;
-  itemType?: InputMaybe<ItemType>;
   relatedEvent?: InputMaybe<Scalars['ID']['input']>;
   sequence?: InputMaybe<Scalars['Int']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
@@ -3676,7 +3673,6 @@ export type AgendaItemResolvers<ContextType = any, ParentType extends ResolversP
   createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   duration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  itemType?: Resolver<ResolversTypes['ItemType'], ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   relatedEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   sequence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;

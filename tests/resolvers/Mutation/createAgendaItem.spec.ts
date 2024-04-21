@@ -110,7 +110,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           duration: "1 hour",
           relatedEventId: testEvent?._id,
           sequence: 1,
-          itemType: "Regular",
+
           organizationId: testOrganization?._id,
         },
       };
@@ -148,7 +148,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           duration: "1 hour",
           relatedEventId: testEvent?._id,
           sequence: 1,
-          itemType: "Regular",
+
           organizationId: testOrganization?._id, // A random ID that does not exist in the database,
         },
       };
@@ -180,7 +180,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           duration: "1 hour",
           relatedEventId: testEvent?._id,
           sequence: 1,
-          itemType: "Regular",
+
           organizationId: new Types.ObjectId().toString(), // A random ID that does not exist in the database
         },
       };
@@ -212,7 +212,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           duration: "1 hour",
           relatedEventId: new Types.ObjectId().toString(),
           sequence: 1,
-          itemType: "Regular",
+
           organizationId: testOrganization?._id,
         },
       };
@@ -244,7 +244,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           duration: "1 hour",
           relatedEventId: testEvent?._id,
           sequence: 1,
-          itemType: "Regular",
+
           organizationId: testOrganization?._id,
         },
       };
@@ -275,7 +275,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
         duration: "1 hour",
         relatedEventId: testEvent?._id,
         sequence: 1,
-        itemType: "Regular",
+
         organizationId: testOrganization?._id,
       },
     };
@@ -301,7 +301,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
         duration: "1 hour",
         relatedEventId: testEvent?._id,
         sequence: 1,
-        itemType: "Regular",
+
         organizationId: testOrganization?._id,
       },
     };
@@ -331,7 +331,7 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
         duration: "1 hour",
         relatedEventId: testEvent?._id,
         sequence: 1,
-        itemType: "Regular",
+
         organizationId: testOrganization?._id,
       },
     };
@@ -359,7 +359,6 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
           duration: "1 hour",
           relatedEventId: testEvent?._id,
           sequence: 1,
-          itemType: "Note",
           organizationId: testOrganization?._id,
         },
       };
