@@ -120,7 +120,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   );
 
   // Boolean to determine whether user is an admin of event.
-  let currentUserIsEventAdmin = event.admins.some(
+  const currentUserIsEventAdmin = event.admins.some(
     (admin) =>
       admin === context.userID ||
       new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
