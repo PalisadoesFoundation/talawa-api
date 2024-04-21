@@ -29,7 +29,11 @@ export const setRequestContext = (obj: any): void => {
 };
 
 export const middleware = () => {
-  return async (request: FastifyRequest, reply: FastifyReply, next: NextFunction): Promise<void> => {
+  return async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    next: NextFunction,
+  ): Promise<void> => {
     requestContextNamespace.bindEmitter(request.raw);
     requestContextNamespace.bindEmitter(reply.raw);
 

@@ -1,6 +1,5 @@
 import _ from "lodash";
 import { createLogger, transports, format } from "winston";
-import { getTracingId } from "./requestTracing";
 import { appConfig } from "../config";
 
 const { combine, printf, splat, colorize, simple, timestamp } = format;
@@ -13,9 +12,7 @@ const formats = {
     timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     printf(
       (info) =>
-        `${info.level || "-"} ${info.timestamp || "-"} ${
-          getTracingId() || "-"
-        } ${info.message} ${
+        `${info.level || "-"} ${info.timestamp || "-"} ${info.message} ${
           Object.keys(_.omit(info, ["level", "message", "stack", "timestamp"]))
             .length === 0
             ? ""
@@ -31,9 +28,7 @@ const formats = {
     timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     printf(
       (info) =>
-        `${info.level || "-"} ${info.timestamp || "-"} ${
-          getTracingId() || "-"
-        } ${info.message} ${
+        `${info.level || "-"} ${info.timestamp || "-"} ${info.message} ${
           Object.keys(_.omit(info, ["level", "message", "stack", "timestamp"]))
             .length === 0
             ? ""

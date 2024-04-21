@@ -12,7 +12,9 @@ import { PubSub } from "graphql-subscriptions";
 import { useServer } from "graphql-ws/lib/use/ws";
 import http from "http";
 import https from "https";
-import fastifyApollo, { fastifyApolloDrainPlugin } from "@as-integrations/fastify";
+import fastifyApollo, {
+  fastifyApolloDrainPlugin,
+} from "@as-integrations/fastify";
 import path from "path";
 import { WebSocketServer } from "ws";
 import fastifyApp from "./app";
@@ -29,7 +31,6 @@ import { fastifyApolloHandler } from "@as-integrations/fastify";
 
 export const pubsub = new PubSub();
 
-
 // defines schema
 let schema = makeExecutableSchema({
   typeDefs,
@@ -43,11 +44,10 @@ schema = roleDirectiveTransformer(schema, "role");
 const fastify = Fastify({
   http2: true,
   https: {
-    key: fs.readFileSync(path.join(__dirname, '..', 'https', 'fastify.key')),
-    cert: fs.readFileSync(path.join(__dirname, '..', 'https', 'fastify.cert'))
-  }
+    key: fs.readFileSync(path.join(__dirname, "..", "https", "fastify.key")),
+    cert: fs.readFileSync(path.join(__dirname, "..", "https", "fastify.cert")),
+  },
 });
-
 
 // Our httpServer handles incoming requests to our Express app.
 // Below, we tell Apollo Server to "drain" this httpServer, enabling our servers to shut down gracefully.
@@ -133,29 +133,28 @@ async function startServer(): Promise<void> {
   //   }),
   // );
 
+  // //Define a Fastify route handler for "/graphql" endpoint
+  // fastify.post("/graphql", async (request, reply) => {
+  //   // Create the context object for Apollo Server
+  //   const context = {
+  //     ...(await isAuth(request)),
+  //     req: request,
+  //     res: reply,
+  //     pubsub: pubsub,
+  //     apiRootUrl: `${request.protocol}://${request.hostname}/`,
+  //   };
 
-// //Define a Fastify route handler for "/graphql" endpoint
-// fastify.post("/graphql", async (request, reply) => {
-//   // Create the context object for Apollo Server
-//   const context = {
-//     ...(await isAuth(request)),
-//     req: request,
-//     res: reply,
-//     pubsub: pubsub,
-//     apiRootUrl: `${request.protocol}://${request.hostname}/`,
-//   };
+  //   const graphqlHandler = fastifyApolloHandler(server, { context });
 
-//   const graphqlHandler = fastifyApolloHandler(server, { context });
+  //   return graphqlHandler(request, reply);
+  // });
 
-//   return graphqlHandler(request, reply);
-// });
+  //   await fastify.register(fastifyApollo(server));
 
-//   await fastify.register(fastifyApollo(server));
-
-//   // Modified server startup
-//   await new Promise<void>((resolve) =>
-//     httpServer.listen({ port: 4000 }, resolve),
-//   );
+  //   // Modified server startup
+  //   await new Promise<void>((resolve) =>
+  //     httpServer.listen({ port: 4000 }, resolve),
+  //   );
 
   // Log all the configuration related issues
   await logIssues();

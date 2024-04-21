@@ -15,8 +15,6 @@ import { EventEmitter } from "stream";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { NextFunction } from "@fastify/middie";
 
-
-
 describe("middleware -> requestContext", () => {
   const value = uuidv4();
   let context: any;
