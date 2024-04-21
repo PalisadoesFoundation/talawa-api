@@ -55,11 +55,11 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
 
   // ensure user exists
   let user: InterfaceUser | null;
-  const userFoundInCache = await findUserInCache([context.userId]);
+  const userFoundInCache = await findUserInCache([args.userId]);
   user = userFoundInCache[0];
   if (user === null) {
     user = await User.findOne({
-      _id: context.userId,
+      _id: args.userId,
     }).lean();
     if (user !== null) {
       await cacheUsers([user]);
