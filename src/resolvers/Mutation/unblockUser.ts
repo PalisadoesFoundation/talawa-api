@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
