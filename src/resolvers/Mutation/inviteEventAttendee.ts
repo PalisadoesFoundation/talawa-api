@@ -15,7 +15,7 @@ import type {
 import { User, Event, EventAttendee, AppUserProfile } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
@@ -107,7 +107,7 @@ export const inviteEventAttendee: MutationResolvers["inviteEventAttendee"] =
     const isUserEventAdmin = event.admins.some(
       (admin) =>
         admin === context.userID ||
-        new Types.ObjectId(admin).equals(context.userId),
+        new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
     );
 
     if (!isUserEventAdmin && !currentUserAppProfile.isSuperAdmin) {

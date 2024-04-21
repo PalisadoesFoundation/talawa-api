@@ -35,7 +35,6 @@ export interface InterfaceEvent {
   recurring: boolean;
   startDate: string;
   startTime: string | undefined;
-  status: string;
   title: string;
   updatedAt: Date;
   volunteerGroups: PopulatedDoc<InterfaceEventVolunteerGroup & Document>[];
@@ -67,7 +66,6 @@ export interface InterfaceEvent {
  * @param recurring - Is the event recurring
  * @param startDate - Start Date
  * @param startTime - Start Time
- * @param status - whether the event is active, blocked, or deleted.
  * @param title - Title of the event
  * @param updatedAt - Timestamp of event updation
  * @param volunteerGroups - event volunteer groups for the event
@@ -181,12 +179,6 @@ const eventSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Organization",
       required: true,
-    },
-    status: {
-      type: String,
-      required: true,
-      enum: ["ACTIVE", "BLOCKED", "DELETED"],
-      default: "ACTIVE",
     },
     volunteerGroups: [
       {

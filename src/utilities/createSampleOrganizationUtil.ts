@@ -106,7 +106,6 @@ export const generateEventData = async (
     creatorId: faker.helpers.arrayElement(users)._id,
     admins: [faker.helpers.arrayElement(users)._id],
     organization: organizationId,
-    status: "ACTIVE",
   });
 
   await event.save();

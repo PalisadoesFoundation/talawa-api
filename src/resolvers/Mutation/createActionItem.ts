@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   ACTION_ITEM_CATEGORY_IS_DISABLED,
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
@@ -131,7 +131,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
     (organizationId) =>
       organizationId === actionItemCategory.organizationId ||
-      new Types.ObjectId(organizationId).equals(
+      new mongoose.Types.ObjectId(organizationId.toString()).equals(
         actionItemCategory.organizationId,
       ),
   );
@@ -177,7 +177,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        new Types.ObjectId(admin).equals(context.userId),
+        new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
     );
   }
 
@@ -186,7 +186,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     (organizationId) =>
       (organizationId &&
         organizationId === actionItemCategory.organizationId) ||
-      new Types.ObjectId(organizationId?.toString()).equals(
+      new mongoose.Types.ObjectId(organizationId?.toString()).equals(
         actionItemCategory.organizationId,
       ),
   );
