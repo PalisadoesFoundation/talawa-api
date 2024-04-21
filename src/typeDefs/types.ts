@@ -274,7 +274,6 @@ export const types = gql`
     attendeesCheckInStatus: [CheckInStatus!]!
     actionItems: [ActionItem]
     admins(adminId: ID): [User!]
-    status: Status!
     feedback: [Feedback!]!
     averageFeedbackScore: Float
     agendaItems: [AgendaItem]

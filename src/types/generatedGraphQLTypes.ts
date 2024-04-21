@@ -715,7 +715,6 @@ export type Event = {
   recurring: Scalars['Boolean']['output'];
   startDate: Scalars['Date']['output'];
   startTime?: Maybe<Scalars['Time']['output']>;
-  status: Status;
   title: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -3874,7 +3873,6 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   recurring?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
