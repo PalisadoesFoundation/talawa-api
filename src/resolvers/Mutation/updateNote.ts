@@ -2,7 +2,8 @@ import {
   NOTE_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
- UNAUTHORIZED_UPDATE_NOTE_ERROR } from "../../constants";
+  UNAUTHORIZED_UPDATE_NOTE_ERROR,
+} from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type {
   InterfaceNote,
@@ -15,7 +16,6 @@ import { findAppUserProfileCache } from "../../services/AppUserProfileCache/find
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-
 
 export const updateNote: MutationResolvers["updateNote"] = async (
   _parent,

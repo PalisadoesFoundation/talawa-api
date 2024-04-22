@@ -1,4 +1,4 @@
-import type { Model, PopulatedDoc, Types} from "mongoose";
+import type { Model, PopulatedDoc, Types } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 

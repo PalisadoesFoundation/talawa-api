@@ -1,4 +1,4 @@
-import type { InterfaceNote} from "../../models";
+import type { InterfaceNote } from "../../models";
 import { NoteModel } from "../../models";
 import { errors } from "../../libraries";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
