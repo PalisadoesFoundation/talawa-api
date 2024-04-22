@@ -87,6 +87,10 @@ describe("resolvers -> Organization -> Advertisement", () => {
       {},
     );
 
+    const context = {
+      apiRootUrl: undefined,
+    };
+
     expect(connection).toEqual({
       edges: [
         {
@@ -101,6 +105,7 @@ describe("resolvers -> Organization -> Advertisement", () => {
           node: {
             ...testAdvertisement1,
             _id: testAdvertisement1?._id.toString(),
+            mediaUrl: `${context.apiRootUrl}${testAdvertisement1?.mediaUrl}`,
           },
         },
       ],
