@@ -86,10 +86,7 @@ describe("resolvers -> Organization -> Advertisement", () => {
       },
       {},
     );
-
-    const context = {
-      apiRootUrl: undefined,
-    };
+    const context = { apiRootUrl: undefined };
 
     expect(connection).toEqual({
       edges: [
@@ -98,6 +95,7 @@ describe("resolvers -> Organization -> Advertisement", () => {
           node: {
             ...testAdvertisement2,
             _id: testAdvertisement2?._id.toString(),
+            mediaUrl: `${context.apiRootUrl}${testAdvertisement2.mediaUrl}`
           },
         },
         {
@@ -105,7 +103,7 @@ describe("resolvers -> Organization -> Advertisement", () => {
           node: {
             ...testAdvertisement1,
             _id: testAdvertisement1?._id.toString(),
-            mediaUrl: `${context.apiRootUrl}${testAdvertisement1?.mediaUrl}`,
+            mediaUrl: `${context.apiRootUrl}${testAdvertisement1.mediaUrl}`
           },
         },
       ],
