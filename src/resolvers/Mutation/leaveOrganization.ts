@@ -1,5 +1,5 @@
 import type { UpdateQuery } from "mongoose";
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -103,7 +103,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   }
 
   const currentUserIsOrganizationMember = organization.members.some((member) =>
-    new Types.ObjectId(member).equals(currentUser?._id),
+    new mongoose.Types.ObjectId(member.toString()).equals(currentUser?._id),
   );
 
   // Checks whether currentUser is not a member of organzation.
@@ -115,7 +115,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     );
   }
   const currentUserIsOrgAdmin = organization.admins.some((admin) =>
-    new Types.ObjectId(admin).equals(currentUser?._id),
+    new mongoose.Types.ObjectId(admin.toString()).equals(currentUser._id),
   );
 
   // Removes currentUser._id from admins and members lists of organzation's document.

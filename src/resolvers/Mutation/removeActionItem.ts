@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   ACTION_ITEM_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -97,7 +97,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
   const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
     (ogranizationId) =>
       ogranizationId === actionItem.actionItemCategoryId.organizationId ||
-      new Types.ObjectId(ogranizationId?.toString()).equals(
+      new mongoose.Types.ObjectId(ogranizationId?.toString()).equals(
         actionItem.actionItemCategoryId.organizationId,
       ),
   );
@@ -134,7 +134,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        new Types.ObjectId(admin).equals(context.userId),
+        new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
     );
   }
 

@@ -1,7 +1,6 @@
 import { Types } from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
-  ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -104,30 +103,23 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
-  const userCreatedOrganization =
-    currentUserAppProfile.createdOrganizations.some((createdOrganization) =>
-      new Types.ObjectId(createdOrganization?.toString()).equals(
-        organization._id,
-      ),
-    );
+  const isUserOrgAdmin = currentUserAppProfile.adminFor.some((org) =>
+    new Types.ObjectId(org?.toString()).equals(organization._id),
+  );
 
-  const userJoinedOrganization = currentUser.joinedOrganizations.some(
+  const isUserOrgMember = currentUser.joinedOrganizations.some(
     (joinedOrganization) => joinedOrganization.equals(organization._id),
   );
 
   // Checks whether currentUser neither created nor joined the organization.
 
   if (
-    !(
-      userCreatedOrganization ||
-      userJoinedOrganization ||
-      currentUserAppProfile.isSuperAdmin
-    )
+    !(isUserOrgAdmin || isUserOrgMember || currentUserAppProfile.isSuperAdmin)
   ) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM,
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -208,9 +200,11 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     }
 
     /* c8 ignore stop */
+
     return createdEvent;
-  } catch (error) {
+
     /* c8 ignore start */
+  } catch (error) {
     if (session) {
       // abort transaction if something fails
       await session.abortTransaction();

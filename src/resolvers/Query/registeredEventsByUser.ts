@@ -14,7 +14,6 @@ export const registeredEventsByUser: QueryResolvers["registeredEventsByUser"] =
     const sort = getSort(args.orderBy);
 
     return await Event.find({
-      status: "ACTIVE",
       registrants: {
         $elemMatch: {
           userId: args.id,

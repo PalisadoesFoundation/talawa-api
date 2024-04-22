@@ -54,7 +54,6 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
 
     const eventsByOrganizationInfo = await Event.find({
       organization: testOrganization?._id,
-      status: "ACTIVE",
     })
       .sort({
         _id: 1,

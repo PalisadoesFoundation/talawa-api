@@ -15,16 +15,17 @@ import {
 import { isValidString } from "../../libraries/validators/validateString";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import { Types } from "mongoose";
 import { session } from "../../db";
 import {
   updateRecurringEvent,
   updateSingleEvent,
 } from "../../helpers/event/updateEventHelpers";
+import mongoose from "mongoose";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -36,6 +37,7 @@ import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheApp
  * 3. The the user is an admin of the event.
  * @returns Updated event.
  */
+
 export const updateEvent: MutationResolvers["updateEvent"] = async (
   _parent,
   args,
@@ -112,12 +114,16 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (organization) =>
       organization &&
-      new Types.ObjectId(organization.toString()).equals(event?.organization),
+      new mongoose.Types.ObjectId(organization.toString()).equals(
+        event?.organization,
+      ),
   );
 
   // Boolean to determine whether user is an admin of event.
-  const currentUserIsEventAdmin = event.admins.some((admin) =>
-    admin.equals(currentUser?._id),
+  const currentUserIsEventAdmin = event.admins.some(
+    (admin) =>
+      admin === context.userID ||
+      new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
   );
 
   // Checks whether currentUser cannot update event.
@@ -192,7 +198,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     }
 
     /* c8 ignore stop */
-    return updatedEvent as InterfaceEvent;
+    return updatedEvent;
     /* c8 ignore start */
   } catch (error) {
     if (session) {

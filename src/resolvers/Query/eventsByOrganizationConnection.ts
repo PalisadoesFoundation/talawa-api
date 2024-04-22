@@ -16,7 +16,6 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
 
     where = {
       ...where,
-      status: "ACTIVE",
       isBaseRecurringEvent: false,
     };
 

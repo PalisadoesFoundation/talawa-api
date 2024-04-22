@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_ALREADY_MEMBER_ERROR,
@@ -72,7 +72,8 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     }
 
     const currentUserIsOrganizationMember = organization.members.some(
-      (member) => new Types.ObjectId(member).equals(context.userId),
+      (member) =>
+        new mongoose.Types.ObjectId(member.toString()).equals(context.userId),
     );
 
     // Checks whether currentUser with _id === context.userId is already a member of organzation.
@@ -89,7 +90,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     if (
       user !== null &&
       organization.blockedUsers.some((blockedUser) =>
-        new Types.ObjectId(blockedUser).equals(user._id),
+        new mongoose.Types.ObjectId(blockedUser.toString()).equals(user._id),
       )
     ) {
       throw new errors.UnauthorizedError(
