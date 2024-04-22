@@ -39,7 +39,8 @@ import { venue } from "./venue";
 import { getEventAttendee } from "./getEventAttendee";
 import { getEventAttendeesByEventId } from "./getEventAttendeesByEventId";
 import { getVenueByOrgId } from "./getVenueByOrgId";
-
+import { getAllNotesForAgendaItem } from "./getAllNotesForAgendaItem";
+import { getNoteById } from "./getNoteById";
 export const Query: QueryResolvers = {
   actionItemsByEvent,
   agendaCategory,
@@ -61,6 +62,8 @@ export const Query: QueryResolvers = {
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getEventInvitesByUserId,
+  getAllNotesForAgendaItem,
+  getNoteById,
   getlanguage,
   getPlugins,
   isSampleOrganization,

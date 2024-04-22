@@ -1,35 +1,32 @@
 import {
-  AGENDA_ITEM_NOT_FOUND_ERROR,
-  UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR,
+  NOTE_NOT_FOUND_ERROR,
+  UNAUTHORIZED_REMOVE_NOTE_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceAgendaItem,
-  InterfaceAppUserProfile,
-  InterfaceUser,
-} from "../../models";
-import { AgendaItemModel, AppUserProfile, NoteModel, User } from "../../models";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import { NoteModel, AppUserProfile, User } from "../../models";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+
 /**
- * This function removes an agenda item.
+ * This function deletes a note.
  * @param _parent - parent of the current request
  * @param args - payload provided with the request
  * @param context - context of the entire application
- * @returns ID of the removed agenda item
- * @throws NotFoundError if the user or agenda item is not found
- * @throws UnauthorizedError if the user is not the creator of the agenda item
+ * @returns ID of the deleted note.
+ * @throws NotFoundError if the user or note is not found
+ * @throws UnauthorizedError if the user is not the creator of the note.
  */
-export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
+export const deleteNote: MutationResolvers["deleteNote"] = async (
   _parent,
   args,
   context,
-): Promise<InterfaceAgendaItem> => {
+): Promise<string> => {
   let currentUser: InterfaceUser | null;
   const userFoundInCache = await findUserInCache([context.userId]);
   currentUser = userFoundInCache[0];
@@ -68,46 +65,42 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
       USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
-  const agendaItem = await AgendaItemModel.findOne({
+  const note = await NoteModel.findOne({
     _id: args.id,
   }).lean();
-  if (!agendaItem) {
+  if (!note) {
     throw new errors.NotFoundError(
-      requestContext.translate(AGENDA_ITEM_NOT_FOUND_ERROR.MESSAGE),
-      AGENDA_ITEM_NOT_FOUND_ERROR.CODE,
-      AGENDA_ITEM_NOT_FOUND_ERROR.PARAM,
+      requestContext.translate(NOTE_NOT_FOUND_ERROR.MESSAGE),
+      NOTE_NOT_FOUND_ERROR.CODE,
+      NOTE_NOT_FOUND_ERROR.PARAM,
     );
   }
 
-  if (!agendaItem.createdBy.equals(currentUser._id)) {
+  if (note.createdBy?.toString() !== currentUser._id.toString()) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.MESSAGE),
-      UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.CODE,
-      UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.PARAM,
+      requestContext.translate(UNAUTHORIZED_REMOVE_NOTE_ERROR.MESSAGE),
+      UNAUTHORIZED_REMOVE_NOTE_ERROR.CODE,
+      UNAUTHORIZED_REMOVE_NOTE_ERROR.PARAM,
     );
   }
 
-  // Delete the agenda item from the database
-  await AgendaItemModel.deleteOne({ _id: args.id });
-
-  // Delete all related notes
-  await NoteModel.deleteMany({ agendaItemId: args.id });
+  // Delete the note from the database
+  await NoteModel.deleteOne({ _id: args.id });
 
   /*
-  Remove agendaItem._id from appropriate lists
-  on currentUser's document.
-  */
+        Remove note._id from appropriate lists
+        on agendaItem's document.
+        */
   await User.updateOne(
     {
-      _id: currentUser._id,
+      _id: note.agendaItemId,
     },
     {
       $pull: {
-        // Add relevant lists here based on your schema
-        createdAgendaItems: agendaItem._id,
+        notes: note._id,
       },
     },
   );
 
-  return agendaItem;
+  return note._id.toString();
 };
