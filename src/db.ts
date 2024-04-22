@@ -6,6 +6,12 @@ import { checkReplicaSet } from "./utilities/checkReplicaSet";
 let session!: mongoose.ClientSession;
 
 export const connect = async (dbName?: string): Promise<void> => {
+  // firstly we check if a connection to the database already exists.
+  if (mongoose.connection.readyState !== 0) {
+    // if the connection state is not 0, it means a connection already exists so we return.
+    return;
+  }
+  // if no connection exists, we try to establish a new connection.
   try {
     await mongoose.connect(MONGO_DB_URL as string, {
       dbName,
@@ -52,6 +58,10 @@ export const connect = async (dbName?: string): Promise<void> => {
 };
 
 export const disconnect = async (): Promise<void> => {
+  if (mongoose.connection.readyState === 0) {
+    logger.warn("No active database connection to disconnect.");
+    return;
+  }
   session?.endSession();
   await mongoose.connection.close();
 };

@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -9,6 +8,7 @@ import type { InterfaceOrganization, InterfaceUser } from "../../models";
 import { MembershipRequest, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import mongoose from "mongoose";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -55,11 +55,11 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
 
   // ensure user exists
   let user: InterfaceUser | null;
-  const userFoundInCache = await findUserInCache([context.userId]);
+  const userFoundInCache = await findUserInCache([args.userId]);
   user = userFoundInCache[0];
   if (user === null) {
     user = await User.findOne({
-      _id: context.userId,
+      _id: args.userId,
     }).lean();
     if (user !== null) {
       await cacheUsers([user]);
@@ -78,7 +78,8 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlockedFromOrganization = organization.blockedUsers.some(
-    (blockedUser) => new Types.ObjectId(blockedUser).equals(user?._id),
+    (blockedUser) =>
+      new mongoose.Types.ObjectId(blockedUser.toString()).equals(user._id),
   );
 
   // checks if user with _id === args.userId is blocked by organzation with _id == args.organizationId
@@ -177,7 +178,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
       $set: {
         organizationsBlockedBy: user.organizationsBlockedBy.filter(
           (organizationBlockedBy) =>
-            !new Types.ObjectId(String(organization._id)).equals(
+            !new mongoose.Types.ObjectId(organization._id.toString()).equals(
               organizationBlockedBy,
             ),
         ),

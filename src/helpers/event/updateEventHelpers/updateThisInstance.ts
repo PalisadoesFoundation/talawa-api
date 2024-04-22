@@ -6,6 +6,7 @@ import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 
 /**
  * This function updates only this instance of a recurrence pattern.
+ * This will make the instance an exception to the recurrence pattern.
  * @param args - update event args.
  * @param event - the event to be updated.
  * @remarks The following steps are followed:
@@ -26,6 +27,7 @@ export const updateThisInstance = async (
       _id: args.id,
     },
     {
+      isRecurringEventException: true,
       ...(args.data as Partial<InterfaceEvent>),
     },
     {
