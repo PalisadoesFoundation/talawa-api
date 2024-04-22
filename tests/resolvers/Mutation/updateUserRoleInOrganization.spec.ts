@@ -48,6 +48,7 @@ let hashedPassword: string;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   hashedPassword = await bcrypt.hash("password", 12);
+  vi.mock("../../../src/models/RoleAuditLogs.ts");
   testUserSuperAdmin = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
     password: hashedPassword,

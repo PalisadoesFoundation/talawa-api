@@ -8,9 +8,15 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
-import { errors, requestContext } from "../../libraries";
-import { AppUserProfile, Organization, User } from "../../models";
+import { errors, requestContext, logger } from "../../libraries";
+import {
+  AppUserProfile,
+  Organization,
+  RoleAuditLogs,
+  User,
+} from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { mailer } from "../../utilities";
 
 /**
  * This function enables a SUPERADMIN to change the role of a user in an organization.
@@ -133,30 +139,48 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       );
     }
 
-    // Check user role and update accordingly
-    if (args.role === "ADMIN") {
-      const updatedOrg = await Organization.updateOne(
-        { _id: args.organizationId },
-        {
-          $push: { admins: args.userId },
-        },
-      );
-      await AppUserProfile.updateOne(
-        { userId: args.userId },
-        { $push: { adminFor: args.organizationId } },
-      );
-      return { ...organization, ...updatedOrg };
-    } else {
-      const updatedOrg = await Organization.updateOne(
-        { _id: args.organizationId },
-        {
-          $pull: { admins: args.userId },
-        },
-      ).lean();
-      await AppUserProfile.updateOne(
-        { userId: args.userId },
-        { $pull: { adminFor: args.organizationId } },
-      );
-      return { ...organization, ...updatedOrg };
-    }
+    const updateOperation = args.role === "ADMIN" ? "$push" : "$pull";
+    const updateAction = args.role === "ADMIN" ? "GRANTED" : "REMOVED";
+
+    const updatedOrg = await Organization.updateOne(
+      { _id: args.organizationId },
+      {
+        [updateOperation]: { admins: args.userId },
+      },
+    );
+    await AppUserProfile.updateOne(
+      { userId: args.userId },
+      { [updateOperation]: { adminFor: args.organizationId } },
+    );
+
+    await RoleAuditLogs.create({
+      roleEditorUserId: context.userId,
+      affectedUserId: args.userId,
+      organizationId: args.organizationId,
+      description: `User ${user.firstName} was ${updateAction} ADMIN role in organization ${organization.name}`,
+    });
+
+    const previousRoleText = args.role === "ADMIN" ? "USER" : "ADMIN";
+    const newRoleText = args.role;
+
+    const roleChangeVisual = `<span style="text-decoration: line-through; color: red;">${previousRoleText}</span> 
+                              <span style="font-size: 18px; color: black;"> → </span> 
+                              <span style="color: green;">${newRoleText}</span>`;
+
+    const emailSubject = "Role Update Notification";
+    const emailBody = `<h2>Hi ${user.firstName},</h2>
+                      <p>Your role in the organization <strong>${organization.name}</strong> has been updated as follows:</p>
+                      <p><strong>Role Change:</strong> ${roleChangeVisual}</p>
+                      <br><br>
+                      <small>This is an automated notification, please do not reply.</small>`;
+
+    mailer({
+      emailTo: user.email,
+      subject: emailSubject,
+      body: emailBody,
+    }).then((info) => {
+      logger.info(`Role update email sent successfully: ${info}`);
+    });
+
+    return { ...organization, ...updatedOrg };
   };

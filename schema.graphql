@@ -639,7 +639,6 @@ type Event {
   recurring: Boolean!
   startDate: Date!
   startTime: Time
-  status: Status!
   title: String!
   updatedAt: DateTime!
 }

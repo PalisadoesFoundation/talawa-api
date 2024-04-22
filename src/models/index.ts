@@ -35,6 +35,7 @@ export * from "./Plugin";
 export * from "./PluginField";
 export * from "./Post";
 export * from "./RecurrenceRule";
+export * from "./RoleAuditLogs";
 export * from "./SampleData";
 export * from "./TagUser";
 export * from "./Venue";
