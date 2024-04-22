@@ -101,7 +101,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Mutation -> removeAgendaItem", () => {
+describe("resolvers -> Mutation -> deleteNote", () => {
   it("throws unknown error if no user exists with _id === userId", async () => {
     try {
       const args: MutationDeleteNoteArgs = { id: testNote?._id.toString() };

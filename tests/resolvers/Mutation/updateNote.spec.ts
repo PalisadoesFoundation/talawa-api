@@ -113,7 +113,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Mutation -> updateAgendaItem", () => {
+describe("resolvers -> Mutation -> updateNote", () => {
   it("throws NotFoundError if no user exists with _id === userID", async () => {
     try {
       const args: MutationUpdateNoteArgs = {
