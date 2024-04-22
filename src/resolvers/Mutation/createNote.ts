@@ -9,8 +9,7 @@ import type {
   InterfaceAppUserProfile,
   InterfaceUser,
 } from "../../models";
-import { AgendaItemModel, AppUserProfile, User } from "../../models";
-import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { AgendaItemModel, AppUserProfile, NoteModel, User } from "../../models";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
@@ -41,7 +40,6 @@ export const createNote: MutationResolvers["createNote"] = async (
       await cacheUsers([currentUser]);
     }
   }
-
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -58,9 +56,9 @@ export const createNote: MutationResolvers["createNote"] = async (
     currentAppUserProfile = await AppUserProfile.findOne({
       userId: currentUser._id,
     }).lean();
-    if (currentAppUserProfile !== null) {
-      await cacheAppUserProfile([currentAppUserProfile]);
-    }
+    // if (currentAppUserProfile !== null) {
+    //   await cacheAppUserProfile([currentAppUserProfile]);
+    // }
   }
   if (!currentAppUserProfile) {
     throw new errors.UnauthenticatedError(
@@ -83,7 +81,7 @@ export const createNote: MutationResolvers["createNote"] = async (
     );
   }
 
-  const createdNote = await AgendaItemModel.create({
+  const createdNote = await NoteModel.create({
     ...args.data,
     createdBy: currentUser._id,
     updatedBy: currentUser._id,
