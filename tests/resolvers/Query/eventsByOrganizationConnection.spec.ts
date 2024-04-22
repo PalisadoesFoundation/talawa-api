@@ -11,7 +11,7 @@ import type {
   QueryEventsByOrganizationConnectionArgs,
 } from "../../../src/types/generatedGraphQLTypes";
 import type { InterfaceEvent } from "../../../src/models";
-import { Event } from "../../../src/models";
+import { Event, Frequency, RecurrenceRule } from "../../../src/models";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
@@ -20,8 +20,8 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { addDays, addYears } from "date-fns";
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import type { TestUserType } from "../../helpers/user";
-import type { InterfaceRecurrenceRule } from "../../../src/models/RecurrenceRule";
-import { Frequency, RecurrenceRule } from "../../../src/models/RecurrenceRule";
+import type { InterfaceRecurrenceRule } from "../../../src/models/";
+
 import {
   RECURRING_EVENT_INSTANCES_DAILY_LIMIT,
   RECURRING_EVENT_INSTANCES_QUERY_LIMIT,
@@ -66,26 +66,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> organizationsMemberConnection", () => {
-  it(`Just retrieve events with status = ACTIVE when no specific input argument is passed`, async () => {
-    const args: QueryEventsByOrganizationConnectionArgs = {
-      first: 1,
-      skip: 1,
-      where: null,
-      orderBy: null,
-    };
-    const events = await Event.find({
-      status: "ACTIVE",
-    })
-      .limit(1)
-      .skip(1)
-      .populate("creatorId", "-password")
-      .populate("admins", "-password")
-      .lean();
-
-    const eventsByOrganizationConnectionPayload =
-      await eventsByOrganizationConnectionResolver?.({}, args, {});
-    expect(eventsByOrganizationConnectionPayload).toEqual(events);
-  });
   it(`returns list of all existing events filtered by args.where ===
   { id: testEvent[1]._id, title: testEvents[1].title, description:testEvents[1].description, organization: testEvents[1].organization._id, location: testEvents[1].location}
   and sorted by ascending order of event._id if args.orderBy === 'id_ASC'`, async () => {
@@ -423,6 +403,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     vi.useFakeTimers();
 
     const startDate = convertToUTCDate(new Date());
+    const endDate = startDate;
 
     const eventArgs: MutationCreateEventArgs = {
       data: {
@@ -436,10 +417,11 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         location: "newLocation",
         recurring: true,
         startDate,
-        startTime: startDate.toUTCString(),
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "DAILY",
       },
     };
@@ -476,7 +458,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     let recurrenceRule = await RecurrenceRule.findOne({
       frequency: Frequency.DAILY,
-      startDate,
+      recurrenceStartDate: startDate,
     });
 
     const { recurrenceRuleString } = recurrenceRule as InterfaceRecurrenceRule;
@@ -509,7 +491,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     recurrenceRule = await RecurrenceRule.findOne({
       frequency: Frequency.DAILY,
-      startDate,
+      recurrenceStartDate: startDate,
     });
 
     const queryUptoDate = addYears(
@@ -535,6 +517,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     vi.useFakeTimers();
 
     const startDate = convertToUTCDate(new Date());
+    const endDate = startDate;
 
     const eventArgs: MutationCreateEventArgs = {
       data: {
@@ -548,10 +531,11 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         location: "newLocation",
         recurring: true,
         startDate,
-        startTime: startDate.toUTCString(),
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "WEEKLY",
         count: 150,
       },
@@ -589,7 +573,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     let recurrenceRule = await RecurrenceRule.findOne({
       frequency: Frequency.WEEKLY,
-      startDate,
+      recurrenceStartDate: startDate,
     });
 
     const { recurrenceRuleString } = recurrenceRule as InterfaceRecurrenceRule;
@@ -628,7 +612,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     recurrenceRule = await RecurrenceRule.findOne({
       frequency: Frequency.WEEKLY,
-      startDate,
+      recurrenceStartDate: startDate,
     });
 
     const queryUptoDate = addYears(

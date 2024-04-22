@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
   PLEASE_PROVIDE_TITLE,
@@ -99,7 +99,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (organizationId) =>
       organizationId &&
-      new Types.ObjectId(organizationId.toString()).equals(post?.organization),
+      new mongoose.Types.ObjectId(organizationId.toString()).equals(
+        post?.organization,
+      ),
   );
 
   if (!currentUserAppProfile.isSuperAdmin && !currentUserIsOrganizationAdmin) {
@@ -128,7 +130,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     }
   }
   const currentPostIsPinned = organization?.pinnedPosts.some((postID) =>
-    new Types.ObjectId(postID).equals(args.id),
+    new mongoose.Types.ObjectId(postID.toString()).equals(args.id),
   );
 
   if (currentPostIsPinned) {

@@ -7,6 +7,7 @@ import { organization } from "./organization";
 import { actionItems } from "./actionItems";
 import { creator } from "./creator";
 import { recurrenceRule } from "./recurrenceRule";
+import { baseRecurringEvent } from "./baseRecurringEvent";
 
 export const Event: EventResolvers = {
   actionItems,
@@ -17,4 +18,5 @@ export const Event: EventResolvers = {
   organization,
   creator,
   recurrenceRule,
+  baseRecurringEvent,
 };
