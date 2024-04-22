@@ -616,6 +616,7 @@ type Event {
   attendees: [User]
   attendeesCheckInStatus: [CheckInStatus!]!
   averageFeedbackScore: Float
+  baseRecurringEvent: Event
   createdAt: DateTime!
   creator: User
   description: String!
@@ -624,6 +625,7 @@ type Event {
   feedback: [Feedback!]!
   images: [String]
   isPublic: Boolean!
+  isRecurringEventException: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
   location: String
@@ -660,7 +662,7 @@ input EventAttendeeInput {
 input EventInput {
   allDay: Boolean!
   description: String!
-  endDate: Date
+  endDate: Date!
   endTime: Time
   images: [String]
   isPublic: Boolean!
@@ -1028,7 +1030,6 @@ type MinimumValueError implements FieldError {
 }
 
 type Mutation {
-  acceptAdmin(id: ID!): Boolean!
   acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   addEventAttendee(data: EventAttendeeInput!): User!
   addFeedback(data: FeedbackInput!): Feedback!
@@ -1040,7 +1041,6 @@ type Mutation {
   addUserImage(file: String!): User!
   addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
   addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
-  adminRemoveEvent(eventId: ID!): Event!
   adminRemoveGroup(groupId: ID!): GroupChat!
   assignUserTag(input: ToggleUserTagAssignInput!): User
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): AppUserProfile!
@@ -1094,7 +1094,6 @@ type Mutation {
   refreshToken(refreshToken: String!): ExtendSession!
   registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
   registerForEvent(id: ID!): EventAttendee!
-  rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): AppUserProfile!
@@ -1143,7 +1142,7 @@ type Mutation {
   updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
   updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
   updateCommunity(data: UpdateCommunityInput!): Boolean!
-  updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
+  updateEvent(data: UpdateEventInput!, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateEventVolunteerGroup(data: UpdateEventVolunteerGroupInput, id: ID!): EventVolunteerGroup!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
@@ -1488,9 +1487,15 @@ input RecaptchaVerification {
 }
 
 type RecurrenceRule {
+  baseRecurringEvent: Event
   count: PositiveInt
-  frequency: Frequency
-  interval: PositiveInt
+  frequency: Frequency!
+  interval: PositiveInt!
+  latestInstanceDate: Date
+  organization: Organization
+  recurrenceEndDate: Date
+  recurrenceRuleString: String!
+  recurrenceStartDate: Date!
   weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }
@@ -1499,14 +1504,16 @@ input RecurrenceRuleInput {
   count: PositiveInt
   frequency: Frequency
   interval: PositiveInt
+  recurrenceEndDate: Date
+  recurrenceStartDate: Date
   weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }
 
 enum RecurringEventMutationType {
-  AllInstances
-  ThisAndFollowingInstances
-  ThisInstance
+  allInstances
+  thisAndFollowingInstances
+  thisInstance
 }
 
 type SocialMediaUrls {

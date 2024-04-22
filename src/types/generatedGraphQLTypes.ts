@@ -693,6 +693,7 @@ export type Event = {
   attendees?: Maybe<Array<Maybe<User>>>;
   attendeesCheckInStatus: Array<CheckInStatus>;
   averageFeedbackScore?: Maybe<Scalars['Float']['output']>;
+  baseRecurringEvent?: Maybe<Event>;
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   description: Scalars['String']['output'];
@@ -701,6 +702,7 @@ export type Event = {
   feedback: Array<Feedback>;
   images?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   isPublic: Scalars['Boolean']['output'];
+  isRecurringEventException: Scalars['Boolean']['output'];
   isRegisterable: Scalars['Boolean']['output'];
   latitude?: Maybe<Scalars['Latitude']['output']>;
   location?: Maybe<Scalars['String']['output']>;
@@ -710,7 +712,6 @@ export type Event = {
   recurring: Scalars['Boolean']['output'];
   startDate: Scalars['Date']['output'];
   startTime?: Maybe<Scalars['Time']['output']>;
-  status: Status;
   title: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -743,7 +744,7 @@ export type EventAttendeeInput = {
 export type EventInput = {
   allDay: Scalars['Boolean']['input'];
   description: Scalars['String']['input'];
-  endDate?: InputMaybe<Scalars['Date']['input']>;
+  endDate: Scalars['Date']['input'];
   endTime?: InputMaybe<Scalars['Time']['input']>;
   images?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   isPublic: Scalars['Boolean']['input'];
@@ -1121,7 +1122,6 @@ export type MinimumValueError = FieldError & {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  acceptAdmin: Scalars['Boolean']['output'];
   acceptMembershipRequest: MembershipRequest;
   addEventAttendee: User;
   addFeedback: Feedback;
@@ -1133,7 +1133,6 @@ export type Mutation = {
   addUserImage: User;
   addUserToGroupChat: GroupChat;
   addUserToUserFamily: UserFamily;
-  adminRemoveEvent: Event;
   adminRemoveGroup: GroupChat;
   assignUserTag?: Maybe<User>;
   blockPluginCreationBySuperadmin: AppUserProfile;
@@ -1187,7 +1186,6 @@ export type Mutation = {
   refreshToken: ExtendSession;
   registerEventAttendee: EventAttendee;
   registerForEvent: EventAttendee;
-  rejectAdmin: Scalars['Boolean']['output'];
   rejectMembershipRequest: MembershipRequest;
   removeActionItem: ActionItem;
   removeAdmin: AppUserProfile;
@@ -1254,11 +1252,6 @@ export type Mutation = {
 };
 
 
-export type MutationAcceptAdminArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
 export type MutationAcceptMembershipRequestArgs = {
   membershipRequestId: Scalars['ID']['input'];
 };
@@ -1319,11 +1312,6 @@ export type MutationAddUserToGroupChatArgs = {
 export type MutationAddUserToUserFamilyArgs = {
   familyId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
-};
-
-
-export type MutationAdminRemoveEventArgs = {
-  eventId: Scalars['ID']['input'];
 };
 
 
@@ -1598,11 +1586,6 @@ export type MutationRegisterForEventArgs = {
 };
 
 
-export type MutationRejectAdminArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
 export type MutationRejectMembershipRequestArgs = {
   membershipRequestId: Scalars['ID']['input'];
 };
@@ -1839,7 +1822,7 @@ export type MutationUpdateCommunityArgs = {
 
 
 export type MutationUpdateEventArgs = {
-  data?: InputMaybe<UpdateEventInput>;
+  data: UpdateEventInput;
   id: Scalars['ID']['input'];
   recurrenceRuleData?: InputMaybe<RecurrenceRuleInput>;
   recurringEventUpdateType?: InputMaybe<RecurringEventMutationType>;
@@ -2561,9 +2544,15 @@ export type RecaptchaVerification = {
 
 export type RecurrenceRule = {
   __typename?: 'RecurrenceRule';
+  baseRecurringEvent?: Maybe<Event>;
   count?: Maybe<Scalars['PositiveInt']['output']>;
-  frequency?: Maybe<Frequency>;
-  interval?: Maybe<Scalars['PositiveInt']['output']>;
+  frequency: Frequency;
+  interval: Scalars['PositiveInt']['output'];
+  latestInstanceDate?: Maybe<Scalars['Date']['output']>;
+  organization?: Maybe<Organization>;
+  recurrenceEndDate?: Maybe<Scalars['Date']['output']>;
+  recurrenceRuleString: Scalars['String']['output'];
+  recurrenceStartDate: Scalars['Date']['output'];
   weekDayOccurenceInMonth?: Maybe<Scalars['Int']['output']>;
   weekDays?: Maybe<Array<Maybe<WeekDays>>>;
 };
@@ -2572,14 +2561,16 @@ export type RecurrenceRuleInput = {
   count?: InputMaybe<Scalars['PositiveInt']['input']>;
   frequency?: InputMaybe<Frequency>;
   interval?: InputMaybe<Scalars['PositiveInt']['input']>;
+  recurrenceEndDate?: InputMaybe<Scalars['Date']['input']>;
+  recurrenceStartDate?: InputMaybe<Scalars['Date']['input']>;
   weekDayOccurenceInMonth?: InputMaybe<Scalars['Int']['input']>;
   weekDays?: InputMaybe<Array<InputMaybe<WeekDays>>>;
 };
 
 export type RecurringEventMutationType =
-  | 'AllInstances'
-  | 'ThisAndFollowingInstances'
-  | 'ThisInstance';
+  | 'allInstances'
+  | 'thisAndFollowingInstances'
+  | 'thisInstance';
 
 export type SocialMediaUrls = {
   __typename?: 'SocialMediaUrls';
@@ -3914,6 +3905,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   attendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   attendeesCheckInStatus?: Resolver<Array<ResolversTypes['CheckInStatus']>, ParentType, ContextType>;
   averageFeedbackScore?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  baseRecurringEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -3922,6 +3914,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   feedback?: Resolver<Array<ResolversTypes['Feedback']>, ParentType, ContextType>;
   images?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isRecurringEventException?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isRegisterable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Latitude']>, ParentType, ContextType>;
   location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3931,7 +3924,6 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   recurring?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4169,7 +4161,6 @@ export type MinimumValueErrorResolvers<ContextType = any, ParentType extends Res
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  acceptAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationAcceptAdminArgs, 'id'>>;
   acceptMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationAcceptMembershipRequestArgs, 'membershipRequestId'>>;
   addEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddEventAttendeeArgs, 'data'>>;
   addFeedback?: Resolver<ResolversTypes['Feedback'], ParentType, ContextType, RequireFields<MutationAddFeedbackArgs, 'data'>>;
@@ -4181,7 +4172,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
   addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;
   addUserToUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationAddUserToUserFamilyArgs, 'familyId' | 'userId'>>;
-  adminRemoveEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationAdminRemoveEventArgs, 'eventId'>>;
   adminRemoveGroup?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAdminRemoveGroupArgs, 'groupId'>>;
   assignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAssignUserTagArgs, 'input'>>;
   blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['AppUserProfile'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'blockUser' | 'userId'>>;
@@ -4235,7 +4225,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
   registerEventAttendee?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationRegisterEventAttendeeArgs, 'data'>>;
   registerForEvent?: Resolver<ResolversTypes['EventAttendee'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
-  rejectAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectAdminArgs, 'id'>>;
   rejectMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationRejectMembershipRequestArgs, 'membershipRequestId'>>;
   removeActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationRemoveActionItemArgs, 'id'>>;
   removeAdmin?: Resolver<ResolversTypes['AppUserProfile'], ParentType, ContextType, RequireFields<MutationRemoveAdminArgs, 'data'>>;
@@ -4284,7 +4273,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateAgendaItem?: Resolver<Maybe<ResolversTypes['AgendaItem']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaItemArgs, 'id' | 'input'>>;
   updateAgendaSection?: Resolver<Maybe<ResolversTypes['AgendaSection']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaSectionArgs, 'id' | 'input'>>;
   updateCommunity?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateCommunityArgs, 'data'>>;
-  updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
+  updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'data' | 'id'>>;
   updateEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerArgs, 'id'>>;
   updateEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerGroupArgs, 'id'>>;
   updateFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationUpdateFundArgs, 'data' | 'id'>>;
@@ -4501,9 +4490,15 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type RecurrenceRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['RecurrenceRule'] = ResolversParentTypes['RecurrenceRule']> = {
+  baseRecurringEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   count?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
-  frequency?: Resolver<Maybe<ResolversTypes['Frequency']>, ParentType, ContextType>;
-  interval?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
+  frequency?: Resolver<ResolversTypes['Frequency'], ParentType, ContextType>;
+  interval?: Resolver<ResolversTypes['PositiveInt'], ParentType, ContextType>;
+  latestInstanceDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  recurrenceEndDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  recurrenceRuleString?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  recurrenceStartDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   weekDayOccurenceInMonth?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   weekDays?: Resolver<Maybe<Array<Maybe<ResolversTypes['WeekDays']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

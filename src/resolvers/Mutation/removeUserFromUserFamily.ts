@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import {
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
@@ -15,6 +14,7 @@ import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { adminCheck } from "../../utilities/userFamilyAdminCheck";
+import mongoose from "mongoose";
 /**
  * This function enables to remove a user from group chat.
  * @param _parent - parent of current request
@@ -48,11 +48,11 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
     })) as InterfaceUserFamily;
 
     const userIsMemberOfUserFamily = userFamily?.users.some((member) => {
-      return new Types.ObjectId(member).equals(user?._id);
+      return new mongoose.Types.ObjectId(member.toString()).equals(user?._id);
     });
 
     const userIdUserFamilyAdmin = userFamily?.admins.some((admin) => {
-      new Types.ObjectId(admin).equals(user?._id);
+      new mongoose.Types.ObjectId(admin.toString()).equals(user?._id);
     });
     //Check whether user family exists.
     if (!userFamily) {
@@ -109,7 +109,11 @@ export const removeUserFromUserFamily: MutationResolvers["removeUserFromUserFami
           of userFamily. If match is true assigns error message to errors list
           and breaks out of loop.
         */
-    if (new Types.ObjectId(userFamily.creator.toString()).equals(user._id)) {
+    if (
+      new mongoose.Types.ObjectId(userFamily.creator.toString()).equals(
+        user._id,
+      )
+    ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
         ADMIN_REMOVING_CREATOR.CODE,

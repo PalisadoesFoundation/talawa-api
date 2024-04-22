@@ -5,8 +5,6 @@ import { gql } from "graphql-tag";
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const mutations = gql`
   type Mutation {
-    acceptAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
-
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
     addOrganizationCustomField(
@@ -44,8 +42,6 @@ export const mutations = gql`
     removeUserFamily(familyId: ID!): UserFamily! @auth
 
     createUserFamily(data: createUserFamilyInput!): UserFamily! @auth
-
-    adminRemoveEvent(eventId: ID!): Event! @auth
 
     adminRemoveGroup(groupId: ID!): GroupChat! @auth
 
@@ -184,8 +180,6 @@ export const mutations = gql`
 
     registerForEvent(id: ID!): EventAttendee! @auth
 
-    rejectAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
-
     registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
 
     rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
@@ -306,7 +300,7 @@ export const mutations = gql`
 
     updateEvent(
       id: ID!
-      data: UpdateEventInput
+      data: UpdateEventInput!
       recurrenceRuleData: RecurrenceRuleInput
       recurringEventUpdateType: RecurringEventMutationType
     ): Event! @auth
