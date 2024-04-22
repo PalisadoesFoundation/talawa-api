@@ -24,7 +24,7 @@ import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-
+import mongoose from "mongoose";
 /**
  * Handles the check-in process for event attendees.
  *
@@ -115,8 +115,10 @@ export const checkIn: MutationResolvers["checkIn"] = async (
     );
   }
 
-  const isUserEventAdmin = currentEvent.admins.some(
-    (admin) => admin.toString() === context.userId.toString(),
+  const isUserEventAdmin = currentEvent.admins.some((admin) =>
+    new mongoose.Types.ObjectId(admin.toString()).equals(
+      context.userId.toString(),
+    ),
   );
 
   if (!isUserEventAdmin && currentUserAppProfile.isSuperAdmin === false) {
