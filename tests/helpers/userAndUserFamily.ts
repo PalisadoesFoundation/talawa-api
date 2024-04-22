@@ -35,13 +35,12 @@ export const createTestUserFamilyWithAdmin = async (
   isMember = true,
   isAdmin = true,
 ): Promise<TestUserFamilyType> => {
-  const testUser = await createTestUserFunc();
-  if (testUser) {
+  if (userID) {
     const testUserFamily = await UserFamily.create({
       title: `name${nanoid().toLocaleLowerCase()}`,
-      users: isMember ? [testUser._id] : [],
-      admins: isAdmin ? [testUser._id] : [],
-      creator: [testUser._id],
+      users: isMember ? [userID] : [],
+      admins: isAdmin ? [userID] : [],
+      creator: [userID],
     });
 
     await User.updateOne(

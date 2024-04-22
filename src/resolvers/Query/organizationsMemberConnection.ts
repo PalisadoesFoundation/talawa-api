@@ -1,3 +1,4 @@
+import type { SortOrder } from "mongoose";
 import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
@@ -22,11 +23,20 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
 
     // Pagination based Options
     interface InterfacePaginateOptions {
-      lean?: boolean | undefined;
-      sort?: object | string | undefined;
-      pagination?: boolean | undefined;
-      page?: number | undefined;
-      limit?: number | undefined;
+      lean?: boolean;
+      sort?: object | string | [string, SortOrder][];
+      pagination?: boolean;
+      page?: number;
+      limit?: number;
+      populate?: {
+        path: string;
+        populate?: {
+          path: string;
+          model: string;
+          select?: string[];
+        };
+        select?: string[];
+      }[];
     }
     let paginateOptions: InterfacePaginateOptions =
       {} as InterfacePaginateOptions;
@@ -41,6 +51,41 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         pagination: true,
         page: args.skip,
         limit: args.first,
+        populate: [
+          {
+            path: "appUserProfileId",
+            populate: [
+              {
+                path: "adminFor",
+                model: "Organization",
+              },
+              {
+                path: "createdOrganizations",
+                model: "Organization",
+              },
+              {
+                path: "createdEvents",
+                model: "Organization",
+              },
+              {
+                path: "eventAdmin",
+                model: "Organization",
+              },
+            ],
+          },
+          {
+            path: "registeredEvents",
+          },
+          {
+            path: "joinedOrganizations",
+          },
+          {
+            path: "membershipRequests",
+          },
+          {
+            path: "organizationsBlockedBy",
+          },
+        ],
       } as InterfacePaginateOptions;
     } else {
       paginateOptions = {
@@ -58,8 +103,6 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       },
       {
         ...paginateOptions,
-        populate: ["registeredEvents"],
-        select: ["-password"],
       },
     );
 
@@ -69,7 +112,16 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       users = usersModel.docs.map((user) => ({
         _id: user._id,
         appUserProfileId: user.appUserProfileId,
-        address: user.address,
+        address: {
+          city: user.address?.city,
+          countryCode: user.address?.countryCode,
+          postalCode: user.address?.postalCode,
+          dependentLocality: user.address?.dependentLocality,
+          sortingCode: user.address?.sortingCode,
+          line1: user.address?.line1,
+          line2: user.address?.line2,
+          state: user.address?.state,
+        },
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
@@ -93,7 +145,16 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       users = usersModel.docs.map((user) => ({
         _id: user._id,
         appUserProfileId: user.appUserProfileId,
-        address: user.address,
+        address: {
+          city: user.address?.city,
+          countryCode: user.address?.countryCode,
+          postalCode: user.address?.postalCode,
+          dependentLocality: user.address?.dependentLocality,
+          sortingCode: user.address?.sortingCode,
+          line1: user.address?.line1,
+          line2: user.address?.line2,
+          state: user.address?.state,
+        },
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,

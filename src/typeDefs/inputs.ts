@@ -518,11 +518,6 @@ export const inputs = gql`
     confirmNewPassword: String!
   }
 
-  input UpdateUserTypeInput {
-    userType: String
-    id: ID
-  }
-
   input UserAndOrganizationInput {
     organizationId: ID!
     userId: ID!
@@ -534,7 +529,7 @@ export const inputs = gql`
     email: EmailAddress!
     password: String!
     appLanguageCode: String
-    organizationUserBelongsToId: ID
+    selectedOrganization: ID!
   }
 
   input UserWhereInput {
@@ -590,5 +585,12 @@ export const inputs = gql`
     capacity: Int!
     description: String
     file: String
+  }
+
+  input VenueWhereInput {
+    name_contains: String
+    name_starts_with: String
+    description_starts_with: String
+    description_contains: String
   }
 `;

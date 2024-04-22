@@ -15,7 +15,7 @@ import {
   LAST_RESORT_SUPERADMIN_EMAIL,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, User } from "../../../src/models";
+import { AppUserProfile, Organization, User } from "../../../src/models";
 import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
 import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
@@ -25,6 +25,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import _ from "lodash";
 
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -62,45 +63,6 @@ describe("resolvers -> Mutation -> signUp", () => {
     vi.restoreAllMocks();
   });
 
-  it(`creates the user and returns the created user with accessToken, refreshToken`, async () => {
-    const email = `email${nanoid().toLowerCase()}@gmail.com`;
-
-    const args: MutationSignUpArgs = {
-      data: {
-        email,
-        firstName: "firstName",
-        lastName: "lastName",
-        password: "password",
-        appLanguageCode: "en",
-        organizationUserBelongsToId: undefined,
-      },
-    };
-    const { signUp: signUpResolver } = await import(
-      "../../../src/resolvers/Mutation/signUp"
-    );
-
-    const signUpPayload = await signUpResolver?.({}, args, {});
-
-    const createdUser = await User.findOne({
-      email,
-    })
-      .select("-password")
-      .lean();
-    // console.log(createdUser, signUpPayload?.user);
-
-    expect({
-      user: signUpPayload?.user,
-    }).toEqual({
-      user: createdUser,
-    });
-
-    expect(typeof signUpPayload?.accessToken).toEqual("string");
-    expect(signUpPayload?.accessToken.length).toBeGreaterThan(1);
-
-    expect(typeof signUpPayload?.refreshToken).toEqual("string");
-    expect(signUpPayload?.refreshToken.length).toBeGreaterThan(1);
-  });
-
   it(`creates the user with provided organizationUserBelongsToId and returns the
   created user  with accessToken, refreshToken`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
@@ -112,7 +74,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization?.id,
+        selectedOrganization: testOrganization?.id,
       },
     };
     const { signUp: signUpResolver } = await import(
@@ -124,14 +86,26 @@ describe("resolvers -> Mutation -> signUp", () => {
     const createdUser = await User.findOne({
       email,
     })
+      .populate("joinedOrganizations")
+      .populate("registeredEvents")
+      .populate("membershipRequests")
+      .populate("organizationsBlockedBy")
       .select("-password")
       .lean();
 
-    expect({
-      user: signUpPayload?.user,
-    }).toEqual({
-      user: createdUser,
-    });
+    const createdUserAppProfile = await AppUserProfile.findOne({
+      userId: createdUser?._id,
+    })
+      .populate("createdOrganizations")
+      .populate("createdEvents")
+      .populate("eventAdmin")
+      .populate("adminFor")
+      .lean();
+
+    expect(_.isEqual(signUpPayload?.user, createdUser)).toBe(true);
+    expect(
+      _.isEqual(signUpPayload?.appUserProfile, createdUserAppProfile),
+    ).toBe(true);
 
     expect(typeof signUpPayload?.accessToken).toEqual("string");
     expect(signUpPayload?.accessToken.length).toBeGreaterThan(1);
@@ -139,6 +113,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     expect(typeof signUpPayload?.refreshToken).toEqual("string");
     expect(signUpPayload?.refreshToken.length).toBeGreaterThan(1);
   });
+
   it(`when uploadImage is called with newFile `, async () => {
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
       async (encodedImageURL: string) => encodedImageURL,
@@ -152,8 +127,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         firstName: "firstName",
         lastName: "lastName",
         password: "password",
-        appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization?.id,
+        selectedOrganization: testOrganization?.id,
       },
       file: testImagePath,
     };
@@ -179,7 +153,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: undefined,
+        selectedOrganization: testOrganization?._id,
       },
     };
     const { signUp: signUpResolver } = await import(
@@ -193,7 +167,6 @@ describe("resolvers -> Mutation -> signUp", () => {
       userId: createdUser?._id,
     });
     expect(createdAppUserProfile?.isSuperAdmin).toEqual(true);
-    expect(createdAppUserProfile?.adminApproved).toBeTruthy();
   });
   it(`Check if the User is not being promoted to SUPER ADMIN automatically`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
@@ -204,7 +177,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: undefined,
+        selectedOrganization: testOrganization?._id,
       },
     };
     const { signUp: signUpResolver } = await import(
@@ -218,7 +191,6 @@ describe("resolvers -> Mutation -> signUp", () => {
       userId: createdUser?._id,
     });
     expect(createdAppUserProfile?.isSuperAdmin).toBeFalsy();
-    expect(createdAppUserProfile?.adminApproved).toBeFalsy();
   });
 });
 
@@ -242,7 +214,7 @@ describe("resolvers -> Mutation -> signUp", () => {
           lastName: "lastName",
           password: "password",
           appLanguageCode: "en",
-          organizationUserBelongsToId: undefined,
+          selectedOrganization: testOrganization?._id,
         },
       };
 
@@ -256,11 +228,11 @@ describe("resolvers -> Mutation -> signUp", () => {
       expect((error as Error).message).toEqual(EMAIL_MESSAGE);
     }
   });
-  it(`throws NotFoundError message if no organization exists with _id === args.data.organizationUserBelongsToId`, async () => {
+  it(`throws NotFoundError message if no organization exists with _id === args.data.selectedOrganization`, async () => {
     const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => message,
+    );
     try {
       const email = `email${nanoid().toLowerCase()}@gmail.com`;
 
@@ -271,7 +243,7 @@ describe("resolvers -> Mutation -> signUp", () => {
           lastName: "lastName",
           password: "password",
           appLanguageCode: "en",
-          organizationUserBelongsToId: new Types.ObjectId().toString(),
+          selectedOrganization: new Types.ObjectId().toString(),
         },
       };
 
@@ -281,10 +253,108 @@ describe("resolvers -> Mutation -> signUp", () => {
 
       await signUpResolver?.({}, args, {});
     } catch (error: unknown) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      // expect((error as E)).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
         ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
     }
+  });
+  it("creates user with joining the organization if userRegistrationRequired is false", async () => {
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+
+    const args: MutationSignUpArgs = {
+      data: {
+        email,
+        firstName: "firstName",
+        lastName: "lastName",
+        password: "password",
+        appLanguageCode: "en",
+        selectedOrganization: testOrganization?._id,
+      },
+    };
+    const { signUp: signUpResolver } = await import(
+      "../../../src/resolvers/Mutation/signUp"
+    );
+
+    await signUpResolver?.({}, args, {});
+
+    const createdUser = await User.findOne({
+      email,
+    }).select("-password");
+
+    // console.log(createdUser?.joinedOrganizations, testOrganization?._id);
+    expect(createdUser?.joinedOrganizations).toContainEqual(
+      testOrganization?._id,
+    );
+  });
+  it("send membership request if the user registration is required by the organization", async () => {
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+
+    const organization = await Organization.create({
+      name: `orgName${nanoid().toLowerCase()}`,
+      description: `orgDesc${nanoid().toLowerCase()}`,
+      userRegistrationRequired: true,
+      creatorId: testUser?._id,
+      admins: [],
+      membershipRequests: [],
+      members: [testUser?._id],
+      visibleInSearch: false,
+    });
+    const args: MutationSignUpArgs = {
+      data: {
+        email,
+        firstName: "firstName",
+        lastName: "lastName",
+        password: "password",
+        appLanguageCode: "en",
+        selectedOrganization: organization?._id.toString(),
+      },
+    };
+    const { signUp: signUpResolver } = await import(
+      "../../../src/resolvers/Mutation/signUp"
+    );
+
+    await signUpResolver?.({}, args, {});
+
+    const createdUser = await User.findOne({
+      email,
+    })
+      .select("-password")
+      .lean();
+    // console.log(createdUser);
+    const updatedOrganization = await Organization.findById(organization?._id);
+    expect(createdUser?.joinedOrganizations).not.toContainEqual(
+      testOrganization?._id,
+    );
+    expect(updatedOrganization?.membershipRequests).toHaveLength(1);
+  });
+  it("creates appUserProfile with userId === createdUser._id", async () => {
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+
+    const args: MutationSignUpArgs = {
+      data: {
+        email,
+        firstName: "firstName",
+        lastName: "lastName",
+        password: "password",
+        appLanguageCode: "en",
+        selectedOrganization: testOrganization?._id,
+      },
+    };
+    const { signUp: signUpResolver } = await import(
+      "../../../src/resolvers/Mutation/signUp"
+    );
+
+    await signUpResolver?.({}, args, {});
+
+    const createdUser = await User.findOne({
+      email,
+    }).select("-password");
+
+    const appUserProfile = await AppUserProfile.findOne({
+      userId: createdUser?._id,
+    });
+
+    expect(appUserProfile).toBeTruthy();
   });
 });

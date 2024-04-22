@@ -8,12 +8,19 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import {
+  AppUserProfile,
   Fund,
   FundraisingCampaign,
   User,
+  type InterfaceAppUserProfile,
   type InterfaceFundraisingCampaign,
-  AppUserProfile,
+  type InterfaceUser,
 } from "../../models";
+
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { validateDate } from "../../utilities/dateValidator";
 
@@ -34,9 +41,17 @@ import { validateDate } from "../../utilities/dateValidator";
 
 export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCampaign"] =
   async (_parent, args, context): Promise<InterfaceFundraisingCampaign> => {
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    });
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     //Checks if the current user exists
     if (!currentUser) {
@@ -47,9 +62,19 @@ export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCamp
       );
     }
 
-    const currentUserAppProfile = await AppUserProfile.findOne({
-      userId: currentUser._id,
-    }).lean();
+    let currentUserAppProfile: InterfaceAppUserProfile | null;
+    const appUserProfileFoundInCache = await findAppUserProfileCache([
+      currentUser.appUserProfileId?.toString(),
+    ]);
+    currentUserAppProfile = appUserProfileFoundInCache[0];
+    if (currentUserAppProfile === null) {
+      currentUserAppProfile = await AppUserProfile.findOne({
+        userId: currentUser._id,
+      }).lean();
+      if (currentUserAppProfile !== null) {
+        await cacheAppUserProfile([currentUserAppProfile]);
+      }
+    }
     if (!currentUserAppProfile) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -97,7 +122,7 @@ export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCamp
       .select("organizationId")
       .lean();
 
-    const currentOrgId = currentOrg?.organizationId?.toString() || "";
+    const currentOrgId = currentOrg?.organizationId?.toString();
 
     const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
       (organizationId) =>
@@ -105,10 +130,7 @@ export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCamp
     );
 
     //Checks if the user is authorized to update the fundraising campaign
-    if (
-      !currentUserIsOrgAdmin ||
-      currentUserAppProfile.isSuperAdmin === false
-    ) {
+    if (!(currentUserIsOrgAdmin || currentUserAppProfile.isSuperAdmin)) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -121,6 +143,7 @@ export const updateFundraisingCampaign: MutationResolvers["updateFundraisingCamp
       const exisitingCampaign = await FundraisingCampaign.findOne({
         name: args.data.name,
       });
+
       if (exisitingCampaign) {
         throw new errors.ConflictError(
           requestContext.translate(FUNDRAISING_CAMPAIGN_ALREADY_EXISTS.MESSAGE),

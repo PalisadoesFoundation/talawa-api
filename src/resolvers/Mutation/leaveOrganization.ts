@@ -7,10 +7,19 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceOrganization, InterfaceUser } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceOrganization,
+  InterfaceUser,
+} from "../../models";
 import { AppUserProfile, Organization, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { deleteUserFromCache } from "../../services/UserCache/deleteUserFromCache";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to leave an organization.
@@ -53,10 +62,17 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     );
   }
 
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
-
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
@@ -65,9 +81,19 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -89,7 +115,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     );
   }
   const currentUserIsOrgAdmin = organization.admins.some((admin) =>
-    new Types.ObjectId(admin).equals(currentUser._id),
+    new Types.ObjectId(admin).equals(currentUser?._id),
   );
 
   // Removes currentUser._id from admins and members lists of organzation's document.
@@ -136,7 +162,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   and returns the updated currentUser.
   */
 
-  return (await User.findOneAndUpdate(
+  const updatedUser = (await User.findOneAndUpdate(
     {
       _id: currentUser._id,
     },
@@ -152,4 +178,9 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   )
     .select(["-password"])
     .lean()) as InterfaceUser;
+  if (updatedUser) {
+    await deleteUserFromCache(updatedUser._id.toString());
+    await cacheUsers([updatedUser]);
+  }
+  return updatedUser;
 };

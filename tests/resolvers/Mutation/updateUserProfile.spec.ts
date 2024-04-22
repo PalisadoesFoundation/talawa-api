@@ -1,29 +1,30 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
+import type { Document } from "mongoose";
 import { Types } from "mongoose";
 import type { InterfaceUser } from "../../../src/models";
 import { User } from "../../../src/models";
 import type { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
+import { nanoid } from "nanoid";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   BASE_URL,
   EMAIL_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
+import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
+import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -315,6 +316,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       userId: testUser._id,
       apiRootUrl: BASE_URL,
     };
+    await deleteUserFromCache(testUser._id.toString() || "");
 
     const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
@@ -642,6 +644,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         employmentStatus: "FULL_TIME",
         gender: "FEMALE",
         maritalStatus: "SINGLE",
+        appLanguageCode: "fr",
         address: {
           city: "CityName",
           countryCode: "123",

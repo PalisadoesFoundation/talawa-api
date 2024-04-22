@@ -1,12 +1,18 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { AgendaCategoryModel, AppUserProfile, User } from "../../models";
+import { Types } from "mongoose";
 import {
   AGENDA_CATEGORY_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { Types } from "mongoose";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import { AgendaCategoryModel, AppUserProfile, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This is a resolver function for the GraphQL mutation 'deleteAgendaCategory'.
  *
@@ -25,10 +31,18 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
     const categoryId = args.id;
     const agendaCategory = await AgendaCategoryModel.findById(args.id);
 
-    const userId = context.userId;
-
     // Fetch the user to get the organization ID
-    const currentUser = await User.findById(userId);
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     // If the user is not found, throw a NotFoundError
     if (!currentUser) {
@@ -38,10 +52,19 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
-
-    const currentAppUserProfile = await AppUserProfile.findOne({
-      userId: currentUser._id,
-    }).lean();
+    let currentAppUserProfile: InterfaceAppUserProfile | null;
+    const appUserProfileFoundInCache = await findAppUserProfileCache([
+      currentUser.appUserProfileId?.toString(),
+    ]);
+    currentAppUserProfile = appUserProfileFoundInCache[0];
+    if (currentAppUserProfile === null) {
+      currentAppUserProfile = await AppUserProfile.findOne({
+        userId: currentUser._id,
+      }).lean();
+      if (currentAppUserProfile !== null) {
+        await cacheAppUserProfile([currentAppUserProfile]);
+      }
+    }
     if (!currentAppUserProfile) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -62,7 +85,15 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
       .select("organizationId")
       .lean();
 
-    const currentOrgId = currentOrg?.organizationId?.toString() || "";
+    if (!currentOrg || !currentOrg.organizationId) {
+      throw new errors.NotFoundError(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    const currentOrgId = currentOrg.organizationId?.toString();
 
     const currentUserIsOrgAdmin = currentAppUserProfile.adminFor.some(
       (organizationId) =>

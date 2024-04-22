@@ -16,6 +16,7 @@ import { eventsByOrganization } from "./eventsByOrganization";
 import { eventsByOrganizationConnection } from "./eventsByOrganizationConnection";
 import { fundsByOrganization } from "./fundsByOrganization";
 import { getAllAgendaItems } from "./getAllAgendaItems";
+import { getEventInvitesByUserId } from "./getEventInvitesByUserId";
 import { getCommunityData } from "./getCommunityData";
 import { getDonationById } from "./getDonationById";
 import { getDonationByOrgId } from "./getDonationByOrgId";
@@ -37,6 +38,7 @@ import { usersConnection } from "./usersConnection";
 import { venue } from "./venue";
 import { getEventAttendee } from "./getEventAttendee";
 import { getEventAttendeesByEventId } from "./getEventAttendeesByEventId";
+import { getVenueByOrgId } from "./getVenueByOrgId";
 
 export const Query: QueryResolvers = {
   actionItemsByEvent,
@@ -58,6 +60,7 @@ export const Query: QueryResolvers = {
   advertisementsConnection,
   getDonationByOrgId,
   getDonationByOrgIdConnection,
+  getEventInvitesByUserId,
   getlanguage,
   getPlugins,
   isSampleOrganization,
@@ -77,4 +80,5 @@ export const Query: QueryResolvers = {
   fundsByOrganization,
   getEventAttendee,
   getEventAttendeesByEventId,
+  getVenueByOrgId,
 };
