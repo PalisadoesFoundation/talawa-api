@@ -17,10 +17,14 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import {
+  createTestUserAndOrganization,
+  createTestUser,
+} from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
+let testUser2: TestUserType;
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
@@ -28,6 +32,7 @@ beforeAll(async () => {
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   testOrganization = temp[1];
+  testUser2 = await createTestUser();
 });
 
 afterAll(async () => {
@@ -97,7 +102,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
     try {
       const args: MutationUnblockUserArgs = {
         organizationId: testOrganization?.id,
-        userId: testUser?.id,
+        userId: testUser2?.id,
       };
 
       const context = {
@@ -148,7 +153,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       const args: MutationUnblockUserArgs = {
         organizationId: testOrganization?.id,
-        userId: testUser?.id,
+        userId: testUser2?.id,
       };
 
       const context = {
@@ -177,7 +182,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       },
       {
         $push: {
-          blockedUsers: testUser?._id,
+          blockedUsers: testUser2?._id,
         },
         $set: {
           userRegistrationRequired: true,
@@ -193,7 +198,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       updatedOrganization.userRegistrationRequired === true
     ) {
       const createdMembershipRequest = await MembershipRequest.create({
-        user: testUser?._id,
+        user: testUser2?._id,
         organization: testOrganization?._id,
       });
 
@@ -213,7 +218,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       await User.updateOne(
         {
-          _id: testUser?._id,
+          _id: testUser2?._id,
         },
         {
           $push: {
@@ -229,7 +234,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
     await User.updateOne(
       {
-        _id: testUser?.id,
+        _id: testUser2?.id,
       },
       {
         $push: {
@@ -240,7 +245,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
     const args: MutationUnblockUserArgs = {
       organizationId: testOrganization?.id,
-      userId: testUser?.id,
+      userId: testUser2?.id,
     };
 
     const context = {
@@ -250,7 +255,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
     const unblockUserPayload = await unblockUserResolver?.({}, args, context);
 
     const testUnblockUserPayload = await User.findOne({
-      _id: testUser?.id,
+      _id: testUser2?.id,
     })
       .select(["-password"])
       .lean();
@@ -267,7 +272,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       },
       {
         $push: {
-          blockedUsers: testUser?._id,
+          blockedUsers: testUser2?._id,
         },
         $set: {
           userRegistrationRequired: false,
@@ -288,7 +293,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         },
         {
           $push: {
-            members: testUser?._id,
+            members: testUser2?._id,
           },
         },
         {
@@ -298,7 +303,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       await User.updateOne(
         {
-          _id: testUser?._id,
+          _id: testUser2?._id,
         },
         {
           $push: {
@@ -314,7 +319,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
     await User.updateOne(
       {
-        _id: testUser?.id,
+        _id: testUser2?.id,
       },
       {
         $push: {
@@ -325,7 +330,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
     const args: MutationUnblockUserArgs = {
       organizationId: testOrganization?.id,
-      userId: testUser?.id,
+      userId: testUser2?.id,
     };
 
     const context = {
@@ -335,7 +340,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
     const unblockUserPayload = await unblockUserResolver?.({}, args, context);
 
     const testUnblockUserPayload = await User.findOne({
-      _id: testUser?.id,
+      _id: testUser2?.id,
     })
       .select(["-password"])
       .lean();
