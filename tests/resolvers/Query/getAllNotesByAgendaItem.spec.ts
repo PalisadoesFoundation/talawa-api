@@ -9,7 +9,7 @@ import {
 } from "../../../src/models";
 import { getAllNotesForAgendaItem } from "../../../src/resolvers/Query/getAllNotesForAgendaItem";
 import { connect, disconnect } from "../../helpers/db";
-import type { TestOrganizationType} from "../../helpers/userAndOrg";
+import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import type { TestUserType } from "../../helpers/user";
 import type { TestNoteType } from "../../helpers/note";
