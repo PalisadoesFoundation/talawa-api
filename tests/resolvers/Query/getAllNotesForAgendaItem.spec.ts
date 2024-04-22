@@ -51,7 +51,7 @@ beforeAll(async () => {
     registrants: [],
     organization: testOrganization?._id,
     creatorId: testUser?._id,
-  });
+  }); //Comment
 
   testAgendaItem = await AgendaItemModel.create({
     title: "Test Agenda Item",
