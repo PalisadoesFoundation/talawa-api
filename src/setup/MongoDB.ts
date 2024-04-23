@@ -46,6 +46,7 @@ export async function checkConnection(url: string): Promise<boolean> {
       );
     } else {
       console.log(`\nConnection to MongoDB failed. Please try again.\n`);
+      console.log(error);
     }
     return false;
   }

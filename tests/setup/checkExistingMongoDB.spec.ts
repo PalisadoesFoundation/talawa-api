@@ -1,15 +1,19 @@
-import { expect, it, describe, vi } from "vitest";
+import { expect, it, describe, vi, afterEach } from "vitest";
 import { checkConnection, checkExistingMongoDB } from "../../src/setup/MongoDB";
 import { MongoClient } from "mongodb";
 
 describe("Setup -> checkExistingMongoDB", () => {
+  afterEach(() => {
+    // Clear all mocks after each test
+    vi.restoreAllMocks();
+  });
   it("should return the first valid URL when a connection is found", async () => {
     const result = await checkExistingMongoDB();
     expect(result).toBe(process.env.MONGO_DB_URL);
   });
 
   it("should return null if MONGO_DB_URL is not set", async () => {
-    delete process.env.MONGO_DB_URL;
+    process.env.MONGO_DB_URL = "";
     const result = await checkExistingMongoDB();
     expect(result).toBeNull();
   });
@@ -54,5 +58,10 @@ describe("Setup -> checkExistingMongoDB", () => {
 
     // Check that the result is false
     expect(result).toBe(false);
+  });
+  it("should return the first valid URL when a connection is found", async () => {
+    process.env.MONGO_DB_URL = "mongodb://localhost:27017/talawa-api";
+    const result = await checkExistingMongoDB();
+    expect(result).toBe(process.env.MONGO_DB_URL);
   });
 });
