@@ -14,7 +14,7 @@ npm run typecheck
 # Throws errors if lint issues requiring manual intervention are found in code.
 npm run lint-staged
 
-# npm run gen:schema
+npm run gen:schema
 
 # Generate table of contents for markdown files in root directory
 npm run update:toc
