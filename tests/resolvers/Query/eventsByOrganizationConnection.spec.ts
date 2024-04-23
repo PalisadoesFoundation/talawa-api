@@ -66,26 +66,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> organizationsMemberConnection", () => {
-  it(`Just retrieve events with status = ACTIVE when no specific input argument is passed`, async () => {
-    const args: QueryEventsByOrganizationConnectionArgs = {
-      first: 1,
-      skip: 1,
-      where: null,
-      orderBy: null,
-    };
-    const events = await Event.find({
-      status: "ACTIVE",
-    })
-      .limit(1)
-      .skip(1)
-      .populate("creatorId", "-password")
-      .populate("admins", "-password")
-      .lean();
-
-    const eventsByOrganizationConnectionPayload =
-      await eventsByOrganizationConnectionResolver?.({}, args, {});
-    expect(eventsByOrganizationConnectionPayload).toEqual(events);
-  });
   it(`returns list of all existing events filtered by args.where ===
   { id: testEvent[1]._id, title: testEvents[1].title, description:testEvents[1].description, organization: testEvents[1].organization._id, location: testEvents[1].location}
   and sorted by ascending order of event._id if args.orderBy === 'id_ASC'`, async () => {

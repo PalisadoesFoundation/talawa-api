@@ -10,7 +10,7 @@ import type {
   InterfaceAppUserProfile,
   InterfaceUser,
 } from "../../models";
-import { AgendaItemModel, AppUserProfile, User } from "../../models";
+import { AgendaItemModel, AppUserProfile, NoteModel, User } from "../../models";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
@@ -89,6 +89,9 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
 
   // Delete the agenda item from the database
   await AgendaItemModel.deleteOne({ _id: args.id });
+
+  // Delete all related notes
+  await NoteModel.deleteMany({ agendaItemId: args.id });
 
   /*
   Remove agendaItem._id from appropriate lists
