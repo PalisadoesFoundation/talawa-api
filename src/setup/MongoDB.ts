@@ -8,23 +8,15 @@ import { MongoClient } from "mongodb";
  * @returns The function `checkExistingMongoDB` returns a promise that resolves to a string or null.
  */
 export async function checkExistingMongoDB(): Promise<string | null> {
-  const existingMongoDbUrls = [
-    process.env.MONGO_DB_URL,
-    "mongodb://localhost:27017",
-  ];
+  const existingMongoDbUrls = process.env.MONGO_DB_URL;
 
-  for (const url of existingMongoDbUrls) {
-    if (!url) {
-      continue;
-    }
-
-    const isConnected = await checkConnection(url);
-    if (isConnected) {
-      return url;
-    }
+  if (!existingMongoDbUrls) {
+    return null;
   }
-
-  return null;
+  const isConnected = await checkConnection(existingMongoDbUrls);
+  if (isConnected) {
+    return existingMongoDbUrls;
+  } else return null;
 }
 
 // Check the connection to MongoDB with the specified URL.
@@ -71,7 +63,7 @@ export async function askForMongoDBUrl(): Promise<string> {
       type: "input",
       name: "url",
       message: "Enter your MongoDB URL:",
-      default: process.env.MONGO_DB_URL,
+      default: "mongodb://localhost:27017",
     },
   ]);
 
