@@ -8,7 +8,6 @@ import type { Document } from "mongoose";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUser } from "./user";
 import { Types } from "mongoose";
-// import { TestEventType, createTestEvent } from "./events";
 
 export type TestAgendaItemType = InterfaceAgendaItem & Document;
 

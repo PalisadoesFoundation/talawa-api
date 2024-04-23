@@ -40,3 +40,4 @@ export * from "./SampleData";
 export * from "./TagUser";
 export * from "./Venue";
 export * from "./User";
+export * from "./Note";

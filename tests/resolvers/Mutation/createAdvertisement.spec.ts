@@ -64,7 +64,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       const args: MutationCreateAdvertisementArgs = {
         input: {
           name: "myad",
-          organizationId: "sdfghj456789",
+          organizationId: new Types.ObjectId().toString(),
           type: "POPUP",
           mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
           startDate: "2023-10-08T13:02:29.000Z",
