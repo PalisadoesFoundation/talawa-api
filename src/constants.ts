@@ -538,6 +538,23 @@ export const AGENDA_SECTION_NOT_FOUND_ERROR = {
   MESSAGE: "agendaSection.notFound",
   PARAM: "agendaSection",
 };
+export const NOTE_NOT_FOUND_ERROR = {
+  MESSAGE: "Error: Note not found",
+  CODE: "note.notFound",
+  PARAM: "noteValidation",
+};
+
+export const UNAUTHORIZED_REMOVE_NOTE_ERROR = {
+  MESSAGE: "Error: Unauthorized to remove note",
+  CODE: "note.unauthorizedRemove",
+  PARAM: "noteRemovalValidation",
+};
+
+export const UNAUTHORIZED_UPDATE_NOTE_ERROR = {
+  MESSAGE: "Error: Unauthorized to update note",
+  CODE: "note.unauthorizedUpdate",
+  PARAM: "noteUpdateValidation",
+};
 
 export const USER_NOT_FOUND_ERROR = {
   DESC: "User not found",

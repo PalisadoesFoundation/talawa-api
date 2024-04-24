@@ -115,7 +115,7 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
     );
 
     // Checks whether the user is admin of the organization or not.
-    if (!currentUserIsOrgAdmin || !currentUserAppProfile.isSuperAdmin) {
+    if (!(currentUserIsOrgAdmin || currentUserAppProfile.isSuperAdmin)) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,

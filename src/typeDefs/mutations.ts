@@ -117,6 +117,8 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
+    createNote(data: NoteInput!): Note! @auth
+
     createPlugin(
       pluginName: String!
       pluginCreatedBy: String!
@@ -138,9 +140,11 @@ export const mutations = gql`
 
     deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
 
-    deleteAgendaCategory(id: ID!): ID!
+    deleteAgendaCategory(id: ID!): ID! @auth
 
     deleteDonationById(id: ID!): DeletePayload!
+
+    deleteNote(id: ID!): ID! @auth
 
     deleteVenue(id: ID!): Venue @auth
 
@@ -329,6 +333,8 @@ export const mutations = gql`
       data: UpdateOrganizationInput
       file: String
     ): Organization! @auth
+
+    updateNote(id: ID!, data: UpdateNoteInput!): Note! @auth
 
     updatePluginStatus(id: ID!, orgId: ID!): Plugin!
 

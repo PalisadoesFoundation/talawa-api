@@ -89,6 +89,8 @@ const config: CodegenConfig = {
 
           Message: "../models/Message#InterfaceMessage",
 
+          Note: "../models/Note#InterfaceNote",
+
           Organization: "../models/Organization#InterfaceOrganization",
 
           Plugin: "../models/Plugin#InterfacePlugin",

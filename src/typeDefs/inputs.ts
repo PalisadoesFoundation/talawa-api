@@ -47,18 +47,16 @@ export const inputs = gql`
   }
 
   input CreateAgendaItemInput {
-    title: String!
+    title: String
     description: String
     duration: String!
     attachments: [String]
     relatedEventId: ID
     urls: [String]
-    user: String
+    users: [ID]
     categories: [ID]
     sequence: Int!
-    itemType: ItemType!
     organizationId: ID!
-    isNote: Boolean!
   }
 
   input UpdateAgendaItemInput {
@@ -69,11 +67,9 @@ export const inputs = gql`
     relatedEvent: ID
     updatedBy: ID!
     urls: [String]
-    user: String
+    users: [ID]
     categories: [ID]
     sequence: Int
-    itemType: ItemType
-    isNote: Boolean
   }
 
   input ActionItemWhereInput {
@@ -266,6 +262,16 @@ export const inputs = gql`
   input MessageChatInput {
     message: String!
     receiver: ID!
+  }
+
+  input NoteInput {
+    content: String!
+    agendaItemId: ID!
+  }
+
+  input UpdateNoteInput {
+    content: String
+    updatedBy: ID!
   }
 
   input OrganizationInput {
