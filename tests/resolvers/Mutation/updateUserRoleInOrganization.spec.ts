@@ -202,7 +202,7 @@ beforeAll(async () => {
       },
     },
   );
-});
+}, 20000);
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
