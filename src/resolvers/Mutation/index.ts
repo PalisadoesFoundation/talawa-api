@@ -120,6 +120,9 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
+import { createNote } from "./createNote";
+import { deleteNote } from "./deleteNote";
+import { updateNote } from "./updateNote";
 
 export const Mutation: MutationResolvers = {
   acceptMembershipRequest,
@@ -159,6 +162,7 @@ export const Mutation: MutationResolvers = {
   createGroupChat,
   createMessageChat,
   createOrganization,
+  createNote,
   createPlugin,
   createPost,
   createSampleOrganization,
@@ -168,6 +172,7 @@ export const Mutation: MutationResolvers = {
   deleteDonationById,
   deleteAdvertisement,
   deleteVenue,
+  deleteNote,
   editVenue,
   deleteAgendaCategory,
   forgotPassword,
@@ -225,6 +230,7 @@ export const Mutation: MutationResolvers = {
   updateAgendaCategory,
   updateAgendaItem,
   updateAgendaSection,
+  updateNote,
   updateCommunity,
   updateEvent,
   updateEventVolunteer,
