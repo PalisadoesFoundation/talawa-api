@@ -230,6 +230,9 @@ jobs:
         uses: juliangruber/sleep-action@v2
         with:
           time: 10s
+      
+      - name: Create a videos directory
+        run: mkdir -p videos
 
       - name: Run the tests
         run: npm run test
