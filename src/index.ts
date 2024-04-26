@@ -121,7 +121,7 @@ async function startServer(): Promise<void> {
 
   // Modified server startup
   await new Promise<void>((resolve) =>
-    httpServer.listen({ port: 4000 }, resolve),
+    httpServer.listen({ port: process.env.SERVER_PORT }, resolve),
   );
 
   // Log all the configuration related issues
@@ -130,9 +130,11 @@ async function startServer(): Promise<void> {
   logger.info(
     `🚀 Server ready at ${
       process.env.NODE_ENV === "production" ? "https" : "http"
-    }://localhost:4000/graphql`,
+    }://localhost:${process.env.SERVER_PORT}/graphql`,
   );
-  logger.info(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
+  logger.info(
+    `🚀 Subscription endpoint ready at ws://localhost:${process.env.SERVER_PORT}/graphql`,
+  );
 }
 
 startServer();

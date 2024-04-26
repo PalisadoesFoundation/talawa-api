@@ -144,6 +144,7 @@ This will setup the repository and the code files locally for you. For more deta
 This guide provides step-by-step instructions on deploying a talawa-api using Docker. Docker allows you to package your application and its dependencies into a container, providing a consistent environment across different systems.
 
 ## Prerequisites
+
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) installed on your machine.
 
 ## Docker Compose Setup
@@ -151,37 +152,40 @@ This guide provides step-by-step instructions on deploying a talawa-api using Do
 ### For Development
 
 1. **Build and Start Development Containers:**
-    ```
-    docker-compose -f docker-compose.dev.yaml up --build
-    ```
+
+   ```
+   docker-compose -f docker-compose.dev.yaml up --build
+   ```
+
    This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
 
 2. **Access the Development Application:**
    Open your web browser and navigate to [http://localhost:4000](http://localhost:4000).
 
 3. **Stopping Development Containers:**
-    ```
-    docker-compose -f docker-compose.dev.yml down
-    ```
+   ```
+   docker-compose -f docker-compose.dev.yml down
+   ```
 
 ### For Production
 
 1. **Build and Start Production Containers:**
-    ```
-    docker-compose -f docker-compose.prod.yml up --build -d
-    ```
+
+   ```
+   docker-compose -f docker-compose.prod.yml up --build -d
+   ```
+
    This command starts the production environment in detached mode, suitable for production deployment.
 
 2. **Access the Production Application:**
    Open your web browser and navigate to [http://localhost:4001](http://localhost:4001).
 
 3. **Stopping Production Containers:**
-    ```
-    docker-compose -f docker-compose.prod.yml down
-    ```
+   ```
+   docker-compose -f docker-compose.prod.yml down
+   ```
 
 ### Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!
-
 
 **Note: If you're using Docker, you'll need to manually import the sample data after the Docker Compose has started the MongoDB container. For instructions on how to do this, refer to [Importing Sample Database](#importing-sample-database)**
 
@@ -338,6 +342,7 @@ This `.env` file must be populated with the following environment variables for 
 | Variable                     | Description                                                               |
 | ---------------------------- | ------------------------------------------------------------------------- |
 | NODE_ENV                     | Used for providing the environment in which the the talawa-api is running |
+| SERVER_PORT                  | Used for specifying the port on which the talawa-api is running           |
 | ACCESS_TOKEN_SECRET          | Used for signing/verifying JWT tokens                                     |
 | REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                                     |
 | MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database                    |

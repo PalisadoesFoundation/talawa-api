@@ -855,6 +855,20 @@ async function main(): Promise<void> {
       `Mail username already exists with the value ${process.env.MAIL_USERNAME}`,
     );
   }
+  const { serverPort } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "serverPort",
+      message: "Enter the server port:",
+      default: 4000,
+    },
+  ]);
+  if (process.env.NODE_ENV === "development") {
+    console.log("development");
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.SERVER_PORT = serverPort;
+    updateEnvVariable(config);
+  }
 
   const { shouldSetMail } = await inquirer.prompt([
     {
