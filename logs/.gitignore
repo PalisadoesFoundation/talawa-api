@@ -1,2 +1,4 @@
-# DO NOT REMOVE
-# This is required to maintain the logs/ directory in the repo
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore

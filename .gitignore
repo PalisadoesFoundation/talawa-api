@@ -25,7 +25,6 @@ videos/**
 
 # Ignore log files
 logs/**
-!logs/README.md
 *.log
 
 # Added as the documentation only refers to npm, not yarn and pnpm. 
