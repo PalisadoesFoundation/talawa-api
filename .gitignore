@@ -19,13 +19,9 @@ node_modules/**
 
 # Ignore upload directories
 image/**
-!image/.gitignore
 images/**
-!images/.gitignore
 video/**
-!video/.gitignore
 videos/**
-!videos/.gitignore
 
 # Ignore log files
 logs/**
