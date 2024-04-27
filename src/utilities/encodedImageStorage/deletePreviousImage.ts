@@ -3,10 +3,10 @@ import path from "path";
 import { EncodedImage } from "../../models/EncodedImage";
 
 export const deletePreviousImage = async (
-  imageToBeDeletedPath: string
+  imageToBeDeletedPath: string,
 ): Promise<void> => {
   const imageToBeDeleted = await EncodedImage.findOne({
-    fileName: imageToBeDeletedPath!,
+    fileName: imageToBeDeletedPath ?? "",
   });
 
   if (imageToBeDeleted?.numberOfUses === 1) {
@@ -24,6 +24,6 @@ export const deletePreviousImage = async (
       $inc: {
         numberOfUses: -1,
       },
-    }
+    },
   );
 };

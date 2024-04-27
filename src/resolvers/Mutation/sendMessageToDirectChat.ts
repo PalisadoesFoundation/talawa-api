@@ -22,32 +22,31 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
       throw new errors.NotFoundError(
         requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
         CHAT_NOT_FOUND_ERROR.CODE,
-        CHAT_NOT_FOUND_ERROR.PARAM
+        CHAT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
-    const currentUserExists = await User.exists({
+    const currentUserExists = !!(await User.exists({
       _id: context.userId,
-    });
+    }));
 
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     // directChat.users can only have 2 users. So, the following method works.
     const receiverIndex = directChat.users.findIndex(
-      (user) => user.toString() !== context.userId.toString()
+      (user) => user.toString() !== context.userId.toString(),
     );
 
     const createdDirectChatMessage = await DirectChatMessage.create({
       directChatMessageBelongsTo: directChat._id,
       sender: context.userId,
       receiver: directChat.users[receiverIndex],
-      createdAt: new Date(),
       messageContent: args.messageContent,
     });
 
@@ -60,7 +59,7 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
         $push: {
           messages: createdDirectChatMessage._id,
         },
-      }
+      },
     );
 
     // calls subscription

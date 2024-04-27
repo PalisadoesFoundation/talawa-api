@@ -1,11 +1,14 @@
 import type { FilterQuery } from "mongoose";
 import type {
+  ActionItemWhereInput,
   DonationWhereInput,
   EventWhereInput,
+  FundWhereInput,
   InputMaybe,
   OrganizationWhereInput,
   PostWhereInput,
   UserWhereInput,
+  VenueWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
 /**
@@ -29,10 +32,13 @@ export const getWhere = <T = unknown>(
             OrganizationWhereInput &
             PostWhereInput &
             UserWhereInput &
-            DonationWhereInput
+            DonationWhereInput &
+            ActionItemWhereInput &
+            FundWhereInput &
+            VenueWhereInput
         >
       >
-    | undefined
+    | undefined,
 ): FilterQuery<T> => {
   let wherePayload: FilterQuery<T> = {};
 
@@ -177,6 +183,38 @@ export const getWhere = <T = unknown>(
     wherePayload = {
       ...wherePayload,
       organization: where.organization_id,
+    };
+  }
+
+  // Returns action items belonging to a specific category
+  if (where.actionItemCategory_id) {
+    wherePayload = {
+      ...wherePayload,
+      actionItemCategoryId: where.actionItemCategory_id,
+    };
+  }
+
+  // Return action items that are active
+  if (where.is_active) {
+    wherePayload = {
+      ...wherePayload,
+      isCompleted: false,
+    };
+  }
+
+  // Return action items that are completed
+  if (where.is_completed) {
+    wherePayload = {
+      ...wherePayload,
+      isCompleted: true,
+    };
+  }
+
+  // Return action items belonging to a specific event
+  if (where.event_id) {
+    wherePayload = {
+      ...wherePayload,
+      eventId: where.event_id,
     };
   }
 
@@ -377,7 +415,6 @@ export const getWhere = <T = unknown>(
       apiUrl: regexp,
     };
   }
-
   // Returns organizations with provided visibleInSearch condition
   if (where.visibleInSearch !== undefined) {
     wherePayload = {
@@ -385,12 +422,11 @@ export const getWhere = <T = unknown>(
       visibleInSearch: where.visibleInSearch,
     };
   }
-
-  // Returns organizations with provided isPublic condition
-  if (where.isPublic !== undefined) {
+  // Returns organizations with provided userRegistrationRequired condition
+  if (where.userRegistrationRequired !== undefined) {
     wherePayload = {
       ...wherePayload,
-      isPublic: where.isPublic,
+      isPublic: where.userRegistrationRequired,
     };
   }
 
@@ -569,72 +605,72 @@ export const getWhere = <T = unknown>(
   }
 
   //Returns provided appLanguageCode user
-  if (where.appLanguageCode) {
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: where.appLanguageCode,
-    };
-  }
+  // if (where.appLanguageCode) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: where.appLanguageCode,
+  //   };
+  // }
 
-  //Returns user with not that provided appLanguageCode
-  if (where.appLanguageCode_not) {
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: {
-        $ne: where.appLanguageCode_not,
-      },
-    };
-  }
+  // //Returns user with not that provided appLanguageCode
+  // if (where.appLanguageCode_not) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: {
+  //       $ne: where.appLanguageCode_not,
+  //     },
+  //   };
+  // }
 
   // Objects appLanguageCode falls in provided list
-  if (where.appLanguageCode_in) {
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: {
-        $in: where.appLanguageCode_in,
-      },
-    };
-  }
+  // if (where.appLanguageCode_in) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: {
+  //       $in: where.appLanguageCode_in,
+  //     },
+  //   };
+  // }
 
-  // Return objects appLanguageCode not falls in the list
-  if (where.appLanguageCode_not_in) {
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: {
-        $nin: where.appLanguageCode_not_in,
-      },
-    };
-  }
+  // // Return objects appLanguageCode not falls in the list
+  // if (where.appLanguageCode_not_in) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: {
+  //       $nin: where.appLanguageCode_not_in,
+  //     },
+  //   };
+  // }
 
-  // Return objects with appLanguageCode containing provided string
-  if (where.appLanguageCode_contains) {
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: {
-        $regex: where.appLanguageCode_contains,
-        $options: "i",
-      },
-    };
-  }
+  // // Return objects with appLanguageCode containing provided string
+  // if (where.appLanguageCode_contains) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: {
+  //       $regex: where.appLanguageCode_contains,
+  //       $options: "i",
+  //     },
+  //   };
+  // }
 
-  // Returns objects with appLanguageCode starts with provided string
-  if (where.appLanguageCode_starts_with) {
-    const regexp = new RegExp("^" + where.appLanguageCode_starts_with);
-    wherePayload = {
-      ...wherePayload,
-      appLanguageCode: regexp,
-    };
-  }
+  // // Returns objects with appLanguageCode starts with provided string
+  // if (where.appLanguageCode_starts_with) {
+  //   const regexp = new RegExp("^" + where.appLanguageCode_starts_with);
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     appLanguageCode: regexp,
+  //   };
+  // }
 
-  // Return users with admin for provided organizationId
-  if (where.admin_for) {
-    wherePayload = {
-      ...wherePayload,
-      adminFor: {
-        _id: where.admin_for,
-      },
-    };
-  }
+  // // Return users with admin for provided organizationId
+  // if (where.admin_for) {
+  //   wherePayload = {
+  //     ...wherePayload,
+  //     adminFor: {
+  //       _id: where.admin_for,
+  //     },
+  //   };
+  // }
 
   if (where.event_title_contains) {
     wherePayload = {
@@ -701,6 +737,24 @@ export const getWhere = <T = unknown>(
     wherePayload = {
       ...wherePayload,
       text: regexp,
+    };
+  }
+
+  if (where.name_starts_with) {
+    const regexp = new RegExp("^" + where.name_starts_with);
+    wherePayload = {
+      ...wherePayload,
+      name: regexp,
+    };
+  }
+
+  if (where.name_contains) {
+    wherePayload = {
+      ...wherePayload,
+      name: {
+        $regex: where.name_contains,
+        $options: "i",
+      },
     };
   }
 

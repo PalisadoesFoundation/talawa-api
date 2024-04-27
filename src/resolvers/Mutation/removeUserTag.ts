@@ -1,27 +1,66 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { User, OrganizationTagUser, TagUser } from "../../models";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
   TAG_NOT_FOUND,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import {
+  AppUserProfile,
+  OrganizationTagUser,
+  TagUser,
+  User,
+} from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const removeUserTag: MutationResolvers["removeUserTag"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -34,24 +73,23 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(TAG_NOT_FOUND.MESSAGE),
       TAG_NOT_FOUND.CODE,
-      TAG_NOT_FOUND.PARAM
+      TAG_NOT_FOUND.PARAM,
     );
   }
 
   // Boolean to determine whether user is an admin of organization of the tag
-  const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.equals(tag.organizationId)
+  const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+    (organization) =>
+      organization &&
+      new Types.ObjectId(organization.toString()).equals(tag.organizationId),
   );
 
   // Checks whether currentUser cannot delete the tag folder.
-  if (
-    !(currentUser.userType === "SUPERADMIN") &&
-    !currentUserIsOrganizationAdmin
-  ) {
+  if (!currentUserAppProfile.isSuperAdmin && !currentUserIsOrganizationAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -63,7 +101,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
 
   while (currentParents.length) {
     allTagIds = allTagIds.concat(currentParents);
-    currentParents = await OrganizationTagUser.find(
+    const foundTags = await OrganizationTagUser.find(
       {
         organizationId: tag.organizationId,
         parentTagId: {
@@ -72,10 +110,10 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
       },
       {
         _id: 1,
-      }
+      },
     );
-    currentParents = currentParents
-      .map((tag) => tag._id)
+    currentParents = foundTags
+      .map((tag) => tag._id.toString())
       .filter((id: string | null) => id);
   }
 

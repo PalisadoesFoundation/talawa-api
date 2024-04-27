@@ -1,23 +1,19 @@
-import express from "express";
-import rateLimit from "express-rate-limit";
-// No type defintions available for package 'xss-clean'
-// @ts-ignore
-import xss from "xss-clean";
-import helmet from "helmet";
-import mongoSanitize from "express-mongo-sanitize";
 import cors from "cors";
-import requestLogger from "morgan";
+import express from "express";
+import mongoSanitize from "express-mongo-sanitize";
+import rateLimit from "express-rate-limit";
+import { express as voyagerMiddleware } from "graphql-voyager/middleware";
+import helmet from "helmet";
 import i18n from "i18n";
+import requestLogger from "morgan";
+import path from "path";
 import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
-import { express as voyagerMiddleware } from "graphql-voyager/middleware";
-import path from "path";
-//@ts-ignore
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
-
 const app = express();
 
 app.use(requestTracing.middleware());
+app.use(i18n.init);
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -25,6 +21,7 @@ const apiLimiter = rateLimit({
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const corsOptions: cors.CorsOptions = {
   origin: (origin, next) => {
     if (process.env.NODE_ENV === "development") {
@@ -61,15 +58,20 @@ i18n.configure({
 
 app.use(i18n.init);
 app.use(apiLimiter);
-app.use(xss());
 app.use(
   helmet({
     contentSecurityPolicy:
       process.env.NODE_ENV === "production" ? undefined : false,
-  })
+  }),
 );
 app.use(mongoSanitize());
 app.use(cors());
+
+app.use("/images", (req, res, next) => {
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  next();
+});
+
 app.use(express.json({ limit: "50mb" }));
 app.use(graphqlUploadExpress());
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -80,8 +82,8 @@ app.use(
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
     {
       stream: stream,
-    }
-  )
+    },
+  ),
 );
 
 app.use("/images", express.static(path.join(__dirname, "./../images")));
@@ -96,7 +98,7 @@ app.get("/", (req, res) =>
   res.json({
     "talawa-version": "v1",
     status: "healthy",
-  })
+  }),
 );
 
 export default app;

@@ -44,13 +44,13 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
         sender: testDirectChatMessage?.sender,
       },
     };
-    // @ts-ignore
+    // @ts-expect-error-ignore
     messageSentToDirectChatPayload.payload = payload;
-    // @ts-ignore
+    // @ts-expect-error-ignore
     const x = messageSentToDirectChatPayload?.subscribe(
       _parent,
       _args,
-      context
+      context,
     );
     expect(x).not.toBe(null);
     expect(await filterFunction(payload, context)).toBe(true);
@@ -83,13 +83,13 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
         sender: "Sender",
       },
     };
-    // @ts-ignore
+    // @ts-expect-error-ignore
     messageSentToDirectChatPayload.payload = payload;
-    // @ts-ignore
+    // @ts-expect-error-ignore
     const x = messageSentToDirectChatPayload?.subscribe(
       _parent,
       _args,
-      context
+      context,
     );
     expect(x).not.toBe(null);
     expect(await filterFunction(payload, context)).toBe(false);

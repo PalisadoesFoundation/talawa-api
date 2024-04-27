@@ -5,35 +5,37 @@ import type { MutationCreatePostArgs } from "../../../src/types/generatedGraphQL
 import { connect, disconnect } from "../../helpers/db";
 
 import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
-  LENGTH_VALIDATION_ERROR,
-  USER_NOT_AUTHORIZED_TO_PIN,
-  BASE_URL,
-} from "../../../src/constants";
-import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
   vi,
 } from "vitest";
+import {
+  BASE_URL,
+  LENGTH_VALIDATION_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_AUTHORIZED_TO_PIN,
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
+} from "../../../src/constants";
+import { AppUserProfile, Organization, Post } from "../../../src/models";
+import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import * as uploadEncodedVideo from "../../../src/utilities/encodedVideoStorage/uploadEncodedVideo";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
 import {
-  createTestUserAndOrganization,
   createTestUser,
+  createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
-import { Organization } from "../../../src/models";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
 
 let testUser: TestUserType;
-let randomUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -46,7 +48,6 @@ beforeAll(async () => {
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   testOrganization = temp[1];
-  randomUser = await createTestUser();
 });
 
 afterAll(async () => {
@@ -76,7 +77,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { createPost: createPostResolver } = await import(
@@ -84,10 +85,11 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
 
       await createPostResolver?.({}, args, context);
-    } catch (error: any) {
+      expect.fail();
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -100,7 +102,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     try {
       const args: MutationCreatePostArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           text: "",
           videoUrl: "",
           title: "",
@@ -117,15 +119,22 @@ describe("resolvers -> Mutation -> createPost", () => {
       );
 
       await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
-      );
+      expect.fail();
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
+        );
+      }
     }
   });
 
-  it(`throws USER_NOT_AUTHORIZED_TO_PIN ERROR if the user is not authorized to pin the post`, async () => {
+  it("throws error if AppUserProfile is not found", async () => {
+    const userWithoutProfileId = await createTestUser();
+    await AppUserProfile.findByIdAndDelete(
+      userWithoutProfileId?.appUserProfileId,
+    );
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -133,7 +142,44 @@ describe("resolvers -> Mutation -> createPost", () => {
     try {
       const args: MutationCreatePostArgs = {
         data: {
-          organizationId: testOrganization?._id,
+          organizationId: "",
+          text: "",
+          videoUrl: "",
+          title: "",
+        },
+      };
+
+      const context = {
+        userId: userWithoutProfileId?.id,
+      };
+
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
+      );
+
+      await createPostResolver?.({}, args, context);
+      expect.fail();
+    } catch (error: unknown) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+      );
+    }
+  });
+
+  it(`throws USER_NOT_AUTHORIZED_TO_PIN ERROR if the user is not authorized to pin the post`, async () => {
+    const organizationWithNoAdmin = await createTestUserAndOrganization(
+      true,
+      false,
+    );
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: organizationWithNoAdmin[1]?._id,
           text: "New Post Text",
           videoUrl: "http://dummyURL.com/",
           title: "New Post Title",
@@ -143,26 +189,69 @@ describe("resolvers -> Mutation -> createPost", () => {
       };
 
       const context = {
-        userId: randomUser?.id,
+        userId: organizationWithNoAdmin[0]?.id,
       };
 
+      expect(args.data.pinned).toBe(true);
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
 
       await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`
+      expect.fail();
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`,
+        );
+      }
+    }
+  });
+
+  it("throws error if user is not member of the organization and is not superadmin", async () => {
+    const organizationWithNoMember = await createTestUserAndOrganization(false);
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: organizationWithNoMember[1]?._id,
+          text: "New Post Text",
+          videoUrl: "http://dummyURL.com/",
+          title: "New Post Title",
+          imageUrl: "http://dummyURL.com/image/",
+          pinned: true,
+        },
+      };
+
+      const context = {
+        userId: organizationWithNoMember[0]?.id,
+      };
+
+      expect(args.data.pinned).toBe(true);
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
       );
+
+      await createPostResolver?.({}, args, context);
+      expect.fail();
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE}`,
+        );
+      }
     }
   });
 
   it(`pinned post should be successfully added to the organization`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
 
     const args: MutationCreatePostArgs = {
@@ -179,17 +268,19 @@ describe("resolvers -> Mutation -> createPost", () => {
       userId: testUser?.id,
     };
 
+    expect(args.data.pinned).toBe(true);
+
     const { createPost: createPostResolver } = await import(
       "../../../src/resolvers/Mutation/createPost"
     );
     const createdPost = await createPostResolver?.({}, args, context);
-
     expect(createdPost).toEqual(
       expect.objectContaining({
         text: "New Post Text",
         videoUrl: null, // Update the expected value to match the received value
         title: "New Post Title",
-      })
+        pinned: true,
+      }),
     );
 
     const updatedTestOrg = await Organization.findOne({
@@ -199,17 +290,18 @@ describe("resolvers -> Mutation -> createPost", () => {
     expect(
       updatedTestOrg?.pinnedPosts
         .map((id) => id.toString())
-        .includes(createdPost?._id.toString())
+        .includes(createdPost?._id.toString()),
     ).toBeTruthy();
   });
 
-  it(`creates the post and returns it when image is not provided`, async () => {
+  it(`creates the post and returns it when image or video is not provided`, async () => {
     const args: MutationCreatePostArgs = {
       data: {
         organizationId: testOrganization?.id,
         text: "text",
         videoUrl: "videoUrl",
         title: "title",
+        pinned: true,
       },
     };
 
@@ -217,21 +309,100 @@ describe("resolvers -> Mutation -> createPost", () => {
       userId: testUser?.id,
     };
 
+    expect(args.data.pinned).toBe(true);
+
     const { createPost: createPostResolver } = await import(
       "../../../src/resolvers/Mutation/createPost"
     );
 
     const createPostPayload = await createPostResolver?.({}, args, context);
+    expect(createPostPayload?.pinned).toBe(true);
 
     expect(createPostPayload).toEqual(
       expect.objectContaining({
         title: "title",
         videoUrl: null, // Update the expected value to match the received value
-        creator: testUser?._id,
+        creatorId: testUser?._id,
         organization: testOrganization?._id,
         imageUrl: null,
-      })
+      }),
     );
+  });
+
+  it(`creates the post and and returns it when an image is provided`, async () => {
+    const args: MutationCreatePostArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        text: "text",
+        title: "title",
+        pinned: true,
+      },
+      file: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZSURBVBhXYzxz5sx/BiBgefLkCQMbGxsDAEdkBicg9wbaAAAAAElFTkSuQmCC", // Provide a supported file type
+    };
+
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL,
+    );
+
+    const context = {
+      userId: testUser?.id,
+      apiRootUrl: BASE_URL,
+    };
+
+    expect(args.data.pinned).toBe(true);
+
+    const createPostPayload = await createPostResolverImage?.(
+      {},
+      args,
+      context,
+    );
+    expect(createPostPayload?.pinned).toBe(true);
+
+    const testCreatePostPayload = await Post.findOne({
+      _id: createPostPayload?._id,
+      imageUrl: { $ne: null },
+    }).lean();
+
+    //Ensures that the post is created and imageUrl is not null
+    expect(testCreatePostPayload).not.toBeNull();
+  });
+
+  it(`creates the post and and returns it when a video is provided`, async () => {
+    const args: MutationCreatePostArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        text: "text",
+        title: "title",
+        pinned: true,
+      },
+      file: "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE", // Provide a supported file type
+    };
+
+    vi.spyOn(uploadEncodedVideo, "uploadEncodedVideo").mockImplementation(
+      async (uploadEncodedVideo: string) => uploadEncodedVideo,
+    );
+
+    const context = {
+      userId: testUser?.id,
+      apiRootUrl: BASE_URL,
+    };
+
+    expect(args.data.pinned).toBe(true);
+
+    const createPostPayload = await createPostResolverImage?.(
+      {},
+      args,
+      context,
+    );
+    expect(createPostPayload?.pinned).toBe(true);
+
+    const testCreatePostPayload = await Post.findOne({
+      _id: createPostPayload?._id,
+      videoUrl: { $ne: null },
+    }).lean();
+
+    //Ensures that the post is created and videoUrl is not null
+    expect(testCreatePostPayload).not.toBeNull();
   });
 
   it(`creates the post and throws an error for unsupported file type`, async () => {
@@ -241,6 +412,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         text: "text",
         videoUrl: "videoUrl",
         title: "title",
+        pinned: true,
       },
       file: "unsupportedFile.txt", // Provide an unsupported file type
     };
@@ -250,23 +422,25 @@ describe("resolvers -> Mutation -> createPost", () => {
       apiRootUrl: BASE_URL,
     };
 
+    expect(args.data.pinned).toBe(true);
+
     // Mock the uploadEncodedImage function to throw an error for unsupported file types
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
       () => {
         throw new Error("Unsupported file type.");
-      }
+      },
     );
 
     // Ensure that an error is thrown when createPostResolverImage is called
     await expect(
-      createPostResolverImage?.({}, args, context)
+      createPostResolverImage?.({}, args, context),
     ).rejects.toThrowError("Unsupported file type.");
   });
 
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationCreatePostArgs = {
@@ -277,28 +451,32 @@ describe("resolvers -> Mutation -> createPost", () => {
           title:
             "AfGtN9o7IJXH9Xr5P4CcKTWMVWKOOHTldleLrWfZcThgoX5scPE5o0jARvtVA8VhneyxXquyhWb5nluW2jtP0Ry1zIOUFYfJ6BUXvpo4vCw4GVleGBnoKwkFLp5oW9L8OsEIrjVtYBwaOtXZrkTEBySZ1prr0vFcmrSoCqrCTaChNOxL3tDoHK6h44ChFvgmoVYMSq3IzJohKtbBn68D9NfEVMEtoimkGarUnVBAOsGkKv0mIBJaCl2pnR8Xwq1cG1",
           imageUrl: null,
+          pinned: true,
         },
       };
 
       const context = {
         userId: testUser?.id,
       };
-
+      expect(args.data.pinned).toBe(true);
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
 
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
-      );
+      const createdPost = await createPostResolver?.({}, args, context);
+      expect(createdPost?.pinned).toBe(true);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
+        );
+      }
     }
   });
   it(`throws String Length Validation error if text is greater than 500 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message
+      (message) => message,
     );
     try {
       const args: MutationCreatePostArgs = {
@@ -308,6 +486,7 @@ describe("resolvers -> Mutation -> createPost", () => {
           videoUrl: "",
           title: "random",
           imageUrl: null,
+          pinned: true,
         },
       };
 
@@ -315,15 +494,119 @@ describe("resolvers -> Mutation -> createPost", () => {
         userId: testUser?.id,
       };
 
+      expect(args.data.pinned).toBe(true);
+
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
 
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
+      const createdPost = await createPostResolver?.({}, args, context);
+      expect(createdPost?.pinned).toBe(true);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
+        );
+      }
+    }
+  });
+
+  it("throws an error if the user tries to create a post but post is not pinned", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => message,
+    );
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: testOrganization?._id,
+          text: "text",
+          pinned: false,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      expect(args.data.pinned).toBe(false);
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
       );
+      const createdPost = await createPostResolver?.({}, args, context);
+      expect(createdPost?.pinned).toBe(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `Cannot create post when pinned is false`,
+        );
+      }
+    }
+  });
+
+  it("throws error if title is provided and post is not pinned", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => message,
+    );
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: testOrganization?._id,
+          title: "Test title",
+          text: "Test text",
+          pinned: false,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      expect(args.data.pinned).toBe(false);
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
+      );
+      const createdPost = await createPostResolver?.({}, args, context);
+      expect(createdPost?.pinned).toBe(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(
+          `Post needs to be pinned inorder to add a title`,
+        );
+      }
+    }
+  });
+
+  it("throws error if title is not provided and post is pinned", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => message,
+    );
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: testOrganization?._id,
+          title: "",
+          text: "Test text",
+          pinned: true,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+      expect(args.data.pinned).toBe(true);
+
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
+      );
+      const createPost = await createPostResolver?.({}, args, context);
+      expect(createPost?.pinned).toBe(true);
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(`Please provide a title to pin post`);
+      }
     }
   });
 });

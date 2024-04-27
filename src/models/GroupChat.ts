@@ -3,6 +3,7 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceGroupChatMessage } from "./GroupChatMessage";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface representing a document for a group chat in the database(MongoDB).
  */
@@ -11,7 +12,9 @@ export interface InterfaceGroupChat {
   title: string;
   users: PopulatedDoc<InterfaceUser & Document>[];
   messages: PopulatedDoc<InterfaceGroupChatMessage & Document>[];
-  creator: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
+  createdAt: Date;
+  updatedAt: Date;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
 }
@@ -20,45 +23,54 @@ export interface InterfaceGroupChat {
  * @param title - Title
  * @param users - Users of the chat
  * @param messages - Message of the chat
- * @param creator - Creator of the chat
+ * @param creatorId - Creator of the chat
+ * @param createdAt - Timestamp of creation
+ * @param updatedAt - Timestamp of updation
  * @param organization - Organization
  * @param status - Status
  */
-const groupChatSchema = new Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  users: [
-    {
+const groupChatSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    users: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
+    messages: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "GroupChatMessage",
+      },
+    ],
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-  ],
-  messages: [
-    {
+    organization: {
       type: Schema.Types.ObjectId,
-      ref: "GroupChatMessage",
+      ref: "Organization",
+      required: true,
     },
-  ],
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
   },
-  organization: {
-    type: Schema.Types.ObjectId,
-    ref: "Organization",
-    required: true,
+  {
+    timestamps: true,
   },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-});
+);
+
+createLoggingMiddleware(groupChatSchema, "GroupChat");
 
 const groupChatModel = (): Model<InterfaceGroupChat> =>
   model<InterfaceGroupChat>("GroupChat", groupChatSchema);

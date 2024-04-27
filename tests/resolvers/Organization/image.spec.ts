@@ -44,13 +44,13 @@ describe("resolvers -> Organization -> image", () => {
       },
       {
         $set: {
-          creator: testUser?._id,
+          creatorId: testUser?._id,
           image: "/test/image.png",
         },
       },
       {
         new: true,
-      }
+      },
     );
 
     const parent = testOrganization?.toObject();
@@ -76,13 +76,13 @@ describe("resolvers -> Organization -> image", () => {
       },
       {
         $set: {
-          creator: testUser?._id,
+          creatorId: testUser?._id,
           image: null,
         },
       },
       {
         new: true,
-      }
+      },
     );
 
     const parent = testOrganization?.toObject();

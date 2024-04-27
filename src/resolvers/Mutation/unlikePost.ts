@@ -1,10 +1,10 @@
 import { POST_NOT_FOUND_ERROR } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfacePost } from "../../models";
 import { Post } from "../../models";
-import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
+import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to unlike a post.
  * @param _parent - parent of current request
@@ -18,7 +18,7 @@ import { cachePosts } from "../../services/PostCache/cachePosts";
 export const unlikePost: MutationResolvers["unlikePost"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let post: InterfacePost | null;
 
@@ -39,12 +39,12 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
       POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM
+      POST_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const currentUserHasLikedPost = post.likedBy.some((liker) =>
-    liker.equals(context.userId)
+    liker.equals(context.userId),
   );
 
   if (currentUserHasLikedPost === true) {
@@ -62,14 +62,14 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     if (updatedPost !== null) {
       await cachePosts([updatedPost]);
     }
 
-    return updatedPost!;
+    return updatedPost;
   }
 
   return post;

@@ -1,18 +1,32 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Post, Organization } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import mongoose from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
+  PLEASE_PROVIDE_TITLE,
+  POST_NEEDS_TO_BE_PINNED,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
 import { isValidString } from "../../libraries/validators/validateString";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceOrganization,
+  InterfaceUser,
+} from "../../models";
+import { AppUserProfile, Organization, Post, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cachePosts } from "../../services/PostCache/cachePosts";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
-import { cachePosts } from "../../services/PostCache/cachePosts";
 /**
  * This function enables to create a post.
  * @param _parent - parent of current request
@@ -21,24 +35,54 @@ import { cachePosts } from "../../services/PostCache/cachePosts";
  * @remarks The following checks are done:
  * 1. If the user exists
  * 2. If the organization exists
+ * 3. If the user has appUserProfile
  * @returns Created Post
  */
 export const createPost: MutationResolvers["createPost"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Get the current user
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -55,7 +99,7 @@ export const createPost: MutationResolvers["createPost"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    await cacheOrganizations([organization as InterfaceOrganization]);
   }
 
   // Checks whether organization with _id == args.data.organizationId exists.
@@ -63,7 +107,21 @@ export const createPost: MutationResolvers["createPost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  const isSuperAdmin = currentUserAppProfile.isSuperAdmin;
+  const currentUserIsOrganizationMember = organization.members.some(
+    (memberId) =>
+      new mongoose.Types.ObjectId(memberId?.toString()).equals(context.userId),
+  );
+
+  if (!currentUserIsOrganizationMember && !isSuperAdmin) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
+      USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
+      USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
     );
   }
 
@@ -81,6 +139,19 @@ export const createPost: MutationResolvers["createPost"] = async (
     }
   }
 
+  // Check title and pinpost
+  if (args.data?.title && !args.data.pinned) {
+    throw new errors.InputValidationError(
+      requestContext.translate(POST_NEEDS_TO_BE_PINNED.MESSAGE),
+      POST_NEEDS_TO_BE_PINNED.CODE,
+    );
+  } else if (!args.data?.title && args.data.pinned) {
+    throw new errors.InputValidationError(
+      requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
+      PLEASE_PROVIDE_TITLE.CODE,
+    );
+  }
+
   // Checks if the recieved arguments are valid according to standard input norms
   if (args.data?.title && args.data?.text) {
     const validationResultTitle = isValidString(args.data?.title, 256);
@@ -88,37 +159,38 @@ export const createPost: MutationResolvers["createPost"] = async (
     if (!validationResultTitle.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
     if (!validationResultText.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
         ),
-        LENGTH_VALIDATION_ERROR.CODE
+        LENGTH_VALIDATION_ERROR.CODE,
       );
     }
   }
 
   if (args.data.pinned) {
     // Check if the user has privileges to pin the post
-    const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-      (organizationId) => organizationId.equals(args.data.organizationId)
+    const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+      (organizationId) =>
+        new mongoose.Types.ObjectId(organizationId?.toString()).equals(
+          args.data.organizationId,
+        ),
     );
-    if (currentUser?.userType) {
-      if (
-        !(currentUser?.userType === "SUPERADMIN") &&
-        !currentUserIsOrganizationAdmin
-      ) {
-        throw new errors.UnauthorizedError(
-          requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
-          USER_NOT_AUTHORIZED_TO_PIN.CODE,
-          USER_NOT_AUTHORIZED_TO_PIN.PARAM
-        );
-      }
+
+    if (
+      !(currentUserAppProfile.isSuperAdmin || currentUserIsOrganizationAdmin)
+    ) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
+        USER_NOT_AUTHORIZED_TO_PIN.CODE,
+        USER_NOT_AUTHORIZED_TO_PIN.PARAM,
+      );
     }
   }
 
@@ -126,7 +198,7 @@ export const createPost: MutationResolvers["createPost"] = async (
   const createdPost = await Post.create({
     ...args.data,
     pinned: args.data.pinned ? true : false,
-    creator: context.userId,
+    creatorId: context.userId,
     organization: args.data.organizationId,
     imageUrl: uploadImageFileName,
     videoUrl: uploadVideoFileName,
@@ -147,10 +219,10 @@ export const createPost: MutationResolvers["createPost"] = async (
       },
       {
         new: true,
-      }
+      },
     );
 
-    await cacheOrganizations([updatedOrganizaiton!]);
+    await cacheOrganizations([updatedOrganizaiton as InterfaceOrganization]);
   }
 
   // Returns createdPost.

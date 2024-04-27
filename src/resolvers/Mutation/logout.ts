@@ -1,5 +1,5 @@
+import { AppUserProfile } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
 
 /**
  * This function enables logout.
@@ -13,18 +13,18 @@ import { User } from "../../models";
 export const logout: MutationResolvers["logout"] = async (
   _parent,
   _args,
-  context
+  context,
 ) => {
   // Sets token field of currentUser with _id === context.userId to null.
-  await User.updateOne(
+  await AppUserProfile.updateOne(
     {
-      _id: context.userId,
+      userId: context.userId,
     },
     {
       $set: {
         token: null,
       },
-    }
+    },
   );
 
   // Returns true if the operation is successful.

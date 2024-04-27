@@ -61,14 +61,16 @@ describe("resolvers -> Mutation -> addLanguageTranslation", () => {
   for language with en === args.data.en_value`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
     try {
       const args: MutationAddLanguageTranslationArgs = testArgs[1];
 
       await addLanguageTranslationResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(`Translated translation.alreadyPresent`);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated translation.alreadyPresent`,
+      );
     }
   });
 
@@ -93,7 +95,7 @@ describe("resolvers -> Mutation -> addLanguageTranslation", () => {
             value: testArgs[2].data.translation_value,
           }),
         ]),
-      })
+      }),
     );
   });
 });

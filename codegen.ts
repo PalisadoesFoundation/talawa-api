@@ -25,11 +25,26 @@ const config: CodegenConfig = {
         // functionality is useful because what we retrieve from the database and what we choose to return from a graphql server
         // could be completely different fields. Address to models here is relative to the location of generated types.
         mappers: {
+          ActionItem: "../models/ActionItem#InterfaceActionItem",
+
+          ActionItemCategory:
+            "../models/ActionItemCategory#InterfaceActionItemCategory",
+          AppUserProfile: "../models/AppUserProfile#InterfaceAppUserProfile",
+          AgendaCategory: "../models/AgendaCategory#InterfaceAgendaCategory",
+
+          Advertisement: "../models/Advertisement#InterfaceAdvertisement",
+
+          AgendaItem: "../models/AgendaItem#InterfaceAgendaItem",
+
+          AgendaSection: "../models/AgendaSection#InterfaceAgendaSection",
+
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
           MessageChat: "../models/MessageChat#InterfaceMessageChat",
 
           Comment: "../models/Comment#InterfaceComment",
+
+          Community: "../models/Community#InterfaceCommunity",
 
           DirectChat: "../models/DirectChat#InterfaceDirectChat",
 
@@ -42,9 +57,19 @@ const config: CodegenConfig = {
 
           EventAttendee: "../models/EventAttendee#InterfaceEventAttendee",
 
-          EventProject: "../models/EventProject#InterfaceEventProject",
+          UserFamily: "../models/userFamily#InterfaceUserFamily",
+
+          EventVolunteer: "../models/EventVolunteer#InterfaceEventVolunteer",
+
+          EventVolunteerGroup:
+            "../models/EventVolunteerGroup#InterfaceEventVolunteerGroup",
 
           Feedback: "../models/Feedback#InterfaceFeedback",
+          Fund: "../models/Fund#InterfaceFund",
+          FundraisingCampaign:
+            "../models/FundraisingCampaign#InterfaceFundraisingCampaign",
+          FundraisingCampaignPledge:
+            "../models/FundraisingCampaignPledge#InterfaceFundraisingCampaignPledges",
 
           // File: '../models/File#InterfaceFile',
 
@@ -64,6 +89,8 @@ const config: CodegenConfig = {
 
           Message: "../models/Message#InterfaceMessage",
 
+          Note: "../models/Note#InterfaceNote",
+
           Organization: "../models/Organization#InterfaceOrganization",
 
           Plugin: "../models/Plugin#InterfacePlugin",
@@ -72,11 +99,13 @@ const config: CodegenConfig = {
 
           Post: "../models/Post#InterfacePost",
 
-          Task: "../models/Task#InterfaceTask",
+          RecurrenceRule: "../models/RecurrenceRule#InterfaceRecurrenceRule",
 
           UserTag: "../models/OrganizationTagUser#InterfaceOrganizationTagUser",
 
           User: "../models/User#InterfaceUser",
+
+          Venue: "../models/Venue#InterfaceVenue",
         },
 
         useTypeImports: true,

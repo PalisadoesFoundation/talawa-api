@@ -5,13 +5,31 @@ docs/schema.json
 # Ignore redis binary dump (dump.rdb) files
 *.rdb
 
-# Miscellaneous files
+# No node modules
+node_modules/**
 
-node_modules
+# No editor related files
 .idea
-.env
-images
 .vscode
+*.swp
+
+# Don't upload configuration files
+.env
+.env_test
+
+# Ignore uploads
+image/**
+images/**
+video/**
+videos/**
+
+# Ignore log files
+logs/*
+!logs/README.md
+*.log
+
+# Don't ignore any .gitignore files in any location
+!.gitignore
 
 # Added as the documentation only refers to npm, not yarn and pnpm. 
 yarn.lock
@@ -26,8 +44,6 @@ serviceAccountKey.json
 cert.pem
 key.pem
 csr.pem
-# Added FNM configuration files
-.node-version
 
 # MacOS
 

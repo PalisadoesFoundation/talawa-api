@@ -1,28 +1,29 @@
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
+import { makeExecutableSchema } from "@graphql-tools/schema";
 import "dotenv/config"; // Pull all the environment variables from .env file
-import { typeDefs } from "./typeDefs";
-import { composedResolvers } from "./resolvers";
-import { WebSocketServer } from "ws";
+import fs from "fs";
+import type { GraphQLFormattedError } from "graphql";
+import depthLimit from "graphql-depth-limit";
+import { PubSub } from "graphql-subscriptions";
 import { useServer } from "graphql-ws/lib/use/ws";
-import { isAuth } from "./middleware";
-import * as database from "./db";
 import http from "http";
 import https from "https";
-import fs from "fs";
-import { makeExecutableSchema } from "@graphql-tools/schema";
-import { PubSub } from "graphql-subscriptions";
+import path from "path";
+import { WebSocketServer } from "ws";
 import app from "./app";
 import { logIssues } from "./checks";
-import depthLimit from "graphql-depth-limit";
+import loadPlugins from "./config/plugins/loadPlugins";
+import * as database from "./db";
 import authDirectiveTransformer from "./directives/directiveTransformer/authDirectiveTransformer";
 import roleDirectiveTransformer from "./directives/directiveTransformer/roleDirectiveTransformer";
 import { logger } from "./libraries";
-import { ApolloServer } from "@apollo/server";
-import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
-import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
-import { expressMiddleware } from "@apollo/server/express4";
-import loadPlugins from "./config/plugins/loadPlugins";
-import path from "path";
-const pubsub = new PubSub();
+import { isAuth } from "./middleware";
+import { composedResolvers } from "./resolvers";
+import { typeDefs } from "./typeDefs";
+export const pubsub = new PubSub();
 
 // defines schema
 let schema = makeExecutableSchema({
@@ -41,26 +42,24 @@ const httpServer =
   process.env.NODE_ENV === "production"
     ? https.createServer(
         {
-          //@ts-ignore
           key: fs.readFileSync(path.join(__dirname, "../key.pem")),
           cert: fs.readFileSync(path.join(__dirname, "../cert.pem")),
         },
         // :{}
-        app
+        app,
       )
     : http.createServer(app);
 
 const server = new ApolloServer({
   schema,
   formatError: (
-    error: any
+    error: GraphQLFormattedError,
   ): { message: string; status: number; data: string[] } => {
-    if (!error.originalError) {
-      return error;
-    }
     const message = error.message ?? "Something went wrong !";
-    const data = error.originalError.errors ?? [];
-    const code = error.originalError.code ?? 422;
+
+    const data: string[] = (error.extensions?.errors as string[]) ?? [];
+    const code: number = (error.extensions?.code as number) ?? 422;
+
     logger.error(message, error);
     return {
       message,
@@ -68,7 +67,7 @@ const server = new ApolloServer({
       data,
     };
   },
-  validationRules: [depthLimit(5)],
+  validationRules: [depthLimit(6)],
   csrfPrevention: true,
   cache: "bounded",
   plugins: [
@@ -99,7 +98,7 @@ const wsServer = new WebSocketServer({
 const serverCleanup = useServer(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   { schema, context: (_ctx, _msg, _args) => ({ pubsub }) },
-  wsServer
+  wsServer,
 );
 
 async function startServer(): Promise<void> {
@@ -117,12 +116,12 @@ async function startServer(): Promise<void> {
         pubsub,
         apiRootUrl: `${req.protocol}://${req.get("host")}/`,
       }),
-    })
+    }),
   );
 
   // Modified server startup
   await new Promise<void>((resolve) =>
-    httpServer.listen({ port: 4000 }, resolve)
+    httpServer.listen({ port: 4000 }, resolve),
   );
 
   // Log all the configuration related issues
@@ -131,7 +130,7 @@ async function startServer(): Promise<void> {
   logger.info(
     `🚀 Server ready at ${
       process.env.NODE_ENV === "production" ? "https" : "http"
-    }://localhost:4000/graphql`
+    }://localhost:4000/graphql`,
   );
   logger.info(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
 }

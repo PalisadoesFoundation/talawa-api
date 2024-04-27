@@ -1,14 +1,26 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Organization } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import type { UpdateQuery } from "mongoose";
+import mongoose from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceOrganization,
+  InterfaceUser,
+} from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { Types } from "mongoose";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { deleteUserFromCache } from "../../services/UserCache/deleteUserFromCache";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to leave an organization.
  * @param _parent - parent of current request
@@ -24,7 +36,7 @@ import { Types } from "mongoose";
 export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization;
 
@@ -38,8 +50,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) await cacheOrganizations([organization]);
   }
 
   // Checks whether organization exists.
@@ -47,25 +58,52 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
-
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
   const currentUserIsOrganizationMember = organization.members.some((member) =>
-    Types.ObjectId(member).equals(currentUser?._id)
+    new mongoose.Types.ObjectId(member.toString()).equals(currentUser?._id),
   );
 
   // Checks whether currentUser is not a member of organzation.
@@ -73,24 +111,47 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     throw new errors.ConflictError(
       requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
       MEMBER_NOT_FOUND_ERROR.CODE,
-      MEMBER_NOT_FOUND_ERROR.PARAM
+      MEMBER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const currentUserIsOrgAdmin = organization.admins.some((admin) =>
+    new mongoose.Types.ObjectId(admin.toString()).equals(currentUser._id),
+  );
 
   // Removes currentUser._id from admins and members lists of organzation's document.
+
+  let updateQuery: UpdateQuery<InterfaceOrganization> = {
+    $pull: {
+      members: currentUser._id,
+    },
+  };
+  if (currentUserIsOrgAdmin) {
+    await AppUserProfile.updateOne(
+      {
+        userId: currentUser._id,
+      },
+      {
+        $pull: {
+          organizations: organization._id,
+        },
+      },
+    );
+    updateQuery = {
+      $pull: {
+        members: currentUser._id,
+        admins: currentUser._id,
+      },
+    };
+  }
+
   const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization._id,
     },
-    {
-      $pull: {
-        admins: currentUser._id,
-        members: currentUser._id,
-      },
-    },
+    updateQuery,
     {
       new: true,
-    }
+    },
   );
 
   if (updatedOrganization !== null) {
@@ -100,7 +161,8 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   Removes organization._id from joinedOrganizations list of currentUser's document
   and returns the updated currentUser.
   */
-  return await User.findOneAndUpdate(
+
+  const updatedUser = (await User.findOneAndUpdate(
     {
       _id: currentUser._id,
     },
@@ -112,8 +174,13 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     },
     {
       new: true,
-    }
+    },
   )
     .select(["-password"])
-    .lean();
+    .lean()) as InterfaceUser;
+  if (updatedUser) {
+    await deleteUserFromCache(updatedUser._id.toString());
+    await cacheUsers([updatedUser]);
+  }
+  return updatedUser;
 };

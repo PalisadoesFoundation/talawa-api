@@ -1,11 +1,14 @@
-import { UserCustomData } from "../../models/UserCustomData";
-import { Organization, User } from "../../models";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceUser } from "../../models";
+import { Organization, User } from "../../models";
+import { UserCustomData } from "../../models/UserCustomData";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables a user to add data for a custom field for a joined organization.
@@ -20,16 +23,26 @@ import {
 export const addUserCustomData: MutationResolvers["addUserCustomData"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const { organizationId, dataName, dataValue } = args;
 
-  const currentUser = await User.findOne({ _id: context.userId });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -38,13 +51,13 @@ export const addUserCustomData: MutationResolvers["addUserCustomData"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   const query = {
-    userId: currentUser._id,
-    organizationId: organization._id,
+    userId: currentUser._id.toString(),
+    organizationId: organization._id.toString(),
   };
 
   let userCustomData = await UserCustomData.findOne(query);

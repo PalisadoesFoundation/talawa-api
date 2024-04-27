@@ -45,7 +45,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveUserFromGroupChatArgs = {
-        chatId: Types.ObjectId().toString(),
+        chatId: new Types.ObjectId().toString(),
         userId: "",
       };
 
@@ -57,9 +57,10 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");
 
       await removeUserFromGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.log((error as Error).message);
       expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -78,7 +79,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        }
+        },
       );
 
       const args: MutationRemoveUserFromGroupChatArgs = {
@@ -94,9 +95,11 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");
 
       await removeUserFromGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -115,7 +118,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
           $push: {
             admins: testUser?._id,
           },
-        }
+        },
       );
 
       await User.updateOne(
@@ -126,7 +129,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
           $push: {
             adminFor: testOrganization?._id,
           },
-        }
+        },
       );
 
       const args: MutationRemoveUserFromGroupChatArgs = {
@@ -142,9 +145,11 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");
 
       await removeUserFromGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -152,7 +157,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
   with _id === args.ChatId and returns the updated groupChat`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => `Translated ${message}`
+      (message) => `Translated ${message}`,
     );
 
     await GroupChat.updateOne(
@@ -163,7 +168,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         $push: {
           users: testUser?._id,
         },
-      }
+      },
     );
 
     const args: MutationRemoveUserFromGroupChatArgs = {
@@ -183,7 +188,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
     }).lean();
 
     expect(removeUserFromGroupChatPayload).toEqual(
-      testRemoveUserFromGroupChatPayload
+      testRemoveUserFromGroupChatPayload,
     );
   });
 
@@ -193,11 +198,11 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
 
-    const deletedOrgaization = await Organization.findOneAndRemove({
+    const deletedOrgaization = await Organization.findOneAndDelete({
       _id: testOrganization?._id,
     });
-
-    await deleteOrganizationFromCache(deletedOrgaization!);
+    if (deletedOrgaization)
+      await deleteOrganizationFromCache(deletedOrgaization);
 
     try {
       const args: MutationRemoveUserFromGroupChatArgs = {
@@ -213,9 +218,11 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");
 
       await removeUserFromGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 });

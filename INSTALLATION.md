@@ -4,42 +4,51 @@ This document provides instructions on how to set up and start a running instanc
 
 # Table of Contents
 
-<!-- TOC -->
+<!-- toc -->
 
 - [Prerequisites](#prerequisites)
-  - [Install Node.js](#install-nodejs)
-  - [Install Git](#install-git)
-  - [Setting Up This Repository](#setting-up-this-repository)
-  - [Install the Required Packages](#install-the-required-packages)
-- [Installation with Docker](#installation-using-docker)
+  - [Install node.js](#install-nodejs)
+  - [Install npm](#install-npm)
+  - [Install TypeScript](#install-typescript)
+  - [Install git](#install-git)
+  - [Setting up this repository](#setting-up-this-repository)
+- [Installation Using Docker](#installation-using-docker)
+  - [Prerequisites](#prerequisites-1)
+  - [Docker Compose Setup](#docker-compose-setup)
+    - [For Development](#for-development)
+    - [For Production](#for-production)
+    - [Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!](#congratulations-%F0%9F%8E%89-your-talawa-api-is-now-successfully-set-up-and-running-using-docker)
 - [Installation without Docker](#installation-without-docker)
+  - [Install the Required Packages](#install-the-required-packages)
   - [Install MongoDB](#install-mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
   - [Install Redis](#install-redis)
+    - [Performance Benefits](#performance-benefits)
     - [Setting Up Redis](#setting-up-redis)
-    - [Benchmark For Performance Benefits](#performance-benefits)
 - [Configuration](#configuration)
-  - [The .env Configuration File](#the-env-configuration-file)
-  - [Generating Token Secrets](#generating-token-secrets)
-    - [Setting up ACCESS_TOKEN_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
-      - [Linux](#linux)
-      - [Windows](#windows)
-    - [Setting up REFRESH_TOKEN_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
-  - [Configuring MongoDB](#configuring-mongodb)
-    - [Setting up the MONGODB_URL in .env file](#setting-up-the-mongodb_url-in-env-file)
-    - [Using the CLI to get the MONGODB_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
-    - [Using Microsoft Windows to get the MONGODB_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
-  - [Configuring Redis](#configuring-redis)
-    - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
-    - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
-  - [Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
-  - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
-    - [Setting up RECAPTCHA_SECRET_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
-    - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
-    - [Setting up .env SMTP Variables](#setting-up-env-smtp-variables)
-  - [Setting up Logger configurations _(optional)_](#setting-up-logger-configurations-optional)
-    - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
-    - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
+  - [Automated Configuration of `.env`](#automated-configuration-of-env)
+  - [Manual Configuration of `.env`](#manual-configuration-of-env)
+    - [The Environment Variables in `.env`](#the-environment-variables-in-env)
+    - [Changing the Development Environment in the .env file](#changing-the-development-environment-in-the-env-file)
+    - [Generating Token Secrets](#generating-token-secrets)
+      - [Setting up ACCESS_TOKEN_SECRET in the .env file](#setting-up-access_token_secret-in-the-env-file)
+        - [Linux](#linux)
+        - [Windows](#windows)
+    - [Setting up REFRESH_TOKEN_SECRET in the .env file](#setting-up-refresh_token_secret-in-the-env-file)
+    - [Configuring MongoDB in the .env file](#configuring-mongodb-in-the-env-file)
+      - [Using the CLI to get the MONGODB_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
+      - [Using Microsoft Windows to get the MONGODB_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+    - [Configuring Redis in .env file](#configuring-redis-in-env-file)
+      - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
+      - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
+    - [Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter in the .env file](#setting-up-env-last_resort_superadmin_email-parameter-in-the-env-file)
+    - [Configuring Google ReCAPTCHA in the .env file](#configuring-google-recaptcha-in-the-env-file)
+      - [Setting up the RECAPTCHA_SECRET_KEY](#setting-up-the-recaptcha_secret_key)
+      - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+    - [Setting up SMTP Email Variables in the .env File](#setting-up-smtp-email-variables-in-the-env-file)
+    - [Setting up Logger configurations](#setting-up-logger-configurations)
+      - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
+      - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
 - [Importing Sample Database](#importing-sample-database)
   - [Syntax:](#syntax)
   - [Examples:](#examples)
@@ -64,7 +73,7 @@ This document provides instructions on how to set up and start a running instanc
   - [Changing default talawa-api port](#changing-default-talawa-api-port)
 - [Testing](#testing)
 
-<!-- /TOC -->
+<!-- tocstop -->
 
 # Prerequisites
 
@@ -72,7 +81,39 @@ You will need to have copies of your code on your local system. Here's how to do
 
 ## Install node.js
 
-Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system.
+Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system ensure the installation of Node.js version 20 LTS.
+
+_**NOTE**_
+
+1. The repository has a `.node-version` file to help ensure you use the supported version of `node.js`. Do not edit this file.
+1. We strongly recommend that you configure your node version manager of choice to automatically read `.node-version` files
+
+_**NOTE**_
+
+1. The repository has a `.node-version` file to help ensure you use the supported version of `node.js`. Do not edit this file.
+1. We strongly recommend that you configure your node version manager of choice to automatically read `.node-version` files
+
+## Install npm
+
+npm is a package manager for Node.js and is installed with Node.js. npm is used to install, share, and distribute code as well as to manage dependencies in your projects. To check if you have npm installed you can run this command in your terminal:
+
+```
+npm -v
+```
+
+If you have it installed then you should see the version that's installed. If not, you can download Node.js and npm from the official [Node.js website](https://nodejs.org/en/download/).
+
+## Install TypeScript
+
+TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional types, classes, and modules to JavaScript, and supports tools for large-scale JavaScript applications.
+
+To install TypeScript, you can use npm:
+
+```bash
+npm install -g typescript
+```
+
+This command installs TypeScript globally on your system so that it can be accessed from any project.
 
 ## Install git
 
@@ -85,9 +126,9 @@ First you need a local copy of talawa-api. Run the following command in the dire
 1. Navigate to the folder where you want to setup the repository. Here, I will set it up in a folder called `talawa`.
 1. Navigate to the folder and open a terminal in this folder (you can right-click and choose appropiate option based onn your OS). Next, we'll fork and clone the `talawa-api` repository.
 1. Navigate to [https://github.com/PalisadoesFoundation/talawa-api/](hhttps://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
-   ![Image with fork](./image/install1.png)
+   ![Image with fork](public/markdown/images/install1.png)
 1. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
-   ![Image of user's clone](./image/install2.png)
+   ![Image of user's clone](public/markdown/images/install2.png)
 1. Clone the repository to your local computer (replacing the values in `{{}}`):
 
 ```
@@ -98,6 +139,56 @@ This will setup the repository and the code files locally for you. For more deta
 
 `NOTE: All the commands we're going to execute in the following instructions will assume you are in the root directory of the project. If you fail to do so, the commands will not work.`
 
+# Installation Using Docker
+
+This guide provides step-by-step instructions on deploying a talawa-api using Docker. Docker allows you to package your application and its dependencies into a container, providing a consistent environment across different systems.
+
+## Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) installed on your machine.
+
+## Docker Compose Setup
+
+### For Development
+
+1. **Build and Start Development Containers:**
+    ```
+    docker-compose -f docker-compose.dev.yaml up --build
+    ```
+   This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
+
+2. **Access the Development Application:**
+   Open your web browser and navigate to [http://localhost:4000](http://localhost:4000).
+
+3. **Stopping Development Containers:**
+    ```
+    docker-compose -f docker-compose.dev.yml down
+    ```
+
+### For Production
+
+1. **Build and Start Production Containers:**
+    ```
+    docker-compose -f docker-compose.prod.yml up --build -d
+    ```
+   This command starts the production environment in detached mode, suitable for production deployment.
+
+2. **Access the Production Application:**
+   Open your web browser and navigate to [http://localhost:4001](http://localhost:4001).
+
+3. **Stopping Production Containers:**
+    ```
+    docker-compose -f docker-compose.prod.yml down
+    ```
+
+### Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!
+
+
+**Note: If you're using Docker, you'll need to manually import the sample data after the Docker Compose has started the MongoDB container. For instructions on how to do this, refer to [Importing Sample Database](#importing-sample-database)**
+
+# Installation without Docker
+
+There are more steps, but the outcome is the same. A working Talawa-API instance.
+
 ## Install the Required Packages
 
 Install the packages required by `talawa-api` using this command:
@@ -106,41 +197,9 @@ Install the packages required by `talawa-api` using this command:
 npm install
 ```
 
-# Setting up .env file
-
-It's important to configure Talawa-API to complete it's setup.
-You can use our interactive setup script for the configuration. Use the following command for the same.
-
-```
-npm run setup
-```
-
-All the options in "setup" can be done manually as well and here's how to do it. - [The .env Configuration File](#the-env-configuration-file)
-
-# Installation Using Docker
-
-> - **Requires Docker and Docker Compose to be installed**
-> - Will start a local mongodb and redis instances
-
-Now use the following command to run docker containers -
-
-```sh
-docker compose up
-```
-
-OR
-
-```sh
-docker-compose up
-```
-
-**Note: If you're using Docker, you'll need to manually import the sample data after the Docker Compose has started the MongoDB container. For instructions on how to do this, refer to [Importing Sample Database](#importing-sample-database)**
-
-# Installation without Docker
-
 ## Install MongoDB
 
-Talawa-api makes use of `MongoDB` for its database needs. We make use of `mongoose ODM` to interact with the MongoDB database from within the code. IMPORTANT: Currently, talawa-api needs to access the retry writes feature on the database. This is only available on clusters, like MongoDB Atlas, or with a local instance with a replica set. 
+Talawa-api makes use of `MongoDB` for its database needs. We make use of `mongoose ODM` to interact with the MongoDB database from within the code.
 
 ### Setting up the mongoDB database
 
@@ -149,8 +208,6 @@ We're listing some common approaches to set up a running instance of MongoDB dat
 1. `System native database approach:` (Highly Recommended) You can install MongoDB natively on your system and create/connect to the database. Follow the setup guide on official [MongoDB Docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
 2. `Hosted database approach:` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [MongoDB Atlas Docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
 3. `Docker container approach:` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container. You can learn about docker from [Docker docs](https://docs.docker.com/).
-
-If you chose a local instance of MongoDB, follow this guidance on how to [Convert to a Replica Set](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/). Make sure your MongoDB URL in your environment file reflects the replica set.
 
 ## Install Redis
 
@@ -191,6 +248,10 @@ Talawa-api makes use of `Redis` for caching frequently accessed data items in th
      ```bash
      redis-cli
      ```
+   - **Step 6**:
+     - Use these parameters when running the setup script if you have configured the server on your local machine:
+       - Redis Host: `localhost`
+       - Redis Port: `6379` (default Redis port)
 
 2. `For Windows Users using WSL`:
 
@@ -219,9 +280,15 @@ If you'd rather not deal with the hassle of setting up WSL on your computer, the
   ```
 
 - **Step 6**: Test if Redis is running by running the Redis CLI:
+
   ```bash
   redis-cli
   ```
+
+- **Step 7**:
+  - Use these parameters when running the setup script if you have configured the server on your local machine:
+    - Redis Host: `localhost`
+    - Redis Port: `6379` (default Redis port)
 
 3. **Connecting to Redis Cloud**:
 
@@ -238,7 +305,13 @@ Remember to adjust any paths or details as needed for your specific environment.
 
 It's important to configure Talawa-API to complete it's setup.
 
-You can use our interactive setup script for the configuration. Use the following command for the same.
+A configuration file named `.env` is required in the root directory of `Talawa-API` for storing environment variables used at runtime. It is not a part of the repo and you will have to create it.
+
+## Automated Configuration of `.env`
+
+You can use our interactive setup script to populate the `.env` file using the command below.
+
+This will create a new `.env` file for you, and if one already exists, it will make the updates you require.
 
 ```
 npm run setup
@@ -246,54 +319,59 @@ npm run setup
 
 It can be done manually as well and here's how to do it.
 
-## The .env Configuration File
+## Manual Configuration of `.env`
 
-A file named `.env` is required in the root directory of talawa-api for storing environment variables used at runtime. It is not a part of the repo and you will have to create it. For a sample of `.env` file there is a file named `.env.sample` in the root directory. Create a new `.env` file by copying the contents of the `.env.sample` into `.env` file.
+**NOTE:** Use the steps below if you decided not to use the automated configuration approach.
+
+With a fresh installation, you will not see a `.env` file present. To manually create one, you will need to copy the contents of the `.env.sample` file provided to `.env`.
+
+Use this command to do this
 
 ```
 cp .env.sample .env
 ```
 
+### The Environment Variables in `.env`
+
 This `.env` file must be populated with the following environment variables for talawa-api to work:
 
-| Variable                     | Description                                            |
-| ---------------------------- | ------------------------------------------------------ |
-| NODE_ENV                     | Used for providing the environment in which the        |
-|                              | the talawa-api is running                              |
-| ACCESS_TOKEN_SECRET          | Used for signing/verifying JWT tokens                  |
-| REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                  |
-| MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database |
-| RECAPTCHA_SECRET_KEY         | Used for authentication using reCAPTCHA                |
-| RECAPTCHA_SITE_KEY           | Used for authentication using reCAPTCHA                |
-| MAIL_USERNAME                | Used for mailing service                               |
-| MAIL_PASSWORD                | Used for mailing service                               |
-| LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
-| COLORIZE_LOGS                | Used for colorized log formats in console              |
-| LOG_LEVEL                    | Used for setting the logging level                     |
-| REDIS HOST                   | Used for connecting talawa-api to the redis instance   |
-| REDIS_PORT                   | Specifies the port of the active redis-server          |
-| REDIS_PASSWORD(optional)     | Used for authenticating the connection request to      |
-|                              | a hosted redis-server                                  |
+| Variable                     | Description                                                               |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| NODE_ENV                     | Used for providing the environment in which the the talawa-api is running |
+| ACCESS_TOKEN_SECRET          | Used for signing/verifying JWT tokens                                     |
+| REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                                     |
+| MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database                    |
+| RECAPTCHA_SECRET_KEY         | Used for authentication using reCAPTCHA                                   |
+| RECAPTCHA_SITE_KEY           | Used for authentication using reCAPTCHA                                   |
+| MAIL_USERNAME                | Used for mailing service                                                  |
+| MAIL_PASSWORD                | Used for mailing service                                                  |
+| LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin                                |
+| COLORIZE_LOGS                | Used for colorized log formats in console                                 |
+| LOG_LEVEL                    | Used for setting the logging level                                        |
+| REDIS HOST                   | Used for connecting talawa-api to the redis instance                      |
+| REDIS_PORT                   | Specifies the port of the active redis-server                             |
+| REDIS_PASSWORD(optional)     | Used for authenticating the connection request to                         |
+|                              | a hosted redis-server                                                     |
 
 The following sections will show you how to configure each of these parameters.
 
-## Changing the environment of talawa-api
+### Changing the Development Environment in the .env file
 
-Change the environment from production to development:
+Change the `NODE_ENV` environment variable in the `.env` file from `production` to `development`:
 
 ```
 NODE_ENV=development
 ```
 
-## Generating Token Secrets
+### Generating Token Secrets
 
 Access and refresh token secrets are used for authentication purposes.
 
-### Setting up ACCESS_TOKEN_SECRET in .env file
+#### Setting up ACCESS_TOKEN_SECRET in the .env file
 
 Run the following command and copy/paste the result to the variable named `ACCESS_TOKEN_SECRET` in `.env` file.
 
-#### Linux
+##### Linux
 
 The command to use is:
 
@@ -301,7 +379,7 @@ The command to use is:
 openssl rand -hex 32
 ```
 
-#### Windows
+##### Windows
 
 This command is available if you have [Git for Windows](https://gitforwindows.org/) installed. Follow these steps:
 
@@ -313,7 +391,7 @@ This command is available if you have [Git for Windows](https://gitforwindows.or
 openssl rand -hex 32
 ```
 
-### Setting up REFRESH_TOKEN_SECRET in .env file
+### Setting up REFRESH_TOKEN_SECRET in the .env file
 
 Run the following command and copy/paste the result to the variable named `REFRESH_TOKEN_SECRET` in `.env` file.
 
@@ -321,7 +399,7 @@ Run the following command and copy/paste the result to the variable named `REFRE
 openssl rand -hex 32
 ```
 
-## Configuring MongoDB
+### Configuring MongoDB in the .env file
 
 Here's how you will configure MongoDB.
 
@@ -330,14 +408,12 @@ Here's how you will configure MongoDB.
 1. You only have to setup one database and provide it's URL in the `.env` file. This is the`primary database` and is used to store all your data.
 1. We automatically create a new database with the name `TALAWA_API_TEST_DATABASE`. This is exclusively used for storing all the test data generated during the testing process so that it does not bloat the main database with unnecessary data.
 
-### Setting up the MONGODB_URL in .env file
-
 A `Connection String` is the URL that applications use to access a MongoDB database. Talawa-API will need to know the correct connection string to use to perform correctly.
 
 1. The `Connection String` is the `.env` variable named `MONGO_DB_URL` in the `.env` file.
-1. The `Connection String` can differ depending on the approach you used to set up your database instance. Please read the official [mongodb docs](https://www.mongodb.com/docs/manual/reference/connection-string/) on `connection string`.
+2. The `Connection String` can differ depending on the approach you used to set up your database instance. Please read the official [mongodb docs](https://www.mongodb.com/docs/manual/reference/connection-string/) on `connection string`.
 
-### Using the CLI to get the MONGODB_URL Connection String
+#### Using the CLI to get the MONGODB_URL Connection String
 
 Your MongoDB installation may include either the `mongo` or `mongosh` command line utility. An easy way of determining the `connection string` is to:
 
@@ -362,7 +438,7 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ```
 
-### Using Microsoft Windows to get the MONGODB_URL Connection String
+#### Using Microsoft Windows to get the MONGODB_URL Connection String
 
 There are a few more steps that need to be done in a Windows environment.
 
@@ -392,13 +468,13 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ```
 
-## Configuring Redis
+### Configuring Redis in .env file
 
 Here's the procedure to set up Redis.
 
 In the `.env` file, you should find three variables: `REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASSWORD`. These environment variables will contain the necessary information for your codebase to connect to a running `redis-server`.
 
-### For Local Setup (Linux and WSL)
+#### For Local Setup (Linux and WSL)
 
 In both scenarios (Linux or WSL post-installation), the variable values should be configured as follows:
 
@@ -406,7 +482,7 @@ In both scenarios (Linux or WSL post-installation), the variable values should b
 2. `REDIS_PORT` = 6379 **Note**: This default port is used by the `redis-server`. However, if your `redis-server` operates on a different port, you must provide that port number.
 3. `REDIS_PASSWORD` should be left empty, as passwords are unnecessary for local connections.
 
-### For Remote Setup (Redis Cloud)
+#### For Remote Setup (Redis Cloud)
 
 To begin, you must register for a free account on Redis Cloud. Following this step, you can proceed by selecting a database from the free tier, which comes with a 30MB data storage limit. Once completed, you can then access your Database by navigating to the `Databases` section. Here, you will find the option to view the overall settings of your free instance.
 
@@ -418,7 +494,7 @@ Here are the configuration details:
 2. `REDIS_PORT` = The number provided in the `Public Endpoint` after the colon (`:`), for instance: `13354`.
 3. `REDIS_PASSWORD` = The `Default user password` located in the Security Section.
 
-## Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter
+### Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter in the .env file
 
 The user with the email address set with this parameter will automatically be elevated to Super Admin status on registration.
 
@@ -432,40 +508,39 @@ Set this value in the event that you need to elevate any of your users to be a S
 
 **NOTE** It is STRONGLY advised that you remove the email address once the initial installation and setup has been done.
 
-## Configuring Google ReCAPTCHA
+### Configuring Google ReCAPTCHA in the .env file
 
 You need to have a `google` account to follow the following steps.
 
-### Setting up RECAPTCHA_SECRET_KEY in .env file
+#### Setting up the RECAPTCHA_SECRET_KEY
 
 We use `reCAPTCHA` for two factor authentication (2FA). Follow these steps:
 
 1. Visit the [reCAPTCHA Key Generation](https://www.google.com/recaptcha/admin/create) URL.
 1. Fill in the input blocks as shown in the screenshot:
-   ![Set up recaptcha page](./image/recaptcha_set_up.webp)
+   ![Set up recaptcha page](public/markdown/images/recaptcha_set_up.webp)
 1. Click on `Submit` button.
 1. Copy the generated `Secret Key` to variable named `RECAPTCHA_SECRET_KEY` in `.env` file.
 
-   ![Set up recaptcha page](./image/recaptcha_site_and_secret_key.webp)
+   ![Set up recaptcha page](public/markdown/images/recaptcha_site_and_secret_key.webp)
 
 1. **NOTE**: Save the generated `Site key` as it will be used in `talawa-admin`.
 
-### Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters
+#### Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters
 
 **NOTE:** ReCAPTCHA is a type of 2FA, so your Google account needs to have two factor authentication set up for the following steps to work. Make sure this is done before proceeding
 
 The MAIL_USERNAME and MAIL_PASSWORD parameters are required to enable an app to access 2FA features. This is how to know what they should be.
 
 1. Go to your [google account page](https://myaccount.google.com/).
-1. Select `Security`.
-1. Under `Signing in to Google` section select `App Passwords`.
-1. Click on `Select app` section and choose `Other(Custom name)`, enter `talawa` as the custom name and press `Generate` button.
+1. Search for `App Passwords` in the `Search Google Account` search bar and select it.
+1. Click on `create a new app-specific password` and enter `talawa` as the custom name and press the `Create` button.
 1. Copy the 16 character generated app password to the variable named `MAIL_PASSWORD` in `.env` file.
 1. Copy your usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
 
 For more info refer to this [Google Answer](https://support.google.com/accounts/answer/185833).
 
-### Setting up .env SMTP Variables
+### Setting up SMTP Email Variables in the .env File
 
 For using SMTP server instead of Gmail, following steps need to be followed:
 
@@ -492,11 +567,12 @@ SMTP_SSL_TLS=true
 
 For more information on setting up a smtp server, here's a [useful article](https://sendgrid.com/blog/what-is-an-smtp-server/)
 
-## Setting up Logger configurations _(optional)_
+### Setting up Logger configurations
 
-You can set up and customize logs by configuring the following parameters
+1. This is an optional setting
+1. You can set up and customize logs by configuring the following parameters
 
-### Setting up COLORIZE_LOGS in .env file
+#### Setting up COLORIZE_LOGS in .env file
 
 The parameter `COLORIZE_LOGS` is a boolean field and can be set to true or false. It customizes the log colorization formats displayed in console. You can set the value in `.env` file as
 
@@ -506,11 +582,11 @@ COLORIZE_LOGS = false
 
 If the parameter value is set to `true`, you should be able to see colorized logs in console, or else logs will display in the console's default simple format.
 
-![Colorized logs in console](./image/colorize-logs.jpg)
+![Colorized logs in console](public/markdown/images/colorize-logs.jpg)
 
-### Setting up LOG_LEVEL in .env file
+#### Setting up LOG_LEVEL in .env file
 
-There are different logging levels that can be configured by setting this parameter. The severity order of levels are displayed numerically ascending from most important to least important.<br>
+There are different logging levels that can be configured by setting this parameter. The severity order of levels are displayed numerically ascending from most important to least important.
 
 ```
  levels = {
@@ -524,8 +600,8 @@ There are different logging levels that can be configured by setting this parame
   }
 ```
 
-<br>On setting this parameter value, log messages are displayed in the console only if the `message.level` is less than or equal to setted `LOG_LEVEL`
-<br><br>
+On setting this parameter value, log messages are displayed in the console only if the `message.level` is less than or equal to the `LOG_LEVEL` set.
+
 For our application, the most appropriate setting is `LOG_LEVEL = info` since most of information logged on the console are error messages, warnings or info texts.
 
 # Importing Sample Database
@@ -550,8 +626,9 @@ You can pass the following arguments while running this script.
 
 - `npm run import:sample-data`: This command will import the complete sample database without removing the existing data.
 - `npm run import:sample-data -- --format`: This command will import the complete sample database after removing the existing data.
-- `npm run import:sample-data -- --format --items=users,organizations`: This command will import the sample `users` and `organizations` collections after cleaning the existing data.
-- `npm run import:sample-data --  --items=users,organizations`: This command will import the sample `users` and `organizations` collections without cleaning the existing data.
+- `npm run import:sample-data -- --format --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations` and `appUserProfiles` collections after cleaning the existing data.
+- `npm run import:sample-data --  --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations`
+  ans `appUserProfiles` collections without cleaning the existing data.
 
 ## Sample Data Overview:
 
@@ -587,7 +664,9 @@ Talawa-api development server runs two processes simultaneously in the backgroun
 
 Run the following command to start talawa-api development server:
 
-        npm run dev
+```
+npm run dev
+```
 
 # How to Access the Talawa-API URL
 
@@ -665,13 +744,13 @@ This guide is for `VSCode` users to easily manage their `MongoDB` databases:
 
 1.  Install the offical `MongoDB` extension for `VSCode` named `MongoDB for VS Code`.
 
-    ![Install official mongoDB vscode extension](./image/install_mongodb_vscode_extension.webp)
+    ![Install official mongoDB vscode extension](public/markdown/images/install_mongodb_vscode_extension.webp)
 
 2.  Connect your `MongoDB` database to the extension.
 
-    ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_1.webp)
+    ![Connect your mongoDB database to the extension](public/markdown/images/connect_extension_to_mongodb_step_1.webp)
 
-    ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_2.webp)
+    ![Connect your mongoDB database to the extension](public/markdown/images/connect_extension_to_mongodb_step_2.webp)
 
 3.  Now you can manage the database you are using for `talawa-api` through this extension within `VSCode`.
 
@@ -693,30 +772,32 @@ You can skip these instructions for now if you don't have running instance of Ta
 
 1. Open MongoDB Compass and click on `Connect`.
 
-2. Select `user` collections and edit the data. Change:
-   1. `userType` from `USER` to `SUPERADMIN`
-   2. `adminApproved` from `false` to `true`
-   - ![Illustration for user edit ](./image/mongodb_compass_user_edit.png)
+2. Select your database.
+
+3. Elevate the user status:
+   1. Find the `AppUserProfile` document of the user that you want to elevate to superadmin.
+   2. In that `AppUserProfile` document, update the value of `isSuperAdmin` field to be `true`.
+   - ![Illustration for user edit ](public/markdown/images/mongodb_compass_user_elevation.png)
 
 ## Using Mongo Shell
 
 1. Open a terminal and run `mongosh` command to open interactive command line interface to work with MongoDB database.
 
-2. In the `mongosh` terminal use the following command to edit the `users` collections data:
-   1.Find the login credentials in the database through following command:
+2. In the `mongosh` terminal use the following commands to edit the `appuserprofiles` collections data:
+   1. Find the user:
    ```
-   db.users.find({userType: 'USER', firstName: '<user's first name>'})
+   const currentUser = db.users.findOne({ firstName: '<user's first name>'})
    ```
-   2. Elevate permission from `USER` to `SUPERADMIN` and set `adminApproved` to `true`:
+   2. Elevate permission of this user in its `AppUserProfile`, i.e. set `isSuperAdmin` to `true`:
    ```
-   db.users.updateOne({ firstName: '<user's first name>' },{ $set: { userType: 'SUPERADMIN', adminApproved: true }})
+   db.appuserprofiles.updateOne({ _id_: currentUser.appUserProfileId },{ $set: { isSuperAdmin: true }})
    ```
    3. To verify the details were updated correctly use:
    ```
-   db.users.find({firstName:'<user's first name>' })
+   db.appuserprofiles.findOne({ _id_: currentUser.appUserProfileId })
    ```
 
-**Note**: You can do the edits via any of the two methods.
+**Note**: You can make the edit via any of these two methods.
 
 # Other
 

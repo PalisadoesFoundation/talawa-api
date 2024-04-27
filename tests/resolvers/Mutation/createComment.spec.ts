@@ -15,7 +15,6 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let testPost: TestPostType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const resultsArray = await createTestPost();
@@ -23,7 +22,7 @@ beforeAll(async () => {
   testPost = resultsArray[2];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -38,7 +37,7 @@ describe("resolvers -> Mutation -> createComment", () => {
         data: {
           text: "",
         },
-        postId: Types.ObjectId().toString(),
+        postId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -46,8 +45,8 @@ describe("resolvers -> Mutation -> createComment", () => {
       };
 
       await createCommentResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -66,13 +65,13 @@ describe("resolvers -> Mutation -> createComment", () => {
     const createCommentPayload = await createCommentResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createCommentPayload).toEqual(
       expect.objectContaining({
         text: "text",
-      })
+      }),
     );
 
     const testUpdatedPost = await Post.findOne({
@@ -83,7 +82,7 @@ describe("resolvers -> Mutation -> createComment", () => {
 
     expect(testUpdatedPost?.commentCount).toEqual(1);
     expect(createCommentPayload?.postId.toString()).toEqual(
-      testPost?._id.toString()
+      testPost?._id.toString(),
     );
   });
 });

@@ -26,7 +26,6 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const resultsArray = await createTestUserAndOrganization();
@@ -53,7 +52,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     try {
       const args: MutationCreateDirectChatArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: new Types.ObjectId().toString(),
           userIds: [],
         },
       };
@@ -65,9 +64,11 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         "../../../src/resolvers/Mutation/createDirectChat"
       );
       await createDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -80,7 +81,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       const args: MutationCreateDirectChatArgs = {
         data: {
           organizationId: testOrganization?.id,
-          userIds: [Types.ObjectId().toString()],
+          userIds: [new Types.ObjectId().toString()],
         },
       };
 
@@ -92,9 +93,9 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         "../../../src/resolvers/Mutation/createDirectChat"
       );
       await createDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
   it(`creates the directChat and returns it`, async () => {
@@ -115,15 +116,15 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     const createDirectChatPayload = await createDirectChatResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(createDirectChatPayload).toEqual(
       expect.objectContaining({
-        creator: testUser?._id,
+        creatorId: testUser?._id,
         users: [testUser?._id],
         organization: testOrganization?._id,
-      })
+      }),
     );
   });
 });

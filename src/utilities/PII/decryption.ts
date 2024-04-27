@@ -4,12 +4,12 @@ import crypto from "crypto";
 export function decrypt(
   encryptedText: string,
   key: string,
-  iv: string
+  iv: string,
 ): string {
   const decipher = crypto.createDecipheriv(
     "aes-256-cbc",
     Buffer.from(key),
-    Buffer.from(iv, "hex")
+    Buffer.from(iv, "hex"),
   );
   let decrypted = decipher.update(encryptedText, "hex", "utf8");
   decrypted += decipher.final("utf8");

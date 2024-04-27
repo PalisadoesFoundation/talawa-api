@@ -17,7 +17,7 @@ import { cachePosts } from "../../services/PostCache/cachePosts";
 export const createComment: MutationResolvers["createComment"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Check if the provided post exists
   const postExists = await Post.exists({
@@ -28,14 +28,14 @@ export const createComment: MutationResolvers["createComment"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
       POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM
+      POST_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   // Creates the new comment
   const createdComment = await Comment.create({
     ...args.data,
-    creator: context.userId,
+    creatorId: context.userId,
     postId: args.postId,
   });
 
@@ -53,7 +53,7 @@ export const createComment: MutationResolvers["createComment"] = async (
     },
     {
       new: true,
-    }
+    },
   );
 
   if (updatedPost !== null) {

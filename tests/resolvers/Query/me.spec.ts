@@ -1,14 +1,18 @@
 import "dotenv/config";
-import { me as meResolver } from "../../../src/resolvers/Query/me";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
-import { User } from "../../../src/models";
+import {
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+} from "../../../src/constants";
+import { AppUserProfile, User } from "../../../src/models";
+import { me as meResolver } from "../../../src/resolvers/Query/me";
+import { connect, disconnect } from "../../helpers/db";
 
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createTestEvent } from "../../helpers/events";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -16,6 +20,7 @@ let testUser: TestUserType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = (await createTestEvent())[0];
+  await deleteUserFromCache(testUser?._id);
 });
 
 afterAll(async () => {
@@ -26,12 +31,12 @@ describe("resolvers -> Query -> me", () => {
   it("throws NotFoundError if no user exists with _id === context.userId", async () => {
     try {
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await meResolver?.({}, {}, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -48,14 +53,26 @@ describe("resolvers -> Query -> me", () => {
       _id: testUser?._id,
     })
       .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
+
       .populate("joinedOrganizations")
       .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
+
       .lean();
 
-    expect(mePayload).toEqual(user);
+    expect(mePayload?.user).toEqual(user);
+  });
+
+  it("throws an error if user does not have appUserProfile", async () => {
+    try {
+      const context = {
+        userId: testUser?._id,
+      };
+      await AppUserProfile.deleteOne({
+        userId: testUser?._id,
+      });
+      await meResolver?.({}, {}, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_AUTHORIZED_ERROR.DESC);
+    }
   });
 });

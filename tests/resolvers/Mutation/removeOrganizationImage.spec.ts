@@ -30,7 +30,7 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
-
+/* eslint-disable */
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
@@ -41,12 +41,21 @@ beforeAll(async () => {
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
+    address: {
+      countryCode: `US`,
+      city: `SAMPLE`,
+      dependentLocality: "TEST",
+      line1: "TES",
+      postalCode: "110001",
+      sortingCode: "ABC-123",
+      state: "Delhi",
+    },
     isPublic: true,
     admins: [testAdminUser?._id],
-    creator: testAdminUser?._id,
-
+    creatorId: testAdminUser?._id,
     members: [testUser?._id],
     blockedUsers: [testUser?._id],
+    visibleInSearch: true,
   });
 
   await User.updateOne(
@@ -59,7 +68,7 @@ beforeAll(async () => {
         adminFor: [testOrganization._id],
         joinedOrganizations: [testOrganization._id],
       },
-    }
+    },
   );
 });
 
@@ -84,7 +93,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
     try {
       const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -97,10 +106,10 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       await removeOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -128,7 +137,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
     }
   });
@@ -155,10 +164,10 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       await removeOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(
-        ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE,
       );
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE}`
+        `Translated ${ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -189,7 +198,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     if (updatedOrganization !== null) {

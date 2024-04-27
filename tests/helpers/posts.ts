@@ -1,20 +1,20 @@
-import type { TestOrganizationType, TestUserType } from "./userAndOrg";
-import { createTestUserAndOrganization } from "./userAndOrg";
-import type { InterfacePost, InterfaceComment } from "../../src/models";
-import { Post, Organization, Comment } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
+import type { InterfaceComment, InterfacePost } from "../../src/models";
+import { Comment, Organization, Post } from "../../src/models";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
 
 export type TestPostType =
-  | (InterfacePost & Document<any, any, InterfacePost>)
+  | (InterfacePost & Document<unknown, unknown, InterfacePost>)
   | null;
 
 export type TestCommentType =
-  | (InterfaceComment & Document<any, any, InterfaceComment>)
+  | (InterfaceComment & Document<unknown, unknown, InterfaceComment>)
   | null;
 
 export const createTestPost = async (
-  pinned = false
+  pinned = false,
 ): Promise<[TestUserType, TestOrganizationType, TestPostType]> => {
   const resultsArray = await createTestUserAndOrganization();
   const testUser = resultsArray[0];
@@ -22,7 +22,7 @@ export const createTestPost = async (
 
   const testPost = await Post.create({
     text: `text${nanoid().toLowerCase()}`,
-    creator: testUser?._id,
+    creatorId: testUser?._id,
     organization: testOrganization?._id,
     pinned,
   });
@@ -35,7 +35,7 @@ export const createTestPost = async (
       $push: {
         posts: testPost._id,
       },
-    }
+    },
   );
 
   return [testUser, testOrganization, testPost];
@@ -48,7 +48,7 @@ export const createPostwithComment = async (): Promise<
 
   const testComment = await Comment.create({
     text: `commentName${nanoid().toLowerCase()}`,
-    creator: testUser && testUser._id,
+    creatorId: testUser && testUser._id,
     postId: testPost && testPost._id,
   });
 
@@ -64,7 +64,7 @@ export const createPostwithComment = async (): Promise<
         likeCount: 1,
         commentCount: 1,
       },
-    }
+    },
   );
 
   await Comment.updateOne(
@@ -78,27 +78,27 @@ export const createPostwithComment = async (): Promise<
       $inc: {
         likeCount: 1,
       },
-    }
+    },
   );
   return [testUser, testOrganization, testPost, testComment];
 };
 
 export const createSinglePostwithComment = async (
   userId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<[TestPostType, TestCommentType]> => {
   const testPost = await Post.create({
     text: `text${nanoid().toLowerCase()}`,
     title: `title${nanoid()}`,
     imageUrl: `imageUrl${nanoid()}`,
     videoUrl: `videoUrl${nanoid()}`,
-    creator: userId,
+    creatorId: userId,
     organization: organizationId,
   });
 
   const testComment = await Comment.create({
     text: `commentName${nanoid().toLowerCase()}`,
-    creator: userId,
+    creatorId: userId,
     postId: testPost._id,
   });
 
@@ -114,7 +114,7 @@ export const createSinglePostwithComment = async (
         likeCount: 1,
         commentCount: 1,
       },
-    }
+    },
   );
   return [testPost, testComment];
 };
@@ -122,14 +122,14 @@ export const createSinglePostwithComment = async (
 export const createTestSinglePost = async (
   userId: string,
   organizationId: string,
-  pinned = false
+  pinned = false,
 ): Promise<TestPostType> => {
   const testPost = await Post.create({
     text: `text${nanoid().toLowerCase()}`,
     title: `title${nanoid()}`,
     imageUrl: `imageUrl${nanoid()}`,
     videoUrl: `videoUrl${nanoid()}`,
-    creator: userId,
+    creatorId: userId,
     organization: organizationId,
     pinned,
   });

@@ -1,14 +1,15 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
-import { User, Organization, GroupChat } from "../../models";
 import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
   CHAT_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { errors, requestContext } from "../../libraries";
+import { AppUserProfile, GroupChat, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
 /**
  * This function enables an admin to remove a group.
  * @param _parent - parent of current request
@@ -25,7 +26,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const groupChat = await GroupChat.findOne({
     _id: args.groupId,
@@ -36,7 +37,7 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
       CHAT_NOT_FOUND_ERROR.CODE,
-      CHAT_NOT_FOUND_ERROR.PARAM
+      CHAT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -52,8 +53,9 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
     organization = await Organization.findOne({
       _id: groupChat.organization,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) {
+      await cacheOrganizations([organization]);
+    }
   }
 
   // Checks whether organization exists.
@@ -61,20 +63,30 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
-  const currentUserExists = await User.exists({
+  const currentUserExists = !!(await User.exists({
     _id: context.userId,
-  });
+  }));
 
   // Checks currentUser with _id === context.userId exists.
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: context.userId,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 

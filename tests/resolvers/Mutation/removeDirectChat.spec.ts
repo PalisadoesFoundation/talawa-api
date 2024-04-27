@@ -44,7 +44,7 @@ beforeAll(async () => {
 
   testDirectChat = await DirectChat.create({
     users: [testUser?._id],
-    creator: testUser?._id,
+    creatorId: testUser?._id,
     organization: testOrganization?._id,
   });
 
@@ -61,7 +61,7 @@ beforeAll(async () => {
     },
     {
       new: true,
-    }
+    },
   );
 });
 
@@ -84,7 +84,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     try {
       const args: MutationRemoveDirectChatArgs = {
         chatId: "",
-        organizationId: Types.ObjectId().toString(),
+        organizationId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -95,10 +95,10 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         "../../../src/resolvers/Mutation/removeDirectChat"
       );
       await removeDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -111,7 +111,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
 
     try {
       const args: MutationRemoveDirectChatArgs = {
-        chatId: Types.ObjectId().toString(),
+        chatId: new Types.ObjectId().toString(),
         organizationId: testOrganization?.id,
       };
 
@@ -123,10 +123,10 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         "../../../src/resolvers/Mutation/removeDirectChat"
       );
       await removeDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${CHAT_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${CHAT_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -171,9 +171,9 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         "../../../src/resolvers/Mutation/removeDirectChat"
       );
       await removeDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
 
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
@@ -192,7 +192,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -214,7 +214,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     const removeDirectChatPayload = await removeDirectChatResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(removeDirectChatPayload).toEqual(testDirectChat?.toObject());

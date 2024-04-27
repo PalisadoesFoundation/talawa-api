@@ -35,7 +35,7 @@ describe("resolvers => Query => customFieldsByOrganization", () => {
         name: "dataName",
         type: "dataType",
       },
-      { userId: testUser?._id }
+      { userId: testUser?._id },
     );
 
     const args = {
@@ -65,11 +65,11 @@ describe("resolvers => Query => customFieldsByOrganization", () => {
         name: "dataName",
         type: "dataType",
       },
-      { userId: testUser?._id }
+      { userId: testUser?._id },
     );
 
     const args = {
-      id: Types.ObjectId().toString(),
+      id: new Types.ObjectId().toString(),
     };
     const context = {
       userId: testUser?._id,
@@ -77,12 +77,12 @@ describe("resolvers => Query => customFieldsByOrganization", () => {
 
     try {
       await customFieldsByOrganization?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
-      expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });

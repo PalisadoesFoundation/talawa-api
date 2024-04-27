@@ -28,11 +28,11 @@ describe("resolvers -> GroupChat -> creator", () => {
     const creatorPayload = await creatorResolver?.(
       parent ?? ({} as InterfaceGroupChat),
       {},
-      {}
+      {},
     );
 
     const creator = await User.findOne({
-      _id: testGroupChat?.creator,
+      _id: testGroupChat?.creatorId,
     }).lean();
 
     expect(creatorPayload).toEqual(creator);

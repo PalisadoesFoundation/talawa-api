@@ -2,10 +2,13 @@ import {
   EMAIL_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceUser } from "../../models";
-import { User } from "../../models";
+import { AppUserProfile, User } from "../../models";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { deleteUserFromCache } from "../../services/UserCache/deleteUserFromCache";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to update user profile.
@@ -19,30 +22,38 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
 export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   if (args.data?.email && args.data?.email !== currentUser?.email) {
     const userWithEmailExists = await User.findOne({
-      email: args.data?.email,
+      email: args.data?.email.toLowerCase(),
     });
 
     if (userWithEmailExists) {
       throw new errors.ConflictError(
         requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
         EMAIL_ALREADY_EXISTS_ERROR.MESSAGE,
-        EMAIL_ALREADY_EXISTS_ERROR.PARAM
+        EMAIL_ALREADY_EXISTS_ERROR.PARAM,
       );
     }
   }
@@ -52,12 +63,12 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   if (args.file) {
     uploadImageFileName = await uploadEncodedImage(
       args.file,
-      currentUser?.image
+      currentUser?.image,
     );
   }
 
   // Update User
-  const updatedUser = await User.findOneAndUpdate(
+  let updatedUser = await User.findOneAndUpdate(
     {
       _id: context.userId,
     },
@@ -95,7 +106,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         educationGrade: args.data?.educationGrade
           ? args.data.educationGrade
           : currentUser?.educationGrade,
-        email: args.data?.email ? args.data.email : currentUser?.email,
+        email: args.data?.email
+          ? args.data.email.toLowerCase()
+          : currentUser?.email.toLowerCase(),
         employmentStatus: args.data?.employmentStatus
           ? args.data.employmentStatus
           : currentUser?.employmentStatus,
@@ -126,11 +139,32 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     {
       new: true,
       runValidators: true,
-    }
+    },
   ).lean();
-  updatedUser!.image = updatedUser?.image
-    ? `${context.apiRootUrl}${updatedUser?.image}`
-    : null;
+  if (updatedUser != null) {
+    await deleteUserFromCache(updatedUser?._id.toString() || "");
+    await cacheUsers([updatedUser]);
+  }
+
+  if (args.data?.appLanguageCode) {
+    await AppUserProfile.findOneAndUpdate(
+      {
+        userId: context.userId,
+      },
+      {
+        $set: {
+          appLanguageCode: args.data?.appLanguageCode,
+        },
+      },
+    );
+  }
+
+  if (updatedUser != null) {
+    updatedUser.image = updatedUser?.image
+      ? `${context.apiRootUrl}${updatedUser?.image}`
+      : null;
+  }
+  if (args.data == undefined) updatedUser = null;
 
   return updatedUser ?? ({} as InterfaceUser);
 };

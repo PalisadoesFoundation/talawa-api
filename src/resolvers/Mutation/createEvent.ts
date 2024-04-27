@@ -1,16 +1,30 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { User, Organization, Event } from "../../models";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { isValidString } from "../../libraries/validators/validateString";
+
+import { session } from "../../db";
+import {
+  createRecurringEvent,
+  createSingleEvent,
+} from "../../helpers/event/createEventHelpers";
+import { errors, requestContext } from "../../libraries";
 import { compareDates } from "../../libraries/validators/compareDates";
-import { EventAttendee } from "../../models/EventAttendee";
-import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { isValidString } from "../../libraries/validators/validateString";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceEvent,
+  InterfaceUser,
+} from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables to create an event.
@@ -19,30 +33,65 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
- * 2. If the organization exists
- * 3. If the user is a part of the organization.
+ * 2.If the user has appUserProfile
+ * 3. If the organization exists
+ * 4. If the user is a part of the organization.
+ * 5. If the event is recurring, create the recurring event instances.
+ * 6. If the event is non-recurring, create a single event.
  * @returns Created event
  */
+
 export const createEvent: MutationResolvers["createEvent"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
+
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
   const organization = await Organization.findOne({
-    _id: args.data?.organizationId,
+    _id: args.data.organizationId.startsWith("id=")
+      ? args.data.organizationId.toString().substring(3)
+      : args.data.organizationId,
   }).lean();
 
   // Checks whether organization exists.
@@ -50,131 +99,119 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
-  const userCreatedOrganization = currentUser.createdOrganizations.some(
-    (createdOrganization) => createdOrganization.equals(organization._id)
+  const isUserOrgAdmin = currentUserAppProfile.adminFor.some((org) =>
+    new Types.ObjectId(org?.toString()).equals(organization._id),
   );
 
-  const userJoinedOrganization = currentUser.joinedOrganizations.some(
-    (joinedOrganization) => joinedOrganization.equals(organization._id)
+  const isUserOrgMember = currentUser.joinedOrganizations.some(
+    (joinedOrganization) => joinedOrganization.equals(organization._id),
   );
 
   // Checks whether currentUser neither created nor joined the organization.
+
   if (
-    !(
-      userCreatedOrganization ||
-      userJoinedOrganization ||
-      currentUser.userType == "SUPERADMIN"
-    )
+    !(isUserOrgAdmin || isUserOrgMember || currentUserAppProfile.isSuperAdmin)
   ) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
-  // Checks if the recieved arguments are valid according to standard input norms
+  // Checks if the received arguments are valid according to standard input norms
   const validationResultTitle = isValidString(args.data?.title ?? "", 256);
   const validationResultDescription = isValidString(
     args.data?.description ?? "",
-    500
+    500,
   );
   const validationResultLocation = isValidString(args.data?.location ?? "", 50);
   if (!validationResultTitle.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   if (!validationResultDescription.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   if (!validationResultLocation.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   const compareDatesResult = compareDates(
     args.data?.startDate,
-    args.data?.endDate
+    args.data?.endDate,
   );
   if (compareDatesResult !== "") {
     throw new errors.InputValidationError(
       requestContext.translate(compareDatesResult),
-      compareDatesResult
+      compareDatesResult,
     );
   }
 
-  // Creates new event.
-  const createdEvent = await Event.create({
-    ...args.data,
-    creator: currentUser._id,
-    admins: [currentUser._id],
-    organization: organization._id,
-  });
-
-  if (createdEvent !== null) {
-    await cacheEvents([createdEvent]);
+  /* c8 ignore start */
+  if (session) {
+    // start a transaction
+    session.startTransaction();
   }
 
-  await EventAttendee.create({
-    userId: currentUser._id.toString(),
-    eventId: createdEvent._id,
-  });
+  /* c8 ignore stop */
+  try {
+    let createdEvent: InterfaceEvent;
 
-  /*
-  Adds createdEvent._id to eventAdmin, createdEvents and registeredEvents lists
-  on currentUser's document.
-  */
-  await User.updateOne(
-    {
-      _id: currentUser._id,
-    },
-    {
-      $push: {
-        eventAdmin: createdEvent._id,
-        createdEvents: createdEvent._id,
-        registeredEvents: createdEvent._id,
-      },
+    if (args.data.recurring) {
+      // create recurring event instances
+      createdEvent = await createRecurringEvent(
+        args,
+        currentUser?._id.toString(),
+        organization?._id.toString(),
+        session,
+      );
+    } else {
+      // create a single non-recurring event
+      createdEvent = await createSingleEvent(
+        args,
+        currentUser?._id.toString(),
+        organization?._id.toString(),
+        session,
+      );
     }
-  );
 
-  /* Commenting out this notification code coz we don't use firebase anymore.
-
-    for (let i = 0; i < organization.members.length; i++) {
-    const user = await User.findOne({
-      _id: organization.members[i],
-    }).lean();
-
-  
-    
-    // Checks whether both user and user.token exist.
-    if (user && user.token) {
-      await admin.messaging().send({
-        token: user.token,
-        notification: {
-          title: "New Event",
-          body: `${currentUser.firstName} has created a new event in ${organization.name}`,
-        },
-      });
+    /* c8 ignore start */
+    if (session) {
+      // commit transaction if everything's successful
+      await session.commitTransaction();
     }
+
+    /* c8 ignore stop */
+
+    return createdEvent;
+
+    /* c8 ignore start */
+  } catch (error) {
+    if (session) {
+      // abort transaction if something fails
+      await session.abortTransaction();
+    }
+
+    throw error;
   }
-     */
 
-  // Returns the createdEvent.
-  return createdEvent.toObject();
+  /* c8 ignore stop */
 };

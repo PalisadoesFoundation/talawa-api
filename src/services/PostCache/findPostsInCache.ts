@@ -1,10 +1,10 @@
 import PostCache from "../redisCache";
 import type { InterfacePost } from "../../models";
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findPostsInCache(
-  ids: string[]
+  ids: string[],
 ): Promise<(InterfacePost | null)[]> {
   if (ids.length === 0) {
     return [null];
@@ -33,11 +33,11 @@ export async function findPostsInCache(
       return {
         ...postObj,
 
-        _id: Types.ObjectId(postObj._id),
+        _id: new mongoose.Types.ObjectId(postObj._id),
 
         createdAt: new Date(postObj.createdAt),
 
-        organization: Types.ObjectId(postObj.organization),
+        organization: new mongoose.Types.ObjectId(postObj.organization),
 
         likeCount: Number(postObj.likeCount),
 
@@ -46,11 +46,13 @@ export async function findPostsInCache(
         likedBy:
           postObj?.likedBy.length !== 0
             ? postObj?.likedBy?.map((user: string) => {
-                return Types.ObjectId(user);
+                return new mongoose.Types.ObjectId(user);
               })
             : [],
 
-        creator: Types.ObjectId(postObj.creator),
+        creatorId: new mongoose.Types.ObjectId(postObj.creatorId),
+
+        updatedAt: new Date(postObj.updatedAt),
       };
     } catch (parseError) {
       logger.info(`Error parsing JSON:${parseError}`);

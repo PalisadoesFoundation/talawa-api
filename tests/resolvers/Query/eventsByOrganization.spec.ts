@@ -9,7 +9,6 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
-import { createTestTask } from "../../helpers/task";
 import type mongoose from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -19,21 +18,18 @@ let testOrganization: TestOrganizationType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const testEvent1 = await createEventWithRegistrant(
     testUser?._id,
     testOrganization?._id,
     true,
-    "ONCE"
   );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const testEvent2 = await createEventWithRegistrant(
     testUser?._id,
     testOrganization?._id,
     true,
-    "ONCE"
   );
-
-  const testEvents = [testEvent1, testEvent2];
-  await createTestTask(testEvents[0]?._id, testUser?._id);
 });
 
 afterAll(async () => {
@@ -43,10 +39,6 @@ afterAll(async () => {
 describe("resolvers -> Query -> eventsByOrganization", () => {
   it(`returns list of all existing events sorted by ascending order of event._id
   if args.orderBy === 'id_ASC'`, async () => {
-    const sort = {
-      _id: 1,
-    };
-
     const args: QueryEventsByOrganizationArgs = {
       id: testOrganization?._id,
       orderBy: "id_ASC",
@@ -57,16 +49,16 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     const eventsByOrganizationPayload = await eventsByOrganization?.(
       {},
       args,
-      {}
+      {},
     );
 
     const eventsByOrganizationInfo = await Event.find({
       organization: testOrganization?._id,
-      status: "ACTIVE",
     })
-      .sort(sort)
-      .populate("creator", "-password")
-      .populate("tasks")
+      .sort({
+        _id: 1,
+      })
+      .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
 

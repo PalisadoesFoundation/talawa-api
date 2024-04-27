@@ -1,11 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { User } from "../../../src/models";
+import { AppUserProfile } from "../../../src/models";
 import type { MutationSaveFcmTokenArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { saveFcmToken as saveFcmTokenResolver } from "../../../src/resolvers/Mutation/saveFcmToken";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
 
@@ -35,8 +35,8 @@ describe("resolvers -> Mutation -> saveFcmToken", () => {
 
     expect(saveFcmTokenPayload).toEqual(true);
 
-    const testSaveFcmTokenPayload = await User.findOne({
-      _id: testUser?._id,
+    const testSaveFcmTokenPayload = await AppUserProfile.findOne({
+      userId: testUser?._id,
     })
       .select("token")
       .lean();

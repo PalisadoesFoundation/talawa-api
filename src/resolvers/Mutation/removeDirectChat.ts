@@ -22,7 +22,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization;
 
@@ -36,8 +36,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
     organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) await cacheOrganizations([organization]);
   }
 
   // Checks whether organization exists.
@@ -45,7 +44,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -58,7 +57,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
       CHAT_NOT_FOUND_ERROR.CODE,
-      CHAT_NOT_FOUND_ERROR.PARAM
+      CHAT_NOT_FOUND_ERROR.PARAM,
     );
   }
 

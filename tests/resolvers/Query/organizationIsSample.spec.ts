@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type mongoose from "mongoose";
 import { isSampleOrganization } from "../../../src/resolvers/Query/organizationIsSample";
@@ -20,7 +21,7 @@ describe("determine whether organization is a sample or not", async () => {
   it("isSampleOrganization should return true if organizationId exists in SampleData collection", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const _id = faker.database.mongodbObjectId();
@@ -31,7 +32,7 @@ describe("determine whether organization is a sample or not", async () => {
       description: faker.lorem.sentences(),
       location: `${faker.location.country()}, ${faker.location.city()}`,
       isPublic: true,
-      creator: creatorId,
+      creatorId: creatorId,
       status: "ACTIVE",
       members: [creatorId],
       admins: [creatorId],
@@ -68,7 +69,7 @@ describe("determine whether organization is a sample or not", async () => {
   it("isSampleOrganization should return false if organizationId does not exist in SampleData collection", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const _id = faker.database.mongodbObjectId();
@@ -79,7 +80,7 @@ describe("determine whether organization is a sample or not", async () => {
       description: faker.lorem.sentences(),
       location: `${faker.location.country()}, ${faker.location.city()}`,
       isPublic: true,
-      creator: creatorId,
+      creatorId: creatorId,
       status: "ACTIVE",
       members: [creatorId],
       admins: [creatorId],
@@ -108,7 +109,7 @@ describe("ensure organization exists in organization collection", async () => {
   it("should throw error when organization doesn't exist in the 'Organization' collection", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     const randomId = faker.database.mongodbObjectId();
@@ -117,7 +118,9 @@ describe("ensure organization exists in organization collection", async () => {
     const args = { id: randomId };
     const context = {};
     try {
-      await isSampleOrganization!(parent, args, context);
+      if (isSampleOrganization) {
+        await isSampleOrganization(parent, args, context);
+      }
     } catch (error: any) {
       expect(error.message).toBe(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }

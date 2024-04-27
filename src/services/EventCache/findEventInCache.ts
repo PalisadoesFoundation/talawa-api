@@ -1,10 +1,10 @@
 import EventCache from "../redisCache";
 import type { InterfaceEvent } from "../../models";
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findEventsInCache(
-  ids: string[]
+  ids: string[],
 ): Promise<(InterfaceEvent | null)[]> {
   if (ids.length === 0) {
     return [null];
@@ -33,16 +33,16 @@ export async function findEventsInCache(
       return {
         ...eventObj,
 
-        _id: Types.ObjectId(eventObj._id),
+        _id: new mongoose.Types.ObjectId(eventObj._id),
 
         admins:
           eventObj?.admins?.length !== 0
             ? eventObj?.admins?.map((admin: string) => {
-                return Types.ObjectId(admin);
+                return new mongoose.Types.ObjectId(admin);
               })
             : [],
 
-        organization: Types.ObjectId(eventObj.organization),
+        organization: new mongoose.Types.ObjectId(eventObj.organization),
 
         startDate: new Date(eventObj.startDate),
 
@@ -54,7 +54,11 @@ export async function findEventsInCache(
 
         ...(eventObj?.endTime ? { endTime: new Date(eventObj.endTime) } : {}), // Conditional removal of endTime field
 
-        creator: Types.ObjectId(eventObj.creator),
+        creatorId: new mongoose.Types.ObjectId(eventObj.creatorId),
+
+        createdAt: new Date(eventObj.createdAt),
+
+        updatedAt: new Date(eventObj.updatedAt),
       };
     } catch (parseError) {
       logger.info(`Error parsing JSON:${parseError}`);

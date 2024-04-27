@@ -1,16 +1,13 @@
-import { nanoid } from "nanoid";
-import {
-  CheckIn,
-  EventAttendee,
-  type InterfaceCheckIn,
-} from "../../src/models";
 import type { Document } from "mongoose";
+import type { InterfaceCheckIn, InterfaceEvent } from "../../src/models";
+import { CheckIn, EventAttendee } from "../../src/models";
 import { createTestEventWithRegistrants } from "./eventsWithRegistrants";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
-import type { TestEventType } from "./task";
-
+export type TestEventType =
+  | (InterfaceEvent & Document<unknown, unknown, InterfaceEvent>)
+  | null;
 export type TestCheckInType =
-  | (InterfaceCheckIn & Document<any, any, InterfaceCheckIn>)
+  | (InterfaceCheckIn & Document<unknown, unknown, InterfaceCheckIn>)
   | null;
 
 export const createEventWithCheckedInUser = async (): Promise<
@@ -19,25 +16,23 @@ export const createEventWithCheckedInUser = async (): Promise<
   const [testUser, testOrg, testEvent] = await createTestEventWithRegistrants();
 
   const eventAttendee = await EventAttendee.findOne({
-    userId: testUser!._id,
-    eventId: testEvent!._id,
+    userId: testUser?._id,
+    eventId: testEvent?._id,
   }).lean();
 
   const checkIn = await CheckIn.create({
-    eventAttendeeId: eventAttendee!._id,
-    allotedRoom: nanoid(),
-    allotedSeat: nanoid(),
+    eventAttendeeId: eventAttendee?._id,
     time: new Date(),
   });
 
   await EventAttendee.updateOne(
     {
-      userId: testUser!._id,
-      eventId: testEvent!._id,
+      userId: testUser?._id,
+      eventId: testEvent?._id,
     },
     {
-      checkInId: checkIn!._id,
-    }
+      checkInId: checkIn?._id,
+    },
   );
 
   return [testUser, testOrg, testEvent, checkIn];

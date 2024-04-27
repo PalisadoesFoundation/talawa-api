@@ -15,7 +15,7 @@ describe("src -> resolvers -> Subscription -> directMessageChat", () => {
         },
       },
     };
-    // @ts-ignore
+    // @ts-expect-error-ignore
     const x = directMessageChatPayload?.subscribe(_parent, _args, context);
     expect(x).not.toBe(null);
   });

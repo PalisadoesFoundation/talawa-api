@@ -1,8 +1,8 @@
+import { nanoid } from "nanoid";
 import type { InterfaceOrganizationTagUser } from "../../src/models";
 import { OrganizationTagUser, TagUser } from "../../src/models";
-import { nanoid } from "nanoid";
-import type { TestUserType, TestOrganizationType } from "./userAndOrg";
-import { createTestUserAndOrganization, createTestUser } from "./userAndOrg";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
 
 export type TestUserTagType = InterfaceOrganizationTagUser | null;
 
@@ -15,13 +15,14 @@ export const createRootTagWithOrg = async (): Promise<
     name: `TagTitle${nanoid()}`,
     parentTagId: null,
     organizationId: testOrganization?._id,
+    tagColor: `tagColor${nanoid()}`,
   });
 
   return [testUser, testOrganization, testTag?.toObject()];
 };
 
 export const createRootTagsWithOrg = async (
-  numberOfTags = 1
+  numberOfTags = 1,
 ): Promise<[TestUserType, TestOrganizationType, TestUserTagType[]]> => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   const tags: TestUserTagType[] = [];
@@ -31,6 +32,7 @@ export const createRootTagsWithOrg = async (
       name: `TagTitle${nanoid()}`,
       parentTagId: null,
       organizationId: testOrganization?._id,
+      tagColor: `tagColor${nanoid()}`,
     });
     tags.push(testTag.toObject());
   }
@@ -42,7 +44,7 @@ export const createTwoLevelTagsWithOrg = async (): Promise<
   [
     TestUserType,
     TestOrganizationType,
-    [TestUserTagType, TestUserTagType, TestUserTagType]
+    [TestUserTagType, TestUserTagType, TestUserTagType],
   ]
 > => {
   const [testUser, testOrg, testRootTag] = await createRootTagWithOrg();
@@ -50,11 +52,13 @@ export const createTwoLevelTagsWithOrg = async (): Promise<
     name: `TagTitle${nanoid()}`,
     parentTagId: testRootTag?._id,
     organizationId: testOrg?._id,
+    tagColor: `tagColor${nanoid()}`,
   });
   const testTag2 = await OrganizationTagUser.create({
     name: `TagTitle${nanoid()}`,
     parentTagId: testRootTag?._id,
     organizationId: testOrg?._id,
+    tagColor: `tagColor${nanoid()}`,
   });
 
   return [
@@ -66,7 +70,7 @@ export const createTwoLevelTagsWithOrg = async (): Promise<
 
 export const createAndAssignUsersToTag = async (
   tag: TestUserTagType,
-  numberOfUsers = 1
+  numberOfUsers = 1,
 ): Promise<TestUserType[]> => {
   const testUsers: TestUserType[] = [];
 
@@ -83,12 +87,12 @@ export const createAndAssignUsersToTag = async (
 };
 
 export const createTagsAndAssignToUser = async (
-  numberOfTags = 1
+  numberOfTags = 1,
 ): Promise<[TestUserType, TestOrganizationType, TestUserTagType[]]> => {
   const [testUser, testOrg, testTag] = await createRootTagWithOrg();
   await TagUser.create({
-    userId: testUser!._id,
-    tagId: testTag!._id,
+    userId: testUser?._id,
+    tagId: testTag?._id,
   });
 
   const tags: TestUserTagType[] = [testTag];
@@ -97,12 +101,13 @@ export const createTagsAndAssignToUser = async (
     const newTag = await OrganizationTagUser.create({
       organizationId: testOrg?._id,
       name: `TagTitle${nanoid()}`,
+      tagColor: `tagColor${nanoid()}`,
     });
     tags.push(newTag.toObject());
 
     await TagUser.create({
-      tagId: newTag!._id,
-      userId: testUser!._id,
+      tagId: newTag?._id,
+      userId: testUser?._id,
     });
   }
 

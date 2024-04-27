@@ -1,14 +1,23 @@
 import type { InterfaceEvent, InterfacePost, InterfaceUser } from "../models";
-import { Organization, User, Event, Post, Plugin } from "../models";
+import {
+  AppUserProfile,
+  Event,
+  Organization,
+  Plugin,
+  Post,
+  User,
+} from "../models";
 
 import { faker } from "@faker-js/faker";
 import type mongoose from "mongoose";
 import { SampleData } from "../models/SampleData";
 
+/* eslint-disable */
+
 export const generateUserData = async (
   organizationId: string,
-  userType: string
-): Promise<InterfaceUser & mongoose.Document<any, any, InterfaceUser>> => {
+  userType: string,
+) => {
   const gender: "male" | "female" = faker.helpers.arrayElement([
     "male",
     "female",
@@ -27,13 +36,21 @@ export const generateUserData = async (
     firstName: fname,
     lastName: lname,
     email: `${fname.toLowerCase()}${lname.toLowerCase()}@${faker.helpers.arrayElement(
-      ["xyz", "abc", "lmnop"]
+      ["xyz", "abc", "lmnop"],
     )}.com`,
     password: "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
     joinedOrganizations: [organizationId],
-    userType,
+  });
+
+  const appUserProfile = new AppUserProfile({
+    userId: user._id,
     adminFor,
   });
+  if (userType == "SUPERADMIN") {
+    appUserProfile.isSuperAdmin = true;
+  }
+  await appUserProfile.save();
+  user.appUserProfileId = appUserProfile._id;
 
   await user.save();
 
@@ -41,27 +58,22 @@ export const generateUserData = async (
     documentId: user._id,
     collectionName: "User",
   });
-
-  await sampleModel.save();
-
-  return user;
-};
-
-const createUser = async (
-  generatedUser: InterfaceUser & mongoose.Document<any, any, InterfaceUser>
-): Promise<InterfaceUser & mongoose.Document<any, any, InterfaceUser>> => {
-  const savedUser = await generatedUser.save();
-  const sampleModel = new SampleData({
-    documentId: savedUser._id,
-    collectionName: "User",
+  const sampleModel2 = new SampleData({
+    documentId: appUserProfile._id,
+    collectionName: "AppUserProfile",
   });
+
   await sampleModel.save();
-  return savedUser;
+  await sampleModel2.save();
+  return {
+    user,
+    appUserProfile,
+  };
 };
 
 export const generateEventData = async (
   users: InterfaceUser[],
-  organizationId: string
+  organizationId: string,
 ): Promise<InterfaceEvent> => {
   const today = new Date();
   const oneWeekFromNow = new Date();
@@ -74,7 +86,7 @@ export const generateEventData = async (
 
   const duration = Math.floor(Math.random() * 7) + 1; // Random duration between 1 and 7 days
   const endDate = new Date(
-    startDate.getTime() + duration * 24 * 60 * 60 * 1000
+    startDate.getTime() + duration * 24 * 60 * 60 * 1000,
   );
 
   const event = new Event({
@@ -89,19 +101,11 @@ export const generateEventData = async (
     endDate,
     startTime: faker.date.future(),
     endTime: faker.date.future(),
-    recurrance: faker.helpers.arrayElement([
-      "ONCE",
-      "DAILY",
-      "WEEKLY",
-      "MONTHLY",
-      "YEARLY",
-    ]),
     isPublic: faker.datatype.boolean({ probability: 0.9 }),
     isRegisterable: faker.datatype.boolean(),
-    creator: faker.helpers.arrayElement(users)._id,
+    creatorId: faker.helpers.arrayElement(users)._id,
     admins: [faker.helpers.arrayElement(users)._id],
     organization: organizationId,
-    status: "ACTIVE",
   });
 
   await event.save();
@@ -113,11 +117,11 @@ export const generateEventData = async (
 
   await sampleModel.save();
 
-  const creatorId = event.creator.toString();
+  const creatorId = event.creatorId.toString();
   await User.findByIdAndUpdate(
     creatorId,
     { $push: { eventsCreated: event._id } },
-    { new: true }
+    { new: true },
   );
 
   return event;
@@ -125,7 +129,7 @@ export const generateEventData = async (
 
 export const generatePostData = async (
   users: InterfaceUser[],
-  organizationId: string
+  organizationId: string,
 ): Promise<InterfacePost & mongoose.Document<any, any, InterfacePost>> => {
   const post = new Post({
     status: "ACTIVE",
@@ -135,7 +139,7 @@ export const generatePostData = async (
     pinned: false,
     text: faker.lorem.sentence(),
     title: faker.lorem.words(),
-    creator: faker.helpers.arrayElement(users),
+    creatorId: faker.helpers.arrayElement(users),
     organization: organizationId,
     imageUrl: faker.image.url(),
     createdAt: faker.date.recent(),
@@ -156,7 +160,7 @@ export const generatePostData = async (
 const createPosts = async (
   numPosts: number,
   users: InterfaceUser[],
-  organizationId: string
+  organizationId: string,
 ): Promise<(InterfacePost & mongoose.Document<any, any, InterfacePost>)[]> => {
   const posts = [];
   for (let i = 0; i < numPosts; i++) {
@@ -169,7 +173,7 @@ const createPosts = async (
 const createEvents = async (
   numEvents: number,
   users: InterfaceUser[],
-  organizationId: string
+  organizationId: string,
 ): Promise<InterfaceEvent[]> => {
   const events = [];
 
@@ -182,7 +186,7 @@ const createEvents = async (
 
 export const generateRandomPlugins = async (
   numberOfPlugins: number,
-  users: string[]
+  users: string[],
 ): Promise<Promise<any>[]> => {
   const pluginPromises = [];
   for (let i = 0; i < numberOfPlugins; i++) {
@@ -212,15 +216,40 @@ export const generateRandomPlugins = async (
 
 export const createSampleOrganization = async (): Promise<void> => {
   const _id = faker.database.mongodbObjectId();
-  const creator = await generateUserData(_id, "ADMIN");
+  const userData = await generateUserData(_id, "ADMIN");
+  const creator = userData.user;
+
+  const creatorAppProfile = userData.appUserProfile;
+
+  interface Address {
+    city: string;
+    countryCode: string;
+    dependentLocality: string;
+    line1: string;
+    line2: string;
+    postalCode: string;
+    sortingCode: string;
+    state: string;
+  }
+
+  const address: Address = {
+    city: faker.location.city(),
+    countryCode: faker.location.countryCode(),
+    dependentLocality: faker.location.secondaryAddress(),
+    line1: faker.location.streetAddress(),
+    line2: faker.location.secondaryAddress(),
+    postalCode: faker.location.zipCode(),
+    sortingCode: faker.location.zipCode(),
+    state: faker.location.state(),
+  };
 
   const organization = new Organization({
     _id,
     name: faker.company.name(),
     description: faker.lorem.sentences(),
-    location: `${faker.location.country()}, ${faker.location.city()}`,
-    isPublic: true,
-    creator: creator._id,
+    address,
+    userRegistrationRequired: false,
+    creatorId: creator._id,
     status: "ACTIVE",
     members: [creator._id],
     admins: [creator._id],
@@ -233,15 +262,18 @@ export const createSampleOrganization = async (): Promise<void> => {
     createdAt: Date.now(),
   });
 
-  creator.adminFor.push(organization._id);
+  creatorAppProfile.adminFor.push(organization._id);
 
-  await creator.save();
+  // await creator.save();
+  await creatorAppProfile.save();
 
   for (let j = 0; j < 10; j++) {
     const userType = j === 0 ? "ADMIN" : "USER";
 
     const newUserData = await generateUserData(_id, userType);
-    const newUser = await createUser(newUserData);
+
+    const newUser = newUserData.user;
+    const newUserAppProfile = newUserData.appUserProfile;
 
     organization.members.push(newUser._id);
 

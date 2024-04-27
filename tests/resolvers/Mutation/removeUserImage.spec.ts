@@ -5,18 +5,19 @@ import { User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import {
   USER_NOT_FOUND_ERROR,
   USER_PROFILE_IMAGE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  afterEach,
-  vi,
-} from "vitest";
+import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
 
@@ -27,6 +28,7 @@ const testImage = "testImage";
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUserFunc();
+  await deleteUserFromCache(testUser?._id?.toString() ?? "");
 });
 
 afterAll(async () => {
@@ -47,7 +49,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
 
     try {
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { removeUserImage: removeUserImageResolver } = await import(
@@ -55,10 +57,10 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
       );
 
       await removeUserImageResolver?.({}, {}, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -80,10 +82,10 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
       );
 
       await removeUserImageResolver?.({}, {}, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -106,8 +108,9 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
         $set: {
           image: testImage,
         },
-      }
+      },
     );
+    deleteUserFromCache(testUser?._id?.toString() ?? "");
 
     const context = {
       userId: testUser?._id,
@@ -120,7 +123,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     const removeUserImagePayload = await removeUserImageResolver?.(
       {},
       {},
-      context
+      context,
     );
 
     const updatedTestUser = await User.findOne({

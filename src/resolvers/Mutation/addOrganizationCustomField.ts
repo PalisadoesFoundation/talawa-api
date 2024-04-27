@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import {
   CUSTOM_FIELD_NAME_MISSING,
   CUSTOM_FIELD_TYPE_MISSING,
@@ -6,7 +7,17 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { OrganizationCustomField, Organization, User } from "../../models";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import {
+  AppUserProfile,
+  Organization,
+  OrganizationCustomField,
+  User,
+} from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
@@ -16,23 +27,52 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
- * 2. If the organization exists.
- * 3. If the user is an admin for the organization.
- * 4. If the required name and value was provided for the new custom field
+ * 2. If the user has appProfile
+ * 3. If the organization exists.
+ * 4. If the user is an admin for the organization.
+ * 5. If the required name and value was provided for the new custom field
  * @returns Newly Added Custom Field.
  */
 
 export const addOrganizationCustomField: MutationResolvers["addOrganizationCustomField"] =
   async (_parent, args, context) => {
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    });
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     if (!currentUser) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+    let currentUserAppProfile: InterfaceAppUserProfile | null;
+    const appUserProfileFoundInCache = await findAppUserProfileCache([
+      currentUser.appUserProfileId,
+    ]);
+    currentUserAppProfile = appUserProfileFoundInCache[0];
+    if (currentUserAppProfile === null) {
+      currentUserAppProfile = await AppUserProfile.findOne({
+        userId: currentUser._id,
+      }).lean();
+      if (currentUserAppProfile !== null) {
+        await cacheAppUserProfile([currentUserAppProfile]);
+      }
+    }
+    if (!currentUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -44,21 +84,22 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
-    const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-      (organization) => organization.equals(organization._id)
+    const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+      (orgId) =>
+        orgId && new Types.ObjectId(orgId.toString()).equals(organization._id),
     );
 
     if (
-      !(currentUserIsOrganizationAdmin || currentUser.userType === "SUPERADMIN")
+      !(currentUserIsOrganizationAdmin || currentUserAppProfile.isSuperAdmin)
     ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -66,7 +107,7 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
       throw new errors.InputValidationError(
         requestContext.translate(CUSTOM_FIELD_NAME_MISSING.MESSAGE),
         CUSTOM_FIELD_NAME_MISSING.CODE,
-        CUSTOM_FIELD_NAME_MISSING.PARAM
+        CUSTOM_FIELD_NAME_MISSING.PARAM,
       );
     }
 
@@ -74,7 +115,7 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
       throw new errors.InputValidationError(
         requestContext.translate(CUSTOM_FIELD_TYPE_MISSING.MESSAGE),
         CUSTOM_FIELD_TYPE_MISSING.CODE,
-        CUSTOM_FIELD_TYPE_MISSING.PARAM
+        CUSTOM_FIELD_TYPE_MISSING.PARAM,
       );
     }
 
@@ -88,7 +129,9 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
 
     await Organization.findOneAndUpdate(
       { _id: organization._id },
-      { $push: { collectionFields: newCollectionField._id } }
+      {
+        $push: { collectionFields: newCollectionField._id },
+      },
     ).lean();
 
     return newCollectionField;

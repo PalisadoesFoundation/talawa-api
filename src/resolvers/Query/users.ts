@@ -1,8 +1,8 @@
-import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import type { InterfaceUser } from "../../models";
-import { User } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import { UNAUTHENTICATED_ERROR } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
+import { AppUserProfile, User } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -17,7 +17,7 @@ import { getWhere } from "./helperFunctions/getWhere";
 export const users: QueryResolvers["users"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   const where = getWhere<InterfaceUser>(args.where);
   const sort = getSort(args.orderBy);
@@ -30,45 +30,62 @@ export const users: QueryResolvers["users"] = async (
     throw new errors.UnauthenticatedError(
       requestContext.translate(UNAUTHENTICATED_ERROR.MESSAGE),
       UNAUTHENTICATED_ERROR.CODE,
-      UNAUTHENTICATED_ERROR.PARAM
+      UNAUTHENTICATED_ERROR.PARAM,
     );
   }
+  const currentUserAppProfile = await AppUserProfile.findOne({
+    userId: currentUser._id,
+  }).lean();
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthenticatedError(
+      requestContext.translate(UNAUTHENTICATED_ERROR.MESSAGE),
+      UNAUTHENTICATED_ERROR.CODE,
+      UNAUTHENTICATED_ERROR.PARAM,
+    );
+  }
+
   const filterCriteria = {
     ...where,
-    ...(args.userType ? { userType: args.userType } : {}),
   };
-
-  if (args.adminApproved === true) {
-    filterCriteria.adminApproved = true;
-  } else if (args.adminApproved === false) {
-    filterCriteria.adminApproved = false;
-  }
 
   const users = await User.find(filterCriteria)
     .sort(sort)
     .limit(args.first ?? 0)
     .skip(args.skip ?? 0)
     .select(["-password"])
-    .populate("createdOrganizations")
-    .populate("createdEvents")
+
     .populate("joinedOrganizations")
     .populate("registeredEvents")
-    .populate("eventAdmin")
-    .populate("adminFor")
     .populate("organizationsBlockedBy")
     .lean();
 
-  return users.map((user) => {
-    const { userType } = currentUser;
+  return await Promise.all(
+    users.map(async (user) => {
+      const isSuperAdmin = currentUserAppProfile.isSuperAdmin;
+      const appUserProfile = await AppUserProfile.findOne({ userId: user._id })
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("eventAdmin")
+        .populate("adminFor");
 
-    return {
-      ...user,
-      image: user.image ? `${context.apiRootUrl}${user.image}` : null,
-      organizationsBlockedBy:
-        (userType === "ADMIN" || userType === "SUPERADMIN") &&
-        currentUser._id !== user._id
-          ? user.organizationsBlockedBy
-          : [],
-    };
-  });
+      return {
+        user: {
+          ...user,
+          image: user.image ? `${context.apiRootUrl}${user.image}` : null,
+          organizationsBlockedBy:
+            isSuperAdmin && currentUser._id !== user._id
+              ? user.organizationsBlockedBy
+              : [],
+        },
+        appUserProfile: (appUserProfile as InterfaceAppUserProfile) || {
+          _id: "",
+          adminFor: [],
+          isSuperAdmin: false,
+          createdOrganizations: [],
+          createdEvents: [],
+          eventAdmin: [],
+        },
+      };
+    }),
+  );
 };

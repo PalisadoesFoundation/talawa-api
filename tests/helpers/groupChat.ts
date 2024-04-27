@@ -9,11 +9,12 @@ import { createTestUserAndOrganization } from "./userAndOrg";
 import type { Document } from "mongoose";
 
 export type TestGroupChatType =
-  | (InterfaceGroupChat & Document<any, any, InterfaceGroupChat>)
+  | (InterfaceGroupChat & Document<unknown, unknown, InterfaceGroupChat>)
   | null;
 
 export type TestGroupChatMessageType =
-  | (InterfaceGroupChatMessage & Document<any, any, InterfaceGroupChatMessage>)
+  | (InterfaceGroupChatMessage &
+      Document<unknown, unknown, InterfaceGroupChatMessage>)
   | null;
 
 export const createTestGroupChat = async (): Promise<
@@ -22,7 +23,7 @@ export const createTestGroupChat = async (): Promise<
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   if (testUser && testOrganization) {
     const testGroupChat = await GroupChat.create({
-      creator: testUser._id,
+      creatorId: testUser._id,
       users: [testUser._id],
       organization: testOrganization._id,
       title: `title${nanoid().toLowerCase()}`,
@@ -39,7 +40,7 @@ export const createTestGroupChatMessage = async (): Promise<
     TestUserType,
     TestOrganizationType,
     TestGroupChatType,
-    TestGroupChatMessageType
+    TestGroupChatMessageType,
   ]
 > => {
   const [testUser, testOrganization, testGroupChat] =

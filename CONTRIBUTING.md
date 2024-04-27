@@ -6,31 +6,34 @@ If you are new to contributing to open source, please read the Open Source Guide
 
 ## Table of Contents
 
-- [Contributing to Talawa API](#contributing-to-talawa-api)
-  - [Table of Contents](#table-of-contents)
-  - [Code of Conduct](#code-of-conduct)
-  - [Ways to Contribute](#ways-to-contribute)
-    - [Our Development Process](#our-development-process)
-      - [Issues](#issues)
-      - [Pull Requests](#pull-requests)
-      - [Branching Strategy](#branching-strategy)
-      - [Conflict Resolution](#conflict-resolution)
-    - [Contributing Code](#contributing-code)
-  - [Upgrading Code](#upgrading-code)
+<!-- toc -->
+
+- [Code of Conduct](#code-of-conduct)
+- [Ways to Contribute](#ways-to-contribute)
+  - [Our Development Process](#our-development-process)
+    - [Issues](#issues)
+    - [Pull Requests](#pull-requests)
+    - [Branching Strategy](#branching-strategy)
+    - [Conflict Resolution](#conflict-resolution)
+  - [Contributing Code](#contributing-code)
+- [Upgrading Code](#upgrading-code)
     - [Setting up Upstream and Origin](#setting-up-upstream-and-origin)
     - [Creating a Pull Request - Process Overview](#creating-a-pull-request---process-overview)
-  - [Type checking and code quality](#type-checking-and-code-quality)
-    - [Type checking code files](#type-checking-code-files)
-    - [Linting code files](#linting-code-files)
-    - [Formatting code files](#formatting-code-files)
-    - [Automation using husky](#automation-using-husky)
-      - [Pre-Commit hook](#pre-commit-hook)
-      - [Post-Merge hook](#post-merge-hook)
-    - [GraphQL Voyager](#graphql-voyager)
-    - [GraphQL Markdown](#graphql-markdown)
-    - [Running Queries with talawa-api](#running-queries-with-talawa-api)
-  - [Internships](#internships)
-  - [Community](#community)
+- [Type checking and code quality](#type-checking-and-code-quality)
+  - [Type checking code files](#type-checking-code-files)
+  - [Linting code files](#linting-code-files)
+  - [Formatting code files](#formatting-code-files)
+  - [Generating Table of Contents](#generating-table-of-contents)
+  - [Automation using husky](#automation-using-husky)
+    - [Pre-Commit hook](#pre-commit-hook)
+    - [Post-Merge hook](#post-merge-hook)
+  - [GraphQL Voyager](#graphql-voyager)
+  - [GraphQL Markdown](#graphql-markdown)
+  - [Running Queries with talawa-api](#running-queries-with-talawa-api)
+- [Internships](#internships)
+- [Community](#community)
+
+<!-- tocstop -->
 
 ## Code of Conduct
 
@@ -91,11 +94,11 @@ Make sure you have read the [Documentation for Setting up the Project](INSTALLAT
 The process of proposing a change to Talawa API can be summarized as:
 
 1. Fork the Talawa API repository and branch off `develop`.
-2. The repository can be cloned locally using `git clone <forked repo url>`.
-3. Make sure your code is up-to-date with the main source main. A detailed guide on the same can be found in the [Upgrading Code Section](#upgrading-code).
-4. Make the desired changes to the Talawa API source.
-5. Run the app and test your changes.
-6. If you've added code, then test suites must be added.
+1. Your newly forked repository can be cloned locally using `git clone <YOUR FORKED REPO URL>`.
+1. Make the Palisadoes Foundation's repo your `git upstream` for your local repo.
+1. Make the desired changes to the Talawa API source.
+1. Run the app and test your changes.
+1. If you've added code, then test suites must be added.
    1. **_General_:**
       1. We need to get to 100% test coverage for the app. We periodically increase the desired test coverage for our pull requests to meet this goal.
       2. Pull requests that don't meet the minimum test coverage levels will not be accepted. This may mean that you will have to create tests for code you did not write. You can decide which part of the code base needs additional tests if this happens to you.
@@ -117,7 +120,7 @@ The process of proposing a change to Talawa API can be summarized as:
             1. [Introduction To Testing In JavaScript With Jest](https://www.youtube.com/watch?v=FgnxcUQ5vho)
             2. [Jest Crash Course](https://www.youtube.com/watch?v=7r4xVDI2vho)
             3. [Testing NodeJS applications with JEST](https://www.youtube.com/watch?v=8gHEv5iNRKk)
-7. **_Test Code Coverage_:**
+1. **_Test Code Coverage_:**
    1. _General Information_
       1. The current code coverage of the repo is: [![codecov](https://codecov.io/gh/PalisadoesFoundation/talawa-api/branch/develop/graph/badge.svg?token=CECBQTAOKM)](https://codecov.io/gh/PalisadoesFoundation/talawa-api)
       2. You can determine the percentage test coverage of your code by running these two commands in sequence:
@@ -136,12 +139,12 @@ The process of proposing a change to Talawa API can be summarized as:
          3. Remember to add the `Repository Upload Token` for your forked repo. This can be found under `Settings` of your `codecov.io` account.
          4. Use the value of this token to create a secret named CODE_COV for your forked repo.
          5. You will see your code coverage reports with every push to your repo after following these steps
-8. After making changes you can add them to git locally using `git add <file_name>`(to add changes only in a particular file) or `git add .` (to add all changes).
-9. After adding the changes you need to commit them using `git commit -m '<commit message>'`(look at the commit guidelines below for commit messages).
-10. Once you have successfully commited your changes, you need to push the changes to the forked repo on github using: `git push origin <branch_name>`.(Here branch name must be name of the branch you want to push the changes to.)
-11. Now create a pull request to the Talawa repository from your forked repo. Open an issue regarding the same and link your PR to it.
-12. Ensure the test suite passes, either locally or on CI once a PR has been created.
-13. Review and address comments on your pull request if requested.
+1. After making changes you can add them to git locally using `git add <file_name>`(to add changes only in a particular file) or `git add .` (to add all changes).
+1. After adding the changes you need to commit them using `git commit -m '<commit message>'`(look at the commit guidelines below for commit messages).
+1. Once you have successfully commited your changes, you need to push the changes to the forked repo on github using: `git push origin <branch_name>`.(Here branch name must be name of the branch you want to push the changes to.)
+1. Now create a pull request to the Talawa repository from your forked repo. Open an issue regarding the same and link your PR to it.
+1. Ensure the test suite passes, either locally or on CI once a PR has been created.
+1. Review and address comments on your pull request if requested.
 
 ## Upgrading Code
 
@@ -169,12 +172,12 @@ Now you can pull in changes from `PalisadoesFoundation/talawa-api` by running `g
 
 We have established a clean setup now. We can make any changes we like and push it to this forked repository, and then make a pull request for getting the changes merged into the original repository. Here's a nice picture explaining the process ([image source](https://github.com/Rafase282/My-FreeCodeCamp-Code/wiki/Lesson-Save-your-Code-Revisions-Forever-with-Git)).
 
-![Diagram of the fork-and-clone workflow](./image/install3.png)
+![Diagram of the fork-and-clone workflow](public/markdown/images/install3.png)
 
 #### Creating a Pull Request - Process Overview
 
 For making any changes to original repository, we first sync our cloned repository with original repository. We merge `develop` with `upstream/develop` to do this.
-This make sometimes require a hard reset, and can be done with the following commands:
+This may sometimes require a hard reset, and can be done with the following commands:
 
 ```
 git fetch upstream
@@ -237,6 +240,24 @@ To fix formatting issues in code use this command:-
 
 <br/>
 
+### Generating Table of Contents
+
+To generate table of contents for markdown files use this command:-
+
+```bash
+npm run update:toc
+```
+
+And if you want to generate table of content for specific file you can use the `markdown-toc` package directly as shown:-
+
+```bash
+npx markdown-toc -i README.md
+```
+
+Remember to replace `README.md` with the name of the file you want to generate table of contents for.
+</br>
+For more information on how to use `markdown-toc` package, visit [this link](https://www.npmjs.com/package/markdown-toc).
+
 ### Automation using husky
 
 <br/>
@@ -271,7 +292,7 @@ We use the open source project [GraphQL Voyager](https://github.com/IvanGoncharo
 
 Go to `http://localhost:4000/voyager` after running the development server to explore the same!
 
-![Voyager Demo for User Model](./image/GraphQL_Voyager.png)
+![Voyager Demo for User Model](public/markdown/images/GraphQL_Voyager.png)
 
 ### GraphQL Markdown
 

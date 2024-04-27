@@ -3,7 +3,7 @@ import { recaptcha as recaptchaResolver } from "../../../src/resolvers/Mutation/
 import { describe, it, expect } from "vitest";
 
 describe("resolvers -> Mutation -> recaptcha", () => {
-  it("", async () => {
+  it("should not generate recaptcha with a dummy recaptcha token ", async () => {
     const args: MutationRecaptchaArgs = {
       data: {
         recaptchaToken: "dummyToken",

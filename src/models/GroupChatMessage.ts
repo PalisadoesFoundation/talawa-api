@@ -2,6 +2,7 @@ import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceGroupChat } from "./GroupChat";
 import type { InterfaceUser } from "./User";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface that represents a database(MongoDB) document for Group Chat Message.
  */
@@ -10,6 +11,7 @@ export interface InterfaceGroupChatMessage {
   groupChatMessageBelongsTo: PopulatedDoc<InterfaceGroupChat & Document>;
   sender: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
+  updatedAt: Date;
   messageContent: string;
   status: string;
 }
@@ -18,35 +20,39 @@ export interface InterfaceGroupChatMessage {
  * @param groupChatMessageBelongsTo - This is the association referring to the `GroupChat` model.
  * @param sender - Sender of the message.
  * @param createdAt - Time stamp of data creation.
+ * @param updatedAt - Time stamp of data updation.
  * @param messageContent - Content of the message.
- * @param status - Status.
+ * @param status - Status
  */
-const groupChatMessageSchema = new Schema({
-  groupChatMessageBelongsTo: {
-    type: Schema.Types.ObjectId,
-    ref: "GroupChat",
-    required: true,
+const groupChatMessageSchema = new Schema(
+  {
+    groupChatMessageBelongsTo: {
+      type: Schema.Types.ObjectId,
+      ref: "GroupChat",
+      required: true,
+    },
+    sender: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    messageContent: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
   },
-  sender: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+  {
+    timestamps: true,
   },
-  createdAt: {
-    type: Date,
-    required: true,
-  },
-  messageContent: {
-    type: String,
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-});
+);
+
+createLoggingMiddleware(groupChatMessageSchema, "GroupChatMessage");
 
 const groupChatMessageModel = (): Model<InterfaceGroupChatMessage> =>
   model<InterfaceGroupChatMessage>("GroupChatMessage", groupChatMessageSchema);

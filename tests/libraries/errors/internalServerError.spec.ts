@@ -9,10 +9,10 @@ describe("libraries -> errors -> internalServerError", () => {
       throw new errors.InternalServerError(
         INTERNAL_SERVER_ERROR.MESSAGE,
         INTERNAL_SERVER_ERROR.CODE,
-        INTERNAL_SERVER_ERROR.PARAM
+        INTERNAL_SERVER_ERROR.PARAM,
       );
-    } catch (error: any) {
-      expect(error.errors).toEqual([
+    } catch (error: unknown) {
+      expect((error as errors.InternalServerError).errors).toEqual([
         expect.objectContaining({
           message: INTERNAL_SERVER_ERROR.MESSAGE,
           code: INTERNAL_SERVER_ERROR.CODE,

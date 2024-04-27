@@ -1,25 +1,25 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { Organization, User } from "../../../src/models";
 import type { MutationUpdateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { updateOrganization as updateOrganizationResolver } from "../../../src/resolvers/Mutation/updateOrganization";
-import {
-  beforeAll,
-  afterAll,
-  afterEach,
-  describe,
-  it,
-  vi,
-  expect,
-} from "vitest";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import type {
   TestOrganizationType,
   TestUserType,
@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
 
     try {
       const args: MutationUpdateOrganizationArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -77,10 +77,10 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
       );
 
       await updateOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -107,10 +107,10 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
       );
 
       await updateOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -124,7 +124,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         $set: {
           admins: [testUser?._id],
         },
-      }
+      },
     );
 
     await User.updateOne(
@@ -135,14 +135,14 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         $set: {
           adminFor: [testOrganization?._id],
         },
-      }
+      },
     );
 
     const args: MutationUpdateOrganizationArgs = {
       id: testOrganization?._id,
       data: {
         description: "newDescription",
-        isPublic: false,
+        userRegistrationRequired: false,
         name: "newName",
         visibleInSearch: false,
       },
@@ -159,7 +159,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     const updateOrganizationPayload = await updateOrganizationResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const testUpdateOrganizationPayload = await Organization.findOne({
@@ -178,7 +178,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         $set: {
           admins: [testUser?._id],
         },
-      }
+      },
     );
 
     await User.updateOne(
@@ -189,22 +189,23 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         $set: {
           adminFor: [testOrganization?._id],
         },
-      }
+      },
     );
 
     const args: MutationUpdateOrganizationArgs = {
       id: testOrganization?._id,
       data: {
         description: "newDescription",
-        isPublic: false,
+        userRegistrationRequired: false,
         name: "newName",
         visibleInSearch: false,
       },
+
       file: "newImageFile.png",
     };
 
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL
+      async (encodedImageURL: string) => encodedImageURL,
     );
 
     const context = {
@@ -214,7 +215,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     const updateOrganizationPayload = await updateOrganizationResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     const testUpdateOrganizationPayload = await Organization.findOne({

@@ -1,13 +1,13 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
-import { Event, EventAttendee } from "../../models";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_UNREGISTERED_ERROR,
 } from "../../constants";
-import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceEvent } from "../../models";
+import { Event, EventAttendee } from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables a user to unregister from an event.
@@ -43,7 +43,7 @@ export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUs
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
         EVENT_NOT_FOUND_ERROR.CODE,
-        EVENT_NOT_FOUND_ERROR.PARAM
+        EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -56,7 +56,7 @@ export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUs
       throw new errors.NotFoundError(
         requestContext.translate(USER_ALREADY_UNREGISTERED_ERROR.MESSAGE),
         USER_ALREADY_UNREGISTERED_ERROR.CODE,
-        USER_ALREADY_UNREGISTERED_ERROR.PARAM
+        USER_ALREADY_UNREGISTERED_ERROR.PARAM,
       );
     }
 

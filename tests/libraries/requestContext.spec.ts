@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import {
   requestContextNamespace,
@@ -20,7 +21,7 @@ describe("middleware -> requestContext", () => {
   const mockResponse = new EventEmitter();
   const nextFunction = vi.fn();
 
-  interface InterfaceInitOptions<T> extends Record<any, any> {
+  interface InterfaceInitOptions<T> extends Record<string, any> {
     requestHandler?: () => T;
   }
 
@@ -54,7 +55,7 @@ describe("middleware -> requestContext", () => {
     middleware()(
       mockRequest as Request,
       mockResponse as Response,
-      nextFunction as NextFunction
+      nextFunction as NextFunction,
     );
     expect(nextFunction).toBeCalledTimes(1);
   });
@@ -70,13 +71,11 @@ describe("middleware -> requestContext", () => {
     const locales = ["en", "fr", "hi", "zh", "sp", "fr"];
     init(options);
     setRequestContext({
-      __: vi.fn((x) => x),
-      __n: vi.fn((x) => x),
+      __: vi.fn((args) => args.join(",")),
+      __n: vi.fn((args) => args.join(",")),
     });
-    expect(translate(locales)).toBe(locales);
-    expect(translatePlural(locales)).toBe(locales);
-
-    // Testing for empty options with no requestHandler for init
+    expect(translate(locales)).toBe(locales.join(","));
+    expect(translatePlural(locales)).toBe(locales.join(","));
     const incorrectOptions: InterfaceInitOptions<any> = {
       defaultLocale: "fr",
       locale: "fr",
@@ -91,7 +90,7 @@ describe("middleware -> requestContext", () => {
       translate({});
     } catch (error: any) {
       expect(error.message).toEqual(
-        "i18n is not initialized, try app.use(i18n.init);"
+        "i18n is not initialized, try app.use(i18n.init);",
       );
     }
   });
@@ -101,10 +100,51 @@ describe("middleware -> requestContext", () => {
       translatePlural({});
     } catch (error: any) {
       expect(error.message).toEqual(
-        "i18n is not initialized, try app.use(i18n.init);"
+        "i18n is not initialized, try app.use(i18n.init);",
       );
     }
   });
+
+  it("should handle missing locale during initialization", () => {
+    const options: InterfaceInitOptions<any> = {
+      defaultLocale: "fr",
+      fallbacks: true,
+    };
+
+    const result = init(options);
+
+    expect(result).toEqual({});
+  });
+
+  it("should handle incorrect locale during initialization", () => {
+    const options: InterfaceInitOptions<any> = {
+      defaultLocale: "fr",
+      locale: "invalid-locale",
+      fallbacks: true,
+    };
+
+    const result = init(options);
+    expect(result).toEqual({});
+  });
+
+  it("should handle missing request handler during initialization", () => {
+    const options: InterfaceInitOptions<any> = {
+      defaultLocale: "fr",
+      locale: "fr",
+      fallbacks: true,
+    };
+
+    const result = init(options);
+
+    expect(result).toEqual({});
+  });
+
+  it("should handle empty options during initialization", () => {
+    const result = init();
+
+    expect(result).toEqual({});
+  });
+
   afterEach(() => {
     requestContextNamespace.exit(context);
     vi.restoreAllMocks();

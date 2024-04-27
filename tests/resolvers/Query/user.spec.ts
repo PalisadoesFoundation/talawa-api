@@ -1,13 +1,14 @@
 import "dotenv/config";
-import { user as userResolver } from "../../../src/resolvers/Query/user";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { BASE_URL, USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
+import { user as userResolver } from "../../../src/resolvers/Query/user";
+import { connect, disconnect } from "../../helpers/db";
 
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
 import type { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
@@ -17,6 +18,7 @@ let testUser: TestUserType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = (await createTestUserAndOrganization())[0];
+  await deleteUserFromCache(testUser?.id);
 });
 
 afterAll(async () => {
@@ -27,12 +29,12 @@ describe("resolvers -> Query -> user", () => {
   it("throws NotFoundError if no user exists with _id === args.id", async () => {
     try {
       const args: QueryUserArgs = {
-        id: Types.ObjectId().toString(),
+        id: new Types.ObjectId().toString(),
       };
 
       await userResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -49,11 +51,9 @@ describe("resolvers -> Query -> user", () => {
 
     const user = await User.findOne({
       _id: testUser?._id,
-    })
-      .populate("adminFor")
-      .lean();
+    }).lean();
 
-    expect(userPayload).toEqual({
+    expect(userPayload?.user).toEqual({
       ...user,
       organizationsBlockedBy: [],
       image: null,
@@ -68,7 +68,7 @@ describe("resolvers -> Query -> user", () => {
         $set: {
           image: `images/newImage.png`,
         },
-      }
+      },
     );
 
     const args: QueryUserArgs = {
@@ -84,11 +84,9 @@ describe("resolvers -> Query -> user", () => {
 
     const user = await User.findOne({
       _id: testUser?._id,
-    })
-      .populate("adminFor")
-      .lean();
+    }).lean();
 
-    expect(userPayload).toEqual({
+    expect(userPayload?.user).toEqual({
       ...user,
       organizationsBlockedBy: [],
       image: user?.image ? `${BASE_URL}${user.image}` : null,

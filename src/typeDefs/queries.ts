@@ -7,7 +7,28 @@ export const queries = gql`
   type Query {
     adminPlugin(orgId: ID!): [Plugin]
 
+    actionItemsByEvent(eventId: ID!): [ActionItem]
+
+    actionItemsByOrganization(
+      organizationId: ID!
+      where: ActionItemWhereInput
+      orderBy: ActionItemsOrderByInput
+    ): [ActionItem]
+
+    actionItemCategoriesByOrganization(
+      organizationId: ID!
+    ): [ActionItemCategory]
+    getAgendaItem(id: ID!): AgendaItem
+
+    getAllAgendaItems: [AgendaItem]
+
+    agendaCategory(id: ID!): AgendaCategory!
+
+    getAgendaSection(id: ID!): AgendaSection
+
     checkAuth: User! @auth
+
+    getCommunityData: Community
 
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]
 
@@ -28,7 +49,20 @@ export const queries = gql`
       orderBy: EventOrderByInput
     ): [Event!]!
 
+    eventVolunteersByEvent(id: ID!): [EventVolunteer]
+
+    fundsByOrganization(organizationId: ID!, where: FundWhereInput): [Fund]
+
     getDonationById(id: ID!): Donation!
+
+    getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
+
+    getEventAttendee(userId: ID!, eventId: ID!): EventAttendee
+
+    getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
+    getFundById(id: ID!): Fund!
+    getFundraisingCampaignById(id: ID!): FundraisingCampaign!
+    getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
 
     getDonationByOrgId(orgId: ID!): [Donation]
 
@@ -42,18 +76,42 @@ export const queries = gql`
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]
-    getAdvertisements: [Advertisement]
+
+    getVenueByOrgId(
+      orgId: ID!
+      where: VenueWhereInput
+      first: Int
+      skip: Int
+      orderBy: VenueOrderByInput
+    ): [Venue]
+
+    getNoteById(id: ID!): Note!
+
+    getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
+
+    advertisementsConnection(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): AdvertisementsConnection
 
     isSampleOrganization(id: ID!): Boolean!
     hasSubmittedFeedback(userId: ID!, eventId: ID!): Boolean
 
     joinedOrganizations(id: ID): [Organization]
 
-    me: User! @auth
+    me: UserData! @auth
 
     myLanguage: String @auth
 
-    organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
+    organizations(
+      id: ID
+      orderBy: OrganizationOrderByInput
+      first: Int
+      skip: Int
+      where: MembershipRequestsWhereInput
+    ): [Organization]
 
     organizationsConnection(
       where: OrganizationWhereInput
@@ -74,21 +132,11 @@ export const queries = gql`
 
     post(id: ID!): Post
 
-    postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
-
-    postsByOrganizationConnection(
-      id: ID!
-      where: PostWhereInput
-      first: Int
-      skip: Int
-      orderBy: PostOrderByInput
-    ): PostConnection
-
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
 
     registrantsByEvent(id: ID!): [User]
 
-    user(id: ID!): User! @auth
+    user(id: ID!): UserData! @auth
 
     userLanguage(userId: ID!): String @auth
 
@@ -97,15 +145,15 @@ export const queries = gql`
       orderBy: UserOrderByInput
       first: Int
       skip: Int
-      userType: String
-      adminApproved: Boolean
-    ): [User] @auth
+    ): [UserData] @auth
 
     usersConnection(
       where: UserWhereInput
       first: Int
       skip: Int
       orderBy: UserOrderByInput
-    ): [User]! @auth
+    ): [UserData]! @auth
+
+    venue(id: ID!): Venue
   }
 `;

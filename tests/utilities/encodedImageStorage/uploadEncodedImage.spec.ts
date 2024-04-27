@@ -1,14 +1,28 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type mongoose from "mongoose";
 import * as fs from "fs";
-import { uploadEncodedImage } from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { EncodedImage } from "../../../src/models/EncodedImage";
-import { connect, disconnect } from "../../helpers/db";
+import type mongoose from "mongoose";
 import path from "path";
-import { INVALID_FILE_TYPE } from "../../../src/constants";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { IMAGE_SIZE_LIMIT_KB, INVALID_FILE_TYPE } from "../../../src/constants";
+import { EncodedImage } from "../../../src/models/EncodedImage";
+import { uploadEncodedImage } from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { connect, disconnect } from "../../helpers/db";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testPreviousImagePath: string;
+
+function generateRandomString(size: number): string {
+  size = (size * 1000 * 4) / 3 - "data:image/jpg;base64,".length;
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength: number = characters.length;
+  let counter = 0;
+  while (counter < size) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    counter += 1;
+  }
+  return result;
+}
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -32,10 +46,22 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
         "3gAAAABJRU5ErkJggg==";
       await uploadEncodedImage(img, null);
-    } catch (error: any) {
-      expect(error.message).toEqual(`Translated ${INVALID_FILE_TYPE.MESSAGE}`);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${INVALID_FILE_TYPE.MESSAGE}`,
+      );
 
       expect(spy).toBeCalledWith(INVALID_FILE_TYPE.MESSAGE);
+    }
+  });
+
+  it("should not create new image if it is bigger than the limit", async () => {
+    const size = Number(process.env.IMAGE_SIZE_LIMIT_KB) || 3000;
+    try {
+      const img = "data:image/jpg;base64," + generateRandomString(size + 1000);
+      await uploadEncodedImage(img, null);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(IMAGE_SIZE_LIMIT_KB.MESSAGE);
     }
   });
 
@@ -47,7 +73,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "3gAAAABJRU5ErkJggg==";
       const fileName = await uploadEncodedImage(img, null);
       expect(fileName).not.toBe(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
     }
   });
@@ -61,7 +87,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
       const fileName = await uploadEncodedImage(img, null);
       expect(fileName).not.toBe(null);
       testPreviousImagePath = fileName;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
     }
   });
@@ -156,7 +182,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
       fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
         if (err) throw err;
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
     }
   });

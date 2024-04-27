@@ -1,14 +1,17 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Organization, MembershipRequest } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import {
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceUser } from "../../models";
+import { MembershipRequest, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to cancel membership request.
  * @param _parent - parent of current request
@@ -32,7 +35,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
-        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -48,8 +51,9 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       organization = await Organization.findOne({
         _id: membershipRequest.organization,
       }).lean();
-
-      await cacheOrganizations([organization!]);
+      if (organization) {
+        await cacheOrganizations([organization]);
+      }
     }
 
     // Checks whether organization exists.
@@ -57,25 +61,33 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([context.userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
+    }
 
     // Checks whether currentUser exists.
     if (!currentUser) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     const currentUserCreatedMembershipRequest = currentUser._id.equals(
-      membershipRequest.user
+      membershipRequest.user,
     );
 
     // Checks whether currentUser is the creator of membershipRequest.
@@ -83,7 +95,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -104,7 +116,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       },
       {
         new: true,
-      }
+      },
     );
 
     if (updatedOrganization !== null) {
@@ -120,7 +132,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         $pull: {
           membershipRequests: membershipRequest._id,
         },
-      }
+      },
     );
 
     // Returns the deleted membershipRequest.

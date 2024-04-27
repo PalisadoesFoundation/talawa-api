@@ -34,7 +34,7 @@ beforeAll(async () => {
   testMembershipRequest = resultsArray[2];
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
+    (message) => message,
   );
 });
 
@@ -46,7 +46,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
   it(`throws NotFoundError if no membershipRequest exists with _id === args.membershipRequestId`, async () => {
     try {
       const args: MutationCancelMembershipRequestArgs = {
-        membershipRequestId: Types.ObjectId().toString(),
+        membershipRequestId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -54,8 +54,10 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
       };
 
       await cancelMembershipRequestResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -68,9 +70,9 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
-        }
+        },
       );
 
       const args: MutationCancelMembershipRequestArgs = {
@@ -82,8 +84,10 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
       };
 
       await cancelMembershipRequestResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -97,7 +101,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        }
+        },
       );
 
       const args: MutationCancelMembershipRequestArgs = {
@@ -105,12 +109,12 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       await cancelMembershipRequestResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -123,9 +127,9 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
         },
         {
           $set: {
-            user: Types.ObjectId().toString(),
+            user: new Types.ObjectId().toString(),
           },
-        }
+        },
       );
 
       const args: MutationCancelMembershipRequestArgs = {
@@ -137,8 +141,10 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
       };
 
       await cancelMembershipRequestResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -151,7 +157,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
         $set: {
           user: testUser?._id,
         },
-      }
+      },
     );
 
     const args: MutationCancelMembershipRequestArgs = {
@@ -166,7 +172,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
       await cancelMembershipRequestResolver?.({}, args, context);
 
     expect(cancelMembershipRequestPayload).toEqual(
-      testMembershipRequest?.toObject()
+      testMembershipRequest?.toObject(),
     );
 
     const testUpdatedUser = await User.findOne({

@@ -1,7 +1,11 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
-import { User, Event } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceEvent,
+  InterfaceUser,
+} from "../../models";
+import { User, Event, AppUserProfile } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -11,7 +15,17 @@ import {
 import { isValidString } from "../../libraries/validators/validateString";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import { Types } from "mongoose";
+import { session } from "../../db";
+import {
+  updateRecurringEvent,
+  updateSingleEvent,
+} from "../../helpers/event/updateEventHelpers";
+import mongoose from "mongoose";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -23,21 +37,51 @@ import { Types } from "mongoose";
  * 3. The the user is an admin of the event.
  * @returns Updated event.
  */
+
 export const updateEvent: MutationResolvers["updateEvent"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   // checks if current user exists
   if (currentUser === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -62,24 +106,38 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM
+      EVENT_NOT_FOUND_ERROR.PARAM,
     );
   }
 
-  const currentUserIsEventAdmin = event.admins.some(
-    (admin) =>
-      admin === context.userID || Types.ObjectId(admin).equals(context.userId)
+  // Boolean to determine whether user is an admin of organization.
+  const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
+    (organization) =>
+      organization &&
+      new mongoose.Types.ObjectId(organization.toString()).equals(
+        event?.organization,
+      ),
   );
 
-  // checks if current user is an admin of the event with _id === args.id
+  // Boolean to determine whether user is an admin of event.
+  const currentUserIsEventAdmin = event.admins.some(
+    (admin) =>
+      admin === context.userID ||
+      new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
+  );
+
+  // Checks whether currentUser cannot update event.
   if (
-    currentUserIsEventAdmin === false &&
-    currentUser.userType !== "SUPERADMIN"
+    !(
+      currentUserIsOrganizationAdmin ||
+      currentUserIsEventAdmin ||
+      currentUserAppProfile.isSuperAdmin
+    )
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -87,49 +145,69 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   const validationResultTitle = isValidString(args.data?.title ?? "", 256);
   const validationResultDescription = isValidString(
     args.data?.description ?? "",
-    500
+    500,
   );
   const validationResultLocation = isValidString(args.data?.location ?? "", 50);
   if (!validationResultTitle.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   if (!validationResultDescription.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
   if (!validationResultLocation.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`,
       ),
-      LENGTH_VALIDATION_ERROR.CODE
+      LENGTH_VALIDATION_ERROR.CODE,
     );
   }
 
-  const updatedEvent = await Event.findOneAndUpdate(
-    {
-      _id: args.id,
-    },
-    {
-      ...(args.data as any),
-    },
-    {
-      new: true,
-    }
-  ).lean();
-
-  if (updatedEvent !== null) {
-    await cacheEvents([updatedEvent]);
+  /* c8 ignore start */
+  if (session) {
+    // start a transaction
+    session.startTransaction();
   }
 
-  return updatedEvent!;
+  /* c8 ignore stop */
+  try {
+    let updatedEvent: InterfaceEvent = event;
+
+    if (event.recurring) {
+      // update recurring event
+      updatedEvent = await updateRecurringEvent(args, event, session);
+    } else {
+      // update single event
+      updatedEvent = await updateSingleEvent(args, event, session);
+    }
+
+    /* c8 ignore start */
+    if (session) {
+      // commit transaction if everything's successful
+      await session.commitTransaction();
+    }
+
+    /* c8 ignore stop */
+    return updatedEvent;
+    /* c8 ignore start */
+  } catch (error) {
+    if (session) {
+      // abort transaction if something fails
+      await session.abortTransaction();
+    }
+
+    throw error;
+  }
+
+  /* c8 ignore stop */
 };

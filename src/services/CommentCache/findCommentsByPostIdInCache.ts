@@ -1,10 +1,10 @@
 import CommentCache from "../redisCache";
 import type { InterfaceComment } from "../../models";
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import { logger } from "../../libraries";
 
 export async function findCommentsByPostIdInCache(
-  postID: Types.ObjectId
+  postID: mongoose.Types.ObjectId,
 ): Promise<(InterfaceComment | null)[]> {
   if (!postID) {
     return [null];
@@ -40,18 +40,20 @@ export async function findCommentsByPostIdInCache(
       return {
         ...commentObj,
 
-        _id: Types.ObjectId(commentObj._id),
+        _id: new mongoose.Types.ObjectId(commentObj._id),
 
         createdAt: new Date(commentObj.createdAt),
 
-        creator: Types.ObjectId(commentObj.creator),
+        creatorId: new mongoose.Types.ObjectId(commentObj.creatorId),
 
-        postId: Types.ObjectId(commentObj.postId),
+        updatedAt: new Date(commentObj.updatedAt),
+
+        postId: new mongoose.Types.ObjectId(commentObj.postId),
 
         likedBy:
           commentObj?.likedBy.length !== 0
             ? commentObj?.likedBy?.map((user: string) => {
-                return Types.ObjectId(user);
+                return new mongoose.Types.ObjectId(user);
               })
             : [],
       };

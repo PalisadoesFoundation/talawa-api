@@ -1,6 +1,7 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
  * This is an interface representing a document for a file in the database(MongoDB).
  */
@@ -10,9 +11,10 @@ export interface InterfaceFile {
   url: string | undefined;
   size: number | undefined;
   secret: string;
-  createdAt: Date;
   contentType: string | undefined;
   status: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 /**
  * This is the structure of a file
@@ -20,41 +22,44 @@ export interface InterfaceFile {
  * @param url - URL
  * @param size - Size
  * @param secret - Secret
- * @param reatedAt - Created at Date
+ * @param createdAt - Timestamp of creation
+ * @param updatedAt - Timestamp of updation
  * @param contentType - Content Type
  * @param status - Status
  */
-const fileSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-    default: uuidv4(),
+const fileSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      default: uuidv4(),
+    },
+    url: {
+      type: String,
+    },
+    size: {
+      type: Number,
+    },
+    secret: {
+      type: String,
+      required: true,
+    },
+    contentType: {
+      type: String,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
   },
-  url: {
-    type: String,
+  {
+    timestamps: true,
   },
-  size: {
-    type: Number,
-  },
-  secret: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    required: true,
-    default: Date.now,
-  },
-  contentType: {
-    type: String,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-});
+);
+
+createLoggingMiddleware(fileSchema, "File");
 
 const fileModel = (): Model<InterfaceFile> =>
   model<InterfaceFile>("File", fileSchema);

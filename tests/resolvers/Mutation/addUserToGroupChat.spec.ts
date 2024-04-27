@@ -1,10 +1,19 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, GroupChat } from "../../../src/models";
+import { GroupChat, Organization } from "../../../src/models";
 import type { MutationAddUserToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -12,22 +21,13 @@ import {
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
-import type {
-  TestUserType,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChat } from "../../helpers/groupChat";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -59,7 +59,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: Types.ObjectId().toString(),
+        chatId: new Types.ObjectId().toString(),
         userId: testUser?.id,
       };
 
@@ -71,9 +71,9 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         "../../../src/resolvers/Mutation/addUserToGroupChat"
       );
       await addUserToGroupChat?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -90,9 +90,9 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         },
         {
           $set: {
-            organization: Types.ObjectId().toString(),
+            organization: new Types.ObjectId().toString(),
           },
-        }
+        },
       );
 
       const args: MutationAddUserToGroupChatArgs = {
@@ -108,9 +108,11 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         "../../../src/resolvers/Mutation/addUserToGroupChat"
       );
       await addUserToGroupChat?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -132,7 +134,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
           $set: {
             organization: testOrganization?._id,
           },
-        }
+        },
       );
 
       await Organization.updateOne(
@@ -143,7 +145,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
           $set: {
             admins: [],
           },
-        }
+        },
       );
 
       const args: MutationAddUserToGroupChatArgs = {
@@ -158,9 +160,9 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         "../../../src/resolvers/Mutation/addUserToGroupChat"
       );
       await addUserToGroupChat?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
       );
 
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
@@ -184,7 +186,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         },
         {
           new: true,
-        }
+        },
       );
 
       if (updatedOrganization !== null) {
@@ -193,7 +195,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
 
       const args: MutationAddUserToGroupChatArgs = {
         chatId: testGroupChat?.id,
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const context = {
@@ -204,9 +206,9 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         "../../../src/resolvers/Mutation/addUserToGroupChat"
       );
       await addUserToGroupChat?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -230,9 +232,11 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         "../../../src/resolvers/Mutation/addUserToGroupChat"
       );
       await addUserToGroupChat?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_ALREADY_MEMBER_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_ALREADY_MEMBER_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_ALREADY_MEMBER_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -245,7 +249,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         $set: {
           users: [],
         },
-      }
+      },
     );
 
     const args: MutationAddUserToGroupChatArgs = {
@@ -262,7 +266,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     const addUserToGroupChatPayload = await addUserToGroupChat?.(
       {},
       args,
-      context
+      context,
     );
     expect(addUserToGroupChatPayload?._id).toEqual(testGroupChat?._id);
     expect(addUserToGroupChatPayload?.users).toEqual([testUser?._id]);

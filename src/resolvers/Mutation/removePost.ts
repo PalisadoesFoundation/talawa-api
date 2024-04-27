@@ -1,18 +1,27 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import type { InterfacePost } from "../../models";
-import { User, Post, Organization } from "../../models";
+import { Types } from "mongoose";
 import {
-  USER_NOT_FOUND_ERROR,
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import type {
+  InterfaceAppUserProfile,
+  InterfacePost,
+  InterfaceUser,
+} from "../../models";
+import { AppUserProfile, Organization, Post, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { cachePosts } from "../../services/PostCache/cachePosts";
 import { deletePostFromCache } from "../../services/PostCache/deletePostFromCache";
 import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
-import { cachePosts } from "../../services/PostCache/cachePosts";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { deletePreviousImage as deleteImage } from "../../utilities/encodedImageStorage/deletePreviousImage";
 import { deletePreviousVideo as deleteVideo } from "../../utilities/encodedVideoStorage/deletePreviousVideo";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 /**
  * This function enables to remove a post.
  * @param _parent - parent of current request
@@ -23,24 +32,53 @@ import { deletePreviousVideo as deleteVideo } from "../../utilities/encodedVideo
  * 2. If the post exists
  * 3. If the user is the creator of the post.
  * 4. If the user to be removed is a member of the organization.
+ * 5. If the user has appUserProfile.
  * @returns Deleted Post.
  */
 export const removePost: MutationResolvers["removePost"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Get the currentUser with _id === context.userId exists.
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   // Get the currentUser with _id === context.userId exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
+  if (!currentUserAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -64,22 +102,23 @@ export const removePost: MutationResolvers["removePost"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
       POST_NOT_FOUND_ERROR.CODE,
-      POST_NOT_FOUND_ERROR.PARAM
+      POST_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   // Checks whether currentUser is allowed to delete the post or not.
-  const isCreator = post.creator.equals(context.userId);
-  const isSuperAdmin = currentUser?.userType === "SUPERADMIN";
-  const isAdminOfPostOrganization = currentUser?.adminFor.some((orgID) =>
-    orgID.equals(post?.organization)
+  const isCreator = post.creatorId.equals(context.userId);
+  const isSuperAdmin = currentUserAppProfile.isSuperAdmin;
+  const isAdminOfPostOrganization = currentUserAppProfile?.adminFor.some(
+    (orgID) =>
+      orgID && new Types.ObjectId(orgID?.toString()).equals(post?.organization),
   );
 
   if (!isCreator && !isSuperAdmin && !isAdminOfPostOrganization) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -112,7 +151,7 @@ export const removePost: MutationResolvers["removePost"] = async (
     },
     {
       new: true,
-    }
+    },
   ).lean();
 
   if (updatedOrganization !== null) {

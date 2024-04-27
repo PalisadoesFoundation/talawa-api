@@ -1,8 +1,9 @@
-import { Types } from "mongoose";
-import { errors, requestContext } from "../libraries";
+import type { Types } from "mongoose";
+import mongoose from "mongoose";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../constants";
+import { errors, requestContext } from "../libraries";
 import type { InterfaceOrganization } from "../models";
-import { User } from "../models";
+import { AppUserProfile } from "../models";
 /**
  * If the current user is an admin of the organisation, this function returns `true` otherwise it returns `false`.
  * @remarks
@@ -13,24 +14,31 @@ import { User } from "../models";
  */
 export const adminCheck = async (
   userId: string | Types.ObjectId,
-  organization: InterfaceOrganization
+  organization: InterfaceOrganization,
 ): Promise<void> => {
   const userIsOrganizationAdmin = organization.admins.some(
-    (admin) => admin === userId || Types.ObjectId(admin).equals(userId)
+    (admin) =>
+      admin === userId ||
+      new mongoose.Types.ObjectId(admin).toString() === userId.toString(),
   );
 
-  const user = await User.findOne({
-    _id: userId,
-  });
-  const isUserSuperAdmin: boolean = user
-    ? user.userType === "SUPERADMIN"
-    : false;
+  const userAppProfile = await AppUserProfile.findOne({
+    userId,
+  }).lean();
+  if (!userAppProfile) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
+      USER_NOT_AUTHORIZED_ADMIN.CODE,
+      USER_NOT_AUTHORIZED_ADMIN.PARAM,
+    );
+  }
+  const isUserSuperAdmin: boolean = userAppProfile.isSuperAdmin;
 
   if (!userIsOrganizationAdmin && !isUserSuperAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(`${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`),
       USER_NOT_AUTHORIZED_ADMIN.CODE,
-      USER_NOT_AUTHORIZED_ADMIN.PARAM
+      USER_NOT_AUTHORIZED_ADMIN.PARAM,
     );
   }
 };

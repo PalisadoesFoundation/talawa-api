@@ -1,12 +1,14 @@
 import "dotenv/config";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
-import { Organization } from "../../models";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
-import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { errors, requestContext } from "../../libraries";
+import type { InterfaceOrganization } from "../../models";
+import { Organization } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+
 /**
  * This function adds Organization Image.
  * @param _parent - parent of current request
@@ -39,7 +41,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -49,7 +51,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
     // Upload Image
     const uploadImageFileName = await uploadEncodedImage(
       args.file,
-      organization.image
+      organization.image,
     );
     // Updates the organization with new image and returns the updated organization.
     const updatedOrganization = await Organization.findOneAndUpdate(
@@ -63,12 +65,12 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       },
       {
         new: true,
-      }
+      },
     ).lean();
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
     }
 
-    return updatedOrganization!;
+    return updatedOrganization as InterfaceOrganization;
   };

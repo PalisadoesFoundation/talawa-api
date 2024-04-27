@@ -1,8 +1,9 @@
-import mongoose, { Types } from "mongoose";
-import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+import mongoose from "mongoose";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { addUserCustomData } from "../../../src/resolvers/Mutation/addUserCustomData";
 import { removeUserCustomData } from "../../../src/resolvers/Mutation/removeUserCustomData";
 
+import { connect, disconnect } from "../../helpers/db";
 import type {
   TestOrganizationType,
   TestUserType,
@@ -11,7 +12,6 @@ import {
   createTestUser,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
-import { connect, disconnect } from "../../helpers/db";
 
 import {
   CUSTOM_DATA_NOT_FOUND,
@@ -19,6 +19,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { AppUserProfile } from "../../../src/models";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -46,7 +47,7 @@ describe("removeUserCustomData mutation", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const args = {
@@ -59,7 +60,7 @@ describe("removeUserCustomData mutation", () => {
     const removeCustomData = await removeUserCustomData?.({}, args, context);
 
     expect(removeCustomData?.organizationId).toBe(
-      addedCustomData?.organizationId
+      addedCustomData?.organizationId,
     );
     expect(removeCustomData?.userId).toBe(addedCustomData?.userId);
     expect(removeCustomData?.values).toStrictEqual(addedCustomData?.values);
@@ -83,7 +84,7 @@ describe("removeUserCustomData mutation", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const args = {
@@ -95,10 +96,10 @@ describe("removeUserCustomData mutation", () => {
 
     try {
       await removeUserCustomData?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -118,22 +119,22 @@ describe("removeUserCustomData mutation", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const args = {
       organizationId: testOrganization?._id,
     };
     const context = {
-      userId: mongoose.Types.ObjectId().toString(),
+      userId: new mongoose.Types.ObjectId().toString(),
     };
 
     try {
       await removeUserCustomData?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -153,11 +154,11 @@ describe("removeUserCustomData mutation", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const args = {
-      organizationId: mongoose.Types.ObjectId().toString(),
+      organizationId: new mongoose.Types.ObjectId().toString(),
     };
     const context = {
       userId: testUser?._id,
@@ -165,12 +166,12 @@ describe("removeUserCustomData mutation", () => {
 
     try {
       await removeUserCustomData?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
-      expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -190,7 +191,7 @@ describe("removeUserCustomData mutation", () => {
       },
       {
         userId: testUser?._id,
-      }
+      },
     );
 
     const args = {
@@ -202,12 +203,12 @@ describe("removeUserCustomData mutation", () => {
 
     try {
       await removeUserCustomData?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(
-        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
       );
-      expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -226,10 +227,31 @@ describe("removeUserCustomData mutation", () => {
 
     try {
       await removeUserCustomData?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenLastCalledWith(CUSTOM_DATA_NOT_FOUND.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${CUSTOM_DATA_NOT_FOUND.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${CUSTOM_DATA_NOT_FOUND.MESSAGE}`,
+      );
+    }
+  });
+  it("throws an error if the user does not have appUserProfile", async () => {
+    await AppUserProfile.deleteOne({ userId: testUser?._id });
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    const args = {
+      organizationId: testOrganization?._id,
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+    try {
+      await removeUserCustomData?.({}, args, context);
+    } catch (error: unknown) {
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
     }
   });

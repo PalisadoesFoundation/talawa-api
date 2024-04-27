@@ -8,46 +8,46 @@ import {
   type Model,
 } from "mongoose";
 import { type InterfaceEventAttendee } from "./EventAttendee";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 export interface InterfaceCheckIn {
   _id: Types.ObjectId;
   eventAttendeeId: PopulatedDoc<InterfaceEventAttendee & Document>;
   time: Date;
-  allotedRoom: string;
-  allotedSeat: string;
   feedbackSubmitted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const checkInSchema = new Schema({
-  eventAttendeeId: {
-    type: Schema.Types.ObjectId,
-    ref: "EventAttendee",
-    required: true,
+const checkInSchema = new Schema(
+  {
+    eventAttendeeId: {
+      type: Schema.Types.ObjectId,
+      ref: "EventAttendee",
+      required: true,
+    },
+    time: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
+    feedbackSubmitted: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
   },
-  time: {
-    type: Date,
-    required: true,
-    default: Date.now,
+  {
+    timestamps: true,
   },
-  allotedRoom: {
-    type: String,
-    required: false,
-  },
-  allotedSeat: {
-    type: String,
-    required: false,
-  },
-  feedbackSubmitted: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-});
+);
 
 // We will also create an index here for faster database querying
 checkInSchema.index({
   eventAttendeeId: 1,
 });
+
+createLoggingMiddleware(checkInSchema, "CheckIn");
 
 const checkInModel = (): Model<InterfaceCheckIn> =>
   model<InterfaceCheckIn>("CheckIn", checkInSchema);

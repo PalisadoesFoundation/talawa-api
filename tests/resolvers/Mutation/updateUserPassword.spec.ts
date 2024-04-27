@@ -1,31 +1,31 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceUser } from "../../../src/models";
-import { User } from "../../../src/models";
+import { AppUserProfile, User } from "../../../src/models";
 import type { MutationUpdateUserPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { updateUserPassword as updateUserPasswordResolver } from "../../../src/resolvers/Mutation/updateUserPassword";
-import {
-  INVALID_CREDENTIALS_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../../src/constants";
+import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import {
-  beforeAll,
   afterAll,
-  describe,
-  it,
-  expect,
-  vi,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
 } from "vitest";
-import bcrypt from "bcryptjs";
+import {
+  INVALID_CREDENTIALS_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
+import { updateUserPassword as updateUserPasswordResolver } from "../../../src/resolvers/Mutation/updateUserPassword";
+import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
+let testUser: TestUserType;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
@@ -41,7 +41,9 @@ beforeAll(async () => {
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",
-    appLanguageCode: "en",
+  });
+  await AppUserProfile.create({
+    userId: testUser._id,
   });
 });
 
@@ -73,7 +75,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: new Types.ObjectId().toString(),
       };
 
       const { updateUserPassword: updateUserPasswordResolver } = await import(
@@ -81,10 +83,10 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       );
 
       await updateUserPasswordResolver?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
@@ -93,7 +95,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     try {
@@ -106,15 +108,17 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       };
 
       const context = {
-        userId: testUser._id,
+        userId: testUser?._id,
       };
 
       const { updateUserPassword: updateUserPasswordResolver } = await import(
         "../../../src/resolvers/Mutation/updateUserPassword"
       );
       await updateUserPasswordResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        INVALID_CREDENTIALS_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -122,7 +126,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     try {
@@ -135,7 +139,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       };
 
       const context = {
-        userId: testUser._id,
+        userId: testUser?._id,
       };
 
       const { updateUserPassword: updateUserPasswordResolver } = await import(
@@ -143,8 +147,10 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       );
 
       await updateUserPasswordResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        INVALID_CREDENTIALS_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -152,7 +158,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
+      (message) => message,
     );
 
     try {
@@ -165,7 +171,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       };
 
       const context = {
-        userId: testUser._id,
+        userId: testUser?._id,
       };
 
       const { updateUserPassword: updateUserPasswordResolver } = await import(
@@ -173,8 +179,10 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       );
 
       await updateUserPasswordResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        INVALID_CREDENTIALS_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -188,15 +196,41 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     };
 
     const context = {
-      userId: testUser._id,
+      userId: testUser?._id,
     };
 
     const updateUserPasswordPayload = await updateUserPasswordResolver?.(
       {},
       args,
-      context
+      context,
     );
 
     expect(updateUserPasswordPayload).not.toBeNull();
+  });
+  it("throws error if user does not have appLanguageCode", async () => {
+    const newUser = await createTestUser();
+    await AppUserProfile.deleteOne({
+      userId: newUser?.id,
+    });
+    const args: MutationUpdateUserPasswordArgs = {
+      data: {
+        previousPassword: "password",
+        newPassword: "abcdabcd",
+        confirmNewPassword: "abcdabcd",
+      },
+    };
+    const context = {
+      userId: newUser?._id,
+    };
+
+    try {
+      await updateUserPasswordResolver?.({}, args, context);
+    } catch (error: unknown) {
+      console.log((error as Error).message);
+      // expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
+    }
   });
 });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Request } from "express";
 import { isAuth } from "../../src/middleware/isAuth";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
@@ -100,7 +101,7 @@ describe("middleware -> isAuth", () => {
     expect(verifyMocked).toHaveBeenCalledWith(
       testToken,
       ACCESS_TOKEN_SECRET as string,
-      expect.anything()
+      expect.anything(),
     );
     expect(authData).toEqual(testAuthData);
   });
@@ -129,7 +130,7 @@ describe("middleware -> isAuth", () => {
     expect(verifyMocked).toHaveBeenCalledWith(
       testToken,
       ACCESS_TOKEN_SECRET as string,
-      expect.anything()
+      expect.anything(),
     );
     expect(infoSpy).toBeCalledWith("decoded token is not present");
     expect(authData).toEqual(testAuthData);
@@ -191,7 +192,7 @@ describe("middleware -> isAuth", () => {
     expect(verifyMocked).toHaveBeenCalledWith(
       testToken,
       ACCESS_TOKEN_SECRET as string,
-      expect.anything()
+      expect.anything(),
     );
     expect(authData).toEqual(testAuthData);
   });

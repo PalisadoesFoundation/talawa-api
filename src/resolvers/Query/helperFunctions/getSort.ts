@@ -1,10 +1,11 @@
+import type { SortOrder } from "mongoose";
 import type {
   EventOrderByInput,
   InputMaybe,
   OrganizationOrderByInput,
   PostOrderByInput,
-  TaskOrderByInput,
   UserOrderByInput,
+  VenueOrderByInput,
 } from "../../../types/generatedGraphQLTypes";
 
 export const getSort = (
@@ -13,11 +14,16 @@ export const getSort = (
         | EventOrderByInput
         | OrganizationOrderByInput
         | PostOrderByInput
-        | TaskOrderByInput
         | UserOrderByInput
+        | VenueOrderByInput
       >
-    | undefined
-): any => {
+    | undefined,
+):
+  | string
+  | { [key: string]: SortOrder | { $meta: unknown } }
+  | [string, SortOrder][]
+  | null
+  | undefined => {
   let sortPayload = {};
 
   switch (orderBy) {
@@ -30,6 +36,18 @@ export const getSort = (
     case "id_DESC":
       sortPayload = {
         _id: -1,
+      };
+      break;
+
+    case "capacity_ASC":
+      sortPayload = {
+        capacity: 1,
+      };
+      break;
+
+    case "capacity_DESC":
+      sortPayload = {
+        capacity: -1,
       };
       break;
 
@@ -117,18 +135,6 @@ export const getSort = (
       };
       break;
 
-    case "recurrance_ASC":
-      sortPayload = {
-        recurrance: 1,
-      };
-      break;
-
-    case "recurrance_DESC":
-      sortPayload = {
-        recurrance: -1,
-      };
-      break;
-
     case "location_ASC":
       sortPayload = {
         location: 1,
@@ -150,18 +156,6 @@ export const getSort = (
     case "createdAt_DESC":
       sortPayload = {
         createdAt: -1,
-      };
-      break;
-
-    case "deadline_ASC":
-      sortPayload = {
-        deadline: 1,
-      };
-      break;
-
-    case "deadline_DESC":
-      sortPayload = {
-        deadline: -1,
       };
       break;
 
@@ -213,17 +207,17 @@ export const getSort = (
       };
       break;
 
-    case "appLanguageCode_ASC":
-      sortPayload = {
-        appLanguageCode: 1,
-      };
-      break;
+    // case "appLanguageCode_ASC":
+    //   sortPayload = {
+    //     appLanguageCode: 1,
+    //   };
+    //   break;
 
-    case "appLanguageCode_DESC":
-      sortPayload = {
-        appLanguageCode: -1,
-      };
-      break;
+    // case "appLanguageCode_DESC":
+    //   sortPayload = {
+    //     appLanguageCode: -1,
+    //   };
+    //   break;
 
     case "email_ASC":
       sortPayload = {

@@ -1,9 +1,16 @@
-import type { Model } from "mongoose";
+import type { Model, Document } from "mongoose";
 import { Schema, model, models } from "mongoose";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
 
-export interface InterfaceSampleData {
+export interface InterfaceSampleData extends Document {
   documentId: string;
-  collectionName: "Organization" | "Post" | "Event" | "User" | "Plugin";
+  collectionName:
+    | "Organization"
+    | "Post"
+    | "Event"
+    | "User"
+    | "Plugin"
+    | "AppUserProfile";
 }
 
 const sampleDataSchema = new Schema<InterfaceSampleData>({
@@ -14,9 +21,11 @@ const sampleDataSchema = new Schema<InterfaceSampleData>({
   collectionName: {
     type: String,
     required: true,
-    enum: ["Organization", "Post", "Event", "User", "Plugin"],
+    enum: ["Organization", "Post", "Event", "User", "AppUserProfile", "Plugin"],
   },
 });
+
+createLoggingMiddleware<InterfaceSampleData>(sampleDataSchema, "SampleData");
 
 const sampleDataModel = (): Model<InterfaceSampleData> =>
   model<InterfaceSampleData>("SampleData", sampleDataSchema);

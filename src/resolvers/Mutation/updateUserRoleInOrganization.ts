@@ -1,14 +1,15 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   ADMIN_CANNOT_CHANGE_ITS_ROLE,
   ADMIN_CHANGING_ROLE_OF_CREATOR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { Organization, User } from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
@@ -31,7 +32,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM,
       );
     }
 
@@ -42,20 +43,20 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
 
     // Checks whether user to be removed is a member of the organization.
     const userIsOrganizationMember = organization?.members.some((member) =>
-      Types.ObjectId(member).equals(user._id)
+      new mongoose.Types.ObjectId(member.toString()).equals(user._id),
     );
 
     if (!userIsOrganizationMember) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
         USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
-        USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM
+        USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
       );
     }
 
@@ -65,55 +66,70 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        USER_NOT_FOUND_ERROR.PARAM,
       );
     }
-
+    const loggedInUserAppProfile = await AppUserProfile.findOne({
+      userId: loggedInUser._id,
+    }).lean();
+    if (!loggedInUserAppProfile) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
     // Check whether loggedIn user is admin of the organization.
     const loggedInUserIsOrganizationAdmin = organization?.admins.some((admin) =>
-      Types.ObjectId(admin).equals(loggedInUser._id)
+      new mongoose.Types.ObjectId(admin.toString()).equals(loggedInUser._id),
     );
 
     if (
       !loggedInUserIsOrganizationAdmin &&
-      loggedInUser.userType !== "SUPERADMIN"
+      loggedInUserAppProfile.isSuperAdmin === false
     ) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
         USER_NOT_AUTHORIZED_ADMIN.CODE,
-        USER_NOT_AUTHORIZED_ADMIN.PARAM
+        USER_NOT_AUTHORIZED_ADMIN.PARAM,
       );
     }
     // Admin of Org cannot change the role of SUPERADMIN in an organization.
     if (
       args.role === "SUPERADMIN" &&
-      loggedInUser.userType !== "SUPERADMIN" &&
+      !loggedInUserAppProfile.isSuperAdmin &&
       loggedInUserIsOrganizationAdmin
     ) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
         USER_NOT_AUTHORIZED_ADMIN.CODE,
-        USER_NOT_AUTHORIZED_ADMIN.PARAM
+        USER_NOT_AUTHORIZED_ADMIN.PARAM,
       );
     }
     // ADMIN cannot change the role of itself
     if (
-      Types.ObjectId(context?.userId).equals(user._id) &&
+      new mongoose.Types.ObjectId(context?.userId.toString()).equals(
+        user._id,
+      ) &&
       loggedInUserIsOrganizationAdmin
     ) {
       throw new errors.ConflictError(
         requestContext.translate(ADMIN_CANNOT_CHANGE_ITS_ROLE.MESSAGE),
         ADMIN_CANNOT_CHANGE_ITS_ROLE.CODE,
-        ADMIN_CANNOT_CHANGE_ITS_ROLE.PARAM
+        ADMIN_CANNOT_CHANGE_ITS_ROLE.PARAM,
       );
     }
 
     // ADMIN cannot change the role of the creator of the organization.
-    if (Types.ObjectId(organization?.creator).equals(user._id)) {
+    if (
+      new mongoose.Types.ObjectId(organization?.creatorId.toString()).equals(
+        user._id,
+      )
+    ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(ADMIN_CHANGING_ROLE_OF_CREATOR.MESSAGE),
         ADMIN_CHANGING_ROLE_OF_CREATOR.CODE,
-        ADMIN_CHANGING_ROLE_OF_CREATOR.PARAM
+        ADMIN_CHANGING_ROLE_OF_CREATOR.PARAM,
       );
     }
 
@@ -121,21 +137,25 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
     if (args.role === "ADMIN") {
       const updatedOrg = await Organization.updateOne(
         { _id: args.organizationId },
-        { $push: { admins: args.userId } }
+        {
+          $push: { admins: args.userId },
+        },
       );
-      await User.updateOne(
-        { _id: args.userId },
-        { $push: { adminFor: args.organizationId } }
+      await AppUserProfile.updateOne(
+        { userId: args.userId },
+        { $push: { adminFor: args.organizationId } },
       );
       return { ...organization, ...updatedOrg };
     } else {
       const updatedOrg = await Organization.updateOne(
         { _id: args.organizationId },
-        { $pull: { admins: args.userId } }
+        {
+          $pull: { admins: args.userId },
+        },
       ).lean();
-      await User.updateOne(
-        { _id: args.userId },
-        { $pull: { adminFor: args.organizationId } }
+      await AppUserProfile.updateOne(
+        { userId: args.userId },
+        { $pull: { adminFor: args.organizationId } },
       );
       return { ...organization, ...updatedOrg };
     }

@@ -3,7 +3,7 @@ import { Event } from "../../models";
 import { errors } from "../../libraries";
 import { EVENT_NOT_FOUND_ERROR } from "../../constants";
 /**
- * This query will fetch the event with `ACTIVE` status from database.
+ * This query will fetch the event with _id === args.id from the database.
  * @param _parent-
  * @param args - An object that contains `id` of the event that need to be fetched.
  * @returns An `event` object. If the `event` object is null then it throws `NotFoundError` error.
@@ -13,10 +13,8 @@ import { EVENT_NOT_FOUND_ERROR } from "../../constants";
 export const event: QueryResolvers["event"] = async (_parent, args) => {
   const event = await Event.findOne({
     _id: args.id,
-    status: "ACTIVE",
   })
-    .populate("creator", "-password")
-    .populate("tasks")
+    .populate("creatorId", "-password")
     .populate("admins", "-password")
     .lean();
 
@@ -24,7 +22,7 @@ export const event: QueryResolvers["event"] = async (_parent, args) => {
     throw new errors.NotFoundError(
       EVENT_NOT_FOUND_ERROR.DESC,
       EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM
+      EVENT_NOT_FOUND_ERROR.PARAM,
     );
   }
 

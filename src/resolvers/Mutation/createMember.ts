@@ -1,44 +1,103 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { User, Organization } from "../../models";
-import { superAdminCheck } from "../../utilities";
+import mongoose from "mongoose";
 import {
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { requestContext } from "../../libraries";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceOrganization,
+  InterfaceUser,
+} from "../../models";
+import { AppUserProfile, Organization, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to add a member.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
- * 1. Checks whether current user making the request is an superAdmin
+ * 1. Checks whether current user making the request is an superAdmin or an Admin.
  * 2. If the organization exists
  * 3. Checks whether curent user exists.
+ * 4. Checks whether current user has appProfile.
  * 4. Checks whether user with _id === args.input.userId is already an member of organization..
+ *
  * @returns Organization.
  */
 export const createMember: MutationResolvers["createMember"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   // Checks whether the current user is a superAdmin
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   if (!currentUser) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+    //   USER_NOT_FOUND_ERROR.CODE,
+    //   USER_NOT_FOUND_ERROR.PARAM,
+    // );
+    return {
+      organization: new Organization(),
+      userErrors: [
+        {
+          __typename: "UserNotFoundError",
+          message: requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
-  superAdminCheck(currentUser);
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
+
+  if (!currentUserAppProfile) {
+    // throw new errors.UnauthorizedError(
+    //   requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+    //   USER_NOT_AUTHORIZED_ERROR.CODE,
+    //   USER_NOT_AUTHORIZED_ERROR.PARAM,
+    // );
+    return {
+      organization: new Organization(),
+      userErrors: [
+        {
+          __typename: "UserNotAuthorizedError",
+          message: requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        },
+      ],
+    };
+  }
 
   // Checks if organization exists.
   let organization;
@@ -54,15 +113,42 @@ export const createMember: MutationResolvers["createMember"] = async (
       _id: args.input.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    await cacheOrganizations([organization as InterfaceOrganization]);
   }
 
   if (!organization) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+    //   ORGANIZATION_NOT_FOUND_ERROR.CODE,
+    //   ORGANIZATION_NOT_FOUND_ERROR.PARAM,
+    // );
+    return {
+      organization: new Organization(),
+      userErrors: [
+        {
+          __typename: "OrganizationNotFoundError",
+          message: requestContext.translate(
+            ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+          ),
+        },
+      ],
+    };
+  }
+  const userIsOrganizationAdmin = organization.admins.some(
+    (admin) =>
+      admin === currentUser._id ||
+      new mongoose.Types.ObjectId(admin.toString()).equals(currentUser._id),
+  );
+  if (!userIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
+    return {
+      organization: new Organization(),
+      userErrors: [
+        {
+          __typename: "UserNotAuthorizedAdminError",
+          message: requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
+        },
+      ],
+    };
   }
 
   const user = await User.findOne({
@@ -71,24 +157,42 @@ export const createMember: MutationResolvers["createMember"] = async (
 
   // Checks whether curent user exists
   if (!user) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+    //   USER_NOT_FOUND_ERROR.CODE,
+    //   USER_NOT_FOUND_ERROR.PARAM,
+    // );
+    return {
+      organization: new Organization(),
+      userErrors: [
+        {
+          __typename: "UserNotFoundError",
+          message: requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
 
   const userIsOrganizationMember = organization?.members.some((member) =>
-    member.equals(user._id)
+    member.equals(user._id),
   );
 
   // Checks whether user with _id === args.input.userId is already an member of organization.
   if (userIsOrganizationMember) {
-    throw new errors.NotFoundError(
-      requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
-      MEMBER_NOT_FOUND_ERROR.CODE,
-      MEMBER_NOT_FOUND_ERROR.PARAM
-    );
+    // throw new errors.NotFoundError(
+    //   requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+    //   MEMBER_NOT_FOUND_ERROR.CODE,
+    //   MEMBER_NOT_FOUND_ERROR.PARAM,
+    // );
+    return {
+      organization: new Organization(),
+      userErrors: [
+        {
+          __typename: "MemberNotFoundError",
+          message: requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+        },
+      ],
+    };
   }
 
   // add organization's id from joinedOrganizations list on user.
@@ -103,7 +207,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     },
     {
       new: true,
-    }
+    },
   );
 
   // add user's id to members list on organization and return it.
@@ -118,12 +222,12 @@ export const createMember: MutationResolvers["createMember"] = async (
     },
     {
       new: true,
-    }
+    },
   ).lean();
 
   if (updatedOrganization !== null) {
     await cacheOrganizations([updatedOrganization]);
   }
 
-  return updatedOrganization!;
+  return { organization: updatedOrganization, userErrors: [] };
 };

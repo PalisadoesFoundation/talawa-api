@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { User } from "../../../src/models";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { AppUserProfile } from "../../../src/models";
 import { revokeRefreshTokenForUser as revokeRefreshTokenForUserResolver } from "../../../src/resolvers/Mutation/revokeRefreshTokenForUser";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
 
@@ -32,8 +32,8 @@ describe("resolvers -> Mutation -> revokeRefreshTokenForUser", () => {
 
     expect(revokeRefreshTokenForUserPayload).toEqual(true);
 
-    const testSaveFcmTokenPayload = await User.findOne({
-      _id: testUser?._id,
+    const testSaveFcmTokenPayload = await AppUserProfile.findOne({
+      userId: testUser?._id,
     })
       .select("token")
       .lean();

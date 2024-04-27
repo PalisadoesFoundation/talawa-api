@@ -1,9 +1,17 @@
-import "dotenv/config";
-import yargs from "yargs";
 import fs from "fs/promises";
 import path from "path";
+import yargs from "yargs";
 import { connect } from "../db";
-import { User, Organization, Event, Post } from "../models";
+import {
+  ActionItemCategory,
+  AppUserProfile,
+  Community,
+  Event,
+  Organization,
+  Post,
+  User,
+} from "../models";
+import { RecurrenceRule } from "../models/RecurrenceRule";
 
 interface InterfaceArgs {
   items?: string;
@@ -11,12 +19,48 @@ interface InterfaceArgs {
   _: unknown;
 }
 
+async function listSampleData(): Promise<void> {
+  try {
+    const sampleDataPath = path.join(__dirname, "../../sample_data");
+    const files = await fs.readdir(sampleDataPath);
+
+    console.log("Sample Data Files:\n");
+
+    console.log(
+      "| File Name".padEnd(30) +
+        "| Document Count |\n" +
+        "|".padEnd(30, "-") +
+        "|----------------|\n",
+    );
+
+    for (const file of files) {
+      const filePath = path.join(sampleDataPath, file);
+      const stats = await fs.stat(filePath);
+      if (stats.isFile()) {
+        const data = await fs.readFile(filePath, "utf8");
+        const docs = JSON.parse(data);
+        console.log(
+          `| ${file.padEnd(28)}| ${docs.length.toString().padEnd(15)}|`,
+        );
+      }
+    }
+    console.log();
+  } catch (err) {
+    console.error("\x1b[31m", `Error listing sample data: ${err}`);
+  }
+}
+
 async function formatDatabase(): Promise<void> {
+  // Clear all collections
   await Promise.all([
+    Community.deleteMany({}),
     User.deleteMany({}),
     Organization.deleteMany({}),
+    ActionItemCategory.deleteMany({}),
     Event.deleteMany({}),
     Post.deleteMany({}),
+    AppUserProfile.deleteMany({}),
+    RecurrenceRule.deleteMany({}),
   ]);
   console.log("Cleared all collections\n");
 }
@@ -43,15 +87,16 @@ async function insertCollections(collections: string[]): Promise<void> {
       })
       .parseSync() as InterfaceArgs;
 
-    // Check if specific collections need to be inserted
+    // Check if formatting is requested
     if (format) {
       await formatDatabase();
     }
 
+    // Insert data into each specified collection
     for (const collection of collections) {
       const data = await fs.readFile(
         path.join(__dirname, `../../sample_data/${collection}.json`),
-        "utf8"
+        "utf8",
       );
       const docs = JSON.parse(data) as Record<string, unknown>[];
 
@@ -62,11 +107,20 @@ async function insertCollections(collections: string[]): Promise<void> {
         case "organizations":
           await Organization.insertMany(docs);
           break;
+        case "actionItemCategories":
+          await ActionItemCategory.insertMany(docs);
+          break;
         case "events":
           await Event.insertMany(docs);
           break;
+        case "recurrenceRules":
+          await RecurrenceRule.insertMany(docs);
+          break;
         case "posts":
           await Post.insertMany(docs);
+          break;
+        case "appUserProfiles":
+          await AppUserProfile.insertMany(docs);
           break;
         default:
           console.log("\x1b[31m", `Invalid collection name: ${collection}`);
@@ -76,6 +130,9 @@ async function insertCollections(collections: string[]): Promise<void> {
       console.log("\x1b[35m", `Added ${collection} collection`);
     }
 
+    // Check document counts after import
+    await checkCountAfterImport();
+
     console.log("\nCollections added successfully");
   } catch (err) {
     console.error("\x1b[31m", `Error adding collections: ${err}`);
@@ -84,8 +141,51 @@ async function insertCollections(collections: string[]): Promise<void> {
   }
 }
 
+async function checkCountAfterImport(): Promise<void> {
+  try {
+    // Connect to MongoDB database
+    await connect();
+
+    const collections = [
+      { name: "users", model: User },
+      { name: "organizations", model: Organization },
+      { name: "actionItemCategories", model: ActionItemCategory },
+      { name: "events", model: Event },
+      { name: "recurrenceRules", model: RecurrenceRule },
+      { name: "posts", model: Post },
+      { name: "appUserProfiles", model: AppUserProfile },
+    ];
+
+    console.log("\nDocument Counts After Import:\n");
+
+    // Table header
+    console.log(
+      "| Collection Name".padEnd(30) +
+        "| Document Count |\n" +
+        "|".padEnd(30, "-") +
+        "|----------------|\n",
+    );
+
+    // Display document counts for each collection
+    for (const { name, model } of collections) {
+      const count = await model.countDocuments();
+      console.log(`| ${name.padEnd(28)}| ${count.toString().padEnd(15)}|`);
+    }
+  } catch (err) {
+    console.error("\x1b[31m", `Error checking document count: ${err}`);
+  }
+}
+
 // Default collections available to insert
-const collections = ["users", "organizations", "posts", "events"];
+const collections = [
+  "users",
+  "organizations",
+  "posts",
+  "events",
+  "recurrenceRules",
+  "appUserProfiles",
+  "actionItemCategories",
+];
 
 // Check if specific collections need to be inserted
 const { items: argvItems } = yargs
@@ -98,9 +198,13 @@ const { items: argvItems } = yargs
   })
   .parseSync() as InterfaceArgs;
 
-if (argvItems) {
-  const specificCollections = argvItems.split(",");
-  insertCollections(specificCollections);
-} else {
-  insertCollections(collections);
-}
+(async (): Promise<void> => {
+  if (argvItems) {
+    const specificCollections = argvItems.split(",");
+    await listSampleData();
+    await insertCollections(specificCollections);
+  } else {
+    await listSampleData();
+    await insertCollections(collections);
+  }
+})();

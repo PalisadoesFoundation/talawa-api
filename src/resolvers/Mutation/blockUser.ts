@@ -1,17 +1,18 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
+import mongoose from "mongoose";
 import {
-  USER_NOT_AUTHORIZED_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_BLOCKING_SELF,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
 import { Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { Types } from "mongoose";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
+import type { InterfaceUser } from "../../models";
 /**
  * This function enables blocking a user.
  * @param _parent - parent of current request
@@ -27,7 +28,7 @@ import { Types } from "mongoose";
 export const blockUser: MutationResolvers["blockUser"] = async (
   _parent,
   args,
-  context
+  context,
 ) => {
   let organization;
 
@@ -41,8 +42,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
-
-    await cacheOrganizations([organization!]);
+    if (organization) {
+      await cacheOrganizations([organization]);
+    }
   }
 
   // Checks whether organization exists.
@@ -50,34 +52,35 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
 
-  const userExists = await User.exists({
+  const userExists = !!(await User.exists({
     _id: args.userId,
-  });
+  }));
 
   // Checks whether user with _id === args.userId exists.
   if (userExists === false) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+      USER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
   // Check whether the user - args.userId is a member of the organization before blocking
   const userIsOrganizationMember = organization?.members.some(
     (member) =>
-      member === args.userId || Types.ObjectId(member).equals(args.userId)
+      member === args.userId ||
+      new mongoose.Types.ObjectId(member.toString()).equals(args.userId),
   );
 
   if (!userIsOrganizationMember) {
     throw new errors.NotFoundError(
       requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
       MEMBER_NOT_FOUND_ERROR.CODE,
-      MEMBER_NOT_FOUND_ERROR.PARAM
+      MEMBER_NOT_FOUND_ERROR.PARAM,
     );
   }
 
@@ -85,7 +88,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     throw new errors.NotFoundError(
       requestContext.translate(USER_BLOCKING_SELF.MESSAGE),
       USER_BLOCKING_SELF.CODE,
-      USER_BLOCKING_SELF.PARAM
+      USER_BLOCKING_SELF.PARAM,
     );
   }
 
@@ -93,7 +96,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlocked = organization.blockedUsers.some((blockedUser) =>
-    Types.ObjectId(blockedUser).equals(args.userId)
+    new mongoose.Types.ObjectId(blockedUser.toString()).equals(args.userId),
   );
 
   // Checks whether user with _id === args.userId is already blocked from organization.
@@ -101,11 +104,14 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
-  // Adds args.userId to blockedUsers list on organization's document.
+  /*
+  Adds args.userId to blockedUsers list on organization's document.
+  Removes args.userId from the organization's members list
+  */
   const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization._id,
@@ -114,10 +120,13 @@ export const blockUser: MutationResolvers["blockUser"] = async (
       $push: {
         blockedUsers: args.userId,
       },
+      $pull: {
+        members: args.userId,
+      },
     },
     {
       new: true,
-    }
+    },
   );
 
   if (updatedOrganization !== null) {
@@ -127,8 +136,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   /*
   Adds organization._id to organizationsBlockedBy list on user's document
   with _id === args.userId and returns the updated user.
+  Remove organization's id from joinedOrganizations list on args.userId.
   */
-  return await User.findOneAndUpdate(
+  return (await User.findOneAndUpdate(
     {
       _id: args.userId,
     },
@@ -136,11 +146,14 @@ export const blockUser: MutationResolvers["blockUser"] = async (
       $push: {
         organizationsBlockedBy: organization._id,
       },
+      $pull: {
+        joinedOrganizations: organization._id,
+      },
     },
     {
       new: true,
-    }
+    },
   )
     .select(["-password"])
-    .lean();
+    .lean()) as InterfaceUser;
 };

@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import type mongoose from "mongoose";
-import { Plugin } from "../../src/models";
 import { faker } from "@faker-js/faker";
+import type mongoose from "mongoose";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { Plugin } from "../../src/models";
 import {
+  generateEventData as generateEventDataFn,
+  generatePostData,
   generateRandomPlugins,
   generateUserData,
-  generatePostData,
-  generateEventData as generateEventDataFn,
 } from "../../src/utilities/createSampleOrganizationUtil";
 
 import { connect, disconnect } from "../helpers/db";
@@ -25,7 +25,9 @@ describe("generateUserData function", () => {
   it("should return correct properties given ADMIN userType and organization Id", async () => {
     const organizationId = faker.database.mongodbObjectId();
 
-    const user = await generateUserData(organizationId, "ADMIN");
+    const userData = await generateUserData(organizationId, "ADMIN");
+    const user = userData.user;
+    const appUserProfile = userData.appUserProfile;
 
     expect(typeof user._id.toString()).toBe("string");
     expect(typeof user.firstName).toBe("string");
@@ -37,18 +39,17 @@ describe("generateUserData function", () => {
     expect(user.joinedOrganizations.length).toBe(1);
     expect(typeof user.joinedOrganizations[0].toString()).toBe("string");
 
-    expect(typeof user.userType).toBe("string");
-    expect(user.userType).toBe("ADMIN");
-
-    expect(Array.isArray(user.adminFor)).toBe(true);
-    expect(user.adminFor.length).toBe(1);
-    expect(typeof user.adminFor[0].toString()).toBe("string");
+    expect(Array.isArray(appUserProfile.adminFor)).toBe(true);
+    expect(appUserProfile.adminFor?.length).toBe(1);
+    expect(typeof appUserProfile.adminFor?.[0]?.toString()).toBe("string");
   });
 
   it("should return User with correct properties", async () => {
     const organizationId = faker.database.mongodbObjectId();
 
-    const user = await generateUserData(organizationId, "SUPERADMIN");
+    const userData = await generateUserData(organizationId, "SUPERADMIN");
+    const user = userData.user;
+    const appUserProfile = userData.appUserProfile;
 
     expect(typeof user._id.toString()).toBe("string");
     expect(typeof user.firstName).toBe("string");
@@ -60,18 +61,17 @@ describe("generateUserData function", () => {
     expect(user.joinedOrganizations.length).toBe(1);
     expect(typeof user.joinedOrganizations[0].toString()).toBe("string");
 
-    expect(typeof user.userType).toBe("string");
-    expect(user.userType).toBe("SUPERADMIN");
+    expect(appUserProfile.isSuperAdmin).toBe(true);
 
-    expect(Array.isArray(user.adminFor)).toBe(true);
-    expect(user.adminFor.length).toBe(0);
+    expect(Array.isArray(appUserProfile.adminFor)).toBe(true);
+    expect(appUserProfile.adminFor.length).toBe(0);
   });
 
   it("should return Event with correct properties", async () => {
-    const users = [
+    const userData = [
       await generateUserData(faker.database.mongodbObjectId(), "USER"),
     ];
-
+    const users = userData.map((user) => user.user);
     const organizationId = faker.database.mongodbObjectId();
     const event = await generateEventDataFn(users, organizationId);
     expect(event._id).toEqual(expect.any(Object));
@@ -86,23 +86,20 @@ describe("generateUserData function", () => {
     expect(event.endDate).toEqual(expect.any(Date));
     expect(event.startTime).toEqual(expect.any(Date));
     expect(event.endTime).toEqual(expect.any(Date));
-    expect(event.recurrance).toEqual(
-      expect.stringMatching(/^(ONCE|DAILY|WEEKLY|MONTHLY|YEARLY)$/)
-    );
     expect(event.isPublic).toEqual(expect.any(Boolean));
     expect(event.isRegisterable).toEqual(expect.any(Boolean));
-    expect(event.creator.toString()).toEqual(expect.any(String));
+    expect(event.creatorId.toString()).toEqual(expect.any(String));
     expect(event.admins).toEqual(expect.any(Array));
     expect(event.organization.toString()).toEqual(expect.any(String));
-    expect(event.status).toEqual(expect.any(String));
   });
 });
 
 describe("generatePostData function", () => {
   it("should return Post with the correct properties", async () => {
-    const users = [
+    const usersData = [
       await generateUserData(faker.database.mongodbObjectId(), "USER"),
     ];
+    const users = usersData.map((user) => user.user);
     const organizationId = faker.database.mongodbObjectId(); // Fake ObjectID for the organization
 
     const post = await generatePostData(users, organizationId);
@@ -115,28 +112,33 @@ describe("generatePostData function", () => {
     expect(post.pinned).toEqual(false);
     expect(post.text).toEqual(expect.any(String));
     expect(post.title).toEqual(expect.any(String));
-    expect(post.creator).toEqual(expect.any(Object));
+    expect(post.creatorId).toEqual(expect.any(Object));
     expect(post.organization).toEqual(expect.any(Object));
     expect(post.imageUrl).toEqual(expect.any(String));
     expect(post.createdAt).toEqual(expect.any(Date));
   });
 
   describe("generateRandomPlugins function", () => {
+    beforeEach(async () => {
+      // Clear the plugins collection before each test
+      await Plugin.deleteMany({});
+    });
     it("should generate and save the specified number of plugins with correct properties", async () => {
       const numberOfPlugins = 5;
-      const users = [
+      const usersData = [
         await generateUserData(faker.database.mongodbObjectId(), "USER"),
       ];
+      const users = usersData.map((user) => user.user);
 
       const pluginPromises = await generateRandomPlugins(
         numberOfPlugins,
-        users.map((user) => user._id.toString())
+        users.map((user) => user._id.toString()),
       );
 
       expect(Array.isArray(pluginPromises)).toBe(true);
-      expect(pluginPromises!.length).toBe(numberOfPlugins);
+      expect(pluginPromises.length).toBe(numberOfPlugins);
 
-      await Promise.all(pluginPromises!);
+      await Promise.all(pluginPromises);
 
       const plugins = await Plugin.find();
       expect(plugins.length).toBe(numberOfPlugins);

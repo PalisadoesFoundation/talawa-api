@@ -1,13 +1,18 @@
-import type { TestUserType, TestOrganizationType } from "./userAndOrg";
-import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
-import type { InterfaceMembershipRequest } from "../../src/models";
-import { MembershipRequest, Organization, User } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
+import type { InterfaceMembershipRequest } from "../../src/models";
+import {
+  AppUserProfile,
+  MembershipRequest,
+  Organization,
+  User,
+} from "../../src/models";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
 
 export type TestMembershipRequestType =
   | (InterfaceMembershipRequest &
-      Document<any, any, InterfaceMembershipRequest>)
+      Document<unknown, unknown, InterfaceMembershipRequest>)
   | null;
 
 export const createTestMembershipRequest = async (): Promise<
@@ -20,7 +25,7 @@ export const createTestMembershipRequest = async (): Promise<
       name: `name${nanoid().toLowerCase()}`,
       description: `desc${nanoid().toLowerCase()}`,
       isPublic: true,
-      creator: testUser._id,
+      creatorId: testUser._id,
       admins: [testUser._id],
       visibleInSearch: true,
     });
@@ -36,11 +41,20 @@ export const createTestMembershipRequest = async (): Promise<
       },
       {
         $push: {
-          createdOrganizations: testOrganization._id,
-          adminFor: testOrganization._id,
           membershipRequests: testMembershipRequest._id,
         },
-      }
+      },
+    );
+    await AppUserProfile.updateOne(
+      {
+        userId: testUser._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization._id,
+          adminFor: testOrganization._id,
+        },
+      },
     );
 
     await Organization.updateOne(
@@ -51,7 +65,7 @@ export const createTestMembershipRequest = async (): Promise<
         $push: {
           membershipRequests: testMembershipRequest._id,
         },
-      }
+      },
     );
 
     return [testUser, testOrganization, testMembershipRequest];
@@ -85,7 +99,7 @@ export const createTestMembershipRequestAsNew = async (): Promise<
       },
       {
         new: true,
-      }
+      },
     );
 
     testOrganization = await Organization.findOneAndUpdate(
@@ -99,7 +113,7 @@ export const createTestMembershipRequestAsNew = async (): Promise<
       },
       {
         new: true,
-      }
+      },
     );
     return [testUser, testOrganization, testMembershipRequest];
   } else {
