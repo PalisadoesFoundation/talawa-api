@@ -121,7 +121,10 @@ async function startServer(): Promise<void> {
 
   // Modified server startup
   await new Promise<void>((resolve) =>
-    httpServer.listen({ port: process.env.SERVER_PORT }, resolve),
+    httpServer.listen(
+      { port: parseInt(process.env.SERVER_PORT as string) },
+      resolve,
+    ),
   );
 
   // Log all the configuration related issues
