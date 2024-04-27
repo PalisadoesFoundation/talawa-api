@@ -158,7 +158,7 @@ export type AdvertisementType =
 export type AdvertisementsConnection = {
   __typename?: 'AdvertisementsConnection';
   edges?: Maybe<Array<Maybe<AdvertisementEdge>>>;
-  pageInfo?: Maybe<ConnectionPageInfo>;
+  pageInfo: DefaultConnectionPageInfo;
   totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
@@ -3586,7 +3586,7 @@ export type AdvertisementEdgeResolvers<ContextType = any, ParentType extends Res
 
 export type AdvertisementsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdvertisementsConnection'] = ResolversParentTypes['AdvertisementsConnection']> = {
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['AdvertisementEdge']>>>, ParentType, ContextType>;
-  pageInfo?: Resolver<Maybe<ResolversTypes['ConnectionPageInfo']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
   totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
