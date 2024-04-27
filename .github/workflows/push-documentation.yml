@@ -1,0 +1,125 @@
+##############################################################################
+##############################################################################
+#
+# NOTE!
+#
+# Please read the README.md file in this directory that defines what should
+# be placed in this file
+#
+##############################################################################
+##############################################################################
+
+name: Push Documentation Workflow
+
+on:
+  push:
+    branches-ignore:
+      - '*'
+      
+jobs:
+  ##############################################################################
+  # This section is added so that the Talawa Docs repository and Talawa API
+  # are both updated with the latest schema docs post merge.
+  ##############################################################################
+
+  Push-Workflow:
+    name: Updating Documentation
+    runs-on: ubuntu-latest
+    environment: TALAWA_ENVIRONMENT
+    strategy:
+      matrix:
+        node-version: [20.x]
+    services:
+      mongo:
+        image: mongo:4.4
+        options: >-
+          --health-cmd mongo
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 27017:27017
+    env:
+      MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+#       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+#       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+
+    # We checkout the content of the Talawa-API repository in a directory called `api`
+    # This is done as we will use the Talawa-Docs repository later too
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TALAWA_DOCS_SYNC }}
+          path: api
+        
+      - name: Generate Access Token Secret
+        run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+        
+      - name: Generate Refresh Token Secret
+        run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+
+      # Move into the api folder before installing the dependencies
+      - name: Install dependencies
+        run: cd api && npm ci
+
+      # Move into the api folder before starting the server
+      - name: Start the development server in detach mode
+        run: |
+          cd api && npm run dev &
+          echo "Development server started..."
+      
+      # Sleep for 10 s
+      - name: Sleep for 10s
+        uses: juliangruber/sleep-action@v2
+        with:
+          time: 10s
+
+      # Move into the api folder before generating the Markdown schema documentation
+      - name: Generate the GraphQL-Markdown documentation
+        run: cd api && npm run generate:graphql-markdown
+      
+      # Move into the api folder before generating the Schema is json form
+      - name: Genrate the GraphQL Schema in JSON form
+        run: cd api && npm run generate:graphql-schema
+
+
+      # Running the generate::** scripts will create the necessary documentation on the server 
+      # where the GitHub Action is running locally. We add the same to stage with -f flag as they are a 
+      # part of the .gitignore file
+      - name: Add the generated Markdown Documentation to stage
+        run: cd api && git add docs/Schema.md -f
+
+      # We use this action to commit the changes above to the repository
+      - name: Commit generated Markdown Documentation to the Talawa API repository
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Generate GraphQL Schema and Markdown Documentation
+          repository: api
+      
+      # We will clone the Talawa Docs in the folder called docs so that we can copy the generated
+      # schema.json into the same later
+      - name: Checkout the Talawa-Docs repository
+        uses: actions/checkout@v4
+        with:
+          repository: PalisadoesFoundation/talawa-docs
+          token: ${{ secrets.TALAWA_DOCS_SYNC }}
+          path: docs
+      
+      # Copy the generated schema.json into the Talawa Docs repository 
+      - name: Sync schema.json from Talawa API to Talawa Docs
+        run: cp api/docs/schema.json docs/docs/github-actions/
+
+      # Add the updated schema.json in Talawa Docs to stage
+      - name: Add the synced schema.json to stage in Talawa Docs
+        run: cd docs && git add docs/github-actions/schema.json
+
+      # Commit the changes made to schema.json into Talawa Docs
+      - name: Commit the synced schema to the Talawa Docs repository
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update schema.json
+          repository: docs
