@@ -1,6 +1,3 @@
-# Don't ignore any .gitignore files in any location
-!.gitignore
-
 # Add the auto-generated docs to .gitignore as the same are created by GitHub actions
 docs/Schema.md
 docs/schema.json
@@ -46,6 +43,8 @@ key.pem
 csr.pem
 
 # MacOS
-
 .DS_STORE
+
+# Don't ignore any .gitignore files in any location
+!.gitignore
 
