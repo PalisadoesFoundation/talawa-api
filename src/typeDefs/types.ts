@@ -36,13 +36,11 @@ export const types = gql`
     createdBy: User!
     updatedBy: User!
     urls: [String]
-    user: String!
+    users: [User]
     categories: [AgendaCategory]
     sequence: Int!
-    itemType: ItemType!
     createdAt: Date!
     updatedAt: Date!
-    isNote: Boolean!
     organization: Organization!
     relatedEvent: Event
   }
@@ -430,6 +428,16 @@ export const types = gql`
     languageBarrier: Boolean
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  type Note {
+    _id: ID!
+    content: String!
+    createdBy: User!
+    updatedBy: User!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    agendaItemId: ID!
   }
 
   type Organization {

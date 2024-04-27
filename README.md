@@ -27,8 +27,7 @@ Core features include:
 
 - [Talawa Components](#talawa-components)
 - [Documentation](#documentation)
-- [Installation](#installation)
-- [Image Upload](#image-upload)
+- [Videos](#videos)
 
 <!-- tocstop -->
 
@@ -41,15 +40,18 @@ Core features include:
 1. **talawa-admin**: [A web based administrative portal](https://github.com/PalisadoesFoundation/talawa-admin)
 1. **talawa-docs**: [The online documentation website](https://github.com/PalisadoesFoundation/talawa-docs)
 
-## Documentation
+# Documentation
 
-- The talawa documentation can be found [here](https://docs.talawa.io).
-- Want to contribute? Look at [CONTRIBUTING.md](./CONTRIBUTING.md) to get started.
+1. You can install the software for this repository using the steps in our [INSTALLATION.md](INSTALLATION.md) file.
+1. Do you want to contribute to our code base? Look at our [CONTRIBUTING.md](CONTRIBUTING.md) file to get started. There you'll also find links to:
+    1. Our code of conduct documentation in the [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) file.
+    1. How we handle the processing of new and existing issues in our [ISSUE_GUIDELINES.md](ISSUE_GUIDELINES.md) file.
+    1. The methodologies we use to manage our pull requests in our [PR_GUIDELINES.md](PR_GUIDELINES.md) file.
+1. The `talawa` documentation can be found at our [docs.talawa.io](https://docs.talawa.io) site.
+    1. It is automatically generated from the markdown files stored in our [Talawa-Docs GitHub repository](https://github.com/PalisadoesFoundation/talawa-docs). This makes it easy for you to update our documenation.
 
-## Installation
+# Videos
 
-[Follow this guide](./INSTALLATION.md)
+1. Visit our [YouTube Channel playlists](https://www.youtube.com/@PalisadoesOrganization/playlists) for more insights
+   1. The "Getting Started - Developers" videos are extremely helpful for new open source contributors.
 
-## Image Upload
-
-To enable image upload functionalities create an images folder in the root of the project
