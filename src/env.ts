@@ -4,6 +4,7 @@ export const envSchema = z.object({
   NODE_ENV: z
     .string()
     .refine((value) => ["development", "production"].includes(value)),
+  SERVER_PORT: z.string(),
   ACCESS_TOKEN_SECRET: z.string(),
   REFRESH_TOKEN_SECRET: z.string(),
   MONGO_DB_URL: z.string().url(),

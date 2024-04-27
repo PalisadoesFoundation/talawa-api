@@ -23,6 +23,7 @@ import { logger } from "./libraries";
 import { isAuth } from "./middleware";
 import { composedResolvers } from "./resolvers";
 import { typeDefs } from "./typeDefs";
+import { SERVER_PORT } from "./constants";
 export const pubsub = new PubSub();
 
 // defines schema
@@ -121,10 +122,7 @@ async function startServer(): Promise<void> {
 
   // Modified server startup
   await new Promise<void>((resolve) =>
-    httpServer.listen(
-      { port: parseInt(process.env.SERVER_PORT as string) },
-      resolve,
-    ),
+    httpServer.listen({ port: parseInt(SERVER_PORT as string) }, resolve),
   );
 
   // Log all the configuration related issues
@@ -133,10 +131,10 @@ async function startServer(): Promise<void> {
   logger.info(
     `🚀 Server ready at ${
       process.env.NODE_ENV === "production" ? "https" : "http"
-    }://localhost:${process.env.SERVER_PORT}/graphql`,
+    }://localhost:${SERVER_PORT}/graphql`,
   );
   logger.info(
-    `🚀 Subscription endpoint ready at ws://localhost:${process.env.SERVER_PORT}/graphql`,
+    `🚀 Subscription endpoint ready at ws://localhost:${SERVER_PORT}/graphql`,
   );
 }
 
