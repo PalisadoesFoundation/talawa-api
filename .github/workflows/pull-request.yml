@@ -221,7 +221,7 @@ jobs:
         run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
       
       - name: Set up SERVER_PORT env
-        run: echo "SERVER_PORT=$(4000)" >> $GITHUB_ENV
+        run: echo "SERVER_PORT=4000" >> $GITHUB_ENV
 
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
