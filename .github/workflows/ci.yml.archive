@@ -1,0 +1,38 @@
+##############################################################################
+##############################################################################
+#
+# NOTE!
+#
+# Please read the README.md file in this directory that defines what should 
+# be placed in this file
+#
+##############################################################################
+##############################################################################
+
+##############################################################################
+##############################################################################
+#
+# NOTE! - Changig branches
+#
+# Before changing the CI/CD branch in this file, you will need to change the
+# configured branch for Heroku auto-deployments. This can be done by 
+# disabling auto-deployments, and then re-enabling it for the new branch.
+#
+##############################################################################
+##############################################################################
+
+name: Talawa Heroku CI/CD Pipeline
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_APP_NAME}} #Must be unique in Heroku
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
