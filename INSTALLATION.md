@@ -111,7 +111,7 @@ First you need a local copy of `talawa-api`. Run the following command in the di
 1. On your computer, navigate to the folder where you want to setup the repository.
 2. Open a `cmd` (Windows) or `terminal` (Linux or MacOS) session in this folder.
     1. An easy way to do this is to right-click and choose appropriate option based on your OS.
-3. **For Our Open Source Contributor Developers:**
+3. **For Our Open Source Contributor Software Developers:**
     1. Next, we'll fork and clone the `talawa-api` repository.
     1. In your web browser, navigate to [https://github.com/PalisadoesFoundation/talawa-api/](https://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
        ![Image with fork](public/markdown/images/install1.png)
@@ -120,8 +120,11 @@ First you need a local copy of `talawa-api`. Run the following command in the di
     3. Clone the repository to your local computer (replacing the values in `{{}}`):
         ```bash
         $ git clone https://github.com/{{YOUR GITHUB USERNAME}}/talawa-api.git
+        cd talawa-api
+        git checkout develop
         ```
-    4. This will setup the repository and the code files locally for you. For more detailed instructions on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
+        - **Note:** Make sure to check out the `develop` branch
+    4. You now have a local copy of the code files. For more detailed instructions on contributing code, and managing the versions of this repository with `git`, checkout our [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 4. **Talawa Administrators:**
       1. Clone the repository to your local computer using this command:
 
@@ -131,21 +134,25 @@ First you need a local copy of `talawa-api`. Run the following command in the di
 
 ## Install node.js
 
-Best way to install and manage `node.js` is making use of node version managers. We recommend using:
-
-- [fnm](https://github.com/Schniz/fnm)
+Best way to install and manage `node.js` is making use of node version managers. We recommend using `fnm`, which will be described in more detail later.
 
 Follow these steps to install the `node.js` packages in Windows, Linux and MacOS.
 
 1. For Windows:
     1. first install `node.js` from their website at https://nodejs.org
         1. When installing, don't click the option to install the `necessary tools`. These are not needed in our case. 
-    2. then install `fnm`
-        1. **Note**: After installing `fnm`:
-            1. Refer to the installation page's section on the `Shell Setup` recommendations.
-            2. Enter `Windows PowerShell` in your Windows terminal window
-            3. Run the recommended `Windows PowerShell` command
-            4. This will ensure that you are always using the correct version of `node.js`
+    2. then install [fnm](https://github.com/Schniz/fnm). Please read all the steps in this section first.
+        1. All the commands listed on this page will need to be run in a Windows terminal session in the `talawa-api` directory.
+        2. Install `fnm` using the `winget` option listed on the page.
+        3. Setup `fnm` to automatically set the version of `node.js` to the version required for the repository using these steps:
+            1. First, refer to the `fnm` web page's section on `Shell Setup` recommendations.
+            2. Open a `Windows PowerShell` terminal window
+            3. Run the recommended `Windows PowerShell` command to open `notepad`.
+            4. Paste the recommended string into `notepad`
+            5. Save the document.
+            6. Exit `notepad`
+            7. Exit PowerShell
+            8. This will ensure that you are always using the correct version of `node.js`
 2. For Linux and MacOS, use the terminal window.
    1. install `node.js`
    2. then install `fnm`
@@ -161,6 +168,7 @@ To install TypeScript, you can use the `npm` command which comes with `node.js`:
 
 ```bash
 npm install -g typescript
+npm install
 ```
 
 This command installs TypeScript globally on your system so that it can be accessed from any project.
@@ -217,7 +225,7 @@ Follow these steps for setting up a software development environment.
 
 3. **Stopping Development Containers:**
     ```
-    docker-compose -f docker-compose.dev.yml down
+    docker-compose -f docker-compose.dev.yaml down
     ```
 
 ### For Production
@@ -226,7 +234,7 @@ Follow these steps for setting up a production environment.
 
 1. **Build and Start Production Containers:**
     ```
-    docker-compose -f docker-compose.prod.yml up --build -d
+    docker-compose -f docker-compose.prod.yaml up --build -d
     ```
    This command starts the production environment in detached mode, suitable for production deployment.
 
@@ -235,7 +243,7 @@ Follow these steps for setting up a production environment.
 
 3. **Stopping Production Containers:**
     ```
-    docker-compose -f docker-compose.prod.yml down
+    docker-compose -f docker-compose.prod.yaml down
     ```
 
 ## Import The Sample Data
