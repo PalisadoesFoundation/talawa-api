@@ -24,6 +24,7 @@ import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 export const advertisements: OrganizationResolvers["advertisements"] = async (
   parent,
   args,
+  context,
 ) => {
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArguments({
@@ -73,12 +74,19 @@ export const advertisements: OrganizationResolvers["advertisements"] = async (
       .exec(),
   ]);
 
+  const advertisements = objectList.map(
+    (advertisement: InterfaceAdvertisement) => ({
+      ...advertisement,
+      mediaUrl: `${context.apiRootUrl}${advertisement.mediaUrl}`,
+    }),
+  );
+
   return transformToDefaultGraphQLConnection<
     ParsedCursor,
     InterfaceAdvertisement,
     InterfaceAdvertisement
   >({
-    objectList,
+    objectList: advertisements,
     parsedArgs,
     totalCount,
   });

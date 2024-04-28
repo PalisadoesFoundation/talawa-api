@@ -351,6 +351,55 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     expect(advertisement).toEqual({ advertisement: expectedAdvertisement });
   });
 
+  it(`updates the advertisement without media and returns it`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message: string) => `Translated ${message}`,
+    );
+
+    const args: MutationUpdateAdvertisementArgs = {
+      input: {
+        _id: testAdvertisement._id,
+        name: "New Advertisement Name",
+        type: "POPUP",
+      },
+    };
+
+    const context = { userId: testSuperAdmin?.id };
+
+    const updateAdvertisementPayload = await updateAdvertisementResolver?.(
+      {},
+      args,
+      context,
+    );
+    const advertisement = updateAdvertisementPayload || {};
+
+    const updatedTestAdvertisement = await Advertisement.findOne({
+      _id: testAdvertisement._id,
+    }).lean();
+
+    let expectedAdvertisement;
+
+    if (!updatedTestAdvertisement) {
+      console.error("Updated advertisement not found in the database");
+    } else {
+      expectedAdvertisement = {
+        _id: updatedTestAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
+        name: updatedTestAdvertisement.name,
+        organizationId: updatedTestAdvertisement.organizationId,
+        mediaUrl: updatedTestAdvertisement.mediaUrl,
+        type: updatedTestAdvertisement.type,
+        startDate: updatedTestAdvertisement.startDate,
+        endDate: updatedTestAdvertisement.endDate,
+        createdAt: updatedTestAdvertisement.createdAt,
+        updatedAt: updatedTestAdvertisement.updatedAt,
+        creatorId: updatedTestAdvertisement.creatorId,
+      };
+    }
+    expect(advertisement).toEqual({ advertisement: expectedAdvertisement });
+  });
+
   it(`updates the advertisement media with unsupported file type`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
