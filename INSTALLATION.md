@@ -111,7 +111,7 @@ First you need a local copy of `talawa-api`. Run the following command in the di
 1. On your computer, navigate to the folder where you want to setup the repository.
 2. Open a `cmd` (Windows) or `terminal` (Linux or MacOS) session in this folder.
     1. An easy way to do this is to right-click and choose appropriate option based on your OS.
-3. **For Our Open Source Contributor Developers:**
+3. **For Our Open Source Contributor Softwared Developers:**
     1. Next, we'll fork and clone the `talawa-api` repository.
     1. In your web browser, navigate to [https://github.com/PalisadoesFoundation/talawa-api/](https://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
        ![Image with fork](public/markdown/images/install1.png)
@@ -120,6 +120,8 @@ First you need a local copy of `talawa-api`. Run the following command in the di
     3. Clone the repository to your local computer (replacing the values in `{{}}`):
         ```bash
         $ git clone https://github.com/{{YOUR GITHUB USERNAME}}/talawa-api.git
+        cd talawa-api
+        git checkout develop
         ```
     4. This will setup the repository and the code files locally for you. For more detailed instructions on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
 4. **Talawa Administrators:**
