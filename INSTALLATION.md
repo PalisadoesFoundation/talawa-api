@@ -4,22 +4,95 @@ This document provides instructions on how to set up and start a running instanc
 
 # Table of Contents
 
-<!-- toc -->
+<!-- TOC -->
 
 - [Talawa-API Installation](#talawa-api-installation)
 - [Table of Contents](#table-of-contents)
+- [Installation Steps Summary](#installation-steps-summary)
 - [Prerequisites](#prerequisites)
   - [Install git](#install-git)
   - [Setting up this repository](#setting-up-this-repository)
   - [Install node.js](#install-nodejs)
-  - [Install npm](#install-npm)
   - [Install TypeScript](#install-typescript)
 - [Installation Using Docker](#installation-using-docker)
-  - [Prerequisites](#prerequisites-1)
+  - [Run the Talawa-API Setup](#run-the-talawa-api-setup)
+  - [Install the Docker Application](#install-the-docker-application)
   - [Docker Compose Setup](#docker-compose-setup)
     - [For Development](#for-development)
     - [For Production](#for-production)
-    - [Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!](#congratulations--your-talawa-api-is-now-successfully-set-up-and-running-using-docker)
+  - [Import The Sample Data](#import-the-sample-data)
+- [Installation without Docker](#installation-without-docker)
+  - [Install the Required Packages](#install-the-required-packages)
+  - [Install MongoDB](#install-mongodb)
+    - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
+  - [Install Redis](#install-redis)
+    - [Performance Benefits](#performance-benefits)
+    - [Setting Up Redis](#setting-up-redis)
+- [Configuration](#configuration)
+  - [Automated Configuration of `.env`](#automated-configuration-of-env)
+  - [Manual Configuration of `.env`](#manual-configuration-of-env)
+    - [The Environment Variables in `.env`](#the-environment-variables-in-env)
+    - [Changing the Development Environment in the .env file](#changing-the-development-environment-in-the-env-file)
+    - [Generating Token Secrets](#generating-token-secrets)
+      - [Setting up ACCESS\_TOKEN\_SECRET in the .env file](#setting-up-access_token_secret-in-the-env-file)
+        - [Linux](#linux)
+        - [Windows](#windows)
+    - [Setting up REFRESH\_TOKEN\_SECRET in the .env file](#setting-up-refresh_token_secret-in-the-env-file)
+    - [Configuring MongoDB in the .env file](#configuring-mongodb-in-the-env-file)
+      - [Using the CLI to get the MONGODB\_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
+      - [Using Microsoft Windows to get the MONGODB\_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+    - [Configuring Redis in .env file](#configuring-redis-in-env-file)
+      - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
+      - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
+    - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter in the .env file](#setting-up-env-last_resort_superadmin_email-parameter-in-the-env-file)
+    - [Configuring Google ReCAPTCHA in the .env file](#configuring-google-recaptcha-in-the-env-file)
+      - [Setting up the RECAPTCHA\_SECRET\_KEY](#setting-up-the-recaptcha_secret_key)
+      - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+    - [Setting up SMTP Email Variables in the .env File](#setting-up-smtp-email-variables-in-the-env-file)
+    - [Setting up Logger configurations](#setting-up-logger-configurations)
+      - [Setting up COLORIZE\_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
+      - [Setting up LOG\_LEVEL in .env file](#setting-up-log_level-in-env-file)
+- [Importing Sample Database](#importing-sample-database)
+  - [Syntax:](#syntax)
+  - [Examples:](#examples)
+  - [Sample Data Overview:](#sample-data-overview)
+    - [User Accounts and Organizations:](#user-accounts-and-organizations)
+    - [Posts](#posts)
+    - [Events](#events)
+- [Running Talawa-API](#running-talawa-api)
+- [How to Access the Talawa-API URL](#how-to-access-the-talawa-api-url)
+  - [For Talawa-API Developers](#for-talawa-api-developers)
+  - [For Mobile App Developers](#for-mobile-app-developers)
+    - [On Android Virtual Device](#on-android-virtual-device)
+    - [On a Real Mobile Device](#on-a-real-mobile-device)
+  - [For Talawa-Admin Developers](#for-talawa-admin-developers)
+- [Accessing MongoDB](#accessing-mongodb)
+  - [Managing MongoDB using the MongoDB Compass GUI](#managing-mongodb-using-the-mongodb-compass-gui)
+  - [Managing MongoDB using the VSCode extension](#managing-mongodb-using-the-vscode-extension)
+- [Manually Adding The First Super Admin User](#manually-adding-the-first-super-admin-user)
+  - [Using MongoDB Compass](#using-mongodb-compass)
+  - [Using Mongo Shell](#using-mongo-shell)
+- [Other](#other)
+  - [Changing default talawa-api port](#changing-default-talawa-api-port)
+- [Testing](#testing)
+
+<!-- /TOC -->
+
+- [Talawa-API Installation](#talawa-api-installation)
+- [Table of Contents](#table-of-contents)
+- [Installation Steps Summary](#installation-steps-summary)
+- [Prerequisites](#prerequisites)
+  - [Install git](#install-git)
+  - [Setting up this repository](#setting-up-this-repository)
+  - [Install node.js](#install-nodejs)
+  - [Install TypeScript](#install-typescript)
+- [Installation Using Docker](#installation-using-docker)
+  - [Run the Talawa-API Setup](#run-the-talawa-api-setup)
+  - [Install the Docker Application](#install-the-docker-application)
+  - [Docker Compose Setup](#docker-compose-setup)
+    - [For Development](#for-development)
+    - [For Production](#for-production)
+  - [Import The Sample Data](#import-the-sample-data)
 - [Installation without Docker](#installation-without-docker)
   - [Install the Required Packages](#install-the-required-packages)
   - [Install MongoDB](#install-mongodb)
@@ -77,11 +150,29 @@ This document provides instructions on how to set up and start a running instanc
 
 <!-- tocstop -->
 
+
+# Installation Steps Summary
+
+Installation is not difficult, but there are many steps. This is a brief explanation of what needs to be done:
+
+1. Install `git`
+2. Download the code from GitHub using `git`
+3. Install `node.js` (Node), the runtime environment the application will need to work.
+4. Configure the Node Package Manager (`npm`) to automatically use the correct version of Node for our application.
+5. Use `npm` to install TypeScript, the language the application is written in.
+6. Install other supporting software such as the database.
+7. Configure the application
+8. Start the application
+
+These steps are explained in more detail in the sections that follow.
+
 # Prerequisites
 
-You will need to have copies of your code on your local system. Here's how to do that.
+In this section we'll explain how to set up all the prerequisite software packages to get you up and running.
 
 ## Install git
+
+The easiest way to get the latest copies of our code is to install the `git` package on your computer.
 
 Follow the setup guide for `git` on official [git docs](https://git-scm.com/downloads). Basic `git` knowledge is required for open source contribution so make sure you're comfortable with it. [Here's](https://youtu.be/apGV9Kg7ics) a good tutorial to get started with `git` and `github`.
 
@@ -89,22 +180,26 @@ Follow the setup guide for `git` on official [git docs](https://git-scm.com/down
 
 First you need a local copy of `talawa-api`. Run the following command in the directory of choice on your local system.
 
-1. Navigate to the folder where you want to setup the repository. Here, I will set it up in a folder called `talawa`.
-1. Navigate to the folder and open a terminal in this folder (you can right-click and choose appropiate option based onn your OS). Next, we'll fork and clone the `talawa-api` repository.
-1. Navigate to [https://github.com/PalisadoesFoundation/talawa-api/](https://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
-   ![Image with fork](public/markdown/images/install1.png)
-1. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
-   ![Image of user's clone](public/markdown/images/install2.png)
-1. Clone the repository to your local computer (replacing the values in `{{}}`):
+1. On your computer, navigate to the folder where you want to setup the repository.
+2. Open a `cmd` (Windows) or `terminal` (Linux or MacOS) session in this folder.
+    1. An easy way to do this is to right-click and choose appropriate option based on your OS.
+3. **For Our Open Source Contributor Developers:**
+    1. Next, we'll fork and clone the `talawa-api` repository.
+    1. In your web browser, navigate to [https://github.com/PalisadoesFoundation/talawa-api/](https://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
+       ![Image with fork](public/markdown/images/install1.png)
+    2. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
+       ![Image of user's clone](public/markdown/images/install2.png)
+    3. Clone the repository to your local computer (replacing the values in `{{}}`):
+        ```bash
+        $ git clone https://github.com/{{YOUR GITHUB USERNAME}}/talawa-api.git
+        ```
+    4. This will setup the repository and the code files locally for you. For more detailed instructions on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
+4. **Talawa Administrators:**
+      1. Clone the repository to your local computer using this command:
 
-```
-$ git clone https://github.com/{{YOUR GITHUB USERNAME}}/talawa-api.git
-```
-
-This will setup the repository and the code files locally for you. For more detailed instructions on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
-
-`NOTE: All the commands we're going to execute in the following instructions will assume you are in the root directory of the project. If you fail to do so, the commands will not work.`
-
+          ```bash
+          $ git clone https://github.com/PalisadoesFoundation/talawa-api.git
+          ```
 
 ## Install node.js
 
@@ -118,29 +213,23 @@ Follow these steps to install the `node.js` packages in Windows, Linux and MacOS
     1. first install `node.js` from their website at https://nodejs.org
         1. When installing, don't click the option to install the `necessary tools`. These are not needed in our case. 
     2. then install `fnm`
-        1. make sure to implement the `Shell Setup` recommendations for Windows PowerShell
+        1. **Note**: After installing `fnm`:
+            1. Refer to the installation page's section on the `Shell Setup` recommendations.
+            2. Enter `Windows PowerShell` in your Windows terminal window
+            3. Run the recommended `Windows PowerShell` command
+            4. This will ensure that you are always using the correct version of `node.js`
 2. For Linux and MacOS, use the terminal window.
-
-_**NOTE**_
-
-1. The repository has a `.node-version` file to help ensure you use the supported version of `node.js`. Do not edit this file.
-2. We strongly recommend that you configure your node version manager of choice to automatically read `.node-version` files
-
-## Install npm
-
-npm is a package manager for Node.js and is installed with Node.js. `fnm` is used to install, share, and distribute code as well as to manage dependencies in your projects. To check if you have npm installed you can run this command in your terminal:
-
-```
-npm -v
-```
-
-If you have it installed then you should see the version that's installed. If not, you can download Node.js and npm from the official [Node.js website](https://nodejs.org/en/download/).
+   1. install `node.js`
+   2. then install `fnm`
+         1. Refer to the installation page's section on the `Shell Setup` recommendations.
+         2. Run the respective recommended commands to setup your node environment
+         3. This will ensure that you are always using the correct version of `node.js`
 
 ## Install TypeScript
 
 TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional types, classes, and modules to JavaScript, and supports tools for large-scale JavaScript applications.
 
-To install TypeScript, you can use npm:
+To install TypeScript, you can use the `npm` command which comes with `node.js`:
 
 ```bash
 npm install -g typescript
@@ -148,17 +237,46 @@ npm install -g typescript
 
 This command installs TypeScript globally on your system so that it can be accessed from any project.
 
-
 # Installation Using Docker
 
 This guide provides step-by-step instructions on deploying a talawa-api using Docker. Docker allows you to package your application and its dependencies into a container, providing a consistent environment across different systems.
 
-## Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop) installed on your machine.
+Here is a list of steps to follow:
+
+1. Run the application setup procedure
+2. Install the Docker application
+3. Install the Docker helper 
+4. Install other supporting software such as the database using the `docker-compose` command.
+5. Start Docker using the `docker-compose` command
+6. Import the sample data into the database
+
+## Run the Talawa-API Setup
+
+We have created a setup script to make configuring Talawa-API easier.
+
+1. You can do this by running the command below.
+2. Default answers will be given with capital letters
+3. Details of what each prompt means can be found in the [Configuration](#configuration) section of this document.
+
+```
+npm run setup
+```
+
+## Install the Docker Application
+
+There are many ways to install Docker. We reccommend using Docker Desktop. It can be downloaded here:
+
+- Download [Docker Desktop](https://www.docker.com/products/docker-desktop) using this link.
 
 ## Docker Compose Setup
 
+After installing Docker, you'll need to tell Docker to install the additional software it will need to run the application.
+
+The setup steps differ depending on whether you are working in a development or production environment.
+
 ### For Development
+
+Follow these steps for setting up a software development environment.
 
 1. **Build and Start Development Containers:**
     ```
@@ -176,6 +294,8 @@ This guide provides step-by-step instructions on deploying a talawa-api using Do
 
 ### For Production
 
+Follow these steps for setting up a production environment.
+
 1. **Build and Start Production Containers:**
     ```
     docker-compose -f docker-compose.prod.yml up --build -d
@@ -190,10 +310,9 @@ This guide provides step-by-step instructions on deploying a talawa-api using Do
     docker-compose -f docker-compose.prod.yml down
     ```
 
-### Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!
+## Import The Sample Data
 
-
-**Note: If you're using Docker, you'll need to manually import the sample data after the Docker Compose has started the MongoDB container. For instructions on how to do this, refer to [Importing Sample Database](#importing-sample-database)**
+You'll need to manually import the sample data after the Docker Compose has started the MongoDB container. For instructions on how to do this, refer to the [Importing Sample Database](#importing-sample-database) section of this document.
 
 # Installation without Docker
 
@@ -221,7 +340,7 @@ We're listing some common approaches to set up a running instance of MongoDB dat
 
 ## Install Redis
 
-Talawa-api makes use of `Redis` for caching frequently accessed data items in the primary database. We make use of `ioredis` to interact with the `redis-server` from within the code. The main Idea is the in production this will act as an in-memory cache. So it is recommended that you set it up locally. However for simplicity purposes, a section to accomodate for setting Redis up using a remote instance like Redis Cloud has been added. Please note that this is not recommended since the remote connection takes a considerable amount of time to be considered as a cache to improve application performance.
+Talawa-api makes use of `Redis` for caching frequently accessed data items in the primary database. We make use of `ioredis` to interact with the `redis-server` from within the code. The main Idea is the in production this will act as an in-memory cache. So it is recommended that you set it up locally. However for simplicity purposes, a section to accommodate for setting Redis up using a remote instance like Redis Cloud has been added. Please note that this is not recommended since the remote connection takes a considerable amount of time to be considered as a cache to improve application performance.
 
 ### Performance Benefits
 
