@@ -6,18 +6,20 @@ This document provides instructions on how to set up and start a running instanc
 
 <!-- toc -->
 
+- [Talawa-API Installation](#talawa-api-installation)
+- [Table of Contents](#table-of-contents)
 - [Prerequisites](#prerequisites)
+  - [Install git](#install-git)
+  - [Setting up this repository](#setting-up-this-repository)
   - [Install node.js](#install-nodejs)
   - [Install npm](#install-npm)
   - [Install TypeScript](#install-typescript)
-  - [Install git](#install-git)
-  - [Setting up this repository](#setting-up-this-repository)
 - [Installation Using Docker](#installation-using-docker)
   - [Prerequisites](#prerequisites-1)
   - [Docker Compose Setup](#docker-compose-setup)
     - [For Development](#for-development)
     - [For Production](#for-production)
-    - [Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!](#congratulations-%F0%9F%8E%89-your-talawa-api-is-now-successfully-set-up-and-running-using-docker)
+    - [Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!](#congratulations--your-talawa-api-is-now-successfully-set-up-and-running-using-docker)
 - [Installation without Docker](#installation-without-docker)
   - [Install the Required Packages](#install-the-required-packages)
   - [Install MongoDB](#install-mongodb)
@@ -31,24 +33,24 @@ This document provides instructions on how to set up and start a running instanc
     - [The Environment Variables in `.env`](#the-environment-variables-in-env)
     - [Changing the Development Environment in the .env file](#changing-the-development-environment-in-the-env-file)
     - [Generating Token Secrets](#generating-token-secrets)
-      - [Setting up ACCESS_TOKEN_SECRET in the .env file](#setting-up-access_token_secret-in-the-env-file)
+      - [Setting up ACCESS\_TOKEN\_SECRET in the .env file](#setting-up-access_token_secret-in-the-env-file)
         - [Linux](#linux)
         - [Windows](#windows)
-    - [Setting up REFRESH_TOKEN_SECRET in the .env file](#setting-up-refresh_token_secret-in-the-env-file)
+    - [Setting up REFRESH\_TOKEN\_SECRET in the .env file](#setting-up-refresh_token_secret-in-the-env-file)
     - [Configuring MongoDB in the .env file](#configuring-mongodb-in-the-env-file)
-      - [Using the CLI to get the MONGODB_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
-      - [Using Microsoft Windows to get the MONGODB_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+      - [Using the CLI to get the MONGODB\_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
+      - [Using Microsoft Windows to get the MONGODB\_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
     - [Configuring Redis in .env file](#configuring-redis-in-env-file)
       - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
       - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
-    - [Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter in the .env file](#setting-up-env-last_resort_superadmin_email-parameter-in-the-env-file)
+    - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter in the .env file](#setting-up-env-last_resort_superadmin_email-parameter-in-the-env-file)
     - [Configuring Google ReCAPTCHA in the .env file](#configuring-google-recaptcha-in-the-env-file)
-      - [Setting up the RECAPTCHA_SECRET_KEY](#setting-up-the-recaptcha_secret_key)
-      - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+      - [Setting up the RECAPTCHA\_SECRET\_KEY](#setting-up-the-recaptcha_secret_key)
+      - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
     - [Setting up SMTP Email Variables in the .env File](#setting-up-smtp-email-variables-in-the-env-file)
     - [Setting up Logger configurations](#setting-up-logger-configurations)
-      - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
-      - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
+      - [Setting up COLORIZE\_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
+      - [Setting up LOG\_LEVEL in .env file](#setting-up-log_level-in-env-file)
 - [Importing Sample Database](#importing-sample-database)
   - [Syntax:](#syntax)
   - [Examples:](#examples)
@@ -79,23 +81,54 @@ This document provides instructions on how to set up and start a running instanc
 
 You will need to have copies of your code on your local system. Here's how to do that.
 
+## Install git
+
+Follow the setup guide for `git` on official [git docs](https://git-scm.com/downloads). Basic `git` knowledge is required for open source contribution so make sure you're comfortable with it. [Here's](https://youtu.be/apGV9Kg7ics) a good tutorial to get started with `git` and `github`.
+
+## Setting up this repository
+
+First you need a local copy of `talawa-api`. Run the following command in the directory of choice on your local system.
+
+1. Navigate to the folder where you want to setup the repository. Here, I will set it up in a folder called `talawa`.
+1. Navigate to the folder and open a terminal in this folder (you can right-click and choose appropiate option based onn your OS). Next, we'll fork and clone the `talawa-api` repository.
+1. Navigate to [https://github.com/PalisadoesFoundation/talawa-api/](https://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
+   ![Image with fork](public/markdown/images/install1.png)
+1. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
+   ![Image of user's clone](public/markdown/images/install2.png)
+1. Clone the repository to your local computer (replacing the values in `{{}}`):
+
+```
+$ git clone https://github.com/{{YOUR GITHUB USERNAME}}/talawa-api.git
+```
+
+This will setup the repository and the code files locally for you. For more detailed instructions on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
+
+`NOTE: All the commands we're going to execute in the following instructions will assume you are in the root directory of the project. If you fail to do so, the commands will not work.`
+
+
 ## Install node.js
 
-Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system ensure the installation of Node.js version 20 LTS.
+Best way to install and manage `node.js` is making use of node version managers. We recommend using:
+
+- [fnm](https://github.com/Schniz/fnm)
+
+Follow these steps to install the `node.js` packages in Windows, Linux and MacOS.
+
+1. For Windows:
+    1. first install `node.js` from their website at https://nodejs.org
+        1. When installing, don't click the option to install the `necessary tools`. These are not needed in our case. 
+    2. then install `fnm`
+        1. make sure to implement the `Shell Setup` recommendations for Windows PowerShell
+2. For Linux and MacOS, use the terminal window.
 
 _**NOTE**_
 
 1. The repository has a `.node-version` file to help ensure you use the supported version of `node.js`. Do not edit this file.
-1. We strongly recommend that you configure your node version manager of choice to automatically read `.node-version` files
-
-_**NOTE**_
-
-1. The repository has a `.node-version` file to help ensure you use the supported version of `node.js`. Do not edit this file.
-1. We strongly recommend that you configure your node version manager of choice to automatically read `.node-version` files
+2. We strongly recommend that you configure your node version manager of choice to automatically read `.node-version` files
 
 ## Install npm
 
-npm is a package manager for Node.js and is installed with Node.js. npm is used to install, share, and distribute code as well as to manage dependencies in your projects. To check if you have npm installed you can run this command in your terminal:
+npm is a package manager for Node.js and is installed with Node.js. `fnm` is used to install, share, and distribute code as well as to manage dependencies in your projects. To check if you have npm installed you can run this command in your terminal:
 
 ```
 npm -v
@@ -115,29 +148,6 @@ npm install -g typescript
 
 This command installs TypeScript globally on your system so that it can be accessed from any project.
 
-## Install git
-
-Follow the setup guide for `git` on official [git docs](https://git-scm.com/downloads). Basic `git` knowledge is required for open source contribution so make sure you're comfortable with it. [Here's](https://youtu.be/apGV9Kg7ics) a good tutorial to get started with `git` and `github`.
-
-## Setting up this repository
-
-First you need a local copy of talawa-api. Run the following command in the directory of choice on your local system.
-
-1. Navigate to the folder where you want to setup the repository. Here, I will set it up in a folder called `talawa`.
-1. Navigate to the folder and open a terminal in this folder (you can right-click and choose appropiate option based onn your OS). Next, we'll fork and clone the `talawa-api` repository.
-1. Navigate to [https://github.com/PalisadoesFoundation/talawa-api/](hhttps://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
-   ![Image with fork](public/markdown/images/install1.png)
-1. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
-   ![Image of user's clone](public/markdown/images/install2.png)
-1. Clone the repository to your local computer (replacing the values in `{{}}`):
-
-```
-$ git clone https://github.com/{{YOUR GITHUB USERNAME}}/talawa-api.git
-```
-
-This will setup the repository and the code files locally for you. For more detailed instructions on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
-
-`NOTE: All the commands we're going to execute in the following instructions will assume you are in the root directory of the project. If you fail to do so, the commands will not work.`
 
 # Installation Using Docker
 
