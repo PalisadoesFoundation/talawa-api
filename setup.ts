@@ -864,7 +864,6 @@ async function main(): Promise<void> {
     },
   ]);
   if (process.env.NODE_ENV === "development") {
-    console.log("development");
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.SERVER_PORT = serverPort;
     updateEnvVariable(config);
