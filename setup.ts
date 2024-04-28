@@ -846,15 +846,6 @@ async function main(): Promise<void> {
     await recaptchaSiteKey();
   }
 
-  console.log(
-    "\n You can configure either SMTP or Mail for sending emails through Talawa.\n",
-  );
-
-  if (process.env.MAIL_USERNAME) {
-    console.log(
-      `Mail username already exists with the value ${process.env.MAIL_USERNAME}`,
-    );
-  }
   const { serverPort } = await inquirer.prompt([
     {
       type: "input",
@@ -868,7 +859,15 @@ async function main(): Promise<void> {
     config.SERVER_PORT = serverPort;
     updateEnvVariable(config);
   }
+  console.log(
+    "\n You can configure either SMTP or Mail for sending emails through Talawa.\n",
+  );
 
+  if (process.env.MAIL_USERNAME) {
+    console.log(
+      `Mail username already exists with the value ${process.env.MAIL_USERNAME}`,
+    );
+  }
   const { shouldSetMail } = await inquirer.prompt([
     {
       type: "confirm",
