@@ -133,21 +133,23 @@ First you need a local copy of `talawa-api`. Run the following command in the di
 
 ## Install node.js
 
-Best way to install and manage `node.js` is making use of node version managers. We recommend using:
-
-- [fnm](https://github.com/Schniz/fnm)
+Best way to install and manage `node.js` is making use of node version managers. We recommend using `fnm`, which will be described in more detail later.
 
 Follow these steps to install the `node.js` packages in Windows, Linux and MacOS.
 
 1. For Windows:
     1. first install `node.js` from their website at https://nodejs.org
         1. When installing, don't click the option to install the `necessary tools`. These are not needed in our case. 
-    2. then install `fnm`
-        1. **Note**: After installing `fnm`:
-            1. Refer to the installation page's section on the `Shell Setup` recommendations.
-            2. Enter `Windows PowerShell` in your Windows terminal window
-            3. Run the recommended `Windows PowerShell` command
-            4. This will ensure that you are always using the correct version of `node.js`
+    2. then install [fnm](https://github.com/Schniz/fnm) using the `winget` option listed on the page.
+        1. **Note**: After installing `fnm` it will be best to setup `fnm` to automatically set the version of `node.js` to be used in this directory.
+            1. Refer to the `fnm` web page's section on `Shell Setup` recommendations.
+            2. Open a `Windows PowerShell` terminal window
+            3. Run the recommended `Windows PowerShell` command to open `notepad`.
+            4. Paste the recommended string into `notepad`
+            5. Save the document.
+            6. Exit `notepad`
+            7. Exit PowerShell
+            8. This will ensure that you are always using the correct version of `node.js`
 2. For Linux and MacOS, use the terminal window.
    1. install `node.js`
    2. then install `fnm`
@@ -163,6 +165,7 @@ To install TypeScript, you can use the `npm` command which comes with `node.js`:
 
 ```bash
 npm install -g typescript
+npm install
 ```
 
 This command installs TypeScript globally on your system so that it can be accessed from any project.
@@ -219,7 +222,7 @@ Follow these steps for setting up a software development environment.
 
 3. **Stopping Development Containers:**
     ```
-    docker-compose -f docker-compose.dev.yml down
+    docker-compose -f docker-compose.dev.yaml down
     ```
 
 ### For Production
@@ -228,7 +231,7 @@ Follow these steps for setting up a production environment.
 
 1. **Build and Start Production Containers:**
     ```
-    docker-compose -f docker-compose.prod.yml up --build -d
+    docker-compose -f docker-compose.prod.yaml up --build -d
     ```
    This command starts the production environment in detached mode, suitable for production deployment.
 
@@ -237,7 +240,7 @@ Follow these steps for setting up a production environment.
 
 3. **Stopping Production Containers:**
     ```
-    docker-compose -f docker-compose.prod.yml down
+    docker-compose -f docker-compose.prod.yaml down
     ```
 
 ## Import The Sample Data
