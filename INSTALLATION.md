@@ -9,17 +9,25 @@ This document provides instructions on how to set up and start a running instanc
 - [Talawa-API Installation](#talawa-api-installation)
 - [Table of Contents](#table-of-contents)
 - [Installation Steps Summary](#installation-steps-summary)
+- [Talawa-API Installation](#talawa-api-installation)
+- [Table of Contents](#table-of-contents)
+- [Installation Steps Summary](#installation-steps-summary)
 - [Prerequisites](#prerequisites)
   - [Install git](#install-git)
   - [Setting up this repository](#setting-up-this-repository)
   - [Install node.js](#install-nodejs)
   - [Install TypeScript](#install-typescript)
+  - [Install node.js](#install-nodejs)
+  - [Install TypeScript](#install-typescript)
 - [Installation Using Docker](#installation-using-docker)
+  - [Run the Talawa-API Setup](#run-the-talawa-api-setup)
+  - [Install the Docker Application](#install-the-docker-application)
   - [Run the Talawa-API Setup](#run-the-talawa-api-setup)
   - [Install the Docker Application](#install-the-docker-application)
   - [Docker Compose Setup](#docker-compose-setup)
     - [For Development](#for-development)
     - [For Production](#for-production)
+  - [Import The Sample Data](#import-the-sample-data)
   - [Import The Sample Data](#import-the-sample-data)
 - [Installation without Docker](#installation-without-docker)
   - [Install the Required Packages](#install-the-required-packages)
@@ -34,24 +42,24 @@ This document provides instructions on how to set up and start a running instanc
     - [The Environment Variables in `.env`](#the-environment-variables-in-env)
     - [Changing the Development Environment in the .env file](#changing-the-development-environment-in-the-env-file)
     - [Generating Token Secrets](#generating-token-secrets)
-      - [Setting up ACCESS\_TOKEN\_SECRET in the .env file](#setting-up-access_token_secret-in-the-env-file)
+      - [Setting up ACCESS\\_TOKEN\\_SECRET in the .env file](#setting-up-access_token_secret-in-the-env-file)
         - [Linux](#linux)
         - [Windows](#windows)
-    - [Setting up REFRESH\_TOKEN\_SECRET in the .env file](#setting-up-refresh_token_secret-in-the-env-file)
+    - [Setting up REFRESH\\_TOKEN\\_SECRET in the .env file](#setting-up-refresh_token_secret-in-the-env-file)
     - [Configuring MongoDB in the .env file](#configuring-mongodb-in-the-env-file)
-      - [Using the CLI to get the MONGODB\_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
-      - [Using Microsoft Windows to get the MONGODB\_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+      - [Using the CLI to get the MONGODB\\_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
+      - [Using Microsoft Windows to get the MONGODB\\_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
     - [Configuring Redis in .env file](#configuring-redis-in-env-file)
       - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
       - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
-    - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter in the .env file](#setting-up-env-last_resort_superadmin_email-parameter-in-the-env-file)
+    - [Setting up .env LAST\\_RESORT\\_SUPERADMIN\\_EMAIL parameter in the .env file](#setting-up-env-last_resort_superadmin_email-parameter-in-the-env-file)
     - [Configuring Google ReCAPTCHA in the .env file](#configuring-google-recaptcha-in-the-env-file)
-      - [Setting up the RECAPTCHA\_SECRET\_KEY](#setting-up-the-recaptcha_secret_key)
-      - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+      - [Setting up the RECAPTCHA\\_SECRET\\_KEY](#setting-up-the-recaptcha_secret_key)
+      - [Setting up .env MAIL\\_USERNAME and MAIL\\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
     - [Setting up SMTP Email Variables in the .env File](#setting-up-smtp-email-variables-in-the-env-file)
     - [Setting up Logger configurations](#setting-up-logger-configurations)
-      - [Setting up COLORIZE\_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
-      - [Setting up LOG\_LEVEL in .env file](#setting-up-log_level-in-env-file)
+      - [Setting up COLORIZE\\_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
+      - [Setting up LOG\\_LEVEL in .env file](#setting-up-log_level-in-env-file)
 - [Importing Sample Database](#importing-sample-database)
   - [Syntax:](#syntax)
   - [Examples:](#examples)
@@ -78,87 +86,33 @@ This document provides instructions on how to set up and start a running instanc
 
 <!-- tocstop -->
 
-
-# Installation Steps Summary
-
-Installation is not difficult, but there are many steps. This is a brief explanation of what needs to be done:
-
-1. Install `git`
-2. Download the code from GitHub using `git`
-3. Install `node.js` (Node), the runtime environment the application will need to work.
-4. Configure the Node Package Manager (`npm`) to automatically use the correct version of Node for our application.
-5. Use `npm` to install TypeScript, the language the application is written in.
-6. Install other supporting software such as the database.
-7. Configure the application
-8. Start the application
-
-These steps are explained in more detail in the sections that follow.
-
 # Prerequisites
 
-In this section we'll explain how to set up all the prerequisite software packages to get you up and running.
-
-## Install git
-
-The easiest way to get the latest copies of our code is to install the `git` package on your computer.
-
-Follow the setup guide for `git` on official [git docs](https://git-scm.com/downloads). Basic `git` knowledge is required for open source contribution so make sure you're comfortable with it. [Here's](https://youtu.be/apGV9Kg7ics) a good tutorial to get started with `git` and `github`.
-
-## Setting up this repository
-
-First you need a local copy of `talawa-api`. Run the following command in the directory of choice on your local system.
-
-1. On your computer, navigate to the folder where you want to setup the repository.
-2. Open a `cmd` (Windows) or `terminal` (Linux or MacOS) session in this folder.
-    1. An easy way to do this is to right-click and choose appropriate option based on your OS.
-3. **For Our Open Source Contributor Softwared Developers:**
-    1. Next, we'll fork and clone the `talawa-api` repository.
-    1. In your web browser, navigate to [https://github.com/PalisadoesFoundation/talawa-api/](https://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
-       ![Image with fork](public/markdown/images/install1.png)
-    2. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
-       ![Image of user's clone](public/markdown/images/install2.png)
-    3. Clone the repository to your local computer (replacing the values in `{{}}`):
-        ```bash
-        $ git clone https://github.com/{{YOUR GITHUB USERNAME}}/talawa-api.git
-        cd talawa-api
-        git checkout develop
-        ```
-        - **Note:** Make sure to check out the `develop` branch
-    4. You now have a local copy of the code files. For more detailed instructions on contributing code, and managing the versions of this repository with `git`, checkout our [CONTRIBUTING.md](./CONTRIBUTING.md) file.
-4. **Talawa Administrators:**
-      1. Clone the repository to your local computer using this command:
-
-          ```bash
-          $ git clone https://github.com/PalisadoesFoundation/talawa-api.git
-          ```
+You will need to have copies of your code on your local system. Here's how to do that.
 
 ## Install node.js
 
-Best way to install and manage `node.js` is making use of node version managers. We recommend using `fnm`, which will be described in more detail later.
+Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system ensure the installation of Node.js version 20 LTS.
 
-Follow these steps to install the `node.js` packages in Windows, Linux and MacOS.
+_**NOTE**_
 
-1. For Windows:
-    1. first install `node.js` from their website at https://nodejs.org
-        1. When installing, don't click the option to install the `necessary tools`. These are not needed in our case. 
-    2. then install [fnm](https://github.com/Schniz/fnm). Please read all the steps in this section first.
-        1. All the commands listed on this page will need to be run in a Windows terminal session in the `talawa-api` directory.
-        2. Install `fnm` using the `winget` option listed on the page.
-        3. Setup `fnm` to automatically set the version of `node.js` to the version required for the repository using these steps:
-            1. First, refer to the `fnm` web page's section on `Shell Setup` recommendations.
-            2. Open a `Windows PowerShell` terminal window
-            3. Run the recommended `Windows PowerShell` command to open `notepad`.
-            4. Paste the recommended string into `notepad`
-            5. Save the document.
-            6. Exit `notepad`
-            7. Exit PowerShell
-            8. This will ensure that you are always using the correct version of `node.js`
-2. For Linux and MacOS, use the terminal window.
-   1. install `node.js`
-   2. then install `fnm`
-         1. Refer to the installation page's section on the `Shell Setup` recommendations.
-         2. Run the respective recommended commands to setup your node environment
-         3. This will ensure that you are always using the correct version of `node.js`
+1. The repository has a `.node-version` file to help ensure you use the supported version of `node.js`. Do not edit this file.
+1. We strongly recommend that you configure your node version manager of choice to automatically read `.node-version` files
+
+_**NOTE**_
+
+1. The repository has a `.node-version` file to help ensure you use the supported version of `node.js`. Do not edit this file.
+1. We strongly recommend that you configure your node version manager of choice to automatically read `.node-version` files
+
+## Install npm
+
+npm is a package manager for Node.js and is installed with Node.js. npm is used to install, share, and distribute code as well as to manage dependencies in your projects. To check if you have npm installed you can run this command in your terminal:
+
+```
+npm -v
+```
+
+If you have it installed then you should see the version that's installed. If not, you can download Node.js and npm from the official [Node.js website](https://nodejs.org/en/download/).
 
 ## Install TypeScript
 
@@ -276,6 +230,7 @@ We're listing some common approaches to set up a running instance of MongoDB dat
 
 ## Install Redis
 
+Talawa-api makes use of `Redis` for caching frequently accessed data items in the primary database. We make use of `ioredis` to interact with the `redis-server` from within the code. The main Idea is the in production this will act as an in-memory cache. So it is recommended that you set it up locally. However for simplicity purposes, a section to accommodate for setting Redis up using a remote instance like Redis Cloud has been added. Please note that this is not recommended since the remote connection takes a considerable amount of time to be considered as a cache to improve application performance.
 Talawa-api makes use of `Redis` for caching frequently accessed data items in the primary database. We make use of `ioredis` to interact with the `redis-server` from within the code. The main Idea is the in production this will act as an in-memory cache. So it is recommended that you set it up locally. However for simplicity purposes, a section to accommodate for setting Redis up using a remote instance like Redis Cloud has been added. Please note that this is not recommended since the remote connection takes a considerable amount of time to be considered as a cache to improve application performance.
 
 ### Performance Benefits
