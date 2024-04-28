@@ -123,7 +123,8 @@ First you need a local copy of `talawa-api`. Run the following command in the di
         cd talawa-api
         git checkout develop
         ```
-    4. This will setup the repository and the code files locally for you. For more detailed instructions on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
+        - **Note:** Make sure to check out the `develop` branch
+    4. You now have a local copy of the code files. For more detailed instructions on contributing code, and managing the versions of this repository with `git`, checkout our [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 4. **Talawa Administrators:**
       1. Clone the repository to your local computer using this command:
 
@@ -140,9 +141,11 @@ Follow these steps to install the `node.js` packages in Windows, Linux and MacOS
 1. For Windows:
     1. first install `node.js` from their website at https://nodejs.org
         1. When installing, don't click the option to install the `necessary tools`. These are not needed in our case. 
-    2. then install [fnm](https://github.com/Schniz/fnm) using the `winget` option listed on the page.
-        1. **Note**: After installing `fnm` it will be best to setup `fnm` to automatically set the version of `node.js` to be used in this directory.
-            1. Refer to the `fnm` web page's section on `Shell Setup` recommendations.
+    2. then install [fnm](https://github.com/Schniz/fnm). Please read all the steps in this section first.
+        1. All the commands listed on this page will need to be run in a Windows terminal session in the `talawa-api` directory.
+        2. Install `fnm` using the `winget` option listed on the page.
+        3. Setup `fnm` to automatically set the version of `node.js` to the version required for the repository using these steps:
+            1. First, refer to the `fnm` web page's section on `Shell Setup` recommendations.
             2. Open a `Windows PowerShell` terminal window
             3. Run the recommended `Windows PowerShell` command to open `notepad`.
             4. Paste the recommended string into `notepad`
