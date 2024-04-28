@@ -25,7 +25,7 @@ Core features include:
 
 <!-- toc -->
 
-- [Talawa Components](#talawa-components)
+  - [Talawa Components](#talawa-components)
 - [Documentation](#documentation)
 - [Videos](#videos)
 

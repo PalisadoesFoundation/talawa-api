@@ -944,19 +944,22 @@ async function main(): Promise<void> {
       const { shouldOverwriteData } = await inquirer.prompt({
         type: "confirm",
         name: "shouldOverwriteData",
-        message: "Do you want to overwrite the existing data?",
+        message:
+          "Are you setting up the Talawa-API for contributing to opensource",
         default: false,
       });
       if (shouldOverwriteData) {
-        const { overwriteDefaultData } = await inquirer.prompt({
+        const { overwriteSampleData } = await inquirer.prompt({
           type: "confirm",
-          name: "overwriteDefaultData",
-          message: "Do you want to import default data?",
+          name: "overwriteSampleData",
+          message:
+            "Do you want to import sample data? (Recommened: yes, for contributors).",
           default: false,
         });
-        if (overwriteDefaultData) {
+        if (overwriteSampleData) {
           await wipeExistingData(process.env.MONGO_DB_URL);
-          await importDefaultData();
+          await importData();
+          // await importDefaultData();
         } else {
           const { overwriteSampleData } = await inquirer.prompt({
             type: "confirm",
