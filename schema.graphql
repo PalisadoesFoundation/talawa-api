@@ -89,7 +89,7 @@ enum AdvertisementType {
 
 type AdvertisementsConnection {
   edges: [AdvertisementEdge]
-  pageInfo: ConnectionPageInfo
+  pageInfo: DefaultConnectionPageInfo!
   totalCount: Int
 }
 
