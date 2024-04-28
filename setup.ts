@@ -258,7 +258,7 @@ export async function checkDb(url: string): Promise<boolean> {
  * is determined that existing data should be wiped.
  * @returns The function returns a Promise that resolves to `void`.
  */
-export async function importData(): Promise<void> {
+export async function importSampleData(): Promise<void> {
   if (!process.env.MONGO_DB_URL) {
     console.log("Couldn't find mongodb url");
     return;
@@ -285,10 +285,10 @@ export async function importData(): Promise<void> {
 
 //Import Default data
 /**
- * The function `importDefaultData` imports default data into a MongoDB database if the database URL is provided.
+ * The function `importProductionData` imports empty collections of data into the MongoDB database if the database URL is provided.
  * @returns The function returns a Promise that resolves to `void`.
  */
-export async function importDefaultData(): Promise<void> {
+export async function importProductionData(): Promise<void> {
   if (!process.env.MONGO_DB_URL) {
     console.log("Couldn't find mongodb url");
     return;
@@ -958,18 +958,18 @@ async function main(): Promise<void> {
         });
         if (overwriteSampleData) {
           await wipeExistingData(process.env.MONGO_DB_URL);
-          await importData();
-          // await importDefaultData();
+          await importSampleData();
         } else {
-          const { overwriteSampleData } = await inquirer.prompt({
+          const { overwriteProdData } = await inquirer.prompt({
             type: "confirm",
-            name: "overwriteSampleData",
-            message: "Do you want to import sample data?",
+            name: "overwriteProdData",
+            message:
+              "Do you want to import data for setting up production server?",
             default: false,
           });
-          if (overwriteSampleData) {
+          if (overwriteProdData) {
             await wipeExistingData(process.env.MONGO_DB_URL);
-            await importData();
+            await importProductionData();
           }
         }
       }
@@ -977,13 +977,14 @@ async function main(): Promise<void> {
       const { shouldImportSampleData } = await inquirer.prompt({
         type: "confirm",
         name: "shouldImportSampleData",
-        message: "Do you want to import Sample data?",
+        message:
+          "Do you want to import sample data? (Recommened: yes, for contributors).",
         default: false,
       });
       if (shouldImportSampleData) {
-        await importData();
+        await importSampleData();
       } else {
-        await importDefaultData();
+        await importProductionData();
       }
     }
   }
