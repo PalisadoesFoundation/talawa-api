@@ -1,8 +1,10 @@
 node_modules
 videos
+images
 .env
 .git
 .gitignore
+.github
 .dockerignore
 Dockerfile.dev
 Dockerfile.prod
