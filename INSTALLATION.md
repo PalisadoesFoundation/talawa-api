@@ -231,16 +231,17 @@ The setup steps differ depending on whether you are working in a development or 
 
 Follow these steps for setting up a software development environment.
 
-1. **Build and Start Development Containers:**
+1. Building and Starting Development Containers:
     ```
     docker-compose -f docker-compose.dev.yaml up --build
     ```
    This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
 
-2. **Access the Development Application:**
-   Open your web browser and navigate to [http://localhost:4000](http://localhost:4000).
-
-3. **Stopping Development Containers:**
+2. Accessing the Development Application: Open your web browser and navigate to:
+    ```
+    http://localhost:4000.
+    ```
+3. Stopping Development Containers:
     ```
     docker-compose -f docker-compose.dev.yaml down
     ```
@@ -249,16 +250,18 @@ Follow these steps for setting up a software development environment.
 
 Follow these steps for setting up a production environment.
 
-1. **Build and Start Production Containers:**
+1. Building and Starting Production Containers:
     ```
     docker-compose -f docker-compose.prod.yaml up --build -d
     ```
    This command starts the production environment in detached mode, suitable for production deployment.
 
-2. **Access the Production Application:**
-   Open your web browser and navigate to [http://localhost:4001](http://localhost:4001).
+2. Accessing the Production Application:Open your web browser and navigate to:
 
-3. **Stopping Production Containers:**
+    ```
+    http://localhost:4001
+    ```
+3. Stopping Production Containers:
     ```
     docker-compose -f docker-compose.prod.yaml down
     ```
@@ -302,82 +305,76 @@ Talawa-api makes use of `Redis` for caching frequently accessed data items in th
 
 ### Setting Up Redis
 
-1. `For Linux Users`:
+1. `For Linux Users`: If you are using a Linux distribution, follow these steps to set up Redis:
 
-   If you are using a Linux distribution, follow these steps to set up Redis:
+   1. Open a terminal.
 
-   - **Step 1**: Open a terminal.
+   2. Update the package list:
 
-   - **Step 2**: Update the package list:
+      ```bash
+      sudo apt update
+      ```
 
-     ```bash
-     sudo apt update
-     ```
+   3. Install Redis Server:
 
-   - **Step 3**: Install Redis Server:
+      ```bash
+      sudo apt install redis-server
+      ```
 
-     ```bash
-     sudo apt install redis-server
-     ```
+   4. Start the Redis service:
 
-   - **Step 4**: Start the Redis service:
+      ```bash
+      sudo service redis-server start
+      ```
 
-     ```bash
-     sudo service redis-server start
-     ```
+   1. Test if Redis is running by running the Redis CLI:
+        ```bash
+        redis-cli
+        ```
+   2. Use these parameters when running the setup script if you have configured the server on your local machine:
+       1. Redis Host: `localhost`
+       1. Redis Port: `6379` (default Redis port)
 
-   - **Step 5**: Test if Redis is running by running the Redis CLI:
-     ```bash
-     redis-cli
-     ```
-   - **Step 6**:
-     - Use these parameters when running the setup script if you have configured the server on your local machine:
-       - Redis Host: `localhost`
-       - Redis Port: `6379` (default Redis port)
+2. `For Windows Users using WSL`: If you'd rather not deal with the hassle of setting up WSL on your computer, there's another option: you can use a hosted database like Redis Cloud. More details about this are provided below, mainly for when you're working on development tasks. But it's a good idea to set up Redis on your own computer if you can. Right now, Redis isn't supported directly on Windows – you can only install and use it through WSL. If you're a Windows user and want to get Redis working using the Windows Subsystem for Linux (WSL), just follow these steps:
 
-2. `For Windows Users using WSL`:
+   1. Install WSL (Windows Subsystem for Linux) following the official [WSL Installation Guide](https://docs.microsoft.com/en-us/windows/wsl/install).
 
-If you'd rather not deal with the hassle of setting up WSL on your computer, there's another option: you can use a hosted database like Redis Cloud. More details about this are provided below, mainly for when you're working on development tasks. But it's a good idea to set up Redis on your own computer if you can. Right now, Redis isn't supported directly on Windows – you can only install and use it through WSL. If you're a Windows user and want to get Redis working using the Windows Subsystem for Linux (WSL), just follow these steps:
+   2. Open a WSL terminal.
 
-- **Step 1**: Install WSL (Windows Subsystem for Linux) following the official [WSL Installation Guide](https://docs.microsoft.com/en-us/windows/wsl/install).
+   3. Update the package list:
 
-- **Step 2**: Open a WSL terminal.
+      ```bash
+      sudo apt update
+      ```
 
-- **Step 3**: Update the package list:
+   4. Install Redis Server:
 
-  ```bash
-  sudo apt update
-  ```
+      ```bash
+      sudo apt install redis-server
+      ```
 
-- **Step 4**: Install Redis Server:
+   5. Start the Redis service:
 
-  ```bash
-  sudo apt install redis-server
-  ```
+      ```bash
+      sudo service redis-server start
+      ```
 
-- **Step 5**: Start the Redis service:
+   6. Test if Redis is running by running the Redis CLI:
 
-  ```bash
-  sudo service redis-server start
-  ```
+      ```bash
+      redis-cli
+      ```
 
-- **Step 6**: Test if Redis is running by running the Redis CLI:
-
-  ```bash
-  redis-cli
-  ```
-
-- **Step 7**:
-  - Use these parameters when running the setup script if you have configured the server on your local machine:
-    - Redis Host: `localhost`
-    - Redis Port: `6379` (default Redis port)
+   7. Use these parameters when running the setup script if you have configured the server on your local machine:
+      1. Redis Host: `localhost`
+      2. Redis Port: `6379` (default Redis port)
 
 3. **Connecting to Redis Cloud**:
 
    To connect to a Redis cloud service, you will need the host and port information provided by your cloud service provider. Use these values in your application to establish a connection. Typically, the host and port strings are provided in the following format:
 
-   - Host: `your-redis-host.redisprovider.com`
-   - Port: `6379` (default Redis port)
+   1. Host: `your-redis-host.redisprovider.com`
+   1. Port: `6379` (default Redis port)
 
    Replace `your-redis-host.redisprovider.com` with the actual host provided by your Redis cloud service. You can then use these values in your application's configuration to connect to your Redis cloud instance. You may also have to enter Redis Password and Username for using cloud instance.
 
@@ -467,11 +464,11 @@ This command is available if you have [Git for Windows](https://gitforwindows.or
 
 1. Install `Git for Windows`
 1. Run the Git Bash app
-1. Issue the same command
+1. Issue the this command:
 
-```
-openssl rand -hex 32
-```
+    ```
+    openssl rand -hex 32
+    ```
 
 ### Setting up REFRESH_TOKEN_SECRET in the .env file
 
@@ -503,22 +500,22 @@ Your MongoDB installation may include either the `mongo` or `mongosh` command li
 1. Note the `connection string` in the first lines of the output.
 1. Add the first section of the `connection string` to the `MONGO_DB_URL` section of the `.env` file. In this case it is `mongodb://127.0.0.1:27017/`
 
-```
-$ mongosh
+    ```
+    $ mongosh
 
-Current Mongosh Log ID: e6ab4232a963d456920b3736
-Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
-Using MongoDB:          6.0.4
-Using Mongosh:          1.6.2
+    Current Mongosh Log ID: e6ab4232a963d456920b3736
+    Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
+    Using MongoDB:          6.0.4
+    Using Mongosh:          1.6.2
 
-For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+    For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
-...
-...
-...
-...
+    ...
+    ...
+    ...
+    ...
 
-```
+    ```
 
 #### Using Microsoft Windows to get the MONGODB_URL Connection String
 
@@ -533,22 +530,22 @@ There are a few more steps that need to be done in a Windows environment.
 1. Open a terminal and run the `mongosh` command in the terminal you will get the connection string. In this case the Connection String is: `mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2`
    1. In the `.env` file of Talawa-API, add the connection string to the `MONGO_DB_URL` section.
 
-```
-$ mongosh
+      ```
+      $ mongosh
 
-Current Mongosh Log ID: e6ab4232a963d456920b3736
-Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
-Using MongoDB:          6.0.4
-Using Mongosh:          1.6.2
+      Current Mongosh Log ID: e6ab4232a963d456920b3736
+      Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
+      Using MongoDB:          6.0.4
+      Using Mongosh:          1.6.2
 
-For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+      For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
-...
-...
-...
-...
+      ...
+      ...
+      ...
+      ...
 
-```
+      ```
 
 ### Configuring Redis in .env file
 
@@ -692,24 +689,26 @@ Talawa API contains a sample database importing function which can be used to im
 
 ## Syntax:
 
-`npm run import:sample-data -- [args]`
+```
+npm run import:sample-data -- [args]
+```
 
 You can pass the following arguments while running this script.
 
-- `--format`: Cleans the database before import. **Add this flag with caution. It will delete all of the existing data inside the talawa database.**
-- `--items=`: Specify the items to add.
-  - Following `items` can be specified, separated with a comma `,`
-    - `users`: For users collection
-    - `organizations`: For organizations collection
-    - `events`: For events collection
-    - `posts`: For posts collection
+1. `--format`: Cleans the database before import. 
+   1. **NOTE!** Add this flag with caution. It will delete all of the existing data inside the talawa database.
+2. `--items=`: Specifies the items to add. The following `items` can be specified, separated with a comma `,`
+   1. `users`: For users collection
+   2. `organizations`: For organizations collection
+   3. `events`: For events collection
+   4. `posts`: For posts collection
 
 ## Examples:
 
-- `npm run import:sample-data`: This command will import the complete sample database without removing the existing data.
-- `npm run import:sample-data -- --format`: This command will import the complete sample database after removing the existing data.
-- `npm run import:sample-data -- --format --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations` and `appUserProfiles` collections after cleaning the existing data.
-- `npm run import:sample-data --  --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations`
+1. `npm run import:sample-data`: This command will import the complete sample database without removing the existing data.
+1. `npm run import:sample-data -- --format`: This command will import the complete sample database after removing the existing data.
+1. `npm run import:sample-data -- --format --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations` and `appUserProfiles` collections after cleaning the existing data.
+1. `npm run import:sample-data --  --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations`
   ans `appUserProfiles` collections without cleaning the existing data.
 
 ## Sample Data Overview:
@@ -756,21 +755,31 @@ There are many important URLs for accessing the API
 
 ## For Talawa-API Developers
 
-By default talawa-api runs on `port 4000` on your system's localhost. It is available on the following endpoint:
+These are some important URLs for coding and troubleshooting :
 
-        http://localhost:4000/
+1. By default talawa-api runs on `port 4000` on your system's localhost. It is available on the following endpoint:
 
-If you navigate to the endpoint you and see a `JSON` response like this it means talawa-api is running successfully:
+    ```
+    http://localhost:4000/
+    ```
 
-        {"talawa-version":"v1","status":"healthy"}
+      - If you navigate to the endpoint you and see a `JSON` response like this it means talawa-api is running successfully:
 
-GraphQL endpoint for handling `queries` and `mutations` is this:
+          ```
+          {"talawa-version":"v1","status":"healthy"}
+          ```
 
-        http://localhost:4000/graphql/
+2. The graphQL endpoint for handling `queries` and `mutations` is this:
 
-GraphQL endpoint for handling `subscriptions` is this:
+    ```
+    http://localhost:4000/graphql/
+    ```
 
-        ws://localhost:4000/graphql/
+3. GraphQL endpoint for handling `subscriptions` is this:
+
+    ```
+    ws://localhost:4000/graphql/
+    ```
 
 ## For Mobile App Developers
 
@@ -778,37 +787,38 @@ The Organization URL for Talawa mobile app developers will depend upon the devic
 
 ### On Android Virtual Device
 
-- If Talawa Mobile App is installed on Android Virtual Device (AVD), use the following URL:
+If the Talawa Mobile App is installed on Android Virtual Device (AVD), use the following URL:
 
-```
-    http://10.0.2.2:4000/graphql
-```
+  ```
+  http://10.0.2.2:4000/graphql
+  ```
 
 ### On a Real Mobile Device
 
-- If Talawa Mobile App is installed on a Real Mobile Device, follow the below steps to get URL:
-  - Open Command Prompt in Windows, or Terminal in Linux/OSX
-  - Enter `ipconfig` (For Windows Users) or `ifconfig` (For Linux/OSX Users)
-  - Your Mobile and Computer (On which API server is running) must be on same Wifi Network. Use Mobile Hotspot to connect your computer to internet in case you don't have access to a Wifi Router.
-  - Search for the `Wireless LAN adapter Wi-Fi:` and then copy `IPv4 Address`, like in image below:
-  - ![image](https://github.com/anshgoyalevil/talawa-api/blob/docs/image/ip-address.png)
-  - Now, use this IP address (`192.168.0.105` in our case) to access the API instance using the following URL pattern:
+If Talawa Mobile App is installed on a Real Mobile Device, follow the below steps to get URL:
 
-```
-    http://{IP_Address}:4000/graphql
-```
+  1. Open Command Prompt in Windows, or Terminal in Linux/OSX
+  1. Enter `ipconfig` (For Windows Users) or `ifconfig` (For Linux/OSX Users)
+  1. Your Mobile and Computer (On which API server is running) must be on same Wifi Network. Use Mobile Hotspot to connect your computer to internet in case you don't have access to a Wifi Router.
+  1. Search for the `Wireless LAN adapter Wi-Fi:` and then copy the `IPv4 Address`
+  1. Now, use this IP address (`192.168.0.105` in our case) to access the API instance using the following URL pattern:
+      ```
+      http://{IP_Address}:4000/graphql
+      ```
 
-For example:
+      For example:
 
-```
-    http://192.168.0.105:4000/graphql
-```
+      ```
+      http://192.168.0.105:4000/graphql
+      ```
 
 ## For Talawa-Admin Developers
 
 The Organization URL for Talawa mobile app developers to use is:
 
-       http://localhost:4000/graphql/
+```
+http://localhost:4000/graphql/
+```
 
 # Accessing MongoDB
 
@@ -842,24 +852,33 @@ You can skip these instructions for now if you don't have running instance of Ta
 
 1. This step is for mandatory Linux specific users others can skip to next step:
 
-   1. You need to start `mongod` [Mongo daemon process] for `mongosh` to work use the following command for the same:
-
-   - `sudo service mongod start` **[System V init(service)]** or `sudo systemctl start mongod` **[systemd(systemctl)]**
-
+   1. You need to start `mongod` [Mongo daemon process] for `mongosh` to work use the following commands:
+      1. Using the System V init
+          ```
+          sudo service mongod start
+          ```   
+      2. Using systemd
+          ```
+          sudo systemctl start mongod
+          ```
    2. To verify whether `mongod`[Mongo daemon process] is running you can use either:
-
-   - `sudo systemctl status mongod` **[systemd(systemctl)]** or `sudo service mongod status` **[System V init(service)]**
-
+      1. Using the System V init
+          ```
+          sudo service mongod status
+          ```   
+      2. Using systemd
+          ```
+          sudo systemctl status mongod
+          ```
 ## Using MongoDB Compass
 
 1. Open MongoDB Compass and click on `Connect`.
-
 2. Select your database.
-
 3. Elevate the user status:
    1. Find the `AppUserProfile` document of the user that you want to elevate to superadmin.
    2. In that `AppUserProfile` document, update the value of `isSuperAdmin` field to be `true`.
-   - ![Illustration for user edit ](public/markdown/images/mongodb_compass_user_elevation.png)
+   
+      ![Illustration for user edit ](public/markdown/images/mongodb_compass_user_elevation.png)
 
 ## Using Mongo Shell
 
@@ -867,17 +886,17 @@ You can skip these instructions for now if you don't have running instance of Ta
 
 2. In the `mongosh` terminal use the following commands to edit the `appuserprofiles` collections data:
    1. Find the user:
-   ```
-   const currentUser = db.users.findOne({ firstName: '<user's first name>'})
-   ```
+      ```
+      const currentUser = db.users.findOne({ firstName: '<user's first name>'})
+      ```
    2. Elevate permission of this user in its `AppUserProfile`, i.e. set `isSuperAdmin` to `true`:
-   ```
-   db.appuserprofiles.updateOne({ _id_: currentUser.appUserProfileId },{ $set: { isSuperAdmin: true }})
-   ```
+      ```
+      db.appuserprofiles.updateOne({ _id_: currentUser.appUserProfileId },{ $set: { isSuperAdmin: true }})
+      ```
    3. To verify the details were updated correctly use:
-   ```
-   db.appuserprofiles.findOne({ _id_: currentUser.appUserProfileId })
-   ```
+      ```
+      db.appuserprofiles.findOne({ _id_: currentUser.appUserProfileId })
+      ```
 
 **Note**: You can make the edit via any of these two methods.
 
@@ -889,19 +908,28 @@ These are some other factors to consider
 
 If port `4000` is not free on your system you can pass a custom environment variable named `PORT` to the script to make it use a different port on your system's localhost. Here's the syntax for it:
 
-        PORT=<CUSTOM_PORT_VALUE> npm run dev
+```
+PORT=<CUSTOM_PORT_VALUE> npm run dev
+```
 
-where `<CUSTOM_PORT_VALUE>` is whatever value you want the `PORT` to be. Whatever you pass will be substituted as the value for port and talawa-api development server on that port. Syntax wise it looks like-
+where `<CUSTOM_PORT_VALUE>` is whatever value you want the `PORT` to be. 
 
-        http://localhost:<CUSTOM_PORT_VALUE>/
+Whatever you pass will be substituted as the value for port and talawa-api development server on that port.
 
-For example:
+```
+http://localhost:<CUSTOM_PORT_VALUE>/
+```
+For example using this command:
 
-        PORT=5000 npm run dev
+```
+PORT=5000 npm run dev
+```
 
 will make talawa-api accessible on the following endpoint:
 
-        http://localhost:5000/
+```
+http://localhost:5000/
+```
 
 # Testing
 
@@ -909,4 +937,6 @@ Talawa-api makes use of `vitest` to run tests because it is much faster than `je
 
 You can run the tests for talawa-api using this command:
 
-        npm run test
+```
+npm run test
+```        
