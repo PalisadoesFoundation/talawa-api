@@ -1020,7 +1020,7 @@ async function main(): Promise<void> {
         type: "confirm",
         name: "shouldImportSampleData",
         message:
-          "Do you want to import sample data? (Recommened: yes, for contributors).",
+          "Do you want to import sample data? (Recommened: yes for contributors, No for production).",
         default: false,
       });
       if (shouldImportSampleData) {
