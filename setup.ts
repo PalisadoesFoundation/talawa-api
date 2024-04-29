@@ -254,7 +254,7 @@ export async function checkDb(url: string): Promise<boolean> {
 }
 //Import sample data
 /**
- * The function `importData` imports sample data into a MongoDB database if the database URL is provided and if it
+ * The function `importSampleData` imports sample data into a MongoDB database if the database URL is provided and if it
  * is determined that existing data should be wiped.
  * @returns The function returns a Promise that resolves to `void`.
  */
@@ -283,7 +283,7 @@ export async function importSampleData(): Promise<void> {
   }
 }
 
-//Import Default data
+//Import Production data
 /**
  * The function `importProductionData` imports empty collections of data into the MongoDB database if the database URL is provided.
  * @returns The function returns a Promise that resolves to `void`.
