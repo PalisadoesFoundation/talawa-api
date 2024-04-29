@@ -14,6 +14,7 @@ This document provides instructions on how to set up and start a running instanc
   - [Setting up this repository](#setting-up-this-repository)
   - [Install node.js](#install-nodejs)
   - [Install TypeScript](#install-typescript)
+  - [Install Required Packages](#install-required-packages)
 - [Installation Using Docker](#installation-using-docker)
   - [Run the Talawa-API Setup](#run-the-talawa-api-setup)
   - [Install the Docker Application](#install-the-docker-application)
@@ -88,7 +89,9 @@ Installation is not difficult, but there are many steps. This is a brief explana
 3. Install `node.js` (Node), the runtime environment the application will need to work.
 4. Configure the Node Package Manager (`npm`) to automatically use the correct version of Node for our application.
 5. Use `npm` to install TypeScript, the language the application is written in.
-6. Install other supporting software such as the database.
+6. Install other supporting software such as the database using either:
+   1. Docker
+   2. A manual setup
 7. Configure the application
 8. Start the application
 
@@ -114,9 +117,13 @@ First you need a local copy of `talawa-api`. Run the following command in the di
 3. **For Our Open Source Contributor Software Developers:**
     1. Next, we'll fork and clone the `talawa-api` repository.
     1. In your web browser, navigate to [https://github.com/PalisadoesFoundation/talawa-api/](https://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
+
        ![Image with fork](public/markdown/images/install1.png)
+
     2. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
+
        ![Image of user's clone](public/markdown/images/install2.png)
+
     3. Clone the repository to your local computer (replacing the values in `{{}}`):
         ```bash
         $ git clone https://github.com/{{YOUR GITHUB USERNAME}}/talawa-api.git
@@ -168,10 +175,20 @@ To install TypeScript, you can use the `npm` command which comes with `node.js`:
 
 ```bash
 npm install -g typescript
-npm install
 ```
 
 This command installs TypeScript globally on your system so that it can be accessed from any project.
+
+## Install Required Packages
+
+Run the following command to install the packages and dependencies required by the app:
+
+```
+npm install
+```
+
+The prerequisites are now installed. The next step will be to get the app up and running.
+
 
 # Installation Using Docker
 
