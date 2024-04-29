@@ -692,24 +692,26 @@ Talawa API contains a sample database importing function which can be used to im
 
 ## Syntax:
 
-`npm run import:sample-data -- [args]`
+```
+npm run import:sample-data -- [args]
+```
 
 You can pass the following arguments while running this script.
 
-- `--format`: Cleans the database before import. **Add this flag with caution. It will delete all of the existing data inside the talawa database.**
-- `--items=`: Specify the items to add.
-  - Following `items` can be specified, separated with a comma `,`
-    - `users`: For users collection
-    - `organizations`: For organizations collection
-    - `events`: For events collection
-    - `posts`: For posts collection
+1. `--format`: Cleans the database before import. 
+   1. **NOTE!** Add this flag with caution. It will delete all of the existing data inside the talawa database.
+2. `--items=`: Specifies the items to add. The following `items` can be specified, separated with a comma `,`
+   1. `users`: For users collection
+   2. `organizations`: For organizations collection
+   3. `events`: For events collection
+   4. `posts`: For posts collection
 
 ## Examples:
 
-- `npm run import:sample-data`: This command will import the complete sample database without removing the existing data.
-- `npm run import:sample-data -- --format`: This command will import the complete sample database after removing the existing data.
-- `npm run import:sample-data -- --format --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations` and `appUserProfiles` collections after cleaning the existing data.
-- `npm run import:sample-data --  --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations`
+1. `npm run import:sample-data`: This command will import the complete sample database without removing the existing data.
+1. `npm run import:sample-data -- --format`: This command will import the complete sample database after removing the existing data.
+1. `npm run import:sample-data -- --format --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations` and `appUserProfiles` collections after cleaning the existing data.
+1. `npm run import:sample-data --  --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations`
   ans `appUserProfiles` collections without cleaning the existing data.
 
 ## Sample Data Overview:
