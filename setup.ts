@@ -254,11 +254,11 @@ export async function checkDb(url: string): Promise<boolean> {
 }
 //Import sample data
 /**
- * The function `importSampleData` imports sample data into a MongoDB database if the database URL is provided and if it
+ * The function `importData` imports sample data into a MongoDB database if the database URL is provided and if it
  * is determined that existing data should be wiped.
  * @returns The function returns a Promise that resolves to `void`.
  */
-export async function importSampleData(): Promise<void> {
+export async function importData(): Promise<void> {
   if (!process.env.MONGO_DB_URL) {
     console.log("Couldn't find mongodb url");
     return;
@@ -283,9 +283,9 @@ export async function importSampleData(): Promise<void> {
   }
 }
 
-//Import Production data
+//Import Initial Production data
 /**
- * The function `importProductionData` imports empty collections of data into the MongoDB database if the database URL is provided.
+ * The function `importProductionData` imports initial production data for a new setup into a MongoDB database if the database URL is provided.
  * @returns The function returns a Promise that resolves to `void`.
  */
 export async function importProductionData(): Promise<void> {
@@ -293,7 +293,7 @@ export async function importProductionData(): Promise<void> {
     console.log("Couldn't find mongodb url");
     return;
   }
-  console.log("Importing production data...");
+  console.log("Importing default data...");
   if (process.env.NODE_ENV !== "test") {
     await loadDefaultOrganiation();
   }
@@ -953,65 +953,30 @@ async function main(): Promise<void> {
       const { shouldOverwriteData } = await inquirer.prompt({
         type: "confirm",
         name: "shouldOverwriteData",
-        message:
-          "Existing data detected. Are you setting up the Talawa-API for contributing to opensource?",
+        message: "Do you want to overwrite the existing data?",
         default: false,
       });
       if (shouldOverwriteData) {
-        const { overwriteSampleData } = await inquirer.prompt({
+        const { overwriteDefaultData } = await inquirer.prompt({
           type: "confirm",
-          name: "overwriteSampleData",
+          name: "overwriteDefaultData",
           message:
-            "Do you want to overwrite and import sample data? (Recommened: yes, for contributors).",
+            "Do you want to import initial production data for a new setup?",
           default: false,
         });
-        if (overwriteSampleData) {
+        if (overwriteDefaultData) {
           await wipeExistingData(process.env.MONGO_DB_URL);
-          await importSampleData();
+          await importProductionData();
         } else {
-          const { overwriteProdData } = await inquirer.prompt({
+          const { overwriteSampleData } = await inquirer.prompt({
             type: "confirm",
-            name: "overwriteProdData",
-            message:
-              "Do you want to overwrite and import data for setting up production server?",
+            name: "overwriteSampleData",
+            message: "Do you want to import sample data?",
             default: false,
           });
-          if (overwriteProdData) {
+          if (overwriteSampleData) {
             await wipeExistingData(process.env.MONGO_DB_URL);
-            await importProductionData();
-          }
-        }
-      } else {
-        const { shouldOverwriteData } = await inquirer.prompt({
-          type: "confirm",
-          name: "shouldOverwriteData",
-          message:
-            "Then, are you setting up the Talawa-API as a production server?",
-          default: false,
-        });
-        if (shouldOverwriteData) {
-          const { overwriteProdData } = await inquirer.prompt({
-            type: "confirm",
-            name: "overwriteProdData",
-            message:
-              "Do you want to overwrite and import production data for setting up a production server?",
-            default: false,
-          });
-          if (overwriteProdData) {
-            await wipeExistingData(process.env.MONGO_DB_URL);
-            await importProductionData();
-          } else {
-            const { overwriteSampleData } = await inquirer.prompt({
-              type: "confirm",
-              name: "overwriteSampleData",
-              message:
-                "Do you want to overwrite and import sample data for setting up a production server?",
-              default: false,
-            });
-            if (overwriteSampleData) {
-              await wipeExistingData(process.env.MONGO_DB_URL);
-              await importSampleData();
-            }
+            await importData();
           }
         }
       }
@@ -1019,12 +984,11 @@ async function main(): Promise<void> {
       const { shouldImportSampleData } = await inquirer.prompt({
         type: "confirm",
         name: "shouldImportSampleData",
-        message:
-          "Do you want to import sample data? (Recommened: yes for contributors, No for production).",
+        message: "Do you want to import Sample data?",
         default: false,
       });
       if (shouldImportSampleData) {
-        await importSampleData();
+        await importData();
       } else {
         await importProductionData();
       }
