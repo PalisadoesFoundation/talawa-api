@@ -702,6 +702,8 @@ export const MAXIMUM_IMAGE_SIZE_LIMIT_KB = 20000;
 
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
+export const SERVER_PORT = ENV.SERVER_PORT;
+
 export const ACCESS_TOKEN_SECRET = ENV.ACCESS_TOKEN_SECRET;
 
 export const REFRESH_TOKEN_SECRET = ENV.REFRESH_TOKEN_SECRET;

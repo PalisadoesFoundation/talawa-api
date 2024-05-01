@@ -855,6 +855,19 @@ async function main(): Promise<void> {
     await recaptchaSiteKey();
   }
 
+  const { serverPort } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "serverPort",
+      message: "Enter the server port:",
+      default: 4000,
+    },
+  ]);
+  if (process.env.NODE_ENV === "development") {
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.SERVER_PORT = serverPort;
+    updateEnvVariable(config);
+  }
   console.log(
     "\n You can configure either SMTP or Mail for sending emails through Talawa.\n",
   );
@@ -864,7 +877,6 @@ async function main(): Promise<void> {
       `Mail username already exists with the value ${process.env.MAIL_USERNAME}`,
     );
   }
-
   const { shouldSetMail } = await inquirer.prompt([
     {
       type: "confirm",

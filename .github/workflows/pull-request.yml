@@ -220,6 +220,9 @@ jobs:
 
       - name: Generate Refresh Token Secret
         run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+      
+      - name: Set up SERVER_PORT env
+        run: echo "SERVER_PORT=4000" >> $GITHUB_ENV
 
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -231,7 +234,10 @@ jobs:
         uses: juliangruber/sleep-action@v2
         with:
           time: 10s
-      
+          
+      - name: Create a videos directory
+        run: mkdir -p videos
+  
       - name: Run the tests
         run: npm run test
       
