@@ -35,24 +35,97 @@ This document provides instructions on how to set up and start a running instanc
     - [The Environment Variables in `.env`](#the-environment-variables-in-env)
     - [Changing the Development Environment in the .env file](#changing-the-development-environment-in-the-env-file)
     - [Generating Token Secrets](#generating-token-secrets)
-      - [Setting up ACCESS\_TOKEN\_SECRET in the .env file](#setting-up-access_token_secret-in-the-env-file)
+      - [Setting up ACCESS_TOKEN_SECRET in the .env file](#setting-up-access_token_secret-in-the-env-file)
         - [Linux](#linux)
         - [Windows](#windows)
-    - [Setting up REFRESH\_TOKEN\_SECRET in the .env file](#setting-up-refresh_token_secret-in-the-env-file)
+    - [Setting up REFRESH_TOKEN_SECRET in the .env file](#setting-up-refresh_token_secret-in-the-env-file)
     - [Configuring MongoDB in the .env file](#configuring-mongodb-in-the-env-file)
-      - [Using the CLI to get the MONGODB\_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
-      - [Using Microsoft Windows to get the MONGODB\_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+      - [Using the CLI to get the MONGODB_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
+      - [Using Microsoft Windows to get the MONGODB_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
     - [Configuring Redis in .env file](#configuring-redis-in-env-file)
       - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
       - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
-    - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter in the .env file](#setting-up-env-last_resort_superadmin_email-parameter-in-the-env-file)
+    - [Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter in the .env file](#setting-up-env-last_resort_superadmin_email-parameter-in-the-env-file)
     - [Configuring Google ReCAPTCHA in the .env file](#configuring-google-recaptcha-in-the-env-file)
-      - [Setting up the RECAPTCHA\_SECRET\_KEY](#setting-up-the-recaptcha_secret_key)
-      - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+      - [Setting up the RECAPTCHA_SECRET_KEY](#setting-up-the-recaptcha_secret_key)
+      - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
     - [Setting up SMTP Email Variables in the .env File](#setting-up-smtp-email-variables-in-the-env-file)
     - [Setting up Logger configurations](#setting-up-logger-configurations)
-      - [Setting up COLORIZE\_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
-      - [Setting up LOG\_LEVEL in .env file](#setting-up-log_level-in-env-file)
+      - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
+      - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
+- [Importing Sample Database](#importing-sample-database)
+  - [Syntax:](#syntax)
+  - [Examples:](#examples)
+  - [Sample Data Overview:](#sample-data-overview)
+    - [User Accounts and Organizations:](#user-accounts-and-organizations)
+    - [Posts](#posts)
+    - [Events](#events)
+- [Running Talawa-API](#running-talawa-api)
+- [How to Access the Talawa-API URL](#how-to-access-the-talawa-api-url)
+  - [For Talawa-API Developers](#for-talawa-api-developers)
+  - [For Mobile App Developers](#for-mobile-app-developers)
+    - [On Android Virtual Device](#on-android-virtual-device)
+    - [On a Real Mobile Device](#on-a-real-mobile-device)
+  - [For Talawa-Admin Developers](#for-talawa-admin-developers)
+- [Accessing MongoDB](#accessing-mongodb)
+  - [Managing MongoDB using the MongoDB Compass GUI](#managing-mongodb-using-the-mongodb-compass-gui)
+  - [Managing MongoDB using the VSCode extension](#managing-mongodb-using-the-vscode-extension)
+- [Manually Adding The First Super Admin User](#manually-adding-the-first-super-admin-user)
+  - [Using MongoDB Compass](#using-mongodb-compass)
+  - [Using Mongo Shell](#using-mongo-shell)
+- [Other](#other)
+  - [Changing default talawa-api port](#changing-default-talawa-api-port)
+- [Testing](#testing)
+
+<!-- toc -->
+
+- [Installation Steps Summary](#installation-steps-summary)
+- [Prerequisites](#prerequisites)
+  - [Install git](#install-git)
+  - [Setting up this repository](#setting-up-this-repository)
+  - [Install node.js](#install-nodejs)
+  - [Install TypeScript](#install-typescript)
+  - [Install Required Packages](#install-required-packages)
+- [Installation Using Docker](#installation-using-docker)
+  - [Run the Talawa-API Setup](#run-the-talawa-api-setup)
+  - [Install the Docker Application](#install-the-docker-application)
+  - [Docker Compose Setup](#docker-compose-setup)
+  - [Prerequisites](#prerequisites-1)
+    - [For Development](#for-development)
+    - [For Production](#for-production)
+    - [Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!](#congratulations-%F0%9F%8E%89-your-talawa-api-is-now-successfully-set-up-and-running-using-docker)
+  - [Import The Sample Data](#import-the-sample-data)
+- [Installation without Docker](#installation-without-docker)
+  - [Install the Required Packages](#install-the-required-packages)
+  - [Install MongoDB](#install-mongodb)
+    - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
+  - [Install Redis](#install-redis)
+    - [Performance Benefits](#performance-benefits)
+    - [Setting Up Redis](#setting-up-redis)
+- [Configuration](#configuration)
+  - [Automated Configuration of `.env`](#automated-configuration-of-env)
+  - [Manual Configuration of `.env`](#manual-configuration-of-env)
+    - [The Environment Variables in `.env`](#the-environment-variables-in-env)
+    - [Changing the Development Environment in the .env file](#changing-the-development-environment-in-the-env-file)
+    - [Generating Token Secrets](#generating-token-secrets)
+      - [Setting up ACCESS_TOKEN_SECRET in the .env file](#setting-up-access_token_secret-in-the-env-file)
+        - [Linux](#linux)
+        - [Windows](#windows)
+    - [Setting up REFRESH_TOKEN_SECRET in the .env file](#setting-up-refresh_token_secret-in-the-env-file)
+    - [Configuring MongoDB in the .env file](#configuring-mongodb-in-the-env-file)
+      - [Using the CLI to get the MONGODB_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
+      - [Using Microsoft Windows to get the MONGODB_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+    - [Configuring Redis in .env file](#configuring-redis-in-env-file)
+      - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
+      - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
+    - [Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter in the .env file](#setting-up-env-last_resort_superadmin_email-parameter-in-the-env-file)
+    - [Configuring Google ReCAPTCHA in the .env file](#configuring-google-recaptcha-in-the-env-file)
+      - [Setting up the RECAPTCHA_SECRET_KEY](#setting-up-the-recaptcha_secret_key)
+      - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+    - [Setting up SMTP Email Variables in the .env File](#setting-up-smtp-email-variables-in-the-env-file)
+    - [Setting up Logger configurations](#setting-up-logger-configurations)
+      - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
+      - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
 - [Importing Sample Database](#importing-sample-database)
   - [Syntax:](#syntax)
   - [Examples:](#examples)
@@ -78,7 +151,6 @@ This document provides instructions on how to set up and start a running instanc
 - [Testing](#testing)
 
 <!-- tocstop -->
-
 
 # Installation Steps Summary
 
@@ -113,31 +185,34 @@ First you need a local copy of `talawa-api`. Run the following command in the di
 
 1. On your computer, navigate to the folder where you want to setup the repository.
 2. Open a `cmd` (Windows) or `terminal` (Linux or MacOS) session in this folder.
-    1. An easy way to do this is to right-click and choose appropriate option based on your OS.
+   1. An easy way to do this is to right-click and choose appropriate option based on your OS.
 3. **For Our Open Source Contributor Software Developers:**
-    1. Next, we'll fork and clone the `talawa-api` repository.
-    1. In your web browser, navigate to [https://github.com/PalisadoesFoundation/talawa-api/](https://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
 
-       ![Image with fork](public/markdown/images/install1.png)
+   1. Next, we'll fork and clone the `talawa-api` repository.
+   1. In your web browser, navigate to [https://github.com/PalisadoesFoundation/talawa-api/](https://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
 
-    2. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
+      ![Image with fork](public/markdown/images/install1.png)
 
-       ![Image of user's clone](public/markdown/images/install2.png)
+   1. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
 
-    3. Clone the repository to your local computer (replacing the values in `{{}}`):
-        ```bash
-        $ git clone https://github.com/{{YOUR GITHUB USERNAME}}/talawa-api.git
-        cd talawa-api
-        git checkout develop
-        ```
-        - **Note:** Make sure to check out the `develop` branch
-    4. You now have a local copy of the code files. For more detailed instructions on contributing code, and managing the versions of this repository with `git`, checkout our [CONTRIBUTING.md](./CONTRIBUTING.md) file.
+      ![Image of user's clone](public/markdown/images/install2.png)
+
+   1. Clone the repository to your local computer (replacing the values in `{{}}`):
+      ```bash
+      $ git clone https://github.com/{{YOUR GITHUB USERNAME}}/talawa-api.git
+      cd talawa-api
+      git checkout develop
+      ```
+      - **Note:** Make sure to check out the `develop` branch
+   1. You now have a local copy of the code files. For more detailed instructions on contributing code, and managing the versions of this repository with `git`, checkout our [CONTRIBUTING.md](./CONTRIBUTING.md) file.
+
 4. **Talawa Administrators:**
-      1. Clone the repository to your local computer using this command:
 
-          ```bash
-          $ git clone https://github.com/PalisadoesFoundation/talawa-api.git
-          ```
+   1. Clone the repository to your local computer using this command:
+
+      ```bash
+      $ git clone https://github.com/PalisadoesFoundation/talawa-api.git
+      ```
 
 ## Install node.js
 
@@ -146,26 +221,26 @@ Best way to install and manage `node.js` is making use of node version managers.
 Follow these steps to install the `node.js` packages in Windows, Linux and MacOS.
 
 1. For Windows:
-    1. first install `node.js` from their website at https://nodejs.org
-        1. When installing, don't click the option to install the `necessary tools`. These are not needed in our case. 
-    2. then install [fnm](https://github.com/Schniz/fnm). Please read all the steps in this section first.
-        1. All the commands listed on this page will need to be run in a Windows terminal session in the `talawa-api` directory.
-        2. Install `fnm` using the `winget` option listed on the page.
-        3. Setup `fnm` to automatically set the version of `node.js` to the version required for the repository using these steps:
-            1. First, refer to the `fnm` web page's section on `Shell Setup` recommendations.
-            2. Open a `Windows PowerShell` terminal window
-            3. Run the recommended `Windows PowerShell` command to open `notepad`.
-            4. Paste the recommended string into `notepad`
-            5. Save the document.
-            6. Exit `notepad`
-            7. Exit PowerShell
-            8. This will ensure that you are always using the correct version of `node.js`
+   1. first install `node.js` from their website at https://nodejs.org
+      1. When installing, don't click the option to install the `necessary tools`. These are not needed in our case.
+   2. then install [fnm](https://github.com/Schniz/fnm). Please read all the steps in this section first.
+      1. All the commands listed on this page will need to be run in a Windows terminal session in the `talawa-api` directory.
+      2. Install `fnm` using the `winget` option listed on the page.
+      3. Setup `fnm` to automatically set the version of `node.js` to the version required for the repository using these steps:
+         1. First, refer to the `fnm` web page's section on `Shell Setup` recommendations.
+         2. Open a `Windows PowerShell` terminal window
+         3. Run the recommended `Windows PowerShell` command to open `notepad`.
+         4. Paste the recommended string into `notepad`
+         5. Save the document.
+         6. Exit `notepad`
+         7. Exit PowerShell
+         8. This will ensure that you are always using the correct version of `node.js`
 2. For Linux and MacOS, use the terminal window.
    1. install `node.js`
    2. then install `fnm`
-         1. Refer to the installation page's section on the `Shell Setup` recommendations.
-         2. Run the respective recommended commands to setup your node environment
-         3. This will ensure that you are always using the correct version of `node.js`
+      1. Refer to the installation page's section on the `Shell Setup` recommendations.
+      2. Run the respective recommended commands to setup your node environment
+      3. This will ensure that you are always using the correct version of `node.js`
 
 ## Install TypeScript
 
@@ -189,7 +264,6 @@ npm install
 
 The prerequisites are now installed. The next step will be to get the app up and running.
 
-
 # Installation Using Docker
 
 This guide provides step-by-step instructions on deploying a talawa-api using Docker. Docker allows you to package your application and its dependencies into a container, providing a consistent environment across different systems.
@@ -198,7 +272,7 @@ Here is a list of steps to follow:
 
 1. Run the application setup procedure
 2. Install the Docker application
-3. Install the Docker helper 
+3. Install the Docker helper
 4. Install other supporting software such as the database using the `docker-compose` command.
 5. Start Docker using the `docker-compose` command
 6. Import the sample data into the database
@@ -223,7 +297,6 @@ There are many ways to install Docker. We reccommend using Docker Desktop. It ca
 
 ## Docker Compose Setup
 
-
 ## Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) installed on your machine.
@@ -236,40 +309,66 @@ The setup steps differ depending on whether you are working in a development or 
 
 Follow these steps for setting up a software development environment.
 
-1. **Build and Start Development Containers:**
+1. Building and Starting Development Containers:
+
+   1. Using Windows:
+
+      ```bash
+      docker-compose -f docker-compose.dev.yaml up --build
+      ```
+
+   2. Using Ubuntu:
+      1. Running synchronously. Using CTRL-C will stop it.
+         ```bash
+         sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build
+         ```
+      2. Running asynchronously in a subshell. You will have to use the `docker-compose down` command below to stop it.
+         `bash
+      sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build &
+      `
+         This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
+
+2. Accessing the Development Application: Open your web browser and navigate to:
 
    ```
-   docker-compose -f docker-compose.dev.yaml up --build
+   http://localhost:4000
    ```
 
-   This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
+3. Stopping Development Containers:
 
-2. **Access the Development Application:**
-   Open your web browser and navigate to [http://localhost:4000](http://localhost:4000).
+   1. Using Windows:
 
-3. **Stopping Development Containers:**
+      ```
+      docker-compose -f docker-compose.dev.yaml down
+      ```
 
-   ```
-   docker-compose -f docker-compose.dev.yml down
-   ```
-   
+   2. Using Ubuntu:
+
+      ```
+      sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml down
+      ```
+
 ### For Production
 
 Follow these steps for setting up a production environment.
 
-1. **Build and Start Production Containers:**
+1. Building and Starting Production Containers:
 
    ```
-   docker-compose -f docker-compose.prod.yml up --build -d
+   docker-compose -f docker-compose.prod.yaml up --build -d
    ```
+
    This command starts the production environment in detached mode, suitable for production deployment.
 
-2. **Access the Production Application:**
-   Open your web browser and navigate to [http://localhost:4001](http://localhost:4001).
+2. Accessing the Production Application:Open your web browser and navigate to:
 
-3. **Stopping Production Containers:**
    ```
-   docker-compose -f docker-compose.prod.yml down
+   http://localhost:4001
+   ```
+
+3. Stopping Production Containers:
+   ```
+   docker-compose -f docker-compose.prod.yaml down
    ```
 
 ### Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!
@@ -315,82 +414,76 @@ Talawa-api makes use of `Redis` for caching frequently accessed data items in th
 
 ### Setting Up Redis
 
-1. `For Linux Users`:
+1. `For Linux Users`: If you are using a Linux distribution, follow these steps to set up Redis:
 
-   If you are using a Linux distribution, follow these steps to set up Redis:
+   1. Open a terminal.
 
-   - **Step 1**: Open a terminal.
+   2. Update the package list:
 
-   - **Step 2**: Update the package list:
+      ```bash
+      sudo apt update
+      ```
 
-     ```bash
-     sudo apt update
-     ```
+   3. Install Redis Server:
 
-   - **Step 3**: Install Redis Server:
+      ```bash
+      sudo apt install redis-server
+      ```
 
-     ```bash
-     sudo apt install redis-server
-     ```
+   4. Start the Redis service:
 
-   - **Step 4**: Start the Redis service:
+      ```bash
+      sudo service redis-server start
+      ```
 
-     ```bash
-     sudo service redis-server start
-     ```
+   5. Test if Redis is running by running the Redis CLI:
+      ```bash
+      redis-cli
+      ```
+   6. Use these parameters when running the setup script if you have configured the server on your local machine:
+      1. Redis Host: `localhost`
+      1. Redis Port: `6379` (default Redis port)
 
-   - **Step 5**: Test if Redis is running by running the Redis CLI:
-     ```bash
-     redis-cli
-     ```
-   - **Step 6**:
-     - Use these parameters when running the setup script if you have configured the server on your local machine:
-       - Redis Host: `localhost`
-       - Redis Port: `6379` (default Redis port)
+2. `For Windows Users using WSL`: If you'd rather not deal with the hassle of setting up WSL on your computer, there's another option: you can use a hosted database like Redis Cloud. More details about this are provided below, mainly for when you're working on development tasks. But it's a good idea to set up Redis on your own computer if you can. Right now, Redis isn't supported directly on Windows – you can only install and use it through WSL. If you're a Windows user and want to get Redis working using the Windows Subsystem for Linux (WSL), just follow these steps:
 
-2. `For Windows Users using WSL`:
+   1. Install WSL (Windows Subsystem for Linux) following the official [WSL Installation Guide](https://docs.microsoft.com/en-us/windows/wsl/install).
 
-If you'd rather not deal with the hassle of setting up WSL on your computer, there's another option: you can use a hosted database like Redis Cloud. More details about this are provided below, mainly for when you're working on development tasks. But it's a good idea to set up Redis on your own computer if you can. Right now, Redis isn't supported directly on Windows – you can only install and use it through WSL. If you're a Windows user and want to get Redis working using the Windows Subsystem for Linux (WSL), just follow these steps:
+   2. Open a WSL terminal.
 
-- **Step 1**: Install WSL (Windows Subsystem for Linux) following the official [WSL Installation Guide](https://docs.microsoft.com/en-us/windows/wsl/install).
+   3. Update the package list:
 
-- **Step 2**: Open a WSL terminal.
+      ```bash
+      sudo apt update
+      ```
 
-- **Step 3**: Update the package list:
+   4. Install Redis Server:
 
-  ```bash
-  sudo apt update
-  ```
+      ```bash
+      sudo apt install redis-server
+      ```
 
-- **Step 4**: Install Redis Server:
+   5. Start the Redis service:
 
-  ```bash
-  sudo apt install redis-server
-  ```
+      ```bash
+      sudo service redis-server start
+      ```
 
-- **Step 5**: Start the Redis service:
+   6. Test if Redis is running by running the Redis CLI:
 
-  ```bash
-  sudo service redis-server start
-  ```
+      ```bash
+      redis-cli
+      ```
 
-- **Step 6**: Test if Redis is running by running the Redis CLI:
-
-  ```bash
-  redis-cli
-  ```
-
-- **Step 7**:
-  - Use these parameters when running the setup script if you have configured the server on your local machine:
-    - Redis Host: `localhost`
-    - Redis Port: `6379` (default Redis port)
+   7. Use these parameters when running the setup script if you have configured the server on your local machine:
+      1. Redis Host: `localhost`
+      2. Redis Port: `6379` (default Redis port)
 
 3. **Connecting to Redis Cloud**:
 
    To connect to a Redis cloud service, you will need the host and port information provided by your cloud service provider. Use these values in your application to establish a connection. Typically, the host and port strings are provided in the following format:
 
-   - Host: `your-redis-host.redisprovider.com`
-   - Port: `6379` (default Redis port)
+   1. Host: `your-redis-host.redisprovider.com`
+   1. Port: `6379` (default Redis port)
 
    Replace `your-redis-host.redisprovider.com` with the actual host provided by your Redis cloud service. You can then use these values in your application's configuration to connect to your Redis cloud instance. You may also have to enter Redis Password and Username for using cloud instance.
 
@@ -481,11 +574,11 @@ This command is available if you have [Git for Windows](https://gitforwindows.or
 
 1. Install `Git for Windows`
 1. Run the Git Bash app
-1. Issue the same command
+1. Issue the this command:
 
-```
-openssl rand -hex 32
-```
+   ```
+   openssl rand -hex 32
+   ```
 
 ### Setting up REFRESH_TOKEN_SECRET in the .env file
 
@@ -517,22 +610,22 @@ Your MongoDB installation may include either the `mongo` or `mongosh` command li
 1. Note the `connection string` in the first lines of the output.
 1. Add the first section of the `connection string` to the `MONGO_DB_URL` section of the `.env` file. In this case it is `mongodb://127.0.0.1:27017/`
 
-```
-$ mongosh
+   ```
+   $ mongosh
 
-Current Mongosh Log ID: e6ab4232a963d456920b3736
-Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
-Using MongoDB:          6.0.4
-Using Mongosh:          1.6.2
+   Current Mongosh Log ID: e6ab4232a963d456920b3736
+   Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
+   Using MongoDB:          6.0.4
+   Using Mongosh:          1.6.2
 
-For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+   For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
-...
-...
-...
-...
+   ...
+   ...
+   ...
+   ...
 
-```
+   ```
 
 #### Using Microsoft Windows to get the MONGODB_URL Connection String
 
@@ -545,24 +638,25 @@ There are a few more steps that need to be done in a Windows environment.
 1. In a separate terminal, run the `mongod` command to start the local instance of the database.
 1. Create a folder named "data" in the C drive and within it create a new folder named "db".
 1. Open a terminal and run the `mongosh` command in the terminal you will get the connection string. In this case the Connection String is: `mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2`
+
    1. In the `.env` file of Talawa-API, add the connection string to the `MONGO_DB_URL` section.
 
-```
-$ mongosh
+      ```
+      $ mongosh
 
-Current Mongosh Log ID: e6ab4232a963d456920b3736
-Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
-Using MongoDB:          6.0.4
-Using Mongosh:          1.6.2
+      Current Mongosh Log ID: e6ab4232a963d456920b3736
+      Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
+      Using MongoDB:          6.0.4
+      Using Mongosh:          1.6.2
 
-For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+      For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
-...
-...
-...
-...
+      ...
+      ...
+      ...
+      ...
 
-```
+      ```
 
 ### Configuring Redis in .env file
 
@@ -706,25 +800,27 @@ Talawa API contains a sample database importing function which can be used to im
 
 ## Syntax:
 
-`npm run import:sample-data -- [args]`
+```
+npm run import:sample-data -- [args]
+```
 
 You can pass the following arguments while running this script.
 
-- `--format`: Cleans the database before import. **Add this flag with caution. It will delete all of the existing data inside the talawa database.**
-- `--items=`: Specify the items to add.
-  - Following `items` can be specified, separated with a comma `,`
-    - `users`: For users collection
-    - `organizations`: For organizations collection
-    - `events`: For events collection
-    - `posts`: For posts collection
+1. `--format`: Cleans the database before import.
+   1. **NOTE!** Add this flag with caution. It will delete all of the existing data inside the talawa database.
+2. `--items=`: Specifies the items to add. The following `items` can be specified, separated with a comma `,`
+   1. `users`: For users collection
+   2. `organizations`: For organizations collection
+   3. `events`: For events collection
+   4. `posts`: For posts collection
 
 ## Examples:
 
-- `npm run import:sample-data`: This command will import the complete sample database without removing the existing data.
-- `npm run import:sample-data -- --format`: This command will import the complete sample database after removing the existing data.
-- `npm run import:sample-data -- --format --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations` and `appUserProfiles` collections after cleaning the existing data.
-- `npm run import:sample-data --  --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations`
-  ans `appUserProfiles` collections without cleaning the existing data.
+1. `npm run import:sample-data`: This command will import the complete sample database without removing the existing data.
+1. `npm run import:sample-data -- --format`: This command will import the complete sample database after removing the existing data.
+1. `npm run import:sample-data -- --format --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations` and `appUserProfiles` collections after cleaning the existing data.
+1. `npm run import:sample-data --  --items=users,organizations,appUserProfiles`: This command will import the sample `users` , `organizations`
+   ans `appUserProfiles` collections without cleaning the existing data.
 
 ## Sample Data Overview:
 
@@ -770,21 +866,31 @@ There are many important URLs for accessing the API
 
 ## For Talawa-API Developers
 
-By default talawa-api runs on `port 4000` on your system's localhost. It is available on the following endpoint:
+These are some important URLs for coding and troubleshooting :
 
-        http://localhost:4000/
+1. By default talawa-api runs on `port 4000` on your system's localhost. It is available on the following endpoint:
 
-If you navigate to the endpoint you and see a `JSON` response like this it means talawa-api is running successfully:
+   ```
+   http://localhost:4000/
+   ```
 
-        {"talawa-version":"v1","status":"healthy"}
+   - If you navigate to the endpoint you and see a `JSON` response like this it means talawa-api is running successfully:
 
-GraphQL endpoint for handling `queries` and `mutations` is this:
+     ```
+     {"talawa-version":"v1","status":"healthy"}
+     ```
 
-        http://localhost:4000/graphql/
+2. The graphQL endpoint for handling `queries` and `mutations` is this:
 
-GraphQL endpoint for handling `subscriptions` is this:
+   ```
+   http://localhost:4000/graphql/
+   ```
 
-        ws://localhost:4000/graphql/
+3. GraphQL endpoint for handling `subscriptions` is this:
+
+   ```
+   ws://localhost:4000/graphql/
+   ```
 
 ## For Mobile App Developers
 
@@ -792,37 +898,39 @@ The Organization URL for Talawa mobile app developers will depend upon the devic
 
 ### On Android Virtual Device
 
-- If Talawa Mobile App is installed on Android Virtual Device (AVD), use the following URL:
+If the Talawa Mobile App is installed on Android Virtual Device (AVD), use the following URL:
 
 ```
-    http://10.0.2.2:4000/graphql
+http://10.0.2.2:4000/graphql
 ```
 
 ### On a Real Mobile Device
 
-- If Talawa Mobile App is installed on a Real Mobile Device, follow the below steps to get URL:
-  - Open Command Prompt in Windows, or Terminal in Linux/OSX
-  - Enter `ipconfig` (For Windows Users) or `ifconfig` (For Linux/OSX Users)
-  - Your Mobile and Computer (On which API server is running) must be on same Wifi Network. Use Mobile Hotspot to connect your computer to internet in case you don't have access to a Wifi Router.
-  - Search for the `Wireless LAN adapter Wi-Fi:` and then copy `IPv4 Address`, like in image below:
-  - ![image](https://github.com/anshgoyalevil/talawa-api/blob/docs/image/ip-address.png)
-  - Now, use this IP address (`192.168.0.105` in our case) to access the API instance using the following URL pattern:
+If Talawa Mobile App is installed on a Real Mobile Device, follow the below steps to get URL:
 
-```
-    http://{IP_Address}:4000/graphql
-```
+1. Open Command Prompt in Windows, or Terminal in Linux/OSX
+1. Enter `ipconfig` (For Windows Users) or `ifconfig` (For Linux/OSX Users)
+1. Your Mobile and Computer (On which API server is running) must be on same Wifi Network. Use Mobile Hotspot to connect your computer to internet in case you don't have access to a Wifi Router.
+1. Search for the `Wireless LAN adapter Wi-Fi:` and then copy the `IPv4 Address`
+1. Now, use this IP address (`192.168.0.105` in our case) to access the API instance using the following URL pattern:
 
-For example:
+   ```
+   http://{IP_Address}:4000/graphql
+   ```
 
-```
-    http://192.168.0.105:4000/graphql
-```
+   For example:
+
+   ```
+   http://192.168.0.105:4000/graphql
+   ```
 
 ## For Talawa-Admin Developers
 
 The Organization URL for Talawa mobile app developers to use is:
 
-       http://localhost:4000/graphql/
+```
+http://localhost:4000/graphql/
+```
 
 # Accessing MongoDB
 
@@ -856,24 +964,35 @@ You can skip these instructions for now if you don't have running instance of Ta
 
 1. This step is for mandatory Linux specific users others can skip to next step:
 
-   1. You need to start `mongod` [Mongo daemon process] for `mongosh` to work use the following command for the same:
-
-   - `sudo service mongod start` **[System V init(service)]** or `sudo systemctl start mongod` **[systemd(systemctl)]**
-
+   1. You need to start `mongod` [Mongo daemon process] for `mongosh` to work use the following commands:
+      1. Using the System V init
+         ```
+         sudo service mongod start
+         ```
+      2. Using systemd
+         ```
+         sudo systemctl start mongod
+         ```
    2. To verify whether `mongod`[Mongo daemon process] is running you can use either:
-
-   - `sudo systemctl status mongod` **[systemd(systemctl)]** or `sudo service mongod status` **[System V init(service)]**
+      1. Using the System V init
+         ```
+         sudo service mongod status
+         ```
+      2. Using systemd
+         ```
+         sudo systemctl status mongod
+         ```
 
 ## Using MongoDB Compass
 
 1. Open MongoDB Compass and click on `Connect`.
-
 2. Select your database.
-
 3. Elevate the user status:
+
    1. Find the `AppUserProfile` document of the user that you want to elevate to superadmin.
    2. In that `AppUserProfile` document, update the value of `isSuperAdmin` field to be `true`.
-   - ![Illustration for user edit ](public/markdown/images/mongodb_compass_user_elevation.png)
+
+      ![Illustration for user edit ](public/markdown/images/mongodb_compass_user_elevation.png)
 
 ## Using Mongo Shell
 
@@ -881,17 +1000,17 @@ You can skip these instructions for now if you don't have running instance of Ta
 
 2. In the `mongosh` terminal use the following commands to edit the `appuserprofiles` collections data:
    1. Find the user:
-   ```
-   const currentUser = db.users.findOne({ firstName: '<user's first name>'})
-   ```
+      ```
+      const currentUser = db.users.findOne({ firstName: '<user's first name>'})
+      ```
    2. Elevate permission of this user in its `AppUserProfile`, i.e. set `isSuperAdmin` to `true`:
-   ```
-   db.appuserprofiles.updateOne({ _id_: currentUser.appUserProfileId },{ $set: { isSuperAdmin: true }})
-   ```
+      ```
+      db.appuserprofiles.updateOne({ _id_: currentUser.appUserProfileId },{ $set: { isSuperAdmin: true }})
+      ```
    3. To verify the details were updated correctly use:
-   ```
-   db.appuserprofiles.findOne({ _id_: currentUser.appUserProfileId })
-   ```
+      ```
+      db.appuserprofiles.findOne({ _id_: currentUser.appUserProfileId })
+      ```
 
 **Note**: You can make the edit via any of these two methods.
 
@@ -903,19 +1022,29 @@ These are some other factors to consider
 
 If port `4000` is not free on your system you can pass a custom environment variable named `PORT` to the script to make it use a different port on your system's localhost. Here's the syntax for it:
 
-        PORT=<CUSTOM_PORT_VALUE> npm run dev
+```
+PORT=<CUSTOM_PORT_VALUE> npm run dev
+```
 
-where `<CUSTOM_PORT_VALUE>` is whatever value you want the `PORT` to be. Whatever you pass will be substituted as the value for port and talawa-api development server on that port. Syntax wise it looks like-
+where `<CUSTOM_PORT_VALUE>` is whatever value you want the `PORT` to be.
 
-        http://localhost:<CUSTOM_PORT_VALUE>/
+Whatever you pass will be substituted as the value for port and talawa-api development server on that port.
 
-For example:
+```
+http://localhost:<CUSTOM_PORT_VALUE>/
+```
 
-        PORT=5000 npm run dev
+For example using this command:
+
+```
+PORT=5000 npm run dev
+```
 
 will make talawa-api accessible on the following endpoint:
 
-        http://localhost:5000/
+```
+http://localhost:5000/
+```
 
 # Testing
 
@@ -923,4 +1052,6 @@ Talawa-api makes use of `vitest` to run tests because it is much faster than `je
 
 You can run the tests for talawa-api using this command:
 
-        npm run test
+```
+npm run test
+```
