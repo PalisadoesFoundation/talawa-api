@@ -1,9 +1,0 @@
-[BASE]
-const-rgx=^[A-Z][A-Z0-9_]+$
-[FORMAT]
-ignore=C0103
-max-line-length=130
-[MESSAGES CONTROL]
-disable=W0703,W0621,W0603
-variable-rgx=^[a-z_][a-z0-9_]*$
-attr-rgx = _?_?[a-z0-9]+(_[a-z]+)*_?_?$
