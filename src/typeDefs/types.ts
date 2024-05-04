@@ -227,7 +227,7 @@ export const types = gql`
 
   type AdvertisementsConnection {
     edges: [AdvertisementEdge]
-    pageInfo: ConnectionPageInfo
+    pageInfo: DefaultConnectionPageInfo!
     totalCount: Int
   }
 

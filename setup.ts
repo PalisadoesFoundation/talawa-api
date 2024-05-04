@@ -397,8 +397,17 @@ export async function superAdmin(): Promise<void> {
 
 // Get the mongodb url
 /**
- * The `mongoDB` function connects to a MongoDB database by asking for a URL, checking the connection,
- * and updating the environment variable with the URL.
+ * The `mongoDB` function manages the connection to a MongoDB database.
+ * It performs the following steps:
+ * 1. Checks if there is an existing MongoDB URL in the environment variables.
+ * 2. If an existing URL is found, it attempts to establish a connection to the URL.
+ *    - If the connection is successful, it returns the URL.
+ *    - If the connection fails, it returns null.
+ * 3. If a URL is returned from the previous step (i.e., a successful connection was made), it prompts the user to either keep the existing URL or change it.
+ * 4. If null is returned from the previous step (i.e., no successful connection was made), it prompts the user to enter a new MongoDB URL.
+ * 5. It then enters a loop where it continues to prompt the user for a MongoDB URL until a successful connection can be made.
+ * 6. Once a successful connection is made, it saves the MongoDB URL to the environment variables.
+ * This function is part of the initial setup process and is designed to ensure a valid MongoDB connection before proceeding.
  */
 export async function mongoDB(): Promise<void> {
   let DB_URL = process.env.MONGO_DB_URL;
@@ -846,6 +855,19 @@ async function main(): Promise<void> {
     await recaptchaSiteKey();
   }
 
+  const { serverPort } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "serverPort",
+      message: "Enter the server port:",
+      default: 4000,
+    },
+  ]);
+  if (process.env.NODE_ENV === "development") {
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.SERVER_PORT = serverPort;
+    updateEnvVariable(config);
+  }
   console.log(
     "\n You can configure either SMTP or Mail for sending emails through Talawa.\n",
   );
@@ -855,7 +877,6 @@ async function main(): Promise<void> {
       `Mail username already exists with the value ${process.env.MAIL_USERNAME}`,
     );
   }
-
   const { shouldSetMail } = await inquirer.prompt([
     {
       type: "confirm",
