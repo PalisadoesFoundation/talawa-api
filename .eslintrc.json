@@ -29,11 +29,6 @@
         "@typescript-eslint/naming-convention": [
           "error",
           {
-            "selector": "interface",
-            "format": ["PascalCase"],
-            "prefix": ["Interface", "TestInterface"]
-          },
-          {
             "selector": ["typeAlias", "typeLike", "enum"],
             "format": ["PascalCase"]
           },
