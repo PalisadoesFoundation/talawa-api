@@ -118,7 +118,7 @@
     "@types/mongoose-paginate-v2": "^1.6.5",
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.12.7",
-    "@types/nodemailer": "^6.4.14",
+    "@types/nodemailer": "^6.4.15",
     "@types/uuid": "^9.0.7",
     "@types/validator": "^13.11.9",
     "@typescript-eslint/eslint-plugin": "^7.7.0",
