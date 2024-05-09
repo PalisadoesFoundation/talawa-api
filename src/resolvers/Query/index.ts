@@ -22,6 +22,7 @@ import { getDonationById } from "./getDonationById";
 import { getDonationByOrgId } from "./getDonationByOrgId";
 import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
 import { getFundById } from "./getFundById";
+import { getFundraisingCampaignById } from "./getFundraisingCampaign";
 import { getPlugins } from "./getPlugins";
 import { getlanguage } from "./getlanguage";
 import { me } from "./me";
@@ -79,6 +80,7 @@ export const Query: QueryResolvers = {
   users,
   usersConnection,
   getFundById,
+  getFundraisingCampaignById,
   venue,
   fundsByOrganization,
   getEventAttendee,
