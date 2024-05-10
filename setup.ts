@@ -860,7 +860,7 @@ async function main(): Promise<void> {
       type: "input",
       name: "serverPort",
       message: "Enter the server port:",
-      default: 4000,
+      default: process.env.SERVER_PORT || 4000,
     },
   ]);
   if (process.env.NODE_ENV === "development") {
