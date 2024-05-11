@@ -2907,6 +2907,8 @@ export type UserNotFoundError = Error & {
 };
 
 export type UserOrderByInput =
+  | 'createdAt_ASC'
+  | 'createdAt_DESC'
   | 'email_ASC'
   | 'email_DESC'
   | 'firstName_ASC'
