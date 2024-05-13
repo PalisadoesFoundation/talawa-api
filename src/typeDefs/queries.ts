@@ -76,6 +76,19 @@ export const queries = gql`
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]
+
+    getVenueByOrgId(
+      orgId: ID!
+      where: VenueWhereInput
+      first: Int
+      skip: Int
+      orderBy: VenueOrderByInput
+    ): [Venue]
+
+    getNoteById(id: ID!): Note!
+
+    getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
+
     advertisementsConnection(
       after: String
       before: String

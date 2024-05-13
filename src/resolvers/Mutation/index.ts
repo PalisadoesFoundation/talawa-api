@@ -9,7 +9,6 @@ import { addUserCustomData } from "./addUserCustomData";
 import { addUserImage } from "./addUserImage";
 import { addUserToGroupChat } from "./addUserToGroupChat";
 import { addUserToUserFamily } from "./addUserToUserFamily";
-import { adminRemoveEvent } from "./adminRemoveEvent";
 import { adminRemoveGroup } from "./adminRemoveGroup";
 import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
@@ -121,6 +120,9 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
+import { createNote } from "./createNote";
+import { deleteNote } from "./deleteNote";
+import { updateNote } from "./updateNote";
 
 export const Mutation: MutationResolvers = {
   acceptMembershipRequest,
@@ -132,7 +134,6 @@ export const Mutation: MutationResolvers = {
   addUserCustomData,
   addUserImage,
   addUserToGroupChat,
-  adminRemoveEvent,
   adminRemoveGroup,
   addUserToUserFamily,
   removeUserFamily,
@@ -161,6 +162,7 @@ export const Mutation: MutationResolvers = {
   createGroupChat,
   createMessageChat,
   createOrganization,
+  createNote,
   createPlugin,
   createPost,
   createSampleOrganization,
@@ -170,6 +172,7 @@ export const Mutation: MutationResolvers = {
   deleteDonationById,
   deleteAdvertisement,
   deleteVenue,
+  deleteNote,
   editVenue,
   deleteAgendaCategory,
   forgotPassword,
@@ -227,6 +230,7 @@ export const Mutation: MutationResolvers = {
   updateAgendaCategory,
   updateAgendaItem,
   updateAgendaSection,
+  updateNote,
   updateCommunity,
   updateEvent,
   updateEventVolunteer,

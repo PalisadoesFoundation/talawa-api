@@ -25,6 +25,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import _ from "lodash";
 
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -62,45 +63,6 @@ describe("resolvers -> Mutation -> signUp", () => {
     vi.restoreAllMocks();
   });
 
-  it(`creates the user and returns the created user with accessToken, refreshToken`, async () => {
-    const email = `email${nanoid().toLowerCase()}@gmail.com`;
-
-    const args: MutationSignUpArgs = {
-      data: {
-        email,
-        firstName: "firstName",
-        lastName: "lastName",
-        password: "password",
-        appLanguageCode: "en",
-        selectedOrganization: testOrganization?._id,
-      },
-    };
-    const { signUp: signUpResolver } = await import(
-      "../../../src/resolvers/Mutation/signUp"
-    );
-
-    const signUpPayload = await signUpResolver?.({}, args, {});
-
-    const createdUser = await User.findOne({
-      email,
-    })
-      .select("-password")
-      .lean();
-    // console.log(createdUser, signUpPayload?.user);
-
-    expect({
-      user: signUpPayload?.user,
-    }).toEqual({
-      user: createdUser,
-    });
-    console.log(`------------------------>${signUpPayload?.accessToken}`);
-    expect(typeof signUpPayload?.accessToken).toEqual("string");
-    expect(signUpPayload?.accessToken.length).toBeGreaterThan(1);
-
-    expect(typeof signUpPayload?.refreshToken).toEqual("string");
-    expect(signUpPayload?.refreshToken.length).toBeGreaterThan(1);
-  });
-
   it(`creates the user with provided organizationUserBelongsToId and returns the
   created user  with accessToken, refreshToken`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
@@ -124,14 +86,26 @@ describe("resolvers -> Mutation -> signUp", () => {
     const createdUser = await User.findOne({
       email,
     })
+      .populate("joinedOrganizations")
+      .populate("registeredEvents")
+      .populate("membershipRequests")
+      .populate("organizationsBlockedBy")
       .select("-password")
       .lean();
 
-    expect({
-      user: signUpPayload?.user,
-    }).toEqual({
-      user: createdUser,
-    });
+    const createdUserAppProfile = await AppUserProfile.findOne({
+      userId: createdUser?._id,
+    })
+      .populate("createdOrganizations")
+      .populate("createdEvents")
+      .populate("eventAdmin")
+      .populate("adminFor")
+      .lean();
+
+    expect(_.isEqual(signUpPayload?.user, createdUser)).toBe(true);
+    expect(
+      _.isEqual(signUpPayload?.appUserProfile, createdUserAppProfile),
+    ).toBe(true);
 
     expect(typeof signUpPayload?.accessToken).toEqual("string");
     expect(signUpPayload?.accessToken.length).toBeGreaterThan(1);
@@ -139,6 +113,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     expect(typeof signUpPayload?.refreshToken).toEqual("string");
     expect(signUpPayload?.refreshToken.length).toBeGreaterThan(1);
   });
+
   it(`when uploadImage is called with newFile `, async () => {
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
       async (encodedImageURL: string) => encodedImageURL,
@@ -152,7 +127,6 @@ describe("resolvers -> Mutation -> signUp", () => {
         firstName: "firstName",
         lastName: "lastName",
         password: "password",
-        appLanguageCode: "en",
         selectedOrganization: testOrganization?.id,
       },
       file: testImagePath,
@@ -308,7 +282,7 @@ describe("resolvers -> Mutation -> signUp", () => {
       email,
     }).select("-password");
 
-    console.log(createdUser?.joinedOrganizations, testOrganization?._id);
+    // console.log(createdUser?.joinedOrganizations, testOrganization?._id);
     expect(createdUser?.joinedOrganizations).toContainEqual(
       testOrganization?._id,
     );
@@ -347,7 +321,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     })
       .select("-password")
       .lean();
-    console.log(createdUser);
+    // console.log(createdUser);
     const updatedOrganization = await Organization.findById(organization?._id);
     expect(createdUser?.joinedOrganizations).not.toContainEqual(
       testOrganization?._id,

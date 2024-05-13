@@ -7,6 +7,7 @@ import {
   EventAttendee,
   Organization,
   User,
+  RecurrenceRule,
 } from "../../../src/models";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import {
@@ -16,11 +17,10 @@ import {
 } from "../../helpers/db";
 
 import { fail } from "assert";
-import { addMonths } from "date-fns";
+import { addDays, addMonths } from "date-fns";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   LENGTH_VALIDATION_ERROR,
-  ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -30,7 +30,7 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from "../../../src/libraries/errors";
-import { Frequency, RecurrenceRule } from "../../../src/models/RecurrenceRule";
+
 import {
   convertToUTCDate,
   countTotalMondaysInMonth,
@@ -70,6 +70,7 @@ beforeAll(async () => {
     {
       $push: {
         adminFor: testOrganization?._id,
+        createdOrganizations: testOrganization?._id,
       },
     },
   );
@@ -204,8 +205,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     }
   });
 
-  it(`throws UnauthorizedError if user with _id === context.userId is neither the creator
-  nor a member of the organization with _id === args.organizationId`, async () => {
+  it(`throws UnauthorizedError if user with _id === context.userId is neither a superadmin, an admin of the organization, or a member of the organization with _id === args.organizationId`, async () => {
     try {
       const args: MutationCreateEventArgs = {
         data: {
@@ -227,8 +227,10 @@ describe("resolvers -> Mutation -> createEvent", () => {
         },
       };
 
+      const randomTestUser = await createTestUser();
+
       const context = {
-        userId: testUser?.id,
+        userId: randomTestUser?._id,
       };
 
       const { createEvent: createEventResolverError } = await import(
@@ -238,16 +240,14 @@ describe("resolvers -> Mutation -> createEvent", () => {
       await createEventResolverError?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof UnauthorizedError) {
-        expect(error.message).toEqual(
-          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE,
-        );
+        expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       } else {
         fail(`Expected UnauthorizedError, but got ${error}`);
       }
     }
   });
 
-  it(`creates the single non-recurring event and returns it`, async () => {
+  it(`creates a single non-recurring event and returns it`, async () => {
     await User.updateOne(
       {
         _id: testUser?._id,
@@ -343,11 +343,12 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
   });
 
-  it(`creates default Weekly recurring instances if the recurrenceRuleData is not provided`, async () => {
+  it(`creates a recurring event with default infinite weekly recurrence, if the recurrenceRuleData is not provided`, async () => {
     let startDate = new Date();
     startDate = convertToUTCDate(startDate);
 
-    const endDate = addMonths(startDate, 1);
+    let endDate = addDays(startDate, 2);
+    endDate = convertToUTCDate(endDate);
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -396,14 +397,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      startDate,
-      endDate,
-      frequency: Frequency.WEEKLY,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -414,7 +412,12 @@ describe("resolvers -> Mutation -> createEvent", () => {
     }).lean();
 
     expect(recurringEvents).toBeDefined();
-    expect(recurringEvents.length).toEqual(5);
+
+    expect(recurrenceRule?.recurrenceStartDate).toEqual(startDate);
+    expect(recurrenceRule?.recurrenceEndDate).toBeNull();
+
+    expect(baseRecurringEvent?.startDate).toEqual(startDate);
+    expect(baseRecurringEvent?.endDate).toBeNull();
 
     const attendeeExists = await EventAttendee.exists({
       userId: testUser?._id,
@@ -429,19 +432,33 @@ describe("resolvers -> Mutation -> createEvent", () => {
       .select(["registeredEvents"])
       .lean();
 
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+      }),
+    );
   });
 
-  it(`creates the daily recurring event upto an end date based on the recurrenceRuleData`, async () => {
+  it(`creates a daily recurring event upto an end date based on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 1);
     startDate = convertToUTCDate(startDate);
+    const endDate = startDate;
 
-    const endDate = addMonths(startDate, 5);
+    const recurrenceEndDate = addMonths(startDate, 5);
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -461,6 +478,8 @@ describe("resolvers -> Mutation -> createEvent", () => {
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
+        recurrenceEndDate,
         frequency: "DAILY",
       },
     };
@@ -492,15 +511,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.DAILY,
-      startDate,
-      endDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
-      endDate: endDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -511,6 +526,12 @@ describe("resolvers -> Mutation -> createEvent", () => {
     }).lean();
 
     expect(recurringEvents).toBeDefined();
+
+    expect(recurrenceRule?.recurrenceStartDate).toEqual(startDate);
+    expect(recurrenceRule?.recurrenceEndDate).toEqual(recurrenceEndDate);
+
+    expect(baseRecurringEvent?.startDate).toEqual(startDate);
+    expect(baseRecurringEvent?.endDate).toEqual(recurrenceEndDate);
 
     const attendeeExists = await EventAttendee.exists({
       userId: testUser?._id,
@@ -525,18 +546,31 @@ describe("resolvers -> Mutation -> createEvent", () => {
       .select(["registeredEvents"])
       .lean();
 
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+      }),
+    );
   });
 
-  it(`creates the daily recurring event with no end date based on the recurrenceRuleData`, async () => {
+  it(`creates a daily recurring event upto a certain number of occurences based on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 2);
-
     startDate = convertToUTCDate(startDate);
+    const endDate = startDate;
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -550,10 +584,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: true,
         startDate,
-        startTime: startDate.toUTCString(),
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "DAILY",
         count: 10,
       },
@@ -586,13 +621,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.DAILY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -618,18 +651,31 @@ describe("resolvers -> Mutation -> createEvent", () => {
       .select(["registeredEvents"])
       .lean();
 
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+      }),
+    );
   });
 
-  it(`creates the weekly recurring event with no end date based on the recurrenceRuleData`, async () => {
+  it(`creates a weekly recurring event upto a certain number of occurences based on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 3);
-
     startDate = convertToUTCDate(startDate);
+    const endDate = startDate;
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -643,10 +689,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: true,
         startDate,
-        startTime: startDate.toUTCString(),
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "WEEKLY",
         weekDays: ["THURSDAY", "SATURDAY"],
         count: 10,
@@ -680,13 +727,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.WEEKLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -712,18 +757,31 @@ describe("resolvers -> Mutation -> createEvent", () => {
       .select(["registeredEvents"])
       .lean();
 
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+      }),
+    );
   });
 
-  it(`creates the monthly recurring event with no end date based on the recurrenceRuleData`, async () => {
+  it(`creates a monthly recurring event upto a certain number of occurences based on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 4);
-
     startDate = convertToUTCDate(startDate);
+    const endDate = startDate;
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -737,10 +795,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: true,
         startDate,
-        startTime: startDate.toUTCString(),
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "MONTHLY",
         count: 10,
       },
@@ -773,13 +832,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.MONTHLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -805,18 +862,31 @@ describe("resolvers -> Mutation -> createEvent", () => {
       .select(["registeredEvents"])
       .lean();
 
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+      }),
+    );
   });
 
-  it(`creates the yearly recurring event with no end date based on the recurrenceRuleData`, async () => {
+  it(`creates a yearly recurring event upto a certain number of occurences based on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 5);
-
     startDate = convertToUTCDate(startDate);
+    const endDate = startDate;
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -830,10 +900,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: true,
         startDate,
-        startTime: startDate.toUTCString(),
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "YEARLY",
         count: 10,
       },
@@ -866,13 +937,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.YEARLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -898,18 +967,31 @@ describe("resolvers -> Mutation -> createEvent", () => {
       .select(["registeredEvents"])
       .lean();
 
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+      }),
+    );
   });
 
-  it(`creates a biweekly recurring event with no end date based on the recurrenceRuleData`, async () => {
+  it(`creates a biweekly recurring event upto a certain number of occurences on the recurrenceRuleData`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 6);
-
     startDate = convertToUTCDate(startDate);
+    const endDate = startDate;
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -923,10 +1005,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: true,
         startDate,
-        startTime: startDate.toUTCString(),
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "WEEKLY",
         interval: 2,
         count: 10,
@@ -960,13 +1043,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.WEEKLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -992,16 +1073,29 @@ describe("resolvers -> Mutation -> createEvent", () => {
       .select(["registeredEvents"])
       .lean();
 
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
   });
 
   it(`creates a monthly recurring event that occurs on every first Monday of the month`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 7);
     startDate = convertToUTCDate(startDate);
 
     startDate.setDate(1);
@@ -1012,6 +1106,8 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate.getDate() + ((1 + 7 - startDate.getDay()) % 7),
       );
     }
+
+    const endDate = startDate;
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -1025,10 +1121,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: true,
         startDate,
-        startTime: startDate.toUTCString(),
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "MONTHLY",
         weekDays: ["MONDAY"],
         count: 10,
@@ -1063,13 +1160,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.MONTHLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -1111,16 +1206,29 @@ describe("resolvers -> Mutation -> createEvent", () => {
       .select(["registeredEvents"])
       .lean();
 
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
   });
 
   it(`creates a monthly recurring event that occurs on every last Monday of the month`, async () => {
     let startDate = new Date();
-    startDate = addMonths(startDate, 9);
     startDate = convertToUTCDate(startDate);
 
     startDate.setDate(0);
@@ -1130,6 +1238,8 @@ describe("resolvers -> Mutation -> createEvent", () => {
       // Subtract one day until we get to a Monday
       startDate.setDate(startDate.getDate() - 1);
     }
+
+    const endDate = startDate;
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -1143,10 +1253,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: true,
         startDate,
-        startTime: startDate.toUTCString(),
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "MONTHLY",
         weekDays: ["MONDAY"],
         count: 10,
@@ -1181,13 +1292,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurrenceRule = await RecurrenceRule.findOne({
-      frequency: Frequency.MONTHLY,
-      startDate,
+      _id: createEventPayload?.recurrenceRuleId,
     });
 
     const baseRecurringEvent = await Event.findOne({
-      isBaseRecurringEvent: true,
-      startDate: startDate.toUTCString(),
+      _id: createEventPayload?.baseRecurringEventId,
     });
 
     const recurringEvents = await Event.find({
@@ -1235,9 +1344,23 @@ describe("resolvers -> Mutation -> createEvent", () => {
       .select(["registeredEvents"])
       .lean();
 
+    const updatedTestUserAppProfile = await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })
+      .select(["createdEvents"])
+      .select(["eventAdmin"])
+      .lean();
+
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
         registeredEvents: expect.arrayContaining([createEventPayload?._id]),
+      }),
+    );
+
+    expect(updatedTestUserAppProfile).toEqual(
+      expect.objectContaining({
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
       }),
     );
   });

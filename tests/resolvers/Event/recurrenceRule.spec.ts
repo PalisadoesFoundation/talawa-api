@@ -7,6 +7,7 @@ import {
 } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { RecurrenceRule } from "../../../src/models";
 import type { InterfaceEvent } from "../../../src/models";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type {
@@ -16,7 +17,6 @@ import type {
 
 import { convertToUTCDate } from "../../../src/utilities/recurrenceDatesUtil";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
-import { RecurrenceRule } from "../../../src/models/RecurrenceRule";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
@@ -38,6 +38,7 @@ describe("resolvers -> Event -> recurrenceRule", () => {
   it(`returns the recurrence rule object for parent event`, async () => {
     let startDate = new Date();
     startDate = convertToUTCDate(startDate);
+    const endDate = startDate;
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -51,9 +52,11 @@ describe("resolvers -> Event -> recurrenceRule", () => {
         location: "newLocation",
         recurring: true,
         startDate,
+        endDate,
         title: "newTitle",
       },
       recurrenceRuleData: {
+        recurrenceStartDate: startDate,
         frequency: "WEEKLY",
         weekDays: ["MONDAY", "TUESDAY", "WEDNESDAY"],
         count: 10,

@@ -31,9 +31,9 @@ export const enums = gql`
   }
 
   enum RecurringEventMutationType {
-    AllInstances
-    ThisInstance
-    ThisAndFollowingInstances
+    allInstances
+    thisInstance
+    thisAndFollowingInstances
   }
 
   enum Frequency {
@@ -107,6 +107,11 @@ export const enums = gql`
     ADMIN
     SUPERADMIN
     NON_USER
+  }
+
+  enum VenueOrderByInput {
+    capacity_ASC
+    capacity_DESC
   }
 
   enum WeekDays {

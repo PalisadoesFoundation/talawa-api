@@ -1,14 +1,19 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
+  ACTION_ITEM_CATEGORY_IS_DISABLED,
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
-  ACTION_ITEM_CATEGORY_IS_DISABLED,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceActionItem, InterfaceEvent } from "../../models";
+import type {
+  InterfaceActionItem,
+  InterfaceAppUserProfile,
+  InterfaceEvent,
+  InterfaceUser,
+} from "../../models";
 import {
   ActionItem,
   ActionItemCategory,
@@ -16,8 +21,12 @@ import {
   Event,
   User,
 } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
@@ -43,10 +52,17 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   args,
   context,
 ): Promise<InterfaceActionItem> => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
-
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
   // Checks whether currentUser with _id === context.userId exists.
   if (currentUser === null) {
     throw new errors.NotFoundError(
@@ -55,9 +71,19 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -105,7 +131,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
     (organizationId) =>
       organizationId === actionItemCategory.organizationId ||
-      new Types.ObjectId(organizationId).equals(
+      new mongoose.Types.ObjectId(organizationId.toString()).equals(
         actionItemCategory.organizationId,
       ),
   );
@@ -151,7 +177,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        new Types.ObjectId(admin).equals(context.userId),
+        new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
     );
   }
 
@@ -160,7 +186,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     (organizationId) =>
       (organizationId &&
         organizationId === actionItemCategory.organizationId) ||
-      new Types.ObjectId(organizationId?.toString()).equals(
+      new mongoose.Types.ObjectId(organizationId?.toString()).equals(
         actionItemCategory.organizationId,
       ),
   );

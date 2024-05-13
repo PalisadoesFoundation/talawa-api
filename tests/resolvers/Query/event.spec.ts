@@ -27,7 +27,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> event", () => {
-  it(`throws NotFoundError if no event exists with _id === args.id and event.status === 'ACTIVE'`, async () => {
+  it(`throws NotFoundError if no event exists with _id === args.id`, async () => {
     try {
       const args: QueryEventArgs = {
         id: new Types.ObjectId().toString(),
@@ -52,7 +52,7 @@ describe("resolvers -> Query -> event", () => {
       .populate("creatorId", "-password")
       .populate("admins", "-password")
       .lean();
-
+    console.log(event, eventPayload);
     expect(eventPayload).toEqual(event);
   });
 });

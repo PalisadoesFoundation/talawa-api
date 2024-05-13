@@ -1,7 +1,6 @@
 import { addDays, addYears } from "date-fns";
-import { RecurrenceRule } from "../../../models/RecurrenceRule";
 import { convertToUTCDate } from "../../../utilities/recurrenceDatesUtil";
-import { Event } from "../../../models";
+import { Event, RecurrenceRule } from "../../../models";
 import {
   generateRecurringEventInstances,
   getRecurringInstanceDates,
@@ -62,9 +61,9 @@ export const createRecurringEventInstancesDuringQuery = async (
       // get the properties from recurrenceRule
       const {
         _id: recurrenceRuleId,
-        latestInstanceDate,
+        recurrenceEndDate,
         recurrenceRuleString,
-        endDate: recurrenceEndDate,
+        latestInstanceDate,
         count: totalInstancesCount,
       } = recurrenceRule;
 

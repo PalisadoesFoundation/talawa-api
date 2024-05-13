@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_REGISTERED_FOR_EVENT,
@@ -7,10 +7,18 @@ import {
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceEvent,
+  InterfaceUser,
+} from "../../models";
 import { AppUserProfile, Event, EventAttendee, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
@@ -18,10 +26,18 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   args,
   context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
 
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
   if (currentUser === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -29,9 +45,20 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId,
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
+
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -66,7 +93,7 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   const isUserEventAdmin = event.admins.some(
     (admin) =>
       admin === context.userID ||
-      new Types.ObjectId(admin).equals(context.userId),
+      new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
   );
 
   if (!isUserEventAdmin && !currentUserAppProfile.isSuperAdmin) {
@@ -108,10 +135,7 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
 
   const requestUserIsOrganizationMember = joinedOrgs.includes(eventOrgId);
 
-  if (
-    process.env.SKIP_ORG_MEMBER_CHECK_TEST !== "true" &&
-    !requestUserIsOrganizationMember
-  ) {
+  if (!requestUserIsOrganizationMember) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
       USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,

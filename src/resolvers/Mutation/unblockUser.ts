@@ -1,16 +1,18 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
 import {
-  USER_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
 import type { InterfaceOrganization, InterfaceUser } from "../../models";
 import { MembershipRequest, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { Types } from "mongoose";
+import mongoose from "mongoose";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
 /**
  * This function enables to unblock user.
  * @param _parent - parent of current request
@@ -52,9 +54,17 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   }
 
   // ensure user exists
-  const user = await User.findOne({
-    _id: args.userId,
-  }).lean();
+  let user: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([args.userId]);
+  user = userFoundInCache[0];
+  if (user === null) {
+    user = await User.findOne({
+      _id: args.userId,
+    }).lean();
+    if (user !== null) {
+      await cacheUsers([user]);
+    }
+  }
 
   if (!user) {
     throw new errors.NotFoundError(
@@ -68,7 +78,8 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlockedFromOrganization = organization.blockedUsers.some(
-    (blockedUser) => new Types.ObjectId(blockedUser).equals(user._id),
+    (blockedUser) =>
+      new mongoose.Types.ObjectId(blockedUser.toString()).equals(user._id),
   );
 
   // checks if user with _id === args.userId is blocked by organzation with _id == args.organizationId
@@ -88,7 +99,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     {
       $set: {
         blockedUsers: organization.blockedUsers.filter(
-          (blockedUser) => !user._id.equals(blockedUser),
+          (blockedUser) => !user?._id.equals(blockedUser),
         ),
       },
     },
@@ -167,7 +178,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
       $set: {
         organizationsBlockedBy: user.organizationsBlockedBy.filter(
           (organizationBlockedBy) =>
-            !new Types.ObjectId(String(organization._id)).equals(
+            !new mongoose.Types.ObjectId(organization._id.toString()).equals(
               organizationBlockedBy,
             ),
         ),

@@ -47,18 +47,16 @@ export const inputs = gql`
   }
 
   input CreateAgendaItemInput {
-    title: String!
+    title: String
     description: String
     duration: String!
     attachments: [String]
     relatedEventId: ID
     urls: [String]
-    user: String
+    users: [ID]
     categories: [ID]
     sequence: Int!
-    itemType: ItemType!
     organizationId: ID!
-    isNote: Boolean!
   }
 
   input UpdateAgendaItemInput {
@@ -69,11 +67,9 @@ export const inputs = gql`
     relatedEvent: ID
     updatedBy: ID!
     urls: [String]
-    user: String
+    users: [ID]
     categories: [ID]
     sequence: Int
-    itemType: ItemType
-    isNote: Boolean
   }
 
   input ActionItemWhereInput {
@@ -130,7 +126,7 @@ export const inputs = gql`
     title: String!
     description: String!
     startDate: Date!
-    endDate: Date
+    endDate: Date!
     startTime: Time
     endTime: Time
     allDay: Boolean!
@@ -268,6 +264,16 @@ export const inputs = gql`
     receiver: ID!
   }
 
+  input NoteInput {
+    content: String!
+    agendaItemId: ID!
+  }
+
+  input UpdateNoteInput {
+    content: String
+    updatedBy: ID!
+  }
+
   input OrganizationInput {
     name: String!
     description: String!
@@ -366,6 +372,8 @@ export const inputs = gql`
   }
 
   input RecurrenceRuleInput {
+    recurrenceStartDate: Date
+    recurrenceEndDate: Date
     frequency: Frequency
     weekDays: [WeekDays]
     interval: PositiveInt
@@ -518,11 +526,6 @@ export const inputs = gql`
     confirmNewPassword: String!
   }
 
-  input UpdateUserTypeInput {
-    userType: String
-    id: ID
-  }
-
   input UserAndOrganizationInput {
     organizationId: ID!
     userId: ID!
@@ -590,5 +593,12 @@ export const inputs = gql`
     capacity: Int!
     description: String
     file: String
+  }
+
+  input VenueWhereInput {
+    name_contains: String
+    name_starts_with: String
+    description_starts_with: String
+    description_contains: String
   }
 `;

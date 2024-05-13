@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 // Only loads plugin data for the time if it's not currently present in the database
 const loadPlugins = async (): Promise<void> => {
   try {
-    await mongoose.connect(process.env.MONGO_URI as string);
+    await mongoose.connect(process.env.MONGO_DB_URL as string);
     logger.info("\x1b[1m\x1b[32m%s\x1b[0m", `Connected to the database`);
     const res = await Plugin.find();
     const databaseTitle = mongoose.connection.db.databaseName;

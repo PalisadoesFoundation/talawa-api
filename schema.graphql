@@ -89,7 +89,7 @@ enum AdvertisementType {
 
 type AdvertisementsConnection {
   edges: [AdvertisementEdge]
-  pageInfo: ConnectionPageInfo
+  pageInfo: DefaultConnectionPageInfo!
   totalCount: Int
 }
 
@@ -112,8 +112,6 @@ type AgendaItem {
   createdBy: User!
   description: String
   duration: String!
-  isNote: Boolean!
-  itemType: ItemType!
   organization: Organization!
   relatedEvent: Event
   sequence: Int!
@@ -121,7 +119,7 @@ type AgendaItem {
   updatedAt: Date!
   updatedBy: User!
   urls: [String]
-  user: String!
+  users: [User]
 }
 
 type AgendaSection {
@@ -290,14 +288,12 @@ input CreateAgendaItemInput {
   categories: [ID]
   description: String
   duration: String!
-  isNote: Boolean!
-  itemType: ItemType!
   organizationId: ID!
   relatedEventId: ID
   sequence: Int!
-  title: String!
+  title: String
   urls: [String]
-  user: String
+  users: [ID]
 }
 
 input CreateAgendaSectionInput {
@@ -620,6 +616,7 @@ type Event {
   attendees: [User]
   attendeesCheckInStatus: [CheckInStatus!]!
   averageFeedbackScore: Float
+  baseRecurringEvent: Event
   createdAt: DateTime!
   creator: User
   description: String!
@@ -628,6 +625,7 @@ type Event {
   feedback: [Feedback!]!
   images: [String]
   isPublic: Boolean!
+  isRecurringEventException: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
   location: String
@@ -637,7 +635,6 @@ type Event {
   recurring: Boolean!
   startDate: Date!
   startTime: Time
-  status: Status!
   title: String!
   updatedAt: DateTime!
 }
@@ -664,7 +661,7 @@ input EventAttendeeInput {
 input EventInput {
   allDay: Boolean!
   description: String!
-  endDate: Date
+  endDate: Date!
   endTime: Time
   images: [String]
   isPublic: Boolean!
@@ -1032,7 +1029,6 @@ type MinimumValueError implements FieldError {
 }
 
 type Mutation {
-  acceptAdmin(id: ID!): Boolean!
   acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   addEventAttendee(data: EventAttendeeInput!): User!
   addFeedback(data: FeedbackInput!): Feedback!
@@ -1044,7 +1040,6 @@ type Mutation {
   addUserImage(file: String!): User!
   addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
   addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
-  adminRemoveEvent(eventId: ID!): Event!
   adminRemoveGroup(groupId: ID!): GroupChat!
   assignUserTag(input: ToggleUserTagAssignInput!): User
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): AppUserProfile!
@@ -1071,6 +1066,7 @@ type Mutation {
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): CreateMemberPayload!
   createMessageChat(data: MessageChatInput!): MessageChat!
+  createNote(data: NoteInput!): Note!
   createOrganization(data: OrganizationInput, file: String): Organization!
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
   createPost(data: PostInput!, file: String): Post
@@ -1081,6 +1077,7 @@ type Mutation {
   deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
   deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
+  deleteNote(id: ID!): ID!
   deleteVenue(id: ID!): Venue
   editVenue(data: EditVenueInput!): Venue
   forgotPassword(data: ForgotPasswordData!): Boolean!
@@ -1096,7 +1093,6 @@ type Mutation {
   refreshToken(refreshToken: String!): ExtendSession!
   registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
   registerForEvent(id: ID!): EventAttendee!
-  rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): AppUserProfile!
@@ -1145,13 +1141,14 @@ type Mutation {
   updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
   updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
   updateCommunity(data: UpdateCommunityInput!): Boolean!
-  updateEvent(data: UpdateEventInput, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
+  updateEvent(data: UpdateEventInput!, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
   updateEventVolunteerGroup(data: UpdateEventVolunteerGroupInput, id: ID!): EventVolunteerGroup!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
   updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
   updateFundraisingCampaignPledge(data: UpdateFundCampaignPledgeInput!, id: ID!): FundraisingCampaignPledge!
   updateLanguage(languageCode: String!): User!
+  updateNote(data: UpdateNoteInput!, id: ID!): Note!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
@@ -1159,7 +1156,21 @@ type Mutation {
   updateUserProfile(data: UpdateUserInput, file: String): User!
   updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
   updateUserTag(input: UpdateUserTagInput!): UserTag
-  updateUserType(data: UpdateUserTypeInput!): Boolean!
+}
+
+type Note {
+  _id: ID!
+  agendaItemId: ID!
+  content: String!
+  createdAt: DateTime!
+  createdBy: User!
+  updatedAt: DateTime!
+  updatedBy: User!
+}
+
+input NoteInput {
+  agendaItemId: ID!
+  content: String!
 }
 
 input OTPInput {
@@ -1436,6 +1447,7 @@ type Query {
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
+  getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
   getCommunityData: Community
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
@@ -1446,7 +1458,9 @@ type Query {
   getFundById(id: ID!): Fund!
   getFundraisingCampaignById(id: ID!): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
+  getNoteById(id: ID!): Note!
   getPlugins: [Plugin]
+  getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
   isSampleOrganization(id: ID!): Boolean!
@@ -1472,9 +1486,15 @@ input RecaptchaVerification {
 }
 
 type RecurrenceRule {
+  baseRecurringEvent: Event
   count: PositiveInt
-  frequency: Frequency
-  interval: PositiveInt
+  frequency: Frequency!
+  interval: PositiveInt!
+  latestInstanceDate: Date
+  organization: Organization
+  recurrenceEndDate: Date
+  recurrenceRuleString: String!
+  recurrenceStartDate: Date!
   weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }
@@ -1483,14 +1503,16 @@ input RecurrenceRuleInput {
   count: PositiveInt
   frequency: Frequency
   interval: PositiveInt
+  recurrenceEndDate: Date
+  recurrenceStartDate: Date
   weekDayOccurenceInMonth: Int
   weekDays: [WeekDays]
 }
 
 enum RecurringEventMutationType {
-  AllInstances
-  ThisAndFollowingInstances
-  ThisInstance
+  allInstances
+  thisAndFollowingInstances
+  thisInstance
 }
 
 type SocialMediaUrls {
@@ -1612,14 +1634,12 @@ input UpdateAgendaItemInput {
   categories: [ID]
   description: String
   duration: String
-  isNote: Boolean
-  itemType: ItemType
   relatedEvent: ID
   sequence: Int
   title: String
   updatedBy: ID!
   urls: [String]
-  user: String
+  users: [ID]
 }
 
 input UpdateAgendaSectionInput {
@@ -1689,6 +1709,11 @@ input UpdateFundInput {
   taxDeductible: Boolean
 }
 
+input UpdateNoteInput {
+  content: String
+  updatedBy: ID!
+}
+
 input UpdateOrganizationInput {
   address: AddressInput
   description: String
@@ -1721,11 +1746,6 @@ input UpdateUserTagInput {
   _id: ID!
   name: String!
   tagColor: String!
-}
-
-input UpdateUserTypeInput {
-  id: ID
-  userType: String
 }
 
 scalar Upload
@@ -1931,6 +1951,18 @@ input VenueInput {
   file: String
   name: String!
   organizationId: ID!
+}
+
+enum VenueOrderByInput {
+  capacity_ASC
+  capacity_DESC
+}
+
+input VenueWhereInput {
+  description_contains: String
+  description_starts_with: String
+  name_contains: String
+  name_starts_with: String
 }
 
 enum WeekDays {

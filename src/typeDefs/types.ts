@@ -36,13 +36,11 @@ export const types = gql`
     createdBy: User!
     updatedBy: User!
     urls: [String]
-    user: String!
+    users: [User]
     categories: [AgendaCategory]
     sequence: Int!
-    itemType: ItemType!
     createdAt: Date!
     updatedAt: Date!
-    isNote: Boolean!
     organization: Organization!
     relatedEvent: Event
   }
@@ -229,7 +227,7 @@ export const types = gql`
 
   type AdvertisementsConnection {
     edges: [AdvertisementEdge]
-    pageInfo: ConnectionPageInfo
+    pageInfo: DefaultConnectionPageInfo!
     totalCount: Int
   }
 
@@ -258,6 +256,8 @@ export const types = gql`
     allDay: Boolean!
     recurring: Boolean!
     recurrenceRule: RecurrenceRule
+    baseRecurringEvent: Event
+    isRecurringEventException: Boolean!
     isPublic: Boolean!
     isRegisterable: Boolean!
     location: String
@@ -272,7 +272,6 @@ export const types = gql`
     attendeesCheckInStatus: [CheckInStatus!]!
     actionItems: [ActionItem]
     admins(adminId: ID): [User!]
-    status: Status!
     feedback: [Feedback!]!
     averageFeedbackScore: Float
     agendaItems: [AgendaItem]
@@ -431,6 +430,16 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
+  type Note {
+    _id: ID!
+    content: String!
+    createdBy: User!
+    updatedBy: User!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    agendaItemId: ID!
+  }
+
   type Organization {
     image: String
     _id: ID!
@@ -562,11 +571,17 @@ export const types = gql`
   }
 
   type RecurrenceRule {
-    frequency: Frequency
+    organization: Organization
+    baseRecurringEvent: Event
+    recurrenceStartDate: Date!
+    recurrenceEndDate: Date
+    recurrenceRuleString: String!
+    frequency: Frequency!
     weekDays: [WeekDays]
-    interval: PositiveInt
+    interval: PositiveInt!
     count: PositiveInt
     weekDayOccurenceInMonth: Int
+    latestInstanceDate: Date
   }
 
   type SocialMediaUrls {

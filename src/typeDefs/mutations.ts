@@ -5,8 +5,6 @@ import { gql } from "graphql-tag";
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const mutations = gql`
   type Mutation {
-    acceptAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
-
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
     addOrganizationCustomField(
@@ -44,8 +42,6 @@ export const mutations = gql`
     removeUserFamily(familyId: ID!): UserFamily! @auth
 
     createUserFamily(data: createUserFamilyInput!): UserFamily! @auth
-
-    adminRemoveEvent(eventId: ID!): Event! @auth
 
     adminRemoveGroup(groupId: ID!): GroupChat! @auth
 
@@ -121,6 +117,8 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
+    createNote(data: NoteInput!): Note! @auth
+
     createPlugin(
       pluginName: String!
       pluginCreatedBy: String!
@@ -142,9 +140,11 @@ export const mutations = gql`
 
     deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
 
-    deleteAgendaCategory(id: ID!): ID!
+    deleteAgendaCategory(id: ID!): ID! @auth
 
     deleteDonationById(id: ID!): DeletePayload!
+
+    deleteNote(id: ID!): ID! @auth
 
     deleteVenue(id: ID!): Venue @auth
 
@@ -179,8 +179,6 @@ export const mutations = gql`
     refreshToken(refreshToken: String!): ExtendSession!
 
     registerForEvent(id: ID!): EventAttendee! @auth
-
-    rejectAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
 
     registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
 
@@ -302,7 +300,7 @@ export const mutations = gql`
 
     updateEvent(
       id: ID!
-      data: UpdateEventInput
+      data: UpdateEventInput!
       recurrenceRuleData: RecurrenceRuleInput
       recurringEventUpdateType: RecurringEventMutationType
     ): Event! @auth
@@ -336,6 +334,8 @@ export const mutations = gql`
       file: String
     ): Organization! @auth
 
+    updateNote(id: ID!, data: UpdateNoteInput!): Note! @auth
+
     updatePluginStatus(id: ID!, orgId: ID!): Plugin!
 
     updateUserTag(input: UpdateUserTagInput!): UserTag @auth
@@ -349,9 +349,5 @@ export const mutations = gql`
       userId: ID!
       role: String!
     ): Organization! @auth
-
-    updateUserType(data: UpdateUserTypeInput!): Boolean!
-      @auth
-      @role(requires: SUPERADMIN)
   }
 `;

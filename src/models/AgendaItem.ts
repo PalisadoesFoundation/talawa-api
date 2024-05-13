@@ -4,6 +4,7 @@ import type { InterfaceUser } from "./User";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceAgendaCategory } from "./AgendaCategory";
 import type { InterfaceEvent } from "./Event";
+import type { InterfaceNote } from "./Note";
 
 /**
  * This is an interface representing a document for an agenda item in the database (MongoDB).
@@ -17,15 +18,15 @@ export interface InterfaceAgendaItem {
   createdBy: PopulatedDoc<InterfaceUser & Document>; // Reference to the user who created the agenda item.
   updatedBy: PopulatedDoc<InterfaceUser & Document>; // Reference to the user who last updated the agenda item.
   urls?: string[]; // Optional array of URLs related to the agenda item.
-  user?: string; // Optional user associated with the agenda item.
+  users?: PopulatedDoc<InterfaceUser & Document>[]; // Optional users array indicating key note users for the agenda item.
   relatedEvent: PopulatedDoc<InterfaceEvent & Document>; // Reference to the event associated with the agenda item.
   categories?: PopulatedDoc<InterfaceAgendaCategory & Document>[]; // Optional array of agenda categories associated with the agenda item.
   sequence: number; // Sequence number of the agenda item.
   itemType: ItemType; // Type of the agenda item (Regular or Note).
   createdAt: Date; // Date when the agenda item was created.
   updatedAt: Date; // Date when the agenda item was last updated.
-  isNote: boolean; // Indicates whether the agenda item is a note.
   organization: PopulatedDoc<InterfaceOrganization & Document>; // Reference to the organization associated with the agenda item.
+  notes: PopulatedDoc<InterfaceNote & Document>[]; // Reference to the notes associated with the agenda item.
 }
 
 /**
@@ -45,8 +46,8 @@ export enum ItemType {
  * @param attachments - Optional array of attachment URLs.
  * @param createdBy - Reference to the user who created the agenda item.
  * @param updatedBy - Reference to the user who last updated the agenda item.
- * @param urls - Optional array of URLs related to the agenda item.
- * @param user - Optional user associated with the agenda item.
+ * @param urls - Optional users array indicating key note users for the agenda item.
+ * @param users - Optional user associated with the agenda item.
  * @param categories - Optional array of agenda categories associated with the agenda item.
  * @param sequence - Sequence number of the agenda item.
  * @param itemType - Type of the agenda item (Regular or Note).
@@ -54,6 +55,7 @@ export enum ItemType {
  * @param updatedAt - Date when the agenda item was last updated.
  * @param isNote - Indicates whether the agenda item is a note.
  * @param organization - Reference to the organization associated with the agenda item.
+ * @param notes - Reference to the notes associated with the agenda item.
  */
 export const AgendaItemSchema = new Schema({
   title: {
@@ -85,9 +87,12 @@ export const AgendaItemSchema = new Schema({
   urls: {
     type: [String],
   },
-  user: {
-    type: String,
-  },
+  users: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   categories: [
     {
       type: Schema.Types.ObjectId,
@@ -109,14 +114,16 @@ export const AgendaItemSchema = new Schema({
     type: Date,
     // required: true,
   },
-  isNote: {
-    type: Boolean,
-    default: false,
-  },
   organization: {
     type: Schema.Types.ObjectId,
     ref: "Organization",
   },
+  notes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Note",
+    },
+  ],
 });
 
 const agendaItemModel = (): Model<InterfaceAgendaItem> =>

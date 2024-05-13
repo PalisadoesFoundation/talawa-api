@@ -1,26 +1,30 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, MembershipRequest } from "../../../src/models";
+import { MembershipRequest, Organization, User } from "../../../src/models";
 import type { MutationUnblockUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { unblockUser as unblockUserResolver } from "../../../src/resolvers/Mutation/unblockUser";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { unblockUser as unblockUserResolver } from "../../../src/resolvers/Mutation/unblockUser";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
+import {
+  createTestUserAndOrganization,
+  createTestUser,
+} from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
+let testUser2: TestUserType;
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
@@ -28,6 +32,7 @@ beforeAll(async () => {
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   testOrganization = temp[1];
+  testUser2 = await createTestUser();
 });
 
 afterAll(async () => {
@@ -65,9 +70,9 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
   it(`throws NotFoundError if no user exists with _id === args.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => message,
+    );
     try {
       const args: MutationUnblockUserArgs = {
         organizationId: testOrganization?.id,
@@ -75,7 +80,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       };
 
       const context = {
-        userId: "",
+        userId: new Types.ObjectId().toString(),
       };
 
       const { unblockUser: unblockUserResolver } = await import(
@@ -84,7 +89,6 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       await unblockUserResolver?.({}, args, context);
     } catch (error: unknown) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
@@ -98,7 +102,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
     try {
       const args: MutationUnblockUserArgs = {
         organizationId: testOrganization?.id,
-        userId: testUser?.id,
+        userId: testUser2?.id,
       };
 
       const context = {
@@ -149,7 +153,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       const args: MutationUnblockUserArgs = {
         organizationId: testOrganization?.id,
-        userId: testUser?.id,
+        userId: testUser2?.id,
       };
 
       const context = {
@@ -178,7 +182,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       },
       {
         $push: {
-          blockedUsers: testUser?._id,
+          blockedUsers: testUser2?._id,
         },
         $set: {
           userRegistrationRequired: true,
@@ -194,7 +198,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       updatedOrganization.userRegistrationRequired === true
     ) {
       const createdMembershipRequest = await MembershipRequest.create({
-        user: testUser?._id,
+        user: testUser2?._id,
         organization: testOrganization?._id,
       });
 
@@ -214,7 +218,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       await User.updateOne(
         {
-          _id: testUser?._id,
+          _id: testUser2?._id,
         },
         {
           $push: {
@@ -230,7 +234,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
     await User.updateOne(
       {
-        _id: testUser?.id,
+        _id: testUser2?.id,
       },
       {
         $push: {
@@ -241,7 +245,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
     const args: MutationUnblockUserArgs = {
       organizationId: testOrganization?.id,
-      userId: testUser?.id,
+      userId: testUser2?.id,
     };
 
     const context = {
@@ -251,7 +255,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
     const unblockUserPayload = await unblockUserResolver?.({}, args, context);
 
     const testUnblockUserPayload = await User.findOne({
-      _id: testUser?.id,
+      _id: testUser2?.id,
     })
       .select(["-password"])
       .lean();
@@ -268,7 +272,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       },
       {
         $push: {
-          blockedUsers: testUser?._id,
+          blockedUsers: testUser2?._id,
         },
         $set: {
           userRegistrationRequired: false,
@@ -289,7 +293,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         },
         {
           $push: {
-            members: testUser?._id,
+            members: testUser2?._id,
           },
         },
         {
@@ -299,7 +303,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       await User.updateOne(
         {
-          _id: testUser?._id,
+          _id: testUser2?._id,
         },
         {
           $push: {
@@ -315,7 +319,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
     await User.updateOne(
       {
-        _id: testUser?.id,
+        _id: testUser2?.id,
       },
       {
         $push: {
@@ -326,7 +330,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
     const args: MutationUnblockUserArgs = {
       organizationId: testOrganization?.id,
-      userId: testUser?.id,
+      userId: testUser2?.id,
     };
 
     const context = {
@@ -336,7 +340,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
     const unblockUserPayload = await unblockUserResolver?.({}, args, context);
 
     const testUnblockUserPayload = await User.findOne({
-      _id: testUser?.id,
+      _id: testUser2?.id,
     })
       .select(["-password"])
       .lean();

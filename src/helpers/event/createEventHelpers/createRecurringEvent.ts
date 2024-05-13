@@ -34,19 +34,19 @@ export const createRecurringEvent = async (
   let { recurrenceRuleData } = args;
 
   if (!recurrenceRuleData) {
-    // create a default weekly recurrence rule
+    // create a default recurrence rule -> infinite weekly recurrence
     recurrenceRuleData = {
       frequency: "WEEKLY",
+      recurrenceStartDate: data.startDate,
+      recurrenceEndDate: null,
     };
   }
 
+  const { recurrenceStartDate, recurrenceEndDate } = recurrenceRuleData;
+
   // generate a recurrence rule string which would be used to generate rrule object
   // and get recurrence dates
-  const recurrenceRuleString = generateRecurrenceRuleString(
-    recurrenceRuleData,
-    data?.startDate,
-    data?.endDate,
-  );
+  const recurrenceRuleString = generateRecurrenceRuleString(recurrenceRuleData);
 
   // create a base recurring event first, based on which all the
   // recurring instances would be dynamically generated
@@ -55,6 +55,8 @@ export const createRecurringEvent = async (
       {
         ...data,
         recurring: true,
+        startDate: recurrenceStartDate,
+        endDate: recurrenceEndDate,
         isBaseRecurringEvent: true,
         creatorId,
         admins: [creatorId],
@@ -68,8 +70,8 @@ export const createRecurringEvent = async (
   // to be generated in this operation (rest would be generated dynamically during query)
   const recurringInstanceDates = getRecurringInstanceDates(
     recurrenceRuleString,
-    data.startDate,
-    data.endDate,
+    recurrenceStartDate,
+    recurrenceEndDate,
   );
 
   // get the date for the latest created instance
@@ -78,8 +80,8 @@ export const createRecurringEvent = async (
   // create a recurrenceRule document that would contain the recurrence pattern
   const recurrenceRule = await createRecurrenceRule(
     recurrenceRuleString,
-    data.startDate,
-    data.endDate,
+    recurrenceStartDate,
+    recurrenceEndDate,
     organizationId,
     baseRecurringEvent[0]?._id.toString(),
     latestInstanceDate,

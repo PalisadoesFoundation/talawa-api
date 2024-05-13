@@ -28,6 +28,7 @@ export const ACTION_ITEM_CATEGORY_ALREADY_EXISTS = {
   MESSAGE: "actionItemCategory.alreadyExists",
   PARAM: "actionItemCategory",
 };
+
 export const ACTION_ITEM_CATEGORY_IS_DISABLED = {
   DESC: "Action Item Category is disabled",
   CODE: "actionItemCategory.isDisabled",
@@ -40,6 +41,13 @@ export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
   CODE: "agendaCategory.notFound",
   MESSAGE: "agendaCategory.notFound",
   PARAM: "agendaCategory",
+};
+
+export const BASE_RECURRING_EVENT_NOT_FOUND = {
+  DESC: "Base Recurring Event not found",
+  CODE: "baseRecurringEvent.notFound",
+  MESSAGE: "baseRecurringEvent.notFound",
+  PARAM: "baseRecurringEvent",
 };
 
 export const CHAT_NOT_FOUND_ERROR = {
@@ -174,6 +182,14 @@ export const ORGANIZATION_NOT_FOUND_ERROR = {
   MESSAGE: "organization.notFound",
   PARAM: "organization",
 };
+
+export const RECURRENCE_RULE_NOT_FOUND = {
+  DESC: "Recurrence Rule not found",
+  CODE: "recurrenceRule.notFound",
+  MESSAGE: "recurrenceRule.notFound",
+  PARAM: "recurrenceRule",
+};
+
 export const VENUE_NAME_MISSING_ERROR = {
   DESC: "Venue name not found",
   CODE: "venueName.notFound",
@@ -522,6 +538,23 @@ export const AGENDA_SECTION_NOT_FOUND_ERROR = {
   MESSAGE: "agendaSection.notFound",
   PARAM: "agendaSection",
 };
+export const NOTE_NOT_FOUND_ERROR = {
+  MESSAGE: "Error: Note not found",
+  CODE: "note.notFound",
+  PARAM: "noteValidation",
+};
+
+export const UNAUTHORIZED_REMOVE_NOTE_ERROR = {
+  MESSAGE: "Error: Unauthorized to remove note",
+  CODE: "note.unauthorizedRemove",
+  PARAM: "noteRemovalValidation",
+};
+
+export const UNAUTHORIZED_UPDATE_NOTE_ERROR = {
+  MESSAGE: "Error: Unauthorized to update note",
+  CODE: "note.unauthorizedUpdate",
+  PARAM: "noteUpdateValidation",
+};
 
 export const USER_NOT_FOUND_ERROR = {
   DESC: "User not found",
@@ -668,6 +701,8 @@ export const MAXIMUM_FETCH_LIMIT = 100;
 export const MAXIMUM_IMAGE_SIZE_LIMIT_KB = 20000;
 
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
+
+export const SERVER_PORT = ENV.SERVER_PORT;
 
 export const ACCESS_TOKEN_SECRET = ENV.ACCESS_TOKEN_SECRET;
 

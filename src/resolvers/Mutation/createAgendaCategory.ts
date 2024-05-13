@@ -1,19 +1,24 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import {
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
 import {
   AgendaCategoryModel,
   AppUserProfile,
   Organization,
   User,
 } from "../../models";
-import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-} from "../../constants";
-import { adminCheck } from "../../utilities";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
 /**
  * This is a resolver function for the GraphQL mutation 'createAgendaCategory'.
  *
@@ -32,24 +37,43 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
 
     const userId = context.userId;
 
-    const currentUser = await User.findById(userId).lean();
-
-    const currentAppUserProfile = await AppUserProfile.findOne({
-      userId: currentUser?._id,
-    }).lean();
-    if (!currentAppUserProfile) {
-      throw new errors.UnauthenticatedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-        USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
-      );
+    let currentUser: InterfaceUser | null;
+    const userFoundInCache = await findUserInCache([userId]);
+    currentUser = userFoundInCache[0];
+    if (currentUser === null) {
+      currentUser = await User.findOne({
+        _id: userId,
+      }).lean();
+      if (currentUser !== null) {
+        await cacheUsers([currentUser]);
+      }
     }
-
     if (!currentUser) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    let currentAppUserProfile: InterfaceAppUserProfile | null;
+    const appUserProfileFoundInCache = await findAppUserProfileCache([
+      currentUser.appUserProfileId?.toString(),
+    ]);
+    currentAppUserProfile = appUserProfileFoundInCache[0];
+    if (currentAppUserProfile === null) {
+      currentAppUserProfile = await AppUserProfile.findOne({
+        _id: currentUser.appUserProfileId,
+      }).lean();
+      if (currentAppUserProfile !== null) {
+        await cacheAppUserProfile([currentAppUserProfile]);
+      }
+    }
+    if (!currentAppUserProfile) {
+      throw new errors.UnauthenticatedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 

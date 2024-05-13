@@ -71,27 +71,6 @@ export const generateUserData = async (
   };
 };
 
-const createUser = async (
-  generatedUser: InterfaceUser & mongoose.Document<any, any, InterfaceUser>,
-): Promise<InterfaceUser & mongoose.Document<any, any, InterfaceUser>> => {
-  const savedUser = await generatedUser.save();
-  const appUserProfile = await AppUserProfile.create({
-    userId: savedUser._id,
-  });
-  const sampleModel = new SampleData({
-    documentId: savedUser._id,
-    collectionName: "User",
-  });
-  const sampleModel2 = new SampleData({
-    documentId: appUserProfile._id,
-    collectionName: "AppUserProfile",
-  });
-
-  await sampleModel.save();
-  await sampleModel2.save();
-  return savedUser;
-};
-
 export const generateEventData = async (
   users: InterfaceUser[],
   organizationId: string,
@@ -127,7 +106,6 @@ export const generateEventData = async (
     creatorId: faker.helpers.arrayElement(users)._id,
     admins: [faker.helpers.arrayElement(users)._id],
     organization: organizationId,
-    status: "ACTIVE",
   });
 
   await event.save();
@@ -240,6 +218,7 @@ export const createSampleOrganization = async (): Promise<void> => {
   const _id = faker.database.mongodbObjectId();
   const userData = await generateUserData(_id, "ADMIN");
   const creator = userData.user;
+
   const creatorAppProfile = userData.appUserProfile;
 
   interface Address {

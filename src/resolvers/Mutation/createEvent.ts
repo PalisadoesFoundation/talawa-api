@@ -1,7 +1,6 @@
 import { Types } from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
-  ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -15,8 +14,16 @@ import {
 import { errors, requestContext } from "../../libraries";
 import { compareDates } from "../../libraries/validators/compareDates";
 import { isValidString } from "../../libraries/validators/validateString";
-import type { InterfaceEvent } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceEvent,
+  InterfaceUser,
+} from "../../models";
 import { AppUserProfile, Organization, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
@@ -39,9 +46,17 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   args,
   context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   // Checks whether currentUser exists.
   if (!currentUser) {
@@ -51,9 +66,19 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
 
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
@@ -78,29 +103,23 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
-  const userCreatedOrganization =
-    currentUserAppProfile.createdOrganizations.some((createdOrganization) =>
-      new Types.ObjectId(createdOrganization?.toString()).equals(
-        organization._id,
-      ),
-    );
+  const isUserOrgAdmin = currentUserAppProfile.adminFor.some((org) =>
+    new Types.ObjectId(org?.toString()).equals(organization._id),
+  );
 
-  const userJoinedOrganization = currentUser.joinedOrganizations.some(
+  const isUserOrgMember = currentUser.joinedOrganizations.some(
     (joinedOrganization) => joinedOrganization.equals(organization._id),
   );
 
   // Checks whether currentUser neither created nor joined the organization.
+
   if (
-    !(
-      userCreatedOrganization ||
-      userJoinedOrganization ||
-      currentUserAppProfile.isSuperAdmin
-    )
+    !(isUserOrgAdmin || isUserOrgMember || currentUserAppProfile.isSuperAdmin)
   ) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM,
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
@@ -181,9 +200,11 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     }
 
     /* c8 ignore stop */
+
     return createdEvent;
-  } catch (error) {
+
     /* c8 ignore start */
+  } catch (error) {
     if (session) {
       // abort transaction if something fails
       await session.abortTransaction();

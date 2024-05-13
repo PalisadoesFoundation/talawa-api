@@ -27,6 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
+          persist-crendetials: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -60,7 +61,7 @@ jobs:
       # or else we'll get failures
       - name: Get changed files
         id: changed_files
-        uses: tj-actions/changed-files@v42
+        uses: tj-actions/changed-files@v44
         with:
           files: |
             **.ts
@@ -77,7 +78,7 @@ jobs:
 
       - name: Run Typescript Type-Checker
         run: npm run typecheck
-
+        
       - name: Check if the source and target branches are different
         if: ${{ github.event.pull_request.base.ref == github.event.pull_request.head.ref }}
         run: |
@@ -92,16 +93,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-crendetials: true
+
       
       - name: Get Changed Unauthorized files
         id: changed-unauth-files
-        uses: tj-actions/changed-files@v40
+        uses: tj-actions/changed-files@v44
         with:
           files: |
             .github/**
             .husky/**
             scripts/**
             .env.sample
+            .dockerignore
             .node-version
             tsconfig.json
             .gitignore
@@ -110,8 +116,8 @@ jobs:
             vite.config.ts
             CODEOWNERS
             LICENSE
-            docker-compose.yaml
-            Dockerfile
+            docker-compose.dev.yaml
+            docker-compose.prod.yaml
             setup.ts
             schema.graphql
 
@@ -131,10 +137,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-crendetials: true
         
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v40
+        uses: tj-actions/changed-files@v44
 
       - name: Echo number of changed files
         env: 
@@ -211,6 +220,9 @@ jobs:
 
       - name: Generate Refresh Token Secret
         run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+      
+      - name: Set up SERVER_PORT env
+        run: echo "SERVER_PORT=4000" >> $GITHUB_ENV
 
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -222,7 +234,10 @@ jobs:
         uses: juliangruber/sleep-action@v2
         with:
           time: 10s
-
+          
+      - name: Create a videos directory
+        run: mkdir -p videos
+  
       - name: Run the tests
         run: npm run test
       

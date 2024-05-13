@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   ACTION_ITEM_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -6,10 +6,18 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent } from "../../models";
+import type {
+  InterfaceAppUserProfile,
+  InterfaceEvent,
+  InterfaceUser,
+} from "../../models";
 import { ActionItem, AppUserProfile, Event, User } from "../../models";
+import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function enables to remove an action item.
@@ -29,9 +37,17 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
   args,
   context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   // Checks if the user exists
   if (currentUser === null) {
@@ -41,9 +57,19 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const currentUserAppProfile = await AppUserProfile.findOne({
-    userId: currentUser._id,
-  }).lean();
+  let currentUserAppProfile: InterfaceAppUserProfile | null;
+  const appUserProfileFoundInCache = await findAppUserProfileCache([
+    currentUser.appUserProfileId?.toString(),
+  ]);
+  currentUserAppProfile = appUserProfileFoundInCache[0];
+  if (currentUserAppProfile === null) {
+    currentUserAppProfile = await AppUserProfile.findOne({
+      userId: currentUser._id,
+    }).lean();
+    if (currentUserAppProfile !== null) {
+      await cacheAppUserProfile([currentUserAppProfile]);
+    }
+  }
 
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
@@ -71,7 +97,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
   const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
     (ogranizationId) =>
       ogranizationId === actionItem.actionItemCategoryId.organizationId ||
-      new Types.ObjectId(ogranizationId?.toString()).equals(
+      new mongoose.Types.ObjectId(ogranizationId?.toString()).equals(
         actionItem.actionItemCategoryId.organizationId,
       ),
   );
@@ -108,7 +134,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
-        new Types.ObjectId(admin).equals(context.userId),
+        new mongoose.Types.ObjectId(admin.toString()).equals(context.userId),
     );
   }
 

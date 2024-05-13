@@ -7,6 +7,8 @@ import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import type { InterfaceUser } from "../../models";
 import { deleteImage } from "../../utilities";
+import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import { cacheUsers } from "../../services/UserCache/cacheUser";
 /**
  * This function enables to remove user image.
  * @param _parent - parent of current request
@@ -22,9 +24,17 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
   _args,
   context,
 ) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (currentUser !== null) {
+      await cacheUsers([currentUser]);
+    }
+  }
 
   // Checks whether currentUser exists.
   if (!currentUser) {
@@ -36,6 +46,7 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
   }
 
   // Checks whether currentUser.image already doesn't exist.
+  console.log(currentUser.image);
   if (!currentUser.image) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE),
