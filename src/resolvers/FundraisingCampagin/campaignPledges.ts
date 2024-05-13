@@ -10,6 +10,8 @@ export const pledges: FundraisingCampaignResolvers["pledges"] = async (
   parent,
 ) => {
   return await FundraisingCampaignPledge.find({
-    campaignId: parent._id,
-  }).lean();
+    campaigns: parent._id,
+  })
+    .populate("users")
+    .lean();
 };
