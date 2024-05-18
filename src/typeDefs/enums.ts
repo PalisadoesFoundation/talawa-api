@@ -100,6 +100,8 @@ export const enums = gql`
     lastName_DESC
     email_ASC
     email_DESC
+    createdAt_ASC
+    createdAt_DESC
   }
 
   enum UserType {
