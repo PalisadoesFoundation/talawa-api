@@ -8,9 +8,7 @@ import { AgendaCategoryModel } from "../../models";
  */
 export const agendaItemCategoriesByOrganization: QueryResolvers["agendaItemCategoriesByOrganization"] =
   async (_parent, args) => {
-    const categories = await AgendaCategoryModel.find({
+    return await AgendaCategoryModel.find({
       organizationId: args.organizationId,
     }).lean();
-
-    return categories as any;
   };
