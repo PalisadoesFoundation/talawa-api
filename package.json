@@ -122,7 +122,7 @@
     "@types/uuid": "^9.0.7",
     "@types/validator": "^13.11.10",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
-    "@typescript-eslint/parser": "^7.7.0",
+    "@typescript-eslint/parser": "^7.9.0",
     "@vitest/coverage-v8": "^1.6.0",
     "cls-bluebird": "^2.1.0",
     "concurrently": "^8.2.2",
