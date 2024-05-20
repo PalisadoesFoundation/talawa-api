@@ -574,7 +574,7 @@ export async function twoFactorAuth(): Promise<void> {
       type: "input",
       name: "email",
       message: "Enter your email:",
-      validate: (input: string) =>
+      validate: (input: string): string | boolean =>
         isValidEmail(input) || "Invalid email. Please try again.",
     },
     {
@@ -860,7 +860,7 @@ async function main(): Promise<void> {
       type: "input",
       name: "serverPort",
       message: "Enter the server port:",
-      default: 4000,
+      default: process.env.SERVER_PORT || 4000,
     },
   ]);
   if (process.env.NODE_ENV === "development") {
@@ -945,7 +945,7 @@ async function main(): Promise<void> {
         MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
       }`,
       default: 3,
-      validate: (input: number) =>
+      validate: (input: number): boolean | string =>
         validateImageFileSize(input) ||
         `Enter a valid number between 0 and ${
           MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000

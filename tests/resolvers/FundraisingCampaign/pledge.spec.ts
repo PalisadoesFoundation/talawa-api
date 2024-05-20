@@ -25,7 +25,7 @@ describe("resolvers->FundrasingCampaign->pledge", () => {
     if (parent) {
       const pledgesPayload = await pledgesResolver?.(parent, {}, {});
       const pledges = await FundraisingCampaignPledge.find({
-        campaignId: testFundCampaigns?._id,
+        campaigns: testFundCampaigns?._id,
       }).lean();
       expect(pledgesPayload).toEqual(pledges);
     }
