@@ -6,6 +6,7 @@ import { actionItemsByOrganization } from "./actionItemsByOrganization";
 import { advertisementsConnection } from "./advertisementsConnection";
 import { agendaCategory } from "./agendaCategory";
 import { getAgendaItem } from "./agendaItemById";
+import { getAgendaSection } from "./getAgendaSection";
 import { checkAuth } from "./checkAuth";
 import { customDataByOrganization } from "./customDataByOrganization";
 import { customFieldsByOrganization } from "./customFieldsByOrganization";
@@ -46,6 +47,7 @@ export const Query: QueryResolvers = {
   actionItemsByEvent,
   agendaCategory,
   getAgendaItem,
+  getAgendaSection,
   getAllAgendaItems,
   actionItemsByOrganization,
   actionItemCategoriesByOrganization,
