@@ -70,7 +70,7 @@ describe("resolvers -> Organization -> post", () => {
       creatorId: testUser?._id,
     }).countDocuments();
 
-    const context = { apiRootUrl: undefined };
+    const context = { apiRootUrl: "http://example.com" };
 
     const formattedPost2 = {
       ...testPost2?.toObject(),
