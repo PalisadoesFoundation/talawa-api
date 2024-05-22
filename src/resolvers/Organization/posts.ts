@@ -81,8 +81,12 @@ export const posts: OrganizationResolvers["posts"] = async (
   ]);
   const posts = objectList.map((post: InterfacePost) => ({
     ...post,
-    imageUrl: post.imageUrl ? `${context.apiRootUrl}${post.imageUrl}` : null,
-    videoUrl: post.videoUrl ? `${context.apiRootUrl}${post.videoUrl}` : null,
+    imageUrl: post.imageUrl
+      ? new URL(post.imageUrl, context.apiRootUrl).toString()
+      : null,
+    videoUrl: post.videoUrl
+      ? new URL(post.videoUrl, context.apiRootUrl).toString()
+      : null,
   }));
   return transformToDefaultGraphQLConnection<
     ParsedCursor,
