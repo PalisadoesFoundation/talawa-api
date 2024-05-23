@@ -14,6 +14,7 @@ import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
 import type { Resolvers } from "../types/generatedGraphQLTypes";
 import { ActionItem } from "./ActionItem";
 import { ActionItemCategory } from "./ActionItemCategory";
+import { AgendaCategory } from "./AgendaCategory";
 import { CheckIn } from "./CheckIn";
 import { Comment } from "./Comment";
 import { DirectChat } from "./DirectChat";
@@ -44,6 +45,7 @@ import { currentUserExists } from "./middleware/currentUserExists";
 const resolvers: Resolvers = {
   ActionItem,
   ActionItemCategory,
+  AgendaCategory,
   Advertisement,
   CheckIn,
   Comment,

@@ -18,6 +18,9 @@ export const queries = gql`
     actionItemCategoriesByOrganization(
       organizationId: ID!
     ): [ActionItemCategory]
+
+    agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
+
     getAgendaItem(id: ID!): AgendaItem
 
     getAllAgendaItems: [AgendaItem]
