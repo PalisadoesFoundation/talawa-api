@@ -82,7 +82,10 @@ export const removeAgendaSection: MutationResolvers["removeAgendaSection"] =
 
     // Check if the current user is the creator of the agenda section or is a superadmin
     if (
-      !agendaSection.createdBy.equals(currentUser._id) &&
+      !(
+        agendaSection.createdBy &&
+        agendaSection.createdBy.equals(currentUser._id)
+      ) &&
       !currentUserAppProfile.isSuperAdmin
     ) {
       throw new errors.UnauthorizedError(
