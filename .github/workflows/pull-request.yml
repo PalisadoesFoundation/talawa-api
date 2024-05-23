@@ -113,6 +113,8 @@ jobs:
             .gitignore
             .eslintrc.json
             .eslintignore
+            .prettierrc.json
+            .prettierignore
             vite.config.ts
             CODEOWNERS
             LICENSE
@@ -120,6 +122,7 @@ jobs:
             docker-compose.prod.yaml
             setup.ts
             schema.graphql
+            .coderabbit.yaml
 
       - name: List all changed unauthorized files
         if: steps.changed-unauth-files.outputs.any_changed == 'true' || steps.changed-unauth-files.outputs.any_deleted == 'true'
