@@ -52,7 +52,7 @@
     "@parcel/watcher": "^2.4.1",
     "@types/graphql-upload": "^16.0.5",
     "@types/yargs": "^17.0.32",
-    "axios": "^1.6.8",
+    "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "bluebird": "3.7.2",
     "cls-hooked": "^4.2.2",
