@@ -46,7 +46,7 @@ export interface InterfaceUser {
     mobile: string;
     work: string;
   };
-
+  eventsAttended: PopulatedDoc<InterfaceEvent & Document>[];
   registeredEvents: PopulatedDoc<InterfaceEvent & Document>[];
   status: string;
 
@@ -76,6 +76,7 @@ export interface InterfaceUser {
  * @param phone - User contact numbers, for mobile, home and work
  
  * @param registeredEvents - Collection of user registered Events, each object refer to `Event` model.
+ * @param eventsAttended - Collection of user attended Events, each object refer to `Event` model.
  * @param status - Status
  *
 
@@ -213,6 +214,12 @@ const userSchema = new Schema(
     },
 
     registeredEvents: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Event",
+      },
+    ],
+    eventsAttended: [
       {
         type: Schema.Types.ObjectId,
         ref: "Event",
