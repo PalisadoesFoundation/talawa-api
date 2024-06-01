@@ -9,7 +9,6 @@ import {
   parseCursor,
   posts as postResolver,
 } from "../../../src/resolvers/Organization/posts";
-import type { PostEdge } from "../../../src/types/generatedGraphQLTypes";
 import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestPost, type TestPostType } from "../../helpers/posts";
@@ -71,12 +70,66 @@ describe("resolvers -> Organization -> post", () => {
       creatorId: testUser?._id,
     }).countDocuments();
 
-    expect((connection?.edges[0] as unknown as PostEdge).cursor).toEqual(
-      testPost2?._id.toString(),
-    );
-    expect((connection?.edges[1] as unknown as PostEdge).cursor).toEqual(
-      testPost?._id.toString(),
-    );
+    const context = { apiRootUrl: "http://example.com" };
+
+    const formattedPost2 = {
+      ...testPost2?.toObject(),
+      imageUrl: testPost2?.imageUrl
+        ? new URL(testPost2.imageUrl, context.apiRootUrl).toString()
+        : null,
+      videoUrl: testPost2?.videoUrl
+        ? new URL(testPost2.videoUrl, context.apiRootUrl).toString()
+        : null,
+    };
+
+    const formattedPost = {
+      ...testPost?.toObject(),
+      imageUrl: testPost?.imageUrl
+        ? new URL(testPost.imageUrl, context.apiRootUrl).toString()
+        : null,
+      videoUrl: testPost?.videoUrl
+        ? new URL(testPost.videoUrl, context.apiRootUrl).toString()
+        : null,
+    };
+
+    expect(connection).toEqual({
+      edges: [
+        {
+          cursor: formattedPost2._id?.toString(),
+          node: {
+            ...formattedPost2,
+            _id: formattedPost2._id?.toString(),
+            imageUrl: testPost?.imageUrl
+              ? new URL(testPost.imageUrl, context.apiRootUrl).toString()
+              : null,
+            videoUrl: formattedPost2?.videoUrl
+              ? new URL(formattedPost2.videoUrl, context.apiRootUrl).toString()
+              : null,
+          },
+        },
+        {
+          cursor: formattedPost._id?.toString(),
+          node: {
+            ...formattedPost,
+            _id: formattedPost?._id?.toString(),
+            imageUrl: formattedPost?.imageUrl
+              ? new URL(formattedPost.imageUrl, context.apiRootUrl).toString()
+              : null,
+            videoUrl: formattedPost?.videoUrl
+              ? new URL(formattedPost.videoUrl, context.apiRootUrl).toString()
+              : null,
+          },
+        },
+      ],
+      pageInfo: {
+        endCursor: testPost?._id.toString(),
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: testPost2?._id.toString(),
+      },
+      totalCount,
+    });
+
     expect(connection?.pageInfo.endCursor).toEqual(testPost?._id.toString());
     expect(connection?.pageInfo.hasNextPage).toBe(false);
     expect(connection?.pageInfo.hasPreviousPage).toBe(false);
