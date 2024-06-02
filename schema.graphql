@@ -1434,6 +1434,7 @@ type Query {
   adminPlugin(orgId: ID!): [Plugin]
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
+  agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
@@ -1829,6 +1830,8 @@ type UserNotFoundError implements Error {
 }
 
 enum UserOrderByInput {
+  createdAt_ASC
+  createdAt_DESC
   email_ASC
   email_DESC
   firstName_ASC

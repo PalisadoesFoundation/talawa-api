@@ -5,7 +5,9 @@ import { actionItemsByEvent } from "./actionItemsByEvent";
 import { actionItemsByOrganization } from "./actionItemsByOrganization";
 import { advertisementsConnection } from "./advertisementsConnection";
 import { agendaCategory } from "./agendaCategory";
+import { agendaItemCategoriesByOrganization } from "./agendaItemCategoriesByOrganization";
 import { getAgendaItem } from "./agendaItemById";
+import { getAgendaSection } from "./getAgendaSection";
 import { checkAuth } from "./checkAuth";
 import { customDataByOrganization } from "./customDataByOrganization";
 import { customFieldsByOrganization } from "./customFieldsByOrganization";
@@ -22,6 +24,7 @@ import { getDonationById } from "./getDonationById";
 import { getDonationByOrgId } from "./getDonationByOrgId";
 import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
 import { getFundById } from "./getFundById";
+import { getFundraisingCampaignById } from "./getFundraisingCampaign";
 import { getPlugins } from "./getPlugins";
 import { getlanguage } from "./getlanguage";
 import { me } from "./me";
@@ -45,9 +48,11 @@ export const Query: QueryResolvers = {
   actionItemsByEvent,
   agendaCategory,
   getAgendaItem,
+  getAgendaSection,
   getAllAgendaItems,
   actionItemsByOrganization,
   actionItemCategoriesByOrganization,
+  agendaItemCategoriesByOrganization,
   checkAuth,
   getCommunityData,
   customFieldsByOrganization,
@@ -79,6 +84,7 @@ export const Query: QueryResolvers = {
   users,
   usersConnection,
   getFundById,
+  getFundraisingCampaignById,
   venue,
   fundsByOrganization,
   getEventAttendee,
