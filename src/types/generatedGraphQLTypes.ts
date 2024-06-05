@@ -852,6 +852,19 @@ export type EventWhereInput = {
   title_starts_with?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type EventsConnection = {
+  __typename?: 'EventsConnection';
+  edges: Array<EventsConnectionEdge>;
+  pageInfo: DefaultConnectionPageInfo;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type EventsConnectionEdge = {
+  __typename?: 'EventsConnectionEdge';
+  cursor: Scalars['String']['output'];
+  node: Event;
+};
+
 export type ExtendSession = {
   __typename?: 'ExtendSession';
   accessToken: Scalars['String']['output'];
@@ -1945,6 +1958,7 @@ export type Organization = {
   creator?: Maybe<User>;
   customFields: Array<OrganizationCustomField>;
   description: Scalars['String']['output'];
+  events?: Maybe<EventsConnection>;
   funds?: Maybe<Array<Maybe<Fund>>>;
   image?: Maybe<Scalars['String']['output']>;
   members?: Maybe<Array<Maybe<User>>>;
@@ -1966,6 +1980,14 @@ export type OrganizationAdminsArgs = {
 
 
 export type OrganizationAdvertisementsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type OrganizationEventsArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -3161,7 +3183,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 ) => TResult | Promise<TResult>;
 
 /** Mapping of union types */
-export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
+export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = {
   ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
   CreateAdminError: ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   CreateCommentError: ( PostNotFoundError );
@@ -3170,7 +3192,7 @@ export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
 };
 
 /** Mapping of interface types */
-export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
+export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = {
   ConnectionPageInfo: ( DefaultConnectionPageInfo );
   Error: ( MemberNotFoundError ) | ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( PostNotFoundError ) | ( UnauthenticatedError ) | ( UnauthorizedError ) | ( UserNotAuthorizedAdminError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   FieldError: ( InvalidCursor ) | ( MaximumLengthError ) | ( MaximumValueError ) | ( MinimumLengthError ) | ( MinimumValueError );
@@ -3248,6 +3270,8 @@ export type ResolversTypes = {
   EventVolunteerInput: EventVolunteerInput;
   EventVolunteerResponse: EventVolunteerResponse;
   EventWhereInput: EventWhereInput;
+  EventsConnection: ResolverTypeWrapper<Omit<EventsConnection, 'edges'> & { edges: Array<ResolversTypes['EventsConnectionEdge']> }>;
+  EventsConnectionEdge: ResolverTypeWrapper<Omit<EventsConnectionEdge, 'node'> & { node: ResolversTypes['Event'] }>;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
   Feedback: ResolverTypeWrapper<InterfaceFeedbackModel>;
   FeedbackInput: FeedbackInput;
@@ -3451,6 +3475,8 @@ export type ResolversParentTypes = {
   EventVolunteerGroupInput: EventVolunteerGroupInput;
   EventVolunteerInput: EventVolunteerInput;
   EventWhereInput: EventWhereInput;
+  EventsConnection: Omit<EventsConnection, 'edges'> & { edges: Array<ResolversParentTypes['EventsConnectionEdge']> };
+  EventsConnectionEdge: Omit<EventsConnectionEdge, 'node'> & { node: ResolversParentTypes['Event'] };
   ExtendSession: ExtendSession;
   Feedback: InterfaceFeedbackModel;
   FeedbackInput: FeedbackInput;
@@ -3979,6 +4005,19 @@ export type EventVolunteerGroupResolvers<ContextType = any, ParentType extends R
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type EventsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventsConnection'] = ResolversParentTypes['EventsConnection']> = {
+  edges?: Resolver<Array<ResolversTypes['EventsConnectionEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EventsConnectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventsConnectionEdge'] = ResolversParentTypes['EventsConnectionEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ExtendSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtendSession'] = ResolversParentTypes['ExtendSession']> = {
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -4322,6 +4361,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   customFields?: Resolver<Array<ResolversTypes['OrganizationCustomField']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  events?: Resolver<Maybe<ResolversTypes['EventsConnection']>, ParentType, ContextType, Partial<OrganizationEventsArgs>>;
   funds?: Resolver<Maybe<Array<Maybe<ResolversTypes['Fund']>>>, ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   members?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
@@ -4741,6 +4781,8 @@ export type Resolvers<ContextType = any> = {
   EventAttendee?: EventAttendeeResolvers<ContextType>;
   EventVolunteer?: EventVolunteerResolvers<ContextType>;
   EventVolunteerGroup?: EventVolunteerGroupResolvers<ContextType>;
+  EventsConnection?: EventsConnectionResolvers<ContextType>;
+  EventsConnectionEdge?: EventsConnectionEdgeResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Feedback?: FeedbackResolvers<ContextType>;
   FieldError?: FieldErrorResolvers<ContextType>;

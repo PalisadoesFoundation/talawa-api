@@ -769,6 +769,17 @@ input EventWhereInput {
   title_starts_with: String
 }
 
+type EventsConnection {
+  edges: [EventsConnectionEdge!]!
+  pageInfo: DefaultConnectionPageInfo!
+  totalCount: Int
+}
+
+type EventsConnectionEdge {
+  cursor: String!
+  node: Event!
+}
+
 type ExtendSession {
   accessToken: String!
   refreshToken: String!
@@ -1190,6 +1201,7 @@ type Organization {
   creator: User
   customFields: [OrganizationCustomField!]!
   description: String!
+  events(after: String, before: String, first: Int, last: Int): EventsConnection
   funds: [Fund]
   image: String
   members: [User]
