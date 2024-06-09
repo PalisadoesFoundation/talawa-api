@@ -6,6 +6,8 @@ import { getFundraisingCampaignById } from "../../../src/resolvers/Query/getFund
 import { createTestFund, type TestFundType } from "../../helpers/Fund";
 import { createTestFundraisingCampaign } from "../../helpers/FundraisingCampaign";
 import { connect, disconnect } from "../../helpers/db";
+import { FundraisingCampaignPledge } from "../../../src/models/FundraisingCampaignPledge";
+
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testFund: TestFundType;
 let testCampaign: InterfaceFundraisingCampaign;
@@ -25,14 +27,19 @@ describe("resolvers->Query->getFundCampaignById", () => {
     const args = {
       id: testCampaign?._id.toString(),
     };
+    const pledges = await FundraisingCampaignPledge.find({
+      campaigns: testCampaign?._id,
+    }).lean();
+    console.log(pledges);
     const getFundCampaignByIdPayload = await getFundraisingCampaignById?.(
       {},
       args,
       {},
     );
-    // console.log(getFundCampaignByIdPayload, testCampaign);
+    console.log(getFundCampaignByIdPayload, testCampaign);
     expect(getFundCampaignByIdPayload?._id).toEqual(testCampaign._id);
   });
+
   it(`returns null if campaign not found for args.id`, async () => {
     const args = {
       id: new Types.ObjectId().toString(),

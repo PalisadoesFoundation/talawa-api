@@ -1308,6 +1308,15 @@ enum PaginationDirection {
 
 scalar PhoneNumber
 
+enum PledgeOrderByInput {
+  amount_ASC
+  amount_DESC
+  endDate_ASC
+  endDate_DESC
+  startDate_ASC
+  startDate_DESC
+}
+
 type Plugin {
   _id: ID!
   pluginCreatedBy: String!
@@ -1457,7 +1466,7 @@ type Query {
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
   getFundById(id: ID!): Fund!
-  getFundraisingCampaignById(id: ID!): FundraisingCampaign!
+  getFundraisingCampaignById(id: ID!, orderBy: PledgeOrderByInput): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getNoteById(id: ID!): Note!
   getPlugins: [Plugin]
@@ -1700,6 +1709,7 @@ input UpdateFundCampaignPledgeInput {
   currency: Currency
   endDate: Date
   startDate: Date
+  users: [ID]
 }
 
 input UpdateFundInput {

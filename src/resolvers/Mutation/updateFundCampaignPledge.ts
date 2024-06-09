@@ -1,7 +1,6 @@
 import {
   FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
-  USER_NOT_MADE_PLEDGE_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceUser } from "../../models";
@@ -67,17 +66,6 @@ export const updateFundraisingCampaignPledge: MutationResolvers["updateFundraisi
         ),
         FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR.CODE,
         FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR.PARAM,
-      );
-    }
-    // console.log(pledge);
-    //check if user has made the pledge
-
-    const pledgeUserIds = pledge.users.map((id) => id?.toString());
-    if (!pledgeUserIds.includes(context.userId)) {
-      throw new errors.ConflictError(
-        requestContext.translate(USER_NOT_MADE_PLEDGE_ERROR.MESSAGE),
-        USER_NOT_MADE_PLEDGE_ERROR.CODE,
-        USER_NOT_MADE_PLEDGE_ERROR.PARAM,
       );
     }
 
