@@ -180,8 +180,13 @@ export const checkIn: MutationResolvers["checkIn"] = async (
       userId: args.data.userId,
     },
     {
-      checkInId: checkIn._id,
-      isCheckedIn: true,
+      $set: {
+        checkInId: checkIn._id,
+        isCheckedIn: true,
+      },
+      $addToSet: {
+        eventsAttended: args.data.eventId,
+      },
     },
   );
 

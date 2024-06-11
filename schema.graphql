@@ -1442,6 +1442,7 @@ type Query {
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
+  eventsAttendedByUser(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
   fundsByOrganization(organizationId: ID!, where: FundWhereInput): [Fund]

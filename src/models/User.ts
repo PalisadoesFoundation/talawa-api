@@ -47,6 +47,7 @@ export interface InterfaceUser {
     work: string;
   };
   eventsAttended: PopulatedDoc<InterfaceEvent & Document>[];
+
   registeredEvents: PopulatedDoc<InterfaceEvent & Document>[];
   status: string;
 

@@ -44,6 +44,8 @@ import { getEventAttendeesByEventId } from "./getEventAttendeesByEventId";
 import { getVenueByOrgId } from "./getVenueByOrgId";
 import { getAllNotesForAgendaItem } from "./getAllNotesForAgendaItem";
 import { getNoteById } from "./getNoteById";
+import { eventsAttendedByUser } from "./eventsAttendedByUser";
+
 export const Query: QueryResolvers = {
   actionItemsByEvent,
   agendaCategory,
@@ -90,4 +92,5 @@ export const Query: QueryResolvers = {
   getEventAttendee,
   getEventAttendeesByEventId,
   getVenueByOrgId,
+  eventsAttendedByUser,
 };
