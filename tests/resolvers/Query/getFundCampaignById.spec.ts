@@ -36,7 +36,6 @@ describe("resolvers->Query->getFundCampaignById", () => {
       args,
       {},
     );
-    console.log(getFundCampaignByIdPayload, testCampaign);
     expect(getFundCampaignByIdPayload?._id).toEqual(testCampaign._id);
   });
 

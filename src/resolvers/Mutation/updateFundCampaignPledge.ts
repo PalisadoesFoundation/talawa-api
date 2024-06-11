@@ -69,19 +69,21 @@ export const updateFundraisingCampaignPledge: MutationResolvers["updateFundraisi
       );
     }
 
-    let startDate;
-    let endDate;
-
-    if (args.data.startDate) {
-      startDate = args.data.startDate;
-    }
-    if (args.data.endDate) {
-      endDate = args.data.endDate;
-    }
-    //validates StartDate and endDate
+    const startDate: Date | undefined = args.data.startDate;
+    const endDate: Date | undefined = args.data.endDate;
     validateDate(startDate, endDate);
 
-    // Update the pledge
+    if (args.data.users && args.data.users.length > 0) {
+      const users = await User.find({ _id: { $in: args.data.users } }).lean();
+      if (users.length !== args.data.users.length) {
+        throw new errors.NotFoundError(
+          requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+          USER_NOT_FOUND_ERROR.CODE,
+          USER_NOT_FOUND_ERROR.PARAM,
+        );
+      }
+    }
+
     const updatedPledge = await FundraisingCampaignPledge.findOneAndUpdate(
       {
         _id: args.id,
