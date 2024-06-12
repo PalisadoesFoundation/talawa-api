@@ -445,6 +445,7 @@ export const inputs = gql`
     currency: Currency
   }
   input UpdateFundCampaignPledgeInput {
+    users: [ID]
     startDate: Date
     endDate: Date
     amount: Float

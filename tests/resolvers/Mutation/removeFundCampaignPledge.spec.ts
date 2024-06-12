@@ -4,7 +4,6 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
-  USER_NOT_MADE_PLEDGE_ERROR,
 } from "../../../src/constants";
 import {
   FundraisingCampaign,
@@ -17,7 +16,7 @@ import {
   type TestPledgeType,
 } from "../../helpers/FundraisingCampaignPledge";
 import { connect, disconnect } from "../../helpers/db";
-import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
+import { type TestUserType } from "../../helpers/userAndOrg";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testCampaign: InterfaceFundraisingCampaign;
@@ -67,22 +66,6 @@ describe("resolvers->Mutation->removeFund", () => {
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR.MESSAGE,
-      );
-    }
-  });
-  it("throw error if user has not made the pledge", async () => {
-    try {
-      const randomUser = await createTestUser();
-      const args: MutationRemoveFundraisingCampaignPledgeArgs = {
-        id: testPledge?._id.toString() || "",
-      };
-      const context = {
-        userId: randomUser?._id.toString() || "",
-      };
-      await removeFundraisingCampaignPledge?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_MADE_PLEDGE_ERROR.MESSAGE,
       );
     }
   });

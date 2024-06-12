@@ -2099,6 +2099,14 @@ export type PaginationDirection =
   | 'BACKWARD'
   | 'FORWARD';
 
+export type PledgeOrderByInput =
+  | 'amount_ASC'
+  | 'amount_DESC'
+  | 'endDate_ASC'
+  | 'endDate_DESC'
+  | 'startDate_ASC'
+  | 'startDate_DESC';
+
 export type Plugin = {
   __typename?: 'Plugin';
   _id: Scalars['ID']['output'];
@@ -2424,6 +2432,7 @@ export type QueryGetFundByIdArgs = {
 
 export type QueryGetFundraisingCampaignByIdArgs = {
   id: Scalars['ID']['input'];
+  orderBy?: InputMaybe<PledgeOrderByInput>;
 };
 
 
@@ -2760,6 +2769,7 @@ export type UpdateFundCampaignPledgeInput = {
   currency?: InputMaybe<Currency>;
   endDate?: InputMaybe<Scalars['Date']['input']>;
   startDate?: InputMaybe<Scalars['Date']['input']>;
+  users?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
 };
 
 export type UpdateFundInput = {
@@ -3161,7 +3171,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 ) => TResult | Promise<TResult>;
 
 /** Mapping of union types */
-export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
+export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = {
   ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
   CreateAdminError: ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   CreateCommentError: ( PostNotFoundError );
@@ -3170,7 +3180,7 @@ export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
 };
 
 /** Mapping of interface types */
-export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
+export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = {
   ConnectionPageInfo: ( DefaultConnectionPageInfo );
   Error: ( MemberNotFoundError ) | ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( PostNotFoundError ) | ( UnauthenticatedError ) | ( UnauthorizedError ) | ( UserNotAuthorizedAdminError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   FieldError: ( InvalidCursor ) | ( MaximumLengthError ) | ( MaximumValueError ) | ( MinimumLengthError ) | ( MinimumValueError );
@@ -3304,6 +3314,7 @@ export type ResolversTypes = {
   PageInfo: ResolverTypeWrapper<PageInfo>;
   PaginationDirection: PaginationDirection;
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']['output']>;
+  PledgeOrderByInput: PledgeOrderByInput;
   Plugin: ResolverTypeWrapper<InterfacePluginModel>;
   PluginField: ResolverTypeWrapper<InterfacePluginFieldModel>;
   PluginFieldInput: PluginFieldInput;
