@@ -14,7 +14,7 @@ name: Push Workflow
 on:
   push:
     branches:
-      - '**'
+      - develop
       
 env:
     CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
@@ -109,7 +109,7 @@ jobs:
           npm install --global typedoc
           npm install typedoc-plugin-markdown
           npm i --save-dev @types/node
-          npx typedoc --entryPoints src --out talawa-api-docs --plugin typedoc-plugin-markdown --theme markdown --entryPointStrategy expand
+          npx typedoc --entryPoints src --out talawa-api-docs --plugin typedoc-plugin-markdown  --entryPointStrategy expand
       
       - name: Make Markdown Files MDX Compatible
         run: python3 .github/workflows/md_mdx_format_adjuster.py --directory talawa-api-docs 
@@ -170,6 +170,57 @@ jobs:
           git config --global url.https://${{ secrets.TALAWA_DOCS_SYNC }}@github.com/.insteadOf https://github.com/
           git commit --allow-empty -m "Trigger Documentation Workflow"
           git push origin develop:automated-docs --force
+      
+  Copy-Docs-To-Talawa-Docs:
+    name: Copy Documentation to talawa-docs
+    runs-on: ubuntu-latest
+    needs: Empty-Commit
+    steps:
+      - name: Checkout talawa-api repository
+        uses: actions/checkout@v4
+
+      - name: List current directory (for debugging)
+        run: ls -l
+
+      - name: List talawa-api-docs directory (for debugging)
+        run: ls -l talawa-api-docs
+
+      - name: Checkout talawa-docs repository
+        uses: actions/checkout@v4
+        with:
+          repository: PalisadoesFoundation/talawa-docs
+          token: ${{ secrets.TALAWA_DOCS_SYNC }}
+          path: talawa-docs
+
+      - name: List talawa-docs directory (for debugging)
+        run: ls -l talawa-docs
+
+      - name: Create destination directory if not exists
+        run: mkdir -p talawa-docs/docs/talawa-api-docs
+
+      - name: Copy Documentation Files
+        run: cp -r talawa-api-docs/* talawa-docs/docs/talawa-api-docs/
+
+      - name: List destination directory (for debugging)
+        run: ls -l talawa-docs/docs/talawa-api-docs
+
+      - name: Configure Git
+        run: |
+            git config --global user.name "${{github.actor}}"
+            git config --global user.email "${{env.email}}"
+
+      - name: Commit and Push Changes
+        run: |
+          cd talawa-docs
+          git add .
+          if git commit -m "Update documentation from talawa-api"; then
+            git push origin develop
+          else
+            echo "No changes to commit"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.TALAWA_DOCS_SYNC }}
+
   
   # Copy-docs-to-talawa-docs:
   #   runs-on: ubuntu-latest
