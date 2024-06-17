@@ -1443,6 +1443,8 @@ type Query {
   adminPlugin(orgId: ID!): [Plugin]
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
+  agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
+  agendaItemByOrganization(organizationId: ID!): [AgendaItem]
   agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
