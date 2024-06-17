@@ -2237,6 +2237,8 @@ export type Query = {
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   advertisementsConnection?: Maybe<AdvertisementsConnection>;
   agendaCategory: AgendaCategory;
+  agendaItemByEvent?: Maybe<Array<Maybe<AgendaItem>>>;
+  agendaItemByOrganization?: Maybe<Array<Maybe<AgendaItem>>>;
   agendaItemCategoriesByOrganization?: Maybe<Array<Maybe<AgendaCategory>>>;
   checkAuth: User;
   customDataByOrganization: Array<UserCustomData>;
@@ -2318,6 +2320,16 @@ export type QueryAdvertisementsConnectionArgs = {
 
 export type QueryAgendaCategoryArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryAgendaItemByEventArgs = {
+  relatedEventId: Scalars['ID']['input'];
+};
+
+
+export type QueryAgendaItemByOrganizationArgs = {
+  organizationId: Scalars['ID']['input'];
 };
 
 
@@ -4461,6 +4473,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   advertisementsConnection?: Resolver<Maybe<ResolversTypes['AdvertisementsConnection']>, ParentType, ContextType, Partial<QueryAdvertisementsConnectionArgs>>;
   agendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<QueryAgendaCategoryArgs, 'id'>>;
+  agendaItemByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType, RequireFields<QueryAgendaItemByEventArgs, 'relatedEventId'>>;
+  agendaItemByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType, RequireFields<QueryAgendaItemByOrganizationArgs, 'organizationId'>>;
   agendaItemCategoriesByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaCategory']>>>, ParentType, ContextType, RequireFields<QueryAgendaItemCategoriesByOrganizationArgs, 'organizationId'>>;
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
