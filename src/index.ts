@@ -121,9 +121,14 @@ async function startServer(): Promise<void> {
   );
 
   // Modified server startup
-  await new Promise<void>((resolve) =>
-    httpServer.listen({ port: parseInt(SERVER_PORT as string) }, resolve),
-  );
+  const port = parseInt(SERVER_PORT || "4000", 10);
+  if (isNaN(port) || port < 0 || port > 65535) {
+    throw new Error(
+      "Invalid SERVER_PORT: ${process.env.SERVER_PORT}. Port should be a number between 0 and 65535.",
+    );
+  }
+
+  await new Promise<void>((resolve) => httpServer.listen({ port }, resolve));
 
   // Log all the configuration related issues
   await logIssues();
@@ -131,10 +136,10 @@ async function startServer(): Promise<void> {
   logger.info(
     `🚀 Server ready at ${
       process.env.NODE_ENV === "production" ? "https" : "http"
-    }://localhost:${SERVER_PORT}/graphql`,
+    }://localhost:${port}/graphql`,
   );
   logger.info(
-    `🚀 Subscription endpoint ready at ws://localhost:${SERVER_PORT}/graphql`,
+    `🚀 Subscription endpoint ready at ws://localhost:${port}/graphql`,
   );
 }
 
