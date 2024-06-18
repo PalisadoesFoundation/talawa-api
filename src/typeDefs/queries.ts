@@ -19,6 +19,10 @@ export const queries = gql`
       organizationId: ID!
     ): [ActionItemCategory]
 
+    agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
+
+    agendaItemByOrganization(organizationId: ID!): [AgendaItem]
+
     agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
 
     getAgendaItem(id: ID!): AgendaItem
@@ -64,7 +68,10 @@ export const queries = gql`
 
     getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
     getFundById(id: ID!): Fund!
-    getFundraisingCampaignById(id: ID!): FundraisingCampaign!
+    getFundraisingCampaignById(
+      id: ID!
+      orderBy: PledgeOrderByInput
+    ): FundraisingCampaign!
     getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
 
     getDonationByOrgId(orgId: ID!): [Donation]

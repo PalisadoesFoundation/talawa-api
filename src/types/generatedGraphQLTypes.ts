@@ -2099,6 +2099,14 @@ export type PaginationDirection =
   | 'BACKWARD'
   | 'FORWARD';
 
+export type PledgeOrderByInput =
+  | 'amount_ASC'
+  | 'amount_DESC'
+  | 'endDate_ASC'
+  | 'endDate_DESC'
+  | 'startDate_ASC'
+  | 'startDate_DESC';
+
 export type Plugin = {
   __typename?: 'Plugin';
   _id: Scalars['ID']['output'];
@@ -2229,6 +2237,8 @@ export type Query = {
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   advertisementsConnection?: Maybe<AdvertisementsConnection>;
   agendaCategory: AgendaCategory;
+  agendaItemByEvent?: Maybe<Array<Maybe<AgendaItem>>>;
+  agendaItemByOrganization?: Maybe<Array<Maybe<AgendaItem>>>;
   agendaItemCategoriesByOrganization?: Maybe<Array<Maybe<AgendaCategory>>>;
   checkAuth: User;
   customDataByOrganization: Array<UserCustomData>;
@@ -2311,6 +2321,16 @@ export type QueryAdvertisementsConnectionArgs = {
 
 export type QueryAgendaCategoryArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryAgendaItemByEventArgs = {
+  relatedEventId: Scalars['ID']['input'];
+};
+
+
+export type QueryAgendaItemByOrganizationArgs = {
+  organizationId: Scalars['ID']['input'];
 };
 
 
@@ -2431,6 +2451,7 @@ export type QueryGetFundByIdArgs = {
 
 export type QueryGetFundraisingCampaignByIdArgs = {
   id: Scalars['ID']['input'];
+  orderBy?: InputMaybe<PledgeOrderByInput>;
 };
 
 
@@ -2767,6 +2788,7 @@ export type UpdateFundCampaignPledgeInput = {
   currency?: InputMaybe<Currency>;
   endDate?: InputMaybe<Scalars['Date']['input']>;
   startDate?: InputMaybe<Scalars['Date']['input']>;
+  users?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
 };
 
 export type UpdateFundInput = {
@@ -3312,6 +3334,7 @@ export type ResolversTypes = {
   PageInfo: ResolverTypeWrapper<PageInfo>;
   PaginationDirection: PaginationDirection;
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']['output']>;
+  PledgeOrderByInput: PledgeOrderByInput;
   Plugin: ResolverTypeWrapper<InterfacePluginModel>;
   PluginField: ResolverTypeWrapper<InterfacePluginFieldModel>;
   PluginFieldInput: PluginFieldInput;
@@ -4458,6 +4481,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   advertisementsConnection?: Resolver<Maybe<ResolversTypes['AdvertisementsConnection']>, ParentType, ContextType, Partial<QueryAdvertisementsConnectionArgs>>;
   agendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<QueryAgendaCategoryArgs, 'id'>>;
+  agendaItemByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType, RequireFields<QueryAgendaItemByEventArgs, 'relatedEventId'>>;
+  agendaItemByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType, RequireFields<QueryAgendaItemByOrganizationArgs, 'organizationId'>>;
   agendaItemCategoriesByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaCategory']>>>, ParentType, ContextType, RequireFields<QueryAgendaItemCategoriesByOrganizationArgs, 'organizationId'>>;
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
