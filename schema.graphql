@@ -1762,6 +1762,7 @@ type User {
   email: EmailAddress!
   employmentStatus: EmploymentStatus
   eventAdmin: [Event]
+  eventsAttended: [Event]
   firstName: String!
   gender: Gender
   image: String
