@@ -2719,7 +2719,6 @@ export type UpdateAgendaItemInput = {
   relatedEvent?: InputMaybe<Scalars['ID']['input']>;
   sequence?: InputMaybe<Scalars['Int']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
-  updatedBy: Scalars['ID']['input'];
   urls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   users?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
 };
