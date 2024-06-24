@@ -237,6 +237,10 @@ export const inputs = gql`
     name_contains: String
   }
 
+  input CampaignWhereInput {
+    name_contains: String
+  }
+
   input LanguageInput {
     en_value: String!
     translation_lang_code: String!
