@@ -238,6 +238,18 @@ export type AuthData = {
   user: User;
 };
 
+export type CampaignOrderByInput =
+  | 'endDate_ASC'
+  | 'endDate_DESC'
+  | 'fundingGoal_ASC'
+  | 'fundingGoal_DESC'
+  | 'startDate_ASC'
+  | 'startDate_DESC';
+
+export type CampaignWhereInput = {
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type CheckIn = {
   __typename?: 'CheckIn';
   _id: Scalars['ID']['output'];
@@ -894,7 +906,7 @@ export type Frequency =
 export type Fund = {
   __typename?: 'Fund';
   _id: Scalars['ID']['output'];
-  campaigns?: Maybe<Array<FundraisingCampaign>>;
+  campaigns?: Maybe<Array<Maybe<FundraisingCampaign>>>;
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   isArchived: Scalars['Boolean']['output'];
@@ -932,6 +944,10 @@ export type FundInput = {
   refrenceNumber?: InputMaybe<Scalars['String']['input']>;
   taxDeductible: Scalars['Boolean']['input'];
 };
+
+export type FundOrderByInput =
+  | 'createdAt_ASC'
+  | 'createdAt_DESC';
 
 export type FundWhereInput = {
   name_contains?: InputMaybe<Scalars['String']['input']>;
@@ -2383,6 +2399,7 @@ export type QueryEventsByOrganizationConnectionArgs = {
 
 
 export type QueryFundsByOrganizationArgs = {
+  orderBy?: InputMaybe<FundOrderByInput>;
   organizationId: Scalars['ID']['input'];
   where?: InputMaybe<FundWhereInput>;
 };
@@ -2439,6 +2456,8 @@ export type QueryGetEventInvitesByUserIdArgs = {
 
 export type QueryGetFundByIdArgs = {
   id: Scalars['ID']['input'];
+  orderBy?: InputMaybe<CampaignOrderByInput>;
+  where?: InputMaybe<CampaignWhereInput>;
 };
 
 
@@ -3218,6 +3237,8 @@ export type ResolversTypes = {
   AppUserProfile: ResolverTypeWrapper<InterfaceAppUserProfileModel>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'appUserProfile' | 'user'> & { appUserProfile: ResolversTypes['AppUserProfile'], user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  CampaignOrderByInput: CampaignOrderByInput;
+  CampaignWhereInput: CampaignWhereInput;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
   CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
@@ -3280,6 +3301,7 @@ export type ResolversTypes = {
   FundCampaignInput: FundCampaignInput;
   FundCampaignPledgeInput: FundCampaignPledgeInput;
   FundInput: FundInput;
+  FundOrderByInput: FundOrderByInput;
   FundWhereInput: FundWhereInput;
   FundraisingCampaign: ResolverTypeWrapper<InterfaceFundraisingCampaignModel>;
   FundraisingCampaignPledge: ResolverTypeWrapper<InterfaceFundraisingCampaignPledgesModel>;
@@ -3427,6 +3449,7 @@ export type ResolversParentTypes = {
   AppUserProfile: InterfaceAppUserProfileModel;
   AuthData: Omit<AuthData, 'appUserProfile' | 'user'> & { appUserProfile: ResolversParentTypes['AppUserProfile'], user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean']['output'];
+  CampaignWhereInput: CampaignWhereInput;
   CheckIn: InterfaceCheckInModel;
   CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
@@ -4025,7 +4048,7 @@ export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversP
 
 export type FundResolvers<ContextType = any, ParentType extends ResolversParentTypes['Fund'] = ResolversParentTypes['Fund']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  campaigns?: Resolver<Maybe<Array<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType>;
+  campaigns?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaign']>>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   isArchived?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
