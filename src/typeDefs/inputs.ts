@@ -65,7 +65,6 @@ export const inputs = gql`
     duration: String
     attachments: [String]
     relatedEvent: ID
-    updatedBy: ID!
     urls: [String]
     users: [ID]
     categories: [ID]
