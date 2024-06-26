@@ -65,7 +65,6 @@ export const inputs = gql`
     duration: String
     attachments: [String]
     relatedEvent: ID
-    updatedBy: ID!
     urls: [String]
     users: [ID]
     categories: [ID]
@@ -234,6 +233,10 @@ export const inputs = gql`
   }
 
   input FundWhereInput {
+    name_contains: String
+  }
+
+  input CampaignWhereInput {
     name_contains: String
   }
 

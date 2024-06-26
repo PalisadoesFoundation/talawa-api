@@ -9,6 +9,7 @@ import type {
   PostWhereInput,
   UserWhereInput,
   VenueWhereInput,
+  CampaignWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
 /**
@@ -34,6 +35,7 @@ export const getWhere = <T = unknown>(
             UserWhereInput &
             DonationWhereInput &
             ActionItemWhereInput &
+            CampaignWhereInput &
             FundWhereInput &
             VenueWhereInput
         >
