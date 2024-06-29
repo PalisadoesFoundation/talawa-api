@@ -38,7 +38,7 @@ services:
     ports:
         - "80:80"
         - "443:443"
-    volumes:            
+    volumes:
         - $PWD/Caddyfile:/etc/caddy/Caddyfile
         - $PWD/site:/srv
         - caddy_data:/data
