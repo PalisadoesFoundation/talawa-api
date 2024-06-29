@@ -19,8 +19,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    # ports:
-    #   - "${SERVER_PORT:-4000}:${SERVER_PORT:-4000}"
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
