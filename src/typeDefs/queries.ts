@@ -58,7 +58,11 @@ export const queries = gql`
 
     eventVolunteersByEvent(id: ID!): [EventVolunteer]
 
-    fundsByOrganization(organizationId: ID!, where: FundWhereInput): [Fund]
+    fundsByOrganization(
+      organizationId: ID!
+      where: FundWhereInput
+      orderBy: FundOrderByInput
+    ): [Fund]
 
     getDonationById(id: ID!): Donation!
 
@@ -67,7 +71,11 @@ export const queries = gql`
     getEventAttendee(userId: ID!, eventId: ID!): EventAttendee
 
     getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
-    getFundById(id: ID!): Fund!
+    getFundById(
+      id: ID!
+      orderBy: CampaignOrderByInput
+      where: CampaignWhereInput
+    ): Fund!
     getFundraisingCampaignById(
       id: ID!
       orderBy: PledgeOrderByInput

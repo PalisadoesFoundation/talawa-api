@@ -7,6 +7,8 @@ import type {
   PostOrderByInput,
   UserOrderByInput,
   VenueOrderByInput,
+  FundOrderByInput,
+  CampaignOrderByInput,
 } from "../../../../src/types/generatedGraphQLTypes";
 
 describe("getSort function", () => {
@@ -55,6 +57,8 @@ describe("getSort function", () => {
     ["likeCount_DESC", { likeCount: -1 }],
     ["commentCount_ASC", { commentCount: 1 }],
     ["commentCount_DESC", { commentCount: -1 }],
+    ["fundingGoal_ASC", { fundingGoal: 1 }],
+    ["fundingGoal_DESC", { fundingGoal: -1 }],
   ];
 
   it.each(testCases)(
@@ -67,7 +71,9 @@ describe("getSort function", () => {
           | PostOrderByInput
           | UserOrderByInput
           | VenueOrderByInput
-          | PledgeOrderByInput,
+          | PledgeOrderByInput
+          | FundOrderByInput
+          | CampaignOrderByInput,
       );
       expect(result).toEqual(expected);
     },

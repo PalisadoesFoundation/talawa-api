@@ -7,6 +7,8 @@ import type {
   UserOrderByInput,
   VenueOrderByInput,
   PledgeOrderByInput,
+  CampaignOrderByInput,
+  FundOrderByInput,
 } from "../../../types/generatedGraphQLTypes";
 
 export const getSort = (
@@ -17,6 +19,8 @@ export const getSort = (
         | PostOrderByInput
         | UserOrderByInput
         | VenueOrderByInput
+        | FundOrderByInput
+        | CampaignOrderByInput
         | PledgeOrderByInput
       >
     | undefined,
@@ -110,6 +114,18 @@ export const getSort = (
     case "endDate_DESC":
       sortPayload = {
         endDate: -1,
+      };
+      break;
+
+    case "fundingGoal_ASC":
+      sortPayload = {
+        fundingGoal: 1,
+      };
+      break;
+
+    case "fundingGoal_DESC":
+      sortPayload = {
+        fundingGoal: -1,
       };
       break;
 

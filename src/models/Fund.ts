@@ -68,7 +68,7 @@ const fundSchema = new Schema(
     campaigns: [
       {
         type: Schema.Types.ObjectId,
-        ref: "FundCampaign",
+        ref: "FundraisingCampaign",
       },
     ],
   },

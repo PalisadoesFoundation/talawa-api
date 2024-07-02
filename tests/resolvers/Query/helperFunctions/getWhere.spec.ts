@@ -9,6 +9,7 @@ import type {
   PostWhereInput,
   UserWhereInput,
   VenueWhereInput,
+  CampaignWhereInput,
 } from "../../../../src/types/generatedGraphQLTypes";
 
 describe("getWhere function", () => {
@@ -22,6 +23,7 @@ describe("getWhere function", () => {
         DonationWhereInput &
         ActionItemWhereInput &
         FundWhereInput &
+        CampaignWhereInput &
         VenueWhereInput
     >,
     Record<string, unknown>,
