@@ -163,6 +163,19 @@ type AuthData {
   user: User!
 }
 
+enum CampaignOrderByInput {
+  endDate_ASC
+  endDate_DESC
+  fundingGoal_ASC
+  fundingGoal_DESC
+  startDate_ASC
+  startDate_DESC
+}
+
+input CampaignWhereInput {
+  name_contains: String
+}
+
 type CheckIn {
   _id: ID!
   createdAt: DateTime!
@@ -809,7 +822,7 @@ enum Frequency {
 
 type Fund {
   _id: ID!
-  campaigns: [FundraisingCampaign!]
+  campaigns: [FundraisingCampaign]
   createdAt: DateTime!
   creator: User
   isArchived: Boolean!
@@ -846,6 +859,11 @@ input FundInput {
   organizationId: ID!
   refrenceNumber: String
   taxDeductible: Boolean!
+}
+
+enum FundOrderByInput {
+  createdAt_ASC
+  createdAt_DESC
 }
 
 input FundWhereInput {
@@ -1456,7 +1474,7 @@ type Query {
   eventsAttendedByUser(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
-  fundsByOrganization(organizationId: ID!, where: FundWhereInput): [Fund]
+  fundsByOrganization(orderBy: FundOrderByInput, organizationId: ID!, where: FundWhereInput): [Fund]
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
@@ -1468,7 +1486,7 @@ type Query {
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
-  getFundById(id: ID!): Fund!
+  getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
   getFundraisingCampaignById(id: ID!, orderBy: PledgeOrderByInput): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getNoteById(id: ID!): Note!
@@ -1650,7 +1668,6 @@ input UpdateAgendaItemInput {
   relatedEvent: ID
   sequence: Int
   title: String
-  updatedBy: ID!
   urls: [String]
   users: [ID]
 }
