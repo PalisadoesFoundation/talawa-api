@@ -114,7 +114,11 @@ export const AgendaItemSchema = new Schema({
     type: Date,
     // required: true,
   },
+<<<<<<< HEAD
   organization: {
+=======
+  organizationId: {
+>>>>>>> develop
     type: Schema.Types.ObjectId,
     ref: "Organization",
   },

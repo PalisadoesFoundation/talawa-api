@@ -6,6 +6,12 @@ import type {
   PostOrderByInput,
   UserOrderByInput,
   VenueOrderByInput,
+<<<<<<< HEAD
+=======
+  PledgeOrderByInput,
+  CampaignOrderByInput,
+  FundOrderByInput,
+>>>>>>> develop
 } from "../../../types/generatedGraphQLTypes";
 
 export const getSort = (
@@ -16,6 +22,12 @@ export const getSort = (
         | PostOrderByInput
         | UserOrderByInput
         | VenueOrderByInput
+<<<<<<< HEAD
+=======
+        | FundOrderByInput
+        | CampaignOrderByInput
+        | PledgeOrderByInput
+>>>>>>> develop
       >
     | undefined,
 ):
@@ -75,6 +87,18 @@ export const getSort = (
       };
       break;
 
+    case "amount_ASC":
+      sortPayload = {
+        amount: 1,
+      };
+      break;
+
+    case "amount_DESC":
+      sortPayload = {
+        amount: -1,
+      };
+      break;
+
     case "startDate_ASC":
       sortPayload = {
         startDate: 1,
@@ -96,6 +120,18 @@ export const getSort = (
     case "endDate_DESC":
       sortPayload = {
         endDate: -1,
+      };
+      break;
+
+    case "fundingGoal_ASC":
+      sortPayload = {
+        fundingGoal: 1,
+      };
+      break;
+
+    case "fundingGoal_DESC":
+      sortPayload = {
+        fundingGoal: -1,
       };
       break;
 

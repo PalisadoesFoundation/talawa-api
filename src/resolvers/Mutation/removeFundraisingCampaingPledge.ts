@@ -1,7 +1,10 @@
 import {
   FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
+<<<<<<< HEAD
   USER_NOT_MADE_PLEDGE_ERROR,
+=======
+>>>>>>> develop
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceUser } from "../../models";
@@ -67,6 +70,7 @@ export const removeFundraisingCampaignPledge: MutationResolvers["removeFundraisi
       );
     }
 
+<<<<<<< HEAD
     // Checks whether the user has made the pledge.
     const pledgeUserIds = pledge.users.map((id) => id?.toString());
     if (!pledgeUserIds.includes(context.userId)) {
@@ -77,6 +81,8 @@ export const removeFundraisingCampaignPledge: MutationResolvers["removeFundraisi
       );
     }
 
+=======
+>>>>>>> develop
     // Remove the pledge from the campaign.
     for (const campaignId of pledge.campaigns) {
       await FundraisingCampaign.updateOne(

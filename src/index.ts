@@ -102,6 +102,8 @@ const serverCleanup = useServer(
   wsServer,
 );
 
+let serverHost = "";
+
 async function startServer(): Promise<void> {
   await database.connect();
 
@@ -117,12 +119,12 @@ async function startServer(): Promise<void> {
         pubsub,
         apiRootUrl: `${req.protocol}://${req.get("host")}/`,
       }),
-    }),
+    })
   );
 
   // Modified server startup
   await new Promise<void>((resolve) =>
-    httpServer.listen({ port: parseInt(SERVER_PORT as string) }, resolve),
+    httpServer.listen({ port: 4000 }, resolve)
   );
 
   // Log all the configuration related issues
@@ -131,11 +133,9 @@ async function startServer(): Promise<void> {
   logger.info(
     `🚀 Server ready at ${
       process.env.NODE_ENV === "production" ? "https" : "http"
-    }://localhost:${SERVER_PORT}/graphql`,
+    }://localhost:4000/graphql`
   );
-  logger.info(
-    `🚀 Subscription endpoint ready at ws://localhost:${SERVER_PORT}/graphql`,
-  );
+  logger.info(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
 }
 
 startServer();

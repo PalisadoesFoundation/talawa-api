@@ -65,7 +65,10 @@ export const inputs = gql`
     duration: String
     attachments: [String]
     relatedEvent: ID
+<<<<<<< HEAD
     updatedBy: ID!
+=======
+>>>>>>> develop
     urls: [String]
     users: [ID]
     categories: [ID]
@@ -236,6 +239,13 @@ export const inputs = gql`
   input FundWhereInput {
     name_contains: String
   }
+<<<<<<< HEAD
+=======
+
+  input CampaignWhereInput {
+    name_contains: String
+  }
+>>>>>>> develop
 
   input LanguageInput {
     en_value: String!
@@ -445,6 +455,10 @@ export const inputs = gql`
     currency: Currency
   }
   input UpdateFundCampaignPledgeInput {
+<<<<<<< HEAD
+=======
+    users: [ID]
+>>>>>>> develop
     startDate: Date
     endDate: Date
     amount: Float

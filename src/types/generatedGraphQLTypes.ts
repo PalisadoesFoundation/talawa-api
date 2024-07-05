@@ -238,6 +238,18 @@ export type AuthData = {
   user: User;
 };
 
+export type CampaignOrderByInput =
+  | 'endDate_ASC'
+  | 'endDate_DESC'
+  | 'fundingGoal_ASC'
+  | 'fundingGoal_DESC'
+  | 'startDate_ASC'
+  | 'startDate_DESC';
+
+export type CampaignWhereInput = {
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type CheckIn = {
   __typename?: 'CheckIn';
   _id: Scalars['ID']['output'];
@@ -894,7 +906,11 @@ export type Frequency =
 export type Fund = {
   __typename?: 'Fund';
   _id: Scalars['ID']['output'];
+<<<<<<< HEAD
   campaigns?: Maybe<Array<FundraisingCampaign>>;
+=======
+  campaigns?: Maybe<Array<Maybe<FundraisingCampaign>>>;
+>>>>>>> develop
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   isArchived: Scalars['Boolean']['output'];
@@ -933,6 +949,13 @@ export type FundInput = {
   taxDeductible: Scalars['Boolean']['input'];
 };
 
+<<<<<<< HEAD
+=======
+export type FundOrderByInput =
+  | 'createdAt_ASC'
+  | 'createdAt_DESC';
+
+>>>>>>> develop
 export type FundWhereInput = {
   name_contains?: InputMaybe<Scalars['String']['input']>;
 };
@@ -2099,6 +2122,14 @@ export type PaginationDirection =
   | 'BACKWARD'
   | 'FORWARD';
 
+export type PledgeOrderByInput =
+  | 'amount_ASC'
+  | 'amount_DESC'
+  | 'endDate_ASC'
+  | 'endDate_DESC'
+  | 'startDate_ASC'
+  | 'startDate_DESC';
+
 export type Plugin = {
   __typename?: 'Plugin';
   _id: Scalars['ID']['output'];
@@ -2229,6 +2260,11 @@ export type Query = {
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   advertisementsConnection?: Maybe<AdvertisementsConnection>;
   agendaCategory: AgendaCategory;
+<<<<<<< HEAD
+=======
+  agendaItemByEvent?: Maybe<Array<Maybe<AgendaItem>>>;
+  agendaItemByOrganization?: Maybe<Array<Maybe<AgendaItem>>>;
+>>>>>>> develop
   agendaItemCategoriesByOrganization?: Maybe<Array<Maybe<AgendaCategory>>>;
   checkAuth: User;
   customDataByOrganization: Array<UserCustomData>;
@@ -2313,6 +2349,19 @@ export type QueryAgendaCategoryArgs = {
 };
 
 
+<<<<<<< HEAD
+=======
+export type QueryAgendaItemByEventArgs = {
+  relatedEventId: Scalars['ID']['input'];
+};
+
+
+export type QueryAgendaItemByOrganizationArgs = {
+  organizationId: Scalars['ID']['input'];
+};
+
+
+>>>>>>> develop
 export type QueryAgendaItemCategoriesByOrganizationArgs = {
   organizationId: Scalars['ID']['input'];
 };
@@ -2363,6 +2412,10 @@ export type QueryEventsByOrganizationConnectionArgs = {
 
 
 export type QueryFundsByOrganizationArgs = {
+<<<<<<< HEAD
+=======
+  orderBy?: InputMaybe<FundOrderByInput>;
+>>>>>>> develop
   organizationId: Scalars['ID']['input'];
   where?: InputMaybe<FundWhereInput>;
 };
@@ -2419,11 +2472,20 @@ export type QueryGetEventInvitesByUserIdArgs = {
 
 export type QueryGetFundByIdArgs = {
   id: Scalars['ID']['input'];
+<<<<<<< HEAD
+=======
+  orderBy?: InputMaybe<CampaignOrderByInput>;
+  where?: InputMaybe<CampaignWhereInput>;
+>>>>>>> develop
 };
 
 
 export type QueryGetFundraisingCampaignByIdArgs = {
   id: Scalars['ID']['input'];
+<<<<<<< HEAD
+=======
+  orderBy?: InputMaybe<PledgeOrderByInput>;
+>>>>>>> develop
 };
 
 
@@ -2698,7 +2760,10 @@ export type UpdateAgendaItemInput = {
   relatedEvent?: InputMaybe<Scalars['ID']['input']>;
   sequence?: InputMaybe<Scalars['Int']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
+<<<<<<< HEAD
   updatedBy: Scalars['ID']['input'];
+=======
+>>>>>>> develop
   urls?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   users?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
 };
@@ -2760,6 +2825,10 @@ export type UpdateFundCampaignPledgeInput = {
   currency?: InputMaybe<Currency>;
   endDate?: InputMaybe<Scalars['Date']['input']>;
   startDate?: InputMaybe<Scalars['Date']['input']>;
+<<<<<<< HEAD
+=======
+  users?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
+>>>>>>> develop
 };
 
 export type UpdateFundInput = {
@@ -3161,7 +3230,11 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 ) => TResult | Promise<TResult>;
 
 /** Mapping of union types */
+<<<<<<< HEAD
 export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
+=======
+export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = {
+>>>>>>> develop
   ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
   CreateAdminError: ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   CreateCommentError: ( PostNotFoundError );
@@ -3170,7 +3243,11 @@ export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
 };
 
 /** Mapping of interface types */
+<<<<<<< HEAD
 export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
+=======
+export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = {
+>>>>>>> develop
   ConnectionPageInfo: ( DefaultConnectionPageInfo );
   Error: ( MemberNotFoundError ) | ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( PostNotFoundError ) | ( UnauthenticatedError ) | ( UnauthorizedError ) | ( UserNotAuthorizedAdminError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   FieldError: ( InvalidCursor ) | ( MaximumLengthError ) | ( MaximumValueError ) | ( MinimumLengthError ) | ( MinimumValueError );
@@ -3197,6 +3274,11 @@ export type ResolversTypes = {
   AppUserProfile: ResolverTypeWrapper<InterfaceAppUserProfileModel>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'appUserProfile' | 'user'> & { appUserProfile: ResolversTypes['AppUserProfile'], user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+<<<<<<< HEAD
+=======
+  CampaignOrderByInput: CampaignOrderByInput;
+  CampaignWhereInput: CampaignWhereInput;
+>>>>>>> develop
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
   CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
@@ -3259,6 +3341,10 @@ export type ResolversTypes = {
   FundCampaignInput: FundCampaignInput;
   FundCampaignPledgeInput: FundCampaignPledgeInput;
   FundInput: FundInput;
+<<<<<<< HEAD
+=======
+  FundOrderByInput: FundOrderByInput;
+>>>>>>> develop
   FundWhereInput: FundWhereInput;
   FundraisingCampaign: ResolverTypeWrapper<InterfaceFundraisingCampaignModel>;
   FundraisingCampaignPledge: ResolverTypeWrapper<InterfaceFundraisingCampaignPledgesModel>;
@@ -3304,6 +3390,10 @@ export type ResolversTypes = {
   PageInfo: ResolverTypeWrapper<PageInfo>;
   PaginationDirection: PaginationDirection;
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']['output']>;
+<<<<<<< HEAD
+=======
+  PledgeOrderByInput: PledgeOrderByInput;
+>>>>>>> develop
   Plugin: ResolverTypeWrapper<InterfacePluginModel>;
   PluginField: ResolverTypeWrapper<InterfacePluginFieldModel>;
   PluginFieldInput: PluginFieldInput;
@@ -3405,6 +3495,10 @@ export type ResolversParentTypes = {
   AppUserProfile: InterfaceAppUserProfileModel;
   AuthData: Omit<AuthData, 'appUserProfile' | 'user'> & { appUserProfile: ResolversParentTypes['AppUserProfile'], user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean']['output'];
+<<<<<<< HEAD
+=======
+  CampaignWhereInput: CampaignWhereInput;
+>>>>>>> develop
   CheckIn: InterfaceCheckInModel;
   CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
@@ -4003,7 +4097,11 @@ export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversP
 
 export type FundResolvers<ContextType = any, ParentType extends ResolversParentTypes['Fund'] = ResolversParentTypes['Fund']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+<<<<<<< HEAD
   campaigns?: Resolver<Maybe<Array<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType>;
+=======
+  campaigns?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaign']>>>, ParentType, ContextType>;
+>>>>>>> develop
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   isArchived?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -4450,6 +4548,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   advertisementsConnection?: Resolver<Maybe<ResolversTypes['AdvertisementsConnection']>, ParentType, ContextType, Partial<QueryAdvertisementsConnectionArgs>>;
   agendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<QueryAgendaCategoryArgs, 'id'>>;
+<<<<<<< HEAD
+=======
+  agendaItemByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType, RequireFields<QueryAgendaItemByEventArgs, 'relatedEventId'>>;
+  agendaItemByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType, RequireFields<QueryAgendaItemByOrganizationArgs, 'organizationId'>>;
+>>>>>>> develop
   agendaItemCategoriesByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaCategory']>>>, ParentType, ContextType, RequireFields<QueryAgendaItemCategoriesByOrganizationArgs, 'organizationId'>>;
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;

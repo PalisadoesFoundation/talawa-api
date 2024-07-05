@@ -15,7 +15,14 @@ import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheApp
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
+<<<<<<< HEAD
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+=======
+import type {
+  MutationResolvers,
+  UpdateAgendaItemInput,
+} from "../../types/generatedGraphQLTypes";
+>>>>>>> develop
 
 /**
  * This function allows the user who created an agenda item to update it.
@@ -29,6 +36,7 @@ export const updateAgendaItem: MutationResolvers["updateAgendaItem"] = async (
   args,
   context,
 ) => {
+<<<<<<< HEAD
   const userId = args.input.updatedBy;
   console.log(context);
 
@@ -39,6 +47,15 @@ export const updateAgendaItem: MutationResolvers["updateAgendaItem"] = async (
   if (currentUser === null) {
     currentUser = await User.findOne({
       _id: userId,
+=======
+  // Fetch the current user based on the provided ID
+  let currentUser: InterfaceUser | null;
+  const userFoundInCache = await findUserInCache([context.userId]);
+  currentUser = userFoundInCache[0];
+  if (currentUser === null) {
+    currentUser = await User.findOne({
+      _id: context.userId,
+>>>>>>> develop
     }).lean();
     if (currentUser !== null) {
       await cacheUsers([currentUser]);
@@ -98,12 +115,22 @@ export const updateAgendaItem: MutationResolvers["updateAgendaItem"] = async (
   }
 
   // Update the agenda item in the database
+<<<<<<< HEAD
   const updatedAgendaItem = await AgendaItemModel.findOneAndUpdate(
     {
       _id: args.id,
     },
     {
       ...(args.input as InterfaceAgendaItem),
+=======
+  const updatedAgendaItem = await AgendaItemModel.findByIdAndUpdate(
+    args.id,
+    {
+      $set: {
+        ...(args.input as UpdateAgendaItemInput),
+      },
+      updatedBy: context.userId,
+>>>>>>> develop
     },
     {
       new: true, // Return the updated document

@@ -4,7 +4,10 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
+<<<<<<< HEAD
   USER_NOT_MADE_PLEDGE_ERROR,
+=======
+>>>>>>> develop
 } from "../../../src/constants";
 import {
   FundraisingCampaign,
@@ -17,7 +20,11 @@ import {
   type TestPledgeType,
 } from "../../helpers/FundraisingCampaignPledge";
 import { connect, disconnect } from "../../helpers/db";
+<<<<<<< HEAD
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
+=======
+import { type TestUserType } from "../../helpers/userAndOrg";
+>>>>>>> develop
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testCampaign: InterfaceFundraisingCampaign;
@@ -70,6 +77,7 @@ describe("resolvers->Mutation->removeFund", () => {
       );
     }
   });
+<<<<<<< HEAD
   it("throw error if user has not made the pledge", async () => {
     try {
       const randomUser = await createTestUser();
@@ -86,6 +94,8 @@ describe("resolvers->Mutation->removeFund", () => {
       );
     }
   });
+=======
+>>>>>>> develop
   it("remove the pledge", async () => {
     const args: MutationRemoveFundraisingCampaignPledgeArgs = {
       id: testPledge?._id.toString() || "",

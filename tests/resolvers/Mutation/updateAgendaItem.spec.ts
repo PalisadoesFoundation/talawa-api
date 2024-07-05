@@ -108,7 +108,11 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
       const args: MutationUpdateAgendaItemArgs = {
         id: "",
         input: {
+<<<<<<< HEAD
           updatedBy: new Types.ObjectId().toString(),
+=======
+          title: "Test Item New",
+>>>>>>> develop
         },
       };
 
@@ -126,7 +130,11 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
       const args: MutationUpdateAgendaItemArgs = {
         id: new Types.ObjectId().toString(),
         input: {
+<<<<<<< HEAD
           updatedBy: testAdminUser?._id,
+=======
+          title: "Test Item New",
+>>>>>>> develop
         },
       };
 
@@ -146,7 +154,11 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
       const args: MutationUpdateAgendaItemArgs = {
         id: testAgendaItem._id.toString(),
         input: {
+<<<<<<< HEAD
           updatedBy: testUser?._id,
+=======
+          title: "Test Item New",
+>>>>>>> develop
         },
       };
 
@@ -165,7 +177,10 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
     const args: MutationUpdateAgendaItemArgs = {
       id: testAgendaItem._id.toString(),
       input: {
+<<<<<<< HEAD
         updatedBy: testAdminUser?._id,
+=======
+>>>>>>> develop
         title: "Test Item New",
         duration: "One hour plus extra time ",
         relatedEvent: testEvent?._id.toString(),
@@ -199,7 +214,10 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
       id: testAgendaItem?._id,
       input: {
         description: "Updated Description",
+<<<<<<< HEAD
         updatedBy: testUser?._id,
+=======
+>>>>>>> develop
       },
     };
 

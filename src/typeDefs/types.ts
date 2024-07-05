@@ -334,7 +334,11 @@ export const types = gql`
     isDefault: Boolean!
     isArchived: Boolean!
     creator: User
+<<<<<<< HEAD
     campaigns: [FundraisingCampaign!]
+=======
+    campaigns: [FundraisingCampaign]
+>>>>>>> develop
     createdAt: DateTime!
     updatedAt: DateTime!
   }

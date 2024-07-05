@@ -25,7 +25,10 @@ import { Event } from "./Event";
 import { EventVolunteer } from "./EventVolunteer";
 import { Feedback } from "./Feedback";
 import { Fund } from "./Fund";
+<<<<<<< HEAD
 import { FundraisingCampaign } from "./FundraisingCampagin";
+=======
+>>>>>>> develop
 import { GroupChat } from "./GroupChat";
 import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
@@ -59,7 +62,10 @@ const resolvers: Resolvers = {
   EventVolunteer,
   Feedback,
   Fund,
+<<<<<<< HEAD
   FundraisingCampaign,
+=======
+>>>>>>> develop
   GroupChat,
   UserFamily,
   GroupChatMessage,
