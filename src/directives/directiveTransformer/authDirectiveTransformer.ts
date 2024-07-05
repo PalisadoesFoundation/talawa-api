@@ -1,3 +1,8 @@
+import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
+import { defaultFieldResolver } from "graphql";
+import type { GraphQLSchema } from "graphql/type/schema";
+import { errors, requestContext } from "../../libraries";
+
 /**
  * A function to transform a GraphQL schema by adding authentication logic
  * to the fields with the specified directive.
@@ -13,10 +18,6 @@
  * @example
  * `const transformedSchema = authDirectiveTransformer(originalSchema, 'auth');`
  */
-import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
-import { defaultFieldResolver } from "graphql";
-import type { GraphQLSchema } from "graphql/type/schema";
-import { errors, requestContext } from "../../libraries";
 
 function authDirectiveTransformer(
   schema: GraphQLSchema,

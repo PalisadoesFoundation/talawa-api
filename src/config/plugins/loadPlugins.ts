@@ -1,3 +1,9 @@
+import { Plugin } from "../../models";
+import _ from "lodash";
+import pluginData from "./pluginData.json";
+import { logger } from "../../libraries";
+import mongoose from "mongoose";
+
 /**
  * Loads plugin data into the MongoDB database if it is not already present.
  *
@@ -17,15 +23,10 @@
  * ```
  * @see Parent File:
  * - `src/index.ts`
- * 
+ *
  * @returns  A promise that resolves when the plugins have been loaded or confirms that they are already present.
  *
  */
-import { Plugin } from "../../models";
-import _ from "lodash";
-import pluginData from "./pluginData.json";
-import { logger } from "../../libraries";
-import mongoose from "mongoose";
 
 const loadPlugins = async (): Promise<void> => {
   try {

@@ -1,3 +1,10 @@
+import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
+import type { GraphQLSchema } from "graphql";
+import { defaultFieldResolver } from "graphql";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { errors } from "../../libraries";
+import { User } from "../../models";
+
 /**
  * A function to transform a GraphQL schema by adding role-based authorization
  * logic to the fields with the specified directive.
@@ -13,12 +20,6 @@
  * @example
  * const transformedSchema = roleDirectiveTransformer(originalSchema, 'role');
  */
-import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
-import type { GraphQLSchema } from "graphql";
-import { defaultFieldResolver } from "graphql";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
-import { errors } from "../../libraries";
-import { User } from "../../models";
 
 function roleDirectiveTransformer(
   schema: GraphQLSchema,
