@@ -70,7 +70,7 @@ export const translate = (...args: any): any => {
   if (typeof _ !== "function") {
     throw new Error("i18n is not initialized, try app.use(i18n.init);");
   }
-  return args.map((arg: any) => _(arg));
+  return args.map((arg: any) => _(arg)).join(",");
 };
 
 export const translatePlural = (...args: any): any => {
@@ -78,5 +78,5 @@ export const translatePlural = (...args: any): any => {
   if (typeof _n !== "function") {
     throw new Error("i18n is not initialized, try app.use(i18n.init);");
   }
-  return args.map((arg: any) => _n(arg));
+  return args.map((arg: any) => _n(arg)).join(",");
 };
