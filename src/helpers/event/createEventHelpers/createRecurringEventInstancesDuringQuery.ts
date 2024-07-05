@@ -10,18 +10,25 @@ import type { InterfaceRecurringEvent } from "../recurringEventHelpers/generateR
 import { RECURRING_EVENT_INSTANCES_QUERY_LIMIT } from "../../../constants";
 
 /**
- * This function creates the instances of a recurring event upto a certain date during queries.
- * @param organizationId - _id of the organization the events belong to
- * @remarks The following steps are followed:
- * 1. Get the limit date upto which we would want to query the recurrenceRules and generate new instances.
- * 2. Get the recurrence rules to be used for instance generation during this query.
- * 3. For every recurrence rule found:
- *   - find the base recurring event to get the data to be used for new instance generation.
- *   - get the number of existing instances and how many more to generate based on the recurrenceRule's count (if specified).
- *   - generate new instances after their latestInstanceDates.
- *   - update the latestInstanceDate.
+ * Creates instances of recurring events up to a specified date during queries.
+ *
+ * @param organizationId - The ID of the organization to which the events belong.
+ *
+ * @see Parent file:
+ * - `resolvers/Mutation/createEvent.ts.`
+ * - `resolvers/Query/eventsByOrganizationConnection.ts.`
+ *
+ * @remarks
+ * This function follows these steps:
+ * 1. Calculates the date limit up to which recurrence rules are queried and new instances are generated.
+ * 2. Retrieves recurrence rules based on the organization ID and their latest instance dates.
+ * 3. For each recurrence rule found:
+ *   - Finds the base recurring event to gather data for new instance generation.
+ *   - Determines how many existing instances exist and calculates how many new instances to generate.
+ *   - Generates new instances starting from the latest instance date recorded.
+ *   - Updates the latest instance date for the recurrence rule.
+ *
  */
-
 export const createRecurringEventInstancesDuringQuery = async (
   organizationId: string | undefined | null,
 ): Promise<void> => {
@@ -29,14 +36,14 @@ export const createRecurringEventInstancesDuringQuery = async (
     return;
   }
 
-  // get the current calendar date in UTC midnight
+  // Get the current UTC date at midnight
   const calendarDate = convertToUTCDate(new Date());
   const queryUptoDate = addYears(
     calendarDate,
     RECURRING_EVENT_INSTANCES_QUERY_LIMIT,
   );
 
-  // get the recurrenceRules
+  // Retrieve recurrence rules that require new instances
   const recurrenceRules = await RecurrenceRule.find({
     organizationId,
     latestInstanceDate: { $lt: queryUptoDate },
@@ -44,21 +51,21 @@ export const createRecurringEventInstancesDuringQuery = async (
 
   await Promise.all(
     recurrenceRules.map(async (recurrenceRule) => {
-      // find the baseRecurringEvent for the recurrenceRule
+      // Find the base recurring event associated with the recurrence rule
       const baseRecurringEvent = await Event.find({
         _id: recurrenceRule.baseRecurringEventId,
       }).lean();
 
-      // get the data from the baseRecurringEvent
+      // Extract necessary data from the base recurring event
       const { _id: baseRecurringEventId, ...data } = baseRecurringEvent[0];
 
-      // get the input data for the generateRecurringEventInstances function
+      // Prepare input data for generating recurring event instances
       const currentInputData: InterfaceRecurringEvent = {
         ...data,
         organizationId: recurrenceRule.organizationId.toString(),
       };
 
-      // get the properties from recurrenceRule
+      // Extract properties from the recurrence rule
       const {
         _id: recurrenceRuleId,
         recurrenceEndDate,
@@ -67,10 +74,10 @@ export const createRecurringEventInstancesDuringQuery = async (
         count: totalInstancesCount,
       } = recurrenceRule;
 
-      // get the date from which new instances would be generated
+      // Determine the start date for generating new instances
       const currentRecurrenceStartDate = addDays(latestInstanceDate, 1);
 
-      // get the dates for recurrence
+      // Calculate dates for new recurring instances
       let recurringInstanceDates = getRecurringInstanceDates(
         recurrenceRuleString,
         currentRecurrenceStartDate,
@@ -78,7 +85,7 @@ export const createRecurringEventInstancesDuringQuery = async (
         queryUptoDate,
       );
 
-      // find out how many instances following the recurrence rule already exist and how many more to generate
+      // Adjust the number of instances to generate based on specified count
       if (totalInstancesCount) {
         const totalExistingInstances = await Event.countDocuments({
           recurrenceRuleId,
@@ -92,19 +99,18 @@ export const createRecurringEventInstancesDuringQuery = async (
         );
       }
 
-      /* c8 ignore start */
+      // Start a transaction if a session is available
       if (session) {
-        // start a transaction
         session.startTransaction();
       }
 
-      /* c8 ignore stop */
       try {
+        // Generate new instances if dates are available
         if (recurringInstanceDates && recurringInstanceDates.length) {
           const updatedLatestRecurringInstanceDate =
             recurringInstanceDates[recurringInstanceDates.length - 1];
 
-          // update the latestInstanceDate of the recurrenceRule
+          // Update the latest instance date for the recurrence rule
           await RecurrenceRule.updateOne(
             {
               _id: recurrenceRuleId,
@@ -115,7 +121,7 @@ export const createRecurringEventInstancesDuringQuery = async (
             { session },
           );
 
-          // generate recurring event instances
+          // Generate recurring event instances
           await generateRecurringEventInstances({
             data: currentInputData,
             baseRecurringEventId: baseRecurringEventId.toString(),
@@ -127,21 +133,17 @@ export const createRecurringEventInstancesDuringQuery = async (
           });
         }
 
-        /* c8 ignore start */
+        // Commit the transaction if everything is successful
         if (session) {
-          // commit transaction if everything's successful
           await session.commitTransaction();
         }
       } catch (error) {
+        // Abort the transaction if an error occurs
         if (session) {
-          // abort transaction if something fails
           await session.abortTransaction();
         }
-
         throw error;
       }
-
-      /* c8 ignore stop */
     }),
   );
 };
