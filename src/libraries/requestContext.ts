@@ -3,23 +3,42 @@ import cls from "cls-hooked";
 import type { NextFunction, Request, Response } from "express";
 import i18n from "i18n";
 
+// Create a namespace for managing request context
 export const requestContextNamespace = cls.createNamespace(
   "talawa-request-context",
 );
 
+/**
+ * Sets a value in the request context.
+ * @param key - The key under which the value is stored.
+ * @param value - The value to store.
+ * @returns The stored value.
+ */
 export const setRequestContextValue = <T>(key: string, value: T): T => {
   return requestContextNamespace.set<string>(key, value);
 };
 
+/**
+ * Gets a value from the request context.
+ * @param key - The key under which the value is stored.
+ * @returns The retrieved value.
+ */
 export const getRequestContextValue = <T>(key: string): T => {
   return requestContextNamespace.get(key);
 };
 
+/**
+ * Sets the translation functions in the request context.
+ * @param obj - The object containing translation functions.
+ */
 export const setRequestContext = (obj: any): void => {
   setRequestContextValue("translate", obj.__);
   setRequestContextValue("translatePlural", obj.__n);
 };
 
+/**
+ * Middleware to bind the request and response to the request context namespace.
+ */
 export const middleware = () => {
   return (req: Request, res: Response, next: NextFunction): void => {
     requestContextNamespace.bindEmitter(req);
@@ -31,10 +50,18 @@ export const middleware = () => {
   };
 };
 
+/**
+ * Interface for initialization options.
+ */
 interface InterfaceInitOptions<T> extends Record<string, any> {
   requestHandler?: () => T;
 }
 
+/**
+ * Initializes the request context and i18n.
+ * @param options - The initialization options.
+ * @returns The result of the request handler or an empty object if not provided.
+ */
 export const init = <T>(options: InterfaceInitOptions<T> = {}): T => {
   const obj: any = {};
 
@@ -65,6 +92,11 @@ export const init = <T>(options: InterfaceInitOptions<T> = {}): T => {
   });
 };
 
+/**
+ * Translates a string using the current context's translation function.
+ * @param args - The arguments to pass to the translation function.
+ * @returns The translated string.
+ */
 export const translate = (...args: any): any => {
   const _ = getRequestContextValue("translate");
   if (typeof _ !== "function") {
@@ -73,6 +105,11 @@ export const translate = (...args: any): any => {
   return _(args);
 };
 
+/**
+ * Translates a plural string using the current context's translation function.
+ * @param args - The arguments to pass to the translation function.
+ * @returns The translated string.
+ */
 export const translatePlural = (...args: any): any => {
   const _n = getRequestContextValue("translatePlural");
   if (typeof _n !== "function") {
