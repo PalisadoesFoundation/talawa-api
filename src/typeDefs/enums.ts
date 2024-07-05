@@ -116,6 +116,29 @@ export const enums = gql`
     capacity_DESC
   }
 
+  enum FundOrderByInput {
+    createdAt_ASC
+    createdAt_DESC
+  }
+
+  enum CampaignOrderByInput {
+    startDate_ASC
+    startDate_DESC
+    endDate_ASC
+    endDate_DESC
+    fundingGoal_ASC
+    fundingGoal_DESC
+  }
+
+  enum PledgeOrderByInput {
+    amount_ASC
+    amount_DESC
+    startDate_ASC
+    startDate_DESC
+    endDate_ASC
+    endDate_DESC
+  }
+
   enum WeekDays {
     MONDAY
     TUESDAY

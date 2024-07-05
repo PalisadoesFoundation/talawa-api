@@ -3,8 +3,12 @@ import { getSort } from "../../../../src/resolvers/Query/helperFunctions/getSort
 import type {
   EventOrderByInput,
   OrganizationOrderByInput,
+  PledgeOrderByInput,
   PostOrderByInput,
   UserOrderByInput,
+  VenueOrderByInput,
+  FundOrderByInput,
+  CampaignOrderByInput,
 } from "../../../../src/types/generatedGraphQLTypes";
 
 describe("getSort function", () => {
@@ -13,6 +17,8 @@ describe("getSort function", () => {
     ["id_DESC", { _id: -1 }],
     ["title_ASC", { title: 1 }],
     ["title_DESC", { title: -1 }],
+    ["amount_ASC", { amount: 1 }],
+    ["amount_DESC", { amount: -1 }],
     ["description_ASC", { description: 1 }],
     ["description_DESC", { description: -1 }],
     ["startDate_ASC", { startDate: 1 }],
@@ -27,6 +33,8 @@ describe("getSort function", () => {
     ["endTime_DESC", { endTime: -1 }],
     ["location_ASC", { location: 1 }],
     ["location_DESC", { location: -1 }],
+    ["capacity_ASC", { capacity: 1 }],
+    ["capacity_DESC", { capacity: -1 }],
     ["createdAt_ASC", { createdAt: 1 }],
     ["createdAt_DESC", { createdAt: -1 }],
     ["name_ASC", { name: 1 }],
@@ -49,6 +57,8 @@ describe("getSort function", () => {
     ["likeCount_DESC", { likeCount: -1 }],
     ["commentCount_ASC", { commentCount: 1 }],
     ["commentCount_DESC", { commentCount: -1 }],
+    ["fundingGoal_ASC", { fundingGoal: 1 }],
+    ["fundingGoal_DESC", { fundingGoal: -1 }],
   ];
 
   it.each(testCases)(
@@ -59,7 +69,11 @@ describe("getSort function", () => {
           | EventOrderByInput
           | OrganizationOrderByInput
           | PostOrderByInput
-          | UserOrderByInput,
+          | UserOrderByInput
+          | VenueOrderByInput
+          | PledgeOrderByInput
+          | FundOrderByInput
+          | CampaignOrderByInput,
       );
       expect(result).toEqual(expected);
     },

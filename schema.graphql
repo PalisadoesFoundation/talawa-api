@@ -163,6 +163,19 @@ type AuthData {
   user: User!
 }
 
+enum CampaignOrderByInput {
+  endDate_ASC
+  endDate_DESC
+  fundingGoal_ASC
+  fundingGoal_DESC
+  startDate_ASC
+  startDate_DESC
+}
+
+input CampaignWhereInput {
+  name_contains: String
+}
+
 type CheckIn {
   _id: ID!
   createdAt: DateTime!
@@ -809,7 +822,7 @@ enum Frequency {
 
 type Fund {
   _id: ID!
-  campaigns: [FundraisingCampaign!]
+  campaigns: [FundraisingCampaign]
   createdAt: DateTime!
   creator: User
   isArchived: Boolean!
@@ -846,6 +859,11 @@ input FundInput {
   organizationId: ID!
   refrenceNumber: String
   taxDeductible: Boolean!
+}
+
+enum FundOrderByInput {
+  createdAt_ASC
+  createdAt_DESC
 }
 
 input FundWhereInput {
@@ -1308,6 +1326,15 @@ enum PaginationDirection {
 
 scalar PhoneNumber
 
+enum PledgeOrderByInput {
+  amount_ASC
+  amount_DESC
+  endDate_ASC
+  endDate_DESC
+  startDate_ASC
+  startDate_DESC
+}
+
 type Plugin {
   _id: ID!
   pluginCreatedBy: String!
@@ -1434,6 +1461,8 @@ type Query {
   adminPlugin(orgId: ID!): [Plugin]
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
+  agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
+  agendaItemByOrganization(organizationId: ID!): [AgendaItem]
   agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
@@ -1444,7 +1473,7 @@ type Query {
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
-  fundsByOrganization(organizationId: ID!, where: FundWhereInput): [Fund]
+  fundsByOrganization(orderBy: FundOrderByInput, organizationId: ID!, where: FundWhereInput): [Fund]
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
@@ -1456,8 +1485,8 @@ type Query {
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
-  getFundById(id: ID!): Fund!
-  getFundraisingCampaignById(id: ID!): FundraisingCampaign!
+  getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
+  getFundraisingCampaignById(id: ID!, orderBy: PledgeOrderByInput): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getNoteById(id: ID!): Note!
   getPlugins: [Plugin]
@@ -1638,7 +1667,6 @@ input UpdateAgendaItemInput {
   relatedEvent: ID
   sequence: Int
   title: String
-  updatedBy: ID!
   urls: [String]
   users: [ID]
 }
@@ -1700,6 +1728,7 @@ input UpdateFundCampaignPledgeInput {
   currency: Currency
   endDate: Date
   startDate: Date
+  users: [ID]
 }
 
 input UpdateFundInput {
