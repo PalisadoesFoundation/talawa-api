@@ -12,7 +12,7 @@ pkgs.mkShell {
     pkgs.typescript
     pkgs.yarn
     pkgs.nodePackages.npm
-    pkgs.mongodb
+  
     pkgs.redis
   ];
 
@@ -35,14 +35,7 @@ pkgs.mkShell {
     fnm install --lts
     fnm use --lts
 
-    # Start MongoDB
-    echo "Starting MongoDB..."
-    if [ -f /etc/mongod.conf ]; then
-      mongod --config /etc/mongod.conf --fork
-    else
-      echo "MongoDB config file not found, using default settings."
-      mongod --fork --logpath /var/log/mongodb.log
-    fi
+  
 
     # Start Redis
     echo "Starting Redis..."
