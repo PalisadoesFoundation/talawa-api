@@ -30,7 +30,7 @@ pkgs.mkShell {
     fi
     export PATH="$FNM_DIR/bin:$PATH"
     eval "$(fnm env)"
-
+q
     # Use the desired Node.js version with fnm
     fnm install --lts
     fnm use --lts
