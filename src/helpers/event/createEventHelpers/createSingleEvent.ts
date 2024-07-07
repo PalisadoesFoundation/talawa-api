@@ -5,24 +5,34 @@ import type { MutationCreateEventArgs } from "../../../types/generatedGraphQLTyp
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
 
 /**
- * This function generates a single non-recurring event.
- * @param args - the arguments provided for the createEvent mutation.
- * @param creatorId - _id of the current user.
- * @param organizationId - _id of the current organization.
- * @remarks The following steps are followed:
- * 1. Create an event document.
- * 2. Associate the event with the user
- * 3. Cache the event.
- * @returns The created event.
+ * Creates a single non-recurring event.
+ *
+ * @param args - Arguments provided for the createEvent mutation, including event data.
+ * @param creatorId - The ID of the current user creating the event.
+ * @param organizationId - The ID of the organization to which the event belongs.
+ * @param session - The MongoDB client session for transactional operations.
+ *
+ * @see Parent file:
+ * - `resolvers/Mutation/createEvent.ts`,
+ * - `resolvers/Query/eventsByOrganizationConnection.ts`
+ *
+ * @remarks
+ * This function follows these steps:
+ * 1. Creates an event document in the database with provided data.
+ * 2. Associates the event with the current user as creator and admin.
+ * 3. Updates user's registered events list with the new event.
+ * 4. Updates user's AppUserProfile with event admin and created events references.
+ * 5. Caches the newly created event for faster access.
+ *
+ * @returns The created event instance.
  */
-
 export const createSingleEvent = async (
   args: MutationCreateEventArgs,
   creatorId: string,
   organizationId: string,
   session: mongoose.ClientSession,
 ): Promise<InterfaceEvent> => {
-  // create the single event
+  // Create the single event in the database
   const createdEvent = await Event.create(
     [
       {
@@ -35,7 +45,7 @@ export const createSingleEvent = async (
     { session },
   );
 
-  // associate event with the user
+  // Associate the event with the user
   await EventAttendee.create(
     [
       {
@@ -45,6 +55,8 @@ export const createSingleEvent = async (
     ],
     { session },
   );
+
+  // Update the user's registered events list
   await User.updateOne(
     {
       _id: creatorId,
@@ -56,6 +68,8 @@ export const createSingleEvent = async (
     },
     { session },
   );
+
+  // Update the user's AppUserProfile with event admin and created events references
   await AppUserProfile.updateOne(
     {
       userId: creatorId,
@@ -69,8 +83,9 @@ export const createSingleEvent = async (
     { session },
   );
 
-  // cache the event
+  // Cache the event for faster access
   await cacheEvents([createdEvent[0]]);
 
+  // Return the created event instance
   return createdEvent[0];
 };

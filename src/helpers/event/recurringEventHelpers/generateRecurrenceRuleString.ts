@@ -3,20 +3,19 @@ import type { RecurrenceRuleInput } from "../../../types/generatedGraphQLTypes";
 import { convertToRRuleDateString } from "../../../utilities/recurrenceDatesUtil";
 
 /**
- * This function generates the recurrence rule (rrule) string.
- * @param recurrenceRuleData - the recurrenceRuleInput provided in the args.
- * @param recurrenceStartDate - start date of recurrence.
- * @param recurrenceEndDate - end date of recurrence.
- * @remarks The following steps are followed:
- * 1. Get the date strings for start and end of recurrence.
- * 2. Get the recurrence rules and make a recurrenceRuleString.
- * @returns The recurrence rule string that would be used to create a valid rrule object.
+ * Generates a recurrence rule (RRULE) string based on the provided recurrence rule input.
+ * @param recurrenceRuleData - The input data defining the recurrence rule.
+ * @returns The generated recurrence rule string suitable for creating a valid RRULE object.
+ * @remarks
+ * This function performs the following steps:
+ * 1. Extracts relevant fields from the recurrenceRuleData such as start date, end date, frequency, weekdays, interval, count, and week day occurrence in month.
+ * 2. Converts start and end dates to string format suitable for RRULE properties.
+ * 3. Constructs the RRULE string based on the extracted fields, using standard RRULE syntax.
  */
-
 export const generateRecurrenceRuleString = (
   recurrenceRuleData: RecurrenceRuleInput,
 ): string => {
-  // destructure the recurrence rules
+  // Destructure the recurrence rule data
   const {
     recurrenceStartDate,
     recurrenceEndDate,
@@ -27,34 +26,35 @@ export const generateRecurrenceRuleString = (
     weekDayOccurenceInMonth,
   } = recurrenceRuleData;
 
-  // get the start date string for rrule's "DTSTART" property
+  // Convert the start date to a string formatted for RRULE "DTSTART" property
   const recurrenceStartDateString =
     convertToRRuleDateString(recurrenceStartDate);
 
-  // get the end date string for rrule's "UNTIL" property
+  // Convert the end date to a string formatted for RRULE "UNTIL" property, if provided
   let recurrenceEndDateString = "";
   if (recurrenceEndDate) {
     recurrenceEndDateString = convertToRRuleDateString(recurrenceEndDate);
   }
 
-  // get weekdays for recurrence rule string, i.e. "MO", "TU", etc.
+  // Map weekdays to their RRULE representation (e.g., "MO" for Monday)
   const recurrenceWeekDays = weekDays?.map((weekDay) => {
     if (weekDay) {
       return RECURRENCE_WEEKDAYS_MAPPING[weekDay];
     }
   });
 
-  // sort the weekDays array
+  // Sort the weekDays array for consistent RRULE output
   recurrenceWeekDays?.sort();
 
-  // string representing the days of the week the event would recur
+  // String representing the days of the week the event would recur
   const weekDaysString = recurrenceWeekDays?.length
     ? recurrenceWeekDays.join(",")
     : "";
 
-  // initiate recurrence rule string
+  // Initialize the recurrence rule string with mandatory "DTSTART" and "FREQ" properties
   let recurrenceRuleString = `DTSTART:${recurrenceStartDateString}\nRRULE:FREQ=${frequency}`;
 
+  // Add optional RRULE properties based on the presence of corresponding data
   if (recurrenceEndDateString) {
     recurrenceRuleString += `;UNTIL=${recurrenceEndDateString}`;
   }
