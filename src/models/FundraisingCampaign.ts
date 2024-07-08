@@ -1,9 +1,13 @@
 import type { Model, PopulatedDoc, Types } from "mongoose";
-
 import { Schema, model, models } from "mongoose";
 import type { InterfaceFund } from "./Fund";
 import type { InterfaceFundraisingCampaignPledges } from "./FundraisingCampaignPledge";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+
+/**
+ * Enum for currency types with their respective codes.
+ * This enum lists all the possible currency codes that can be used in the system.
+ */
 export enum CurrencyType {
   AED = "AED", // United Arab Emirates Dirham
   AFN = "AFN", // Afghan Afghani
@@ -170,18 +174,6 @@ export enum CurrencyType {
   ZWD = "ZWD", // Zimbabwean Dollar
 }
 
-/**
- * This is the structure of a file
- * @param fund - parent fund to which campaign belongs
- * @param name - Name of the campaign
- * @param startDate - Start date of the campaign
- * @param endDate - End date of the campaign
- * @param fundingGoal - Goal of the campaign
- * @param currency - Currency of the campaign
- * @param createdAt - Timestamp of creation
- * @param updatedAt - Timestamp of updation
- *
- */
 export interface InterfaceFundraisingCampaign {
   _id: Types.ObjectId;
   fundId: PopulatedDoc<InterfaceFund & Document>;
@@ -194,6 +186,19 @@ export interface InterfaceFundraisingCampaign {
   createdAt: Date;
   updatedAt: Date;
 }
+
+/**
+ * Mongoose schema definition for a fundraising campaign document.
+ * This schema defines how the data will be stored in the MongoDB database.
+ *
+ * @param fundId - Reference to the parent fund.
+ * @param name - Name of the fundraising campaign.
+ * @param startDate - Start date of the fundraising campaign.
+ * @param endDate - End date of the fundraising campaign.
+ * @param fundingGoal - Financial goal of the fundraising campaign.
+ * @param currency - Currency in which the funding goal is specified.
+ * @param pledges - List of pledges associated with the fundraising campaign.
+ */
 const fundraisingCampaignSchema = new Schema(
   {
     fundId: {
@@ -220,7 +225,7 @@ const fundraisingCampaignSchema = new Schema(
     currency: {
       type: String,
       required: true,
-      enum: Object.values(CurrencyType),
+      enum: Object.values(CurrencyType), // Must be one of the defined currency types
     },
     pledges: [
       {
@@ -230,17 +235,31 @@ const fundraisingCampaignSchema = new Schema(
     ],
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically manage `createdAt` and `updatedAt` fields
   },
 );
 
+/**
+ * Adds logging middleware to the fundraising campaign schema.
+ * This middleware logs changes to fundraising campaign documents.
+ */
 createLoggingMiddleware(fundraisingCampaignSchema, "FundRaisingCampaign");
 
+/**
+ * Creates a Mongoose model for the fundraising campaign schema.
+ * This function ensures that we don't create multiple models during testing, which can cause errors.
+ *
+ * @returns The FundraisingCampaign model.
+ */
 const fundraisingCampaignModel = (): Model<InterfaceFundraisingCampaign> =>
   model<InterfaceFundraisingCampaign>(
     "FundraisingCampaign",
     fundraisingCampaignSchema,
   );
-// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
+
+/**
+ * Export the FundraisingCampaign model.
+ * This syntax ensures we don't get an OverwriteModelError while running tests.
+ */
 export const FundraisingCampaign = (models.FundraisingCampaign ||
   fundraisingCampaignModel()) as ReturnType<typeof fundraisingCampaignModel>;

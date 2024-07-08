@@ -3,8 +3,9 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import { type InterfaceAgendaItem } from "./AgendaItem";
 import type { InterfaceEvent } from "./Event";
+
 /**
- * This is an interface representing a document for an agenda section in the database (MongoDB).
+ * Interface representing a document for an agenda section in MongoDB.
  */
 export interface InterfaceAgendaSection {
   _id: Types.ObjectId; // Unique identifier for the agenda section.
@@ -31,7 +32,7 @@ export interface InterfaceAgendaSection {
 export const AgendaSectionSchema = new Schema({
   relatedEvent: {
     type: Schema.Types.ObjectId,
-    ref: "Event",
+    ref: "Event", // Refers to the Event model
   },
   description: {
     type: String,
@@ -40,7 +41,7 @@ export const AgendaSectionSchema = new Schema({
   items: [
     {
       type: Schema.Types.ObjectId,
-      ref: "AgendaItem",
+      ref: "AgendaItem", // Refers to the AgendaItem model
     },
   ],
   sequence: {
@@ -49,7 +50,7 @@ export const AgendaSectionSchema = new Schema({
   },
   createdBy: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: "User", // Refers to the User model (creator)
   },
   createdAt: {
     type: Date,
@@ -61,9 +62,13 @@ export const AgendaSectionSchema = new Schema({
   },
 });
 
+/**
+ * Retrieves or creates the Mongoose model for AgendaSection.
+ * Prevents Mongoose OverwriteModelError during testing.
+ */
 const agendaSectionModel = (): Model<InterfaceAgendaSection> =>
   model<InterfaceAgendaSection>("AgendaSection", AgendaSectionSchema);
 
-// Check if the AgendaItem model is already defined, if not, create a new one
+// Export the AgendaSection model, preventing overwrite during tests
 export const AgendaSectionModel = (models.AgendaSection ||
   agendaSectionModel()) as ReturnType<typeof agendaSectionModel>;
