@@ -24,6 +24,10 @@ import { isAuth } from "./middleware";
 import { composedResolvers } from "./resolvers";
 import { typeDefs } from "./typeDefs";
 import { SERVER_PORT } from "./constants";
+
+/**
+ * Create a PubSub instance for handling subscriptions.
+ */
 export const pubsub = new PubSub();
 
 // defines schema
@@ -39,6 +43,9 @@ schema = roleDirectiveTransformer(schema, "role");
 // Our httpServer handles incoming requests to our Express app.
 // Below, we tell Apollo Server to "drain" this httpServer, enabling our servers to shut down gracefully.
 
+/**
+ * HTTP server instance for handling Apollo Server requests.
+ */
 const httpServer =
   process.env.NODE_ENV === "production"
     ? https.createServer(
@@ -51,6 +58,9 @@ const httpServer =
       )
     : http.createServer(app);
 
+/**
+ * Apollo Server instance configuration.
+ */
 const server = new ApolloServer({
   schema,
   formatError: (
@@ -86,7 +96,9 @@ const server = new ApolloServer({
   ],
 });
 
-// Creating the WebSocket server
+/**
+ * Creating the WebSocket server.
+ */
 const wsServer = new WebSocketServer({
   // This is the `httpServer` we created in a previous step.
   server: httpServer,
@@ -94,19 +106,26 @@ const wsServer = new WebSocketServer({
   path: "/graphql",
 });
 
-// Hand in the schema we just created and have the
-// WebSocketServer start listening.
+/**
+ * Cleanup function for the WebSocket server.
+ */
 const serverCleanup = useServer(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   { schema, context: (_ctx, _msg, _args) => ({ pubsub }) },
   wsServer,
 );
 
+/**
+ * Start the server asynchronously.
+ */
 async function startServer(): Promise<void> {
+  // Connect to the database
   await database.connect();
 
+  // Start the Apollo Server
   await server.start();
 
+  // Apply Apollo Server middleware to Express app
   app.use(
     "/graphql",
     expressMiddleware(server, {
@@ -120,14 +139,15 @@ async function startServer(): Promise<void> {
     }),
   );
 
-  // Modified server startup
+  // Start the HTTP server
   await new Promise<void>((resolve) =>
     httpServer.listen({ port: parseInt(SERVER_PORT as string) }, resolve),
   );
 
-  // Log all the configuration related issues
+  // Log all configuration related issues
   await logIssues();
 
+  // Log server and subscription endpoints
   logger.info(
     `🚀 Server ready at ${
       process.env.NODE_ENV === "production" ? "https" : "http"
@@ -138,5 +158,6 @@ async function startServer(): Promise<void> {
   );
 }
 
+// Start the server and load plugins
 startServer();
 loadPlugins();

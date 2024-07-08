@@ -6,16 +6,19 @@ import { checkReplicaSet } from "./utilities/checkReplicaSet";
 let session!: mongoose.ClientSession;
 
 export const connect = async (dbName?: string): Promise<void> => {
-  // firstly we check if a connection to the database already exists.
+  // Check if a connection to the database already exists.
   if (mongoose.connection.readyState !== 0) {
-    // if the connection state is not 0, it means a connection already exists so we return.
+    // If a connection already exists, return immediately.
     return;
   }
-  // if no connection exists, we try to establish a new connection.
+
+  // If no connection exists, attempt to establish a new connection.
   try {
     await mongoose.connect(MONGO_DB_URL as string, {
       dbName,
     });
+
+    // Check if connected to a replica set and start a session if true.
     const replicaSet = await checkReplicaSet();
     if (replicaSet) {
       logger.info("Session started --> Connected to a replica set!");
@@ -27,6 +30,7 @@ export const connect = async (dbName?: string): Promise<void> => {
     if (error instanceof Error) {
       const errorMessage = error.toString();
       if (errorMessage.includes("ECONNREFUSED")) {
+        // Handle connection errors due to common issues.
         logger.error("\n\n\n\x1b[1m\x1b[31m%s\x1b[0m", error);
         logger.error(
           "\n\n\x1b[1m\x1b[34m%s\x1b[0m",
@@ -50,7 +54,7 @@ export const connect = async (dbName?: string): Promise<void> => {
           `- Please try again with the fixes !`,
         );
       } else {
-        logger.error("Error while connecting to mongo database", error);
+        logger.error("Error while connecting to MongoDB database", error);
       }
       process.exit(1);
     }
