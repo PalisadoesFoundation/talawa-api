@@ -3,11 +3,8 @@ import { GraphQLError } from "graphql";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type {
-  InterfaceOrganization} from "../../../src/models";
-import {
-  OrganizationTagUser,
-} from "../../../src/models";
+import type { InterfaceOrganization } from "../../../src/models";
+import { OrganizationTagUser } from "../../../src/models";
 import {
   parseCursor,
   userTags as userTagsResolver,
