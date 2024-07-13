@@ -34,7 +34,7 @@ export const inputs = gql`
 
   input CreateUserTagInput {
     name: String!
-    tagColor: String!
+    tagColor: String
     parentTagId: ID
     organizationId: ID!
   }

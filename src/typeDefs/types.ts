@@ -738,6 +738,7 @@ export const types = gql`
   type UserTagsConnection {
     edges: [UserTagsConnectionEdge!]!
     pageInfo: DefaultConnectionPageInfo!
+    totalCount: PositiveInt
   }
 
   """
