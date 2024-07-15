@@ -18,7 +18,7 @@ export const inputs = gql`
 
   input createChatInput {
     userIds: [ID!]!
-    organizationId: ID!
+    organizationId: ID
   }
 
   input createGroupChatInput {

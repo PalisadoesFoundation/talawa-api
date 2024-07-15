@@ -22,30 +22,6 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   args,
   context,
 ) => {
-  let organization;
-
-  const organizationFoundInCache = await findOrganizationsInCache([
-    args.data.organizationId,
-  ]);
-
-  organization = organizationFoundInCache[0];
-
-  if (organizationFoundInCache.includes(null)) {
-    organization = await Organization.findOne({
-      _id: args.data.organizationId,
-    }).lean();
-    if (organization) await cacheOrganizations([organization]);
-  }
-
-  // Checks whether organization with _id === args.data.organizationId exists.
-  if (!organization) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
-    );
-  }
-
   // Variable to store list of users to be members of directChat.
   const usersInDirectChat = [];
 
@@ -71,7 +47,6 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   const createdDirectChat = await DirectChat.create({
     creatorId: context.userId,
     users: usersInDirectChat,
-    organization: args.data.organizationId,
   });
 
   // Returns createdDirectChat.

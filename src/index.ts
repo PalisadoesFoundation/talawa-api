@@ -98,7 +98,7 @@ const wsServer = new WebSocketServer({
 // WebSocketServer start listening.
 const serverCleanup = useServer(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  { schema, context: (_ctx, _msg, _args) => ({ pubsub }) },
+  { schema, context: (ctx, _msg, args) => ({ pubsub, ctx, args }) },
   wsServer,
 );
 
