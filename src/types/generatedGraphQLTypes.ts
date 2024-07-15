@@ -414,7 +414,7 @@ export type CreateUserTagInput = {
   name: Scalars['String']['input'];
   organizationId: Scalars['ID']['input'];
   parentTagId?: InputMaybe<Scalars['ID']['input']>;
-  tagColor: Scalars['String']['input'];
+  tagColor?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Currency =
@@ -3020,6 +3020,7 @@ export type UserTagsConnection = {
   __typename?: 'UserTagsConnection';
   edges: Array<UserTagsConnectionEdge>;
   pageInfo: DefaultConnectionPageInfo;
+  totalCount?: Maybe<Scalars['PositiveInt']['output']>;
 };
 
 /** A default connection edge on the UserTag type for UserTagsConnection. */
@@ -4706,6 +4707,7 @@ export type UserTagResolvers<ContextType = any, ParentType extends ResolversPare
 export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
   edges?: Resolver<Array<ResolversTypes['UserTagsConnectionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
