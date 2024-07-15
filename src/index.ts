@@ -128,7 +128,7 @@ async function startServer(): Promise<void> {
   const PORT = parseInt(SERVER_PORT || "4000", 10);
   if (Number.isNaN(PORT) || PORT < 0 || PORT > 65535) {
     throw new Error(
-      `Invalid SERVER_PORT: ${process.env.SERVER_PORT}. Port should be a number between 0 and 65535.`,
+      `Invalid SERVER_PORT: ${process.env.SERVER_PORT}. Please ensure it is a numeric value between 0 and 65535.`,
     );
   }
 
