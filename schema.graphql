@@ -336,7 +336,7 @@ input CreateUserTagInput {
   name: String!
   organizationId: ID!
   parentTagId: ID
-  tagColor: String!
+  tagColor: String
 }
 
 enum Currency {
@@ -1913,6 +1913,7 @@ type UserTag {
 type UserTagsConnection {
   edges: [UserTagsConnectionEdge!]!
   pageInfo: DefaultConnectionPageInfo!
+  totalCount: PositiveInt
 }
 
 """A default connection edge on the UserTag type for UserTagsConnection."""
