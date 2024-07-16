@@ -6,7 +6,6 @@ import {
   FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
   USER_NOT_FOUND_ERROR,
-  USER_NOT_MADE_PLEDGE_ERROR,
 } from "../../../src/constants";
 import { type InterfaceFundraisingCampaign } from "../../../src/models";
 import { updateFundraisingCampaignPledge } from "../../../src/resolvers/Mutation/updateFundCampaignPledge";
@@ -17,9 +16,8 @@ import {
 } from "../../helpers/FundraisingCampaignPledge";
 import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/user";
-import { createTestUser } from "../../helpers/userAndOrg";
-let testUser: TestUserType;
 
+let testUser: TestUserType;
 let testcampaignPledge: TestPledgeType;
 let testFundraisingCampaign: InterfaceFundraisingCampaign;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -35,9 +33,11 @@ beforeAll(async () => {
   testFundraisingCampaign = temp[3];
   testcampaignPledge = temp[4];
 });
+
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
+
 describe("resolvers->Mutation->updateFundCampaignPledge", () => {
   it("throw error if no user exists with _id===context.userId", async () => {
     try {
@@ -58,7 +58,7 @@ describe("resolvers->Mutation->updateFundCampaignPledge", () => {
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
-  it("throw errpr if no plege exists with _id===args.id", async () => {
+  it("throw error if no plege exists with _id===args.id", async () => {
     try {
       const args: MutationUpdateFundraisingCampaignPledgeArgs = {
         id: new Types.ObjectId().toString() || "",
@@ -78,27 +78,7 @@ describe("resolvers->Mutation->updateFundCampaignPledge", () => {
       );
     }
   });
-  it("throw error if user has not made the pledge", async () => {
-    try {
-      const randomUser = await createTestUser();
-      const args: MutationUpdateFundraisingCampaignPledgeArgs = {
-        id: testcampaignPledge?._id.toString() || "",
-        data: {
-          startDate: new Date(new Date().toDateString()),
-          endDate: new Date(new Date().toDateString()),
-          currency: "USD",
-        },
-      };
-      const context = {
-        userId: randomUser?._id.toString() || "",
-      };
-      await updateFundraisingCampaignPledge?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_MADE_PLEDGE_ERROR.MESSAGE,
-      );
-    }
-  });
+
   it("throws error if startDate is invalid", async () => {
     try {
       const args: MutationUpdateFundraisingCampaignPledgeArgs = {
@@ -131,10 +111,6 @@ describe("resolvers->Mutation->updateFundCampaignPledge", () => {
         },
       };
 
-      // console.log(
-      //   testcampaignPledge?.users.includes(testUser?._id),
-      //   testUser?._id,
-      // );
       const context = {
         userId: testUser?._id.toString(),
       };
@@ -145,6 +121,7 @@ describe("resolvers->Mutation->updateFundCampaignPledge", () => {
       );
     }
   });
+
   it("should update the pledge", async () => {
     const args: MutationUpdateFundraisingCampaignPledgeArgs = {
       id: testcampaignPledge?._id.toString() || "",
@@ -160,5 +137,22 @@ describe("resolvers->Mutation->updateFundCampaignPledge", () => {
     };
     const pledge = await updateFundraisingCampaignPledge?.({}, args, context);
     expect(pledge).toBeTruthy();
+  });
+
+  it("throws an error when an invalid user ID is provided", async () => {
+    try {
+      const args = {
+        id: testcampaignPledge?._id.toString() || "",
+        data: {
+          users: [new Types.ObjectId().toString()],
+        },
+      };
+      const context = {
+        userId: testUser?._id.toString(),
+      };
+      await updateFundraisingCampaignPledge?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
   });
 });

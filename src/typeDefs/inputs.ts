@@ -34,7 +34,7 @@ export const inputs = gql`
 
   input CreateUserTagInput {
     name: String!
-    tagColor: String!
+    tagColor: String
     parentTagId: ID
     organizationId: ID!
   }
@@ -65,7 +65,6 @@ export const inputs = gql`
     duration: String
     attachments: [String]
     relatedEvent: ID
-    updatedBy: ID!
     urls: [String]
     users: [ID]
     categories: [ID]
@@ -234,6 +233,10 @@ export const inputs = gql`
   }
 
   input FundWhereInput {
+    name_contains: String
+  }
+
+  input CampaignWhereInput {
     name_contains: String
   }
 
@@ -445,6 +448,7 @@ export const inputs = gql`
     currency: Currency
   }
   input UpdateFundCampaignPledgeInput {
+    users: [ID]
     startDate: Date
     endDate: Date
     amount: Float

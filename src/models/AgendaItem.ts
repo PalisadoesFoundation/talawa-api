@@ -114,7 +114,7 @@ export const AgendaItemSchema = new Schema({
     type: Date,
     // required: true,
   },
-  organization: {
+  organizationId: {
     type: Schema.Types.ObjectId,
     ref: "Organization",
   },

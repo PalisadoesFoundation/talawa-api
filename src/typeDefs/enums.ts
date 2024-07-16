@@ -100,6 +100,8 @@ export const enums = gql`
     lastName_DESC
     email_ASC
     email_DESC
+    createdAt_ASC
+    createdAt_DESC
   }
 
   enum UserType {
@@ -112,6 +114,29 @@ export const enums = gql`
   enum VenueOrderByInput {
     capacity_ASC
     capacity_DESC
+  }
+
+  enum FundOrderByInput {
+    createdAt_ASC
+    createdAt_DESC
+  }
+
+  enum CampaignOrderByInput {
+    startDate_ASC
+    startDate_DESC
+    endDate_ASC
+    endDate_DESC
+    fundingGoal_ASC
+    fundingGoal_DESC
+  }
+
+  enum PledgeOrderByInput {
+    amount_ASC
+    amount_DESC
+    startDate_ASC
+    startDate_DESC
+    endDate_ASC
+    endDate_DESC
   }
 
   enum WeekDays {

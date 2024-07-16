@@ -2,17 +2,14 @@ import type mongoose from "mongoose";
 import { Event, RecurrenceRule } from "../../../models";
 
 /**
- * This function removes dangling recurrence rule and base recurring event documents.
- * @param baseRecurringEventId - _id of the base recurring event.
+ * Removes dangling recurrence rule and base recurring event documents if they have no associated events.
  * @param recurrenceRuleId - _id of the recurrence rule.
- * @remarks The following steps are followed:
- * 1. Call the function associated with the document to be removed, i.e. removeRecurrenceRule or removeBaseRecurringEvent.
- * 2. Check if the document has any associations, i.e.:
- *   - for recurrence rule, check if there exist any event that follow this given recurrence rule
- *   - for base recurring event, check if there exist any event that has this event as its base recurring event
- * 3. Remove the documents if no associations are found.
+ * @param baseRecurringEventId - _id of the base recurring event.
+ * @param session - Mongoose client session.
+ * @remarks
+ * The function first checks if there are any associated events for each document.
+ * If no associated events are found, it deletes the document from the database.
  */
-
 export const removeDanglingDocuments = async (
   recurrenceRuleId: string,
   baseRecurringEventId: string,
@@ -22,6 +19,11 @@ export const removeDanglingDocuments = async (
   await removeBaseRecurringEvent(baseRecurringEventId, session);
 };
 
+/**
+ * Removes the recurrence rule document if no events follow this recurrence rule.
+ * @param recurrenceRuleId - _id of the recurrence rule.
+ * @param session - Mongoose client session.
+ */
 const removeRecurrenceRule = async (
   recurrenceRuleId: string,
   session: mongoose.ClientSession,
@@ -40,6 +42,11 @@ const removeRecurrenceRule = async (
   }
 };
 
+/**
+ * Removes the base recurring event document if no events reference this base recurring event.
+ * @param baseRecurringEventId - _id of the base recurring event.
+ * @param session - Mongoose client session.
+ */
 const removeBaseRecurringEvent = async (
   baseRecurringEventId: string,
   session: mongoose.ClientSession,

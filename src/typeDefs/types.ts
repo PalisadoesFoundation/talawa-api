@@ -334,7 +334,7 @@ export const types = gql`
     isDefault: Boolean!
     isArchived: Boolean!
     creator: User
-    campaigns: [FundraisingCampaign!]
+    campaigns: [FundraisingCampaign]
     createdAt: DateTime!
     updatedAt: DateTime!
   }
@@ -739,6 +739,7 @@ export const types = gql`
   type UserTagsConnection {
     edges: [UserTagsConnectionEdge!]!
     pageInfo: DefaultConnectionPageInfo!
+    totalCount: PositiveInt
   }
 
   """
