@@ -26,8 +26,16 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
 
     const _args = {};
     const _parent = {};
+    const context = {
+      pubsub: {
+        asyncIterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT"): string => {
+          return _action;
+        },
+      },
+      context: { currentUserId: testGroupChat?.users[0] },
+    };
     const variables = {
-      userId: testGroupChat?.users[0]
+      userId: testGroupChat?.users[0],
     };
     const payload = {
       messageSentToGroupChat: {
@@ -62,11 +70,14 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
         groupChatMessageBelongsTo: new mongoose.Types.ObjectId(),
       },
     };
+    const variables = {
+      userId: testGroupChat?.users[0],
+    };
     // @ts-expect-error-ignore
     messageSentToGroupChatPayload.payload = payload;
     // @ts-expect-error-ignore
     const x = messageSentToGroupChatPayload?.subscribe(_parent, _args, context);
     expect(x).not.toBe(null);
-    expect(await filterFunction(payload, context)).toBe(false);
+    expect(await filterFunction(payload, variables)).toBe(false);
   });
 });
