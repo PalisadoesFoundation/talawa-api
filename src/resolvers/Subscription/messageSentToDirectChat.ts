@@ -7,7 +7,7 @@ const MESSAGE_SENT_TO_DIRECT_CHAT = "MESSAGE_SENT_TO_DIRECT_CHAT";
 export const filterFunction = function (
   payload: any,
   variables: any,
-  context: any,
+  _context: any,
 ): boolean {
 
   const currentUserId = variables.userId;
