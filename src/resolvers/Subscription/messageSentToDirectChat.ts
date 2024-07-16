@@ -7,7 +7,6 @@ const MESSAGE_SENT_TO_DIRECT_CHAT = "MESSAGE_SENT_TO_DIRECT_CHAT";
 export const filterFunction = function (
   payload: any,
   variables: any,
-  _context: any,
 ): boolean {
 
   const currentUserId = variables.userId;
@@ -31,7 +30,7 @@ export const messageSentToDirectChat: SubscriptionResolvers["messageSentToDirect
       (_parent, _args, context) =>
         context.pubsub.asyncIterator([MESSAGE_SENT_TO_DIRECT_CHAT]),
 
-      (payload, variables, context) =>
-        filterFunction(payload, variables, context),
+      (payload, variables) =>
+        filterFunction(payload, variables),
     ),
   };
