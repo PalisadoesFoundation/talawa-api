@@ -101,7 +101,7 @@ const serverCleanup = useServer(
   { schema, context: (_ctx, _msg, _args) => ({ pubsub }) },
   wsServer,
 );
-let serverHost = "";
+let serverHost = "localhost";
 
 async function startServer(): Promise<void> {
   await database.connect();
