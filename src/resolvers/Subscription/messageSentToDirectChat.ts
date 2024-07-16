@@ -9,15 +9,8 @@ export const filterFunction = function (
   variables: any,
   context: any,
 ): boolean {
-  console.log(context, "context");
-  console.log(context.ctx, "ctx");
-  console.log(variables, "var");
+
   const currentUserId = variables.userId;
-  console.log(
-    variables.userId,
-    payload.messageSentToDirectChat.receiver,
-    payload.messageSentToDirectChat.sender,
-  );
   return (
     currentUserId === payload.messageSentToDirectChat.receiver.toString() ||
     currentUserId === payload.messageSentToDirectChat.sender.toString()
