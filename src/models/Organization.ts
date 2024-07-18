@@ -7,11 +7,10 @@ import type { InterfaceMessage } from "./Message";
 import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
-
 import type { InterfaceAdvertisement } from "./Advertisement";
 
 /**
- * This is an interface that represents a database(MongoDB) document for Organization.
+ * Interface representing a document for an Organization in the database (MongoDB).
  */
 export interface InterfaceOrganization {
   _id: Types.ObjectId;
@@ -46,24 +45,31 @@ export interface InterfaceOrganization {
   funds: PopulatedDoc<InterfaceFund & Document>[];
   visibleInSearch: boolean;
 }
+
 /**
- * This describes the schema for a `Organization` that corresponds to `InterfaceOrganization` document.
- * @param apiUrl - API URL.
- * @param image - Organization image URL.
- * @param name - Organization name.
- * @param description - Organization description.
- * @param address - Organization address, stored as an object.
- * @param creatorId - Organization creator, referring to `User` model.
- * @param status - Status.
- * @param members - Collection of members, each object refer to `User` model.
- * @param admins - Collection of organization admins, each object refer to `User` model.
- * @param groupChats - Collection of group chats, each object refer to `Message` model.
- * @param posts - Collection of Posts in the Organization, each object refer to `Post` model.
- * @param membershipRequests - Collection of membership requests in the Organization, each object refer to `MembershipRequest` model.
- * @param blockedUsers - Collection of Blocked User in the Organization, each object refer to `User` model.
- * @param tags - Collection of tags.
- * @param createdAt - Time stamp of data creation.
- * @param updatedAt - Time stamp of data updation.
+ * Mongoose schema for an Organization.
+ * Defines the structure of the Organization document stored in MongoDB.
+ * @param apiUrl - API URL associated with the organization.
+ * @param image - URL of the organization's image.
+ * @param name - Name of the organization.
+ * @param description - Description of the organization.
+ * @param address - Address details of the organization.
+ * @param creatorId - Creator of the organization, referencing the User model.
+ * @param status - Status of the organization.
+ * @param members - Collection of members in the organization, each object referencing the User model.
+ * @param admins - Collection of admins in the organization, each object referencing the User model.
+ * @param advertisements - Collection of advertisements associated with the organization, each object referencing the Advertisement model.
+ * @param groupChats - Collection of group chats associated with the organization, each object referencing the Message model.
+ * @param posts - Collection of posts associated with the organization, each object referencing the Post model.
+ * @param pinnedPosts - Collection of pinned posts associated with the organization, each object referencing the Post model.
+ * @param membershipRequests - Collection of membership requests associated with the organization, each object referencing the MembershipRequest model.
+ * @param blockedUsers - Collection of blocked users associated with the organization, each object referencing the User model.
+ * @param customFields - Collection of custom fields associated with the organization, each object referencing the OrganizationCustomField model.
+ * @param funds - Collection of funds associated with the organization, each object referencing the Fund model.
+ * @param createdAt - Timestamp of when the organization was created.
+ * @param updatedAt - Timestamp of when the organization was last updated.
+ * @param userRegistrationRequired - Indicates if user registration is required for the organization.
+ * @param visibleInSearch - Indicates if the organization should be visible in search results.
  */
 const organizationSchema = new Schema(
   {
@@ -193,15 +199,25 @@ const organizationSchema = new Schema(
     ],
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields
   },
 );
 
+// Add logging middleware for organizationSchema
 createLoggingMiddleware(organizationSchema, "Organization");
 
+/**
+ * Function to retrieve or create the Mongoose model for the Organization.
+ * This is necessary to avoid the OverwriteModelError during testing.
+ * @returns The Mongoose model for the Organization.
+ */
 const organizationModel = (): Model<InterfaceOrganization> =>
   model<InterfaceOrganization>("Organization", organizationSchema);
 
-// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
+/**
+ * The Mongoose model for the Organization.
+ * If the model already exists (e.g., during testing), it uses the existing model.
+ * Otherwise, it creates a new model.
+ */
 export const Organization = (models.Organization ||
   organizationModel()) as ReturnType<typeof organizationModel>;

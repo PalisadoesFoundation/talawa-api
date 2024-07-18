@@ -4,7 +4,7 @@ import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
- * This is an interface that represents a database(MongoDB) document for Membership Request.
+ * Represents a database document for Membership Request.
  */
 export interface InterfaceMembershipRequest {
   _id: Types.ObjectId;
@@ -12,11 +12,12 @@ export interface InterfaceMembershipRequest {
   user: PopulatedDoc<InterfaceUser & Document> | undefined;
   status: string;
 }
+
 /**
- * This describes the schema for a `MembershipRequest` that corresponds to `InterfaceMembershipRequest` document.
- * @param organization - Organization data for which membership request is added.
- * @param user - User data who requested membership for an organization.
- * @param status - Status.
+ * Mongoose schema definition for Membership Request documents.
+ * @param organization - The ID of the organization for which membership is requested.
+ * @param user - The ID of the user who requested membership.
+ * @param status - The current status of the membership request.
  */
 const membershipRequestSchema = new Schema({
   organization: {
@@ -37,14 +38,18 @@ const membershipRequestSchema = new Schema({
   },
 });
 
+// Adding logging middleware for Membership Request schema.
 createLoggingMiddleware(membershipRequestSchema, "MembershipRequest");
 
+/**
+ * Mongoose model for Membership Request documents.
+ */
 const membershipRequestModel = (): Model<InterfaceMembershipRequest> =>
   model<InterfaceMembershipRequest>(
     "MembershipRequest",
     membershipRequestSchema,
   );
 
-// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
+// Exporting the Membership Request model while preventing Mongoose OverwriteModelError during tests.
 export const MembershipRequest = (models.MembershipRequest ||
   membershipRequestModel()) as ReturnType<typeof membershipRequestModel>;

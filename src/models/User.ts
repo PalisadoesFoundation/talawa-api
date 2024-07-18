@@ -9,7 +9,7 @@ import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
 
 /**
- * This is an interface that represents a database(MongoDB) document for User.
+ * Represents a MongoDB document for User in the database.
  */
 export interface InterfaceUser {
   _id: Types.ObjectId;
@@ -52,35 +52,29 @@ export interface InterfaceUser {
 
   updatedAt: Date;
 }
+
 /**
- * This describes the schema for a `User` that corresponds to `InterfaceUser` document.
- * @param appUserProfileId - AppUserProfile id of the User
- * @param address - User address
-
- * @param birthDate - User Date of birth
- * @param createdAt - Time stamp of data creation.
- 
- * @param educationGrade - User highest education degree
- * @param email - User email id.
- * @param employmentStatus - User employment status
- 
- * @param firstName - User First Name.
- * @param gender - User gender
- * @param image - User Image URL.
- * @param joinedOrganizations - Collection of the organization where user is the member, each object refer to `Organization` model.
- * @param lastName - User Last Name.
- * @param maritalStatus - User marital status
- * @param membershipRequests - Collections of the membership request, each object refer to `MembershipRequest` model.
- * @param organizationsBlockedBy - Collections of organizations where user is blocked, each object refer to `Organization` model.
- * @param password - User hashed password.
- * @param phone - User contact numbers, for mobile, home and work
- 
- * @param registeredEvents - Collection of user registered Events, each object refer to `Event` model.
- * @param status - Status
- *
-
- * @param updatedAt - Timestamp of data updation
-
+ * Mongoose schema definition for User documents.
+ * @param appUserProfileId - Reference to the user's app profile.
+ * @param address - User's address details.
+ * @param birthDate - User's date of birth.
+ * @param createdAt - Timestamp of when the user was created.
+ * @param educationGrade - User's highest education grade.
+ * @param email - User's email address (validated as an email).
+ * @param employmentStatus - User's employment status.
+ * @param firstName - User's first name.
+ * @param gender - User's gender.
+ * @param image - URL to the user's image.
+ * @param joinedOrganizations - Organizations the user has joined.
+ * @param lastName - User's last name.
+ * @param maritalStatus - User's marital status.
+ * @param membershipRequests - Membership requests made by the user.
+ * @param organizationsBlockedBy - Organizations that have blocked the user.
+ * @param password - User's hashed password.
+ * @param phone - User's contact numbers (home, mobile, work).
+ * @param registeredEvents - Events the user has registered for.
+ * @param status - User's status (ACTIVE, BLOCKED, DELETED).
+ * @param updatedAt - Timestamp of when the user was last updated.
  */
 const userSchema = new Schema(
   {
@@ -117,7 +111,6 @@ const userSchema = new Schema(
     birthDate: {
       type: Date,
     },
-
     educationGrade: {
       type: String,
       enum: [
@@ -232,6 +225,7 @@ const userSchema = new Schema(
 
 userSchema.plugin(mongoosePaginate);
 
+// Create and export the User model
 const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
 

@@ -10,6 +10,9 @@ import {
 import { type InterfaceEventAttendee } from "./EventAttendee";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
+/**
+ * Represents a document for a check-in entry in the MongoDB database.
+ */
 export interface InterfaceCheckIn {
   _id: Types.ObjectId;
   eventAttendeeId: PopulatedDoc<InterfaceEventAttendee & Document>;
@@ -19,6 +22,14 @@ export interface InterfaceCheckIn {
   updatedAt: Date;
 }
 
+/**
+ * Mongoose schema definition for a check-in document.
+ * @param eventAttendeeId - Reference to the event attendee associated with the check-in.
+ * @param time - Date and time of the check-in.
+ * @param feedbackSubmitted - Indicates if feedback was submitted for the check-in.
+ * @param createdAt - Date when the check-in entry was created.
+ * @param updatedAt - Date when the check-in entry was last updated.
+ */
 const checkInSchema = new Schema(
   {
     eventAttendeeId: {
@@ -38,17 +49,21 @@ const checkInSchema = new Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Adds createdAt and updatedAt automatically
   },
 );
 
-// We will also create an index here for faster database querying
+// Create an index for faster querying by eventAttendeeId
 checkInSchema.index({
   eventAttendeeId: 1,
 });
 
+// Apply logging middleware to the schema
 createLoggingMiddleware(checkInSchema, "CheckIn");
 
+/**
+ * Returns the Mongoose Model for CheckIn to prevent OverwriteModelError.
+ */
 const checkInModel = (): Model<InterfaceCheckIn> =>
   model<InterfaceCheckIn>("CheckIn", checkInSchema);
 
