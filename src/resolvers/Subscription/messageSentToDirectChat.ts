@@ -5,7 +5,7 @@ const MESSAGE_SENT_TO_DIRECT_CHAT = "MESSAGE_SENT_TO_DIRECT_CHAT";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const filterFunction = function (payload: any, variables: any): boolean {
-  const currentUserId = variables.userId;
+  const currentUserId = variables.userId.toString();
   console.log(currentUserId, payload.messageSentToDirectChat.receiver.toString(), payload.messageSentToDirectChat.sender.toString());
   return (
     currentUserId === payload.messageSentToDirectChat.receiver.toString() ||
