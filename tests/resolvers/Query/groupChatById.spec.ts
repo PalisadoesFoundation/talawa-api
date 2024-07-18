@@ -5,7 +5,10 @@ import { connect, disconnect } from "../../helpers/db";
 
 import { groupChatById as groupChatByIdResolver } from "../../../src/resolvers/Query/groupChatById";
 import { GroupChat } from "../../../src/models";
-import type { QueryGroupChatByIdArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  QueryGroupChatByIdArgs,
+  QueryGroupChatsByUserIdArgs,
+} from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestGroupChat } from "../../helpers/groupChat";
 import type { TestGroupChatType } from "../../helpers/groupChat";
@@ -38,7 +41,7 @@ describe("resolvers -> Query -> directChatsById", () => {
 
   it(`returns list of all directChats with directChat.users containing the user
   with _id === args.id`, async () => {
-    const args: QueryGroupChatByIdArgs = {
+    const args: QueryGroupChatsByUserIdArgs = {
       id: testGroupChat?._id,
     };
 
