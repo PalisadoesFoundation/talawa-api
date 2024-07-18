@@ -7,17 +7,15 @@ import { directChatById as directChatByIdResolver } from "../../../src/resolvers
 import { DirectChat } from "../../../src/models";
 import type { QueryDirectChatsByUserIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestDirectChat,  TestDirectChatType} from "../../helpers/directChat";
-import type { TestUserType,  } from "../../helpers/userAndOrg";
+import { createTestDirectChat,  } from "../../helpers/directChat";
+import type { TestDirectChatType } from "../../helpers/directChat";
 
-let testUser: TestUserType;
 let testDirectChat: TestDirectChatType
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const resultArray = await createTestDirectChat();
-  testUser = resultArray[0];
   testDirectChat = resultArray[2];
 });
 
@@ -34,7 +32,7 @@ describe("resolvers -> Query -> directChatsById", () => {
 
       await directChatByIdResolver?.({}, args, {});
     } catch (error: unknown) {
-      expect((error as Error).message).toEqual("DirectChats not found");
+      expect((error as Error).message).toEqual("Chat not found");
     }
   });
 
@@ -51,7 +49,7 @@ describe("resolvers -> Query -> directChatsById", () => {
     );
 
     const directChatsByUserId = await DirectChat.find({
-      users: testDirectChat?._id,
+      _id: testDirectChat?._id,
     }).lean();
 
     expect(directChatsByUserIdPayload).toEqual(directChatsByUserId);
