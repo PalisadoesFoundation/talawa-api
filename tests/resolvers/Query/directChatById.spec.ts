@@ -48,9 +48,7 @@ describe("resolvers -> Query -> directChatsById", () => {
       {},
     );
 
-    const directChatsByUserId = await DirectChat.find({
-      _id: testDirectChat?._id,
-    }).lean();
+    const directChatsByUserId = await DirectChat.findById(testDirectChat?._id).lean();
     console.log(directChatsByUserIdPayload);
     console.log(directChatsByUserId);
     expect(directChatsByUserIdPayload).toEqual(directChatsByUserId);
