@@ -11,6 +11,7 @@ import { membershipRequests } from "./membershipRequests";
 import { pinnedPosts } from "./pinnedPosts";
 import { posts } from "./posts";
 import { advertisements } from "./advertisements";
+import { userTags } from "./userTags";
 
 import { venues } from "./venues";
 // import { userTags } from "./userTags";
@@ -27,7 +28,7 @@ export const Organization: OrganizationResolvers = {
   membershipRequests,
   pinnedPosts,
   funds,
+  userTags,
   posts,
   venues,
-  // userTags,
 };
