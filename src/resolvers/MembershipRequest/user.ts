@@ -2,10 +2,18 @@ import type { MembershipRequestResolvers } from "../../types/generatedGraphQLTyp
 import { User } from "../../models";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+
 /**
- * This resolver function will retrieve and return the user who sent the membership request from the database.
- * @param parent - An object that is the return value of the resolver for this field's parent.
- * @returns An object that contains the User data.
+ * Resolver function for the `user` field of a `MembershipRequest`.
+ *
+ * This function retrieves the user who made a specific membership request.
+ *
+ * @param parent - The parent object representing the membership request. It contains information about the membership request, including the ID of the user who made it.
+ * @returns A promise that resolves to the user document found in the database. This document represents the user who made the membership request.
+ *
+ * @see User - The User model used to interact with the users collection in the database.
+ * @see MembershipRequestResolvers - The type definition for the resolvers of the MembershipRequest fields.
+ *
  */
 export const user: MembershipRequestResolvers["user"] = async (parent) => {
   const result = await User.findOne({

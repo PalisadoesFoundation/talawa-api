@@ -12,17 +12,35 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+
 /**
- * This function enables to cancel membership request.
- * @param _parent - parent of current request
- * @param args -  payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the membership request exists
- * 2. If the organization exists
- * 3. If the user exists
- * 4. If the user is the creator of the request
- * @returns Deleted membership request
+ * Mutation resolver function to cancel a membership request.
+ *
+ * This function performs the following actions:
+ * 1. Verifies that the membership request specified by `args.membershipRequestId` exists.
+ * 2. Ensures that the organization associated with the membership request exists.
+ * 3. Confirms that the user specified by `context.userId` exists.
+ * 4. Checks if the current user is the creator of the membership request.
+ * 5. Deletes the membership request.
+ * 6. Updates the organization document to remove the membership request from its `membershipRequests` list.
+ * 7. Updates the user's document to remove the membership request from their `membershipRequests` list.
+ *
+ * @param _parent - The parent object for the mutation. This parameter is not used in this resolver.
+ * @param args - The arguments for the mutation, including:
+ *   - `membershipRequestId`: The ID of the membership request to be canceled.
+ * @param context - The context for the mutation, including:
+ *   - `userId`: The ID of the current user making the request.
+ *
+ * @returns A promise that resolves to the deleted membership request.
+ *
+ * @see MembershipRequest - The MembershipRequest model used to interact with the membership requests collection in the database.
+ * @see Organization - The Organization model used to interact with the organizations collection in the database.
+ * @see User - The User model used to interact with the users collection in the database.
+ * @see MutationResolvers - The type definition for the mutation resolvers.
+ * @see findOrganizationsInCache - Service function to retrieve organizations from cache.
+ * @see cacheOrganizations - Service function to cache updated organization data.
+ * @see findUserInCache - Service function to retrieve users from cache.
+ * @see cacheUsers - Service function to cache updated user data.
  */
 export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest"] =
   async (_parent, args, context) => {

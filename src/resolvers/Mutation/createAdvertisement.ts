@@ -11,6 +11,29 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 
+/**
+ * Mutation resolver function to create a new advertisement.
+ *
+ * This function performs the following actions:
+ * 1. Verifies that the current user, identified by `context.userId`, exists.
+ * 2. Ensures that the organization specified by `args.input.organizationId` exists.
+ * 3. Uploads the media file if provided, determining its type (image or video).
+ * 4. Creates a new advertisement with the provided details.
+ *
+ * @param _parent - The parent object for the mutation. This parameter is not used in this resolver.
+ * @param args - The arguments for the mutation, including:
+ *   - `input`: An object containing:
+ *     - `organizationId`: The ID of the organization where the advertisement will be created.
+ *     - `mediaFile`: The encoded media file (image or video) to be uploaded.
+ *     - Other advertisement details.
+ * @param context - The context for the mutation, including:
+ *   - `userId`: The ID of the current user making the request.
+ *   - `apiRootUrl`: The root URL for the API to construct the media URL.
+ *
+ * @returns An object containing the created advertisement, including:
+ *   - `advertisement`: The created advertisement details with the media URL.
+ *
+ */
 export const createAdvertisement: MutationResolvers["createAdvertisement"] =
   async (_parent, args, context) => {
     // Get the current user
