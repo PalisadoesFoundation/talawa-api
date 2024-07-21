@@ -17,81 +17,157 @@
         };
       in
       {
-        devShells.default = pkgs.mkShell {
-          buildInputs = [
-            pkgs.git
-            pkgs.nodejs
-            pkgs.typescript
-            pkgs.fnm
-            pkgs.redis
-          ];
+        packages = {
+          default = pkgs.stdenv.mkDerivation {
+            name = "talawa-api";
+            src = ./.;
 
-          preBuild = ''
-            echo "PreBuild: Setting up the development environment..."
+            buildInputs = [
+              pkgs.nodejs
+              pkgs.typescript
+              pkgs.fnm
+              pkgs.redis
+              pkgs.glibcLocales # Ensure locale support
+            ];
 
-            # Ensure npm uses a user-writable directory
-            mkdir -p ~/.npm-global
-            npm config set prefix '~/.npm-global'
-            export PATH=~/.npm-global/bin:$PATH
+            preBuild = ''
+              echo "PreBuild: Setting up the development environment..."
 
-            case "$(uname)" in
-              Linux)
-                # Linux-specific settings
-                echo 1 > /proc/sys/vm/overcommit_memory || true
-                #export LC_ALL=en_US.UTF-8
-                export LANG=en_US.UTF-8
-                ;;
-              Darwin)
-                # macOS-specific settings
-                export LC_ALL=en_US.UTF-8
-                export LANG=en_US.UTF-8
-                ;;
-              CYGWIN*|MINGW32*|MSYS*|MINGW*)
-                # Windows-specific settings
-                echo "Running on Windows"
-                ;;
-              *)
-                echo "Unknown OS"
-                ;;
-            esac
-          '';
+              # Ensure npm uses a user-writable directory
+              mkdir -p ~/.npm-global
+              npm config set prefix '~/.npm-global'
+              export PATH=~/.npm-global/bin:$PATH
 
-          buildPhase = ''
-            echo "Building the project..."
-            npm config set registry https://registry.npmjs.org/
-            npm install
-          '';
+              export LOCALE_ARCHIVE=$(nix-build '<nixpkgs>' -A glibcLocales)/lib/locale/locale-archive
 
-          installPhase = ''
-            echo "InstallPhase: Installing dependencies and setting up the environment..."
+              case "$(uname)" in
+                Linux)
+                  # Linux-specific settings
+                  echo 1 > /proc/sys/vm/overcommit_memory || true
+                  export LC_ALL=en_US.UTF-8
+                  export LANG=en_US.UTF-8
+                  ;;
+                Darwin)
+                  # macOS-specific settings
+                  export LC_ALL=en_US.UTF-8
+                  export LANG=en_US.UTF-8
+                  ;;
+                CYGWIN*|MINGW32*|MSYS*|MINGW*)
+                  # Windows-specific settings
+                  echo "Running on Windows"
+                  ;;
+                *)
+                  echo "Unknown OS"
+                  ;;
+              esac
+            '';
 
-            # Setup FNM
-            if [ -d "$HOME/.fnm" ]; then
-              export PATH="$HOME/.fnm/bin:$PATH"
-              eval "$(fnm env)"
-            else
-              echo "FNM not found"
-            fi
+            buildPhase = ''
+              echo "Building the project..."
+              npm config set registry https://registry.npmjs.org/
+              sudo npm install
+            '';
 
-            # Setup Redis
-            export REDIS_CONF_FILE=$PWD/redis.conf
-            mkdir -p $PWD/redis_data
-            echo "dir $PWD/redis_data" > $REDIS_CONF_FILE
-            redis-server $REDIS_CONF_FILE &
+            installPhase = ''
+              echo "InstallPhase: Installing dependencies and setting up the environment..."
 
-            # Set environment variables
-            export NODE_ENV=development
-            export REDIS_URL=redis://localhost:6379
+              # Setup FNM
+              if [ -d "$HOME/.fnm" ]; then
+                export PATH="$HOME/.fnm/bin:$PATH"
+                eval "$(fnm env)"
+              else
+                echo "FNM not found"
+              fi
 
-            echo "Installing Node.js dependencies..."
-            npm config set registry https://registry.npmjs.org/
-            npm install
-          '';
+              # Setup Redis
+              export REDIS_CONF_FILE=$PWD/redis.conf
+              mkdir -p $PWD/redis_data
+              echo "dir $PWD/redis_data" > $REDIS_CONF_FILE
+              redis-server $REDIS_CONF_FILE &
 
-          postInstall = ''
-            echo "Starting the development server..."
-            npm run dev
-          '';
+              
+
+              echo "Installing Node.js dependencies..."
+              npm config set registry https://registry.npmjs.org/
+              sudo npm install
+            '';
+
+            postInstall = ''
+              echo "Starting the development server..."
+              npm run dev
+            '';
+          };
+        };
+
+        devShells = {
+          default = pkgs.mkShell {
+            buildInputs = [
+              pkgs.git
+              pkgs.nodejs
+              pkgs.typescript
+              pkgs.fnm
+              pkgs.redis
+              pkgs.glibcLocales # Ensure locale support
+            ];
+
+            shellHook = ''
+              echo "Setting up the development environment..."
+
+              # Ensure npm uses a user-writable directory
+              mkdir -p ~/.npm-global
+              npm config set prefix '~/.npm-global'
+              export PATH=~/.npm-global/bin:$PATH
+
+              export LOCALE_ARCHIVE=$(nix-build '<nixpkgs>' -A glibcLocales)/lib/locale/locale-archive
+
+              case "$(uname)" in
+                Linux)
+                  # Linux-specific settings
+                  echo 1 > /proc/sys/vm/overcommit_memory || true
+                  export LC_ALL=en_US.UTF-8
+                  export LANG=en_US.UTF-8
+                  ;;
+                Darwin)
+                  # macOS-specific settings
+                  export LC_ALL=en_US.UTF-8
+                  export LANG=en_US.UTF-8
+                  ;;
+                CYGWIN*|MINGW32*|MSYS*|MINGW*)
+                  # Windows-specific settings
+                  echo "Running on Windows"
+                  ;;
+                *)
+                  echo "Unknown OS"
+                  ;;
+              esac
+
+              # Setup FNM
+              if [ -d "$HOME/.fnm" ]; then
+                export PATH="$HOME/.fnm/bin:$PATH"
+                eval "$(fnm env)"
+              else
+                echo "FNM not found"
+              fi
+
+              # Setup Redis
+              export REDIS_CONF_FILE=$PWD/redis.conf
+              mkdir -p $PWD/redis_data
+              echo "dir $PWD/redis_data" > $REDIS_CONF_FILE
+              redis-server $REDIS_CONF_FILE &
+
+              # Set environment variables
+              export NODE_ENV=development
+              export REDIS_URL=redis://localhost:6379
+
+              echo "Installing Node.js dependencies..."
+              npm install
+
+              echo "Starting the development server..."
+              npm run dev
+
+              echo "Development environment is ready!"
+            '';
+          };
         };
       }
     );
