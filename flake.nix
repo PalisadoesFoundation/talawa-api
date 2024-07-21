@@ -27,20 +27,44 @@
               pkgs.typescript
               pkgs.fnm
               pkgs.redis
-              pkgs.mongodb
             ];
+
+            preBuild = ''
+              echo "PreBuild: Setting up the development environment..."
+
+              case "$(uname)" in
+                Linux)
+                  # Linux-specific settings
+                  echo 1 > /proc/sys/vm/overcommit_memory || true
+                  export LC_ALL=C
+                  export LANG=C
+                  ;;
+                Darwin)
+                  # macOS-specific settings
+                  export LC_ALL=C
+                  export LANG=C
+                  ;;
+                CYGWIN*|MINGW32*|MSYS*|MINGW*)
+                  # Windows-specific settings
+                  echo "Running on Windows"
+                  ;;
+                *)
+                  echo "Unknown OS"
+                  ;;
+              esac
+            '';
 
             buildPhase = ''
               echo "Building the project..."
-              # Add any build-specific commands here if necessary
+              npm install
             '';
 
             installPhase = ''
-              echo "Installing dependencies and setting up the environment..."
+              echo "InstallPhase: Installing dependencies and setting up the environment..."
 
               # Setup FNM
               if [ -d "$HOME/.fnm" ]; then
-                export PATH="$HOME/.fnm:$PATH"
+                export PATH="$HOME/.fnm/bin:$PATH"
                 eval "$(fnm env)"
               else
                 echo "FNM not found"
@@ -52,15 +76,9 @@
               echo "dir $PWD/redis_data" > $REDIS_CONF_FILE
               redis-server $REDIS_CONF_FILE &
 
-              # Setup MongoDB
-              export MONGO_DATA_DIR=$PWD/mongo_data
-              mkdir -p $MONGO_DATA_DIR
-              mongod --dbpath $MONGO_DATA_DIR --fork --logpath $PWD/mongodb.log
-
               # Set environment variables
               export NODE_ENV=development
               export REDIS_URL=redis://localhost:6379
-              export MONGO_URL=mongodb://localhost:27017
 
               echo "Installing Node.js dependencies..."
               npm install
@@ -81,16 +99,15 @@
               pkgs.typescript
               pkgs.fnm
               pkgs.redis
-              pkgs.mongodb
             ];
 
-            shellHook = ''
-              echo "Setting up the development environment..."
+            preBuild = ''
+              echo "PreBuild: Setting up the development environment..."
 
               case "$(uname)" in
                 Linux)
                   # Linux-specific settings
-                  sudo sysctl vm.overcommit_memory=1 || true
+                  echo 1 > /proc/sys/vm/overcommit_memory || true
                   export LC_ALL=C
                   export LANG=C
                   ;;
@@ -107,10 +124,14 @@
                   echo "Unknown OS"
                   ;;
               esac
+            '';
+
+            installPhase = ''
+              echo "InstallPhase: Installing dependencies and setting up the environment..."
 
               # Setup FNM
               if [ -d "$HOME/.fnm" ]; then
-                export PATH="$HOME/.fnm:$PATH"
+                export PATH="$HOME/.fnm/bin:$PATH"
                 eval "$(fnm env)"
               else
                 echo "FNM not found"
@@ -122,15 +143,9 @@
               echo "dir $PWD/redis_data" > $REDIS_CONF_FILE
               redis-server $REDIS_CONF_FILE &
 
-              # Setup MongoDB
-              export MONGO_DATA_DIR=$PWD/mongo_data
-              mkdir -p $MONGO_DATA_DIR
-              mongod --dbpath $MONGO_DATA_DIR --fork --logpath $PWD/mongodb.log
-
               # Set environment variables
               export NODE_ENV=development
               export REDIS_URL=redis://localhost:6379
-              export MONGO_URL=mongodb://localhost:27017
 
               echo "Installing Node.js dependencies..."
               npm install
