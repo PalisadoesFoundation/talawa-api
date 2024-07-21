@@ -1,6 +1,4 @@
-{description = "Nix flake for Git, Node.js, TypeScript, FNM, and Redis";
-
-inputs = {
+{inputs = {
   nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   flake-utils.url = "github:numtide/flake-utils";
 };
@@ -23,10 +21,11 @@ outputs = { self, nixpkgs, flake-utils }:
           pkgs.typescript
           pkgs.fnm
           pkgs.redis
+          pkgs.mongodb
         ];
 
-        shellHook = ''
-          echo "Setting up the development environment..."
+        preBuild = ''
+          echo "PreBuild: Setting up the development environment..."
 
           case "$(uname)" in
             Linux)
@@ -48,6 +47,10 @@ outputs = { self, nixpkgs, flake-utils }:
               echo "Unknown OS"
               ;;
           esac
+        '';
+
+        installPhase = ''
+          echo "InstallPhase: Installing dependencies and setting up the environment..."
 
           # Setup FNM
           if [ -d "$HOME/.fnm" ]; then
@@ -63,7 +66,24 @@ outputs = { self, nixpkgs, flake-utils }:
           echo "dir $PWD/redis_data" > $REDIS_CONF_FILE
           redis-server $REDIS_CONF_FILE &
 
-          echo "Development environment is ready!"
+          # Setup MongoDB
+         # export MONGO_DATA_DIR=$PWD/mongo_data
+          #mkdir -p $MONGO_DATA_DIR
+         # mongod --dbpath $MONGO_DATA_DIR --fork --logpath $PWD/mongodb.log
+
+          # Set environment variables
+          
+#export NODE_ENV=development
+         # export REDIS_URL=redis://localhost:6379
+        #  export MONGO_URL=mongodb://localhost:27017
+        '';
+
+        postBuild = ''
+          echo "PostBuild: Finalizing the setup..."
+          echo "Installing Node.js dependencies..."
+          npm install
+          echo "Starting the development server..."
+          npm run dev
         '';
       };
     });
