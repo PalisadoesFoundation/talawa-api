@@ -137,7 +137,7 @@
     "prettier": "^3.2.5",
     "rimraf": "^5.0.7",
     "tsx": "^4.16.0",
-    "typescript": "^5.4.5",
+    "typescript": "^5.5.3",
     "vitest": "^1.2.1"
   },
   "overrides": {

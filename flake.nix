@@ -6,192 +6,109 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          config = {
-            allowUnfree = true;
-          };
+ outputs = { self, nixpkgs, flake-utils }:
+  flake-utils.lib.eachDefaultSystem (system:
+    let
+      pkgs = import nixpkgs {
+        inherit system;
+        config = {
+          allowUnfree = true;
         };
-      in
-      {
-        packages = {
-          default = pkgs.stdenv.mkDerivation {
-            name = "talawa-api";
-            src = ./.;
+      };
+    in {
+      packages.default = pkgs.stdenv.mkDerivation {
+        name = "talawa-api";
+        src = ./.;
 
-            buildInputs = [
-              pkgs.nodejs
-              pkgs.typescript
-              pkgs.fnm
-              pkgs.redis
-              pkgs.glibcLocales # Ensure locale support
-            ];
+        buildInputs = [
+          pkgs.nodejs
+          pkgs.fnm
+          pkgs.redis
+          pkgs.glibcLocales
+        ];
 
-            preBuild = ''
-              echo "PreBuild: Setting up the development environment..."
+        unpackPhase = "cp -r $src/* .";
 
-              # Ensure npm uses a user-writable directory
-              mkdir -p ~/.npm-global
-              npm config set prefix '~/.npm-global'
-              export PATH=~/.npm-global/bin:$PATH
+        installPhase = ''
+          export HOME=$PWD
+          export PATH=$PATH:$HOME/.fnm/bin
+          mkdir -p $HOME/.npm-global
+          export npm_config_prefix=$HOME/.npm-global
 
-              export LOCALE_ARCHIVE=$(nix-build '<nixpkgs>' -A glibcLocales)/lib/locale/locale-archive
+          export LANG=en_US.UTF-8
+          export LC_ALL=en_US.UTF-8
+          export LOCALE_ARCHIVE=${pkgs.glibcLocales}/lib/locale/locale-archive
 
-              case "$(uname)" in
-                Linux)
-                  # Linux-specific settings
-                  echo 1 > /proc/sys/vm/overcommit_memory || true
-                  export LC_ALL=en_US.UTF-8
-                  export LANG=en_US.UTF-8
-                  ;;
-                Darwin)
-                  # macOS-specific settings
-                  export LC_ALL=en_US.UTF-8
-                  export LANG=en_US.UTF-8
-                  ;;
-                CYGWIN*|MINGW32*|MSYS*|MINGW*)
-                  # Windows-specific settings
-                  echo "Running on Windows"
-                  ;;
-                *)
-                  echo "Unknown OS"
-                  ;;
-              esac
-            '';
+          #fnm use --install-if-missing $(cat .nvmrc)
+	
+          echo "Starting redis server..."
+          redis-server --daemonize yes
+          
+          echo "Installing dependencies..."
+          npm install --verbose
+           # setting environment variables
+              export MONGO_DB_URL="mongodb://localhost:27017/"
+              export REDIS_HOST="localhost"
+              export REDIS_PORT=6379
+              export SERVER_PORT=4040
+echo "Building the API server..."
+  npm run build
 
-            buildPhase = ''
-              echo "Building the project..."
-              export HOME=$PWD
-              export npm_config_cache=$PWD/.npm
-              export npm_config_tmp=$PWD/.tmp
-              mkdir -p $npm_config_cache $npm_config_tmp
-              npm config set registry https://registry.npmjs.org/
-              npm install
-            '';
+  # Assuming the build outputs to a dist folder or similar
+  cp -r dist/* $out/bin
+        '';
+        postInstall=''
+          echo "Building the API server..."
+          npm run build
 
-            installPhase = ''
-              echo "InstallPhase: Installing dependencies and setting up the environment..."
+  	   # Assuming the build outputs to a dist folder or similar
+  cp -r dist/* $out/bin
+          echo "API server installed successfully."
+        '';
 
-              # Setup FNM
-              if [ -d "$HOME/.fnm" ]; then
-                export PATH="$HOME/.fnm/bin:$PATH"
-                eval "$(fnm env)"
-              else
-                echo "FNM not found"
-              fi
+        shellHook = ''
+          echo "Ready to develop!"
+        '';
+      };
 
-              # Setup Redis
-              export REDIS_CONF_FILE=$PWD/redis.conf
-              mkdir -p $PWD/redis_data
-              echo "dir $PWD/redis_data" > $REDIS_CONF_FILE
-              redis-server $REDIS_CONF_FILE &
+   
 
+      devShells.default = pkgs.mkShell {
+        buildInputs = with pkgs; [
+          nodejs
+          fnm
+          redis
+          glibcLocales
+          git
+        ];
 
+        shellHook = ''
+          export HOME=$PWD
+          export PATH=$PATH:$HOME/.fnm/bin
+          mkdir -p $HOME/.npm-global
+          export npm_config_prefix=$HOME/.npm-global
 
-              echo "Installing Node.js dependencies..."
-              export HOME=$PWD
-              export npm_config_cache=$PWD/.npm
-              export npm_config_tmp=$PWD/.tmp
-              mkdir -p $npm_config_cache $npm_config_tmp
-              npm config set registry https://registry.npmjs.org/
-              npm install
-            '';
+          fnm use --install-if-missing $(cat .nvmrc)
 
-            postInstall = ''
-              echo "Starting the development server..."
-              npm run dev 
-            '';
-          };
-        };
+          export LANG=en_US.UTF-8
+          export LOCALE_ARCHIVE=${pkgs.glibcLocales}/lib/locale/locale-archive
 
-        devShells = {
-          default = pkgs.mkShell {
-            buildInputs = [
-              pkgs.git
-              pkgs.nodejs
-              pkgs.typescript
-              pkgs.fnm
-              pkgs.redis
-              pkgs.glibcLocales # Ensure locale support
-            ];
+          redis-server --daemonize yes
 
-            preBuild = ''
-              echo "PreBuild: Setting up the development environment..."
+          npm install
+        # setting environment variables
+          export MONGO_DB_URL="mongodb://localhost:27017/"
+          export REDIS_HOST="localhost"
+          export REDIS_PORT=6379
+          export SERVER_PORT=4040
 
-              # Ensure npm uses a user-writable directory
-              mkdir -p ~/.npm-global
-              npm config set prefix '~/.npm-global'
-              export PATH=~/.npm-global/bin:$PATH
+          echo "Starting the API server..."
+          npm run dev &
 
-              export LOCALE_ARCHIVE=$(nix-build '<nixpkgs>' -A glibcLocales)/lib/locale/locale-archive
+          echo "Development environment is set up."
+        '';
+      };
+    }
+  );
 
-              case "$(uname)" in
-                Linux)
-                  # Linux-specific settings
-                  echo 1 > /proc/sys/vm/overcommit_memory || true
-                  export LC_ALL=en_US.UTF-8
-                  export LANG=en_US.UTF-8
-                  ;;
-                Darwin)
-                  # macOS-specific settings
-                  export LC_ALL=en_US.UTF-8
-                  export LANG=en_US.UTF-8
-                  ;;
-                CYGWIN*|MINGW32*|MSYS*|MINGW*)
-                  # Windows-specific settings
-                  echo "Running on Windows"
-                  ;;
-                *)
-                  echo "Unknown OS"
-                  ;;
-              esac
-            '';
-
-            buildPhase = ''
-              echo "Building the project..."
-              export HOME=$PWD
-              export npm_config_cache=$PWD/.npm
-              export npm_config_tmp=$PWD/.tmp
-              mkdir -p $npm_config_cache $npm_config_tmp
-              npm config set registry https://registry.npmjs.org/
-              npm install
-            '';
-
-            installPhase = ''
-              echo "InstallPhase: Installing dependencies and setting up the environment..."
-
-              # Setup FNM
-              if [ -d "$HOME/.fnm" ]; then
-                export PATH="$HOME/.fnm/bin:$PATH"
-                eval "$(fnm env)"
-              else
-                echo "FNM not found"
-              fi
-
-              # Setup Redis
-              export REDIS_CONF_FILE=$PWD/redis.conf
-              mkdir -p $PWD/redis_data
-              echo "dir $PWD/redis_data" > $REDIS_CONF_FILE
-              redis-server $REDIS_CONF_FILE &
-
-
-
-              echo "Installing Node.js dependencies..."
-              export HOME=$PWD
-              export npm_config_cache=$PWD/.npm
-              export npm_config_tmp=$PWD/.tmp
-              mkdir -p $npm_config_cache $npm_config_tmp
-              npm install
-
-              echo "Starting the development server..."
-              npm run dev 
-            '';
-          };
-        };
-      }
-    );
 }
-

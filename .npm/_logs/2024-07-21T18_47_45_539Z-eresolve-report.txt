@@ -1,0 +1,73 @@
+'Log files:
+/home/Avtheking/work/talawa-api/.npm/_logs/2024-07-21T18_47_45_539Z-debug-0.log
+
+# npm resolution error report
+
+While resolving: typedoc@0.25.12
+Found: typescript@5.5.3
+node_modules/typescript
+  dev typescript@"^5.5.3" from the root project
+  peerOptional typescript@">=4.9.5" from cosmiconfig@8.3.6
+  node_modules/cosmiconfig
+    cosmiconfig@"^8.1.3" from @graphql-codegen/cli@5.0.2
+    node_modules/@graphql-codegen/cli
+      dev @graphql-codegen/cli@"^5.0.2" from the root project
+    cosmiconfig@"^8.1.0" from graphql-config@5.0.3
+    node_modules/graphql-config
+      graphql-config@"^5.0.2" from @graphql-codegen/cli@5.0.2
+      node_modules/@graphql-codegen/cli
+        dev @graphql-codegen/cli@"^5.0.2" from the root project
+  peer typescript@">=4.2.0" from ts-api-utils@1.3.0
+  node_modules/ts-api-utils
+    ts-api-utils@"^1.3.0" from @typescript-eslint/eslint-plugin@7.14.1
+    node_modules/@typescript-eslint/eslint-plugin
+      dev @typescript-eslint/eslint-plugin@"^7.14.1" from the root project
+    ts-api-utils@"^1.3.0" from @typescript-eslint/typescript-estree@7.13.1
+    node_modules/@typescript-eslint/parser/node_modules/@typescript-eslint/typescript-estree
+      @typescript-eslint/typescript-estree@"7.13.1" from @typescript-eslint/parser@7.13.1
+      node_modules/@typescript-eslint/parser
+        dev @typescript-eslint/parser@"^7.13.1" from the root project
+        peer @typescript-eslint/parser@"^7.0.0" from @typescript-eslint/eslint-plugin@7.14.1
+        node_modules/@typescript-eslint/eslint-plugin
+          dev @typescript-eslint/eslint-plugin@"^7.14.1" from the root project
+    ts-api-utils@"^1.3.0" from @typescript-eslint/type-utils@7.14.1
+    node_modules/@typescript-eslint/type-utils
+      @typescript-eslint/type-utils@"7.14.1" from @typescript-eslint/eslint-plugin@7.14.1
+      node_modules/@typescript-eslint/eslint-plugin
+        dev @typescript-eslint/eslint-plugin@"^7.14.1" from the root project
+    ts-api-utils@"^1.3.0" from @typescript-eslint/typescript-estree@7.14.1
+    node_modules/@typescript-eslint/typescript-estree
+      @typescript-eslint/typescript-estree@"7.14.1" from @typescript-eslint/type-utils@7.14.1
+      node_modules/@typescript-eslint/type-utils
+        @typescript-eslint/type-utils@"7.14.1" from @typescript-eslint/eslint-plugin@7.14.1
+        node_modules/@typescript-eslint/eslint-plugin
+          dev @typescript-eslint/eslint-plugin@"^7.14.1" from the root project
+      @typescript-eslint/typescript-estree@"7.14.1" from @typescript-eslint/utils@7.14.1
+      node_modules/@typescript-eslint/utils
+        @typescript-eslint/utils@"7.14.1" from @typescript-eslint/eslint-plugin@7.14.1
+        node_modules/@typescript-eslint/eslint-plugin
+          dev @typescript-eslint/eslint-plugin@"^7.14.1" from the root project
+        @typescript-eslint/utils@"7.14.1" from @typescript-eslint/type-utils@7.14.1
+        node_modules/@typescript-eslint/type-utils
+          @typescript-eslint/type-utils@"7.14.1" from @typescript-eslint/eslint-plugin@7.14.1
+          node_modules/@typescript-eslint/eslint-plugin
+            dev @typescript-eslint/eslint-plugin@"^7.14.1" from the root project
+
+Could not resolve dependency:
+peer typescript@"4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x" from typedoc@0.25.12
+node_modules/typedoc
+  peer typedoc@"0.25.x" from typedoc-plugin-markdown@4.0.3
+  node_modules/typedoc-plugin-markdown
+    typedoc-plugin-markdown@"^4.0.3" from the root project
+
+Conflicting peer dependency: typescript@5.4.5
+node_modules/typescript
+  peer typescript@"4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x" from typedoc@0.25.12
+  node_modules/typedoc
+    peer typedoc@"0.25.x" from typedoc-plugin-markdown@4.0.3
+    node_modules/typedoc-plugin-markdown
+      typedoc-plugin-markdown@"^4.0.3" from the root project
+
+Fix the upstream dependency conflict, or retry
+this command with --force or --legacy-peer-deps
+to accept an incorrect (and potentially broken) dependency resolution.
