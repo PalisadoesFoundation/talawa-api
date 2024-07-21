@@ -46,23 +46,23 @@
           
           echo "Installing dependencies..."
           npm install --verbose
+
            # setting environment variables
               export MONGO_DB_URL="mongodb://localhost:27017/"
               export REDIS_HOST="localhost"
               export REDIS_PORT=6379
               export SERVER_PORT=4040
-echo "Building the API server..."
-  npm run build
 
-  # Assuming the build outputs to a dist folder or similar
-  cp -r dist/* $out/bin
+          echo "Building the API server..."
+          npm run build
+
+        # Assuming the build outputs to a dist folder or similar
+        cp -r dist/* $out/bin
         '';
         postInstall=''
           echo "Building the API server..."
           npm run build
 
-  	   # Assuming the build outputs to a dist folder or similar
-  cp -r dist/* $out/bin
           echo "API server installed successfully."
         '';
 
