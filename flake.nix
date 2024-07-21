@@ -2,7 +2,7 @@
   description = "Development environment for Talawa API";
 
   inputs = {
-    nixpkgs.url = "github:Nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
