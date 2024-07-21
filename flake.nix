@@ -64,8 +64,12 @@
 
             buildPhase = ''
               echo "Building the project..."
+              export HOME=$PWD
+              export npm_config_cache=$PWD/.npm
+              export npm_config_tmp=$PWD/.tmp
+              mkdir -p $npm_config_cache $npm_config_tmp
               npm config set registry https://registry.npmjs.org/
-              sudo npm install
+              npm install
             '';
 
             installPhase = ''
@@ -85,16 +89,20 @@
               echo "dir $PWD/redis_data" > $REDIS_CONF_FILE
               redis-server $REDIS_CONF_FILE &
 
-              
+
 
               echo "Installing Node.js dependencies..."
+              export HOME=$PWD
+              export npm_config_cache=$PWD/.npm
+              export npm_config_tmp=$PWD/.tmp
+              mkdir -p $npm_config_cache $npm_config_tmp
               npm config set registry https://registry.npmjs.org/
-              sudo npm install
+              npm install
             '';
 
             postInstall = ''
               echo "Starting the development server..."
-              npm run dev
+              npm run dev 
             '';
           };
         };
@@ -110,8 +118,8 @@
               pkgs.glibcLocales # Ensure locale support
             ];
 
-            shellHook = ''
-              echo "Setting up the development environment..."
+            preBuild = ''
+              echo "PreBuild: Setting up the development environment..."
 
               # Ensure npm uses a user-writable directory
               mkdir -p ~/.npm-global
@@ -140,6 +148,20 @@
                   echo "Unknown OS"
                   ;;
               esac
+            '';
+
+            buildPhase = ''
+              echo "Building the project..."
+              export HOME=$PWD
+              export npm_config_cache=$PWD/.npm
+              export npm_config_tmp=$PWD/.tmp
+              mkdir -p $npm_config_cache $npm_config_tmp
+              npm config set registry https://registry.npmjs.org/
+              npm install
+            '';
+
+            installPhase = ''
+              echo "InstallPhase: Installing dependencies and setting up the environment..."
 
               # Setup FNM
               if [ -d "$HOME/.fnm" ]; then
@@ -155,17 +177,17 @@
               echo "dir $PWD/redis_data" > $REDIS_CONF_FILE
               redis-server $REDIS_CONF_FILE &
 
-              # Set environment variables
-              export NODE_ENV=development
-              export REDIS_URL=redis://localhost:6379
+
 
               echo "Installing Node.js dependencies..."
+              export HOME=$PWD
+              export npm_config_cache=$PWD/.npm
+              export npm_config_tmp=$PWD/.tmp
+              mkdir -p $npm_config_cache $npm_config_tmp
               npm install
 
               echo "Starting the development server..."
-              npm run dev
-
-              echo "Development environment is ready!"
+              npm run dev 
             '';
           };
         };
