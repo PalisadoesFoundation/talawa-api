@@ -38,7 +38,7 @@
               Linux)
                 # Linux-specific settings
                 echo 1 > /proc/sys/vm/overcommit_memory || true
-                export LC_ALL=en_US.UTF-8
+                #export LC_ALL=en_US.UTF-8
                 export LANG=en_US.UTF-8
                 ;;
               Darwin)
