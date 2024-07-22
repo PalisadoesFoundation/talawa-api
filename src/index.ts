@@ -132,7 +132,9 @@ async function startServer(): Promise<void> {
     );
   }
 
-  await new Promise<void>((resolve) => httpServer.listen({ port:PORT }, resolve));
+  await new Promise<void>((resolve) =>
+    httpServer.listen({ port: PORT }, resolve),
+  );
 
   // Log all the configuration related issues
   await logIssues();
