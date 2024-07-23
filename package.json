@@ -47,7 +47,7 @@
     "@faker-js/faker": "^8.2.0",
     "@graphql-inspector/cli": "^5.0.6",
     "@graphql-tools/resolvers-composition": "^7.0.1",
-    "@graphql-tools/schema": "^10.0.0",
+    "@graphql-tools/schema": "^10.0.4",
     "@graphql-tools/utils": "^10.3.2",
     "@parcel/watcher": "^2.4.1",
     "@types/graphql-upload": "^16.0.5",
