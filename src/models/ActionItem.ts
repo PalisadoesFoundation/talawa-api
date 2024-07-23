@@ -6,9 +6,8 @@ import type { InterfaceActionItemCategory } from "./ActionItemCategory";
 import { MILLISECONDS_IN_A_WEEK } from "../constants";
 
 /**
- * This is an interface that represents a database(MongoDB) document for ActionItem [test change].
+ * Interface representing a database document for ActionItem in MongoDB.
  */
-
 export interface InterfaceActionItem {
   _id: Types.ObjectId;
   assigneeId: PopulatedDoc<InterfaceUser & Document>;
@@ -27,22 +26,21 @@ export interface InterfaceActionItem {
 }
 
 /**
- * This describes the schema for a `ActionItem` that corresponds to `InterfaceActionItem` document.
- * @param assigneeId - User to whom the ActionItem is assigned, refer to `User` model.
- * @param assignerId - User who assigned the ActionItem, refer to the `User` model.
- * @param actionItemCategoryId - ActionItemCategory to which the ActionItem is related, refer to the `ActionItemCategory` model.
- * @param preCompletionNotes - Notes prior to completion.
- * @param postCompletionNotes - Notes on completion.
- * @param assignmentDate - Date of assignment.
- * @param dueDate - Due date.
- * @param completionDate - Completion date.
- * @param isCompleted - Whether the ActionItem has been completed.
- * @param eventId - Event to which the ActionItem is related, refer to the `Event` model.
- * @param creatorId - User who created the ActionItem, refer to the `User` model.
+ * Defines the schema for the ActionItem document.
+ * @param assigneeId - User to whom the ActionItem is assigned.
+ * @param assignerId - User who assigned the ActionItem.
+ * @param actionItemCategoryId - ActionItemCategory to which the ActionItem belongs.
+ * @param preCompletionNotes - Notes recorded before completion.
+ * @param postCompletionNotes - Notes recorded after completion.
+ * @param assignmentDate - Date when the ActionItem was assigned.
+ * @param dueDate - Due date for the ActionItem.
+ * @param completionDate - Date when the ActionItem was completed.
+ * @param isCompleted - Flag indicating if the ActionItem is completed.
+ * @param eventId - Optional: Event to which the ActionItem is related.
+ * @param creatorId - User who created the ActionItem.
  * @param createdAt - Timestamp when the ActionItem was created.
  * @param updatedAt - Timestamp when the ActionItem was last updated.
  */
-
 const actionItemSchema = new Schema(
   {
     assigneeId: {
@@ -96,9 +94,13 @@ const actionItemSchema = new Schema(
       required: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }, // Automatic timestamps for createdAt and updatedAt fields
 );
 
+/**
+ * Retrieves or creates the ActionItem model.
+ * Prevents Mongoose OverwriteModelError during testing.
+ */
 const actionItemModel = (): Model<InterfaceActionItem> =>
   model<InterfaceActionItem>("ActionItem", actionItemSchema);
 

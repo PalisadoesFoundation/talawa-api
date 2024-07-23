@@ -19,6 +19,9 @@ interface InterfaceArgs {
   _: unknown;
 }
 
+/**
+ * Lists sample data files and their document counts in the sample_data directory.
+ */
 async function listSampleData(): Promise<void> {
   try {
     const sampleDataPath = path.join(__dirname, "../../sample_data");
@@ -50,6 +53,9 @@ async function listSampleData(): Promise<void> {
   }
 }
 
+/**
+ * Clears all collections in the database.
+ */
 async function formatDatabase(): Promise<void> {
   // Clear all collections
   await Promise.all([
@@ -65,6 +71,10 @@ async function formatDatabase(): Promise<void> {
   console.log("Cleared all collections\n");
 }
 
+/**
+ * Inserts data into specified collections.
+ * @param collections - Array of collection names to insert data into
+ */
 async function insertCollections(collections: string[]): Promise<void> {
   try {
     // Connect to MongoDB database
@@ -141,6 +151,9 @@ async function insertCollections(collections: string[]): Promise<void> {
   }
 }
 
+/**
+ * Checks document counts in specified collections after data insertion.
+ */
 async function checkCountAfterImport(): Promise<void> {
   try {
     // Connect to MongoDB database

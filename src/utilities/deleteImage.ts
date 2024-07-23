@@ -2,12 +2,13 @@ import { unlink } from "fs";
 import { logger } from "../libraries";
 import { ImageHash } from "../models";
 import { reuploadDuplicateCheck } from "./reuploadDuplicateCheck";
+
 /**
- * This function deletes an image if it is only used once.
- * It is also ensured that the image hash isn't used by multiple users/organization before deleting it
- * After deleting the image, the number of uses of the hashed image are decremented by one.
- * @param imageToBeDeleted - Path of image
- * @param imageBelongingToItem - Does image belong to an item
+ * Deletes an image file if it meets deletion criteria based on usage and duplicate checks.
+ *
+ * @param imageToBeDeleted - The path of the image file to be deleted
+ * @param imageBelongingToItem - Optional. Indicates if the image belongs to a specific item for duplicate check
+ * @returns A promise that resolves once the image is successfully deleted
  */
 export const deleteImage = async (
   imageToBeDeleted: string,
@@ -16,6 +17,7 @@ export const deleteImage = async (
   let imageIsDuplicate = false;
 
   if (imageBelongingToItem) {
+    // Check if the image is a duplicate of another image belonging to the same item
     imageIsDuplicate = await reuploadDuplicateCheck(
       imageToBeDeleted,
       imageBelongingToItem,
@@ -23,20 +25,21 @@ export const deleteImage = async (
   }
 
   if (!imageIsDuplicate) {
-    /* 
-    Only remove the old image if its different from the new one
-    Ensure image hash isn't used by multiple users/organization before deleting it
-    */
+    // Proceed with deletion only if the image is not a duplicate
+
+    // Retrieve the image hash information from the database
     const imageHash = await ImageHash.findOne({
       fileName: imageToBeDeleted,
     }).lean();
 
     if (imageHash && imageHash?.numberOfUses > 1) {
-      // Image can only be deleted if imageHash.numberOfUses === 1
+      // If the image is used by multiple users/organizations, log that it cannot be deleted
       logger.info("Image cannot be deleted");
     } else {
+      // If the image is only used once or not tracked by image hash, proceed with deletion
       logger.info("Image is only used once and therefore can be deleted");
 
+      // Delete the image file from the filesystem
       unlink(imageToBeDeleted, (error) => {
         if (error) {
           throw error;
@@ -47,6 +50,7 @@ export const deleteImage = async (
       });
     }
 
+    // Decrease the usage count of the image hash in the database
     await ImageHash.updateOne(
       {
         fileName: imageToBeDeleted,

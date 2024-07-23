@@ -3,6 +3,9 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
+/**
+ * Interface representing a document for an Organization Tag User in the database (MongoDB).
+ */
 export interface InterfaceOrganizationTagUser {
   _id: Types.ObjectId;
   organizationId: PopulatedDoc<InterfaceOrganization & Document>;
@@ -11,9 +14,14 @@ export interface InterfaceOrganizationTagUser {
   tagColor: string;
 }
 
-// A User Tag is used for the categorization and the grouping of related users
-// Each tag belongs to a particular organization, and is private to the same.
-// Each tag can be nested to hold other sub-tags so as to create a heriecheal structure.
+/**
+ * Mongoose schema for an Organization Tag User.
+ * Defines the structure of the Organization Tag User document stored in MongoDB.
+ * @param name - Name of the organization tag user.
+ * @param organizationId - Reference to the organization to which the tag belongs.
+ * @param parentTagId - Reference to the parent tag (if any) for hierarchical organization.
+ * @param tagColor - Color associated with the tag.
+ */
 const organizationTagUserSchema = new Schema({
   name: {
     type: String,
@@ -37,19 +45,30 @@ const organizationTagUserSchema = new Schema({
   },
 });
 
+// Index to ensure unique combination of organizationId, parentOrganizationTagUserId, and name
 organizationTagUserSchema.index(
   { organizationId: 1, parentOrganizationTagUserId: 1, name: 1 },
   { unique: true },
 );
 
+// Add logging middleware for organizationTagUserSchema
 createLoggingMiddleware(organizationTagUserSchema, "OrganizationTagUser");
 
+/**
+ * Function to retrieve or create the Mongoose model for the Organization Tag User.
+ * This is necessary to avoid the OverwriteModelError during testing.
+ * @returns The Mongoose model for the Organization Tag User.
+ */
 const organizationTagUserModel = (): Model<InterfaceOrganizationTagUser> =>
   model<InterfaceOrganizationTagUser>(
     "OrganizationTagUser",
     organizationTagUserSchema,
   );
 
-// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
+/**
+ * The Mongoose model for the Organization Tag User.
+ * If the model already exists (e.g., during testing), it uses the existing model.
+ * Otherwise, it creates a new model.
+ */
 export const OrganizationTagUser = (models.OrganizationTagUser ||
   organizationTagUserModel()) as ReturnType<typeof organizationTagUserModel>;
