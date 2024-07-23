@@ -2,14 +2,6 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, DirectChat } from "../../models";
 import { errors, requestContext } from "../../libraries";
 
-import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
-} from "../../constants";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
-
-
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 
 /**

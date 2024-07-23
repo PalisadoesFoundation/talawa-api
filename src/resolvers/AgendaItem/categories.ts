@@ -1,7 +1,6 @@
 import type { AgendaItemResolvers } from "../../types/generatedGraphQLTypes";
 import { AgendaCategoryModel } from "../../models";
 
-
 /**
  * Resolver function for the `categories` field of an `AgendaItem`.
  *
@@ -14,8 +13,6 @@ import { AgendaCategoryModel } from "../../models";
  * @see AgendaItemResolvers - The type definition for the resolvers of the AgendaItem fields.
  *
  */
-//@ts-expect-error - type error
-
 
 export const categories: AgendaItemResolvers["categories"] = async (parent) => {
   const relatedCategoryIds = parent.categories;
