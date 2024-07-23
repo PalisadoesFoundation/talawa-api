@@ -47,11 +47,6 @@ const directChatSchema = new Schema(
       ref: "User",
       required: true,
     },
-    organization: {
-      type: Schema.Types.ObjectId,
-      ref: "Organization",
-      required: true,
-    },
     status: {
       type: String,
       required: true,
