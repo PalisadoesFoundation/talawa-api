@@ -4,8 +4,8 @@ import { gql } from "graphql-tag";
 export const subscriptions = gql`
   type Subscription {
     directMessageChat: MessageChat
-    messageSentToDirectChat: DirectChatMessage
-    messageSentToGroupChat: GroupChatMessage
+    messageSentToDirectChat(userId: ID!): DirectChatMessage
+    messageSentToGroupChat(userId: ID!): GroupChatMessage
     onPluginUpdate: Plugin
   }
 `;

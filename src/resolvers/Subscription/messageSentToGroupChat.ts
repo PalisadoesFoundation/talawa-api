@@ -14,9 +14,9 @@ const MESSAGE_SENT_TO_GROUP_CHAT = "MESSAGE_SENT_TO_GROUP_CHAT";
  */
 export const filterFunction = async function (
   payload: any,
-  context: any,
+  variables: any,
 ): Promise<boolean> {
-  const { currentUserId } = context.context;
+  const currentUserId = variables.userId;
   const groupChatId = payload.messageSentToGroupChat.groupChatMessageBelongsTo;
 
   const groupChat = await GroupChat.findOne({
@@ -47,6 +47,6 @@ export const messageSentToGroupChat: SubscriptionResolvers["messageSentToGroupCh
       (_parent, _args, context) =>
         context.pubsub.asyncIterator([MESSAGE_SENT_TO_GROUP_CHAT]),
 
-      (payload, _variables, context) => filterFunction(payload, context),
+      (payload, variables) => filterFunction(payload, variables),
     ),
   };

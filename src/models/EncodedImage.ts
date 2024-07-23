@@ -1,8 +1,9 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+
 /**
- * This is an interface that represents a database(MongoDB) document for Encoded Image.
+ * Represents a document for an encoded image in the MongoDB database.
  */
 export interface InterfaceEncodedImage {
   _id: Types.ObjectId;
@@ -10,11 +11,12 @@ export interface InterfaceEncodedImage {
   content: string;
   numberOfUses: number;
 }
+
 /**
- * This describes the schema for a `encodedImage` that corresponds to `InterfaceEncodedImage` document.
- * @param fileName - File name.
- * @param content - Content.
- * @param numberOfUses - Number of Uses.
+ * Mongoose schema definition for an encoded image document.
+ * @param fileName - File name of the encoded image.
+ * @param content - Content of the encoded image.
+ * @param numberOfUses - Number of times the encoded image has been used.
  */
 const encodedImageSchema = new Schema({
   fileName: {
@@ -32,6 +34,7 @@ const encodedImageSchema = new Schema({
   },
 });
 
+// Apply logging middleware to the schema
 createLoggingMiddleware(encodedImageSchema, "EncodedImage");
 
 const encodedImageModel = (): Model<InterfaceEncodedImage> =>
