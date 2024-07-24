@@ -1,12 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Organization, DirectChat } from "../../models";
+import { User, DirectChat } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
-} from "../../constants";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This function enables to create direct chat.
  * @param _parent - parent of current request
@@ -22,30 +17,6 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   args,
   context,
 ) => {
-  let organization;
-
-  const organizationFoundInCache = await findOrganizationsInCache([
-    args.data.organizationId,
-  ]);
-
-  organization = organizationFoundInCache[0];
-
-  if (organizationFoundInCache.includes(null)) {
-    organization = await Organization.findOne({
-      _id: args.data.organizationId,
-    }).lean();
-    if (organization) await cacheOrganizations([organization]);
-  }
-
-  // Checks whether organization with _id === args.data.organizationId exists.
-  if (!organization) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM,
-    );
-  }
-
   // Variable to store list of users to be members of directChat.
   const usersInDirectChat = [];
 
@@ -71,7 +42,6 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   const createdDirectChat = await DirectChat.create({
     creatorId: context.userId,
     users: usersInDirectChat,
-    organization: args.data.organizationId,
   });
 
   // Returns createdDirectChat.

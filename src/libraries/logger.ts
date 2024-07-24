@@ -3,14 +3,16 @@ import { createLogger, transports, format } from "winston";
 import { getTracingId } from "./requestTracing";
 import { appConfig } from "../config";
 
+// Destructure the necessary format functions from winston.format
 const { combine, printf, splat, colorize, simple, timestamp } = format;
 
+// Define log formats with and without colorization
 const formats = {
   colorized: combine(
-    colorize(),
-    splat(),
-    simple(),
-    timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+    colorize(), // Add colors to log levels
+    splat(), // Allow string interpolation in log messages
+    simple(), // Simplify log message format
+    timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), // Add timestamp in specified format
     printf(
       (info) =>
         `${info.level || "-"} ${info.timestamp || "-"} ${
@@ -22,13 +24,13 @@ const formats = {
             : JSON.stringify(
                 _.omit(info, ["level", "message", "stack", "timestamp"]),
               )
-        } ${info.stack || ""}`,
+        } ${info.stack || ""}`, // Custom log message format
     ),
   ),
   non_colorized: combine(
-    splat(),
-    simple(),
-    timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+    splat(), // Allow string interpolation in log messages
+    simple(), // Simplify log message format
+    timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), // Add timestamp in specified format
     printf(
       (info) =>
         `${info.level || "-"} ${info.timestamp || "-"} ${
@@ -40,28 +42,30 @@ const formats = {
             : JSON.stringify(
                 _.omit(info, ["level", "message", "stack", "timestamp"]),
               )
-        } ${info.stack || ""}`,
+        } ${info.stack || ""}`, // Custom log message format
     ),
   ),
 };
 
+// Create a Winston logger with a console transport
 const logger = createLogger({
   transports: [
     new transports.Console({
-      level: appConfig.log_level,
+      level: appConfig.log_level, // Set log level from app configuration
       format:
         appConfig.colorize_logs === "true"
-          ? formats.colorized
-          : formats.non_colorized,
+          ? formats.colorized // Use colorized format if enabled in config
+          : formats.non_colorized, // Use non-colorized format otherwise
     }),
   ],
 });
 
-// The code block shifted before exporting logger
+// Define a stream for use with other logging systems, such as morgan
 const stream = {
   write: (message: string | null): void => {
-    logger.info((message || "").trim());
+    logger.info((message || "").trim()); // Log the message using the info level
   },
 };
 
+// Export the logger and stream
 export { logger, stream };

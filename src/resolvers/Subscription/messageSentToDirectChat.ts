@@ -4,11 +4,16 @@ import type { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
 const MESSAGE_SENT_TO_DIRECT_CHAT = "MESSAGE_SENT_TO_DIRECT_CHAT";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const filterFunction = function (payload: any, context: any): boolean {
-  const { currentUserId } = context.context;
+export const filterFunction = function (payload: any, variables: any): boolean {
+  const currentUserId = variables.userId.toString();
+  console.log(
+    currentUserId,
+    payload.messageSentToDirectChat.receiver.toString(),
+    payload.messageSentToDirectChat.sender.toString(),
+  );
   return (
-    currentUserId === payload.messageSentToDirectChat.receiver ||
-    currentUserId === payload.messageSentToDirectChat.sender
+    currentUserId === payload.messageSentToDirectChat.receiver.toString() ||
+    currentUserId === payload.messageSentToDirectChat.sender.toString()
   );
 };
 /**
@@ -26,6 +31,6 @@ export const messageSentToDirectChat: SubscriptionResolvers["messageSentToDirect
       (_parent, _args, context) =>
         context.pubsub.asyncIterator([MESSAGE_SENT_TO_DIRECT_CHAT]),
 
-      (payload, _variables, context) => filterFunction(payload, context),
+      (payload, variables) => filterFunction(payload, variables),
     ),
   };

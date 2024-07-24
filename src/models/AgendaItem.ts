@@ -7,7 +7,7 @@ import type { InterfaceEvent } from "./Event";
 import type { InterfaceNote } from "./Note";
 
 /**
- * This is an interface representing a document for an agenda item in the database (MongoDB).
+ * Represents a document for an agenda item in the MongoDB database.
  */
 export interface InterfaceAgendaItem {
   _id: Types.ObjectId; // Unique identifier for the agenda item.
@@ -38,24 +38,23 @@ export enum ItemType {
 }
 
 /**
- * This is the Mongoose schema for an agenda item.
+ * Mongoose schema definition for an agenda item document.
  * @param title - Title of the agenda item.
  * @param description - Optional description of the agenda item.
- * @param relatedEvent - Reference to the event associated with the agenda item.
+ * @param relatedEventId - Reference to the event associated with the agenda item.
  * @param duration - Duration of the agenda item.
  * @param attachments - Optional array of attachment URLs.
  * @param createdBy - Reference to the user who created the agenda item.
  * @param updatedBy - Reference to the user who last updated the agenda item.
- * @param urls - Optional users array indicating key note users for the agenda item.
- * @param users - Optional user associated with the agenda item.
+ * @param urls - Optional array of URLs related to the agenda item.
+ * @param users - Optional array of users associated with the agenda item.
  * @param categories - Optional array of agenda categories associated with the agenda item.
  * @param sequence - Sequence number of the agenda item.
  * @param itemType - Type of the agenda item (Regular or Note).
  * @param createdAt - Date when the agenda item was created.
  * @param updatedAt - Date when the agenda item was last updated.
- * @param isNote - Indicates whether the agenda item is a note.
- * @param organization - Reference to the organization associated with the agenda item.
- * @param notes - Reference to the notes associated with the agenda item.
+ * @param organizationId - Reference to the organization associated with the agenda item.
+ * @param notes - Array of notes associated with the agenda item.
  */
 export const AgendaItemSchema = new Schema({
   title: {
@@ -126,6 +125,9 @@ export const AgendaItemSchema = new Schema({
   ],
 });
 
+/**
+ * Returns the Mongoose Model for AgendaItem to prevent OverwriteModelError.
+ */
 const agendaItemModel = (): Model<InterfaceAgendaItem> =>
   model<InterfaceAgendaItem>("AgendaItem", AgendaItemSchema);
 
