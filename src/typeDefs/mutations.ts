@@ -250,11 +250,13 @@ export const mutations = gql`
     sendMessageToDirectChat(
       chatId: ID!
       messageContent: String!
+      replyTo: ID
     ): DirectChatMessage! @auth
 
     sendMessageToGroupChat(
       chatId: ID!
       messageContent: String!
+      replyTo: ID
     ): GroupChatMessage! @auth
 
     signUp(data: UserInput!, file: String): AuthData!

@@ -45,11 +45,14 @@ export const createTestDirectChatMessage = async (): Promise<
   const [testUser, testOrganization, testDirectChat] =
     await createTestDirectChat();
 
+    const directChatMessage = await createDirectChatMessage(testUser?._id, testUser?._id, testDirectChat?._id)
+
   if (testDirectChat && testUser) {
     const testDirectChatMessage = await DirectChatMessage.create({
       directChatMessageBelongsTo: testDirectChat._id,
       sender: testUser._id,
       receiver: testUser._id,
+      replyTo: directChatMessage?._id,
       messageContent: `msgContent${nanoid().toLowerCase()}`,
     });
     return [testUser, testOrganization, testDirectChat, testDirectChatMessage];

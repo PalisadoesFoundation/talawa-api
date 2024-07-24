@@ -11,6 +11,7 @@ export interface InterfaceDirectChatMessage {
   directChatMessageBelongsTo: PopulatedDoc<InterfaceDirectChat & Document>;
   sender: PopulatedDoc<InterfaceUser & Document>;
   receiver: PopulatedDoc<InterfaceUser & Document>;
+  replyTo: PopulatedDoc<InterfaceDirectChatMessage & Document>;
   messageContent: string;
   status: string;
   createdAt: Date;
@@ -42,6 +43,11 @@ const directChatMessageSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    replyTo: {
+      type: Schema.Types.ObjectId,
+      ref: "DirectChatMessage",
+      required: false,
     },
     messageContent: {
       type: String,

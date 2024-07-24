@@ -46,16 +46,33 @@ export const createTestGroupChatMessage = async (): Promise<
   const [testUser, testOrganization, testGroupChat] =
     await createTestGroupChat();
 
+    const message = await createGroupChatMessage(testUser?._id, testGroupChat?._id)
+
   if (testGroupChat && testUser) {
     const testGroupChatMessage = await GroupChatMessage.create({
       groupChatMessageBelongsTo: testGroupChat._id,
       sender: testUser._id,
       createdAt: new Date(),
       messageContent: `messageContent${nanoid().toLowerCase()}`,
+      replyTo: message?._id
     });
 
     return [testUser, testOrganization, testGroupChat, testGroupChatMessage];
   } else {
     return [testUser, testOrganization, testGroupChat, null];
   }
+};
+
+export const createGroupChatMessage = async (
+  senderId: string,
+  groupChatId: string,
+): Promise<TestGroupChatMessageType> => {
+  const directChatMessage = await GroupChatMessage.create({
+    groupChatMessageBelongsTo: groupChatId,
+      sender: senderId,
+      createdAt: new Date(),
+      messageContent: `messageContent${nanoid().toLowerCase()}`,
+  });
+
+  return directChatMessage;
 };
