@@ -45,7 +45,11 @@ export const createTestDirectChatMessage = async (): Promise<
   const [testUser, testOrganization, testDirectChat] =
     await createTestDirectChat();
 
-    const directChatMessage = await createDirectChatMessage(testUser?._id, testUser?._id, testDirectChat?._id)
+  const directChatMessage = await createDirectChatMessage(
+    testUser?._id,
+    testUser?._id,
+    testDirectChat?._id,
+  );
 
   if (testDirectChat && testUser) {
     const testDirectChatMessage = await DirectChatMessage.create({

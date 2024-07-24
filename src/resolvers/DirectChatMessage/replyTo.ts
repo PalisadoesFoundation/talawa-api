@@ -10,23 +10,22 @@ import { errors, requestContext } from "../../libraries";
 export const replyTo: DirectChatMessageResolvers["replyTo"] = async (
   parent,
 ) => {
-    console.log("PARENT ", parent);
-    if(parent.replyTo) {
-        const result = await DirectChatMessage.findOne({
-            _id: parent.replyTo,
-        }).lean();
-        
-        if (result) {
-            return result;
-        } else {
-            throw new errors.NotFoundError(
-            requestContext.translate(MESSAGE_NOT_FOUND_ERROR.MESSAGE),
-            MESSAGE_NOT_FOUND_ERROR.CODE,
-            MESSAGE_NOT_FOUND_ERROR.PARAM,
-            );
-        }
+  console.log("PARENT ", parent);
+  if (parent.replyTo) {
+    const result = await DirectChatMessage.findOne({
+      _id: parent.replyTo,
+    }).lean();
+
+    if (result) {
+      return result;
     } else {
-        return null;
+      throw new errors.NotFoundError(
+        requestContext.translate(MESSAGE_NOT_FOUND_ERROR.MESSAGE),
+        MESSAGE_NOT_FOUND_ERROR.CODE,
+        MESSAGE_NOT_FOUND_ERROR.PARAM,
+      );
     }
-  
+  } else {
+    return null;
+  }
 };

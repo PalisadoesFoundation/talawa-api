@@ -64,7 +64,7 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
       sender: context.userId,
       createdAt: new Date(),
       messageContent: args.messageContent,
-      replyTo: args.replyTo
+      replyTo: args.replyTo,
     });
 
     // add createdGroupChatMessage to groupChat

@@ -8,5 +8,5 @@ export const DirectChatMessage: DirectChatMessageResolvers = {
   directChatMessageBelongsTo,
   receiver,
   sender,
-  replyTo
+  replyTo,
 };

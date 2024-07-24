@@ -46,7 +46,10 @@ export const createTestGroupChatMessage = async (): Promise<
   const [testUser, testOrganization, testGroupChat] =
     await createTestGroupChat();
 
-    const message = await createGroupChatMessage(testUser?._id, testGroupChat?._id)
+  const message = await createGroupChatMessage(
+    testUser?._id,
+    testGroupChat?._id,
+  );
 
   if (testGroupChat && testUser) {
     const testGroupChatMessage = await GroupChatMessage.create({
@@ -54,7 +57,7 @@ export const createTestGroupChatMessage = async (): Promise<
       sender: testUser._id,
       createdAt: new Date(),
       messageContent: `messageContent${nanoid().toLowerCase()}`,
-      replyTo: message?._id
+      replyTo: message?._id,
     });
 
     return [testUser, testOrganization, testGroupChat, testGroupChatMessage];
@@ -69,9 +72,9 @@ export const createGroupChatMessage = async (
 ): Promise<TestGroupChatMessageType> => {
   const directChatMessage = await GroupChatMessage.create({
     groupChatMessageBelongsTo: groupChatId,
-      sender: senderId,
-      createdAt: new Date(),
-      messageContent: `messageContent${nanoid().toLowerCase()}`,
+    sender: senderId,
+    createdAt: new Date(),
+    messageContent: `messageContent${nanoid().toLowerCase()}`,
   });
 
   return directChatMessage;

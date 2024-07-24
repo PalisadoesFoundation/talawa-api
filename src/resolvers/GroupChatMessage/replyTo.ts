@@ -7,26 +7,23 @@ import { errors, requestContext } from "../../libraries";
  * @param parent - An object that is the return value of the resolver for this field's parent.
  * @returns An `object` that contains User's data.
  */
-export const replyTo: GroupChatMessageResolvers["replyTo"] = async (
-  parent,
-) => {
-    console.log("PARENT ", parent);
-    if(parent.replyTo) {
-        const result = await GroupChatMessage.findOne({
-            _id: parent.replyTo,
-        }).lean();
-        
-        if (result) {
-            return result;
-        } else {
-            throw new errors.NotFoundError(
-            requestContext.translate(MESSAGE_NOT_FOUND_ERROR.MESSAGE),
-            MESSAGE_NOT_FOUND_ERROR.CODE,
-            MESSAGE_NOT_FOUND_ERROR.PARAM,
-            );
-        }
+export const replyTo: GroupChatMessageResolvers["replyTo"] = async (parent) => {
+  console.log("PARENT ", parent);
+  if (parent.replyTo) {
+    const result = await GroupChatMessage.findOne({
+      _id: parent.replyTo,
+    }).lean();
+
+    if (result) {
+      return result;
     } else {
-        return null;
+      throw new errors.NotFoundError(
+        requestContext.translate(MESSAGE_NOT_FOUND_ERROR.MESSAGE),
+        MESSAGE_NOT_FOUND_ERROR.CODE,
+        MESSAGE_NOT_FOUND_ERROR.PARAM,
+      );
     }
-  
+  } else {
+    return null;
+  }
 };

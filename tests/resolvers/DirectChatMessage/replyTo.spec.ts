@@ -7,7 +7,7 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type { TestDirectChatMessageType } from "../../helpers/directChat";
 import { createTestDirectChatMessage } from "../../helpers/directChat";
 import { Types } from "mongoose";
-import { CHAT_NOT_FOUND_ERROR } from "../../../src/constants";
+import { MESSAGE_NOT_FOUND_ERROR } from "../../../src/constants";
 
 let testDirectChatMessage: TestDirectChatMessageType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -34,16 +34,13 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
       throw new Error("replyToResolver is not a function.");
     }
 
-    const replyToPayload =
-      await replyToResolver(parent, {}, {});
+    const replyToPayload = await replyToResolver(parent, {}, {});
 
     const replyTo = await DirectChatMessage.findOne({
       _id: testDirectChatMessage?.replyTo,
     }).lean();
 
-    expect(replyToPayload).toEqual(
-        replyTo,
-    );
+    expect(replyToPayload).toEqual(replyTo);
   });
   it(`throws NotFoundError if no directChat exists`, async () => {
     const { requestContext } = await import("../../../src/libraries");
@@ -68,8 +65,8 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
       // @ts-expect-error - Testing for error
       await replyToResolver(parent, {}, {});
     } catch (error: unknown) {
-      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect(spy).toBeCalledWith(MESSAGE_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(MESSAGE_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 });

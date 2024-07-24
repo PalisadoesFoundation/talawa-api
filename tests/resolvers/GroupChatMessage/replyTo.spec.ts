@@ -7,7 +7,7 @@ import { GroupChatMessage } from "../../../src/models";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { TestGroupChatMessageType } from "../../helpers/groupChat";
 import { createTestGroupChatMessage } from "../../helpers/groupChat";
-import { CHAT_NOT_FOUND_ERROR } from "../../../src/constants";
+import { MESSAGE_NOT_FOUND_ERROR } from "../../../src/constants";
 
 let testGroupChatMessage: TestGroupChatMessageType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -28,8 +28,7 @@ describe("resolvers -> GroupChatMessage -> replyTo", () => {
     if (!parent) {
       throw new Error("Parent object is undefined.");
     }
-    const replyToPayload =
-      await replyToResolver?.(parent, {}, {});
+    const replyToPayload = await replyToResolver?.(parent, {}, {});
 
     const replyTo = await GroupChatMessage.findOne({
       _id: testGroupChatMessage?.replyTo,
@@ -58,8 +57,8 @@ describe("resolvers -> GroupChatMessage -> replyTo", () => {
         await replyToResolver(parent, {}, {});
       }
     } catch (error: unknown) {
-      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect(spy).toBeCalledWith(MESSAGE_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(MESSAGE_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 });
