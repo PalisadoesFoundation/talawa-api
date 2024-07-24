@@ -4,7 +4,7 @@ import type { InterfaceEvent } from "./Event";
 import type { InterfaceOrganization } from "./Organization";
 
 /**
- * This is an interface representing a document for a recurrence rule in the database(MongoDB).
+ * Enumeration for recurrence frequencies.
  */
 
 export enum Frequency {
@@ -14,6 +14,9 @@ export enum Frequency {
   DAILY = "DAILY",
 }
 
+/**
+ * Enumeration for weekdays.
+ */
 export enum WeekDays {
   SUNDAY = "SUNDAY",
   MONDAY = "MONDAY",
@@ -24,6 +27,9 @@ export enum WeekDays {
   SATURDAY = "SATURDAY",
 }
 
+/**
+ * Interface representing a document for a recurrence rule in the database (MongoDB).
+ */
 export interface InterfaceRecurrenceRule {
   _id: Types.ObjectId;
   organizationId: PopulatedDoc<InterfaceOrganization & Document>;
@@ -110,6 +116,10 @@ const recurrenceRuleSchema = new Schema(
 const recurrenceRuleModel = (): Model<InterfaceRecurrenceRule> =>
   model<InterfaceRecurrenceRule>("RecurrenceRule", recurrenceRuleSchema);
 
-// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
+/**
+ * The Mongoose model for the Recurrence Rule.
+ * If the model already exists (e.g., during testing), it uses the existing model.
+ * Otherwise, it creates a new model.
+ */
 export const RecurrenceRule = (models.RecurrenceRule ||
   recurrenceRuleModel()) as ReturnType<typeof recurrenceRuleModel>;

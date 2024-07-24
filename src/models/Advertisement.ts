@@ -3,8 +3,9 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 import type { InterfaceOrganization } from "./Organization";
+
 /**
- * This is an interface, that represents database - (MongoDB) document for Advertisement.
+ * Interface representing a database document for Advertisement in MongoDB.
  */
 export interface InterfaceAdvertisement {
   _id: string;
@@ -97,14 +98,20 @@ const advertisementSchema = new Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatic timestamps for createdAt and updatedAt fields
   },
 );
 
+// Ensure uniqueness of combination of organizationId and name
 advertisementSchema.index({ organizationId: 1, name: 1 }, { unique: true });
 
+// Add logging middleware for Advertisement schema
 createLoggingMiddleware(advertisementSchema, "Advertisement");
 
+/**
+ * Retrieves or creates the Advertisement model.
+ * Prevents Mongoose OverwriteModelError during testing.
+ */
 const advertisementModel = (): Model<InterfaceAdvertisement> =>
   model<InterfaceAdvertisement>("Advertisement", advertisementSchema);
 

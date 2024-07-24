@@ -1,8 +1,9 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+
 /**
- * This is an interface representing a document for a donation in the database(MongoDB).
+ * Interface representing a document for a donation in MongoDB.
  */
 export interface InterfaceDonation {
   userId: Types.ObjectId | string;
@@ -14,16 +15,17 @@ export interface InterfaceDonation {
   createdAt: Date;
   updatedAt: Date;
 }
+
 /**
- * This is the Structure of the Donation
- * @param userId - User-id
- * @param orgId - Organization-id
- * @param nameOfOrg - Name of the organization
- * @param payPalId - PayPalId
- * @param nameOfUser - Name of the user
- * @param amount - Amount of the donation
- * @param createdAt - Timestamp of creation
- * @param updatedAt - Timestamp of updation
+ * Mongoose schema for a donation.
+ * @param userId - ID of the user making the donation.
+ * @param orgId - ID of the organization receiving the donation.
+ * @param nameOfOrg - Name of the organization.
+ * @param payPalId - PayPal ID used for the donation.
+ * @param nameOfUser - Name of the user making the donation.
+ * @param amount - Amount of the donation.
+ * @param createdAt - Timestamp of donation creation.
+ * @param updatedAt - Timestamp of donation update.
  */
 const donationSchema = new Schema(
   {
@@ -57,8 +59,12 @@ const donationSchema = new Schema(
   },
 );
 
+// Add logging middleware for donationSchema
 createLoggingMiddleware(donationSchema, "Donation");
 
+/**
+ * Retrieves or creates the Mongoose model for Donation.
+ */
 const donationModel = (): Model<InterfaceDonation> =>
   model<InterfaceDonation>("Donation", donationSchema);
 

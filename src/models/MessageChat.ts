@@ -3,7 +3,7 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 /**
- * This is an interface representing a document for a chat in the database(MongoDB).
+ * Interface representing a document for a chat in the database (MongoDB).
  */
 export interface InterfaceMessageChat {
   _id: Types.ObjectId;
@@ -15,13 +15,14 @@ export interface InterfaceMessageChat {
   updatedAt: Date;
 }
 /**
- * This the structure of a chat
- * @param message - Chat message
- * @param languageBarrier - Boolean Type
- * @param sender - Sender
- * @param receiver - Receiver
- * @param createdAt - Date when the chat was created
- * @param updatedAt - Date when the chat was updated
+ * Mongoose schema for a Message Chat.
+ * Defines the structure of the Message Chat document stored in MongoDB.
+ * @param message - The content of the chat message.
+ * @param languageBarrier - Indicates if there's a language barrier in the chat.
+ * @param sender - Reference to the User who sent the chat message.
+ * @param receiver - Reference to the User who received the chat message.
+ * @param createdAt - The date and time when the chat was created.
+ * @param updatedAt - The date and time when the chat was last updated.
  */
 const messageChatSchema = new Schema(
   {
@@ -46,15 +47,25 @@ const messageChatSchema = new Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields
   },
 );
 
+// Add logging middleware for messageChatSchema
 createLoggingMiddleware(messageChatSchema, "MessageChat");
 
+/**
+ * Function to retrieve or create the Mongoose model for the MessageChat.
+ * This is necessary to avoid the OverwriteModelError during testing.
+ * @returns The Mongoose model for the MessageChat.
+ */
 const messageChatModel = (): Model<InterfaceMessageChat> =>
   model<InterfaceMessageChat>("MessageChat", messageChatSchema);
 
-// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
+/**
+ * The Mongoose model for the MessageChat.
+ * If the model already exists (e.g., during testing), it uses the existing model.
+ * Otherwise, it creates a new model.
+ */
 export const MessageChat = (models.MessageChat ||
   messageChatModel()) as ReturnType<typeof messageChatModel>;

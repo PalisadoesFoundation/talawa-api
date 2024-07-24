@@ -4,9 +4,8 @@ import type { InterfaceUser } from "./User";
 import type { InterfaceOrganization } from "./Organization";
 
 /**
- * This is an interface that represents a database(MongoDB) document for ActionItemCategory (~Test Check).
+ * Represents a database document for ActionItemCategory in MongoDB.
  */
-
 export interface InterfaceActionItemCategory {
   _id: Types.ObjectId;
   name: string;
@@ -18,15 +17,14 @@ export interface InterfaceActionItemCategory {
 }
 
 /**
- * This describes the schema for a `actionItemCategory` that corresponds to `InterfaceCategory` document.
- * @param name - An actionItemCategory to be selected for ActionItems.
- * @param organizationId - Organization the actionItemCategory belongs to, refer to the `Organization` model.
- * @param isDisabled - Whether actionItemCategory is disabled or not.
- * @param creatorId - Task creator, refer to `User` model.
- * @param createdAt - Time stamp of data creation.
- * @param updatedAt - Time stamp of data updation.
+ * Mongoose schema definition for ActionItemCategory document.
+ * @param name - The name of the action item category.
+ * @param organizationId - The ID of the organization the category belongs to, referencing the Organization model.
+ * @param isDisabled - Indicates if the action item category is disabled.
+ * @param creatorId - The ID of the user who created the action item category, referencing the User model.
+ * @param createdAt - Timestamp of when the data was created.
+ * @param updatedAt - Timestamp of when the data was last updated.
  */
-
 const actionItemCategorySchema = new Schema(
   {
     name: {
@@ -52,11 +50,15 @@ const actionItemCategorySchema = new Schema(
   { timestamps: true },
 );
 
+// Indexing for organizationId and name to ensure uniqueness
 actionItemCategorySchema.index(
   { organizationId: 1, name: 1 },
   { unique: true },
 );
 
+/**
+ * Returns the Mongoose Model for ActionItemCategory to prevent OverwriteModelError.
+ */
 const actionItemCategoryModel = (): Model<InterfaceActionItemCategory> =>
   model<InterfaceActionItemCategory>(
     "ActionItemCategory",
