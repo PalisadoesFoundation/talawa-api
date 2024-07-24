@@ -1,8 +1,9 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+
 /**
- * This is an interface that represents a database(MongoDB) document for Plugin.
+ * Represents a MongoDB document for Plugin in the database.
  */
 export interface InterfacePlugin {
   _id: Types.ObjectId;
@@ -13,10 +14,11 @@ export interface InterfacePlugin {
 }
 
 /**
- * @param  pluginName- Name of the plugin preferred having underscores "_",(type: String)
- * @param pluginCreatedBy- name of the plugin creator ex.John Doe,(type: String)
- * @param pluginDesc- brief description of the plugin and it's features,(type: String)
- * @param uninstalledOrgs - list of orgIDs which have disabled the feature on mobile app,(type: String[])
+ * Mongoose schema definition for Plugin documents.
+ * @param pluginName - Name of the plugin preferred having underscores "_".
+ * @param pluginCreatedBy - Name of the plugin creator (e.g., "John Doe").
+ * @param pluginDesc - Brief description of the plugin and its features.
+ * @param uninstalledOrgs - List of organization IDs which have disabled the feature on mobile app.
  */
 
 const pluginSchema = new Schema({
@@ -41,6 +43,9 @@ const pluginSchema = new Schema({
   ],
 });
 
+/**
+ * Middleware to log database operations on the Plugin collection.
+ */
 createLoggingMiddleware(pluginSchema, "Plugin");
 
 const pluginModel = (): Model<InterfacePlugin> =>

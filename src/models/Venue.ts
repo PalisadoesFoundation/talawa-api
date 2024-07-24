@@ -12,14 +12,13 @@ export interface InterfaceVenue {
 }
 
 /**
- * This describes the schema for a Venue that corresponds to InterfaceVenue document.
+ * Mongoose schema definition for Venue documents.
  * @param name - Name of the venue.
  * @param description - Description of the venue.
  * @param capacity - Maximum capacity of the venue.
- * @param imageUrl - Image URL(if attached) of the venue.
- * @param organization - Organization in which the venue belongs.
+ * @param imageUrl - Image URL (if attached) of the venue.
+ * @param organization - Reference to the organization that owns the venue.
  */
-
 const venueSchema = new Schema({
   name: {
     type: String,
@@ -43,6 +42,7 @@ const venueSchema = new Schema({
   },
 });
 
+// Create and export the Venue model
 const venueModel = (): Model<InterfaceVenue> =>
   model<InterfaceVenue>("Venue", venueSchema);
 

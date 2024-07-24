@@ -323,7 +323,7 @@ type CreateCommentPayload {
   userErrors: [CreateCommentError!]!
 }
 
-union CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError
+union CreateDirectChatError = UserNotFoundError
 
 union CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError
 
@@ -539,7 +539,7 @@ type DirectChat {
   createdAt: DateTime!
   creator: User
   messages: [DirectChatMessage]
-  organization: Organization!
+  organization: Organization
   updatedAt: DateTime!
   users: [User!]!
 }
@@ -912,6 +912,7 @@ type Group {
 type GroupChat {
   _id: ID!
   createdAt: DateTime!
+  title: String!
   creator: User
   messages: [GroupChatMessage]
   organization: Organization!
@@ -1469,6 +1470,9 @@ type Query {
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
+  directChatById(id: ID!): DirectChat
+  groupChatsByUserId(id: ID!): [GroupChat]
+  groupChatById(id: ID!): GroupChat
   event(id: ID!): Event
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
@@ -1593,8 +1597,8 @@ enum Status {
 
 type Subscription {
   directMessageChat: MessageChat
-  messageSentToDirectChat: DirectChatMessage
-  messageSentToGroupChat: GroupChatMessage
+  messageSentToDirectChat(userId: ID!): DirectChatMessage
+  messageSentToGroupChat(userId: ID!): GroupChatMessage
   onPluginUpdate: Plugin
 }
 
@@ -2009,7 +2013,7 @@ enum WeekDays {
 }
 
 input createChatInput {
-  organizationId: ID!
+  organizationId: ID
   userIds: [ID!]!
 }
 
