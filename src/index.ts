@@ -101,6 +101,7 @@ const serverCleanup = useServer(
   { schema, context: (_ctx, _msg, _args) => ({ pubsub }) },
   wsServer,
 );
+let serverHost = "localhost";
 
 async function startServer(): Promise<void> {
   await database.connect();
@@ -110,31 +111,39 @@ async function startServer(): Promise<void> {
   app.use(
     "/graphql",
     expressMiddleware(server, {
-      context: async ({ req, res }) => ({
-        ...isAuth(req),
-        req,
-        res,
-        pubsub,
-        apiRootUrl: `${req.protocol}://${req.get("host")}/`,
-      }),
+      context: async ({ req, res }) => {
+        serverHost = req.get("host") || "localhost";
+        return {
+          ...isAuth(req),
+          req,
+          res,
+          pubsub,
+          apiRootUrl: `${req.protocol}://${serverHost}/`,
+        };
+      },
     }),
   );
 
   // Modified server startup
+  const PORT = parseInt(SERVER_PORT || "4000", 10);
+  if (Number.isNaN(PORT) || PORT < 0 || PORT > 65535) {
+    throw new Error(
+      `Invalid SERVER_PORT: ${process.env.SERVER_PORT}. Please ensure it is a numeric value between 0 and 65535.`,
+    );
+  }
+
   await new Promise<void>((resolve) =>
-    httpServer.listen({ port: parseInt(SERVER_PORT as string) }, resolve),
+    httpServer.listen({ port: PORT }, resolve),
   );
 
   // Log all the configuration related issues
   await logIssues();
 
   logger.info(
-    `🚀 Server ready at ${
-      process.env.NODE_ENV === "production" ? "https" : "http"
-    }://localhost:${SERVER_PORT}/graphql`,
+    `🚀 Server ready at ${process.env.NODE_ENV === "production" ? "https" : "http"}://${serverHost}:${PORT}/graphql`,
   );
   logger.info(
-    `🚀 Subscription endpoint ready at ws://localhost:${SERVER_PORT}/graphql`,
+    `🚀 Subscription endpoint ready at ws://${serverHost}:${PORT}/graphql`,
   );
 }
 
