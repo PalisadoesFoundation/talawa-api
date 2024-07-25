@@ -27,20 +27,32 @@ import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
- * This function enables to create an event.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * 2.If the user has appUserProfile
- * 3. If the organization exists
- * 4. If the user is a part of the organization.
- * 5. If the event is recurring, create the recurring event instances.
- * 6. If the event is non-recurring, create a single event.
- * @returns Created event
+ * Creates a new event and associates it with an organization.
+ *
+ * This resolver handles both recurring and non-recurring events, performing the following steps:
+ *
+ * 1. Validates the existence of the user, their app user profile, and the associated organization.
+ * 2. Checks if the user is authorized to create an event in the organization.
+ * 3. Validates the provided event details, including title, description, location, and date range.
+ * 4. Creates the event using the appropriate method based on whether it's recurring or not.
+ * 5. Uses a database transaction to ensure data consistency.
+ *
+ * @param _parent - The parent object, not used in this resolver.
+ * @param args - The input arguments for the mutation, including:
+ *   - `data`: An object containing:
+ *     - `organizationId`: The ID of the organization to associate with the event.
+ *     - `title`: The title of the event (max 256 characters).
+ *     - `description`: A description of the event (max 500 characters).
+ *     - `location`: The location of the event (max 50 characters).
+ *     - `startDate`: The start date of the event.
+ *     - `endDate`: The end date of the event.
+ *     - `recurring`: A boolean indicating if the event is recurring.
+ * @param context - The context object containing user information (context.userId).
+ *
+ * @returns A promise that resolves to the created event object.
+ *
+ * @remarks This function uses a transaction to ensure that either all operations succeed or none do, maintaining data integrity.
  */
-
 export const createEvent: MutationResolvers["createEvent"] = async (
   _parent,
   args,

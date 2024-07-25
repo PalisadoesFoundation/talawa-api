@@ -15,19 +15,29 @@ import {
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+
 /**
- * This function adds  campaign pledge to campaign.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the current user exists
- * 2. If the pledge exists
- * 3. If the campaign exists
- * @returns Updated pledge
-
+ * Mutation resolver to add a pledge to a fundraising campaign.
+ *
+ * This function adds a specified pledge to a fundraising campaign. It performs several checks:
+ *
+ * 1. Verifies that the current user exists.
+ * 2. Confirms that the pledge exists.
+ * 3. Checks that the campaign exists.
+ * 4. Ensures the user has made the pledge.
+ * 5. Verifies that the campaign is not already associated with the pledge.
+ *
+ * If any of these conditions are not met, appropriate errors are thrown.
+ *
+ * @param _parent - The parent object for the mutation (not used in this function).
+ * @param args - The arguments provided with the request, including:
+ *   - `pledgeId`: The ID of the pledge to be added.
+ *   - `campaignId`: The ID of the campaign to which the pledge will be added.
+ * @param context - The context of the entire application, containing user information and other context-specific data.
+ *
+ * @returns A promise that resolves to the updated pledge object.
+ *
  */
-
 export const addPledgeToFundraisingCampaign: MutationResolvers["addPledgeToFundraisingCampaign"] =
   async (
     _parent,
@@ -48,7 +58,8 @@ export const addPledgeToFundraisingCampaign: MutationResolvers["addPledgeToFundr
         await cacheUsers([currentUser]);
       }
     }
-    // Checks whether currentUser exists.
+
+    // Checks whether the current user exists.
     if (!currentUser) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -56,11 +67,12 @@ export const addPledgeToFundraisingCampaign: MutationResolvers["addPledgeToFundr
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+
     const pledge = await FundraisingCampaignPledge.findOne({
       _id: args.pledgeId,
     }).lean();
 
-    // Checks whether pledge exists.
+    // Checks whether the pledge exists.
     if (!pledge) {
       throw new errors.NotFoundError(
         requestContext.translate(
@@ -70,11 +82,12 @@ export const addPledgeToFundraisingCampaign: MutationResolvers["addPledgeToFundr
         FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR.PARAM,
       );
     }
+
     const campaign = await FundraisingCampaign.findOne({
       _id: args.campaignId,
     }).lean();
 
-    // Checks whether campaign exists.
+    // Checks whether the campaign exists.
     if (!campaign) {
       throw new errors.NotFoundError(
         requestContext.translate(FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR.MESSAGE),
@@ -82,6 +95,7 @@ export const addPledgeToFundraisingCampaign: MutationResolvers["addPledgeToFundr
         FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR.PARAM,
       );
     }
+
     // Checks whether the user has made the pledge.
     const pledgeUserIds = pledge.users.map((id) => id?.toString());
     if (!pledgeUserIds.includes(context.userId)) {
@@ -91,6 +105,7 @@ export const addPledgeToFundraisingCampaign: MutationResolvers["addPledgeToFundr
         USER_NOT_MADE_PLEDGE_ERROR.PARAM,
       );
     }
+
     // Checks whether the campaign is already added to the pledge.
     const pledgeCampaignIds = pledge.campaigns.map((id) => id?.toString());
     if (pledgeCampaignIds.includes(args.campaignId)) {
@@ -100,7 +115,8 @@ export const addPledgeToFundraisingCampaign: MutationResolvers["addPledgeToFundr
         FUNDRAISING_CAMPAIGN_ALREADY_ADDED.PARAM,
       );
     }
-    // Add the campaign to the pledge
+
+    // Add the campaign to the pledge.
     const updatedPledge = await FundraisingCampaignPledge.findOneAndUpdate(
       {
         _id: args.pledgeId,
@@ -111,7 +127,7 @@ export const addPledgeToFundraisingCampaign: MutationResolvers["addPledgeToFundr
       { new: true },
     );
 
-    // Add the pledge to the campaign
+    // Add the pledge to the campaign.
     await FundraisingCampaign.updateOne(
       {
         _id: args.campaignId,
@@ -120,5 +136,6 @@ export const addPledgeToFundraisingCampaign: MutationResolvers["addPledgeToFundr
         $push: { pledges: args.pledgeId },
       },
     );
+
     return updatedPledge as InterfaceFundraisingCampaignPledges;
   };

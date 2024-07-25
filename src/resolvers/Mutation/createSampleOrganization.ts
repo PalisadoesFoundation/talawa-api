@@ -14,7 +14,21 @@ import { createSampleOrganization as createSampleOrgUtil } from "../../utilities
 
 /**
  * Generates sample data for testing or development purposes.
- * @returns True if the sample data generation is successful, false otherwise.
+ *
+ * This resolver performs the following steps:
+ *
+ * 1. Verifies that the current user exists and is fetched from the cache or database.
+ * 2. Checks if the current user has a valid application profile and whether they are authorized.
+ * 3. Ensures that the current user is a super admin.
+ * 4. Utilizes a utility function to create a sample organization.
+ *
+ * @param _parent - The parent object, not used in this resolver.
+ * @param _args - The arguments for the mutation, not used in this resolver.
+ * @param _context - The context object, including the user ID and other necessary context for authorization.
+ *
+ * @returns True if the sample data generation is successful; false otherwise.
+ *
+ * @remarks This function is intended for creating sample data and should only be accessible by super admins.
  */
 export const createSampleOrganization: MutationResolvers["createSampleOrganization"] =
   async (_parent, _args, _context) => {

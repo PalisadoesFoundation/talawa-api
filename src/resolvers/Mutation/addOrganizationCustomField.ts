@@ -21,19 +21,28 @@ import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
- * This function enables an admin to add an organization colleciton field.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * 2. If the user has appProfile
- * 3. If the organization exists.
- * 4. If the user is an admin for the organization.
- * 5. If the required name and value was provided for the new custom field
- * @returns Newly Added Custom Field.
+ * Mutation resolver to add a custom field to an organization.
+ *
+ * This function allows an admin to add a new custom field to the collection of fields for a specified organization. It performs several checks:
+ *
+ * 1. Verifies the existence of the user.
+ * 2. Checks if the user has an application profile.
+ * 3. Confirms that the organization exists.
+ * 4. Ensures that the user is an admin for the organization or has super admin privileges.
+ * 5. Validates that the name and type of the custom field are provided.
+ *
+ * If any of these conditions are not met, appropriate errors are thrown.
+ *
+ * @param _parent - The parent object for the mutation (not used in this function).
+ * @param args - The arguments provided with the request, including:
+ *   - `organizationId`: The ID of the organization to which the custom field will be added.
+ *   - `name`: The name of the new custom field.
+ *   - `type`: The type of the new custom field.
+ * @param context - The context of the entire application, containing user information and other context-specific data.
+ *
+ * @returns A promise that resolves to the newly added custom field object.
+ *
  */
-
 export const addOrganizationCustomField: MutationResolvers["addOrganizationCustomField"] =
   async (_parent, args, context) => {
     let currentUser: InterfaceUser | null;

@@ -22,6 +22,27 @@ import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
+/**
+ * Creates a new tag for an organization if the user is authorized to do so.
+ *
+ * This resolver performs the following steps:
+ *
+ * 1. Verifies that the current user exists and is fetched from the cache or database.
+ * 2. Checks if the current user has an application profile.
+ * 3. Ensures the current user is authorized to create a tag by being either a super admin or an admin for the specified organization.
+ * 4. Checks if the provided organization exists.
+ * 5. Validates that the parent tag (if provided) belongs to the specified organization.
+ * 6. Ensures no other tag with the same name exists under the same parent tag.
+ * 7. Creates a new tag if all validation checks pass.
+ *
+ * @param _parent - The parent object, not used in this resolver.
+ * @param args - The input arguments for the mutation, including the tag details and organization ID.
+ * @param context - The context object, including the user ID and other necessary context for authorization.
+ *
+ * @returns The created tag object.
+ *
+ * @remarks This function is intended for creating new tags within an organization and includes validation to ensure the integrity of the tag creation process.
+ */
 export const createUserTag: MutationResolvers["createUserTag"] = async (
   _parent,
   args,
@@ -61,7 +82,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
     }
   }
 
-  //check whether current User has app profile or not
+  // Check whether current User has app profile or not
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
