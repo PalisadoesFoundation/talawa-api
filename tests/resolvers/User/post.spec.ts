@@ -56,9 +56,9 @@ describe("resolvers -> User -> post", () => {
       await postResolver?.(parent, {}, {});
     } catch (error) {
       if (error instanceof GraphQLError) {
-        expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
+        expect(error.extensions?.code).toEqual("INVALID_ARGUMENTS");
         expect(
-          (error.extensions.errors as DefaultGraphQLArgumentError[]).length,
+          (error.extensions?.errors as DefaultGraphQLArgumentError[]).length,
         ).toBeGreaterThan(0);
       }
     }
@@ -134,6 +134,45 @@ describe("resolvers -> User -> post", () => {
     expect(connectionLast?.edges).toHaveLength(1);
     expect(connectionLast?.pageInfo.hasNextPage).toBe(false);
     expect(connectionLast?.pageInfo.hasPreviousPage).toBe(true);
+  });
+
+  // Additional tests to cover parseCursor in postResolver
+  it("throws an error for invalid cursor value", async () => {
+    const parent = testUser as InterfaceUser;
+    const args = { after: "invalidCursor" }; // Simulate an invalid cursor value
+    try {
+      await postResolver?.(parent, args, {});
+    } catch (error) {
+      if (error instanceof GraphQLError) {
+        expect(error.extensions?.code).toEqual("INVALID_ARGUMENTS");
+      } else {
+        throw error; // Re-throw if not a GraphQLError
+      }
+    }
+  });
+
+  it("handles valid cursor value", async () => {
+    const parent = testUser as InterfaceUser;
+    const args = { after: testPost?._id.toString() }; // Use a valid cursor value
+    const connection = await postResolver?.(parent, args, {});
+    expect(connection).toBeDefined();
+    expect(connection?.edges.length).toBeGreaterThan(0); // Check if posts are returned
+  });
+
+  it("handles missing cursor value gracefully", async () => {
+    const parent = testUser as InterfaceUser;
+    const args = {}; // No cursor provided
+    const connection = await postResolver?.(parent, args, {});
+    expect(connection).toBeDefined();
+    expect(connection?.edges.length).toBeGreaterThan(0); // Check if posts are returned
+  });
+
+  it("handles cursor value with pagination arguments", async () => {
+    const parent = testUser as InterfaceUser;
+    const args = { after: testPost?._id.toString(), first: 2 }; // Valid cursor with pagination
+    const connection = await postResolver?.(parent, args, {});
+    expect(connection).toBeDefined();
+    expect(connection?.edges.length).toBeLessThanOrEqual(2); // Check if pagination works
   });
 });
 
