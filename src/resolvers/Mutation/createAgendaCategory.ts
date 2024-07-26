@@ -19,22 +19,36 @@ import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { adminCheck } from "../../utilities";
-/**
- * This is a resolver function for the GraphQL mutation 'createAgendaCategory'.
- *
- * This resolver creates a new agenda category, associates it with an organization,
- * and updates the organization with the new agenda category.
- *
- * @returns A promise that resolves to the created agenda category.
- * @throws `NotFoundError` If the user or organization is not found.
- * @throws `UnauthorizedError` If the user does not have the required permissions.
- * @throws `InternalServerError` For other potential issues during agenda category creation.
- */
 
+/**
+ * Creates a new agenda category and associates it with a specified organization.
+ *
+ * This resolver function performs the following steps:
+ *
+ * 1. Retrieves the current user based on the userId from the context.
+ * 2. Fetches the associated app user profile for the current user.
+ * 3. Retrieves the organization specified in the input, either from the cache or from the database.
+ * 4. Validates the existence of the organization.
+ * 5. Checks if the current user is authorized to perform this operation.
+ * 6. Creates a new agenda category and associates it with the specified organization.
+ * 7. Updates the organization document with the new agenda category.
+ *
+ * @param _parent - The parent object for the mutation (not used in this function).
+ * @param args - The arguments provided with the request, including:
+ *   - `input`: An object containing:
+ *     - `organizationId`: The ID of the organization to which the new agenda category will be added.
+ *     - `name`: The name of the new agenda category.
+ *     - `description`: A description of the new agenda category.
+ * @param context - The context of the entire application, including user information (context.userId).
+ *
+ * @returns A promise that resolves to the created agenda category object.
+ *
+ * @remarks The function performs caching and retrieval operations to ensure the latest data is used,
+ * and it updates the organization document to include the new agenda category.
+ */
 export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
   async (_parent, args, context) => {
-    // Find the current user based on the provided createdBy ID or use the context userId
-
+    // Find the current user based on the provided userId from the context
     const userId = context.userId;
 
     let currentUser: InterfaceUser | null;
@@ -91,7 +105,7 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
       await cacheOrganizations([organization]);
     }
 
-    // Checks whether the organization with _id === args.organizationId exists.
+    // Checks whether the organization with _id === args.input.organizationId exists.
     if (!organization) {
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
@@ -109,6 +123,8 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
       createdBy: currentUser?._id,
       createdAt: new Date(),
     });
+
+    // Update the organization's document to include the new agenda category
     await Organization.findByIdAndUpdate(
       organization._id,
       {

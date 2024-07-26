@@ -4,8 +4,9 @@ import mongoosePaginate from "mongoose-paginate-v2";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+
 /**
- * This is an interface that represents a database(MongoDB) document for Post.
+ * Represents a MongoDB document for Post in the database.
  */
 export interface InterfacePost {
   _id: Types.ObjectId;
@@ -23,21 +24,20 @@ export interface InterfacePost {
   updatedAt: Date;
   videoUrl: string | undefined | null;
 }
+
 /**
- * This describes the schema for a `Post` that corresponds to `InterfacePost` document.
- * @param commentCount - Post comments count.
- * @param createdAt - Time stamp of data creation.
- * @param creatorId - Post creator, refer to `User` model.
- * @param imageUrl - Post attached image URL(if attached).
- * @param likeCount - Post likes count.
- * @param likedBy - Collection of user liked the post, each object refer to `User` model.
- * @param pinned - Post pinned status
- * @param organization - Organization data where the post is uploaded, refer to `Organization` model.
- * @param status - Status.
- * @param text - Post description.
- * @param title - Post title.
- * @param updatedAt - Time stamp of post updation
- * @param videoUrl - Post attached video URL(if attached).
+ * Mongoose schema definition for Post documents.
+ * @param text - Content or description of the post.
+ * @param title - Title of the post.
+ * @param status - Status of the post.
+ * @param imageUrl - URL of the attached image, if any.
+ * @param videoUrl - URL of the attached video, if any.
+ * @param creatorId - Reference to the user who created the post.
+ * @param organization - Reference to the organization where the post is uploaded.
+ * @param likedBy - Array of users who liked the post.
+ * @param likeCount - Number of likes on the post.
+ * @param commentCount - Number of comments on the post.
+ * @param pinned - Indicates if the post is pinned.
  */
 const postSchema = new Schema(
   {
@@ -96,12 +96,16 @@ const postSchema = new Schema(
   },
 );
 
+// Apply pagination plugin to the schema
 postSchema.plugin(mongoosePaginate);
 
+// Ensure indexing for organization field for efficient querying
 postSchema.index({ organization: 1 }, { unique: false });
 
+// Middleware to log database operations on the Post collection
 createLoggingMiddleware(postSchema, "Post");
 
+// Define and export the model directly
 const postModel = (): PaginateModel<InterfacePost> =>
   model<InterfacePost, PaginateModel<InterfacePost>>("Post", postSchema);
 

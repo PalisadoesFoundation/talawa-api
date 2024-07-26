@@ -11,16 +11,25 @@ import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
+
 /**
- * This function enables an admin to create block plugin.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * 2.If the user has appUserProfile
- * 2. If the user is the SUPERADMIN of organization
- * @returns Deleted updated user
+ * Allows a superadmin to enable or disable plugin creation for a specific user.
+ *
+ * This function performs several checks:
+ *
+ * 1. Verifies if the current user exists.
+ * 2. Ensures that the current user has an associated app user profile.
+ * 3. Confirms that the current user is a superadmin.
+ * 4. Checks if the target user exists and updates their `pluginCreationAllowed` field based on the provided value.
+ *
+ * @param _parent - The parent object for the mutation (not used in this function).
+ * @param args - The arguments provided with the request, including:
+ *   - `userId`: The ID of the user whose plugin creation permissions are being modified.
+ *   - `blockUser`: A boolean indicating whether to block (`true`) or allow (`false`) plugin creation for the user.
+ * @param context - The context of the entire application, including user information and other context-specific data.
+ *
+ * @returns A promise that resolves to the updated user app profile object with the new `pluginCreationAllowed` value.
+ *
  */
 export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCreationBySuperadmin"] =
   async (_parent, args, context) => {
@@ -68,6 +77,7 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
 
     // Checks whether currentUser is a SUPERADMIN.
     superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
+
     const userAppProfile = await AppUserProfile.findOne({
       userId: args.userId,
     }).lean();
@@ -78,9 +88,10 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
         USER_NOT_FOUND_ERROR.PARAM,
       );
     }
+
     /*
-    Sets pluginCreationAllowed field on document of appUserProfile with _id === args.userId
-    to !args.blockUser and returns the updated user.
+    Sets the pluginCreationAllowed field on the document of the appUserProfile with _id === args.userId
+    to !args.blockUser and returns the updated user profile.
     */
     return (await AppUserProfile.findOneAndUpdate(
       {

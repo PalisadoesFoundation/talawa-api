@@ -8,18 +8,21 @@ import {
   SMTP_OPTIONS,
 } from "../constants";
 
-export interface InterfaceMailFields {
-  emailTo: string;
-  subject: string;
-  body: string;
-}
 /**
- * This function sends emails to the specified user using the node mailer module.
+ * Interface for the fields required to send an email.
+ */
+export interface InterfaceMailFields {
+  emailTo: string; // Email address of the recipient
+  subject: string; // Subject of the email
+  body: string; // Body content of the email (HTML format)
+}
+
+/**
+ * Sends an email using Nodemailer.
  * @remarks
- * This is a utility method.
- *
- * @param InterfaceMailFields - `Interface` type with emailTo(`string`), subject(`string`), and body(`string`) necessary attributes.
- * @returns Promise along with resolve and reject methods.
+ * This is a utility method for sending emails.
+ * @param mailFields - An object containing emailTo, subject, and body fields.
+ * @returns A promise resolving to `SMTPTransport.SentMessageInfo` on success, or an error string on failure.
  */
 export const mailer = (
   mailFields: InterfaceMailFields,
@@ -27,8 +30,7 @@ export const mailer = (
   // Nodemailer configuration
   let transporter: Transporter<SMTPTransport.SentMessageInfo>;
 
-  // For using custom smtp server
-  /* c8 ignore next 12 */
+  // Check if custom SMTP server is configured
   if (SMTP_OPTIONS.IS_SMTP) {
     transporter = nodemailer.createTransport({
       host: String(SMTP_OPTIONS.SMTP_HOST),
@@ -39,8 +41,8 @@ export const mailer = (
         pass: SMTP_OPTIONS.SMTP_PASSWORD,
       },
     } as SMTPTransport.Options);
-    // For using gmail transporter
   } else {
+    // Use Gmail transporter if custom SMTP is not configured
     transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -51,7 +53,6 @@ export const mailer = (
   }
 
   const mailOptions = {
-    /* c8 ignore next 6 */
     from: !SMTP_OPTIONS.IS_SMTP
       ? "Talawa<>noreply@gmail.com"
       : SMTP_OPTIONS.SMTP_USERNAME,
@@ -59,13 +60,17 @@ export const mailer = (
     subject: mailFields.subject,
     html: mailFields.body,
   };
+
   return new Promise((resolve, reject) => {
+    // Send email using transporter
     transporter.sendMail(
       mailOptions,
       function (error: Error | null, info: SMTPTransport.SentMessageInfo) {
         if (error) {
+          // Handle error if sending mail fails
           reject(ERROR_IN_SENDING_MAIL);
         } else {
+          // Resolve with sent message information if email is sent successfully
           resolve(info);
         }
       },

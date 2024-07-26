@@ -8,7 +8,7 @@ import type { InterfaceRecurrenceRule } from "./RecurrenceRule";
 import type { InterfaceAgendaItem } from "./AgendaItem";
 
 /**
- * This is an interface representing a document for an event in the database(MongoDB).
+ * Represents a document for an event in the MongoDB database.
  */
 export interface InterfaceEvent {
   _id: Types.ObjectId;
@@ -42,35 +42,33 @@ export interface InterfaceEvent {
 }
 
 /**
- * This is the Structure of the Event
- * @param admins - Admins
- * @param allDay - Is the event occuring all day
- * @param attendees - Attendees
- * @param baseRecurringEventId - Id of the true recurring event used for generating this instance
- * @param createdAt - Timestamp of event creation
- * @param creatorId - Creator of the event
- * @param description - Description of the event
- * @param endDate - End date
- * @param endTime - End Time
- * @param images -Event Flyer
- * @param isBaseRecurringEvent - Is the event a true recurring event that is used for generating new instances
- * @param isPublic - Is the event public
- * @param isRecurringEventException - Is the event an exception to the recurring pattern it was following
- * @param isRegisterable - Is the event Registrable
- * @param latitude - Latitude
- * @param location - Location of the event
- * @param longitude - Longitude
- * @param organization - Organization
- * @param recurrance - Periodicity of recurrance of the event
- * @param recurrenceRuleId - Id of the recurrence rule document containing the recurrence pattern for the event
- * @param recurring - Is the event recurring
- * @param startDate - Start Date
- * @param startTime - Start Time
- * @param title - Title of the event
- * @param updatedAt - Timestamp of event updation
- * @param volunteerGroups - event volunteer groups for the event
+ * Mongoose schema definition for an event document.
+ * @param title - Title of the event.
+ * @param description - Description of the event.
+ * @param attendees - Optional attendees information.
+ * @param images - Array of image URLs associated with the event.
+ * @param location - Optional location of the event.
+ * @param latitude - Latitude coordinate of the event location.
+ * @param longitude - Longitude coordinate of the event location.
+ * @param recurring - Indicates if the event is recurring.
+ * @param isRecurringEventException - Indicates if the event is an exception to a recurring pattern.
+ * @param isBaseRecurringEvent - Indicates if the event is a base recurring event.
+ * @param recurrenceRuleId - Reference to the recurrence rule for recurring events.
+ * @param baseRecurringEventId - Reference to the base recurring event for generated instances.
+ * @param allDay - Indicates if the event occurs throughout the entire day.
+ * @param startDate - Start date of the event.
+ * @param endDate - Optional end date of the event.
+ * @param startTime - Optional start time of the event.
+ * @param endTime - Optional end time of the event.
+ * @param isPublic - Indicates if the event is public.
+ * @param isRegisterable - Indicates if the event is registerable.
+ * @param creatorId - Reference to the user who created the event.
+ * @param admins - Array of admins for the event.
+ * @param organization - Reference to the organization hosting the event.
+ * @param volunteerGroups - Array of volunteer groups associated with the event.
+ * @param createdAt - Timestamp of when the event was created.
+ * @param updatedAt - Timestamp of when the event was last updated.
  */
-
 const eventSchema = new Schema(
   {
     title: {
@@ -194,6 +192,7 @@ const eventSchema = new Schema(
   },
 );
 
+// Apply logging middleware to the schema
 createLoggingMiddleware(eventSchema, "Event");
 
 const eventModel = (): Model<InterfaceEvent> =>

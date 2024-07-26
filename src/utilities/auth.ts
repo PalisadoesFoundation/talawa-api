@@ -3,6 +3,9 @@ import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "../constants";
 import type { InterfaceAppUserProfile, InterfaceUser } from "../models";
 import { User } from "../models";
 
+/**
+ * Interface representing the payload of a JWT token.
+ */
 export interface InterfaceJwtTokenPayload {
   tokenVersion: number;
   userId: string;
@@ -10,10 +13,13 @@ export interface InterfaceJwtTokenPayload {
   lastName: string;
   email: string;
 }
+
 /**
- * This function creates a json web token which expires in 15 minutes.
- * It signs the given payload(user data) into a JSON Web Token string payload.
+ * Creates an access token (JWT) for a user that expires in 40 minutes.
+ * The token contains user data and is signed with the access token secret.
+ *
  * @param user - User data
+ * @param appUserProfile - Application user profile data
  * @returns JSON Web Token string payload
  */
 export const createAccessToken = (
@@ -35,6 +41,14 @@ export const createAccessToken = (
   );
 };
 
+/**
+ * Creates a refresh token (JWT) for a user that expires in 30 days.
+ * The token contains user data and is signed with the refresh token secret.
+ *
+ * @param user - User data
+ * @param appUserProfile - Application user profile data
+ * @returns JSON Web Token string payload
+ */
 export const createRefreshToken = (
   user: InterfaceUser,
   appUserProfile: InterfaceAppUserProfile,
@@ -54,6 +68,13 @@ export const createRefreshToken = (
   );
 };
 
+/**
+ * Revokes the refresh token for a user by removing the token from the user's profile.
+ * This function searches for the user by their ID and unsets the token field in the user's document.
+ *
+ * @param userId - The ID of the user whose refresh token is to be revoked
+ * @returns A promise that resolves when the token has been revoked
+ */
 export const revokeRefreshToken = async (userId: string): Promise<void> => {
   const user = await User.findOne({ _id: userId }).lean();
 

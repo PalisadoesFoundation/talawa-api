@@ -13,14 +13,26 @@ import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
- * Resolver function for the GraphQL mutation 'createAgendaSection'.
+ * Creates a new agenda section and performs authorization checks.
  *
- * This resolver creates a new agenda section and performs necessary authorization checks.
+ * This resolver performs the following steps:
  *
- * @param _parent - The parent object, not used in this resolver.
- * @param args - The input arguments for the mutation.
- * @param context - The context object containing user information.
- * @returns A promise that resolves to the created agenda section.
+ * 1. Retrieves the current user based on the userId from the context.
+ * 2. Fetches the associated app user profile for the current user.
+ * 3. Validates the existence of the related event and checks user permissions.
+ * 4. Creates a new agenda section and sets the appropriate metadata.
+ *
+ * @param _parent - The parent object for the mutation (not used in this function).
+ * @param args - The arguments provided with the mutation, including:
+ *   - `input`: An object containing:
+ *     - `relatedEvent`: The ID of the event to which the new agenda section is related.
+ *     - Additional fields for the agenda section.
+ * @param context - The context of the entire application, including user information (context.userId).
+ *
+ * @returns A promise that resolves to the created agenda section object.
+ *
+ * @remarks This function performs caching and retrieval operations to ensure the latest data is used.
+ * It also verifies that the user has the necessary permissions to create the agenda section in the context of the specified event.
  */
 export const createAgendaSection: MutationResolvers["createAgendaSection"] =
   async (_parent, args, context) => {
