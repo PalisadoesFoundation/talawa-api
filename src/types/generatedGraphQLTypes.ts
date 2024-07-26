@@ -414,7 +414,7 @@ export type CreateUserTagInput = {
   name: Scalars['String']['input'];
   organizationId: Scalars['ID']['input'];
   parentTagId?: InputMaybe<Scalars['ID']['input']>;
-  tagColor: Scalars['String']['input'];
+  tagColor?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Currency =
@@ -616,7 +616,7 @@ export type DirectChat = {
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   messages?: Maybe<Array<Maybe<DirectChatMessage>>>;
-  organization: Organization;
+  organization?: Maybe<Organization>;
   updatedAt: Scalars['DateTime']['output'];
   users: Array<User>;
 };
@@ -1001,6 +1001,7 @@ export type GroupChat = {
   creator?: Maybe<User>;
   messages?: Maybe<Array<Maybe<GroupChatMessage>>>;
   organization: Organization;
+  title: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
   users: Array<User>;
 };
@@ -2259,6 +2260,7 @@ export type Query = {
   checkAuth: User;
   customDataByOrganization: Array<UserCustomData>;
   customFieldsByOrganization?: Maybe<Array<Maybe<OrganizationCustomField>>>;
+  directChatById?: Maybe<DirectChat>;
   directChatsByUserID?: Maybe<Array<Maybe<DirectChat>>>;
   directChatsMessagesByChatID?: Maybe<Array<Maybe<DirectChatMessage>>>;
   event?: Maybe<Event>;
@@ -2284,6 +2286,8 @@ export type Query = {
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
+  groupChatById?: Maybe<GroupChat>;
+  groupChatsByUserId?: Maybe<Array<Maybe<GroupChat>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']['output']>;
   isSampleOrganization: Scalars['Boolean']['output'];
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
@@ -2360,6 +2364,11 @@ export type QueryCustomDataByOrganizationArgs = {
 
 
 export type QueryCustomFieldsByOrganizationArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryDirectChatByIdArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -2488,6 +2497,16 @@ export type QueryGetVenueByOrgIdArgs = {
 
 export type QueryGetlanguageArgs = {
   lang_code: Scalars['String']['input'];
+};
+
+
+export type QueryGroupChatByIdArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGroupChatsByUserIdArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -2668,6 +2687,16 @@ export type Subscription = {
   messageSentToDirectChat?: Maybe<DirectChatMessage>;
   messageSentToGroupChat?: Maybe<GroupChatMessage>;
   onPluginUpdate?: Maybe<Plugin>;
+};
+
+
+export type SubscriptionMessageSentToDirectChatArgs = {
+  userId: Scalars['ID']['input'];
+};
+
+
+export type SubscriptionMessageSentToGroupChatArgs = {
+  userId: Scalars['ID']['input'];
 };
 
 export type ToggleUserTagAssignInput = {
@@ -3020,6 +3049,7 @@ export type UserTagsConnection = {
   __typename?: 'UserTagsConnection';
   edges: Array<UserTagsConnectionEdge>;
   pageInfo: DefaultConnectionPageInfo;
+  totalCount?: Maybe<Scalars['PositiveInt']['output']>;
 };
 
 /** A default connection edge on the UserTag type for UserTagsConnection. */
@@ -3116,7 +3146,7 @@ export type WeekDays =
   | 'WEDNESDAY';
 
 export type CreateChatInput = {
-  organizationId: Scalars['ID']['input'];
+  organizationId?: InputMaybe<Scalars['ID']['input']>;
   userIds: Array<Scalars['ID']['input']>;
 };
 
@@ -3910,7 +3940,7 @@ export type DirectChatResolvers<ContextType = any, ParentType extends ResolversP
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChatMessage']>>>, ParentType, ContextType>;
-  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4103,6 +4133,7 @@ export type GroupChatResolvers<ContextType = any, ParentType extends ResolversPa
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChatMessage']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4501,6 +4532,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
   customFieldsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['OrganizationCustomField']>>>, ParentType, ContextType, RequireFields<QueryCustomFieldsByOrganizationArgs, 'id'>>;
+  directChatById?: Resolver<Maybe<ResolversTypes['DirectChat']>, ParentType, ContextType, RequireFields<QueryDirectChatByIdArgs, 'id'>>;
   directChatsByUserID?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChat']>>>, ParentType, ContextType, RequireFields<QueryDirectChatsByUserIdArgs, 'id'>>;
   directChatsMessagesByChatID?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChatMessage']>>>, ParentType, ContextType, RequireFields<QueryDirectChatsMessagesByChatIdArgs, 'id'>>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
@@ -4526,6 +4558,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
+  groupChatById?: Resolver<Maybe<ResolversTypes['GroupChat']>, ParentType, ContextType, RequireFields<QueryGroupChatByIdArgs, 'id'>>;
+  groupChatsByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChat']>>>, ParentType, ContextType, RequireFields<QueryGroupChatsByUserIdArgs, 'id'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
   isSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<QueryIsSampleOrganizationArgs, 'id'>>;
   joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryJoinedOrganizationsArgs>>;
@@ -4574,8 +4608,8 @@ export type SocialMediaUrlsResolvers<ContextType = any, ParentType extends Resol
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   directMessageChat?: SubscriptionResolver<Maybe<ResolversTypes['MessageChat']>, "directMessageChat", ParentType, ContextType>;
-  messageSentToDirectChat?: SubscriptionResolver<Maybe<ResolversTypes['DirectChatMessage']>, "messageSentToDirectChat", ParentType, ContextType>;
-  messageSentToGroupChat?: SubscriptionResolver<Maybe<ResolversTypes['GroupChatMessage']>, "messageSentToGroupChat", ParentType, ContextType>;
+  messageSentToDirectChat?: SubscriptionResolver<Maybe<ResolversTypes['DirectChatMessage']>, "messageSentToDirectChat", ParentType, ContextType, RequireFields<SubscriptionMessageSentToDirectChatArgs, 'userId'>>;
+  messageSentToGroupChat?: SubscriptionResolver<Maybe<ResolversTypes['GroupChatMessage']>, "messageSentToGroupChat", ParentType, ContextType, RequireFields<SubscriptionMessageSentToGroupChatArgs, 'userId'>>;
   onPluginUpdate?: SubscriptionResolver<Maybe<ResolversTypes['Plugin']>, "onPluginUpdate", ParentType, ContextType>;
 };
 
@@ -4706,6 +4740,7 @@ export type UserTagResolvers<ContextType = any, ParentType extends ResolversPare
 export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
   edges?: Resolver<Array<ResolversTypes['UserTagsConnectionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

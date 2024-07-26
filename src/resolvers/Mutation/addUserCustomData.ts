@@ -11,14 +11,25 @@ import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
- * This function enables a user to add data for a custom field for a joined organization.
- * @param _parent - parent of the current request
- * @param args - payload provided with the request
- * @param context - context of the entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * 2. If the organization exists.
- * @returns Newly Added User Custom Field.
+ * Mutation resolver to add or update custom data for a user within a joined organization.
+ *
+ * This function allows a user to add or update a custom field with a name and value for an organization
+ * they are a part of. It performs several checks and operations:
+ *
+ * 1. Validates that the user exists.
+ * 2. Verifies that the organization exists.
+ * 3. Checks if user custom data for the given organization already exists.
+ * 4. If it exists, updates the custom field; if not, creates a new entry.
+ *
+ * @param _parent - The parent object for the mutation (not used in this function).
+ * @param args - The arguments provided with the request, including:
+ *   - `organizationId`: The ID of the organization for which custom data is being added.
+ *   - `dataName`: The name of the custom data field.
+ *   - `dataValue`: The value of the custom data field.
+ * @param context - The context of the entire application, including user information and other context-specific data.
+ *
+ * @returns A promise that resolves to the newly added or updated user custom data object.
+ *
  */
 export const addUserCustomData: MutationResolvers["addUserCustomData"] = async (
   _parent,

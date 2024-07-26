@@ -183,7 +183,7 @@ export const types = gql`
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!
-    organization: Organization!
+    organization: Organization
   }
 
   type DirectChatMessage {
@@ -372,6 +372,7 @@ export const types = gql`
 
   type GroupChat {
     _id: ID!
+    title: String!
     users: [User!]!
     messages: [GroupChatMessage]
     creator: User
@@ -738,6 +739,7 @@ export const types = gql`
   type UserTagsConnection {
     edges: [UserTagsConnectionEdge!]!
     pageInfo: DefaultConnectionPageInfo!
+    totalCount: PositiveInt
   }
 
   """

@@ -18,7 +18,7 @@ export const inputs = gql`
 
   input createChatInput {
     userIds: [ID!]!
-    organizationId: ID!
+    organizationId: ID
   }
 
   input createGroupChatInput {
@@ -34,7 +34,7 @@ export const inputs = gql`
 
   input CreateUserTagInput {
     name: String!
-    tagColor: String!
+    tagColor: String
     parentTagId: ID
     organizationId: ID!
   }

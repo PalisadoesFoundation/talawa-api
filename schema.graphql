@@ -336,7 +336,7 @@ input CreateUserTagInput {
   name: String!
   organizationId: ID!
   parentTagId: ID
-  tagColor: String!
+  tagColor: String
 }
 
 enum Currency {
@@ -539,7 +539,7 @@ type DirectChat {
   createdAt: DateTime!
   creator: User
   messages: [DirectChatMessage]
-  organization: Organization!
+  organization: Organization
   updatedAt: DateTime!
   users: [User!]!
 }
@@ -915,6 +915,7 @@ type GroupChat {
   creator: User
   messages: [GroupChatMessage]
   organization: Organization!
+  title: String!
   updatedAt: DateTime!
   users: [User!]!
 }
@@ -1467,6 +1468,7 @@ type Query {
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
+  directChatById(id: ID!): DirectChat
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
@@ -1492,6 +1494,8 @@ type Query {
   getPlugins: [Plugin]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getlanguage(lang_code: String!): [Translation]
+  groupChatById(id: ID!): GroupChat
+  groupChatsByUserId(id: ID!): [GroupChat]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
   isSampleOrganization(id: ID!): Boolean!
   joinedOrganizations(id: ID): [Organization]
@@ -1593,8 +1597,8 @@ enum Status {
 
 type Subscription {
   directMessageChat: MessageChat
-  messageSentToDirectChat: DirectChatMessage
-  messageSentToGroupChat: GroupChatMessage
+  messageSentToDirectChat(userId: ID!): DirectChatMessage
+  messageSentToGroupChat(userId: ID!): GroupChatMessage
   onPluginUpdate: Plugin
 }
 
@@ -1913,6 +1917,7 @@ type UserTag {
 type UserTagsConnection {
   edges: [UserTagsConnectionEdge!]!
   pageInfo: DefaultConnectionPageInfo!
+  totalCount: PositiveInt
 }
 
 """A default connection edge on the UserTag type for UserTagsConnection."""
@@ -2008,7 +2013,7 @@ enum WeekDays {
 }
 
 input createChatInput {
-  organizationId: ID!
+  organizationId: ID
   userIds: [ID!]!
 }
 

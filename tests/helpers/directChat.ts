@@ -9,7 +9,7 @@ import { createTestUserAndOrganization } from "./userAndOrg";
 import type { Document } from "mongoose";
 
 export type TestDirectChatType =
-  | (InterfaceDirectChat & Document<unknown, unknown, InterfaceDirectChat>)
+  | (InterfaceDirectChat & Document<any, any, InterfaceDirectChat>)
   | null;
 
 export type TestDirectChatMessageType =

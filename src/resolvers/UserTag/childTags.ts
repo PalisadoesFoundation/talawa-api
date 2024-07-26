@@ -14,6 +14,25 @@ import { GraphQLError } from "graphql";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import type { Types } from "mongoose";
 
+/**
+ * Resolver function for the `childTags` field of a `UserTag`.
+ *
+ * This resolver is used to resolve the `childTags` field of a `UserTag` type.
+ *
+ * @param parent - The parent object representing the user tag. It contains information about the user tag, including the ID of the user tag.
+ * @param args - The arguments provided to the field. These arguments are used to filter, sort, and paginate the child tags.
+ * @returns A promise that resolves to a connection object containing the child tags of the user tag.
+ *
+ * @see OrganizationTagUser - The OrganizationTagUser model used to interact with the organization tag users collection in the database.
+ * @see parseGraphQLConnectionArguments - The function used to parse the GraphQL connection arguments (filter, sort, pagination).
+ * @see transformToDefaultGraphQLConnection - The function used to transform the list of child tags into a connection object.
+ * @see getCommonGraphQLConnectionFilter - The function used to get the common filter object for the GraphQL connection.
+ * @see getCommonGraphQLConnectionSort - The function used to get the common sort object for the GraphQL connection.
+ * @see MAXIMUM_FETCH_LIMIT - The maximum number of child tags that can be fetched in a single request.
+ * @see GraphQLError - The error class used to throw GraphQL errors.
+ * @see UserTagResolvers - The type definition for the resolvers of the UserTag fields.
+ *
+ */
 export const childTags: UserTagResolvers["childTags"] = async (
   parent,
   args,
