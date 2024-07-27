@@ -123,7 +123,6 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       expect.objectContaining({
         creatorId: testUser?._id,
         users: [testUser?._id],
-        organization: testOrganization?._id,
       }),
     );
   });

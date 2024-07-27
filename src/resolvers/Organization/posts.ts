@@ -17,15 +17,24 @@ import { GraphQLError } from "graphql";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 
 /**
- * Resolver function to fetch and return posts created by a user from the database.
- * This function implements cursor-based pagination using GraphQL connection arguments.
+ * Resolver function for the `posts` field of an `Organization`.
  *
- * @param parent - An object that is the return value of the resolver for this field's parent.
- * @param args - Arguments passed to the resolver. These should include pagination arguments such as `first`, `last`, `before`, and `after`.
+ * This resolver is used to resolve the `posts` field of an `Organization` type.
  *
- * @returns A Promise that resolves to an object containing an array of posts, the total count of posts, and pagination information. The pagination information includes the `startCursor`, `endCursor`, `hasPreviousPage`, and `hasNextPage`.
+ * @param parent - The parent object representing the organization. It contains information about the organization, including the ID of the organization.
+ * @param args - The arguments provided to the field. These arguments are used to filter, sort, and paginate the posts.
+ * @param context - The context object passed to the GraphQL resolvers. It contains the API root URL, which is used to construct the media URL for each post.
+ * @returns A promise that resolves to a connection object containing the posts of the organization.
  *
- * @throws GraphQLError Throws an error if the provided arguments are invalid.
+ * @see Post - The Post model used to interact with the posts collection in the database.
+ * @see parseGraphQLConnectionArguments - The function used to parse the GraphQL connection arguments (filter, sort, pagination).
+ * @see transformToDefaultGraphQLConnection - The function used to transform the list of posts into a connection object.
+ * @see getCommonGraphQLConnectionFilter - The function used to get the common filter object for the GraphQL connection.
+ * @see getCommonGraphQLConnectionSort - The function used to get the common sort object for the GraphQL connection.
+ * @see MAXIMUM_FETCH_LIMIT - The maximum number of posts that can be fetched in a single request.
+ * @see GraphQLError - The error class used to throw GraphQL errors.
+ * @see OrganizationResolvers - The type definition for the resolvers of the Organization fields.
+ *
  */
 export const posts: OrganizationResolvers["posts"] = async (
   parent,
@@ -104,14 +113,21 @@ This is typescript type of the parsed cursor for this connection resolver.
 type ParsedCursor = string;
 
 /**
- * This function is used to validate and transform the cursor passed to the `posts` connection resolver.
+ * Parses the cursor value for the `posts` connection resolver.
  *
- * @param args - An object that includes the cursor value, cursor name, cursor path, and the ID of the creator.
+ * This function is used to parse the cursor value for the `posts` connection resolver.
  *
- * @returns A Promise that resolves to an object that includes a boolean indicating whether the operation was successful, and the parsed cursor value. If the operation was not successful, the object also includes an array of errors.
+ * @param cursorValue - The cursor value to be parsed.
+ * @param cursorName - The name of the cursor argument.
+ * @param cursorPath - The path of the cursor argument in the GraphQL query.
+ * @param organization - The ID of the organization to which the posts belong.
+ * @returns An object containing the parsed cursor value or an array of errors if the cursor is invalid.
  *
- * @throws Error Throws an error if the provided cursor is invalid.
- * */
+ * @see Post - The Post model used to interact with the posts collection in the database.
+ * @see ParseGraphQLConnectionCursorArguments - The type definition for the arguments of the parseCursor function.
+ * @see ParseGraphQLConnectionCursorResult - The type definition for the result of the parseCursor function.
+ *
+ */
 export const parseCursor = async ({
   cursorValue,
   cursorName,

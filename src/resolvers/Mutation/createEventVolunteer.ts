@@ -14,19 +14,28 @@ import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
- * This function enables to create an event volunteer.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the current user exists
- * 2. if the volunteer user exists
- * 3. If the event exists
- * 4. If the group exists
- * 5. If the current user is leader of the group
- * @returns Created event volunteer
+ * Creates a new event volunteer entry.
+ *
+ * This function performs the following actions:
+ * 1. Verifies the existence of the current user.
+ * 2. Verifies the existence of the volunteer user.
+ * 3. Verifies the existence of the event.
+ * 4. Verifies the existence of the volunteer group.
+ * 5. Ensures that the current user is the leader of the volunteer group.
+ * 6. Creates a new event volunteer record.
+ * 7. Adds the newly created volunteer to the group's list of volunteers.
+ *
+ * @param _parent - The parent object for the mutation. This parameter is not used in this resolver.
+ * @param args - The arguments for the mutation, including:
+ *   - `data.userId`: The ID of the user to be assigned as a volunteer.
+ *   - `data.eventId`: The ID of the event for which the volunteer is being created.
+ *   - `data.groupId`: The ID of the volunteer group to which the user is being added.
+ * @param context - The context for the mutation, including:
+ *   - `userId`: The ID of the current user performing the operation.
+ *
+ * @returns The created event volunteer record.
+ *
  */
-
 export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
   async (_parent, args, context) => {
     let currentUser: InterfaceUser | null;

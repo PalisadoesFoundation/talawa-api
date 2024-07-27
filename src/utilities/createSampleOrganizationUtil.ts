@@ -14,6 +14,13 @@ import { SampleData } from "../models/SampleData";
 
 /* eslint-disable */
 
+/**
+ * Generates user data for a given organization and user type.
+ *
+ * @param organizationId - The ID of the organization the user belongs to
+ * @param userType - The type of the user ('ADMIN' or 'USER')
+ * @returns A promise that resolves to an object containing the created user and their application profile
+ */
 export const generateUserData = async (
   organizationId: string,
   userType: string,
@@ -71,6 +78,13 @@ export const generateUserData = async (
   };
 };
 
+/**
+ * Generates event data for a given list of users and organization.
+ *
+ * @param users - The list of users associated with the event
+ * @param organizationId - The ID of the organization the event belongs to
+ * @returns A promise that resolves to the created event
+ */
 export const generateEventData = async (
   users: InterfaceUser[],
   organizationId: string,
@@ -127,6 +141,13 @@ export const generateEventData = async (
   return event;
 };
 
+/**
+ * Generates post data for a given list of users and organization.
+ *
+ * @param users - The list of users associated with the post
+ * @param organizationId - The ID of the organization the post belongs to
+ * @returns A promise that resolves to the created post
+ */
 export const generatePostData = async (
   users: InterfaceUser[],
   organizationId: string,
@@ -157,6 +178,14 @@ export const generatePostData = async (
   return post;
 };
 
+/**
+ * Creates multiple posts for a given list of users and organization.
+ *
+ * @param numPosts - The number of posts to create
+ * @param users - The list of users associated with the posts
+ * @param organizationId - The ID of the organization the posts belong to
+ * @returns A promise that resolves to an array of created posts
+ */
 const createPosts = async (
   numPosts: number,
   users: InterfaceUser[],
@@ -170,6 +199,14 @@ const createPosts = async (
   return posts;
 };
 
+/**
+ * Creates multiple events for a given list of users and organization.
+ *
+ * @param numEvents - The number of events to create
+ * @param users - The list of users associated with the events
+ * @param organizationId - The ID of the organization the events belong to
+ * @returns A promise that resolves to an array of created events
+ */
 const createEvents = async (
   numEvents: number,
   users: InterfaceUser[],
@@ -184,6 +221,13 @@ const createEvents = async (
   return events;
 };
 
+/**
+ * Generates random plugin data for a given number of plugins and list of users.
+ *
+ * @param numberOfPlugins - The number of plugins to create
+ * @param users - The list of users associated with the plugins
+ * @returns A promise that resolves to an array of promises for created plugins
+ */
 export const generateRandomPlugins = async (
   numberOfPlugins: number,
   users: string[],
@@ -214,6 +258,11 @@ export const generateRandomPlugins = async (
   return pluginPromises;
 };
 
+/**
+ * Creates a sample organization with associated users, events, posts, and plugins.
+ *
+ * @returns A promise that resolves when the sample organization and its related data have been created
+ */
 export const createSampleOrganization = async (): Promise<void> => {
   const _id = faker.database.mongodbObjectId();
   const userData = await generateUserData(_id, "ADMIN");

@@ -2,10 +2,18 @@ import type { GroupChatMessageResolvers } from "../../types/generatedGraphQLType
 import { User } from "../../models";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+
 /**
- * This resolver function will fetch and return the send of the group chat message from database.
- * @param parent - An object that is the return value of the resolver for this field's parent.
- * @returns An object that will contain the User data.
+ * Resolver function for the `sender` field of a `GroupChatMessage`.
+ *
+ * This function retrieves the user who sent a specific group chat message.
+ *
+ * @param parent - The parent object representing the group chat message. It contains information about the group chat message, including the ID of the user who sent it.
+ * @returns A promise that resolves to the user document found in the database. This document represents the user who sent the group chat message.
+ *
+ * @see User - The User model used to interact with the users collection in the database.
+ * @see GroupChatMessageResolvers - The type definition for the resolvers of the GroupChatMessage fields.
+ *
  */
 export const sender: GroupChatMessageResolvers["sender"] = async (parent) => {
   const result = await User.findOne({
