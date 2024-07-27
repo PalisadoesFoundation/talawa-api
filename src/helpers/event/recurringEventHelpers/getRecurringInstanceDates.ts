@@ -9,32 +9,30 @@ import {
 } from "../../../constants";
 
 /**
- * This function generates the dates of recurrence for the recurring event.
- * @param recurrenceRuleString - the rrule string for the recurrenceRule.
- * @param recurrenceStartDate - the starting date from which we want to generate instances.
- * @param eventEndDate - the end date of the event
- * @param queryUptoDate - the limit date to query recurrenceRules (To be used for dynamic instance generation during queries).
- * @remarks The following steps are followed:
- * 1. Get the date limit for instance generation based on its recurrence frequency.
- * 2. Get the dates for recurring event instances.
+ * Generates dates of recurrence for the recurring event based on provided recurrence rules.
+ * @param recurrenceRuleString - The rrule string defining the recurrence rules.
+ * @param recurrenceStartDate - The starting date from which to generate instances.
+ * @param recurrenceEndDate - The end date of the event.
+ * @param queryUptoDate - The limit date for querying recurrence rules (used for dynamic instance generation during queries).
+ * @remarks
+ * This function performs the following steps:
+ * 1. Determines the date limit for instance generation based on the recurrence frequency.
+ * 2. Retrieves dates for recurring event instances within the specified limits.
  * @returns Dates for recurring instances to be generated during this operation.
  */
-
 export function getRecurringInstanceDates(
   recurrenceRuleString: string,
   recurrenceStartDate: Date,
   recurrenceEndDate: Date | null,
   queryUptoDate: Date = recurrenceStartDate,
 ): Date[] {
-  // get the rrule object
+  // Parse the rrule string to get the rrule object
   const recurrenceRuleObject: RRule = rrulestr(recurrenceRuleString);
 
-  // get the recurrence frequency
+  // Get the recurrence frequency from the rrule options
   const { freq: recurrenceFrequency } = recurrenceRuleObject.options;
 
-  // set limitEndDate according to the recurrence frequency
-  // and queryUptoDate, which would default to recurrenceStartDate during createRecurringEvent mutation
-  // and have a specific value during queries
+  // Determine the limit end date based on recurrence frequency
   let limitEndDate = addYears(
     queryUptoDate,
     RECURRING_EVENT_INSTANCES_DAILY_LIMIT,
@@ -57,19 +55,19 @@ export function getRecurringInstanceDates(
     );
   }
 
-  // if the event has no endDate
+  // If the event has no specified end date, use the limit end date
   recurrenceEndDate = recurrenceEndDate || limitEndDate;
 
-  // the date upto which we would generate the instances in this operation
+  // Determine the date up to which we will generate instances in this operation
   const generateUptoDate = new Date(
     Math.min(recurrenceEndDate.getTime(), limitEndDate.getTime()),
   );
 
-  // get the dates of recurrence
+  // Retrieve the dates of recurrence based on the rrule and limits
   const recurringInstanceDates = recurrenceRuleObject.between(
     recurrenceStartDate,
     generateUptoDate,
-    true,
+    true, // Inclusive of start date
   );
 
   return recurringInstanceDates;

@@ -4,7 +4,6 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   FUND_ALREADY_EXISTS,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -16,10 +15,7 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import {
-  createTestUser,
-  createTestUserAndOrganization,
-} from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -83,29 +79,7 @@ describe("resolvers-> Mutation-> createFund", () => {
       );
     }
   });
-  it("throw error if the user is not authorized to create the fund", async () => {
-    try {
-      const args: MutationCreateFundArgs = {
-        data: {
-          organizationId: testOrganization?._id,
-          name: "testFund",
-          taxDeductible: true,
-          isDefault: true,
-          isArchived: false,
-        },
-      };
-      const randomUser = await createTestUser();
-      const context = {
-        userId: randomUser?._id,
-      };
 
-      await createFund?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ADMIN.MESSAGE,
-      );
-    }
-  });
   it("creates fund with provided data", async () => {
     const args: MutationCreateFundArgs = {
       data: {

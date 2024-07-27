@@ -14,13 +14,28 @@ import { findAppUserProfileCache } from "../../services/AppUserProfileCache/find
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+
 /**
- * Create an note for an agenda item based on the provided input.
+ * Creates a note for a specified agenda item.
  *
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @returns The created note for an agenda item.
+ * This resolver performs the following actions:
+ *
+ * 1. Verifies the existence of the current user making the request.
+ * 2. Checks the user's app profile to ensure they are authenticated.
+ * 3. Checks if the specified agenda item exists.
+ * 4. Creates a new note associated with the agenda item.
+ * 5. Updates the agenda item to include the newly created note.
+ *
+ * @param _parent - The parent object, not used in this resolver.
+ * @param args - The input arguments for the mutation, including:
+ *   - `data`: An object containing:
+ *     - `agendaItemId`: The ID of the agenda item to which the note will be added.
+ *     - `content`: The content of the note.
+ * @param context - The context object containing user information (context.userId).
+ *
+ * @returns The created note object.
+ *
+ * @remarks This function creates a note, associates it with the specified agenda item, and updates the agenda item to include the new note. It also handles caching and error scenarios.
  */
 export const createNote: MutationResolvers["createNote"] = async (
   _parent,

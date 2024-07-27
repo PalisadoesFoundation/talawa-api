@@ -163,6 +163,19 @@ type AuthData {
   user: User!
 }
 
+enum CampaignOrderByInput {
+  endDate_ASC
+  endDate_DESC
+  fundingGoal_ASC
+  fundingGoal_DESC
+  startDate_ASC
+  startDate_DESC
+}
+
+input CampaignWhereInput {
+  name_contains: String
+}
+
 type CheckIn {
   _id: ID!
   createdAt: DateTime!
@@ -323,7 +336,7 @@ input CreateUserTagInput {
   name: String!
   organizationId: ID!
   parentTagId: ID
-  tagColor: String!
+  tagColor: String
 }
 
 enum Currency {
@@ -526,7 +539,7 @@ type DirectChat {
   createdAt: DateTime!
   creator: User
   messages: [DirectChatMessage]
-  organization: Organization!
+  organization: Organization
   updatedAt: DateTime!
   users: [User!]!
 }
@@ -809,7 +822,7 @@ enum Frequency {
 
 type Fund {
   _id: ID!
-  campaigns: [FundraisingCampaign!]
+  campaigns: [FundraisingCampaign]
   createdAt: DateTime!
   creator: User
   isArchived: Boolean!
@@ -846,6 +859,11 @@ input FundInput {
   organizationId: ID!
   refrenceNumber: String
   taxDeductible: Boolean!
+}
+
+enum FundOrderByInput {
+  createdAt_ASC
+  createdAt_DESC
 }
 
 input FundWhereInput {
@@ -897,6 +915,7 @@ type GroupChat {
   creator: User
   messages: [GroupChatMessage]
   organization: Organization!
+  title: String!
   updatedAt: DateTime!
   users: [User!]!
 }
@@ -1308,6 +1327,15 @@ enum PaginationDirection {
 
 scalar PhoneNumber
 
+enum PledgeOrderByInput {
+  amount_ASC
+  amount_DESC
+  endDate_ASC
+  endDate_DESC
+  startDate_ASC
+  startDate_DESC
+}
+
 type Plugin {
   _id: ID!
   pluginCreatedBy: String!
@@ -1434,17 +1462,20 @@ type Query {
   adminPlugin(orgId: ID!): [Plugin]
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
+  agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
+  agendaItemByOrganization(organizationId: ID!): [AgendaItem]
   agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
+  directChatById(id: ID!): DirectChat
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
-  fundsByOrganization(organizationId: ID!, where: FundWhereInput): [Fund]
+  fundsByOrganization(orderBy: FundOrderByInput, organizationId: ID!, where: FundWhereInput): [Fund]
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
   getAllAgendaItems: [AgendaItem]
@@ -1456,13 +1487,15 @@ type Query {
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
-  getFundById(id: ID!): Fund!
-  getFundraisingCampaignById(id: ID!): FundraisingCampaign!
+  getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
+  getFundraisingCampaignById(id: ID!, orderBy: PledgeOrderByInput): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getNoteById(id: ID!): Note!
   getPlugins: [Plugin]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getlanguage(lang_code: String!): [Translation]
+  groupChatById(id: ID!): GroupChat
+  groupChatsByUserId(id: ID!): [GroupChat]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
   isSampleOrganization(id: ID!): Boolean!
   joinedOrganizations(id: ID): [Organization]
@@ -1564,8 +1597,8 @@ enum Status {
 
 type Subscription {
   directMessageChat: MessageChat
-  messageSentToDirectChat: DirectChatMessage
-  messageSentToGroupChat: GroupChatMessage
+  messageSentToDirectChat(userId: ID!): DirectChatMessage
+  messageSentToGroupChat(userId: ID!): GroupChatMessage
   onPluginUpdate: Plugin
 }
 
@@ -1638,7 +1671,6 @@ input UpdateAgendaItemInput {
   relatedEvent: ID
   sequence: Int
   title: String
-  updatedBy: ID!
   urls: [String]
   users: [ID]
 }
@@ -1700,6 +1732,7 @@ input UpdateFundCampaignPledgeInput {
   currency: Currency
   endDate: Date
   startDate: Date
+  users: [ID]
 }
 
 input UpdateFundInput {
@@ -1884,6 +1917,7 @@ type UserTag {
 type UserTagsConnection {
   edges: [UserTagsConnectionEdge!]!
   pageInfo: DefaultConnectionPageInfo!
+  totalCount: PositiveInt
 }
 
 """A default connection edge on the UserTag type for UserTagsConnection."""
@@ -1979,7 +2013,7 @@ enum WeekDays {
 }
 
 input createChatInput {
-  organizationId: ID!
+  organizationId: ID
   userIds: [ID!]!
 }
 

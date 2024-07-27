@@ -19,6 +19,10 @@ export const queries = gql`
       organizationId: ID!
     ): [ActionItemCategory]
 
+    agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
+
+    agendaItemByOrganization(organizationId: ID!): [AgendaItem]
+
     agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
 
     getAgendaItem(id: ID!): AgendaItem
@@ -39,6 +43,12 @@ export const queries = gql`
 
     directChatsByUserID(id: ID!): [DirectChat]
 
+    directChatById(id: ID!): DirectChat
+
+    groupChatById(id: ID!): GroupChat
+
+    groupChatsByUserId(id: ID!): [GroupChat]
+
     directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
 
     event(id: ID!): Event
@@ -54,7 +64,11 @@ export const queries = gql`
 
     eventVolunteersByEvent(id: ID!): [EventVolunteer]
 
-    fundsByOrganization(organizationId: ID!, where: FundWhereInput): [Fund]
+    fundsByOrganization(
+      organizationId: ID!
+      where: FundWhereInput
+      orderBy: FundOrderByInput
+    ): [Fund]
 
     getDonationById(id: ID!): Donation!
 
@@ -63,8 +77,15 @@ export const queries = gql`
     getEventAttendee(userId: ID!, eventId: ID!): EventAttendee
 
     getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
-    getFundById(id: ID!): Fund!
-    getFundraisingCampaignById(id: ID!): FundraisingCampaign!
+    getFundById(
+      id: ID!
+      orderBy: CampaignOrderByInput
+      where: CampaignWhereInput
+    ): Fund!
+    getFundraisingCampaignById(
+      id: ID!
+      orderBy: PledgeOrderByInput
+    ): FundraisingCampaign!
     getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
 
     getDonationByOrgId(orgId: ID!): [Donation]
