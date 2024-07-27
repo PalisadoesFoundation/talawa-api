@@ -1,5 +1,8 @@
 import { gql } from "graphql-tag";
 
+/**
+ * GraphQL schema definition for common error types.
+ */
 export const commonErrors = gql`
   interface Error {
     message: String!

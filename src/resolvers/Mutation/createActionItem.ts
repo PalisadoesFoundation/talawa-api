@@ -30,23 +30,31 @@ import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
- * This function enables to create an action item.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * 2.If the user has appUserProfile
- * 3. If the asignee exists
- * 4. If the actionItemCategory exists
- * 5. If the actionItemCategory is disabled
- * 6. If the asignee is a member of the organization
- * 7. If the user is a member of the organization
- * 8. If the event exists (if action item related to an event)
- * 9. If the user is authorized.
- * @returns Created action item
+ * Creates a new action item and assigns it to a user.
+ *
+ * This function performs several checks:
+ *
+ * 1. Verifies if the current user exists.
+ * 2. Ensures that the current user has an associated app user profile.
+ * 3. Checks if the assignee exists.
+ * 4. Validates if the action item category exists and is not disabled.
+ * 5. Confirms that the assignee is a member of the organization associated with the action item category.
+ * 6. If the action item is related to an event, checks if the event exists and whether the current user is an admin of that event.
+ * 7. Verifies if the current user is an admin of the organization or a superadmin.
+ *
+ * @param _parent - The parent object for the mutation (not used in this function).
+ * @param args - The arguments provided with the request, including:
+ *   - `data`: An object containing:
+ *     - `assigneeId`: The ID of the user to whom the action item is assigned.
+ *     - `preCompletionNotes`: Notes to be added before the action item is completed.
+ *     - `dueDate`: The due date for the action item.
+ *     - `eventId` (optional): The ID of the event associated with the action item.
+ *   - `actionItemCategoryId`: The ID of the action item category.
+ * @param context - The context of the entire application, including user information and other context-specific data.
+ *
+ * @returns A promise that resolves to the created action item object.
+ *
  */
-
 export const createActionItem: MutationResolvers["createActionItem"] = async (
   _parent,
   args,
@@ -63,6 +71,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       await cacheUsers([currentUser]);
     }
   }
+
   // Checks whether currentUser with _id === context.userId exists.
   if (currentUser === null) {
     throw new errors.NotFoundError(
@@ -71,6 +80,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+
   let currentUserAppProfile: InterfaceAppUserProfile | null;
   const appUserProfileFoundInCache = await findAppUserProfileCache([
     currentUser.appUserProfileId?.toString(),
@@ -84,6 +94,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       await cacheAppUserProfile([currentUserAppProfile]);
     }
   }
+
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -96,7 +107,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     _id: args.data.assigneeId,
   });
 
-  // Checks whether the asignee exists.
+  // Checks whether the assignee exists.
   if (assignee === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -109,7 +120,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     _id: args.actionItemCategoryId,
   }).lean();
 
-  // Checks if the actionItemCategory exists
+  // Checks if the actionItemCategory exists.
   if (!actionItemCategory) {
     throw new errors.NotFoundError(
       requestContext.translate(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
@@ -118,7 +129,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     );
   }
 
-  // Checks if the actionItemCategory is disabled
+  // Checks if the actionItemCategory is disabled.
   if (actionItemCategory.isDisabled) {
     throw new errors.ConflictError(
       requestContext.translate(ACTION_ITEM_CATEGORY_IS_DISABLED.MESSAGE),
@@ -173,7 +184,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       );
     }
 
-    // Checks if the currUser is an admin of the event
+    // Checks if the currUser is an admin of the event.
     currentUserIsEventAdmin = currEvent.admins.some(
       (admin) =>
         admin === context.userID ||
@@ -181,7 +192,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     );
   }
 
-  // Checks if the currUser is an admin of the organization
+  // Checks if the currentUser is an admin of the organization.
   const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
     (organizationId) =>
       (organizationId &&
@@ -191,7 +202,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       ),
   );
 
-  // Checks whether currentUser with _id === context.userId is authorized for the operation.
+  // Checks whether the currentUser is authorized for the operation.
   if (
     currentUserIsEventAdmin === false &&
     currentUserIsOrgAdmin === false &&
@@ -204,7 +215,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     );
   }
 
-  // Creates new action item.
+  // Creates and returns the new action item.
   const createActionItem = await ActionItem.create({
     assigneeId: args.data.assigneeId,
     assignerId: context.userId,
@@ -215,6 +226,5 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     creatorId: context.userId,
   });
 
-  // Returns created action item.
   return createActionItem.toObject();
 };

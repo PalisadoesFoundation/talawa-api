@@ -2,10 +2,18 @@ import type { GroupChatMessageResolvers } from "../../types/generatedGraphQLType
 import { GroupChat } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { CHAT_NOT_FOUND_ERROR } from "../../constants";
+
 /**
- * This resolver method will retrieve and return from the database the Group chat to which the specified message belongs.
- * @param parent - An object that is the return value of the resolver for this field's parent.
- * @returns An object that contains the Group chat data.
+ * Resolver function for the `groupChatMessageBelongsTo` field of a `GroupChatMessage`.
+ *
+ * This function retrieves the group chat to which a specific group chat message belongs.
+ *
+ * @param parent - The parent object representing the group chat message. It contains information about the group chat message, including the ID of the group chat to which it belongs.
+ * @returns A promise that resolves to the group chat document found in the database. This document represents the group chat to which the group chat message belongs.
+ *
+ * @see GroupChat - The GroupChat model used to interact with the group chats collection in the database.
+ * @see GroupChatMessageResolvers - The type definition for the resolvers of the GroupChatMessage fields.
+ *
  */
 export const groupChatMessageBelongsTo: GroupChatMessageResolvers["groupChatMessageBelongsTo"] =
   async (parent) => {

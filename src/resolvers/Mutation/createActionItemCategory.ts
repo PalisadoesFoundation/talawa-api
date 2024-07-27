@@ -15,18 +15,34 @@ import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import { adminCheck } from "../../utilities";
 
 /**
- * This function enables to create an ActionItemCategory.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the User exists
- * 2. If the Organization exists
- * 3. Is the User is Authorized
- * 4. If the action item category already exists
- * @returns Created ActionItemCategory
+ * Mutation resolver function to create a new ActionItemCategory.
+ *
+ * This function performs the following actions:
+ * 1. Verifies that the current user, identified by `context.userId`, exists.
+ * 2. Ensures that the organization specified by `args.organizationId` exists.
+ * 3. Checks if the current user is authorized to perform the operation (must be an admin).
+ * 4. Checks if an ActionItemCategory with the provided name already exists for the specified organization.
+ * 5. Creates a new ActionItemCategory if no conflicts are found.
+ *
+ * @param _parent - The parent object for the mutation. This parameter is not used in this resolver.
+ * @param args - The arguments for the mutation, including:
+ *   - `name`: The name of the ActionItemCategory to be created.
+ *   - `organizationId`: The ID of the organization where the ActionItemCategory will be created.
+ * @param context - The context for the mutation, including:
+ *   - `userId`: The ID of the current user making the request.
+ *
+ * @returns A promise that resolves to the created ActionItemCategory.
+ *
+ * @see ActionItemCategory - The ActionItemCategory model used to interact with the ActionItemCategory collection in the database.
+ * @see Organization - The Organization model used to interact with the organizations collection in the database.
+ * @see User - The User model used to interact with the users collection in the database.
+ * @see MutationResolvers - The type definition for the mutation resolvers.
+ * @see findOrganizationsInCache - Service function to retrieve organizations from cache.
+ * @see cacheOrganizations - Service function to cache updated organization data.
+ * @see findUserInCache - Service function to retrieve users from cache.
+ * @see cacheUsers - Service function to cache updated user data.
+ * @see adminCheck - Utility function to check if a user is an admin of an organization.
  */
-
 export const createActionItemCategory: MutationResolvers["createActionItemCategory"] =
   async (_parent, args, context) => {
     let currentUser: InterfaceUser | null;

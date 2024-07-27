@@ -10,19 +10,34 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { adminCheck } from "../../utilities";
-/**
- * This function enables an admin to remove a group.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the group chat exists
- * 2. If the organization exists
- * 3. If the user exists
- * 4. If the user is an admin of organization
- * @returns Deleted group chat
- */
 
+/**
+ * Mutation resolver function to remove a group chat.
+ *
+ * This function performs the following actions:
+ * 1. Checks if the group chat specified by `args.groupId` exists.
+ * 2. Verifies that the organization associated with the group chat exists.
+ * 3. Ensures that the current user (identified by `context.userId`) exists.
+ * 4. Checks that the current user is authorized as an admin of the organization.
+ * 5. Deletes the group chat from the database.
+ *
+ * @param _parent - The parent object for the mutation. This parameter is not used in this resolver.
+ * @param args - The arguments for the mutation, including:
+ *   - `groupId`: The ID of the group chat to be removed.
+ * @param context - The context for the mutation, including:
+ *   - `userId`: The ID of the current user making the request.
+ *
+ * @returns A promise that resolves to the deleted group chat document.
+ *
+ * @see GroupChat - The GroupChat model used to interact with the group chats collection in the database.
+ * @see Organization - The Organization model used to interact with the organizations collection in the database.
+ * @see User - The User model used to interact with the users collection in the database.
+ * @see AppUserProfile - The AppUserProfile model used to retrieve the user's profile information.
+ * @see MutationResolvers - The type definition for the mutation resolvers.
+ * @see adminCheck - Utility function to check if the current user is an admin of the organization.
+ * @see findOrganizationsInCache - Service function to retrieve organizations from cache.
+ * @see cacheOrganizations - Service function to cache updated organization data.
+ */
 export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   _parent,
   args,

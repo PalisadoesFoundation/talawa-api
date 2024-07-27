@@ -1,11 +1,12 @@
 import { deleteImage } from "./deleteImage";
 import { errors, requestContext } from "../libraries";
 import { INVALID_FILE_TYPE } from "../constants";
+
 /**
- * This function checks the extension of the file.
- * If the extension isn't of type 'png', or 'jpg', or 'jpeg',
- * then the file is deleted and a validation error is thrown.
- * @param filename - Name of file
+ * Checks the file extension of the given filename.
+ * If the extension is not 'png', 'jpg', or 'jpeg', deletes the file and throws a validation error.
+ *
+ * @param filename - The name of the file to check
  */
 export const imageExtensionCheck = async (filename: string): Promise<void> => {
   const fileExtension = filename.split(".").pop();
@@ -15,8 +16,10 @@ export const imageExtensionCheck = async (filename: string): Promise<void> => {
     fileExtension !== "jpg" &&
     fileExtension !== "jpeg"
   ) {
+    // Delete the file because the extension is not allowed
     await deleteImage(filename);
 
+    // Throw a validation error indicating invalid file type
     throw new errors.ValidationError(
       [
         {

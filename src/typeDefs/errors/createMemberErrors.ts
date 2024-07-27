@@ -1,5 +1,9 @@
 import { gql } from "graphql-tag";
 
+/**
+ * GraphQL schema definition for errors related to creating a member.
+ */
+
 export const createMemberErrors = gql`
   type UserNotFoundError implements Error {
     message: String!

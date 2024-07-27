@@ -9,43 +9,36 @@ export interface InterfaceAuthData {
   expired: boolean | undefined;
   userId: string | undefined;
 }
+
 /**
  * This function determines whether the user is authorised and whether the access token has expired.
- * @param Request - User Request
+ * @param request - User Request object from Express.
  * @returns Returns `authData` object with `isAuth`, `expired` and `userId` properties.
  */
 export const isAuth = (request: Request): InterfaceAuthData => {
-  /*
-  This object is the return value of this function. Mutate the fields of this
-  object conditionally as the authentication flow continues and return it from
-  the function whereever needed.
-  */
+  // Initialize authData object with default values
   const authData: InterfaceAuthData = {
     isAuth: false,
     expired: undefined,
     userId: undefined,
   };
 
-  // This checks to see if there is an authorization field within the incoming request
+  // Retrieve authorization header from request
   const authHeader = request.headers.authorization;
 
-  // If no authorization header was sent from the client
+  // If no authorization header is present, return default authData
   if (!authHeader) {
     return authData;
   }
 
-  // format of request sent will be Bearer tokenvalue
-  // this splits it into two values bearer and the token
+  // Extract token from authorization header
   const token = authHeader.split(" ")[1];
 
-  // if the token is null or an empty string
+  // If token is missing or empty, return default authData
   if (!token || token === "") {
     return authData;
   }
 
-  // uses key created in the auth resolver
-  // to be changed in production
-  // only tokens created with this key will be valid tokens
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let decodedToken: any;
   try {
@@ -70,16 +63,16 @@ export const isAuth = (request: Request): InterfaceAuthData => {
     return authData;
   }
 
-  // if the decoded token is not set
+  // If decoded token is not set, log an info message and return default authData
   if (!decodedToken) {
     logger.info("decoded token is not present");
     return authData;
   }
 
-  // shows the user is an authenticated user
+  // Set isAuth to true and extract userId from decoded token
   authData.isAuth = true;
-  // pulls user data(userId) out of the token and attaches it to userId field of authData object
   authData.userId = decodedToken.userId;
 
+  // Return the finalized authData object
   return authData;
 };

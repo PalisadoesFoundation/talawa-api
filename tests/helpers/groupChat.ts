@@ -9,7 +9,7 @@ import { createTestUserAndOrganization } from "./userAndOrg";
 import type { Document } from "mongoose";
 
 export type TestGroupChatType =
-  | (InterfaceGroupChat & Document<unknown, unknown, InterfaceGroupChat>)
+  | (InterfaceGroupChat & Document<any, any, InterfaceGroupChat>)
   | null;
 
 export type TestGroupChatMessageType =
