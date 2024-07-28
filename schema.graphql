@@ -323,7 +323,7 @@ type CreateCommentPayload {
   userErrors: [CreateCommentError!]!
 }
 
-union CreateDirectChatError = UserNotFoundError
+union CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError
 
 union CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError
 
@@ -912,10 +912,10 @@ type Group {
 type GroupChat {
   _id: ID!
   createdAt: DateTime!
-  title: String!
   creator: User
   messages: [GroupChatMessage]
   organization: Organization!
+  title: String!
   updatedAt: DateTime!
   users: [User!]!
 }
@@ -1468,11 +1468,9 @@ type Query {
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
+  directChatById(id: ID!): DirectChat
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
-  directChatById(id: ID!): DirectChat
-  groupChatsByUserId(id: ID!): [GroupChat]
-  groupChatById(id: ID!): GroupChat
   event(id: ID!): Event
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
@@ -1496,6 +1494,8 @@ type Query {
   getPlugins: [Plugin]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getlanguage(lang_code: String!): [Translation]
+  groupChatById(id: ID!): GroupChat
+  groupChatsByUserId(id: ID!): [GroupChat]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
   isSampleOrganization(id: ID!): Boolean!
   joinedOrganizations(id: ID): [Organization]

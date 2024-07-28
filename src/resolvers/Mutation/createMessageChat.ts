@@ -10,16 +10,29 @@ import { findAppUserProfileCache } from "../../services/AppUserProfileCache/find
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+
 /**
- * This function enables to create a chat.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the receiver user exists
- * 2. If the sender and receiver users have same language code.
- * 3. If the sender and receiver users have appProfile.
- * @returns Created message chat.
+ * Creates a new chat message between users.
+ *
+ * This function performs the following actions:
+ * 1. Verifies the existence of the current user.
+ * 2. Retrieves and caches the current user's details and application profile if not already cached.
+ * 3. Checks the existence of the receiver user and retrieves their application profile.
+ * 4. Ensures that both the current user and the receiver have valid application profiles.
+ * 5. Compares the language codes of the sender and receiver to determine if there is a language barrier.
+ * 6. Creates a new chat message with the specified content and language barrier status.
+ * 7. Publishes the created message chat to a pub/sub channel for real-time updates.
+ *
+ * @param _parent - The parent object for the mutation. This parameter is not used in this resolver.
+ * @param args - The arguments for the mutation, including:
+ *   - `data.receiver`: The ID of the user receiving the message.
+ *   - `data.message`: The content of the message being sent.
+ * @param context - The context for the mutation, including:
+ *   - `userId`: The ID of the current user sending the message.
+ *   - `pubsub`: The pub/sub instance for publishing real-time updates.
+ *
+ * @returns The created message chat record.
+ *
  */
 export const createMessageChat: MutationResolvers["createMessageChat"] = async (
   _parent,
@@ -89,6 +102,7 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
       USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
+
   // Boolean to identify whether both sender and receiver for messageChat have the same appLanguageCode.
   const isSenderReceiverLanguageSame =
     receiverUserAppProfile?.appLanguageCode ===

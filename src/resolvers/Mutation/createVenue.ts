@@ -16,20 +16,27 @@ import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-/**
- * This function enables to create a venue in an organization.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * 2. If the organization exists
- * 3. Whether the user is admin or superadmin or not
- * 4. If the venue name is missing
- * 5. If the same venue already exists in an organization
- * @returns Created venue
- */
 
+/**
+ * Creates a new venue within an organization, if the user has appropriate permissions and the venue does not already exist.
+ *
+ * This resolver performs the following checks:
+ *
+ * 1. Verifies the existence of the user and fetches their profile.
+ * 2. Checks if the specified organization exists.
+ * 3. Ensures the user is authorized to create a venue by verifying their admin or superadmin status within the organization.
+ * 4. Validates that a venue name is provided.
+ * 5. Ensures that no venue with the same name already exists within the organization.
+ * 6. Uploads an image if provided and associates it with the venue.
+ *
+ * @param _parent - The parent object, not used in this resolver.
+ * @param args - The input arguments for the mutation, including the venue details and organization ID.
+ * @param context - The context object, including the user ID, API root URL, and other necessary context for authorization and image upload.
+ *
+ * @returns The created venue object, including the associated organization.
+ *
+ * @remarks This function includes validation for user authorization, venue uniqueness, and handles image uploads if applicable.
+ */
 export const createVenue: MutationResolvers["createVenue"] = async (
   _parent,
   args,
@@ -89,7 +96,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     );
   }
 
-  // Checks Whether the user is admin or superadmin or not
+  // Checks whether the user is admin or superadmin.
   if (
     !(
       organization.admins?.some((admin) => admin._id.equals(context.userId)) ||
@@ -103,7 +110,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     );
   }
 
-  // Check if the venue name provided is empty string
+  // Check if the venue name provided is an empty string.
   if (!args.data?.name ?? "") {
     throw new errors.InputValidationError(
       requestContext.translate(VENUE_NAME_MISSING_ERROR.MESSAGE),
@@ -112,7 +119,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     );
   }
 
-  // Check if a venue with the same organizationId and name exists
+  // Check if a venue with the same organizationId and name exists.
   const existingVenue = await Venue.findOne({
     name: args.data.name,
     organization: args.data.organizationId,

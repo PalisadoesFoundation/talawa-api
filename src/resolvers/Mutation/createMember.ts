@@ -20,19 +20,29 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+
 /**
- * This function enables to add a member.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. Checks whether current user making the request is an superAdmin or an Admin.
- * 2. If the organization exists
- * 3. Checks whether curent user exists.
- * 4. Checks whether current user has appProfile.
- * 4. Checks whether user with _id === args.input.userId is already an member of organization..
+ * Adds a user as a member to an organization.
  *
- * @returns Organization.
+ * This resolver performs the following actions:
+ *
+ * 1. Verifies if the current user making the request exists and is either a superAdmin or an admin of the organization.
+ * 2. Checks if the specified organization exists in the cache; if not, fetches it from the database and caches it.
+ * 3. Checks if the specified user exists and is not already a member of the organization.
+ * 4. Adds the user to the organization's member list and updates the user's joinedOrganizations list.
+ *
+ * @param _parent - The parent object, not used in this resolver.
+ * @param args - The input arguments for the mutation, including:
+ *   - `input`: An object containing:
+ *     - `organizationId`: The ID of the organization to which the user will be added.
+ *     - `userId`: The ID of the user to be added as a member.
+ * @param context - The context object containing user information (context.userId).
+ *
+ * @returns An object containing:
+ *   - `organization`: The updated organization object.
+ *   - `userErrors`: A list of errors encountered during the process.
+ *
+ * @remarks This function returns the updated organization and any errors encountered. It ensures that the user is not already a member before adding them and handles caching of the organization.
  */
 export const createMember: MutationResolvers["createMember"] = async (
   _parent,
@@ -53,11 +63,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   }
 
   if (!currentUser) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-    //   USER_NOT_FOUND_ERROR.CODE,
-    //   USER_NOT_FOUND_ERROR.PARAM,
-    // );
+    // Return an error if the user is not found
     return {
       organization: new Organization(),
       userErrors: [
@@ -68,6 +74,7 @@ export const createMember: MutationResolvers["createMember"] = async (
       ],
     };
   }
+
   let currentUserAppProfile: InterfaceAppUserProfile | null;
   const appUserProfileFoundInCache = await findAppUserProfileCache([
     currentUser.appUserProfileId?.toString(),
@@ -83,11 +90,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   }
 
   if (!currentUserAppProfile) {
-    // throw new errors.UnauthorizedError(
-    //   requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-    //   USER_NOT_AUTHORIZED_ERROR.CODE,
-    //   USER_NOT_AUTHORIZED_ERROR.PARAM,
-    // );
+    // Return an error if the user's app profile is not found
     return {
       organization: new Organization(),
       userErrors: [
@@ -117,11 +120,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   }
 
   if (!organization) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-    //   ORGANIZATION_NOT_FOUND_ERROR.CODE,
-    //   ORGANIZATION_NOT_FOUND_ERROR.PARAM,
-    // );
+    // Return an error if the organization is not found
     return {
       organization: new Organization(),
       userErrors: [
@@ -134,12 +133,14 @@ export const createMember: MutationResolvers["createMember"] = async (
       ],
     };
   }
+
   const userIsOrganizationAdmin = organization.admins.some(
     (admin) =>
       admin === currentUser._id ||
       new mongoose.Types.ObjectId(admin.toString()).equals(currentUser._id),
   );
   if (!userIsOrganizationAdmin && !currentUserAppProfile.isSuperAdmin) {
+    // Return an error if the user is not authorized
     return {
       organization: new Organization(),
       userErrors: [
@@ -155,13 +156,9 @@ export const createMember: MutationResolvers["createMember"] = async (
     _id: args.input.userId,
   }).lean();
 
-  // Checks whether curent user exists
+  // Checks whether the user exists
   if (!user) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-    //   USER_NOT_FOUND_ERROR.CODE,
-    //   USER_NOT_FOUND_ERROR.PARAM,
-    // );
+    // Return an error if the user is not found
     return {
       organization: new Organization(),
       userErrors: [
@@ -177,13 +174,9 @@ export const createMember: MutationResolvers["createMember"] = async (
     member.equals(user._id),
   );
 
-  // Checks whether user with _id === args.input.userId is already an member of organization.
+  // Checks whether the user is already a member of the organization
   if (userIsOrganizationMember) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
-    //   MEMBER_NOT_FOUND_ERROR.CODE,
-    //   MEMBER_NOT_FOUND_ERROR.PARAM,
-    // );
+    // Return an error if the user is already a member
     return {
       organization: new Organization(),
       userErrors: [
@@ -195,7 +188,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     };
   }
 
-  // add organization's id from joinedOrganizations list on user.
+  // Adds the organization ID to the user's joinedOrganizations list.
   await User.updateOne(
     {
       _id: args.input.userId,
@@ -210,7 +203,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     },
   );
 
-  // add user's id to members list on organization and return it.
+  // Adds the user's ID to the organization's members list and returns it.
   const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization?._id,

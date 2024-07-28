@@ -3235,7 +3235,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 ) => TResult | Promise<TResult>;
 
 /** Mapping of union types */
-export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
+export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = {
   ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
   CreateAdminError: ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   CreateCommentError: ( PostNotFoundError );
@@ -3244,7 +3244,7 @@ export type ResolversUnionTypes<RefType extends Record<string, unknown>> = {
 };
 
 /** Mapping of interface types */
-export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
+export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = {
   ConnectionPageInfo: ( DefaultConnectionPageInfo );
   Error: ( MemberNotFoundError ) | ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( PostNotFoundError ) | ( UnauthenticatedError ) | ( UnauthorizedError ) | ( UserNotAuthorizedAdminError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   FieldError: ( InvalidCursor ) | ( MaximumLengthError ) | ( MaximumValueError ) | ( MinimumLengthError ) | ( MinimumValueError );
