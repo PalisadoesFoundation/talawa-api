@@ -40,3 +40,5 @@ export * from "./TagUser";
 export * from "./Venue";
 export * from "./User";
 export * from "./Note";
+export * from "./Chat";
+export * from "./ChatMessage";

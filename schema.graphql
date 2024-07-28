@@ -554,6 +554,32 @@ type DirectChatMessage {
   updatedAt: DateTime!
 }
 
+type Chat {
+  _id: ID!
+  isGroup: Boolean
+  name: String
+  createdAt: DateTime!
+  creator: User
+  messages: [ChatMessage]
+  organization: Organization
+  updatedAt: DateTime!
+  users: [User!]!
+  admins: [User]
+  lastMessageId: String
+}
+
+type ChatMessage {
+  _id: ID!
+  createdAt: DateTime!
+  chatMessageBelongsTo: Chat!
+  messageContent: String!
+  type: String!
+  replyTo: ChatMessage
+  sender: User!
+  deletedBy: [User]
+  updatedAt: DateTime!
+}
+
 type Donation {
   _id: ID!
   amount: Float!
@@ -1075,6 +1101,7 @@ type Mutation {
   createAgendaSection(input: CreateAgendaSectionInput!): AgendaSection!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
+  createChat(data: chatInput!): Chat
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
@@ -1144,6 +1171,7 @@ type Mutation {
   revokeRefreshTokenForUser: Boolean!
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
+  sendMessageToChat(chatId: ID!, messageContent: String!, type: String!, replyTo: ID): ChatMessage!
   sendMessageToDirectChat(chatId: ID!, messageContent: String!, replyTo: ID): DirectChatMessage!
   sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
   signUp(data: UserInput!, file: String): AuthData!
@@ -1468,6 +1496,8 @@ type Query {
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
+  chatById(id: ID!): Chat!
+  chatsByUserId(id: ID!): [Chat]
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   directChatById(id: ID!): DirectChat
@@ -1598,6 +1628,7 @@ enum Status {
 type Subscription {
   directMessageChat: MessageChat
   messageSentToDirectChat(userId: ID!): DirectChatMessage
+  messageSentToChat(userId: ID!): ChatMessage
   messageSentToGroupChat(userId: ID!): GroupChatMessage
   onPluginUpdate: Plugin
 }
@@ -2015,6 +2046,14 @@ enum WeekDays {
 input createChatInput {
   organizationId: ID
   userIds: [ID!]!
+}
+
+input chatInput {
+  isGroup: Boolean!
+  organizationId: ID
+  userIds: [ID!]!
+  name: String
+  image: String
 }
 
 type createDirectChatPayload {

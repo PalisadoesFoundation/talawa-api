@@ -19,6 +19,8 @@ import { AgendaSection } from "./AgendaSection";
 import { AgendaCategory } from "./AgendaCategory";
 import { CheckIn } from "./CheckIn";
 import { Comment } from "./Comment";
+import { Chat } from "./Chat";
+import { ChatMessage } from "./ChatMessage";
 import { DirectChat } from "./DirectChat";
 import { DirectChatMessage } from "./DirectChatMessage";
 import { Event } from "./Event";
@@ -52,6 +54,8 @@ const resolvers: Resolvers = {
   Advertisement,
   CheckIn,
   Comment,
+  Chat,
+  ChatMessage,
   DirectChat,
   DirectChatMessage,
   Event,
@@ -91,6 +95,7 @@ const resolversComposition = {
   "Mutation.addOrganizationImage": [currentUserExists()],
   "Mutation.blockPluginCreationBySuperadmin": [currentUserExists()],
   "Mutation.createComment": [currentUserExists()],
+  "Mutation.createChat": [currentUserExists()],
   "Mutation.createDirectChat": [currentUserExists()],
   "Mutation.createGroupChat": [currentUserExists()],
   "Mutation.createOrganization": [currentUserExists()],

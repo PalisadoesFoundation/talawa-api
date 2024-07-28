@@ -87,7 +87,7 @@ export const mutations = gql`
 
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
-    createDirectChat(data: createChatInput!): DirectChat! @auth
+    createChat(data: chatInput!): Chat
 
     createDonation(
       userId: ID!
@@ -252,6 +252,13 @@ export const mutations = gql`
       messageContent: String!
       replyTo: ID
     ): DirectChatMessage! @auth
+
+    sendMessageToChat(
+      chatId: ID!
+      messageContent: String!
+      type: String!
+      replyTo: ID
+    ): ChatMessage! @auth
 
     sendMessageToGroupChat(
       chatId: ID!

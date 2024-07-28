@@ -48,6 +48,10 @@ const config: CodegenConfig = {
 
           DirectChat: "../models/DirectChat#InterfaceDirectChat",
 
+          Chat: "../models/Chat#InterfaceChat",
+
+          ChatMessage: "../models/ChatMessage#InterfaceChatMessage",
+
           DirectChatMessage:
             "../models/DirectChatMessage#InterfaceDirectChatMessage",
 

@@ -5,6 +5,7 @@ export const subscriptions = gql`
   type Subscription {
     directMessageChat: MessageChat
     messageSentToDirectChat(userId: ID!): DirectChatMessage
+    messageSentToChat(userId: ID!): ChatMessage
     messageSentToGroupChat(userId: ID!): GroupChatMessage
     onPluginUpdate: Plugin
   }

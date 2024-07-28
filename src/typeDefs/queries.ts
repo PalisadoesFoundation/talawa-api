@@ -41,6 +41,10 @@ export const queries = gql`
 
     customDataByOrganization(organizationId: ID!): [UserCustomData!]!
 
+    chatById(id: ID!): Chat!
+
+    chatsByUserId(id: ID!): [Chat]
+
     directChatsByUserID(id: ID!): [DirectChat]
 
     directChatById(id: ID!): DirectChat

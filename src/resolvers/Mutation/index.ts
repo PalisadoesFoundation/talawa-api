@@ -24,7 +24,7 @@ import { createAgendaCategory } from "./createAgendaCategory";
 import { createAgendaItem } from "./createAgendaItem";
 import { createAgendaSection } from "./createAgendaSection";
 import { createComment } from "./createComment";
-import { createDirectChat } from "./createDirectChat";
+import { createChat } from "./createChat";
 import { createDonation } from "./createDonation";
 import { createEvent } from "./createEvent";
 import { createEventVolunteer } from "./createEventVolunteer";
@@ -91,6 +91,7 @@ import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
 import { saveFcmToken } from "./saveFcmToken";
 import { sendMembershipRequest } from "./sendMembershipRequest";
 import { sendMessageToDirectChat } from "./sendMessageToDirectChat";
+import { sendMessageToChat } from "./sendMessageToChat";
 import { sendMessageToGroupChat } from "./sendMessageToGroupChat";
 import { signUp } from "./signUp";
 import { togglePostPin } from "./togglePostPin";
@@ -154,7 +155,7 @@ export const Mutation: MutationResolvers = {
   createAgendaCategory,
   createAgendaItem,
   createAgendaSection,
-  createDirectChat,
+  createChat,
   createDonation,
   createEvent,
   createFund,
@@ -217,6 +218,7 @@ export const Mutation: MutationResolvers = {
   saveFcmToken,
   sendMembershipRequest,
   sendMessageToDirectChat,
+  sendMessageToChat,
   sendMessageToGroupChat,
   signUp,
   togglePostPin,

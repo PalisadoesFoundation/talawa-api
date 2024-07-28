@@ -767,4 +767,31 @@ export const types = gql`
     cursor: String!
     node: User!
   }
+
+  type Chat {
+    _id: ID!
+    isGroup: Boolean!
+    name: String
+    createdAt: DateTime!
+    creator: User
+    messages: [ChatMessage]
+    organization: Organization
+    updatedAt: DateTime!
+    users: [User!]!
+    admins: [User]
+    lastMessageId: String
+    image: String
+  }
+
+  type ChatMessage {
+    _id: ID!
+    createdAt: DateTime!
+    chatMessageBelongsTo: Chat!
+    replyTo: ChatMessage
+    messageContent: String!
+    type: String!
+    sender: User!
+    deletedBy: [User]
+    updatedAt: DateTime!
+  }
 `;

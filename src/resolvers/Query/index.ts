@@ -16,6 +16,8 @@ import { customFieldsByOrganization } from "./customFieldsByOrganization";
 import { directChatsByUserID } from "./directChatsByUserID";
 import { directChatsMessagesByChatID } from "./directChatsMessagesByChatID";
 import { directChatById } from "./directChatById";
+import { chatById } from "./chatById";
+import { chatsByUserId } from "./chatsByUserId";
 import { groupChatById } from "./groupChatById";
 import { groupChatsByUserId } from "./groupChatsByUserId";
 import { event } from "./event";
@@ -64,6 +66,8 @@ export const Query: QueryResolvers = {
   getCommunityData,
   customFieldsByOrganization,
   customDataByOrganization,
+  chatById,
+  chatsByUserId,
   directChatsByUserID,
   directChatsMessagesByChatID,
   directChatById,
