@@ -1,5 +1,5 @@
 # Stage 1: Install Dependencies
-FROM node:lts AS builder
+FROM node:lts as builder
 
 WORKDIR /usr/src/app
 
@@ -13,6 +13,11 @@ COPY . .
 FROM node:lts-bookworm-slim
 
 WORKDIR /usr/src/app
+
+# Install Git
+RUN apt-get update && \
+    apt-get install -y git && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/src/app ./
 
