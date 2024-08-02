@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y curl && \
     apt-get install -y nodejs
 
 # Copy package.json and install dependencies
+RUN ls -la
 COPY package.json ./
 RUN npm install
 

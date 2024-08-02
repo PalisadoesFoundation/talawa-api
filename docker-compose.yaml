@@ -20,7 +20,7 @@ services:
     ports:
       - "${SERVER_PORT:-4000}:4000"
     volumes:
-      - ../..:/workspaces:cached
+      - :/workspaces:cached
       - /usr/src/app/node_modules
     depends_on:
       - mongodb
