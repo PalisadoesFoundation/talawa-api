@@ -1,6 +1,6 @@
 {
   "name": "talawa api dev environment",
-  "dockerComposeFile": ["../docker-compose.dev.yaml"],
+  "dockerComposeFile": ["../docker-compose.yaml"],
   "service": "devcontainer",
   "workspaceFolder": "/workspaces/talawa-api/content",
   // Settings to apply to the workspace.
