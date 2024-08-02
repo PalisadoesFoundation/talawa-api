@@ -2,7 +2,7 @@
   "name": "talawa api dev environment",
   "dockerComposeFile": ["../docker-compose.yaml"],
   "service": "devcontainer",
-  "workspaceFolder": "/workspaces/work/${localWorkspaceFolderBasename}",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   // Settings to apply to the workspace.
   "customizations": {
     // Configure properties specific to VS Code.
@@ -30,6 +30,7 @@
   ],
   // Post-create commands to run after creating the container
   "postCreateCommand": "npm install",
+  "postStartCommand": "npm run dev -d",
   // Volumes from docker-compose are already included
   "shutdownAction": "stopCompose"
 }
