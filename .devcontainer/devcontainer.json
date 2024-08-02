@@ -1,6 +1,6 @@
 {
   "name": "talawa api dev environment",
-  "dockerComposeFile": ["../docker-compose.yaml"],
+  "dockerComposeFile": ["../docker-compose.dev.yaml"],
   "service": "devcontainer",
   "workspaceFolder": "/workspaces/talawa-api/content",
   // Settings to apply to the workspace.
@@ -17,7 +17,7 @@
       "extensions": [
         "dbaeumer.vscode-eslint",
         "ms-azuretools.vscode-docker",
-        // "esbenp.prettier-vscode",
+        "esbenp.prettier-vscode",
         "redhat.vscode-yaml"
       ]
     }
