@@ -5,11 +5,18 @@ import { GroupChat } from "../../models";
 
 const MESSAGE_SENT_TO_GROUP_CHAT = "MESSAGE_SENT_TO_GROUP_CHAT";
 
+/**
+ * This function is used to filter the subscription payload based on the current user's membership in the group chat.
+ *
+ * @param payload - The payload of the subscription message.
+ * @param context - The context object containing the current user's ID.
+ * @returns A promise that resolves to a boolean value indicating whether the current user is a member of the group chat.
+ */
 export const filterFunction = async function (
   payload: any,
-  context: any,
+  variables: any,
 ): Promise<boolean> {
-  const { currentUserId } = context.context;
+  const currentUserId = variables.userId;
   const groupChatId = payload.messageSentToGroupChat.groupChatMessageBelongsTo;
 
   const groupChat = await GroupChat.findOne({
@@ -40,6 +47,6 @@ export const messageSentToGroupChat: SubscriptionResolvers["messageSentToGroupCh
       (_parent, _args, context) =>
         context.pubsub.asyncIterator([MESSAGE_SENT_TO_GROUP_CHAT]),
 
-      (payload, _variables, context) => filterFunction(payload, context),
+      (payload, variables) => filterFunction(payload, variables),
     ),
   };

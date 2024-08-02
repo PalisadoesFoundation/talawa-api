@@ -2,6 +2,9 @@ import type { Model, PopulatedDoc, Types } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 
+/**
+ * Represents a note document in the database.
+ */
 export interface InterfaceNote {
   _id: Types.ObjectId; // Unique identifier for the note.
   content: string; // Content of the note.
@@ -12,6 +15,15 @@ export interface InterfaceNote {
   agendaItemId: Types.ObjectId; // Reference to the agenda item associated with the note.
 }
 
+/**
+ * Mongoose schema definition for Note documents.
+ * @param content - The content of the note.
+ * @param createdBy - The ID of the user who created the note.
+ * @param updatedBy - Optional: The ID of the user who last updated the note.
+ * @param createdAt - The date when the note was created.
+ * @param updatedAt - Optional: The date when the note was last updated.
+ * @param agendaItemId - The ID of the agenda item associated with the note.
+ */
 export const NoteSchema = new Schema({
   content: {
     type: String,
@@ -42,9 +54,13 @@ export const NoteSchema = new Schema({
   },
 });
 
+/**
+ * Mongoose model for Note documents.
+ */
 const noteModel = (): Model<InterfaceNote> =>
   model<InterfaceNote>("Note", NoteSchema);
 
+// Exporting the Note model while preventing Mongoose OverwriteModelError during tests.
 export const NoteModel = (models.Note || noteModel()) as ReturnType<
   typeof noteModel
 >;

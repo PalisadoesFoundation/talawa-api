@@ -15,19 +15,34 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
+
 /**
- * This function enables to create an admin for an organization.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the organization exists
- * 2. If the user has appUserProfile
- * 3. If the current user is the creator of the organization
- * 4. If the user exists
- * 5. If the user is a member of the organization
- * 6. If the user is already an admin of the organization
- * @returns Updated appUserProfile
+ * Creates an admin for an organization by adding the specified user to the organization's admin list.
+ *
+ * This function performs several checks:
+ *
+ * 1. Verifies if the specified organization exists.
+ * 2. Ensures the current user is found and has an associated app user profile.
+ * 3. Checks if the current user is the creator of the organization.
+ * 4. Checks if the specified user exists and is a member of the organization.
+ * 5. Ensures the specified user is not already an admin of the organization.
+ *
+ * @param _parent - The parent object for the mutation (not used in this function).
+ * @param args - The arguments provided with the request, including:
+ *   - `data`: An object containing:
+ *     - `organizationId`: The ID of the organization to which the user will be added as an admin.
+ *     - `userId`: The ID of the user to be made an admin.
+ * @param context - The context of the entire application, including user information and other context-specific data.
+ *
+ * @returns An object containing:
+ *   - `user`: The updated app user profile of the user being added as an admin.
+ *   - `userErrors`: An array of error objects if any errors occurred, otherwise an empty array.
+ *
+ * @remarks The function handles the following:
+ * - Caches and retrieves the organization data.
+ * - Verifies the existence and profile of the current user.
+ * - Ensures the user to be added is a member of the organization and is not already an admin.
+ * - Updates the organization's admin list and the app user profile of the newly added admin.
  */
 export const createAdmin: MutationResolvers["createAdmin"] = async (
   _parent,
@@ -50,13 +65,8 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     await cacheOrganizations([organization as InterfaceOrganization]);
   }
 
-  // Checks whether organization exists.
+  // Checks whether the organization exists.
   if (!organization) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-    //   ORGANIZATION_NOT_FOUND_ERROR.CODE,
-    //   ORGANIZATION_NOT_FOUND_ERROR.PARAM,
-    // );
     return {
       user: new AppUserProfile(),
       userErrors: [
@@ -69,16 +79,13 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       ],
     };
   }
-  // Checks whether the current user is a superAdmin
+
+  // Checks whether the current user exists and has an app user profile.
   const currentUser = await User.findById({
     _id: context.userId,
   });
+
   if (!currentUser) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-    //   USER_NOT_FOUND_ERROR.CODE,
-    //   USER_NOT_FOUND_ERROR.PARAM,
-    // );
     return {
       user: new AppUserProfile(),
       userErrors: [
@@ -89,16 +96,12 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       ],
     };
   }
+
   const currentUserAppProfile = await AppUserProfile.findOne({
     userId: currentUser._id,
   }).lean();
 
   if (!currentUserAppProfile) {
-    // throw new errors.UnauthorizedError(
-    //   requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-    //   USER_NOT_AUTHORIZED_ERROR.CODE,
-    //   USER_NOT_AUTHORIZED_ERROR.PARAM,
-    // );
     return {
       user: new AppUserProfile(),
       userErrors: [
@@ -111,16 +114,12 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   }
 
   superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
+
   const userAppProfile = await AppUserProfile.findOne({
     userId: args.data.userId,
   }).lean();
-  1;
+
   if (!userAppProfile) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-    //   USER_NOT_FOUND_ERROR.CODE,
-    //   USER_NOT_FOUND_ERROR.PARAM,
-    // );
     return {
       user: new AppUserProfile(),
       userErrors: [
@@ -131,34 +130,13 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       ],
     };
   }
-  // const userExists = !!(await User.exists({
-  //   _id: args.data.userId,
-  // }));
 
-  // // Checks whether user with _id === args.data.userId exists.
-  // if (userExists === false) {
-  //   return {
-  //     user: new AppUserProfile(),
-  //     userErrors: [
-  //       {
-  //         __typename: "UserNotFoundError",
-  //         message: requestContext.translate("test"),
-  //       },
-  //     ],
-  //   };
-  // }
-
+  // Checks if the user is a member of the organization.
   const userIsOrganizationMember = organization.members.some((member) =>
     new mongoose.Types.ObjectId(member.toString()).equals(args.data.userId),
   );
 
-  // Checks whether user with _id === args.data.userId is not a member of organization.
   if (userIsOrganizationMember === false) {
-    // throw new errors.NotFoundError(
-    //   requestContext.translate(ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE),
-    //   ORGANIZATION_MEMBER_NOT_FOUND_ERROR.CODE,
-    //   ORGANIZATION_MEMBER_NOT_FOUND_ERROR.PARAM,
-    // );
     return {
       user: new AppUserProfile(),
       userErrors: [
@@ -172,17 +150,12 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     };
   }
 
+  // Checks if the user is already an admin of the organization.
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
     new mongoose.Types.ObjectId(admin.toString()).equals(args.data.userId),
   );
 
-  // Checks whether user with _id === args.data.userId is already an admin of organization.
   if (userIsOrganizationAdmin === true) {
-    // throw new errors.UnauthorizedError(
-    //   requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-    //   USER_NOT_AUTHORIZED_ERROR.CODE,
-    //   USER_NOT_AUTHORIZED_ERROR.PARAM,
-    // );
     return {
       user: new AppUserProfile(),
       userErrors: [
@@ -194,7 +167,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     };
   }
 
-  // Adds args.data.userId to admins list of organization's document.
+  // Updates the organization document to add the user as an admin.
   const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization._id,
@@ -213,10 +186,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     await cacheOrganizations([updatedOrganization]);
   }
 
-  /*
-  Adds organization._id to adminFor list on appUserProfile's document with userId === args.data.userId
-  and returns the updated appUserProfile of the user.
-  */
+  // Updates the app user profile to reflect the new admin role.
   return {
     user: await AppUserProfile.findOneAndUpdate(
       {

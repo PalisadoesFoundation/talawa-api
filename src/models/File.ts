@@ -16,23 +16,25 @@ export interface InterfaceFile {
   createdAt: Date;
   updatedAt: Date;
 }
+
 /**
- * This is the structure of a file
- * @param name - Name
- * @param url - URL
- * @param size - Size
- * @param secret - Secret
- * @param createdAt - Timestamp of creation
- * @param updatedAt - Timestamp of updation
- * @param contentType - Content Type
- * @param status - Status
+ * Mongoose schema for a file.
+ * Defines the structure of the file document stored in MongoDB.
+ * @param name - The name of the file.
+ * @param url - The URL where the file is stored.
+ * @param size - The size of the file in bytes.
+ * @param secret - A secret key associated with the file.
+ * @param contentType - The MIME type of the file.
+ * @param status - The status of the file (e.g., ACTIVE, BLOCKED, DELETED).
+ * @param createdAt - The date and time when the file was created.
+ * @param updatedAt - The date and time when the file was last updated.
  */
 const fileSchema = new Schema(
   {
     name: {
       type: String,
       required: true,
-      default: uuidv4(),
+      default: uuidv4(), // Generates a unique identifier for the name by default
     },
     url: {
       type: String,
@@ -55,16 +57,26 @@ const fileSchema = new Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields
   },
 );
 
+// Add logging middleware for fileSchema
 createLoggingMiddleware(fileSchema, "File");
 
+/**
+ * Function to retrieve or create the Mongoose model for the File.
+ * This is necessary to avoid the OverwriteModelError during testing.
+ * @returns The Mongoose model for the File.
+ */
 const fileModel = (): Model<InterfaceFile> =>
   model<InterfaceFile>("File", fileSchema);
 
-// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
+/**
+ * The Mongoose model for the File.
+ * If the model already exists (e.g., during testing), it uses the existing model.
+ * Otherwise, it creates a new model.
+ */
 export const File = (models.File || fileModel()) as ReturnType<
   typeof fileModel
 >;
