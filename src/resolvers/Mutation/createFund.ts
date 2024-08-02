@@ -14,19 +14,32 @@ import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { adminCheck } from "../../utilities";
-/**
- * This function enables to create an organization specific fundraising funds.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * 2. If the organization exists
- * 3. If the user is authorized.
- * 4. If the fund already exists
- * @returns Created fund
- */
 
+/**
+ * Creates a new fundraising fund for a specified organization.
+ *
+ * This function performs the following actions:
+ * 1. Verifies the existence of the current user.
+ * 2. Retrieves and caches the user's profile if not already cached.
+ * 3. Verifies the existence of the specified organization.
+ * 4. Checks if the current user is an admin of the organization.
+ * 5. Verifies that the fund does not already exist for the given organization.
+ * 6. Creates a new fund with the provided details.
+ * 7. Updates the organization's list of funds to include the newly created fund.
+ *
+ * @param _parent - The parent object for the mutation. This parameter is not used in this resolver.
+ * @param args - The arguments for the mutation, including:
+ *   - `data.organizationId`: The ID of the organization for which the fund is being created.
+ *   - `data.name`: The name of the fund.
+ *   - `data.refrenceNumber`: The reference number for the fund.
+ *   - `data.taxDeductible`: Indicates if the fund is tax-deductible.
+ *   - `data.isDefault`: Indicates if the fund is a default fund.
+ *   - `data.isArchived`: Indicates if the fund is archived.
+ * @param context - The context for the mutation, including:
+ *   - `userId`: The ID of the current user performing the operation.
+ *
+ * @returns The created fund record.
+ */
 export const createFund: MutationResolvers["createFund"] = async (
   _parent,
   args,
@@ -86,22 +99,25 @@ export const createFund: MutationResolvers["createFund"] = async (
       ORGANIZATION_NOT_FOUND_ERROR.PARAM,
     );
   }
-  //checks whether the user is admin of organization or not
+
+  // Checks whether the user is admin of the organization or not.
   await adminCheck(currentUser._id, organization);
 
-  const exisitingFund = await Fund.findOne({
+  const existingFund = await Fund.findOne({
     name: args.data.name,
     organizationId: args.data.organizationId,
   });
-  //checks if the fund already exists
-  if (exisitingFund) {
+
+  // Checks if the fund already exists.
+  if (existingFund) {
     throw new errors.ConflictError(
       requestContext.translate(FUND_ALREADY_EXISTS.MESSAGE),
       FUND_ALREADY_EXISTS.CODE,
       FUND_ALREADY_EXISTS.PARAM,
     );
   }
-  //create Fund with the provided data
+
+  // Creates Fund with the provided data.
   const createdFund = await Fund.create({
     name: args.data.name,
     organizationId: args.data.organizationId,
@@ -112,7 +128,7 @@ export const createFund: MutationResolvers["createFund"] = async (
     creatorId: context.userId,
   });
 
-  //push the created fund to the organization funds array
+  // Pushes the created fund to the organization's funds array.
   await Organization.updateOne(
     {
       _id: organization._id,

@@ -38,6 +38,9 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
       },
       context: { currentUserId: testCurrentUser?._id },
     };
+    const variables = {
+      userId: testCurrentUser?._id,
+    };
     const payload = {
       messageSentToDirectChat: {
         receiver: testDirectChatMessage?.receiver,
@@ -53,11 +56,11 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
       context,
     );
     expect(x).not.toBe(null);
-    expect(await filterFunction(payload, context)).toBe(true);
+    expect(await filterFunction(payload, variables)).toBe(true);
 
     // If current User is sender
     payload.messageSentToDirectChat.receiver = "receiver";
-    expect(await filterFunction(payload, context)).toBe(true);
+    expect(await filterFunction(payload, variables)).toBe(true);
   });
 
   it("user is not notified if it is not a part of DirectChat", async () => {
@@ -76,6 +79,9 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
       },
       context: { currentUserId: testCurrentUser?._id },
     };
+    const variables = {
+      userId: testCurrentUser?._id,
+    };
 
     const payload = {
       messageSentToDirectChat: {
@@ -92,6 +98,6 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
       context,
     );
     expect(x).not.toBe(null);
-    expect(await filterFunction(payload, context)).toBe(false);
+    expect(await filterFunction(payload, variables)).toBe(false);
   });
 });

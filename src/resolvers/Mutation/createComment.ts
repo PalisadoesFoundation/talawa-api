@@ -6,13 +6,23 @@ import { cacheComments } from "../../services/CommentCache/cacheComments";
 import { cachePosts } from "../../services/PostCache/cachePosts";
 
 /**
- * This function enables to create comment.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * @returns Created comment
+ * Creates a new comment and associates it with the specified post.
+ *
+ * This function performs the following actions:
+ * 1. Verifies that the post specified by `postId` exists.
+ * 2. Creates a new comment associated with the post.
+ * 3. Increments the `commentCount` for the post by 1.
+ * 4. Caches the newly created comment and updated post data.
+ *
+ * @param _parent - The parent object for the mutation. This parameter is not used in this resolver.
+ * @param args - The arguments for the mutation, including:
+ *   - `postId`: The ID of the post to which the comment will be associated.
+ *   - `data`: The comment data, including the content of the comment.
+ * @param context - The context for the mutation, including:
+ *   - `userId`: The ID of the current user creating the comment.
+ *
+ * @returns The created comment.
+ *
  */
 export const createComment: MutationResolvers["createComment"] = async (
   _parent,

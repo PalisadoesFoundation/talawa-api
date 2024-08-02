@@ -3,8 +3,9 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import type { InterfacePost } from "./Post";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+
 /**
- * This is an interface representing a document for a comment in the database - (MongoDB).
+ * Represents a document for a comment in the MongoDB database.
  */
 export interface InterfaceComment {
   _id: Types.ObjectId;
@@ -17,16 +18,17 @@ export interface InterfaceComment {
   likeCount: number;
   status: string;
 }
+
 /**
- * This is the Structure of the Comments
- * @param text - Text
- * @param createdAt - Date when the comment was created
- * @param creatorId - Comment Creator, refer to `User` model
- * @param postId - Id of the post on which this comment is created
- * @param likedBy - Liked by whom
- * @param likeCount - No of likes
- * @param status - whether the comment is active, blocked or deleted.
- * @param updatedAt - Date when the comment was updated
+ * Mongoose schema definition for a comment document.
+ * @param text - Text content of the comment.
+ * @param createdAt - Date when the comment was created.
+ * @param creatorId - Reference to the user who created the comment.
+ * @param updatedAt - Date when the comment was last updated.
+ * @param postId - Reference to the post on which this comment is created.
+ * @param likedBy - Array of users who liked the comment.
+ * @param likeCount - Number of likes for the comment.
+ * @param status - Status of the comment (ACTIVE, BLOCKED, DELETED).
  */
 const commentSchema = new Schema(
   {
@@ -62,12 +64,16 @@ const commentSchema = new Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Adds createdAt and updatedAt automatically
   },
 );
 
+// Apply logging middleware to the schema
 createLoggingMiddleware(commentSchema, "Comment");
 
+/**
+ * Returns the Mongoose Model for Comment to prevent OverwriteModelError.
+ */
 const commentModel = (): Model<InterfaceComment> =>
   model<InterfaceComment>("Comment", commentSchema);
 

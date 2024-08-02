@@ -1,8 +1,9 @@
 import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+
 /**
- * This is an interface that represents a database(MongoDB) document for Encoded Video.
+ * Interface representing a document for an encoded video in MongoDB.
  */
 export interface InterfaceEncodedVideo {
   _id: Types.ObjectId;
@@ -10,11 +11,12 @@ export interface InterfaceEncodedVideo {
   content: string;
   numberOfUses: number;
 }
+
 /**
- * This describes the schema for a `encodedVideo` that corresponds to `InterfaceEncodedVideo` document.
- * @param fileName - File name.
- * @param content - Content.
- * @param numberOfUses - Number of Uses.
+ * Mongoose schema for an encoded video.
+ * @param fileName - Name of the file for the encoded video.
+ * @param content - Content of the encoded video.
+ * @param numberOfUses - Number of times the encoded video has been used.
  */
 const encodedVideoSchema = new Schema({
   fileName: {
@@ -28,12 +30,16 @@ const encodedVideoSchema = new Schema({
   numberOfUses: {
     type: Number,
     required: true,
-    default: 1,
+    default: 1, // Default value set to 1 when a new document is created.
   },
 });
 
+// Add logging middleware for encodedVideoSchema
 createLoggingMiddleware(encodedVideoSchema, "EncodedVideo");
 
+/**
+ * Retrieves or creates the Mongoose model for EncodedVideo.
+ */
 const encodedVideoModel = (): Model<InterfaceEncodedVideo> =>
   model<InterfaceEncodedVideo>("EncodedVideo", encodedVideoSchema);
 
