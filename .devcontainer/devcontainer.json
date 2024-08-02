@@ -30,7 +30,7 @@
   ],
   // Post-create commands to run after creating the container
   "postCreateCommand": "npm install",
-  "postStartCommand": "npm run dev -d",
+
   // Volumes from docker-compose are already included
   "shutdownAction": "stopCompose"
 }
