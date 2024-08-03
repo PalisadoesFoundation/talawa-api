@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mongodb:
@@ -7,20 +7,18 @@ services:
       - 27017:27017
     volumes:
       - mongodb-data:/data/db
-  
+
   redis-stack-server:
     image: redis/redis-stack-server:latest
     ports:
       - 6379:6379
     volumes:
-      - redis-data:/data/redis 
+      - redis-data:/data/redis
 
-  talawa-api-dev-container:
+  talawa-api-dev:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    ports:
-      - "${SERVER_PORT:-4000}:${SERVER_PORT:-4000}"
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -32,6 +30,21 @@ services:
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
 
+  caddy:
+    image: caddy/caddy:2.2.1-alpine
+    container_name: caddy-service
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - $PWD/Caddyfile:/etc/caddy/Caddyfile
+      - $PWD/site:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+
 volumes:
   mongodb-data:
   redis-data:
+  caddy_data:
+  caddy_config:
