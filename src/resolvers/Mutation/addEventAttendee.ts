@@ -144,6 +144,20 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   }
 
   await EventAttendee.create({ ...args.data });
-
+  const updateResult = await User.findByIdAndUpdate(
+    args.data.userId,
+    {
+      $push: {
+        eventsAttended: args.data.eventId.toString(),
+      },
+    },
+    { new: true },
+  );
+  console.log("testing eventID", args.data.eventId);
+  if (!updateResult) {
+    console.log("User not found or update failed");
+  } else {
+    console.log("Updated user:", updateResult);
+  }
   return requestUser;
 };
