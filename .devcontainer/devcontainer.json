@@ -2,7 +2,7 @@
   "name": "talawa api dev environment",
   "dockerComposeFile": ["../docker-compose.yaml"],
   "service": "devcontainer",
-  "workspaceFolder": "/workspaces/talawa-api/content",
+  "workspaceFolder": "/usr/src/app",
   // Settings to apply to the workspace.
   "customizations": {
     // Configure properties specific to VS Code.
