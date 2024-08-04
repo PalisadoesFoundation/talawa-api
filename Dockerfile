@@ -40,7 +40,7 @@ EXPOSE 4000
 # Set the frontend back to dialog
 ENV DEBIAN_FRONTEND=dialog
 
-CMD ["npm", "run", "dev"]
+CMD ["tail", "-f", "/dev/null"]
 
 
 
