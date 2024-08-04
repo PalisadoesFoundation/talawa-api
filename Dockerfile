@@ -40,5 +40,5 @@ EXPOSE 4000
 # Set the frontend back to dialog
 ENV DEBIAN_FRONTEND=dialog
 
-# Command to run the application
-CMD ["npm", "run", "dev"]
+
+
