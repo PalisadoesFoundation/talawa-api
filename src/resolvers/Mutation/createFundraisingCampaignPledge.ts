@@ -4,7 +4,7 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceUser } from "../../models";
-import { FundraisingCampaign, User } from "../../models";
+import { AppUserProfile, FundraisingCampaign, User } from "../../models";
 import {
   FundraisingCampaignPledge,
   type InterfaceFundraisingCampaignPledges,
@@ -88,13 +88,23 @@ export const createFundraisingCampaignPledge: MutationResolvers["createFundraisi
 
     // Create a new pledge.
     const pledge = await FundraisingCampaignPledge.create({
-      campaigns: [args.data.campaignId],
+      campaign: args.data.campaignId,
       users: args.data.userIds,
       startDate: startDate,
       endDate: endDate,
       amount: args.data.amount,
       currency: args.data.currency,
     });
+
+    // Update the user with the new pledge and campaign
+    await AppUserProfile.updateMany(
+      {
+        userId: { $in: args.data.userIds },
+      },
+      {
+        $addToSet: { pledges: pledge._id, campaigns: args.data.campaignId },
+      },
+    );
 
     // Update the campaign with the new pledge.
     await FundraisingCampaign.updateOne(

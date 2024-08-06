@@ -4,6 +4,8 @@ import mongoosePaginate from "mongoose-paginate-v2";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
+import type { InterfaceFundraisingCampaign } from "./FundraisingCampaign";
+import type { InterfaceFundraisingCampaignPledges } from "./FundraisingCampaignPledge";
 
 export interface InterfaceAppUserProfile {
   _id: Types.ObjectId;
@@ -13,24 +15,28 @@ export interface InterfaceAppUserProfile {
   createdEvents: PopulatedDoc<InterfaceEvent & Document>[];
   createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
   eventAdmin: PopulatedDoc<InterfaceEvent & Document>[];
+  pledges: PopulatedDoc<InterfaceFundraisingCampaignPledges & Document>[];
+  campaigns: PopulatedDoc<InterfaceFundraisingCampaign & Document>[];
   pluginCreationAllowed: boolean;
   token: string | undefined;
   tokenVersion: number;
   isSuperAdmin: boolean;
 }
 /**
- * Mongoose schema for an application user profile.
- * @param userId - Reference to the user associated with the profile.
- * @param adminFor - Array of organizations where the user is an admin.
- * @param appLanguageCode - Language code preference of the app user.
- * @param createdEvents - Array of events created by the user.
- * @param createdOrganizations - Array of organizations created by the user.
- * @param eventAdmin - Array of events where the user is an admin.
- * @param pluginCreationAllowed - Flag indicating if user is allowed to create plugins.
- * @param tokenVersion - Token version for authentication.
- * @param isSuperAdmin - Flag indicating if the user is a super admin.
- * @param token - Access token associated with the user profile.
- */
+ * This describes the schema for a `AppUserProfile` that corresponds to `InterfaceAppUserProfile` document.
+ * @param user - User id of the AppUserProfile
+ * @param adminFor - Collection of organization where appuser is admin, each object refer to `Organization` model.
+ * @param appLanguageCode - AppUser's app language code.
+ * @param createdEvents - Collection of all events created by the user, each object refer to `Event` model.
+ * @param createdOrganizations - Collection of all organization created by the user, each object refer to `Organization` model.
+ * @param eventAdmin - Collection of the event admins, each object refer to `Event` model.
+ * @param pledges - Collection of pledges user is associated with, each object refer to `FundraisingCampaignPledges` model.
+ * @param campaigns - Collection of campaigns user has pledged to, each object refer to `FundraisingCampaign` model.
+ * @param pluginCreationAllowed - Wheather user is allowed to create plugins.
+ * @param tokenVersion - Token version.
+ * @param isSuperAdmin - Wheather user is super admin.
+ * @param token - Access token.
+ *  */
 
 const appUserSchema = new Schema(
   {
@@ -66,6 +72,18 @@ const appUserSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "Event",
+      },
+    ],
+    pledges: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "FundraisingCampaignPledge",
+      },
+    ],
+    campaigns: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "FundraisingCampaign",
       },
     ],
     pluginCreationAllowed: {

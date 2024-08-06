@@ -21,6 +21,8 @@ import { findAppUserProfileCache } from "../../services/AppUserProfileCache/find
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceFundraisingCampaignPledges } from "../../models/FundraisingCampaignPledge";
+import { FundraisingCampaignPledge } from "../../models/FundraisingCampaignPledge";
 
 /**
  * This function enables to remove fundraising campaign .
@@ -81,7 +83,9 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
 
     const campaign = await FundraisingCampaign.findOne({
       _id: args.id,
-    }).lean();
+    })
+      .populate("pledges")
+      .lean();
 
     // Checks whether fundraising campaign exists.
     if (!campaign) {
@@ -122,6 +126,23 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
         USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
+
+    const pledgesTobeDeleted: Types.ObjectId[] = [];
+    for (const pledge of campaign.pledges as InterfaceFundraisingCampaignPledges[]) {
+      // Remove pledges & campaign from related user's AppUserProfile
+      pledgesTobeDeleted.push(pledge._id);
+
+      await AppUserProfile.updateMany(
+        { userId: { $in: pledge.users } },
+        { $pull: { pledges: pledge._id, campaigns: campaign._id } },
+      );
+    }
+
+    // Remove all the associated pledges.
+    await FundraisingCampaignPledge.deleteMany({
+      _id: { $in: pledgesTobeDeleted },
+    });
+
     // Deletes the fundraising campaign.
     await FundraisingCampaign.deleteOne({
       _id: args.id,

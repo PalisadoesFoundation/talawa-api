@@ -139,7 +139,7 @@ describe("resolvers->Mutation->addPledgeToFundraisingCampaign", () => {
       userId: testUser?._id.toString() || "",
     };
     const pledge = await addPledgeToFundraisingCampaign?.({}, args, context);
-    expect(pledge?.campaigns).toContainEqual(testCampaign2?._id);
+    expect(pledge?.campaign).toContainEqual(testCampaign2?._id);
     const campaign = await FundraisingCampaign.findOne({
       _id: testCampaign2?._id,
     });

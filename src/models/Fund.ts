@@ -1,11 +1,10 @@
 import type { Model, PopulatedDoc, Types } from "mongoose";
+
 import { Schema, model, models } from "mongoose";
 import type { InterfaceFundraisingCampaign } from "./FundraisingCampaign";
 import type { InterfaceUser } from "./User";
-
 /**
- * This is an interface representing a document for a fund in the database (MongoDB).
- * This interface defines the structure and types of data that a fund document will hold.
+ * This is an interface representing a document for fund in the database(MongoDB).
  */
 export interface InterfaceFund {
   _id: Types.ObjectId;
@@ -22,19 +21,18 @@ export interface InterfaceFund {
 }
 
 /**
- * Mongoose schema definition for a fund document.
- * This schema defines how the data will be stored in the MongoDB database.
+ * This is the structure of a file
+ * @param organizationId - Organization ID to which the fund belongs
+ * @param name - Name of the fund
+ * @param refrenceNumber - Reference number of the fund
+ * @param taxDeductible - Whether the fund is tax deductible
+ * @param isDefault - Whether the fund is default
+ * @param isArchived - Whether the fund is archived
+ * @param campaigns - Campaigns associated with the fund
+ * @param createdAt - Timestamp of creation
+ * @param updatedAt - Timestamp of updation
+ * @param creatorId - User who created the fund, refer to `User` model.
  *
- * @param organizationId - Organization ID to which the fund belongs.
- * @param name - Name of the fund.
- * @param refrenceNumber - Reference number of the fund.
- * @param taxDeductible - Indicates whether the fund is tax deductible.
- * @param isDefault - Indicates whether the fund is the default fund.
- * @param isArchived - Indicates whether the fund is archived.
- * @param creatorId - Reference to the user who created the fund (refers to the `User` model).
- * @param campaigns - Campaigns associated with the fund.
- * @param createdAt - Timestamp of when the fund document was created.
- * @param updatedAt - Timestamp of when the fund document was last updated.
  */
 const fundSchema = new Schema(
   {
@@ -75,23 +73,12 @@ const fundSchema = new Schema(
     ],
   },
   {
-    timestamps: true, // Automatically manage `createdAt` and `updatedAt` fields
+    timestamps: true,
   },
 );
-
-/**
- * Creates a Mongoose model for the fund schema.
- * This function ensures that we don't create multiple models during testing, which can cause errors.
- *
- * @returns The Fund model.
- */
 const fundModel = (): Model<InterfaceFund> =>
   model<InterfaceFund>("Fund", fundSchema);
-
-/**
- * Export the Fund model.
- * This syntax ensures we don't get an OverwriteModelError while running tests.
- */
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Fund = (models.Fund || fundModel()) as ReturnType<
   typeof fundModel
 >;
