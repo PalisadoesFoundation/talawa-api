@@ -1,0 +1,36 @@
+{
+  "name": "talawa api dev environment",
+  "dockerComposeFile": "docker-compose.yaml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  // Settings to apply to the workspace.
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "database.host": "mongodb",
+        "redis.host": "redis-stack-server"
+      },
+      // List of extensions to install inside the container
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker",
+        "esbenp.prettier-vscode",
+        "redhat.vscode-yaml"
+      ]
+    }
+  },
+  // Set up forward ports
+  "forwardPorts": [
+    4000, // Server port
+    27017, // MongoDB port
+    6379 // Redis port
+  ],
+  // Post-create commands to run after creating the container
+  "postCreateCommand": "npm install",
+
+  // Volumes from docker-compose are already included
+  "shutdownAction": "stopCompose"
+}
