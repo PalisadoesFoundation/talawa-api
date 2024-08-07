@@ -1,8 +1,8 @@
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { USER_NOT_AUTHORIZED_ERROR } from "../../../src/constants";
-import type {
-  InterfaceUser,
+import {
+  type InterfaceUser,
   AppUserProfile,
   type InterfaceFundraisingCampaign,
 } from "../../../src/models";
@@ -10,11 +10,8 @@ import type {
 import { getPledgesByUserId } from "../../../src/resolvers/Query/getPledgesByUserId";
 import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import type {
-  TestPledgeType} from "../../helpers/FundraisingCampaignPledge";
-import {
-  createTestFundraisingCampaignPledge
-} from "../../helpers/FundraisingCampaignPledge";
+import type { TestPledgeType } from "../../helpers/FundraisingCampaignPledge";
+import { createTestFundraisingCampaignPledge } from "../../helpers/FundraisingCampaignPledge";
 import type { InterfaceFundraisingCampaignPledges } from "../../../src/models/FundraisingCampaignPledge";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
