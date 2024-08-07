@@ -19,11 +19,8 @@ import { createTestFundraisingCampaign } from "../../helpers/FundraisingCampaign
 import { connect, disconnect } from "../../helpers/db";
 import { createTestUser } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import type {
-  TestPledgeType} from "../../helpers/FundraisingCampaignPledge";
-import {
-  createTestFundraisingCampaignPledge
-} from "../../helpers/FundraisingCampaignPledge";
+import type { TestPledgeType } from "../../helpers/FundraisingCampaignPledge";
+import { createTestFundraisingCampaignPledge } from "../../helpers/FundraisingCampaignPledge";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
