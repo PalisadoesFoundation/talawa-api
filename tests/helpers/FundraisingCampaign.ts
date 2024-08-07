@@ -4,6 +4,7 @@ import {
   FundraisingCampaign,
   type InterfaceFundraisingCampaign,
 } from "../../src/models";
+import { Types } from "mongoose";
 
 export type TestFundCampaignType =
   | (InterfaceFundraisingCampaign & Document)
@@ -19,7 +20,7 @@ export const createTestFundraisingCampaign = async (
   const testFundraisingCampaign = await FundraisingCampaign.create({
     name: `name${nanoid().toLowerCase()}`,
     fundId: fundId,
-    organizationId: organizationId ?? "organizationId",
+    organizationId: organizationId ?? new Types.ObjectId(),
     startDate: new Date(new Date().toDateString()),
     endDate: new Date(new Date().toDateString()),
     currency: "USD",

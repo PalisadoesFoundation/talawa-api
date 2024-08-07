@@ -182,7 +182,6 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
         id: testFundraisingCampaign?._id.toString() || "",
         data: {
           name: "testFundraisingCampaign",
-
           startDate: new Date(new Date().toDateString()),
           endDate: "Tue Feb 13 2023",
           currency: "USD",
