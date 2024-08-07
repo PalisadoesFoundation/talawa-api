@@ -1,4 +1,4 @@
-import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { USER_NOT_AUTHORIZED_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceFundraisingCampaign, InterfaceUser } from "../../models";
 import { AppUserProfile } from "../../models";
@@ -37,9 +37,9 @@ export const getPledgesByUserId: QueryResolvers["getPledgesByUserId"] = async (
 
   if (!appUserProfile) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 

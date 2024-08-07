@@ -845,6 +845,7 @@ input FundCampaignInput {
   fundId: ID!
   fundingGoal: Float!
   name: String!
+  organizationId: ID!
   startDate: Date!
 }
 

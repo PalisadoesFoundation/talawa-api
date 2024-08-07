@@ -222,6 +222,7 @@ export const inputs = gql`
     endDate: Date!
     fundingGoal: Float!
     currency: Currency!
+    organizationId: ID!
   }
   input FundCampaignPledgeInput {
     campaignId: ID!

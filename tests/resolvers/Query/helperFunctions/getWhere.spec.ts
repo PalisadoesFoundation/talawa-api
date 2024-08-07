@@ -10,6 +10,7 @@ import type {
   UserWhereInput,
   VenueWhereInput,
   CampaignWhereInput,
+  PledgeWhereInput,
 } from "../../../../src/types/generatedGraphQLTypes";
 
 describe("getWhere function", () => {
@@ -24,7 +25,8 @@ describe("getWhere function", () => {
         ActionItemWhereInput &
         FundWhereInput &
         CampaignWhereInput &
-        VenueWhereInput
+        VenueWhereInput &
+        PledgeWhereInput
     >,
     Record<string, unknown>,
   ][] = [
@@ -321,11 +323,19 @@ describe("getWhere function", () => {
       { name_contains: "Test" },
       { name: { $regex: "Test", $options: "i" } },
     ],
+    ["fundId", { fundId: "6f6c" }, { fundId: "6f6c" }],
+    [
+      "organizationId",
+      { organizationId: "6f6cd" },
+      { organizationId: "6f6cd" },
+    ],
+    ["campaignId", { campaignId: "6f6c" }, { _id: "6f6c" }],
   ];
 
   it.each(testCases)(
     "should return correct where payload for %s",
     (name, input, expected) => {
+      console.log({ name, input, expected });
       const result = getWhere(input);
       expect(result).toEqual(expected);
     },

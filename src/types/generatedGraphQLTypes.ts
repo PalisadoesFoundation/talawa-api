@@ -929,6 +929,7 @@ export type FundCampaignInput = {
   fundId: Scalars['ID']['input'];
   fundingGoal: Scalars['Float']['input'];
   name: Scalars['String']['input'];
+  organizationId: Scalars['ID']['input'];
   startDate: Scalars['Date']['input'];
 };
 

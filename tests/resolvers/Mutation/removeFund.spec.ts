@@ -106,7 +106,10 @@ describe("resolvers->Mutation->removeFund", () => {
     const context = {
       userId: testUser2?._id,
     };
-    const campaign = await createTestFundraisingCampaign(testfund2?._id);
+    const campaign = await createTestFundraisingCampaign(
+      testfund2?._id,
+      testfund2?.organizationId.toString(),
+    );
 
     try {
       await removeFund?.({}, args, context);

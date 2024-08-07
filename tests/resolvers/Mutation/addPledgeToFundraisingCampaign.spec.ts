@@ -43,7 +43,10 @@ beforeAll(async () => {
   testFund = temp[2];
   testPledge = temp[4];
   testCampaign = temp[3];
-  testCampaign2 = await createTestFundraisingCampaign(testFund?._id);
+  testCampaign2 = await createTestFundraisingCampaign(
+    testFund?._id,
+    testFund?.organizationId.toString(),
+  );
 });
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
@@ -139,10 +142,10 @@ describe("resolvers->Mutation->addPledgeToFundraisingCampaign", () => {
       userId: testUser?._id.toString() || "",
     };
     const pledge = await addPledgeToFundraisingCampaign?.({}, args, context);
-    expect(pledge?.campaign).toContainEqual(testCampaign2?._id);
+    expect(pledge?.campaign).toEqual(testCampaign2?._id);
     const campaign = await FundraisingCampaign.findOne({
       _id: testCampaign2?._id,
     });
-    expect(campaign?.pledges).toContainEqual(testPledge?._id);
+    expect(campaign?.pledges[0]?._id).toEqual(testPledge?._id);
   });
 });

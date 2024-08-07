@@ -11,16 +11,20 @@ export type TestFundCampaignType =
 
 export const createTestFundraisingCampaign = async (
   fundId: string,
+  organizationId?: string | undefined,
+  populated?: string[],
 ): Promise<InterfaceFundraisingCampaign> => {
   //   const [testUser, testOrganization, testFund] = await createTestFund();
 
   const testFundraisingCampaign = await FundraisingCampaign.create({
     name: `name${nanoid().toLowerCase()}`,
     fundId: fundId,
+    organizationId: organizationId ?? "organizationId",
     startDate: new Date(new Date().toDateString()),
     endDate: new Date(new Date().toDateString()),
     currency: "USD",
     fundingGoal: 1000,
+    pledges: [],
   });
   await Fund.updateOne(
     {
@@ -33,5 +37,9 @@ export const createTestFundraisingCampaign = async (
     },
   );
 
-  return testFundraisingCampaign;
+  const finalFundraisingCampaign = await FundraisingCampaign.findOne({
+    _id: testFundraisingCampaign._id,
+  }).populate(populated || []);
+
+  return finalFundraisingCampaign as InterfaceFundraisingCampaign;
 };
