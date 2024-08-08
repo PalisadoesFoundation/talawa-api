@@ -138,7 +138,7 @@ describe("resolvers->Mutation->removeFund", () => {
     };
     const campaign = await createTestFundraisingCampaign(
       testfund2?._id,
-      testfund2?.organizationId.toString(),
+      testfund2?.organizationId,
     );
 
     try {

@@ -44,7 +44,7 @@ beforeAll(async () => {
   testCampaign = temp[3];
   testCampaign2 = await createTestFundraisingCampaign(
     testFund?._id,
-    testFund?.organizationId.toString(),
+    testFund?.organizationId,
   );
 });
 afterAll(async () => {

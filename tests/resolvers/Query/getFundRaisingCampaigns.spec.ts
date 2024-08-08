@@ -18,7 +18,7 @@ beforeAll(async () => {
   testFund = resultArray[2];
   testCampaign = await createTestFundraisingCampaign(
     testFund?._id,
-    testFund?.organizationId.toString(),
+    testFund?.organizationId,
     ["fundId"],
   );
 });

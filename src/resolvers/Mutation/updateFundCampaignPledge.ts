@@ -85,9 +85,9 @@ export const updateFundraisingCampaignPledge: MutationResolvers["updateFundraisi
       }
 
       // Identify all users who were previously part of the pledge and were removed
-      const usersRemoved = pledge.users.filter((userId) => {
-        if (userId) return !args.data.users?.includes(userId.toString());
-      });
+      const usersRemoved = pledge.users.filter(
+        (userId) => userId && !args.data.users?.includes(userId.toString()),
+      );
 
       // Update AppUserProfile for every user who was removed from the pledge
       for (const userId of usersRemoved) {
@@ -116,9 +116,10 @@ export const updateFundraisingCampaignPledge: MutationResolvers["updateFundraisi
       }
 
       // Identify all users who are newly added to the pledge
-      const usersAdded = args.data.users.filter((userId) => {
-        if (userId) return !pledge.users.includes(new Types.ObjectId(userId));
-      });
+      const usersAdded = args.data.users.filter(
+        (userId) =>
+          userId && !pledge.users.includes(new Types.ObjectId(userId)),
+      );
 
       // Update AppUserProfile for every user who is newly added to the pledge
       await AppUserProfile.updateMany(

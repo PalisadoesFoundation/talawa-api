@@ -82,7 +82,7 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
     try {
       const campaign = await createTestFundraisingCampaign(
         new Types.ObjectId().toString(),
-        testFund?.organizationId.toString(),
+        testFund?.organizationId,
       );
       const args = {
         id: campaign?._id.toString() || "",
@@ -145,7 +145,7 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
     );
     const newCampaign = await createTestFundraisingCampaign(
       testFund?._id,
-      testFund?.organizationId.toString(),
+      testFund?.organizationId,
     ); // Ensuring a fresh campaign for this test
     const args = { id: newCampaign._id.toString() };
     const context = { userId: testUser?._id.toString() };
@@ -160,7 +160,7 @@ describe("resolvers->Mutation->removeFundraisingCampaign", () => {
     await AppUserProfile.deleteOne({ userId: testUser?._id });
     testCampaign = await createTestFundraisingCampaign(
       testFund?._id,
-      testFund?.organizationId.toString(),
+      testFund?.organizationId,
     );
     const args = {
       id: testCampaign?._id.toString() || "",

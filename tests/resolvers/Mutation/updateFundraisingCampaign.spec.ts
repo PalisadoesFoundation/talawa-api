@@ -87,7 +87,6 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
 
       await updateFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
-      //   console.log(error);
       expect((error as Error).message).toEqual(
         FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR.MESSAGE,
       );
@@ -117,7 +116,6 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
 
       await updateFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
-      //   console.log(error);
       expect((error as Error).message).toEqual(FUND_NOT_FOUND_ERROR.MESSAGE);
     }
   });
@@ -143,7 +141,6 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
 
       await updateFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
-      // console.log((error as Error).message);
       expect((error as Error).message).toEqual(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
       );
@@ -169,7 +166,6 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
 
       await updateFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
-      //   console.log(error);
       expect((error as Error).message).toEqual(
         START_DATE_VALIDATION_ERROR.MESSAGE,
       );
@@ -195,7 +191,6 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
 
       await updateFundraisingCampaign?.({}, args, context);
     } catch (error: unknown) {
-      //   console.log(error);
       expect((error as Error).message).toEqual(
         END_DATE_VALIDATION_ERROR.MESSAGE,
       );
@@ -232,7 +227,7 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
     const args: MutationUpdateFundraisingCampaignArgs = {
       id: testFundraisingCampaign?._id.toString() || "",
       data: {
-        name: "testFundraisingCampaign",
+        name: testFundraisingCampaign?.name + "2" || "",
         startDate: new Date(new Date().toDateString()),
         endDate: new Date(new Date().toDateString()),
         currency: "USD",
@@ -245,7 +240,7 @@ describe("resolvers->Mutation->updateFundrasingCampaign", () => {
     };
     const result = await updateFundraisingCampaign?.({}, args, context);
 
-    expect(result?.name).toEqual("testFundraisingCampaign");
+    expect(result?.name).toEqual(testFundraisingCampaign?.name + "2");
   });
 
   it("throws an error if the user does not have appUserProfile", async () => {

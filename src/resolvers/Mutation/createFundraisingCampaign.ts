@@ -141,7 +141,7 @@ export const createFundraisingCampaign: MutationResolvers["createFundraisingCamp
     const campaign = await FundraisingCampaign.create({
       name: args.data.name,
       fundId: args.data.fundId,
-      organizationId: currentOrgId,
+      organizationId: args.data.organizationId,
       startDate: args.data.startDate,
       endDate: args.data.endDate,
       fundingGoal: args.data.fundingGoal,

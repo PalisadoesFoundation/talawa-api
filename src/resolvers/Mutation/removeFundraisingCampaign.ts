@@ -132,10 +132,13 @@ export const removeFundraisingCampaign: MutationResolvers["removeFundraisingCamp
       // Remove pledges & campaign from related user's AppUserProfile
       pledgesTobeDeleted.push(pledge._id);
 
-      await AppUserProfile.updateMany(
-        { userId: { $in: pledge.users } },
-        { $pull: { pledges: pledge._id, campaigns: campaign._id } },
-      );
+      const bulkOps = pledge.users.map((userId) => ({
+        updateOne: {
+          filter: { userId },
+          update: { $pull: { pledges: pledge._id, campaigns: campaign._id } },
+        },
+      }));
+      await AppUserProfile.bulkWrite(bulkOps);
     }
 
     // Remove all the associated pledges.

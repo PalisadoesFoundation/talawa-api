@@ -56,8 +56,10 @@ export const getPledgesByUserId: QueryResolvers["getPledgesByUserId"] = async (
   if (args.where?.firstName_contains) {
     appUserProfile.pledges = appUserProfile.pledges.filter((pledge) => {
       const tempPledge = pledge as InterfaceFundraisingCampaignPledges;
-      const user = tempPledge.users[0] as InterfaceUser;
-      return user.firstName.includes(args?.where?.firstName_contains as string);
+      const users = tempPledge.users as InterfaceUser[];
+      return users.some((user) =>
+        user.firstName.includes(args?.where?.firstName_contains as string),
+      );
     });
   }
 

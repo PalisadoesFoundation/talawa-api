@@ -12,7 +12,7 @@ export type TestFundCampaignType =
 
 export const createTestFundraisingCampaign = async (
   fundId: string,
-  organizationId?: string | undefined,
+  organizationId?: Types.ObjectId | undefined,
   populated?: string[],
 ): Promise<InterfaceFundraisingCampaign> => {
   //   const [testUser, testOrganization, testFund] = await createTestFund();
