@@ -12,6 +12,8 @@ import {
   createTestUser,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
+import { FundraisingCampaignPledge } from "../../../src/models/FundraisingCampaignPledge";
+import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -25,6 +27,10 @@ beforeAll(async () => {
     testOrganization?._id,
     true,
   );
+  const pledges = await FundraisingCampaignPledge.find({
+    _id: new Types.ObjectId(),
+  }).lean();
+  console.log(pledges);
 });
 
 afterAll(async () => {

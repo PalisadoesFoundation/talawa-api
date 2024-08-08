@@ -148,10 +148,12 @@ type AppUserProfile {
   _id: ID!
   adminFor: [Organization]
   appLanguageCode: String!
+  campaigns: [FundraisingCampaign]
   createdEvents: [Event]
   createdOrganizations: [Organization]
   eventAdmin: [Event]
   isSuperAdmin: Boolean!
+  pledges: [FundraisingCampaignPledge]
   pluginCreationAllowed: Boolean!
   userId: User!
 }
@@ -173,7 +175,10 @@ enum CampaignOrderByInput {
 }
 
 input CampaignWhereInput {
+  fundId: ID
+  id: ID
   name_contains: String
+  organizationId: ID
 }
 
 type CheckIn {
@@ -840,6 +845,7 @@ input FundCampaignInput {
   fundId: ID!
   fundingGoal: Float!
   name: String!
+  organizationId: ID!
   startDate: Date!
 }
 
@@ -878,6 +884,7 @@ type FundraisingCampaign {
   fundId: Fund!
   fundingGoal: Float!
   name: String!
+  organizationId: Organization!
   pledges: [FundraisingCampaignPledge]
   startDate: Date!
   updatedAt: DateTime!
@@ -886,7 +893,7 @@ type FundraisingCampaign {
 type FundraisingCampaignPledge {
   _id: ID!
   amount: Float!
-  campaigns: [FundraisingCampaign]!
+  campaign: FundraisingCampaign!
   currency: Currency!
   endDate: Date
   startDate: Date
@@ -1336,6 +1343,13 @@ enum PledgeOrderByInput {
   startDate_DESC
 }
 
+input PledgeWhereInput {
+  campaignId: ID
+  firstName_contains: String
+  id: ID
+  name_contains: String
+}
+
 type Plugin {
   _id: ID!
   pluginCreatedBy: String!
@@ -1488,9 +1502,10 @@ type Query {
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
   getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
-  getFundraisingCampaignById(id: ID!, orderBy: PledgeOrderByInput): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
+  getFundraisingCampaigns(campaignOrderby: CampaignOrderByInput, pledgeOrderBy: PledgeOrderByInput, where: CampaignWhereInput): [FundraisingCampaign]!
   getNoteById(id: ID!): Note!
+  getPledgesByUserId(orderBy: PledgeOrderByInput, userId: ID!, where: PledgeWhereInput): [FundraisingCampaignPledge]
   getPlugins: [Plugin]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getlanguage(lang_code: String!): [Translation]

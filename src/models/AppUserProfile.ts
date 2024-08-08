@@ -4,6 +4,8 @@ import mongoosePaginate from "mongoose-paginate-v2";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
+import type { InterfaceFundraisingCampaign } from "./FundraisingCampaign";
+import type { InterfaceFundraisingCampaignPledges } from "./FundraisingCampaignPledge";
 
 export interface InterfaceAppUserProfile {
   _id: Types.ObjectId;
@@ -13,6 +15,8 @@ export interface InterfaceAppUserProfile {
   createdEvents: PopulatedDoc<InterfaceEvent & Document>[];
   createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
   eventAdmin: PopulatedDoc<InterfaceEvent & Document>[];
+  pledges: PopulatedDoc<InterfaceFundraisingCampaignPledges & Document>[];
+  campaigns: PopulatedDoc<InterfaceFundraisingCampaign & Document>[];
   pluginCreationAllowed: boolean;
   token: string | undefined;
   tokenVersion: number;
@@ -26,6 +30,8 @@ export interface InterfaceAppUserProfile {
  * @param createdEvents - Array of events created by the user.
  * @param createdOrganizations - Array of organizations created by the user.
  * @param eventAdmin - Array of events where the user is an admin.
+ * @param pledges - Array of pledges associated with the user.
+ * @param campaigns - Array of campaigns associated with the user.
  * @param pluginCreationAllowed - Flag indicating if user is allowed to create plugins.
  * @param tokenVersion - Token version for authentication.
  * @param isSuperAdmin - Flag indicating if the user is a super admin.
@@ -66,6 +72,18 @@ const appUserSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "Event",
+      },
+    ],
+    pledges: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "FundraisingCampaignPledge",
+      },
+    ],
+    campaigns: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "FundraisingCampaign",
       },
     ],
     pluginCreationAllowed: {

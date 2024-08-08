@@ -53,7 +53,6 @@ export const users: QueryResolvers["users"] = async (
     .limit(args.first ?? 0)
     .skip(args.skip ?? 0)
     .select(["-password"])
-
     .populate("joinedOrganizations")
     .populate("registeredEvents")
     .populate("organizationsBlockedBy")
@@ -66,7 +65,9 @@ export const users: QueryResolvers["users"] = async (
         .populate("createdOrganizations")
         .populate("createdEvents")
         .populate("eventAdmin")
-        .populate("adminFor");
+        .populate("adminFor")
+        .populate("pledges")
+        .populate("campaigns");
 
       return {
         user: {
@@ -84,6 +85,8 @@ export const users: QueryResolvers["users"] = async (
           createdOrganizations: [],
           createdEvents: [],
           eventAdmin: [],
+          pledges: [],
+          campaigns: [],
         },
       };
     }),

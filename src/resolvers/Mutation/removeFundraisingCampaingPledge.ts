@@ -4,7 +4,7 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceUser } from "../../models";
-import { FundraisingCampaign, User } from "../../models";
+import { AppUserProfile, FundraisingCampaign, User } from "../../models";
 import {
   FundraisingCampaignPledge,
   type InterfaceFundraisingCampaignPledges,
@@ -66,13 +66,37 @@ export const removeFundraisingCampaignPledge: MutationResolvers["removeFundraisi
       );
     }
 
-    // Remove the pledge from the campaign.
-    for (const campaignId of pledge.campaigns) {
-      await FundraisingCampaign.updateOne(
-        { _id: campaignId?.toString() },
+    // Update AppUserProfile for every pledger
+    for (const userId of pledge.users) {
+      const updatedUserProfile = await AppUserProfile.findOneAndUpdate(
+        { userId },
         { $pull: { pledges: args.id } },
+        { new: true },
+      ).populate("pledges");
+
+      // Remove campaign from appUserProfile if there is no pledge left for that campaign.
+      const pledges =
+        updatedUserProfile?.pledges as InterfaceFundraisingCampaignPledges[];
+
+      const campaignId = pledge.campaign?.toString();
+      const otherPledges = pledges.filter(
+        (pledge) => pledge.campaign?.toString() === campaignId,
       );
+
+      if (otherPledges.length === 0) {
+        await AppUserProfile.updateOne(
+          { userId },
+          { $pull: { campaigns: campaignId } },
+        );
+      }
     }
+
+    // Remove the pledge from the campaign.
+    await FundraisingCampaign.updateOne(
+      { _id: pledge.campaign?.toString() },
+      { $pull: { pledges: args.id } },
+    );
+
     // Remove the pledge.
     await FundraisingCampaignPledge.deleteOne({
       _id: args.id,

@@ -42,6 +42,8 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
     .populate("createdEvents")
     .populate("eventAdmin")
     .populate("adminFor")
+    .populate("pledges")
+    .populate("campaigns")
     .lean();
   if (!userAppProfile) {
     throw new errors.NotFoundError(

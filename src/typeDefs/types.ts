@@ -341,6 +341,7 @@ export const types = gql`
   type FundraisingCampaign {
     _id: ID!
     fundId: Fund!
+    organizationId: Organization!
     name: String!
     startDate: Date!
     endDate: Date!
@@ -352,7 +353,7 @@ export const types = gql`
   }
   type FundraisingCampaignPledge {
     _id: ID!
-    campaigns: [FundraisingCampaign]!
+    campaign: FundraisingCampaign!
     users: [User]!
     startDate: Date
     endDate: Date
@@ -663,6 +664,8 @@ export const types = gql`
     createdEvents: [Event]
     createdOrganizations: [Organization]
     eventAdmin: [Event]
+    pledges: [FundraisingCampaignPledge]
+    campaigns: [FundraisingCampaign]
     pluginCreationAllowed: Boolean!
     isSuperAdmin: Boolean!
     appLanguageCode: String!

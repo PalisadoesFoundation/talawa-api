@@ -1,8 +1,8 @@
 import type { Model, PopulatedDoc, Types } from "mongoose";
+
 import { Schema, model, models } from "mongoose";
 import type { InterfaceFundraisingCampaign } from "./FundraisingCampaign";
 import type { InterfaceUser } from "./User";
-
 /**
  * This is an interface representing a document for a fund in the database (MongoDB).
  * This interface defines the structure and types of data that a fund document will hold.
@@ -24,7 +24,6 @@ export interface InterfaceFund {
 /**
  * Mongoose schema definition for a fund document.
  * This schema defines how the data will be stored in the MongoDB database.
- *
  * @param organizationId - Organization ID to which the fund belongs.
  * @param name - Name of the fund.
  * @param refrenceNumber - Reference number of the fund.
@@ -35,7 +34,7 @@ export interface InterfaceFund {
  * @param campaigns - Campaigns associated with the fund.
  * @param createdAt - Timestamp of when the fund document was created.
  * @param updatedAt - Timestamp of when the fund document was last updated.
- */
+ **/
 const fundSchema = new Schema(
   {
     organizationId: {

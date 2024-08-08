@@ -54,7 +54,6 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
       };
       await createFundraisingCampaignPledge?.({}, args, context);
     } catch (error: unknown) {
-      //   console.log(error);
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
@@ -76,7 +75,6 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
       };
       await createFundraisingCampaignPledge?.({}, args, context);
     } catch (error: unknown) {
-      //   console.log(error);
       expect((error as Error).message).toEqual(
         FUNDRAISING_CAMPAIGN_NOT_FOUND_ERROR.MESSAGE,
       );
@@ -100,7 +98,6 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
       };
       await createFundraisingCampaignPledge?.({}, args, context);
     } catch (error: unknown) {
-      //   console.log(error);
       expect((error as Error).message).toEqual(
         START_DATE_VALIDATION_ERROR.MESSAGE,
       );
@@ -124,7 +121,6 @@ describe("resolvers->Mutation->createFundraisingCampaignPledge", () => {
       };
       await createFundraisingCampaignPledge?.({}, args, context);
     } catch (error: unknown) {
-      //   console.log(error);
       expect((error as Error).message).toEqual(
         END_DATE_VALIDATION_ERROR.MESSAGE,
       );

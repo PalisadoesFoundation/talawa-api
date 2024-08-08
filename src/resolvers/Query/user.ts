@@ -35,6 +35,8 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     .populate("createdEvents")
     .populate("eventAdmin")
     .populate("adminFor")
+    .populate("pledges")
+    .populate("campaigns")
     .lean()) as InterfaceAppUserProfile;
 
   // This Query field doesn't allow client to see organizations they are blocked by

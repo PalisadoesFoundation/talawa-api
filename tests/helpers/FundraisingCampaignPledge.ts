@@ -1,4 +1,5 @@
 import {
+  AppUserProfile,
   FundraisingCampaign,
   type InterfaceFundraisingCampaign,
 } from "../../src/models";
@@ -28,11 +29,12 @@ export const createTestFundraisingCampaignPledge = async (): Promise<
   const testFund = userOrgAndFund[2];
   let testFundraisingCampaign = await createTestFundraisingCampaign(
     testFund?._id,
+    testOrganization?._id,
   );
   if (testUser && testOrganization && testFund && testFundraisingCampaign) {
     const testFundraisingCampaignPledge =
       (await FundraisingCampaignPledge.create({
-        campaigns: [testFundraisingCampaign._id],
+        campaign: testFundraisingCampaign._id,
         users: [testUser._id.toString()],
         startDate: new Date(),
         endDate: new Date(),
@@ -52,6 +54,19 @@ export const createTestFundraisingCampaignPledge = async (): Promise<
         new: true,
       },
     )) as InterfaceFundraisingCampaign;
+
+    await AppUserProfile.updateOne(
+      {
+        userId: testUser._id,
+      },
+      {
+        $addToSet: {
+          pledges: testFundraisingCampaignPledge?._id,
+          campaigns: testFundraisingCampaign._id,
+        },
+      },
+    );
+
     return [
       testUser,
       testOrganization,

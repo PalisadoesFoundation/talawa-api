@@ -177,6 +177,7 @@ export enum CurrencyType {
 export interface InterfaceFundraisingCampaign {
   _id: Types.ObjectId;
   fundId: PopulatedDoc<InterfaceFund & Document>;
+  organizationId: Types.ObjectId;
   name: string;
   startDate: Date;
   endDate: Date;
@@ -192,6 +193,7 @@ export interface InterfaceFundraisingCampaign {
  * This schema defines how the data will be stored in the MongoDB database.
  *
  * @param fundId - Reference to the parent fund.
+ * @param organizationId - Organization ID to which the fundraising campaign belongs.
  * @param name - Name of the fundraising campaign.
  * @param startDate - Start date of the fundraising campaign.
  * @param endDate - End date of the fundraising campaign.
@@ -204,6 +206,11 @@ const fundraisingCampaignSchema = new Schema(
     fundId: {
       type: Schema.Types.ObjectId,
       ref: "Fund",
+      required: true,
+    },
+    organizationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
       required: true,
     },
     name: {

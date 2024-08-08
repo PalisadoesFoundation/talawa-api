@@ -46,6 +46,8 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
         data: {
           name: "testFundraisingCampaign",
           fundId: testfund?._id,
+          organizationId:
+            testfund?.organizationId.toString() || "organizationId",
           startDate: new Date(new Date().toDateString()),
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -66,6 +68,8 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
         data: {
           name: "testFundraisingCampaign",
           fundId: new Types.ObjectId().toString(),
+          organizationId:
+            testfund?.organizationId.toString() || "organizationId",
           startDate: new Date(new Date().toDateString()),
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -87,6 +91,8 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
         data: {
           name: "testFundraisingCampaign",
           fundId: testfund?._id,
+          organizationId:
+            testfund?.organizationId.toString() || "organizationId",
           startDate: new Date(new Date().toDateString()),
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -112,6 +118,8 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
         data: {
           name: "testFundraisingCampaign",
           fundId: testfund?._id,
+          organizationId:
+            testfund?.organizationId.toString() || "organizationId",
           startDate: "Tue Feb 13 2023",
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -135,6 +143,8 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
         data: {
           name: "testFundraisingCampaign",
           fundId: testfund?._id,
+          organizationId:
+            testfund?.organizationId.toString() || "organizationId",
           startDate: new Date(new Date().toDateString()),
           endDate: "Tue Feb 13 2023",
           currency: "USD",
@@ -157,6 +167,7 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
       data: {
         name: "testFundraisingCampaign",
         fundId: testfund?._id,
+        organizationId: testfund?.organizationId.toString() || "organizationId",
         startDate: new Date(new Date().toDateString()),
         endDate: new Date(new Date().toDateString()),
         currency: "USD",
@@ -181,6 +192,8 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
         data: {
           name: "test",
           fundId: testfund?._id,
+          organizationId:
+            testfund?.organizationId.toString() || "organizationId",
           startDate: new Date(),
           endDate: new Date(new Date().toDateString()),
           currency: "USD",
@@ -212,6 +225,7 @@ describe("resolvers->Mutation->createFundraisingCampaign", () => {
       data: {
         name: "testFundraisingCampaign",
         fundId: testfund?._id,
+        organizationId: testfund?.organizationId.toString() || "organizationId",
         startDate: new Date(new Date().toDateString()),
         endDate: new Date(new Date().toDateString()),
         currency: "USD",

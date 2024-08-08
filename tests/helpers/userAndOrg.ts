@@ -29,6 +29,8 @@ export const createTestUser = async (): Promise<TestUserType> => {
   const testUserAppProfile = await AppUserProfile.create({
     userId: testUser._id,
     appLanguageCode: "en",
+    pledges: [],
+    campaigns: [],
   });
   testUser = (await User.findOneAndUpdate(
     {
