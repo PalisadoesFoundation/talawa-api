@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { MutationCreateDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationCreateChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -38,7 +38,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Mutation -> createDirectChat", () => {
+describe("resolvers -> Mutation -> createChat", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
@@ -50,20 +50,21 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      const args: MutationCreateDirectChatArgs = {
+      const args: MutationCreateChatArgs = {
         data: {
           organizationId: new Types.ObjectId().toString(),
           userIds: [],
+          isGroup: true
         },
       };
       const context = {
         userId: testUser?.id,
       };
 
-      const { createDirectChat: createDirectChatResolver } = await import(
-        "../../../src/resolvers/Mutation/createDirectChat"
+      const { createChat: createChatResolver } = await import(
+        "../../../src/resolvers/Mutation/createChat"
       );
-      await createDirectChatResolver?.({}, args, context);
+      await createChatResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
@@ -78,10 +79,11 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      const args: MutationCreateDirectChatArgs = {
+      const args: MutationCreateChatArgs = {
         data: {
           organizationId: testOrganization?.id,
           userIds: [new Types.ObjectId().toString()],
+          isGroup: true
         },
       };
 
@@ -89,37 +91,38 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         userId: testUser?.id,
       };
 
-      const { createDirectChat: createDirectChatResolver } = await import(
-        "../../../src/resolvers/Mutation/createDirectChat"
+      const { createChat: createChatResolver } = await import(
+        "../../../src/resolvers/Mutation/createChat"
       );
-      await createDirectChatResolver?.({}, args, context);
+      await createChatResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
   it(`creates the directChat and returns it`, async () => {
-    const args: MutationCreateDirectChatArgs = {
+    const args: MutationCreateChatArgs = {
       data: {
         organizationId: testOrganization?.id,
         userIds: [testUser?.id],
+        isGroup: true
       },
     };
 
     const context = {
       userId: testUser?.id,
     };
-    const { createDirectChat: createDirectChatResolver } = await import(
-      "../../../src/resolvers/Mutation/createDirectChat"
+    const { createChat: createChatResolver } = await import(
+      "../../../src/resolvers/Mutation/createChat"
     );
 
-    const createDirectChatPayload = await createDirectChatResolver?.(
+    const createChatPayload = await createChatResolver?.(
       {},
       args,
       context,
     );
 
-    expect(createDirectChatPayload).toEqual(
+    expect(createChatPayload).toEqual(
       expect.objectContaining({
         creatorId: testUser?._id,
         users: [testUser?._id],

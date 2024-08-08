@@ -1,21 +1,21 @@
 import "dotenv/config";
-import { replyTo as replyToResolver } from "../../../src/resolvers/DirectChatMessage/replyTo";
+import { replyTo as replyToResolver } from "../../../src/resolvers/ChatMessage/replyTo";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import { DirectChatMessage } from "../../../src/models";
+import { ChatMessage } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type { TestDirectChatMessageType } from "../../helpers/directChat";
-import { createTestDirectChatMessage } from "../../helpers/directChat";
+import type { TestChatMessageType } from "../../helpers/chat";
+import { createTestChatMessage } from "../../helpers/chat";
 import { Types } from "mongoose";
 import { MESSAGE_NOT_FOUND_ERROR } from "../../../src/constants";
 
-let testDirectChatMessage: TestDirectChatMessageType;
+let testChatMessage: TestChatMessageType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestDirectChatMessage();
-  testDirectChatMessage = temp[3];
+  const temp = await createTestChatMessage();
+  testChatMessage = temp[3];
 });
 
 afterAll(async () => {
@@ -24,7 +24,7 @@ afterAll(async () => {
 
 describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
   it(`returns directChat object for parent.directChatMessageBelongsTo`, async () => {
-    const parent = testDirectChatMessage?.toObject();
+    const parent = testChatMessage?.toObject();
 
     if (!parent) {
       throw new Error("Parent object is undefined.");
@@ -36,8 +36,8 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
 
     const replyToPayload = await replyToResolver(parent, {}, {});
 
-    const replyTo = await DirectChatMessage.findOne({
-      _id: testDirectChatMessage?.replyTo,
+    const replyTo = await ChatMessage.findOne({
+      _id: testChatMessage?.replyTo,
     }).lean();
 
     expect(replyToPayload).toEqual(replyTo);
@@ -49,7 +49,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
       .mockImplementationOnce((message) => message);
 
     const parent = {
-      ...testDirectChatMessage?.toObject(),
+      ...testChatMessage?.toObject(),
       replyTo: new Types.ObjectId(), // Set to a non-existing ObjectId
     };
 

@@ -1,21 +1,21 @@
 import "dotenv/config";
-import { sender as senderResolver } from "../../../src/resolvers/DirectChatMessage/sender";
+import { sender as senderResolver } from "../../../src/resolvers/ChatMessage/sender";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type { TestDirectChatMessageType } from "../../helpers/directChat";
-import { createTestDirectChatMessage } from "../../helpers/directChat";
+import type { TestChatMessageType } from "../../helpers/chat";
+import { createTestChatMessage } from "../../helpers/chat";
 import { Types } from "mongoose";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 
-let testDirectChatMessage: TestDirectChatMessageType;
+let testChatMessage: TestChatMessageType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestDirectChatMessage();
-  testDirectChatMessage = temp[3];
+  const temp = await createTestChatMessage();
+  testChatMessage = temp[3];
 });
 
 afterAll(async () => {
@@ -24,14 +24,14 @@ afterAll(async () => {
 
 describe("resolvers -> DirectChatMessage -> sender", () => {
   it(`returns user object for parent.sender`, async () => {
-    const parent = testDirectChatMessage?.toObject();
+    const parent = testChatMessage?.toObject();
     if (!parent) {
       throw new Error("Parent object is undefined.");
     }
     const senderPayload = await senderResolver?.(parent, {}, {});
 
     const sender = await User.findOne({
-      _id: testDirectChatMessage?.sender,
+      _id: testChatMessage?.sender,
     }).lean();
 
     expect(senderPayload).toEqual(sender);
@@ -42,7 +42,7 @@ describe("resolvers -> DirectChatMessage -> sender", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     const parent = {
-      ...testDirectChatMessage?.toObject(),
+      ...testChatMessage?.toObject(),
       sender: new Types.ObjectId(), // Set to a non-existing ObjectId
     };
 

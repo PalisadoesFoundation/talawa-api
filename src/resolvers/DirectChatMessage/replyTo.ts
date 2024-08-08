@@ -10,7 +10,6 @@ import { errors, requestContext } from "../../libraries";
 export const replyTo: DirectChatMessageResolvers["replyTo"] = async (
   parent,
 ) => {
-  console.log("PARENT ", parent);
   if (parent.replyTo) {
     const result = await DirectChatMessage.findOne({
       _id: parent.replyTo,
