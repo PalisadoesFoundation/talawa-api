@@ -54,7 +54,7 @@ describe("resolvers -> Mutation -> createChat", () => {
         data: {
           organizationId: new Types.ObjectId().toString(),
           userIds: [],
-          isGroup: true
+          isGroup: true,
         },
       };
       const context = {
@@ -83,7 +83,7 @@ describe("resolvers -> Mutation -> createChat", () => {
         data: {
           organizationId: testOrganization?.id,
           userIds: [new Types.ObjectId().toString()],
-          isGroup: true
+          isGroup: true,
         },
       };
 
@@ -105,7 +105,7 @@ describe("resolvers -> Mutation -> createChat", () => {
       data: {
         organizationId: testOrganization?.id,
         userIds: [testUser?.id],
-        isGroup: true
+        isGroup: true,
       },
     };
 
@@ -116,11 +116,7 @@ describe("resolvers -> Mutation -> createChat", () => {
       "../../../src/resolvers/Mutation/createChat"
     );
 
-    const createChatPayload = await createChatResolver?.(
-      {},
-      args,
-      context,
-    );
+    const createChatPayload = await createChatResolver?.({}, args, context);
 
     expect(createChatPayload).toEqual(
       expect.objectContaining({

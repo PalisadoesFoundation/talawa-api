@@ -34,16 +34,17 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
       throw new Error("directChatMessageBelongsToResolver is not a function.");
     }
 
-    const chatMessageBelongsToPayload =
-      await chatMessageBelongsToResolver(parent, {}, {});
+    const chatMessageBelongsToPayload = await chatMessageBelongsToResolver(
+      parent,
+      {},
+      {},
+    );
 
     const chatMessageBelongsTo = await Chat.findOne({
       _id: testChatMessage?.chatMessageBelongsTo,
     }).lean();
 
-    expect(chatMessageBelongsToPayload).toEqual(
-      chatMessageBelongsTo,
-    );
+    expect(chatMessageBelongsToPayload).toEqual(chatMessageBelongsTo);
   });
   it(`throws NotFoundError if no directChat exists`, async () => {
     const { requestContext } = await import("../../../src/libraries");

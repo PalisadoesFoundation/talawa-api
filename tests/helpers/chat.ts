@@ -1,9 +1,11 @@
 import { nanoid } from "nanoid";
-import type {
-  InterfaceChat,
-  InterfaceChatMessage,
+import type { InterfaceChat, InterfaceChatMessage } from "../../src/models";
+import {
+  Chat,
+  ChatMessage,
+  DirectChat,
+  DirectChatMessage,
 } from "../../src/models";
-import { Chat, ChatMessage, DirectChat, DirectChatMessage } from "../../src/models";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUserAndOrganization } from "./userAndOrg";
 import type { Document } from "mongoose";
@@ -13,8 +15,7 @@ export type TestChatType =
   | null;
 
 export type TestChatMessageType =
-  | (InterfaceChatMessage &
-      Document<unknown, unknown, InterfaceChatMessage>)
+  | (InterfaceChatMessage & Document<unknown, unknown, InterfaceChatMessage>)
   | null;
 
 export const createTestChat = async (): Promise<
@@ -35,20 +36,11 @@ export const createTestChat = async (): Promise<
 };
 
 export const createTestChatMessage = async (): Promise<
-  [
-    TestUserType,
-    TestOrganizationType,
-    TestChatType,
-    TestChatMessageType,
-  ]
+  [TestUserType, TestOrganizationType, TestChatType, TestChatMessageType]
 > => {
-  const [testUser, testOrganization, testChat] =
-    await createTestChat();
+  const [testUser, testOrganization, testChat] = await createTestChat();
 
-  const chatMessage = await createChatMessage(
-    testUser?._id,
-    testChat?._id,
-  );
+  const chatMessage = await createChatMessage(testUser?._id, testChat?._id);
 
   if (testChat && testUser) {
     const testChatMessage = await ChatMessage.create({

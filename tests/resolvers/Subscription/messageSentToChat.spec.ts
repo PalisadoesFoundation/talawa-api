@@ -23,10 +23,9 @@ afterAll(async () => {
 
 describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
   it("subscription filter function returns true if CurrentUser is receiveror sender", async () => {
-    const { messageSentToChat: messageSentToChatPayload } =
-      await import(
-        "../../../src/resolvers/Subscription/messageSentToChat"
-      );
+    const { messageSentToChat: messageSentToChatPayload } = await import(
+      "../../../src/resolvers/Subscription/messageSentToChat"
+    );
 
     const _args = {};
     const _parent = {};
@@ -49,11 +48,7 @@ describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
     // @ts-expect-error-ignore
     messageSentToChatPayload.payload = payload;
     // @ts-expect-error-ignore
-    const x = messageSentToChatPayload?.subscribe(
-      _parent,
-      _args,
-      context,
-    );
+    const x = messageSentToChatPayload?.subscribe(_parent, _args, context);
     expect(x).not.toBe(null);
     expect(await filterFunction(payload, variables)).toBe(true);
 
@@ -62,10 +57,9 @@ describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
   });
 
   it("user is not notified if it is not a part of DirectChat", async () => {
-    const { messageSentToChat: messageSentToChatPayload } =
-      await import(
-        "../../../src/resolvers/Subscription/messageSentToChat"
-      );
+    const { messageSentToChat: messageSentToChatPayload } = await import(
+      "../../../src/resolvers/Subscription/messageSentToChat"
+    );
 
     const _args = {};
     const _parent = {};
@@ -89,11 +83,7 @@ describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
     // @ts-expect-error-ignore
     messageSentToChatPayload.payload = payload;
     // @ts-expect-error-ignore
-    const x = messageSentToChatPayload?.subscribe(
-      _parent,
-      _args,
-      context,
-    );
+    const x = messageSentToChatPayload?.subscribe(_parent, _args, context);
     expect(x).not.toBe(null);
     expect(await filterFunction(payload, variables)).toBe(false);
   });
