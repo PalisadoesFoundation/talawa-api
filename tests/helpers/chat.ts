@@ -27,6 +27,9 @@ export const createTestChat = async (): Promise<
       creatorId: testUser._id,
       users: [testUser._id],
       organization: testOrganization._id,
+      isGroup: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     return [testUser, testOrganization, testChat];
@@ -48,6 +51,8 @@ export const createTestChatMessage = async (): Promise<
       sender: testUser._id,
       replyTo: chatMessage?._id,
       messageContent: `msgContent${nanoid().toLowerCase()}`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
     return [testUser, testOrganization, testChat, testChatMessage];
   } else {
@@ -69,6 +74,8 @@ export const createTestMessageForMultipleUser = async (
     chatMessageBelongsTo: testChat._id,
     sender: senderId,
     messageContent: `messageContent${nanoid().toLowerCase()}`,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   return testChat;
@@ -83,6 +90,9 @@ export const createTestChatwithUsers = async (
     creatorId: creator,
     users: users,
     organization: organizationId,
+    isGroup: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
   return testChat;
 };
@@ -95,6 +105,8 @@ export const createChatMessage = async (
     chatMessageBelongsTo: directChatId,
     sender: senderId,
     messageContent: `messageContent${nanoid().toLowerCase()}`,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   return chatMessage;
