@@ -47,7 +47,7 @@ export const createTestChatMessage = async (): Promise<
 
   if (testChat && testUser) {
     const testChatMessage = await ChatMessage.create({
-      directChatMessageBelongsTo: testChat._id,
+      chatMessageBelongsTo: testChat._id,
       sender: testUser._id,
       replyTo: chatMessage?._id,
       messageContent: `msgContent${nanoid().toLowerCase()}`,
@@ -101,10 +101,10 @@ export const createTestChatwithUsers = async (
 
 export const createChatMessage = async (
   senderId: string,
-  directChatId: string,
+  chatId: string,
 ): Promise<TestChatMessageType> => {
   const chatMessage = await ChatMessage.create({
-    chatMessageBelongsTo: directChatId,
+    chatMessageBelongsTo: chatId,
     sender: senderId,
     type: "STRING",
     messageContent: `messageContent${nanoid().toLowerCase()}`,
