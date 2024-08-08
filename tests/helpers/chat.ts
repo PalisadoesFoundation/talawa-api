@@ -53,6 +53,7 @@ export const createTestChatMessage = async (): Promise<
       messageContent: `msgContent${nanoid().toLowerCase()}`,
       createdAt: new Date(),
       updatedAt: new Date(),
+      type: "STRING",
     });
     return [testUser, testOrganization, testChat, testChatMessage];
   } else {
@@ -76,6 +77,7 @@ export const createTestMessageForMultipleUser = async (
     messageContent: `messageContent${nanoid().toLowerCase()}`,
     createdAt: new Date(),
     updatedAt: new Date(),
+    type: "STRING",
   });
 
   return testChat;
@@ -104,6 +106,7 @@ export const createChatMessage = async (
   const chatMessage = await ChatMessage.create({
     chatMessageBelongsTo: directChatId,
     sender: senderId,
+    type: "STRING",
     messageContent: `messageContent${nanoid().toLowerCase()}`,
     createdAt: new Date(),
     updatedAt: new Date(),
