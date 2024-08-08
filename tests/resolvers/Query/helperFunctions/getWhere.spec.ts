@@ -334,8 +334,7 @@ describe("getWhere function", () => {
 
   it.each(testCases)(
     "should return correct where payload for %s",
-    (name, input, expected) => {
-      console.log({ name, input, expected });
+    (_name, input, expected) => {
       const result = getWhere(input);
       expect(result).toEqual(expected);
     },

@@ -27,7 +27,6 @@ let testUser: TestUserType;
 let testFund: TestFundType;
 let testCampaign: InterfaceFundraisingCampaign;
 let testCampaign2: InterfaceFundraisingCampaign;
-
 let testPledge: TestPledgeType;
 
 beforeAll(async () => {

@@ -6,7 +6,13 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, Fund, FundraisingCampaign } from "../../../src/models";
+import {
+  AppUserProfile,
+  Fund,
+  FundraisingCampaign,
+  type InterfaceAppUserProfile,
+  type InterfaceFundraisingCampaign,
+} from "../../../src/models";
 import { removeFund } from "../../../src/resolvers/Mutation/removeFund";
 import type { TestFundType } from "../../helpers/Fund";
 import { createTestFund } from "../../helpers/Fund";
@@ -14,10 +20,15 @@ import { createTestFundraisingCampaign } from "../../helpers/FundraisingCampaign
 import { connect, disconnect } from "../../helpers/db";
 import { createTestUser } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
+import {
+  createTestFundraisingCampaignPledge,
+  type TestPledgeType,
+} from "../../helpers/FundraisingCampaignPledge";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-// let testCampaign: TestFundCampaignType;
+let testCampaign: InterfaceFundraisingCampaign;
 let testFund: TestFundType;
+let testPledge: TestPledgeType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -27,10 +38,11 @@ beforeAll(async () => {
     (message) => message,
   );
 
-  const temp = await createTestFund();
+  const temp = await createTestFundraisingCampaignPledge();
   testUser = temp[0];
-
   testFund = temp[2];
+  testPledge = temp[4];
+  testCampaign = temp[3];
 });
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
@@ -79,23 +91,41 @@ describe("resolvers->Mutation->removeFund", () => {
       );
     }
   });
-  it("deletes the fund", async () => {
+  it("deletes the fund and all the campaigns, pledges and update AppUserProfile of members associated with the fund", async () => {
     const args = {
       id: testFund?._id,
     };
     const context = {
       userId: testUser?._id,
     };
-    try {
-      await removeFund?.({}, args, context);
-      const fund = await Fund.findOne({ _id: testFund?._id });
-      expect(fund).toBeNull();
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
-    }
+    const appUserProfile = (await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })) as InterfaceAppUserProfile;
+
+    expect(appUserProfile?.campaigns[0]?._id).toEqual(testCampaign?._id);
+    expect(appUserProfile?.pledges[0]?._id).toEqual(testPledge?._id);
+    await removeFund?.({}, args, context);
+    const fund = await Fund.findOne({ _id: testFund?._id });
+    expect(fund).toBeNull();
+
+    const updatedAppUserProfile = (await AppUserProfile.findOne({
+      userId: testUser?._id,
+    })) as InterfaceAppUserProfile;
+
+    expect(updatedAppUserProfile?.campaigns.length).toEqual(0);
+    expect(updatedAppUserProfile?.pledges.length).toEqual(0);
+
+    const campaign = await FundraisingCampaign.findOne({
+      _id: testCampaign?._id,
+    });
+    expect(campaign).toBeNull();
+
+    const pledge = await FundraisingCampaign.findOne({
+      _id: testPledge?._id,
+    });
+    expect(pledge).toBeNull();
   });
+
   it("deletes all the campaigns associated with the fund", async () => {
     const temp = await createTestFund();
     const testfund2 = temp[2];
