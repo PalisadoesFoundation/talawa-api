@@ -28,11 +28,11 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * 7. Hashes the new password and updates it in the database.
  * 8. Clears the user's token and updates their profile.
  * 9. Updates the user and profile caches.
- * 
+ *
  * @param _parent - This parameter is not used in this resolver function.
  * @param args - The arguments provided by the GraphQL query, including the previous password, new password, and password confirmation.
  * @param context - The context of the request, containing information about the currently authenticated user.
- * 
+ *
  * @returns An object containing the updated user and their profile.
  */
 

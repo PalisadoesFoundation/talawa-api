@@ -10,13 +10,13 @@ import { NOTE_NOT_FOUND_ERROR } from "../../constants";
  * 1. Queries the database to find a `Note` record by the provided ID.
  * 2. If the note is not found, throws a `NotFoundError` with a predefined error message.
  * 3. Returns the note record if found.
- * 
+ *
  * @param _parent - This parameter is not used in this resolver function but is included for compatibility with GraphQL resolver signatures.
  * @param args - The arguments provided by the GraphQL query, including:
  *   - `id`: The ID of the note to be retrieved.
- * 
+ *
  * @returns The note record corresponding to the provided ID.
- * 
+ *
  */
 
 export const getNoteById: QueryResolvers["getNoteById"] = async (

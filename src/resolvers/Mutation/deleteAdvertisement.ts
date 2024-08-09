@@ -25,9 +25,9 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * @param _parent - This is an unused parameter that represents the parent resolver in the GraphQL schema. It can be ignored.
  * @param args - Contains the arguments passed to the GraphQL mutation, specifically the ID of the advertisement to be deleted.
  * @param context - Provides contextual information such as the current user's ID and API root URL. This is used to find the user and validate permissions.
- * 
+ *
  * @returns The deleted advertisement's details, including the advertisement ID and media URL, if the deletion was successful.
- * 
+ *
  */
 export const deleteAdvertisement: MutationResolvers["deleteAdvertisement"] =
   async (_parent, args, context) => {
