@@ -13,6 +13,18 @@ import {
   type ParseGraphQLConnectionCursorResult,
 } from "../../utilities/graphQLConnection";
 
+/**
+ * Retrieves a paginated list of advertisements based on the provided connection arguments.
+ *
+ * This function handles querying and pagination of advertisements using connection arguments. It performs validation of the connection arguments, applies filters and sorting, and then returns a paginated result containing the advertisements. The media URLs for each advertisement are adjusted based on the API root URL provided in the context.
+ *
+ * @param _parent - This parameter represents the parent resolver in the GraphQL schema and is not used in this function.
+ * @param args - The arguments passed to the GraphQL query, including pagination and filter criteria.
+ * @param context - Provides contextual information, including the API root URL. This is used to construct the media URLs for the advertisements.
+ *
+ * @returns A paginated connection object containing the advertisements, their total count, and the pagination information.
+ *
+ */
 export const advertisementsConnection: QueryResolvers["advertisementsConnection"] =
   async (_parent, args, context) => {
     const parseGraphQLConnectionArgumentsResult =
@@ -74,15 +86,22 @@ export const advertisementsConnection: QueryResolvers["advertisementsConnection"
     });
   };
 
-/*
-This is typescript type of the parsed cursor for this connection resolver.
-*/
+/**
+ * Type representing the parsed cursor used in the connection resolver.
+ */
 type ParsedCursor = string;
 
-/*
-This function is used to validate and transform the cursor passed to this connnection
-resolver.
-*/
+/**
+ * Validates and transforms the cursor passed to the connection resolver.
+ *
+ * This function checks if the provided cursor value corresponds to a valid advertisement in the database. If the cursor is valid, it is returned as-is. Otherwise, an error is recorded.
+ *
+ * @param cursorValue - The value of the cursor to be validated.
+ * @param cursorName - The name of the cursor argument used in the query.
+ * @param cursorPath - The path in the query where the cursor argument is located.
+ *
+ * @returns An object containing a flag indicating success or failure, the parsed cursor, and any errors encountered during validation.
+ */
 export const parseCursor = async ({
   cursorValue,
   cursorName,

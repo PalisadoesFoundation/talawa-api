@@ -17,6 +17,28 @@ import { findAppUserProfileCache } from "../../services/AppUserProfileCache/find
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+/**
+ * Removes a user tag from an organization.
+ *
+ * This function removes a specific tag associated with a user in an organization.
+ * It checks whether the user has the proper authorization to delete the tag.
+ * It also handles cases where the user or the tag is not found in the system.
+ *
+ * The function performs the following steps:
+ * 1. Attempts to find the user in the cache or database.
+ * 2. Verifies if the user exists.
+ * 3. Attempts to find the user's profile in the cache or database.
+ * 4. Checks if the user has the necessary permissions to delete the tag.
+ * 5. Fetches the tag that needs to be deleted.
+ * 6. Retrieves all child tags (including the parent tag) related to the organization.
+ * 7. Deletes all related tags from the organization and user tag entries.
+ *
+ * @param _parent - This parameter is not used in this resolver function.
+ * @param args - The arguments provided by the GraphQL query, specifically containing the ID of the tag to be removed.
+ * @param context - The context of the request, containing information about the currently authenticated user.
+ *
+ * @returns The tag that was deleted.
+ */
 
 export const removeUserTag: MutationResolvers["removeUserTag"] = async (
   _parent,

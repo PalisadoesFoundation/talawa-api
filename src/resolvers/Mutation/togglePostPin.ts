@@ -25,12 +25,24 @@ import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
+/**
+ * Toggles the pinning status of a post within an organization.
+ *
+ * This function allows an authorized user, such as an organization admin or super admin, to pin or unpin a post within an organization. If the post is already pinned, it will be unpinned, and if it is not pinned, it will be pinned. The function ensures that only authorized users can perform this action and that the title provided for pinning meets validation requirements.
+ *
+ * @param _parent - This parameter represents the parent resolver in the GraphQL schema and is not used in this function.
+ * @param args - The arguments passed to the GraphQL mutation, including the post's `id` and optionally the `title` to be used if pinning the post.
+ * @param context - Provides contextual information, including the current user's ID. This is used to authenticate and authorize the request.
+ *
+ * @returns The updated post object after the pinning status has been toggled.
+ *
+ */
 export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   _parent,
   args,
   context,
 ) => {
-  // Get the current user
+  // Get the current user from the cache or database
   let currentUser: InterfaceUser | null;
   const userFoundInCache = await findUserInCache([context.userId]);
   currentUser = userFoundInCache[0];
@@ -43,7 +55,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     }
   }
 
-  // Check if the user requesting the action exits
+  // Check if the user exists
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -51,6 +63,8 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+
+  // Get the current user's app profile from the cache or database
   let currentUserAppProfile: InterfaceAppUserProfile | null;
   const appUserProfileFoundInCache = await findAppUserProfileCache([
     currentUser.appUserProfileId?.toString(),
@@ -64,6 +78,8 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       await cacheAppUserProfile([currentUserAppProfile]);
     }
   }
+
+  // Check if the user's app profile exists
   if (!currentUserAppProfile) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -71,11 +87,10 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
-  // Check if the post object exists
+
+  // Get the post from the cache or database
   let post: InterfacePost | null;
-
   const postFoundInCache = await findPostsInCache([args.id]);
-
   post = postFoundInCache[0];
 
   if (postFoundInCache[0] === null) {
@@ -87,6 +102,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     }
   }
 
+  // Check if the post exists
   if (!post) {
     throw new errors.NotFoundError(
       requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
@@ -95,7 +111,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     );
   }
 
-  // Check if the current user is authorized to perform the operation
+  // Check if the user is authorized to pin or unpin the post
   const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
     (organizationId) =>
       organizationId &&
@@ -112,9 +128,8 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     );
   }
 
-  // Toggle the post's status for the organization
+  // Toggle the pinning status of the post within the organization
   let organization;
-
   const organizationFoundInCache = await findOrganizationsInCache([
     post.organization,
   ]);
@@ -129,11 +144,13 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       await cacheOrganizations([organization]);
     }
   }
+
   const currentPostIsPinned = organization?.pinnedPosts.some((postID) =>
     new mongoose.Types.ObjectId(postID.toString()).equals(args.id),
   );
 
   if (currentPostIsPinned) {
+    // Unpin the post if it is currently pinned
     const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: post.organization,
@@ -170,6 +187,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
 
     return updatedPost as InterfacePost;
   } else {
+    // Pin the post if it is not currently pinned
     if (!args.title) {
       throw new errors.InputValidationError(
         requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
@@ -177,6 +195,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       );
     }
 
+    // Validate the title length if provided
     if (args?.title) {
       const validationResultTitle = isValidString(args?.title, 256);
       if (!validationResultTitle.isLessThanMaxLength) {
@@ -206,6 +225,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
     }
+
     const updatedPost = await Post.findOneAndUpdate(
       {
         _id: args.id,
