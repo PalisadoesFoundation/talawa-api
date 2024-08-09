@@ -5,7 +5,7 @@ import type mongoose from "mongoose";
 import type { TestChatMessageType } from "../../helpers/chat";
 import { createTestChatMessage } from "../../helpers/chat";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToDirectChat";
+import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testChatMessage: TestChatMessageType;
@@ -41,7 +41,7 @@ describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
       userId: testCurrentUser?._id,
     };
     const payload = {
-      messageSentToDirectChat: {
+      messageSentToChat: {
         sender: testChatMessage?.sender,
       },
     };
