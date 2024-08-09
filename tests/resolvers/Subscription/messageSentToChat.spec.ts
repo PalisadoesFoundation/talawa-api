@@ -6,6 +6,7 @@ import type { TestChatMessageType } from "../../helpers/chat";
 import { createTestChatMessage } from "../../helpers/chat";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToChat";
+import { chatMessageBelongsTo } from "../../../src/resolvers/ChatMessage/chatMessageBelongsTo";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testChatMessage: TestChatMessageType;
@@ -42,7 +43,7 @@ describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
     };
     const payload = {
       messageSentToChat: {
-        sender: testChatMessage?.sender,
+        chatMessageBelongsTo: testChatMessage?.chatMessageBelongsTo,
       },
     };
     // @ts-expect-error-ignore
@@ -50,9 +51,6 @@ describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
     // @ts-expect-error-ignore
     const x = messageSentToChatPayload?.subscribe(_parent, _args, context);
     expect(x).not.toBe(null);
-    expect(await filterFunction(payload, variables)).toBe(true);
-
-    // If current User is sender
     expect(await filterFunction(payload, variables)).toBe(true);
   });
 
