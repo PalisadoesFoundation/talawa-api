@@ -13,17 +13,25 @@ import {
 } from "../../constants";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
+
 /**
- * This function adds user to the family.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of the entire application
- * @remarks The following checks are done:
- * 1. If the family exists
- * 2. If the user exists
- * 3. If the user is already member of the family
- * 4. If the user is admin of the user Family
- * @returns Updated family
+ * Adds a user to a user family.
+ *
+ * This function allows an admin to add a user to a specific user family. It performs several checks:
+ *
+ * 1. Verifies if the user family exists.
+ * 2. Checks if the user exists.
+ * 3. Confirms that the user is not already a member of the family.
+ * 4. Ensures that the current user is an admin of the user family.
+ *
+ * @param _parent - The parent object for the mutation (not used in this function).
+ * @param args - The arguments provided with the request, including:
+ *   - `familyId`: The ID of the user family to which the user will be added.
+ *   - `userId`: The ID of the user to be added to the user family.
+ * @param context - The context of the entire application, including user information and other context-specific data.
+ *
+ * @returns A promise that resolves to the updated user family object.
+ *
  */
 export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
   async (_parent, args, context) => {
@@ -51,7 +59,7 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
       );
     }
 
-    //check wheather family exists
+    // Check whether family exists.
     if (!userFamily) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_FAMILY_NOT_FOUND_ERROR.MESSAGE),
@@ -60,14 +68,14 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
       );
     }
 
-    //check whether user is admin of the family
+    // Check whether user is an admin of the family.
     await adminCheck(currentUser?._id, userFamily);
 
     const isUserMemberOfUserFamily = userFamily.users.some((user) =>
       user.equals(args.userId),
     );
 
-    // Checks whether user with _id === args.userId is already a member of Family.
+    // Checks whether user with _id === args.userId is already a member of the family.
     if (isUserMemberOfUserFamily) {
       throw new errors.ConflictError(
         requestContext.translate(USER_ALREADY_MEMBER_ERROR.MESSAGE),
@@ -76,7 +84,7 @@ export const addUserToUserFamily: MutationResolvers["addUserToUserFamily"] =
       );
     }
 
-    // Adds args.userId to users lists on family group and return the updated family.
+    // Adds args.userId to the users list in the user family and returns the updated family.
     const updatedFamily = await UserFamily.findOneAndUpdate(
       {
         _id: args.familyId,
