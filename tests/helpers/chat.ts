@@ -61,6 +61,29 @@ export const createTestChatMessage = async (): Promise<
   }
 };
 
+export const createTestChatMessageWithoutReply = async (): Promise<
+  [TestUserType, TestOrganizationType, TestChatType, TestChatMessageType]
+> => {
+  const [testUser, testOrganization, testChat] = await createTestChat();
+
+  const chatMessage = await createChatMessage(testUser?._id, testChat?._id);
+
+  if (testChat && testUser) {
+    const testChatMessage = await ChatMessage.create({
+      chatMessageBelongsTo: testChat._id,
+      sender: testUser._id,
+      replyTo: undefined,
+      messageContent: `msgContent${nanoid().toLowerCase()}`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      type: "STRING",
+    });
+    return [testUser, testOrganization, testChat, testChatMessage];
+  } else {
+    return [testUser, testOrganization, testChat, null];
+  }
+};
+
 export const createTestMessageForMultipleUser = async (
   senderId: string,
   organizationId: string,

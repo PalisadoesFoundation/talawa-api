@@ -5,25 +5,31 @@ import type mongoose from "mongoose";
 import { ChatMessage } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type { TestChatMessageType } from "../../helpers/chat";
-import { createTestChatMessage } from "../../helpers/chat";
+import {
+  createTestChatMessageWithoutReply,
+  createTestChatMessage,
+} from "../../helpers/chat";
 import { Types } from "mongoose";
 import { MESSAGE_NOT_FOUND_ERROR } from "../../../src/constants";
 
 let testChatMessage: TestChatMessageType;
+let testChatMessageWithoutReply: TestChatMessageType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestChatMessage();
-  testChatMessage = temp[3];
+  const temp = await createTestChatMessageWithoutReply();
+  const temp1 = await createTestChatMessage();
+  testChatMessageWithoutReply = temp[3];
+  testChatMessage = temp1[3];
 });
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
-  it(`returns directChat object for parent.directChatMessageBelongsTo`, async () => {
+describe("resolvers -> DirectChatMessage -> replyTo", () => {
+  it(`returns directChat object for parent.replyTo`, async () => {
     const parent = testChatMessage?.toObject();
 
     if (!parent) {
@@ -68,5 +74,27 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
       expect(spy).toBeCalledWith(MESSAGE_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(MESSAGE_NOT_FOUND_ERROR.MESSAGE);
     }
+  });
+  it(`return null if no replyTo`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+
+    const parent = testChatMessageWithoutReply?.toObject();
+
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
+
+    if (typeof replyToResolver !== "function") {
+      throw new Error("replyToResolver is not a function.");
+    }
+
+    const replyToPayload = await replyToResolver(parent, {}, {});
+
+    const replyTo = null;
+
+    expect(replyToPayload).toEqual(replyTo);
   });
 });
