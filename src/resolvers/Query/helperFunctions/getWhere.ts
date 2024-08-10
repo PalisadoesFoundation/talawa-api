@@ -3,6 +3,7 @@ import type {
   ActionItemWhereInput,
   DonationWhereInput,
   EventWhereInput,
+  EventVolunteerGroupWhereInput,
   FundWhereInput,
   InputMaybe,
   OrganizationWhereInput,
@@ -30,6 +31,7 @@ export const getWhere = <T = unknown>(
     | InputMaybe<
         Partial<
           EventWhereInput &
+            EventVolunteerGroupWhereInput &
             OrganizationWhereInput &
             PostWhereInput &
             UserWhereInput &
@@ -213,10 +215,10 @@ export const getWhere = <T = unknown>(
   }
 
   // Return action items belonging to a specific event
-  if (where.event_id) {
+  if (where.event_id || where.eventId) {
     wherePayload = {
       ...wherePayload,
-      eventId: where.event_id,
+      eventId: where.event_id || where.eventId,
     };
   }
 
@@ -756,6 +758,15 @@ export const getWhere = <T = unknown>(
       name: {
         $regex: where.name_contains,
         $options: "i",
+      },
+    };
+  }
+
+  if (where.volunteerId) {
+    wherePayload = {
+      ...wherePayload,
+      volunteers: {
+        $in: [where.volunteerId],
       },
     };
   }

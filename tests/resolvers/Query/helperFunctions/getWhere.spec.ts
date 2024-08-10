@@ -10,6 +10,7 @@ import type {
   UserWhereInput,
   VenueWhereInput,
   CampaignWhereInput,
+  EventVolunteerGroupWhereInput,
 } from "../../../../src/types/generatedGraphQLTypes";
 
 describe("getWhere function", () => {
@@ -17,6 +18,7 @@ describe("getWhere function", () => {
     string,
     Partial<
       EventWhereInput &
+        EventVolunteerGroupWhereInput &
         OrganizationWhereInput &
         PostWhereInput &
         UserWhereInput &
@@ -105,6 +107,7 @@ describe("getWhere function", () => {
     ["is_active", { is_active: true }, { isCompleted: false }],
     ["is_completed", { is_completed: true }, { isCompleted: true }],
     ["event_id", { event_id: "6f43d" }, { eventId: "6f43d" }],
+    ["eventId", { eventId: "6f43d" }, { eventId: "6f43d" }],
     ["location", { location: "test location" }, { location: "test location" }],
     [
       "location_not",
@@ -321,11 +324,20 @@ describe("getWhere function", () => {
       { name_contains: "Test" },
       { name: { $regex: "Test", $options: "i" } },
     ],
+    [
+      "volunteerId",
+      { volunteerId: "6f43d" },
+      {
+        volunteers: {
+          $in: ["6f43d"],
+        },
+      },
+    ],
   ];
 
   it.each(testCases)(
     "should return correct where payload for %s",
-    (name, input, expected) => {
+    (_name, input, expected) => {
       const result = getWhere(input);
       expect(result).toEqual(expected);
     },

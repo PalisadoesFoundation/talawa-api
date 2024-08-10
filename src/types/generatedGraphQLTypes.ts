@@ -826,6 +826,12 @@ export type EventVolunteerGroupInput = {
   volunteersRequired?: InputMaybe<Scalars['Int']['input']>;
 };
 
+export type EventVolunteerGroupWhereInput = {
+  eventId?: InputMaybe<Scalars['ID']['input']>;
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+  volunteerId?: InputMaybe<Scalars['ID']['input']>;
+};
+
 export type EventVolunteerInput = {
   eventId: Scalars['ID']['input'];
   groupId: Scalars['ID']['input'];
@@ -2279,6 +2285,7 @@ export type Query = {
   getEventAttendee?: Maybe<EventAttendee>;
   getEventAttendeesByEventId?: Maybe<Array<Maybe<EventAttendee>>>;
   getEventInvitesByUserId: Array<EventAttendee>;
+  getEventVolunteerGroups: Array<Maybe<EventVolunteerGroup>>;
   getFundById: Fund;
   getFundraisingCampaignById: FundraisingCampaign;
   getFundraisingCampaignPledgeById: FundraisingCampaignPledge;
@@ -2460,6 +2467,11 @@ export type QueryGetEventAttendeesByEventIdArgs = {
 
 export type QueryGetEventInvitesByUserIdArgs = {
   userId: Scalars['ID']['input'];
+};
+
+
+export type QueryGetEventVolunteerGroupsArgs = {
+  where?: InputMaybe<EventVolunteerGroupWhereInput>;
 };
 
 
@@ -3317,6 +3329,7 @@ export type ResolversTypes = {
   EventVolunteer: ResolverTypeWrapper<InterfaceEventVolunteerModel>;
   EventVolunteerGroup: ResolverTypeWrapper<InterfaceEventVolunteerGroupModel>;
   EventVolunteerGroupInput: EventVolunteerGroupInput;
+  EventVolunteerGroupWhereInput: EventVolunteerGroupWhereInput;
   EventVolunteerInput: EventVolunteerInput;
   EventVolunteerResponse: EventVolunteerResponse;
   EventWhereInput: EventWhereInput;
@@ -3524,6 +3537,7 @@ export type ResolversParentTypes = {
   EventVolunteer: InterfaceEventVolunteerModel;
   EventVolunteerGroup: InterfaceEventVolunteerGroupModel;
   EventVolunteerGroupInput: EventVolunteerGroupInput;
+  EventVolunteerGroupWhereInput: EventVolunteerGroupWhereInput;
   EventVolunteerInput: EventVolunteerInput;
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
@@ -4551,6 +4565,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getEventAttendee?: Resolver<Maybe<ResolversTypes['EventAttendee']>, ParentType, ContextType, RequireFields<QueryGetEventAttendeeArgs, 'eventId' | 'userId'>>;
   getEventAttendeesByEventId?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventAttendee']>>>, ParentType, ContextType, RequireFields<QueryGetEventAttendeesByEventIdArgs, 'eventId'>>;
   getEventInvitesByUserId?: Resolver<Array<ResolversTypes['EventAttendee']>, ParentType, ContextType, RequireFields<QueryGetEventInvitesByUserIdArgs, 'userId'>>;
+  getEventVolunteerGroups?: Resolver<Array<Maybe<ResolversTypes['EventVolunteerGroup']>>, ParentType, ContextType, Partial<QueryGetEventVolunteerGroupsArgs>>;
   getFundById?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<QueryGetFundByIdArgs, 'id'>>;
   getFundraisingCampaignById?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignByIdArgs, 'id'>>;
   getFundraisingCampaignPledgeById?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignPledgeByIdArgs, 'id'>>;

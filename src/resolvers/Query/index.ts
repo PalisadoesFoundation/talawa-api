@@ -21,6 +21,7 @@ import { groupChatsByUserId } from "./groupChatsByUserId";
 import { event } from "./event";
 import { eventsByOrganization } from "./eventsByOrganization";
 import { eventsByOrganizationConnection } from "./eventsByOrganizationConnection";
+import { getEventVolunteerGroups } from "./getEventVolunteerGroups";
 import { fundsByOrganization } from "./fundsByOrganization";
 import { getAllAgendaItems } from "./getAllAgendaItems";
 import { getEventInvitesByUserId } from "./getEventInvitesByUserId";
@@ -77,6 +78,7 @@ export const Query: QueryResolvers = {
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getEventInvitesByUserId,
+  getEventVolunteerGroups,
   getAllNotesForAgendaItem,
   getNoteById,
   getlanguage,
