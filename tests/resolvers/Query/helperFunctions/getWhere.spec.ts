@@ -10,6 +10,7 @@ import type {
   UserWhereInput,
   VenueWhereInput,
   CampaignWhereInput,
+  EventVolunteerGroupWhereInput,
   PledgeWhereInput,
 } from "../../../../src/types/generatedGraphQLTypes";
 
@@ -18,6 +19,7 @@ describe("getWhere function", () => {
     string,
     Partial<
       EventWhereInput &
+        EventVolunteerGroupWhereInput &
         OrganizationWhereInput &
         PostWhereInput &
         UserWhereInput &
@@ -107,6 +109,7 @@ describe("getWhere function", () => {
     ["is_active", { is_active: true }, { isCompleted: false }],
     ["is_completed", { is_completed: true }, { isCompleted: true }],
     ["event_id", { event_id: "6f43d" }, { eventId: "6f43d" }],
+    ["eventId", { eventId: "6f43d" }, { eventId: "6f43d" }],
     ["location", { location: "test location" }, { location: "test location" }],
     [
       "location_not",
@@ -330,6 +333,15 @@ describe("getWhere function", () => {
       { organizationId: "6f6cd" },
     ],
     ["campaignId", { campaignId: "6f6c" }, { _id: "6f6c" }],
+    [
+      "volunteerId",
+      { volunteerId: "6f43d" },
+      {
+        volunteers: {
+          $in: ["6f43d"],
+        },
+      },
+    ],
   ];
 
   it.each(testCases)(

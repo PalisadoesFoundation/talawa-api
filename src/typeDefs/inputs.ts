@@ -151,6 +151,12 @@ export const inputs = gql`
     volunteersRequired: Int
   }
 
+  input EventVolunteerGroupWhereInput {
+    eventId: ID
+    volunteerId: ID
+    name_contains: String
+  }
+
   input UpdateEventVolunteerInput {
     eventId: ID
     isAssigned: Boolean

@@ -748,6 +748,12 @@ input EventVolunteerGroupInput {
   volunteersRequired: Int
 }
 
+input EventVolunteerGroupWhereInput {
+  eventId: ID
+  name_contains: String
+  volunteerId: ID
+}
+
 input EventVolunteerInput {
   eventId: ID!
   groupId: ID!
@@ -1501,6 +1507,7 @@ type Query {
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
+  getEventVolunteerGroups(where: EventVolunteerGroupWhereInput): [EventVolunteerGroup]!
   getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getFundraisingCampaigns(campaignOrderby: CampaignOrderByInput, pledgeOrderBy: PledgeOrderByInput, where: CampaignWhereInput): [FundraisingCampaign]!

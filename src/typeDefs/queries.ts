@@ -64,6 +64,10 @@ export const queries = gql`
 
     eventVolunteersByEvent(id: ID!): [EventVolunteer]
 
+    getEventVolunteerGroups(
+      where: EventVolunteerGroupWhereInput
+    ): [EventVolunteerGroup]!
+
     fundsByOrganization(
       organizationId: ID!
       where: FundWhereInput
