@@ -222,6 +222,7 @@ export const inputs = gql`
     endDate: Date!
     fundingGoal: Float!
     currency: Currency!
+    organizationId: ID!
   }
   input FundCampaignPledgeInput {
     campaignId: ID!
@@ -237,6 +238,16 @@ export const inputs = gql`
   }
 
   input CampaignWhereInput {
+    id: ID
+    fundId: ID
+    organizationId: ID
+    name_contains: String
+  }
+
+  input PledgeWhereInput {
+    id: ID
+    campaignId: ID
+    firstName_contains: String
     name_contains: String
   }
 
