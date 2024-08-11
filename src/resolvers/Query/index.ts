@@ -30,7 +30,8 @@ import { getDonationById } from "./getDonationById";
 import { getDonationByOrgId } from "./getDonationByOrgId";
 import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
 import { getFundById } from "./getFundById";
-import { getFundraisingCampaignById } from "./getFundraisingCampaign";
+import { getFundraisingCampaigns } from "./getFundraisingCampaigns";
+import { getPledgesByUserId } from "./getPledgesByUserId";
 import { getPlugins } from "./getPlugins";
 import { getlanguage } from "./getlanguage";
 import { me } from "./me";
@@ -96,9 +97,10 @@ export const Query: QueryResolvers = {
   users,
   usersConnection,
   getFundById,
-  getFundraisingCampaignById,
+  getFundraisingCampaigns,
   venue,
   fundsByOrganization,
+  getPledgesByUserId,
   getEventAttendee,
   getEventAttendeesByEventId,
   getVenueByOrgId,

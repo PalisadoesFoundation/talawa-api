@@ -1,21 +1,22 @@
-import {
-  FundraisingCampaign,
-  type InterfaceFundraisingCampaign,
-} from "../../models";
+import { FundraisingCampaign } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getSort } from "./helperFunctions/getSort";
+import { getWhere } from "./helperFunctions/getWhere";
 /**
  * This query will fetch the fundraisingCampaign as a transaction from database.
  * @param _parent-
  * @param args - An object that contains `id` of the campaign.
  * @returns A `fundraisingCampaign` object.
- */ //@ts-expect-error - type error
-export const getFundraisingCampaignById: QueryResolvers["getFundraisingCampaignById"] =
+ */
+export const getFundraisingCampaigns: QueryResolvers["getFundraisingCampaigns"] =
   async (_parent, args) => {
-    const sort = getSort(args.orderBy);
-    const campaign = await FundraisingCampaign.findOne({
-      _id: args.id,
+    const sortPledge = getSort(args.pledgeOrderBy);
+    const sortCampaign = getSort(args.campaignOrderby);
+    const where = getWhere(args.where);
+    const campaigns = await FundraisingCampaign.find({
+      ...where,
     })
+      .sort(sortCampaign)
       .populate("fundId")
       .populate({
         path: "pledges",
@@ -23,10 +24,9 @@ export const getFundraisingCampaignById: QueryResolvers["getFundraisingCampaignB
           path: "users",
         },
         options: {
-          sort: sort,
+          sort: sortPledge,
         },
-      })
-      .lean();
+      });
 
-    return campaign ?? ({} as InterfaceFundraisingCampaign);
+    return campaigns;
   };
