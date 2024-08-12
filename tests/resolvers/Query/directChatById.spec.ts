@@ -39,7 +39,7 @@ describe("resolvers -> Query -> directChatsById", () => {
   it(`returns list of all directChats with directChat.users containing the user
   with _id === args.id`, async () => {
     const args: QueryDirectChatsByUserIdArgs = {
-      id: testDirectChat?._id,
+      id: testDirectChat?._id.toString() ?? "defaultString",
     };
 
     const directChatsByUserIdPayload = await directChatByIdResolver?.(
