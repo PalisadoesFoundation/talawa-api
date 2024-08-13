@@ -4,6 +4,19 @@ import { Event } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 import { createRecurringEventInstancesDuringQuery } from "../../helpers/event/createEventHelpers";
+/**
+ * Retrieves events for a specific organization based on the provided query parameters.
+ *
+ * This function performs the following steps:
+ * 1. Generates recurring event instances up to a certain date if the organization has any.
+ * 2. Builds a query filter (`where`) and sorting parameters based on the provided arguments.
+ * 3. Queries the database for events matching the filter, with sorting, pagination, and related data fetching.
+ *
+ * @param _parent - This parameter is not used in this resolver function.
+ * @param args - The arguments provided by the GraphQL query, including filters (`where`), sorting order (`orderBy`), pagination options (`first` and `skip`), and any other query parameters.
+ *
+ * @returns A list of events matching the query parameters, with related data populated.
+ */
 
 export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizationConnection"] =
   async (_parent, args) => {
