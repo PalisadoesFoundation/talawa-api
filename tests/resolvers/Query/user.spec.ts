@@ -11,6 +11,7 @@ import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserF
 import type { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { FundraisingCampaignPledge } from "../../../src/models/FundraisingCampaignPledge";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -19,6 +20,10 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = (await createTestUserAndOrganization())[0];
   await deleteUserFromCache(testUser?.id);
+  const pledges = await FundraisingCampaignPledge.find({
+    _id: new Types.ObjectId(),
+  }).lean();
+  console.log(pledges);
 });
 
 afterAll(async () => {

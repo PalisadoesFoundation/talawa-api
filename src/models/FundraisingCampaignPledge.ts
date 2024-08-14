@@ -11,7 +11,7 @@ import { type InterfaceUser } from "./User";
  */
 export interface InterfaceFundraisingCampaignPledges {
   _id: Types.ObjectId;
-  campaigns: PopulatedDoc<InterfaceFundraisingCampaign & Document>[];
+  campaign: PopulatedDoc<InterfaceFundraisingCampaign & Document>;
   users: PopulatedDoc<InterfaceUser & Document>[];
   startDate: Date;
   endDate: Date;
@@ -24,7 +24,7 @@ export interface InterfaceFundraisingCampaignPledges {
 /**
  * Mongoose schema for a fundraising campaign pledge.
  * Defines the structure of the pledge document stored in MongoDB.
- * @param campaigns - The fundraising campaigns associated with the pledge.
+ * @param campaign - The fundraising campaign associated with the pledge.
  * @param users - The users who made the pledge.
  * @param startDate - The start date of the pledge.
  * @param endDate - The end date of the pledge.
@@ -35,13 +35,11 @@ export interface InterfaceFundraisingCampaignPledges {
  */
 const fundraisingCampaignPledgeSchema = new Schema(
   {
-    campaigns: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "FundraisingCampaign",
-        required: true,
-      },
-    ],
+    campaign: {
+      type: Schema.Types.ObjectId,
+      ref: "FundraisingCampaign",
+      required: true,
+    },
     users: [
       {
         type: Schema.Types.ObjectId,
