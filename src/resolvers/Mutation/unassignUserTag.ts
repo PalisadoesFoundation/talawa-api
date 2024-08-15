@@ -145,9 +145,36 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
     );
   }
 
+  // Get all the child tags of the current tag (including itself)
+  // on the OrganizationTagUser model
+  // The following implementation makes number of queries = max depth of nesting in the tag provided
+  let allTagIds: string[] = [];
+  let currentParents = [tag._id.toString()];
+
+  while (currentParents.length) {
+    allTagIds = allTagIds.concat(currentParents);
+    const foundTags = await OrganizationTagUser.find(
+      {
+        organizationId: tag.organizationId,
+        parentTagId: {
+          $in: currentParents,
+        },
+      },
+      {
+        _id: 1,
+      },
+    );
+    currentParents = foundTags
+      .map((tag) => tag._id.toString())
+      .filter((id: string | null) => id);
+  }
+
   // Unassign the tag
-  await TagUser.deleteOne({
-    ...args.input,
+  await TagUser.deleteMany({
+    tagId: {
+      $in: allTagIds,
+    },
+    userId: args.input.userId,
   });
 
   return requestUser;

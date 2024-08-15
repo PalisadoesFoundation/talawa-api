@@ -125,6 +125,10 @@ export const queries = gql`
 
     getNoteById(id: ID!): Note!
 
+    getUserTag(id: ID!): UserTag
+
+    getUserTagAncestors(id: ID!): [UserTag]
+
     getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
 
     advertisementsConnection(
