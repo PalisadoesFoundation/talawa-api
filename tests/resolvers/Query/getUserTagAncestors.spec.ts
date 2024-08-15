@@ -6,7 +6,10 @@ import { connect, disconnect } from "../../helpers/db";
 import { getUserTagAncestors as getUserTagAncestorsResolver } from "../../../src/resolvers/Query/getUserTagAncestors";
 import type { QueryGetUserTagAncestorsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTwoLevelTagsWithOrg, TestUserTagType } from "../../helpers/tags";
+import {
+  createTwoLevelTagsWithOrg,
+  type TestUserTagType,
+} from "../../helpers/tags";
 import { TAG_NOT_FOUND } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose;

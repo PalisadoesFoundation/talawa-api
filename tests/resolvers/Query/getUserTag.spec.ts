@@ -4,17 +4,9 @@ import { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 
 import { getUserTag as getUserTagResolver } from "../../../src/resolvers/Query/getUserTag";
-import type {
-  QueryGetUserTagAncestorsArgs,
-  QueryGetUserTagArgs,
-} from "../../../src/types/generatedGraphQLTypes";
+import type { QueryGetUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
-import {
-  createRootTagWithOrg,
-  createTwoLevelTagsWithOrg,
-  TestUserTagType,
-} from "../../helpers/tags";
+import { createRootTagWithOrg, type TestUserTagType } from "../../helpers/tags";
 import { TAG_NOT_FOUND } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose;

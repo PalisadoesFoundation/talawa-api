@@ -36,13 +36,11 @@ let adminUser2: TestUserType;
 let testTag2: TestUserTagType;
 let testTag: TestUserTagType;
 let testSubTag1: TestUserTagType;
-let testSubTag2: TestUserTagType;
 let randomUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [adminUser, , [testTag, testSubTag1, testSubTag2]] =
-    await createTwoLevelTagsWithOrg();
+  [adminUser, , [testTag, testSubTag1]] = await createTwoLevelTagsWithOrg();
   [adminUser2, , testTag2] = await createRootTagWithOrg();
   randomUser = await createTestUser();
 });
@@ -248,7 +246,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     const args: MutationAssignUserTagArgs = {
       input: {
         userId: adminUser?._id,
-        tagId: testSubTag2?._id.toString() ?? "",
+        tagId: testSubTag1?._id.toString() ?? "",
       },
     };
     const context = {

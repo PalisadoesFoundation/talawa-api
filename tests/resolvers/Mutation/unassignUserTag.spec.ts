@@ -30,13 +30,11 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 let adminUser: TestUserType;
 let testTag: TestUserTagType;
 let testSubTag1: TestUserTagType;
-let testSubTag2: TestUserTagType;
 let randomUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [adminUser, , [testTag, testSubTag1, testSubTag2]] =
-    await createTwoLevelTagsWithOrg();
+  [adminUser, , [testTag, testSubTag1]] = await createTwoLevelTagsWithOrg();
   randomUser = await createTestUser();
 });
 
