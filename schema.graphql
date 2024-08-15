@@ -1580,7 +1580,7 @@ type SocialMediaUrls {
   linkedIn: String
   reddit: String
   slack: String
-  twitter: String
+  X: String
   youTube: String
 }
 
@@ -1591,7 +1591,7 @@ input SocialMediaUrlsInput {
   linkedIn: String
   reddit: String
   slack: String
-  twitter: String
+  X: String
   youTube: String
 }
 

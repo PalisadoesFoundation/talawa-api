@@ -589,7 +589,7 @@ export const types = gql`
   type SocialMediaUrls {
     facebook: String
     instagram: String
-    twitter: String
+    X: String
     linkedIn: String
     gitHub: String
     youTube: String

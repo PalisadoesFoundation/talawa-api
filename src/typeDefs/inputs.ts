@@ -408,7 +408,7 @@ export const inputs = gql`
     linkedIn: String
     reddit: String
     slack: String
-    twitter: String
+    X: String
     youTube: String
   }
 
