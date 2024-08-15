@@ -12,18 +12,34 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { adminCheck } from "../../utilities";
 import type { InterfaceGroupChat } from "../../models";
+
 /**
- * This function adds user to group chat.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the group chat exists
- * 2. If the organization exists
- * 3. If the user trying to add the user is an admin of organization
- * 4. If the user exists
- * 5. If the user is already a member of the chat
- * @returns Updated Group chat
+ * Mutation resolver function to add a user to a group chat.
+ *
+ * This function performs the following actions:
+ * 1. Checks if the group chat specified by `args.chatId` exists.
+ * 2. Checks if the organization associated with the group chat exists.
+ * 3. Verifies that the current user (identified by `context.userId`) is an admin of the organization.
+ * 4. Confirms that the user to be added (specified by `args.userId`) exists.
+ * 5. Ensures that the user is not already a member of the group chat.
+ * 6. Adds the user to the list of users in the group chat and returns the updated group chat.
+ *
+ * @param _parent - The parent object for the mutation. This parameter is not used in this resolver.
+ * @param args - The arguments for the mutation, including:
+ *   - `chatId`: The ID of the group chat to which the user will be added.
+ *   - `userId`: The ID of the user to be added to the group chat.
+ * @param context - The context for the mutation, including:
+ *   - `userId`: The ID of the current user making the request.
+ *
+ * @returns A promise that resolves to the updated group chat document with the new user added.
+ *
+ * @see GroupChat - The GroupChat model used to interact with the group chats collection in the database.
+ * @see Organization - The Organization model used to interact with the organizations collection in the database.
+ * @see User - The User model used to interact with the users collection in the database.
+ * @see MutationResolvers - The type definition for the mutation resolvers.
+ * @see adminCheck - Utility function to check if the current user is an admin of the organization.
+ * @see findOrganizationsInCache - Service function to retrieve organizations from cache.
+ * @see cacheOrganizations - Service function to cache updated organization data.
  */
 export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
   async (_parent, args, context) => {

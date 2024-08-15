@@ -31,7 +31,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
     }
 
     if (typeof chatMessageBelongsToResolver !== "function") {
-      throw new Error("directChatMessageBelongsToResolver is not a function.");
+      throw new Error("chatMessageBelongsToResolver is not a function.");
     }
 
     const chatMessageBelongsToPayload = await chatMessageBelongsToResolver(
@@ -54,7 +54,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
 
     const parent = {
       ...testChatMessage?.toObject(),
-      directChatMessageBelongsTo: new Types.ObjectId(), // Set to a non-existing ObjectId
+      chatMessageBelongsTo: new Types.ObjectId(), // Set to a non-existing ObjectId
     };
 
     if (!parent) {
@@ -62,7 +62,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
     }
 
     if (typeof chatMessageBelongsToResolver !== "function") {
-      throw new Error("directChatMessageBelongsToResolver is not a function.");
+      throw new Error("chatMessageBelongsToResolver is not a function.");
     }
 
     try {
