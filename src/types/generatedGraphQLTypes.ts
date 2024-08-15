@@ -2306,6 +2306,8 @@ export type Query = {
   getNoteById: Note;
   getPledgesByUserId?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
+  getUserTag?: Maybe<UserTag>;
+  getUserTagAncestors?: Maybe<Array<Maybe<UserTag>>>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   groupChatById?: Maybe<GroupChat>;
@@ -2518,6 +2520,16 @@ export type QueryGetPledgesByUserIdArgs = {
   orderBy?: InputMaybe<PledgeOrderByInput>;
   userId: Scalars['ID']['input'];
   where?: InputMaybe<PledgeWhereInput>;
+};
+
+
+export type QueryGetUserTagArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetUserTagAncestorsArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -2908,9 +2920,9 @@ export type UpdateUserPasswordInput = {
 };
 
 export type UpdateUserTagInput = {
-  _id: Scalars['ID']['input'];
   name: Scalars['String']['input'];
-  tagColor: Scalars['String']['input'];
+  tagColor?: InputMaybe<Scalars['String']['input']>;
+  tagId: Scalars['ID']['input'];
 };
 
 export type User = {
@@ -3084,7 +3096,7 @@ export type UserTagsConnection = {
   __typename?: 'UserTagsConnection';
   edges: Array<UserTagsConnectionEdge>;
   pageInfo: DefaultConnectionPageInfo;
-  totalCount?: Maybe<Scalars['PositiveInt']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
 /** A default connection edge on the UserTag type for UserTagsConnection. */
@@ -3133,6 +3145,7 @@ export type UsersConnection = {
   __typename?: 'UsersConnection';
   edges: Array<UsersConnectionEdge>;
   pageInfo: DefaultConnectionPageInfo;
+  totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
 /** A default connection edge on the User type for UsersConnection. */
@@ -4600,6 +4613,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getNoteById?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<QueryGetNoteByIdArgs, 'id'>>;
   getPledgesByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType, RequireFields<QueryGetPledgesByUserIdArgs, 'userId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
+  getUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<QueryGetUserTagArgs, 'id'>>;
+  getUserTagAncestors?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTag']>>>, ParentType, ContextType, RequireFields<QueryGetUserTagAncestorsArgs, 'id'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   groupChatById?: Resolver<Maybe<ResolversTypes['GroupChat']>, ParentType, ContextType, RequireFields<QueryGroupChatByIdArgs, 'id'>>;
@@ -4784,7 +4799,7 @@ export type UserTagResolvers<ContextType = any, ParentType extends ResolversPare
 export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
   edges?: Resolver<Array<ResolversTypes['UserTagsConnectionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
-  totalCount?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4797,6 +4812,7 @@ export type UserTagsConnectionEdgeResolvers<ContextType = any, ParentType extend
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
   edges?: Resolver<Array<ResolversTypes['UsersConnectionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
