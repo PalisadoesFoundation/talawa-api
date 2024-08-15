@@ -28,7 +28,7 @@ services:
       - mongodb
       - redis-stack-server
     environment:
-      - mongodb+srv://disha:disha@test.hz7knd5.mongodb.net/?retryWrites=true&w=majority&appName=test
+      - mongodb://localhost:27017/talawa-api
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
 

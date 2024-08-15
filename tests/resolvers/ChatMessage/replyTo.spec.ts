@@ -46,7 +46,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
+      .mockImplementationOnce((message: any) => message);
 
     const parent = {
       ...testChatMessage?.toObject(),
