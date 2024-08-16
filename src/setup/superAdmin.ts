@@ -16,7 +16,7 @@ export async function askForSuperAdminEmail(): Promise<string> {
       name: "email",
       message:
         "Enter the email which you wish to assign as the Super Admin of last resort :",
-      validate: (input: string) =>
+      validate: (input: string): boolean | string =>
         isValidEmail(input) || "Invalid email. Please try again.",
     },
   ]);
