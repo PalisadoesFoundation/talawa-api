@@ -84,6 +84,53 @@ describe("resolvers -> Mutation -> login", () => {
     vi.resetModules();
   });
 
+  it("creates a new AppUserProfile for the user if it doesn't exist and associates it with the user", async () => {
+    // Create a new user without an associated AppUserProfile
+    const newUser = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: "password",
+      firstName: "firstName",
+      lastName: "lastName",
+    });
+
+    const hashedPassword = await bcrypt.hash("password", 12);
+    await User.updateOne(
+      {
+        _id: newUser?._id,
+      },
+      {
+        $set: {
+          password: hashedPassword,
+        },
+      },
+    );
+
+    const args: MutationLoginArgs = {
+      data: {
+        email: newUser?.email,
+        password: "password",
+      },
+    };
+
+    // Call the login resolver
+    const loginPayload = await loginResolver?.({}, args, {});
+
+    // Find the newly created AppUserProfile
+    const userAppProfile = await AppUserProfile.findOne({
+      userId: newUser?._id,
+    });
+
+    // Check if the AppUserProfile is created and associated with the user
+    expect(userAppProfile).toBeDefined();
+    expect(loginPayload).toEqual(
+      expect.objectContaining({
+        user: expect.objectContaining({
+          appUserProfileId: userAppProfile?._id,
+        }),
+      }),
+    );
+  });
+
   it(`throws NotFoundError if no user exists with email === args.data.email`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
