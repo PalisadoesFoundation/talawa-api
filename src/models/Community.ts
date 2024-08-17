@@ -12,7 +12,7 @@ export interface InterfaceCommunity {
   socialMediaUrls: {
     facebook: string;
     instagram: string;
-    twitter: string;
+    X: string;
     linkedIn: string;
     gitHub: string;
     youTube: string;
@@ -30,7 +30,7 @@ export interface InterfaceCommunity {
  * @param socialMediaUrls - Object containing social media URLs for the community.
  * @param facebook - Facebook URL.
  * @param instagram - Instagram URL.
- * @param twitter - Twitter URL.
+ * @param X - X URL.
  * @param linkedIn - LinkedIn URL.
  * @param gitHub - GitHub URL.
  * @param youTube - YouTube URL.
@@ -58,7 +58,7 @@ const communitySchema = new Schema({
     instagram: {
       type: String,
     },
-    twitter: {
+    X: {
       type: String,
     },
     linkedIn: {
