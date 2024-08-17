@@ -589,7 +589,7 @@ export const types = gql`
   type SocialMediaUrls {
     facebook: String
     instagram: String
-    twitter: String
+    X: String
     linkedIn: String
     gitHub: String
     youTube: String
@@ -743,7 +743,7 @@ export const types = gql`
   type UserTagsConnection {
     edges: [UserTagsConnectionEdge!]!
     pageInfo: DefaultConnectionPageInfo!
-    totalCount: PositiveInt
+    totalCount: Int
   }
 
   """
@@ -760,6 +760,7 @@ export const types = gql`
   type UsersConnection {
     edges: [UsersConnectionEdge!]!
     pageInfo: DefaultConnectionPageInfo!
+    totalCount: Int
   }
 
   """
