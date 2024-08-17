@@ -17,7 +17,7 @@ export const chatsByUserId: QueryResolvers["chatsByUserId"] = async (
     users: args.id,
   }).lean();
 
-  console.log(chats);
+  console.log('CHATS AFTER UPDATE',chats);
 
   return chats;
 };

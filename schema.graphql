@@ -566,6 +566,7 @@ type Chat {
   users: [User!]!
   admins: [User]
   lastMessageId: String
+  unseenMessagesByUsers: JSON
 }
 
 type ChatMessage {
@@ -1172,6 +1173,7 @@ type Mutation {
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
   sendMessageToChat(chatId: ID!, messageContent: String!, type: String!, replyTo: ID): ChatMessage!
+  markChatMessagesAsRead(chatId: ID!, userId: ID!): Chat
   sendMessageToDirectChat(chatId: ID!, messageContent: String!, replyTo: ID): DirectChatMessage!
   sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
   signUp(data: UserInput!, file: String): AuthData!

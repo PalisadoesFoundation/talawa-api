@@ -4,6 +4,7 @@ import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 import { InterfaceChatMessage } from "./ChatMessage";
+import { required } from "yargs";
 /**
  * Interface representing a document for direct chat in MongoDB.
  */
@@ -20,6 +21,7 @@ export interface InterfaceChat {
   createdAt: Date;
   updatedAt: Date;
   lastMessageId: string;
+  unseenMessagesByUsers: JSON;
 }
 
 /**
@@ -94,6 +96,10 @@ const chatSchema = new Schema(
       type: String,
       required: false,
     },
+    unseenMessagesByUsers: {
+      type: JSON,
+      required: true
+    }
   },
   {
     timestamps: true,

@@ -1,6 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { Chat, User, ChatMessage } from "../../models";
+import { Chat, User } from "../../models";
 import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This function enables to send message to direct chat.
@@ -12,7 +12,7 @@ import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
  * 2. If the user exists
  * @returns Direct chat message.
  */
-export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
+export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"] = async (
   _parent,
   args,
   context,
@@ -43,46 +43,29 @@ export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
 
   const now = new Date();
 
-  const createdChatMessage = await ChatMessage.create({
-    chatMessageBelongsTo: chat._id,
-    sender: context.userId,
-    messageContent: args.messageContent,
-    type: args.type,
-    replyTo: args.replyTo,
-    createdAt: now,
-    updatedAt: now,
-  });
-
   const unseenMessagesByUsers = JSON.parse(chat.unseenMessagesByUsers as unknown as string);
 
   Object.keys(unseenMessagesByUsers).map((user: string) => {
-    if(user !== context.userId) {
-      console.log('user', user, context.userId)
-      unseenMessagesByUsers[user] += 1;
+    if(user === context.userId) {
+      unseenMessagesByUsers[user] = 0;
     }
   });
 
   console.log('unseenMessagesByUsers', unseenMessagesByUsers)
 
   // add createdDirectChatMessage to directChat
-  await Chat.updateOne(
+  const updatedChat = await Chat.findByIdAndUpdate(
     {
       _id: chat._id,
     },
     {
-      $push: {
-        messages: createdChatMessage._id,
-      },
       $set: {
         unseenMessagesByUsers: JSON.stringify(unseenMessagesByUsers),
       },
     },
   );
 
-  // calls subscription
-  context.pubsub.publish("MESSAGE_SENT_TO_CHAT", {
-    messageSentToChat: createdChatMessage.toObject(),
-  });
+  console.log('updatedChat', updatedChat);
 
-  return createdChatMessage.toObject();
+  return updatedChat;
 };
