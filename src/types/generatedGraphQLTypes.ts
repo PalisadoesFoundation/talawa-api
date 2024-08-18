@@ -1220,7 +1220,6 @@ export type Mutation = {
   removeFund: Fund;
   removeFundraisingCampaign: FundraisingCampaign;
   removeFundraisingCampaignPledge: FundraisingCampaignPledge;
-  removeGroupChat: GroupChat;
   removeMember: Organization;
   removeOrganization: UserData;
   removeOrganizationCustomField: OrganizationCustomField;
@@ -1679,11 +1678,6 @@ export type MutationRemoveFundraisingCampaignArgs = {
 
 export type MutationRemoveFundraisingCampaignPledgeArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type MutationRemoveGroupChatArgs = {
-  chatId: Scalars['ID']['input'];
 };
 
 
@@ -4330,7 +4324,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationRemoveFundArgs, 'id'>>;
   removeFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignArgs, 'id'>>;
   removeFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignPledgeArgs, 'id'>>;
-  removeGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveGroupChatArgs, 'chatId'>>;
   removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'data'>>;
   removeOrganization?: Resolver<ResolversTypes['UserData'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
   removeOrganizationCustomField?: Resolver<ResolversTypes['OrganizationCustomField'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationCustomFieldArgs, 'customFieldId' | 'organizationId'>>;
