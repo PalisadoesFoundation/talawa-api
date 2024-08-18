@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { users as usersResolver } from "../../../src/resolvers/Chat/users";
+import { admins as adminsResolver } from "../../../src/resolvers/Chat/admins";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { User } from "../../../src/models";
@@ -20,18 +20,18 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Chat -> users", () => {
+describe("resolvers -> Chat -> admins", () => {
   it(`returns user object for parent.users`, async () => {
     const parent = testChat?.toObject();
     if (!parent) {
       throw new Error("Parent object is undefined.");
     }
 
-    const usersPayload = await usersResolver?.(parent, {}, {});
+    const usersPayload = await adminsResolver?.(parent, {}, {});
 
     const users = await User.find({
       _id: {
-        $in: testChat?.users,
+        $in: testChat?.admins,
       },
     }).lean();
 

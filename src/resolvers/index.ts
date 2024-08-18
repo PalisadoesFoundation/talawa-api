@@ -21,14 +21,10 @@ import { CheckIn } from "./CheckIn";
 import { Comment } from "./Comment";
 import { Chat } from "./Chat";
 import { ChatMessage } from "./ChatMessage";
-import { DirectChat } from "./DirectChat";
-import { DirectChatMessage } from "./DirectChatMessage";
 import { Event } from "./Event";
 import { EventVolunteer } from "./EventVolunteer";
 import { Feedback } from "./Feedback";
 import { Fund } from "./Fund";
-import { GroupChat } from "./GroupChat";
-import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
 import { Mutation } from "./Mutation";
 import { Organization } from "./Organization";
@@ -56,15 +52,11 @@ const resolvers: Resolvers = {
   Comment,
   Chat,
   ChatMessage,
-  DirectChat,
-  DirectChatMessage,
   Event,
   EventVolunteer,
   Feedback,
   Fund,
-  GroupChat,
   UserFamily,
-  GroupChatMessage,
   MembershipRequest,
   Mutation,
   Organization,
