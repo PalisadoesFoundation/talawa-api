@@ -25,6 +25,17 @@ import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 
+/**
+ * Updates a post with new details, including handling image and video URL uploads and validating input fields.
+ *
+ * This function updates an existing post based on the provided input. It retrieves and validates the current user and their app profile, checks if the user has the necessary permissions, handles media file uploads, and performs input validation before updating the post in the database. The function returns the updated post after applying changes.
+ *
+ * @param _parent - This parameter represents the parent resolver in the GraphQL schema and is not used in this function.
+ * @param args - The arguments passed to the GraphQL mutation, including the post's `id` and data to update, such as `title`, `text`, `imageUrl`, and `videoUrl`.
+ * @param context - Provides contextual information, including the current user's ID. This is used to authenticate and authorize the request.
+ *
+ * @returns The updated post with all its fields.
+ */
 export const updatePost: MutationResolvers["updatePost"] = async (
   _parent,
   args,
@@ -86,7 +97,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     }
   }
 
-  // checks if there exists a post with _id === args.id
+  // Check if the post exists
   if (!post) {
     throw new errors.NotFoundError(
       requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
@@ -95,6 +106,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
+  // Check if the user has the right to update the post
   const currentUserIsPostCreator = post.creatorId.equals(context.userId);
   const isSuperAdmin = currentUserAppProfile.isSuperAdmin;
   const isAdminOfPostOrganization = currentUserAppProfile?.adminFor.some(
@@ -115,6 +127,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
+  // Handle image and video URL uploads
   if (args.data?.imageUrl && args.data?.imageUrl !== null) {
     args.data.imageUrl = await uploadEncodedImage(
       args.data.imageUrl,
@@ -129,7 +142,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
-  // Check title and pinpost
+  // Validate title and pinned status
   if (args.data?.title && !post.pinned) {
     throw new errors.InputValidationError(
       requestContext.translate(POST_NEEDS_TO_BE_PINNED.MESSAGE),
@@ -142,7 +155,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
-  // Checks if the recieved arguments are valid according to standard input norms
+  // Validate input lengths
   const validationResultTitle = isValidString(args.data?.title ?? "", 256);
   const validationResultText = isValidString(args.data?.text ?? "", 500);
   if (!validationResultTitle.isLessThanMaxLength) {
@@ -162,6 +175,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
+  // Update the post in the database
   const updatedPost = await Post.findOneAndUpdate(
     {
       _id: args.id,
