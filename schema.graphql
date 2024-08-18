@@ -176,6 +176,33 @@ input CampaignWhereInput {
   name_contains: String
 }
 
+type Chat {
+  _id: ID!
+  admins: [User]
+  createdAt: DateTime!
+  creator: User
+  image: String
+  isGroup: Boolean!
+  lastMessageId: String
+  messages: [ChatMessage]
+  name: String
+  organization: Organization
+  updatedAt: DateTime!
+  users: [User!]!
+}
+
+type ChatMessage {
+  _id: ID!
+  chatMessageBelongsTo: Chat!
+  createdAt: DateTime!
+  deletedBy: [User]
+  messageContent: String!
+  replyTo: ChatMessage
+  sender: User!
+  type: String!
+  updatedAt: DateTime!
+}
+
 type CheckIn {
   _id: ID!
   createdAt: DateTime!
@@ -550,33 +577,8 @@ type DirectChatMessage {
   directChatMessageBelongsTo: DirectChat!
   messageContent: String!
   receiver: User!
+  replyTo: DirectChatMessage
   sender: User!
-  updatedAt: DateTime!
-}
-
-type Chat {
-  _id: ID!
-  isGroup: Boolean
-  name: String
-  createdAt: DateTime!
-  creator: User
-  messages: [ChatMessage]
-  organization: Organization
-  updatedAt: DateTime!
-  users: [User!]!
-  admins: [User]
-  lastMessageId: String
-}
-
-type ChatMessage {
-  _id: ID!
-  createdAt: DateTime!
-  chatMessageBelongsTo: Chat!
-  messageContent: String!
-  type: String!
-  replyTo: ChatMessage
-  sender: User!
-  deletedBy: [User]
   updatedAt: DateTime!
 }
 
@@ -951,6 +953,7 @@ type GroupChatMessage {
   createdAt: DateTime!
   groupChatMessageBelongsTo: GroupChat!
   messageContent: String!
+  replyTo: GroupChatMessage
   sender: User!
   updatedAt: DateTime!
 }
@@ -1099,9 +1102,8 @@ type Mutation {
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
   createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!
   createAgendaSection(input: CreateAgendaSectionInput!): AgendaSection!
-  createComment(data: CommentInput!, postId: ID!): Comment
-  createDirectChat(data: createChatInput!): DirectChat!
   createChat(data: chatInput!): Chat
+  createComment(data: CommentInput!, postId: ID!): Comment
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
@@ -1171,9 +1173,9 @@ type Mutation {
   revokeRefreshTokenForUser: Boolean!
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
-  sendMessageToChat(chatId: ID!, messageContent: String!, type: String!, replyTo: ID): ChatMessage!
+  sendMessageToChat(chatId: ID!, messageContent: String!, replyTo: ID, type: String!): ChatMessage!
   sendMessageToDirectChat(chatId: ID!, messageContent: String!, replyTo: ID): DirectChatMessage!
-  sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
+  sendMessageToGroupChat(chatId: ID!, messageContent: String!, replyTo: ID): GroupChatMessage!
   signUp(data: UserInput!, file: String): AuthData!
   togglePostPin(id: ID!, title: String): Post!
   unassignUserTag(input: ToggleUserTagAssignInput!): User
@@ -1493,11 +1495,12 @@ type Query {
   agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
   agendaItemByOrganization(organizationId: ID!): [AgendaItem]
   agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
+  chatById(id: ID!): Chat!
+  chatsByUserId(id: ID!): [Chat]
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
-  chatById(id: ID!): Chat!
-  chatsByUserId(id: ID!): [Chat]
+  directChatById(id: ID!): DirectChat
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
@@ -1626,8 +1629,8 @@ enum Status {
 
 type Subscription {
   directMessageChat: MessageChat
-  messageSentToDirectChat(userId: ID!): DirectChatMessage
   messageSentToChat(userId: ID!): ChatMessage
+  messageSentToDirectChat(userId: ID!): DirectChatMessage
   messageSentToGroupChat(userId: ID!): GroupChatMessage
   onPluginUpdate: Plugin
 }
@@ -2042,17 +2045,12 @@ enum WeekDays {
   WEDNESDAY
 }
 
-input createChatInput {
-  organizationId: ID
-  userIds: [ID!]!
-}
-
 input chatInput {
+  image: String
   isGroup: Boolean!
+  name: String
   organizationId: ID
   userIds: [ID!]!
-  name: String
-  image: String
 }
 
 type createDirectChatPayload {

@@ -8,7 +8,6 @@ import { addOrganizationImage } from "./addOrganizationImage";
 import { addUserCustomData } from "./addUserCustomData";
 import { addUserImage } from "./addUserImage";
 import { addUserToUserFamily } from "./addUserToUserFamily";
-import { adminRemoveGroup } from "./adminRemoveGroup";
 import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
@@ -78,7 +77,6 @@ import { removePost } from "./removePost";
 import { removeSampleOrganization } from "./removeSampleOrganization";
 import { removeUserCustomData } from "./removeUserCustomData";
 import { removeUserFamily } from "./removeUserFamily";
-import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
 import { removeUserImage } from "./removeUserImage";
 import { removeUserTag } from "./removeUserTag";
@@ -128,7 +126,6 @@ export const Mutation: MutationResolvers = {
   addOrganizationImage,
   addUserCustomData,
   addUserImage,
-  adminRemoveGroup,
   addUserToUserFamily,
   removeUserFamily,
   removeUserFromUserFamily,
@@ -200,7 +197,6 @@ export const Mutation: MutationResolvers = {
   removeSampleOrganization,
   removePost,
   removeUserCustomData,
-  removeUserFromGroupChat,
   removeUserImage,
   removeUserTag,
   resetCommunity,
