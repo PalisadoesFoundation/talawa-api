@@ -18,6 +18,7 @@ import { chatsByUserId } from "./chatsByUserId";
 import { event } from "./event";
 import { eventsByOrganization } from "./eventsByOrganization";
 import { eventsByOrganizationConnection } from "./eventsByOrganizationConnection";
+import { getEventVolunteerGroups } from "./getEventVolunteerGroups";
 import { fundsByOrganization } from "./fundsByOrganization";
 import { getAllAgendaItems } from "./getAllAgendaItems";
 import { getEventInvitesByUserId } from "./getEventInvitesByUserId";
@@ -26,9 +27,12 @@ import { getDonationById } from "./getDonationById";
 import { getDonationByOrgId } from "./getDonationByOrgId";
 import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
 import { getFundById } from "./getFundById";
-import { getFundraisingCampaignById } from "./getFundraisingCampaign";
+import { getFundraisingCampaigns } from "./getFundraisingCampaigns";
+import { getPledgesByUserId } from "./getPledgesByUserId";
 import { getPlugins } from "./getPlugins";
 import { getlanguage } from "./getlanguage";
+import { getUserTag } from "./getUserTag";
+import { getUserTagAncestors } from "./getUserTagAncestors";
 import { me } from "./me";
 import { myLanguage } from "./myLanguage";
 import { organizations } from "./organizations";
@@ -71,10 +75,13 @@ export const Query: QueryResolvers = {
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getEventInvitesByUserId,
+  getEventVolunteerGroups,
   getAllNotesForAgendaItem,
   getNoteById,
   getlanguage,
   getPlugins,
+  getUserTag,
+  getUserTagAncestors,
   isSampleOrganization,
   me,
   myLanguage,
@@ -88,9 +95,10 @@ export const Query: QueryResolvers = {
   users,
   usersConnection,
   getFundById,
-  getFundraisingCampaignById,
+  getFundraisingCampaigns,
   venue,
   fundsByOrganization,
+  getPledgesByUserId,
   getEventAttendee,
   getEventAttendeesByEventId,
   getVenueByOrgId,

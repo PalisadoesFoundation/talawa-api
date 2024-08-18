@@ -21,7 +21,7 @@ import {
 } from "../../../src/constants";
 import { AppUserProfile, TagUser } from "../../../src/models";
 import type { TestUserTagType } from "../../helpers/tags";
-import { createRootTagWithOrg } from "../../helpers/tags";
+import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 
@@ -29,11 +29,12 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 
 let adminUser: TestUserType;
 let testTag: TestUserTagType;
+let testSubTag1: TestUserTagType;
 let randomUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [adminUser, , testTag] = await createRootTagWithOrg();
+  [adminUser, , [testTag, testSubTag1]] = await createTwoLevelTagsWithOrg();
   randomUser = await createTestUser();
 });
 
@@ -244,6 +245,56 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
 
     expect(tagAssigned).toBeFalsy();
   });
+
+  it(`should unassign all the child tags and decendent tags of a parent tag and return the user`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`,
+    );
+
+    const args: MutationUnassignUserTagArgs = {
+      input: {
+        userId: adminUser?._id,
+        tagId: testTag ? testTag._id.toString() : "",
+      },
+    };
+    const context = {
+      userId: adminUser?._id,
+    };
+
+    // Assign the parent and sub tag to the user
+    await TagUser.create({
+      ...args.input,
+    });
+
+    await TagUser.create({
+      ...args.input,
+      tagId: testSubTag1 ? testSubTag1._id.toString() : "",
+    });
+
+    // Test the unassignUserTag resolver
+    const { unassignUserTag: unassignUserTagResolver } = await import(
+      "../../../src/resolvers/Mutation/unassignUserTag"
+    );
+
+    const payload = await unassignUserTagResolver?.({}, args, context);
+
+    expect(payload?._id.toString()).toEqual(adminUser?._id.toString());
+
+    const tagAssigned = await TagUser.exists({
+      ...args.input,
+    });
+
+    const subTagAssigned = await TagUser.exists({
+      ...args.input,
+      tagId: testSubTag1 ? testSubTag1._id.toString() : "",
+    });
+
+    expect(tagAssigned).toBeFalsy();
+    expect(subTagAssigned).toBeFalsy();
+  });
+
   it("throws an error if the user does not have appUserProfile", async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi

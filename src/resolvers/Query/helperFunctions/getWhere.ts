@@ -3,6 +3,7 @@ import type {
   ActionItemWhereInput,
   DonationWhereInput,
   EventWhereInput,
+  EventVolunteerGroupWhereInput,
   FundWhereInput,
   InputMaybe,
   OrganizationWhereInput,
@@ -10,6 +11,7 @@ import type {
   UserWhereInput,
   VenueWhereInput,
   CampaignWhereInput,
+  PledgeWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
 /**
@@ -30,6 +32,7 @@ export const getWhere = <T = unknown>(
     | InputMaybe<
         Partial<
           EventWhereInput &
+            EventVolunteerGroupWhereInput &
             OrganizationWhereInput &
             PostWhereInput &
             UserWhereInput &
@@ -37,6 +40,7 @@ export const getWhere = <T = unknown>(
             ActionItemWhereInput &
             CampaignWhereInput &
             FundWhereInput &
+            PledgeWhereInput &
             VenueWhereInput
         >
       >
@@ -213,10 +217,10 @@ export const getWhere = <T = unknown>(
   }
 
   // Return action items belonging to a specific event
-  if (where.event_id) {
+  if (where.event_id || where.eventId) {
     wherePayload = {
       ...wherePayload,
-      eventId: where.event_id,
+      eventId: where.event_id || where.eventId,
     };
   }
 
@@ -756,6 +760,36 @@ export const getWhere = <T = unknown>(
       name: {
         $regex: where.name_contains,
         $options: "i",
+      },
+    };
+  }
+
+  if (where.fundId) {
+    wherePayload = {
+      ...wherePayload,
+      fundId: where.fundId,
+    };
+  }
+
+  if (where.organizationId) {
+    wherePayload = {
+      ...wherePayload,
+      organizationId: where.organizationId,
+    };
+  }
+
+  if (where.campaignId) {
+    wherePayload = {
+      ...wherePayload,
+      _id: where.campaignId,
+    };
+  }
+
+  if (where.volunteerId) {
+    wherePayload = {
+      ...wherePayload,
+      volunteers: {
+        $in: [where.volunteerId],
       },
     };
   }
