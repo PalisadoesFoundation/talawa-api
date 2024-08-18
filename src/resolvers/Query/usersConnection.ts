@@ -37,6 +37,8 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
         .populate("createdEvents")
         .populate("eventAdmin")
         .populate("adminFor")
+        .populate("pledges")
+        .populate("campaigns")
         .lean();
       return {
         user: user as InterfaceUser,

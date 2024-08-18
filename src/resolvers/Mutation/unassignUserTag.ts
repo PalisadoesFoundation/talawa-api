@@ -19,6 +19,31 @@ import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
+/**
+ * Unassigns a tag from a user in an organization.
+ *
+ * This function removes a specific tag from a user in an organization.
+ * It checks whether the current user has the necessary permissions to unassign the tag and
+ * verifies if the tag and the user exist in the system. If the tag is not currently assigned
+ * to the user, an error is thrown.
+ *
+ * The function performs the following steps:
+ * 1. Attempts to find the current user in the cache or database.
+ * 2. Verifies if the current user exists.
+ * 3. Attempts to find the current user's profile in the cache or database.
+ * 4. Checks if the current user has the necessary permissions to unassign the tag.
+ * 5. Fetches the tag that needs to be unassigned.
+ * 6. Checks if the user to whom the tag is assigned exists.
+ * 7. Ensures that the tag is actually assigned to the user.
+ * 8. Removes the tag assignment from the user.
+ *
+ * @param _parent - This parameter is not used in this resolver function.
+ * @param args - The arguments provided by the GraphQL query, specifically containing the user ID and tag ID to unassign.
+ * @param context - The context of the request, containing information about the currently authenticated user.
+ *
+ * @returns  The user from whom the tag was unassigned.
+ */
+
 export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
   _parent,
   args,
@@ -120,9 +145,36 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
     );
   }
 
+  // Get all the child tags of the current tag (including itself)
+  // on the OrganizationTagUser model
+  // The following implementation makes number of queries = max depth of nesting in the tag provided
+  let allTagIds: string[] = [];
+  let currentParents = [tag._id.toString()];
+
+  while (currentParents.length) {
+    allTagIds = allTagIds.concat(currentParents);
+    const foundTags = await OrganizationTagUser.find(
+      {
+        organizationId: tag.organizationId,
+        parentTagId: {
+          $in: currentParents,
+        },
+      },
+      {
+        _id: 1,
+      },
+    );
+    currentParents = foundTags
+      .map((tag) => tag._id.toString())
+      .filter((id: string | null) => id);
+  }
+
   // Unassign the tag
-  await TagUser.deleteOne({
-    ...args.input,
+  await TagUser.deleteMany({
+    tagId: {
+      $in: allTagIds,
+    },
+    userId: args.input.userId,
   });
 
   return requestUser;

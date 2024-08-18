@@ -10,6 +10,7 @@ import { users as usersResolver } from "../../../src/resolvers/Query/users";
 import type { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestUser } from "../../helpers/user";
+import { FundraisingCampaignPledge } from "../../../src/models/FundraisingCampaignPledge";
 
 let testUsers: (InterfaceUser & Document<unknown, unknown, InterfaceUser>)[];
 
@@ -17,6 +18,10 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  const pledges = await FundraisingCampaignPledge.find({
+    _id: new mongoose.Types.ObjectId(),
+  }).lean();
+  console.log(pledges);
 });
 
 afterAll(async () => {

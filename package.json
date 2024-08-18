@@ -63,7 +63,7 @@
     "dotenv": "^16.4.1",
     "express": "^4.19.2",
     "express-mongo-sanitize": "^2.2.0",
-    "express-rate-limit": "^7.3.1",
+    "express-rate-limit": "^7.4.0",
     "graphql": "^16.9.0",
     "graphql-depth-limit": "^1.1.0",
     "graphql-scalars": "^1.20.1",
@@ -134,10 +134,10 @@
     "graphql-markdown": "^7.0.0",
     "husky": "^9.1.4",
     "lint-staged": "^15.2.7",
-    "prettier": "^3.2.5",
+    "prettier": "^3.3.3",
     "rimraf": "^6.0.1",
     "tsx": "^4.16.2",
-    "typescript": "^5.4.5",
+    "typescript": "^5.5.4",
     "vitest": "^1.2.1"
   },
   "overrides": {
