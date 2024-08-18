@@ -101,7 +101,7 @@ const chatSchema = new Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: false,
   },
 );
 
