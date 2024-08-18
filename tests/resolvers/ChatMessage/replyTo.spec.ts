@@ -76,11 +76,6 @@ describe("resolvers -> DirectChatMessage -> replyTo", () => {
     }
   });
   it(`return null if no replyTo`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-
     const parent = testChatMessageWithoutReply?.toObject();
 
     if (!parent) {

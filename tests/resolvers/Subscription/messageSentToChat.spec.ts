@@ -6,7 +6,6 @@ import type { TestChatMessageType } from "../../helpers/chat";
 import { createTestChatMessage } from "../../helpers/chat";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToChat";
-import { chatMessageBelongsTo } from "../../../src/resolvers/ChatMessage/chatMessageBelongsTo";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testChatMessage: TestChatMessageType;

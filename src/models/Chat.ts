@@ -3,14 +3,14 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
-import { InterfaceChatMessage } from "./ChatMessage";
+import type { InterfaceChatMessage } from "./ChatMessage";
 /**
  * Interface representing a document for direct chat in MongoDB.
  */
 export interface InterfaceChat {
   _id: Types.ObjectId;
   isGroup: boolean;
-  name: String;
+  name: string;
   users: PopulatedDoc<InterfaceUser & Document>[];
   messages: PopulatedDoc<InterfaceChatMessage & Document>[];
   creatorId: PopulatedDoc<InterfaceUser & Document>;
