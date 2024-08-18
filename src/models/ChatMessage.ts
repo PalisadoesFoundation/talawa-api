@@ -2,7 +2,7 @@ import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
-import { InterfaceChat } from "./Chat";
+import type { InterfaceChat } from "./Chat";
 
 /**
  * Represents a document for a direct chat message in the MongoDB database.

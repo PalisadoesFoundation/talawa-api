@@ -53,16 +53,16 @@ export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
     updatedAt: now,
   });
 
-  const unseenMessagesByUsers = JSON.parse(chat.unseenMessagesByUsers as unknown as string);
+  const unseenMessagesByUsers = JSON.parse(
+    chat.unseenMessagesByUsers as unknown as string,
+  );
 
   Object.keys(unseenMessagesByUsers).map((user: string) => {
-    if(user !== context.userId) {
-      console.log('user', user, context.userId)
+    if (user !== context.userId) {
+      console.log("user", user, context.userId);
       unseenMessagesByUsers[user] += 1;
     }
   });
-
-  console.log('unseenMessagesByUsers', unseenMessagesByUsers)
 
   // add createdDirectChatMessage to directChat
   await Chat.updateOne(
@@ -75,6 +75,7 @@ export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
       },
       $set: {
         unseenMessagesByUsers: JSON.stringify(unseenMessagesByUsers),
+        updatedAt: now,
       },
     },
   );
