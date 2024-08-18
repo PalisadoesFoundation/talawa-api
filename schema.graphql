@@ -148,10 +148,12 @@ type AppUserProfile {
   _id: ID!
   adminFor: [Organization]
   appLanguageCode: String!
+  campaigns: [FundraisingCampaign]
   createdEvents: [Event]
   createdOrganizations: [Organization]
   eventAdmin: [Event]
   isSuperAdmin: Boolean!
+  pledges: [FundraisingCampaignPledge]
   pluginCreationAllowed: Boolean!
   userId: User!
 }
@@ -173,7 +175,10 @@ enum CampaignOrderByInput {
 }
 
 input CampaignWhereInput {
+  fundId: ID
+  id: ID
   name_contains: String
+  organizationId: ID
 }
 
 type CheckIn {
@@ -744,6 +749,12 @@ input EventVolunteerGroupInput {
   volunteersRequired: Int
 }
 
+input EventVolunteerGroupWhereInput {
+  eventId: ID
+  name_contains: String
+  volunteerId: ID
+}
+
 input EventVolunteerInput {
   eventId: ID!
   groupId: ID!
@@ -841,6 +852,7 @@ input FundCampaignInput {
   fundId: ID!
   fundingGoal: Float!
   name: String!
+  organizationId: ID!
   startDate: Date!
 }
 
@@ -879,6 +891,7 @@ type FundraisingCampaign {
   fundId: Fund!
   fundingGoal: Float!
   name: String!
+  organizationId: Organization!
   pledges: [FundraisingCampaignPledge]
   startDate: Date!
   updatedAt: DateTime!
@@ -887,7 +900,7 @@ type FundraisingCampaign {
 type FundraisingCampaignPledge {
   _id: ID!
   amount: Float!
-  campaigns: [FundraisingCampaign]!
+  campaign: FundraisingCampaign!
   currency: Currency!
   endDate: Date
   startDate: Date
@@ -1337,6 +1350,13 @@ enum PledgeOrderByInput {
   startDate_DESC
 }
 
+input PledgeWhereInput {
+  campaignId: ID
+  firstName_contains: String
+  id: ID
+  name_contains: String
+}
+
 type Plugin {
   _id: ID!
   pluginCreatedBy: String!
@@ -1488,11 +1508,15 @@ type Query {
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
+  getEventVolunteerGroups(where: EventVolunteerGroupWhereInput): [EventVolunteerGroup]!
   getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
-  getFundraisingCampaignById(id: ID!, orderBy: PledgeOrderByInput): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
+  getFundraisingCampaigns(campaignOrderby: CampaignOrderByInput, pledgeOrderBy: PledgeOrderByInput, where: CampaignWhereInput): [FundraisingCampaign]!
   getNoteById(id: ID!): Note!
+  getPledgesByUserId(orderBy: PledgeOrderByInput, userId: ID!, where: PledgeWhereInput): [FundraisingCampaignPledge]
   getPlugins: [Plugin]
+  getUserTag(id: ID!): UserTag
+  getUserTagAncestors(id: ID!): [UserTag]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getlanguage(lang_code: String!): [Translation]
   groupChatById(id: ID!): GroupChat
@@ -1557,7 +1581,7 @@ type SocialMediaUrls {
   linkedIn: String
   reddit: String
   slack: String
-  twitter: String
+  X: String
   youTube: String
 }
 
@@ -1568,7 +1592,7 @@ input SocialMediaUrlsInput {
   linkedIn: String
   reddit: String
   slack: String
-  twitter: String
+  X: String
   youTube: String
 }
 
@@ -1778,9 +1802,9 @@ input UpdateUserPasswordInput {
 }
 
 input UpdateUserTagInput {
-  _id: ID!
   name: String!
-  tagColor: String!
+  tagColor: String
+  tagId: ID!
 }
 
 scalar Upload
@@ -1918,7 +1942,7 @@ type UserTag {
 type UserTagsConnection {
   edges: [UserTagsConnectionEdge!]!
   pageInfo: DefaultConnectionPageInfo!
-  totalCount: PositiveInt
+  totalCount: Int
 }
 
 """A default connection edge on the UserTag type for UserTagsConnection."""
@@ -1966,6 +1990,7 @@ input UserWhereInput {
 type UsersConnection {
   edges: [UsersConnectionEdge!]!
   pageInfo: DefaultConnectionPageInfo!
+  totalCount: Int
 }
 
 """A default connection edge on the User type for UsersConnection."""

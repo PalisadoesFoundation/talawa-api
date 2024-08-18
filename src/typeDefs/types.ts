@@ -342,6 +342,7 @@ export const types = gql`
   type FundraisingCampaign {
     _id: ID!
     fundId: Fund!
+    organizationId: Organization!
     name: String!
     startDate: Date!
     endDate: Date!
@@ -353,7 +354,7 @@ export const types = gql`
   }
   type FundraisingCampaignPledge {
     _id: ID!
-    campaigns: [FundraisingCampaign]!
+    campaign: FundraisingCampaign!
     users: [User]!
     startDate: Date
     endDate: Date
@@ -590,7 +591,7 @@ export const types = gql`
   type SocialMediaUrls {
     facebook: String
     instagram: String
-    twitter: String
+    X: String
     linkedIn: String
     gitHub: String
     youTube: String
@@ -665,6 +666,8 @@ export const types = gql`
     createdEvents: [Event]
     createdOrganizations: [Organization]
     eventAdmin: [Event]
+    pledges: [FundraisingCampaignPledge]
+    campaigns: [FundraisingCampaign]
     pluginCreationAllowed: Boolean!
     isSuperAdmin: Boolean!
     appLanguageCode: String!
@@ -741,7 +744,7 @@ export const types = gql`
   type UserTagsConnection {
     edges: [UserTagsConnectionEdge!]!
     pageInfo: DefaultConnectionPageInfo!
-    totalCount: PositiveInt
+    totalCount: Int
   }
 
   """
@@ -758,6 +761,7 @@ export const types = gql`
   type UsersConnection {
     edges: [UsersConnectionEdge!]!
     pageInfo: DefaultConnectionPageInfo!
+    totalCount: Int
   }
 
   """

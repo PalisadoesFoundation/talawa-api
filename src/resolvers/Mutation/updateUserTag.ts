@@ -14,7 +14,18 @@ import { findAppUserProfileCache } from "../../services/AppUserProfileCache/find
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-
+/**
+ * Updates an existing tag's name based on provided input, including validation and authorization checks.
+ *
+ * This function updates the name of an existing tag in the database. It performs various checks to ensure that the current user is authorized to update the tag, validates that the new tag name is not the same as the old one, and ensures that no other tag with the same name exists under the same parent tag. It then updates the tag's name and returns the updated tag.
+ *
+ * @param _parent - This parameter represents the parent resolver in the GraphQL schema and is not used in this function.
+ * @param args - The arguments passed to the GraphQL mutation, including the tag's `id` and the new `name` for the tag.
+ * @param context - Provides contextual information, including the current user's ID. This is used to authenticate and authorize the request.
+ *
+ * @returns The updated tag with its new name.
+ *
+ */
 export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   _parent,
   args,
@@ -63,7 +74,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
 
   // Get the tag object
   const existingTag = await OrganizationTagUser.findOne({
-    _id: args.input._id,
+    _id: args.input.tagId,
   }).lean();
 
   if (!existingTag) {
@@ -119,7 +130,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   // Update the title of the tag and return it
   return await OrganizationTagUser.findOneAndUpdate(
     {
-      _id: args.input._id,
+      _id: args.input.tagId,
     },
     {
       name: args.input.name,

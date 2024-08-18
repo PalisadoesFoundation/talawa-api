@@ -107,8 +107,7 @@ export const addPledgeToFundraisingCampaign: MutationResolvers["addPledgeToFundr
     }
 
     // Checks whether the campaign is already added to the pledge.
-    const pledgeCampaignIds = pledge.campaigns.map((id) => id?.toString());
-    if (pledgeCampaignIds.includes(args.campaignId)) {
+    if (pledge.campaign?.toString() === args.campaignId) {
       throw new errors.ConflictError(
         requestContext.translate(FUNDRAISING_CAMPAIGN_ALREADY_ADDED.MESSAGE),
         FUNDRAISING_CAMPAIGN_ALREADY_ADDED.CODE,
@@ -122,7 +121,7 @@ export const addPledgeToFundraisingCampaign: MutationResolvers["addPledgeToFundr
         _id: args.pledgeId,
       },
       {
-        $push: { campaigns: args.campaignId },
+        campaign: args.campaignId,
       },
       { new: true },
     );

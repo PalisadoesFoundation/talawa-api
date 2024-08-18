@@ -22,19 +22,26 @@ import {
 } from "../../../src/constants";
 import { AppUserProfile, TagUser } from "../../../src/models";
 import type { TestUserTagType } from "../../helpers/tags";
-import { createRootTagWithOrg } from "../../helpers/tags";
+import {
+  createRootTagWithOrg,
+  createTwoLevelTagsWithOrg,
+} from "../../helpers/tags";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 let adminUser: TestUserType;
+let adminUser2: TestUserType;
+let testTag2: TestUserTagType;
 let testTag: TestUserTagType;
+let testSubTag1: TestUserTagType;
 let randomUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [adminUser, , testTag] = await createRootTagWithOrg();
+  [adminUser, , [testTag, testSubTag1]] = await createTwoLevelTagsWithOrg();
+  [adminUser2, , testTag2] = await createRootTagWithOrg();
   randomUser = await createTestUser();
 });
 
@@ -212,8 +219,34 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
   it(`Tag assign should be successful and the user who has been assigned the tag is returned`, async () => {
     const args: MutationAssignUserTagArgs = {
       input: {
+        userId: adminUser2?._id,
+        tagId: testTag2?._id.toString() ?? "",
+      },
+    };
+    const context = {
+      userId: adminUser2?._id,
+    };
+
+    const { assignUserTag: assignUserTagResolver } = await import(
+      "../../../src/resolvers/Mutation/assignUserTag"
+    );
+
+    const payload = await assignUserTagResolver?.({}, args, context);
+
+    expect(payload?._id.toString()).toEqual(adminUser2?._id.toString());
+
+    const tagAssigned = await TagUser.exists({
+      ...args.input,
+    });
+
+    expect(tagAssigned).toBeTruthy();
+  });
+
+  it(`Should assign all the ancestor tags and returns the user that is assigned`, async () => {
+    const args: MutationAssignUserTagArgs = {
+      input: {
         userId: adminUser?._id,
-        tagId: testTag?._id.toString() ?? "",
+        tagId: testSubTag1?._id.toString() ?? "",
       },
     };
     const context = {
@@ -228,11 +261,17 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
 
     expect(payload?._id.toString()).toEqual(adminUser?._id.toString());
 
-    const tagAssigned = await TagUser.exists({
+    const subTagAssigned = await TagUser.exists({
       ...args.input,
     });
 
-    expect(tagAssigned).toBeTruthy();
+    const ancestorTagAssigned = await TagUser.exists({
+      ...args.input,
+      tagId: testTag?._id.toString() ?? "",
+    });
+
+    expect(subTagAssigned).toBeTruthy();
+    expect(ancestorTagAssigned).toBeTruthy();
   });
 
   it(`Throws USER_ALREADY_HAS_TAG error if tag with _id === args.input.tagId is already assigned to user with _id === args.input.userId`, async () => {
