@@ -1,12 +1,17 @@
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 import { EventVolunteerResponse } from "../../src/constants";
-import type { InterfaceEvent, InterfaceEventVolunteer } from "../../src/models";
+import type {
+  InterfaceEvent,
+  InterfaceEventVolunteer,
+  InterfaceEventVolunteerGroup,
+} from "../../src/models";
 import {
   AppUserProfile,
   Event,
   EventAttendee,
   EventVolunteer,
+  EventVolunteerGroup,
   User,
 } from "../../src/models";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
@@ -17,6 +22,9 @@ export type TestEventType = (InterfaceEvent & Document) | null;
 export type TestEventVolunteerType =
   | (InterfaceEventVolunteer & Document)
   | null;
+
+export type TestEventVolunteerGroupType = InterfaceEventVolunteerGroup &
+  Document;
 
 export const createTestEvent = async (): Promise<
   [TestUserType, TestOrganizationType, TestEventType]
@@ -133,4 +141,33 @@ export const createTestEventAndVolunteer = async (): Promise<
   });
 
   return [volunteerUser, creatorUser, testEvent, testEventVolunteer];
+};
+
+export const createTestEventVolunteerGroup = async (): Promise<
+  [
+    TestUserType,
+    TestUserType,
+    TestEventType,
+    TestEventVolunteerType,
+    TestEventVolunteerGroupType,
+  ]
+> => {
+  const [creatorUser, volunteerUser, testEvent, testEventVolunteer] =
+    await createTestEventAndVolunteer();
+  const testEventVolunteerGroup = await EventVolunteerGroup.create({
+    name: "testEventVolunteerGroup",
+    volunteersRequired: 1,
+    eventId: testEvent?._id,
+    creatorId: creatorUser?._id,
+    leaderId: creatorUser?._id,
+    volunteers: [testEventVolunteer?._id],
+  });
+
+  return [
+    creatorUser,
+    volunteerUser,
+    testEvent,
+    testEventVolunteer,
+    testEventVolunteerGroup,
+  ];
 };

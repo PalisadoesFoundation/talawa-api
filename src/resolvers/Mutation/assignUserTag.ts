@@ -152,10 +152,32 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
     );
   }
 
-  // Assign the tag
-  await TagUser.create({
-    ...args.input,
-  });
+  // assign all the ancestor tags
+  const allAncestorTags = [tag._id];
+  let currentTag = tag;
+  while (currentTag?.parentTagId) {
+    const currentParentTag = await OrganizationTagUser.findOne({
+      _id: currentTag.parentTagId,
+    }).lean();
+
+    if (currentParentTag) {
+      allAncestorTags.push(currentParentTag?._id);
+      currentTag = currentParentTag;
+    }
+  }
+
+  const assigneeId = args.input.userId;
+
+  const tagUserDocs = allAncestorTags.map((tagId) => ({
+    updateOne: {
+      filter: { userId: assigneeId, tagId },
+      update: { $setOnInsert: { userId: assigneeId, tagId } },
+      upsert: true,
+      setDefaultsOnInsert: true,
+    },
+  }));
+
+  await TagUser.bulkWrite(tagUserDocs);
 
   return requestUser;
 };
