@@ -4,7 +4,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { ChatResolvers } from "../../types/generatedGraphQLTypes";
 /**
- * This resolver function will fetch and return the Organization for the Direct Chat from database.
+ * This resolver function will fetch and return the Organization for the Chat from database.
  * @param parent - An object that is the return value of the resolver for this field's parent.
  * @returns An `object` that contains Organization data.
  */

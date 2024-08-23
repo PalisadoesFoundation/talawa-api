@@ -3,14 +3,14 @@ import { errors, requestContext } from "../../libraries";
 import { Chat, User, ChatMessage } from "../../models";
 import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 /**
- * This function enables to send message to direct chat.
+ * This function enables to send message to chat.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the direct chat exists.
  * 2. If the user exists
- * @returns Direct chat message.
+ * @returns  Chat message.
  */
 export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
   _parent,

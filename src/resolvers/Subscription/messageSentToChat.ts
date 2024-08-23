@@ -27,7 +27,7 @@ export const filterFunction = async function (
 };
 /**
  * This property included a `subscribe` method, which is used to
- * subscribe the `receiver` and `sender` to receive Direct Chat updates.
+ * subscribe the `receiver` and `sender` to receive Chat updates.
  *
  * @remarks To control updates on a per-client basis, the function uses the `withFilter`
  * method imported from `apollo-server-express` module.
