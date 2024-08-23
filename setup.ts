@@ -673,6 +673,68 @@ export async function configureSmtp(): Promise<void> {
 }
 
 /**
+ * Configures MinIO settings by prompting the user for input and saving the configuration to the environment file.
+ *
+ * This function performs the following steps:
+ * 1. Prompts the user for MinIO root user, root password, and bucket name.
+ * 2. Determines the MinIO endpoint based on whether it's a Docker installation or not.
+ * 3. Reads the current environment file (.env or .env_test based on NODE_ENV).
+ * 4. Updates the environment configuration with the new MinIO settings.
+ * 5. Writes the updated configuration back to the environment file.
+ * 6. Logs a success message and provides information about the MinIO console access.
+ *
+ * @param isDockerInstallation - A boolean indicating whether the setup is for a Docker installation.
+ * @throws Will throw an error if there are issues with file operations or user input validation.
+ * @returns A Promise that resolves when the configuration is complete.
+ */
+export async function configureMinio(
+  isDockerInstallation: boolean,
+): Promise<void> {
+  const minioConfig = await inquirer.prompt([
+    {
+      type: "input",
+      name: "MINIO_ROOT_USER",
+      message: "Enter MinIO root user:",
+      default: process.env.MINIO_ROOT_USER || "talawa",
+      validate: (input: string): boolean | string =>
+        input.trim() !== "" ? true : "MinIO root user is required.",
+    },
+    {
+      type: "password",
+      name: "MINIO_ROOT_PASSWORD",
+      message: "Enter MinIO root password:",
+      default: process.env.MINIO_ROOT_PASSWORD || "talawa1234",
+      validate: (input: string): boolean | string =>
+        input.trim() !== "" ? true : "MinIO root password is required.",
+    },
+    {
+      type: "input",
+      name: "MINIO_BUCKET",
+      message: "Enter MinIO bucket name:",
+      default: process.env.MINIO_BUCKET || "talawa",
+      validate: (input: string): boolean | string =>
+        input.trim() !== "" ? true : "MinIO bucket name is required.",
+    },
+  ]);
+
+  const minioEndpoint = isDockerInstallation
+    ? "http://minio:9000"
+    : "http://localhost:9000";
+
+  const envFile = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
+  const config = dotenv.parse(fs.readFileSync(envFile));
+  config.MINIO_ENDPOINT = minioEndpoint;
+  config.MINIO_ROOT_USER = minioConfig.MINIO_ROOT_USER;
+  config.MINIO_ROOT_PASSWORD = minioConfig.MINIO_ROOT_PASSWORD;
+  config.MINIO_BUCKET = minioConfig.MINIO_BUCKET;
+
+  updateEnvVariable(config);
+
+  console.log("MinIO configuration saved successfully. 📦\n");
+  console.log("You can access the MinIO console at: http://localhost:9001\n");
+}
+
+/**
  * The main function sets up the Talawa API by prompting the user to configure various environment
  * variables and import sample data if desired.
  */
@@ -771,6 +833,7 @@ async function main(): Promise<void> {
     const REDIS_HOST = "localhost";
     const REDIS_PORT = "6379"; // default Redis port
     const REDIS_PASSWORD = "";
+    const MINIO_ENDPOINT = "http://minio:9000";
 
     const config = dotenv.parse(fs.readFileSync(".env"));
 
@@ -778,16 +841,19 @@ async function main(): Promise<void> {
     config.REDIS_HOST = REDIS_HOST;
     config.REDIS_PORT = REDIS_PORT;
     config.REDIS_PASSWORD = REDIS_PASSWORD;
+    config.MINIO_ENDPOINT = MINIO_ENDPOINT;
 
     process.env.MONGO_DB_URL = DB_URL;
     process.env.REDIS_HOST = REDIS_HOST;
     process.env.REDIS_PORT = REDIS_PORT;
     process.env.REDIS_PASSWORD = REDIS_PASSWORD;
+    process.env.MINIO_ENDPOINT = MINIO_ENDPOINT;
 
     updateEnvVariable(config);
     console.log(`Your MongoDB URL is:\n${process.env.MONGO_DB_URL}`);
     console.log(`Your Redis host is:\n${process.env.REDIS_HOST}`);
     console.log(`Your Redis port is:\n${process.env.REDIS_PORT}`);
+    console.log(`Your MinIO endpoint is:\n${process.env.MINIO_ENDPOINT}`);
   }
 
   if (!isDockerInstallation) {
@@ -903,6 +969,18 @@ async function main(): Promise<void> {
       console.log("SMTP configuration skipped.\n");
     }
   }
+
+  console.log(
+    `\nConfiguring MinIO storage...\n` +
+      `Setting up MinIO credentials and bucket configuration based on your environment.\n` +
+      `${
+        isDockerInstallation
+          ? `Since you are using Docker, MinIO will be configured with the Docker-specific endpoint: http://minio:9000.\n`
+          : `Since you are not using Docker, MinIO will be configured with the local endpoint: http://localhost:9000.\n`
+      }`,
+  );
+
+  await configureMinio(isDockerInstallation);
 
   if (process.env.LAST_RESORT_SUPERADMIN_EMAIL) {
     console.log(
