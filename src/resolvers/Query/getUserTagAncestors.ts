@@ -1,8 +1,5 @@
-import type {
-  InterfaceOrganizationTagUser} from "../../models";
-import {
-  OrganizationTagUser,
-} from "../../models";
+import type { InterfaceOrganizationTagUser } from "../../models";
+import { OrganizationTagUser } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { TAG_NOT_FOUND } from "../../constants";
