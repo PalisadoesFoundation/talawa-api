@@ -13,6 +13,12 @@ const spinnerChars = ["|", "/", "-", "\\"];
 let spinnerIndex = 0;
 const spinnerInterval = 100;
 
+/**
+ * Constructs the URL to download the MinIO binary for the current platform.
+ *
+ * @returns The URL of the MinIO binary for the current platform.
+ * @throws Error If the platform is unsupported.
+ */
 export const getMinioBinaryUrl = (): string => {
   let platformPath: string;
   switch (platform) {
@@ -31,11 +37,26 @@ export const getMinioBinaryUrl = (): string => {
   return `https://dl.min.io/server/minio/release/${platformPath}`;
 };
 
+/**
+ * Installs MinIO by downloading the binary, saving it to a local directory, and setting appropriate permissions.
+ *
+ * @returns A promise that resolves with the path to the installed MinIO binary.
+ * @throws Error If the download or installation fails.
+ */
 export const installMinio = (): Promise<string> => {
   return new Promise((resolve, reject) => {
     const installDir = path.join(os.homedir(), ".minio");
     if (!fs.existsSync(installDir)) {
-      fs.mkdirSync(installDir, { recursive: true });
+      try {
+        fs.mkdirSync(installDir, { recursive: true });
+      } catch (err: unknown) {
+        if (err instanceof Error)
+          return reject(
+            new Error(
+              `Failed to create directory ${installDir}: ${err.message}`,
+            ),
+          );
+      }
     }
     const minioPath = path.join(
       installDir,
@@ -54,7 +75,16 @@ export const installMinio = (): Promise<string> => {
         "\x1b[1m\x1b[32m%s\x1b[0m",
         "[MINIO] Minio is already installed.",
       );
-      setPathEnvVar(installDir);
+      try {
+        setPathEnvVar(installDir);
+      } catch (err: unknown) {
+        if (err instanceof Error)
+          return reject(
+            new Error(
+              `Failed to set PATH environment variable: ${err.message}`,
+            ),
+          );
+      }
       return resolve(minioPath);
     }
 
@@ -67,8 +97,17 @@ export const installMinio = (): Promise<string> => {
         file.on("finish", () => {
           file.close(() => {
             clearInterval(spinner);
-            fs.chmodSync(minioPath, 0o755);
-            setPathEnvVar(installDir);
+            try {
+              fs.chmodSync(minioPath, 0o755);
+              setPathEnvVar(installDir);
+            } catch (err: unknown) {
+              if (err instanceof Error)
+                return reject(
+                  new Error(
+                    `Failed to set permissions or PATH environment variable: ${err.message}`,
+                  ),
+                );
+            }
             console.log("[MINIO] Minio installed successfully!");
             resolve(minioPath);
           });
@@ -77,34 +116,53 @@ export const installMinio = (): Promise<string> => {
       .on("error", (err) => {
         clearInterval(spinner);
         fs.unlinkSync(minioPath);
-        reject(err);
+        reject(new Error(`Failed to download Minio binary: ${err.message}`));
       });
   });
 };
 
+/**
+ * Sets the PATH environment variable to include the directory where MinIO is installed.
+ *
+ * @param installDir - The directory where MinIO is installed.
+ * @throws Error If updating the PATH environment variable fails.
+ */
 export const setPathEnvVar = (installDir: string): void => {
-  if (platform === "win32") {
-    const pathEnvVar = `${process.env.PATH};${installDir}`;
-    spawnSync("setx", ["PATH", pathEnvVar], {
-      shell: true,
-      stdio: "inherit",
-    });
-  } else {
-    process.env.PATH = `${process.env.PATH}:${installDir}`;
+  try {
+    if (platform === "win32") {
+      const pathEnvVar = `${process.env.PATH};${installDir}`;
+      spawnSync("setx", ["PATH", pathEnvVar], {
+        shell: true,
+        stdio: "inherit",
+      });
+    } else {
+      process.env.PATH = `${process.env.PATH}:${installDir}`;
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error)
+      throw new Error(
+        `Failed to set PATH environment variable: ${err.message}`,
+      );
   }
 };
 
+/**
+ * Checks if MinIO is installed by attempting to execute `minio --version`. If not installed, it triggers the installation process.
+ *
+ * @returns A promise that resolves with the path to the MinIO binary if it was installed or resolves with no value if MinIO was already installed.
+ */
 export const checkMinio = (): Promise<string | void> => {
   try {
     execSync("minio --version", { stdio: "ignore" });
     console.log("[MINIO] Minio is already installed.");
-    setPathEnvVar(path.join(os.homedir(), ".minio")); // Set PATH variable
+    setPathEnvVar(path.join(os.homedir(), ".minio"));
     return Promise.resolve();
   } catch (err) {
     return installMinio();
   }
 };
 
+// Start MinIO installation or verification process
 checkMinio()
   .then((minioPath) => {
     console.log("[MINIO] Starting server...");
