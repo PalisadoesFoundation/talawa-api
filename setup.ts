@@ -1,5 +1,6 @@
 // eslint-disable-next-line
 import * as cryptolib from "crypto";
+import crypto from "crypto"
 import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";
@@ -544,6 +545,41 @@ export async function recaptchaSiteKey(): Promise<void> {
 }
 
 /**
+ * This function 'Encryption' prompts the user to enter the 'ENCRYPTION_KEY' which will be used for 
+ * proper Encryption/Decryption of user data.
+ * If the value for the 'ENCRYPTION_KEY' variable is already set, then there would be no further modifications.
+ * If in case the value of the variable is not set, then a randomly 32 byte 'ENCRYPTION_KEY' would be generated.
+ */
+
+export async function setEncryptionKey(): Promise<void>
+{
+  try
+  { 
+    // If the encryption key is already present.
+    if(process.env.ENCRYPTION_KEY)
+    {
+      console.log(`\n Encryption key already present with the value ${process.env.ENCRYPTION_KEY}`);
+    } 
+    else 
+    {
+      // If the encryption key is not present.
+      const EncryptionKey = crypto.randomBytes(32).toString("hex");
+
+      // sets the ENCRYPTION_KEY to a randomly generated 32 byte string.
+      process.env.ENCRYPTION_KEY = EncryptionKey;
+
+      // updating the env variable
+      updateEnvVariable({ENCRYPTION_KEY: EncryptionKey});        
+      console.log(" \n Encryption key is successfully set \n");
+    }
+  }
+  catch(err)
+  {
+    console.log("An error occured");
+  }
+}
+
+/**
  * The `abort` function logs a message and exits the process.
  */
 export function abort(): void {
@@ -872,6 +908,32 @@ async function main(): Promise<void> {
     "\n You can configure either SMTP or Mail for sending emails through Talawa.\n",
   );
 
+  /**
+   * Will be implementing the inquirer for Encryption key here
+   */
+
+    if(process.env.ENCRYPTION_KEY)
+    {
+      console.log(`\n Encryption key already present with the value ${process.env.ENCRYPTION_KEY}`);
+    }
+
+    const { shouldGenerateEncryptionKey }  = await inquirer.prompt({
+      type : "confirm",
+      name : "shouldGenerateEncryptionKey",
+      message: "Would you like to generate a new Encryption key?",
+      default: process.env.ENCRYPTION_KEY ? false : true
+    })
+
+    if(shouldGenerateEncryptionKey)
+    {
+      await setEncryptionKey();
+    }
+    else 
+    {
+      await setEncryptionKey();
+    }
+
+  /** */
   if (process.env.MAIL_USERNAME) {
     console.log(
       `Mail username already exists with the value ${process.env.MAIL_USERNAME}`,
