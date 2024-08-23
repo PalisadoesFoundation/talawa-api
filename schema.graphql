@@ -1574,24 +1574,24 @@ enum RecurringEventMutationType {
 }
 
 type SocialMediaUrls {
-  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
+  X: String
   youTube: String
 }
 
 input SocialMediaUrlsInput {
-  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
+  X: String
   youTube: String
 }
 
