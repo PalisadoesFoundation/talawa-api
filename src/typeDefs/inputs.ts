@@ -154,6 +154,12 @@ export const inputs = gql`
     volunteersRequired: Int
   }
 
+  input EventVolunteerGroupWhereInput {
+    eventId: ID
+    volunteerId: ID
+    name_contains: String
+  }
+
   input UpdateEventVolunteerInput {
     eventId: ID
     isAssigned: Boolean
@@ -225,6 +231,7 @@ export const inputs = gql`
     endDate: Date!
     fundingGoal: Float!
     currency: Currency!
+    organizationId: ID!
   }
   input FundCampaignPledgeInput {
     campaignId: ID!
@@ -240,6 +247,16 @@ export const inputs = gql`
   }
 
   input CampaignWhereInput {
+    id: ID
+    fundId: ID
+    organizationId: ID
+    name_contains: String
+  }
+
+  input PledgeWhereInput {
+    id: ID
+    campaignId: ID
+    firstName_contains: String
     name_contains: String
   }
 
@@ -394,7 +411,7 @@ export const inputs = gql`
     linkedIn: String
     reddit: String
     slack: String
-    twitter: String
+    X: String
     youTube: String
   }
 
@@ -476,8 +493,8 @@ export const inputs = gql`
   }
 
   input UpdateUserTagInput {
-    _id: ID!
-    tagColor: String!
+    tagId: ID!
+    tagColor: String
     name: String!
   }
 

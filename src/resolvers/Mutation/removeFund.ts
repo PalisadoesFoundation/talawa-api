@@ -14,12 +14,15 @@ import {
   type InterfaceUser,
 } from "../../models";
 
+import type { InterfaceFundraisingCampaign } from "../../models/FundraisingCampaign";
 import { FundraisingCampaign } from "../../models/FundraisingCampaign";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceFundraisingCampaignPledges } from "../../models/FundraisingCampaignPledge";
+import { FundraisingCampaignPledge } from "../../models/FundraisingCampaignPledge";
 
 /**
  * This function enables to remove fund .
@@ -83,7 +86,14 @@ export const removeFund: MutationResolvers["removeFund"] = async (
 
   const fund = await Fund.findOne({
     _id: args.id,
-  }).lean();
+  })
+    .populate({
+      path: "campaigns",
+      populate: {
+        path: "pledges",
+      },
+    })
+    .lean();
 
   // Checks whether fund exists.
   if (!fund) {
@@ -116,12 +126,30 @@ export const removeFund: MutationResolvers["removeFund"] = async (
     );
   }
 
-  //deletes all the campaigns associated with the fund
-  for (const campaignId of fund.campaigns) {
-    await FundraisingCampaign.findByIdAndDelete({
-      _id: campaignId,
-    });
+  const campaignsToDelete: Types.ObjectId[] = [];
+  const pledgesToDelete: Types.ObjectId[] = [];
+
+  for (const campaign of fund.campaigns as InterfaceFundraisingCampaign[]) {
+    campaignsToDelete.push(campaign._id);
+    for (const pledge of campaign.pledges as InterfaceFundraisingCampaignPledges[]) {
+      pledgesToDelete.push(pledge._id);
+      // Remove pledges & campaign from related user's AppUserProfile
+      await AppUserProfile.updateMany(
+        { userId: { $in: pledge.users } },
+        { $pull: { pledges: pledge._id, campaigns: campaign._id } },
+      );
+    }
   }
+
+  // Remove all pledges associated with the fund
+  await FundraisingCampaignPledge.deleteMany({
+    _id: { $in: pledgesToDelete },
+  });
+
+  // Remove all campaigns associated with the fund
+  await FundraisingCampaign.deleteMany({
+    _id: { $in: campaignsToDelete },
+  });
 
   //deletes the fund
   await Fund.deleteOne({

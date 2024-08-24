@@ -35,7 +35,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  // console.log(user);
+
   const isPasswordValid = await bcrypt.compare(
     args.data.password,
     user.password as string,
@@ -58,7 +58,6 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
       userId: user._id.toString(),
       appLanguageCode: "en",
       tokenVersion: 0,
-      isSuperAdmin: false,
     }).lean();
 
   if (!appUserProfile) {

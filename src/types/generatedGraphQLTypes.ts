@@ -224,10 +224,12 @@ export type AppUserProfile = {
   _id: Scalars['ID']['output'];
   adminFor?: Maybe<Array<Maybe<Organization>>>;
   appLanguageCode: Scalars['String']['output'];
+  campaigns?: Maybe<Array<Maybe<FundraisingCampaign>>>;
   createdEvents?: Maybe<Array<Maybe<Event>>>;
   createdOrganizations?: Maybe<Array<Maybe<Organization>>>;
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
   isSuperAdmin: Scalars['Boolean']['output'];
+  pledges?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
   pluginCreationAllowed: Scalars['Boolean']['output'];
   userId: User;
 };
@@ -249,7 +251,10 @@ export type CampaignOrderByInput =
   | 'startDate_DESC';
 
 export type CampaignWhereInput = {
+  fundId?: InputMaybe<Scalars['ID']['input']>;
+  id?: InputMaybe<Scalars['ID']['input']>;
   name_contains?: InputMaybe<Scalars['String']['input']>;
+  organizationId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type Chat = {
@@ -859,6 +864,12 @@ export type EventVolunteerGroupInput = {
   volunteersRequired?: InputMaybe<Scalars['Int']['input']>;
 };
 
+export type EventVolunteerGroupWhereInput = {
+  eventId?: InputMaybe<Scalars['ID']['input']>;
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+  volunteerId?: InputMaybe<Scalars['ID']['input']>;
+};
+
 export type EventVolunteerInput = {
   eventId: Scalars['ID']['input'];
   groupId: Scalars['ID']['input'];
@@ -957,6 +968,7 @@ export type FundCampaignInput = {
   fundId: Scalars['ID']['input'];
   fundingGoal: Scalars['Float']['input'];
   name: Scalars['String']['input'];
+  organizationId: Scalars['ID']['input'];
   startDate: Scalars['Date']['input'];
 };
 
@@ -995,6 +1007,7 @@ export type FundraisingCampaign = {
   fundId: Fund;
   fundingGoal: Scalars['Float']['output'];
   name: Scalars['String']['output'];
+  organizationId: Organization;
   pledges?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
   startDate: Scalars['Date']['output'];
   updatedAt: Scalars['DateTime']['output'];
@@ -1004,7 +1017,7 @@ export type FundraisingCampaignPledge = {
   __typename?: 'FundraisingCampaignPledge';
   _id: Scalars['ID']['output'];
   amount: Scalars['Float']['output'];
-  campaigns: Array<Maybe<FundraisingCampaign>>;
+  campaign: FundraisingCampaign;
   currency: Currency;
   endDate?: Maybe<Scalars['Date']['output']>;
   startDate?: Maybe<Scalars['Date']['output']>;
@@ -2176,6 +2189,13 @@ export type PledgeOrderByInput =
   | 'startDate_ASC'
   | 'startDate_DESC';
 
+export type PledgeWhereInput = {
+  campaignId?: InputMaybe<Scalars['ID']['input']>;
+  firstName_contains?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type Plugin = {
   __typename?: 'Plugin';
   _id: Scalars['ID']['output'];
@@ -2333,11 +2353,15 @@ export type Query = {
   getEventAttendee?: Maybe<EventAttendee>;
   getEventAttendeesByEventId?: Maybe<Array<Maybe<EventAttendee>>>;
   getEventInvitesByUserId: Array<EventAttendee>;
+  getEventVolunteerGroups: Array<Maybe<EventVolunteerGroup>>;
   getFundById: Fund;
-  getFundraisingCampaignById: FundraisingCampaign;
   getFundraisingCampaignPledgeById: FundraisingCampaignPledge;
+  getFundraisingCampaigns: Array<Maybe<FundraisingCampaign>>;
   getNoteById: Note;
+  getPledgesByUserId?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
+  getUserTag?: Maybe<UserTag>;
+  getUserTagAncestors?: Maybe<Array<Maybe<UserTag>>>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   groupChatById?: Maybe<GroupChat>;
@@ -2527,16 +2551,15 @@ export type QueryGetEventInvitesByUserIdArgs = {
 };
 
 
+export type QueryGetEventVolunteerGroupsArgs = {
+  where?: InputMaybe<EventVolunteerGroupWhereInput>;
+};
+
+
 export type QueryGetFundByIdArgs = {
   id: Scalars['ID']['input'];
   orderBy?: InputMaybe<CampaignOrderByInput>;
   where?: InputMaybe<CampaignWhereInput>;
-};
-
-
-export type QueryGetFundraisingCampaignByIdArgs = {
-  id: Scalars['ID']['input'];
-  orderBy?: InputMaybe<PledgeOrderByInput>;
 };
 
 
@@ -2545,7 +2568,31 @@ export type QueryGetFundraisingCampaignPledgeByIdArgs = {
 };
 
 
+export type QueryGetFundraisingCampaignsArgs = {
+  campaignOrderby?: InputMaybe<CampaignOrderByInput>;
+  pledgeOrderBy?: InputMaybe<PledgeOrderByInput>;
+  where?: InputMaybe<CampaignWhereInput>;
+};
+
+
 export type QueryGetNoteByIdArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetPledgesByUserIdArgs = {
+  orderBy?: InputMaybe<PledgeOrderByInput>;
+  userId: Scalars['ID']['input'];
+  where?: InputMaybe<PledgeWhereInput>;
+};
+
+
+export type QueryGetUserTagArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetUserTagAncestorsArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -2709,7 +2756,7 @@ export type SocialMediaUrls = {
   linkedIn?: Maybe<Scalars['String']['output']>;
   reddit?: Maybe<Scalars['String']['output']>;
   slack?: Maybe<Scalars['String']['output']>;
-  twitter?: Maybe<Scalars['String']['output']>;
+  X?: Maybe<Scalars['String']['output']>;
   youTube?: Maybe<Scalars['String']['output']>;
 };
 
@@ -2720,7 +2767,7 @@ export type SocialMediaUrlsInput = {
   linkedIn?: InputMaybe<Scalars['String']['input']>;
   reddit?: InputMaybe<Scalars['String']['input']>;
   slack?: InputMaybe<Scalars['String']['input']>;
-  twitter?: InputMaybe<Scalars['String']['input']>;
+  X?: InputMaybe<Scalars['String']['input']>;
   youTube?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -2943,9 +2990,9 @@ export type UpdateUserPasswordInput = {
 };
 
 export type UpdateUserTagInput = {
-  _id: Scalars['ID']['input'];
   name: Scalars['String']['input'];
-  tagColor: Scalars['String']['input'];
+  tagColor?: InputMaybe<Scalars['String']['input']>;
+  tagId: Scalars['ID']['input'];
 };
 
 export type User = {
@@ -3119,7 +3166,7 @@ export type UserTagsConnection = {
   __typename?: 'UserTagsConnection';
   edges: Array<UserTagsConnectionEdge>;
   pageInfo: DefaultConnectionPageInfo;
-  totalCount?: Maybe<Scalars['PositiveInt']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
 /** A default connection edge on the UserTag type for UserTagsConnection. */
@@ -3168,6 +3215,7 @@ export type UsersConnection = {
   __typename?: 'UsersConnection';
   edges: Array<UsersConnectionEdge>;
   pageInfo: DefaultConnectionPageInfo;
+  totalCount?: Maybe<Scalars['Int']['output']>;
 };
 
 /** A default connection edge on the User type for UsersConnection. */
@@ -3392,6 +3440,7 @@ export type ResolversTypes = {
   EventVolunteer: ResolverTypeWrapper<InterfaceEventVolunteerModel>;
   EventVolunteerGroup: ResolverTypeWrapper<InterfaceEventVolunteerGroupModel>;
   EventVolunteerGroupInput: EventVolunteerGroupInput;
+  EventVolunteerGroupWhereInput: EventVolunteerGroupWhereInput;
   EventVolunteerInput: EventVolunteerInput;
   EventVolunteerResponse: EventVolunteerResponse;
   EventWhereInput: EventWhereInput;
@@ -3453,6 +3502,7 @@ export type ResolversTypes = {
   PaginationDirection: PaginationDirection;
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']['output']>;
   PledgeOrderByInput: PledgeOrderByInput;
+  PledgeWhereInput: PledgeWhereInput;
   Plugin: ResolverTypeWrapper<InterfacePluginModel>;
   PluginField: ResolverTypeWrapper<InterfacePluginFieldModel>;
   PluginFieldInput: PluginFieldInput;
@@ -3601,6 +3651,7 @@ export type ResolversParentTypes = {
   EventVolunteer: InterfaceEventVolunteerModel;
   EventVolunteerGroup: InterfaceEventVolunteerGroupModel;
   EventVolunteerGroupInput: EventVolunteerGroupInput;
+  EventVolunteerGroupWhereInput: EventVolunteerGroupWhereInput;
   EventVolunteerInput: EventVolunteerInput;
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
@@ -3653,6 +3704,7 @@ export type ResolversParentTypes = {
   OtpData: OtpData;
   PageInfo: PageInfo;
   PhoneNumber: Scalars['PhoneNumber']['output'];
+  PledgeWhereInput: PledgeWhereInput;
   Plugin: InterfacePluginModel;
   PluginField: InterfacePluginFieldModel;
   PluginFieldInput: PluginFieldInput;
@@ -3866,10 +3918,12 @@ export type AppUserProfileResolvers<ContextType = any, ParentType extends Resolv
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  campaigns?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaign']>>>, ParentType, ContextType>;
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   createdOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   isSuperAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  pledges?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   userId?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4207,6 +4261,7 @@ export type FundraisingCampaignResolvers<ContextType = any, ParentType extends R
   fundId?: Resolver<ResolversTypes['Fund'], ParentType, ContextType>;
   fundingGoal?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  organizationId?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   pledges?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -4216,7 +4271,7 @@ export type FundraisingCampaignResolvers<ContextType = any, ParentType extends R
 export type FundraisingCampaignPledgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FundraisingCampaignPledge'] = ResolversParentTypes['FundraisingCampaignPledge']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   amount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  campaigns?: Resolver<Array<Maybe<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType>;
+  campaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType>;
   currency?: Resolver<ResolversTypes['Currency'], ParentType, ContextType>;
   endDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   startDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -4664,11 +4719,15 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getEventAttendee?: Resolver<Maybe<ResolversTypes['EventAttendee']>, ParentType, ContextType, RequireFields<QueryGetEventAttendeeArgs, 'eventId' | 'userId'>>;
   getEventAttendeesByEventId?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventAttendee']>>>, ParentType, ContextType, RequireFields<QueryGetEventAttendeesByEventIdArgs, 'eventId'>>;
   getEventInvitesByUserId?: Resolver<Array<ResolversTypes['EventAttendee']>, ParentType, ContextType, RequireFields<QueryGetEventInvitesByUserIdArgs, 'userId'>>;
+  getEventVolunteerGroups?: Resolver<Array<Maybe<ResolversTypes['EventVolunteerGroup']>>, ParentType, ContextType, Partial<QueryGetEventVolunteerGroupsArgs>>;
   getFundById?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<QueryGetFundByIdArgs, 'id'>>;
-  getFundraisingCampaignById?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignByIdArgs, 'id'>>;
   getFundraisingCampaignPledgeById?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignPledgeByIdArgs, 'id'>>;
+  getFundraisingCampaigns?: Resolver<Array<Maybe<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType, Partial<QueryGetFundraisingCampaignsArgs>>;
   getNoteById?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<QueryGetNoteByIdArgs, 'id'>>;
+  getPledgesByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType, RequireFields<QueryGetPledgesByUserIdArgs, 'userId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
+  getUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<QueryGetUserTagArgs, 'id'>>;
+  getUserTagAncestors?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTag']>>>, ParentType, ContextType, RequireFields<QueryGetUserTagAncestorsArgs, 'id'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   groupChatById?: Resolver<Maybe<ResolversTypes['GroupChat']>, ParentType, ContextType, RequireFields<QueryGroupChatByIdArgs, 'id'>>;
@@ -4714,7 +4773,7 @@ export type SocialMediaUrlsResolvers<ContextType = any, ParentType extends Resol
   linkedIn?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reddit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slack?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  twitter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  X?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   youTube?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -4854,7 +4913,7 @@ export type UserTagResolvers<ContextType = any, ParentType extends ResolversPare
 export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
   edges?: Resolver<Array<ResolversTypes['UserTagsConnectionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
-  totalCount?: Resolver<Maybe<ResolversTypes['PositiveInt']>, ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4867,6 +4926,7 @@ export type UserTagsConnectionEdgeResolvers<ContextType = any, ParentType extend
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
   edges?: Resolver<Array<ResolversTypes['UsersConnectionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
