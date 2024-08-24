@@ -36,7 +36,7 @@ describe("resolvers -> GroupChatMessage -> replyTo", () => {
 
     expect(replyToPayload).toEqual(replyTo);
   });
-  it(`throws NotFoundError if no replyTo exists`, async () => {
+  it(`throws NotFoundError if replyTo message not found`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -44,7 +44,7 @@ describe("resolvers -> GroupChatMessage -> replyTo", () => {
 
     const parent = {
       ...testGroupChatMessage?.toObject(),
-      reolyTo: new Types.ObjectId(), // Set to a non-existing ObjectId
+      replyTo: new Types.ObjectId().toString(), // Set to a non-existing ObjectId
     };
 
     if (!parent) {
@@ -59,6 +59,25 @@ describe("resolvers -> GroupChatMessage -> replyTo", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(MESSAGE_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(MESSAGE_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
+  it(`return null if there no reply to message`, async () => {
+    const parent = {
+      ...testGroupChatMessage?.toObject(),
+      replyTo: "",
+    };
+
+    console;
+
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
+
+    if (replyToResolver) {
+      // @ts-expect-error - Testing for error
+      const replyToPayload = await replyToResolver(parent, {}, {});
+      expect(replyToPayload).toEqual(null);
     }
   });
 });

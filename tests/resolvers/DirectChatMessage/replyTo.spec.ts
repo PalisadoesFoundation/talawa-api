@@ -42,7 +42,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
 
     expect(replyToPayload).toEqual(replyTo);
   });
-  it(`throws NotFoundError if no directChat exists`, async () => {
+  it(`throws NotFoundError if no message exists`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -68,5 +68,24 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
       expect(spy).toBeCalledWith(MESSAGE_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(MESSAGE_NOT_FOUND_ERROR.MESSAGE);
     }
+  });
+
+  it(`return null if there is no replyTo message`, async () => {
+    const parent = {
+      ...testDirectChatMessage?.toObject(),
+      replyTo: "", // Set to a non-existing ObjectId
+    };
+
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
+    }
+
+    if (typeof replyToResolver !== "function") {
+      throw new Error("replyToResolver is not a function.");
+    }
+
+    // @ts-expect-error - Testing for error
+    const replyToPayload = await replyToResolver(parent, {}, {});
+    expect(replyToPayload).toEqual(null);
   });
 });
