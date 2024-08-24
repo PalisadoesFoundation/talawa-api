@@ -125,4 +125,30 @@ describe("resolvers -> Mutation -> createChat", () => {
       }),
     );
   });
+
+  it(`creates the groupChat and returns it`, async () => {
+    const args: MutationCreateChatArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        userIds: [testUser?.id],
+        isGroup: false,
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+    const { createChat: createChatResolver } = await import(
+      "../../../src/resolvers/Mutation/createChat"
+    );
+
+    const createChatPayload = await createChatResolver?.({}, args, context);
+
+    expect(createChatPayload).toEqual(
+      expect.objectContaining({
+        creatorId: testUser?._id,
+        users: [testUser?._id],
+      }),
+    );
+  });
 });
