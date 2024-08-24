@@ -24,11 +24,14 @@ describe("resolvers->Query->chatById", () => {
     const chatByIdPayload = await chatById?.({}, args, {});
     expect(chatByIdPayload).toEqual(testChat?.toObject());
   });
-  it(`returns null if fund not found for args.id`, async () => {
-    const args = {
-      id: new Types.ObjectId().toString(),
-    };
-    const chatByIdPayload = await chatById?.({}, args, {});
-    expect(chatByIdPayload).toEqual({});
+  it(`throws chat not found if fund not found for args.id`, async () => {
+    try {
+      const args = {
+        id: new Types.ObjectId().toString(),
+      };
+      await chatById?.({}, args, {});
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual("Chat not found");
+    }
   });
 });
