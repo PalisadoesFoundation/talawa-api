@@ -73,7 +73,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
   it(`return null if there is no replyTo message`, async () => {
     const parent = {
       ...testDirectChatMessage?.toObject(),
-      replyTo: "", // Set to a non-existing ObjectId
+      replyTo: "",
     };
 
     if (!parent) {
