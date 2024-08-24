@@ -3,11 +3,11 @@ import { errors } from "../../libraries";
 import { Chat } from "../../models";
 import { CHAT_NOT_FOUND_ERROR } from "../../constants";
 /**
- * This query will fetch all the Direct chats for the current user from the database.
+ * This query will fetch Chats by a specified id from the database.
  * @param _parent-
  * @param args - An object that contains `id` of the user.
- * @returns An object `directChats` that contains all direct chats of the current user.
- * If the `directChats` object is null then it throws `NotFoundError` error.
+ * @returns An object `Chat`.
+ * If the `Chat` object is null then it throws `NotFoundError` error.
  * @remarks You can learn about GraphQL `Resolvers`
  * {@link https://www.apollographql.com/docs/apollo-server/data/resolvers/ | here}.
  */

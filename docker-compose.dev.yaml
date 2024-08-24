@@ -26,7 +26,7 @@ services:
       - mongodb
       - redis-stack-server
     environment:
-      - mongodb+srv://disha:disha@cluster0.ynjfu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - MONGO_DB_URL=mongodb://mongodb:27017
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
 

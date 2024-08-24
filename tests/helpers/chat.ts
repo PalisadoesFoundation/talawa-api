@@ -1,11 +1,6 @@
 import { nanoid } from "nanoid";
 import type { InterfaceChat, InterfaceChatMessage } from "../../src/models";
-import {
-  Chat,
-  ChatMessage,
-  DirectChat,
-  DirectChatMessage,
-} from "../../src/models";
+import { Chat, ChatMessage } from "../../src/models";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUserAndOrganization } from "./userAndOrg";
 import type { Document } from "mongoose";
@@ -30,6 +25,7 @@ export const createTestChat = async (): Promise<
       isGroup: true,
       createdAt: new Date(),
       updatedAt: new Date(),
+      admins: [testUser._id],
     });
 
     return [testUser, testOrganization, testChat];
@@ -42,6 +38,7 @@ export const createTestChatMessage = async (): Promise<
   [TestUserType, TestOrganizationType, TestChatType, TestChatMessageType]
 > => {
   const [testUser, testOrganization, testChat] = await createTestChat();
+  console.log("TEST CHAT", testChat);
 
   const chatMessage = await createChatMessage(testUser?._id, testChat?._id);
 
@@ -65,8 +62,6 @@ export const createTestChatMessageWithoutReply = async (): Promise<
   [TestUserType, TestOrganizationType, TestChatType, TestChatMessageType]
 > => {
   const [testUser, testOrganization, testChat] = await createTestChat();
-
-  const chatMessage = await createChatMessage(testUser?._id, testChat?._id);
 
   if (testChat && testUser) {
     const testChatMessage = await ChatMessage.create({

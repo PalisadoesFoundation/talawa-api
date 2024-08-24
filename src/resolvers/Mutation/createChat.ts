@@ -8,14 +8,14 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
- * This function enables to create a group chat.
+ * This function enables to create a chat.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
  * 2. If the organization exists
- * @returns Created group chat
+ * @returns Created chat
  */
 export const createChat: MutationResolvers["createChat"] = async (
   _parent,

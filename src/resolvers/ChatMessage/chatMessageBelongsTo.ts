@@ -3,9 +3,9 @@ import { Chat } from "../../models";
 import { CHAT_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 /**
- * This resolver method will retrieve and return from the database the Direct chat to which the specified message belongs.
+ * This resolver method will retrieve and return from the database the Chat to which the specified message belongs.
  * @param parent - An object that is the return value of the resolver for this field's parent.
- * @returns An `object` that contains the Direct chat data.
+ * @returns An `object` that contains the Chat data.
  */
 export const chatMessageBelongsTo: ChatMessageResolvers["chatMessageBelongsTo"] =
   async (parent) => {

@@ -46,14 +46,9 @@ const config: CodegenConfig = {
 
           Community: "../models/Community#InterfaceCommunity",
 
-          DirectChat: "../models/DirectChat#InterfaceDirectChat",
-
           Chat: "../models/Chat#InterfaceChat",
 
           ChatMessage: "../models/ChatMessage#InterfaceChatMessage",
-
-          DirectChatMessage:
-            "../models/DirectChatMessage#InterfaceDirectChatMessage",
 
           Donation: "../models/Donation#InterfaceDonation",
 
@@ -78,11 +73,6 @@ const config: CodegenConfig = {
           // File: '../models/File#InterfaceFile',
 
           Group: "../models/Group#InterfaceGroup",
-
-          GroupChat: "../models/GroupChat#InterfaceGroupChat",
-
-          GroupChatMessage:
-            "../models/GroupChatMessage#InterfaceGroupChatMessage",
 
           // ImageHash: '../models/ImageHash#InterfaceImageHash',
 

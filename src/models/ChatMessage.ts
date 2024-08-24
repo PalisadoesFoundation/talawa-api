@@ -22,11 +22,13 @@ export interface InterfaceChatMessage {
 
 /**
  * Mongoose schema definition for a direct chat message document.
- * @param directChatMessageBelongsTo - Reference to the direct chat session to which the message belongs.
+ * @param chatMessageBelongsTo - Reference to the chat session to which the message belongs.
  * @param sender - Reference to the user who sent the message.
- * @param receiver - Reference to the user who received the message.
  * @param messageContent - Content of the direct chat message.
+ * @param replyTo - Reference to the message replied to.
+ * @param type - Type of the message (STRING, MEDIA, FILE).
  * @param status - Status of the message (ACTIVE, BLOCKED, DELETED).
+ * @param deletedBy - List of users who have deleted the message.
  * @param createdAt - Date when the direct chat message was created.
  * @param updatedAt - Date when the direct chat message was last updated.
  */

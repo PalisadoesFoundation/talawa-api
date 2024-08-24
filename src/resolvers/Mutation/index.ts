@@ -7,9 +7,7 @@ import { addOrganizationCustomField } from "./addOrganizationCustomField";
 import { addOrganizationImage } from "./addOrganizationImage";
 import { addUserCustomData } from "./addUserCustomData";
 import { addUserImage } from "./addUserImage";
-import { addUserToGroupChat } from "./addUserToGroupChat";
 import { addUserToUserFamily } from "./addUserToUserFamily";
-import { adminRemoveGroup } from "./adminRemoveGroup";
 import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
@@ -32,7 +30,6 @@ import { createFund } from "./createFund";
 import { createFundraisingCampaign } from "./createFundraisingCampaign";
 import { createEventVolunteerGroup } from "./createEventVolunteerGroup";
 import { createFundraisingCampaignPledge } from "./createFundraisingCampaignPledge";
-import { createGroupChat } from "./createGroupChat";
 import { createMember } from "./createMember";
 import { createMessageChat } from "./createMessageChat";
 import { createOrganization } from "./createOrganization";
@@ -65,7 +62,6 @@ import { removeAdmin } from "./removeAdmin";
 import { removeAgendaItem } from "./removeAgendaItem";
 import removeAgendaSection from "./removeAgendaSection";
 import { removeComment } from "./removeComment";
-import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
 import { removeEventVolunteer } from "./removeEventVolunteer";
@@ -73,7 +69,6 @@ import { removeFund } from "./removeFund";
 import { removeEventVolunteerGroup } from "./removeEventVolunteerGroup";
 import { removeFundraisingCampaign } from "./removeFundraisingCampaign";
 import { removeFundraisingCampaignPledge } from "./removeFundraisingCampaingPledge";
-import { removeGroupChat } from "./removeGroupChat";
 import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
 import { removeOrganizationCustomField } from "./removeOrganizationCustomField";
@@ -82,7 +77,6 @@ import { removePost } from "./removePost";
 import { removeSampleOrganization } from "./removeSampleOrganization";
 import { removeUserCustomData } from "./removeUserCustomData";
 import { removeUserFamily } from "./removeUserFamily";
-import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
 import { removeUserImage } from "./removeUserImage";
 import { removeUserTag } from "./removeUserTag";
@@ -90,10 +84,8 @@ import { resetCommunity } from "./resetCommunity";
 import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
 import { saveFcmToken } from "./saveFcmToken";
 import { sendMembershipRequest } from "./sendMembershipRequest";
-import { sendMessageToDirectChat } from "./sendMessageToDirectChat";
 import { sendMessageToChat } from "./sendMessageToChat";
 import { markChatMessagesAsRead } from "./markChatMessagesAsRead";
-import { sendMessageToGroupChat } from "./sendMessageToGroupChat";
 import { signUp } from "./signUp";
 import { togglePostPin } from "./togglePostPin";
 import { unassignUserTag } from "./unassignUserTag";
@@ -135,8 +127,6 @@ export const Mutation: MutationResolvers = {
   addOrganizationImage,
   addUserCustomData,
   addUserImage,
-  addUserToGroupChat,
-  adminRemoveGroup,
   addUserToUserFamily,
   removeUserFamily,
   removeUserFromUserFamily,
@@ -161,7 +151,6 @@ export const Mutation: MutationResolvers = {
   createEvent,
   createFund,
   createFundraisingCampaign,
-  createGroupChat,
   createMessageChat,
   createOrganization,
   createNote,
@@ -197,13 +186,11 @@ export const Mutation: MutationResolvers = {
   removeAgendaItem,
   removeAgendaSection,
   removeComment,
-  removeDirectChat,
   removeEvent,
   removeEventAttendee,
   removeEventVolunteer,
   removeFund,
   removeEventVolunteerGroup,
-  removeGroupChat,
   removeMember,
   removeOrganization,
   removeOrganizationCustomField,
@@ -211,16 +198,13 @@ export const Mutation: MutationResolvers = {
   removeSampleOrganization,
   removePost,
   removeUserCustomData,
-  removeUserFromGroupChat,
   removeUserImage,
   removeUserTag,
   resetCommunity,
   revokeRefreshTokenForUser,
   saveFcmToken,
   sendMembershipRequest,
-  sendMessageToDirectChat,
   sendMessageToChat,
-  sendMessageToGroupChat,
   signUp,
   togglePostPin,
   unassignUserTag,

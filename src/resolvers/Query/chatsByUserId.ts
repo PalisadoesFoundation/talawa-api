@@ -2,7 +2,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Chat } from "../../models";
 import type { SortOrder } from "mongoose";
 /**
- * This query will fetch all the Direct chats for the current user from the database.
+ * This query will fetch all the Chats for the current user from the database.
  * @param _parent-
  * @param args - An object that contains `id` of the user.
  * @returns An object `directChats` that contains all direct chats of the current user.

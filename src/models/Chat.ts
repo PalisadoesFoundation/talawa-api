@@ -24,14 +24,18 @@ export interface InterfaceChat {
 }
 
 /**
- * Mongoose schema for a direct chat.
+ * Mongoose schema for a chat.
+ * @param isGroup - Indicates if the chat is a group chat.
+ * @param name - Name of the chat if its a group chat.
  * @param users - Users participating in the chat.
  * @param messages - Messages in the chat.
  * @param creatorId - Creator of the chat, reference to `User` model.
+ * @param admins - Admins of the chat if its a group chat, reference to `User` model.
  * @param organization - Organization associated with the chat, reference to `Organization` model.
  * @param status - Status of the chat (ACTIVE, BLOCKED, DELETED).
  * @param createdAt - Timestamp of chat creation.
  * @param updatedAt - Timestamp of chat update.
+ * @param lastMessageId - ID of the last message in the chat.
  */
 const chatSchema = new Schema(
   {
