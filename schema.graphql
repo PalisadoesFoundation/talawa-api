@@ -209,6 +209,11 @@ type ChatMessage {
   updatedAt: DateTime!
 }
 
+input ChatWhereInput {
+  user: UserWhereInput,
+  name_contains: String
+}
+
 type CheckIn {
   _id: ID!
   createdAt: DateTime!
@@ -1517,8 +1522,9 @@ type Query {
   agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
   agendaItemByOrganization(organizationId: ID!): [AgendaItem]
   agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
-  chatById(id: ID!): Chat!
+  chatById(id: ID!, where: ChatWhereInput): Chat!
   chatsByUserId(id: ID!): [Chat]
+  getUnreadChatsByUserId: [Chat]
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]

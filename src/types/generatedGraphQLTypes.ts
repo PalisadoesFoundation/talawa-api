@@ -283,6 +283,11 @@ export type ChatMessage = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type ChatWhereInput = {
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+  user?: InputMaybe<UserWhereInput>;
+};
+
 export type CheckIn = {
   __typename?: 'CheckIn';
   _id: Scalars['ID']['output'];
@@ -2353,9 +2358,11 @@ export type Query = {
   getFundById: Fund;
   getFundraisingCampaignPledgeById: FundraisingCampaignPledge;
   getFundraisingCampaigns: Array<Maybe<FundraisingCampaign>>;
+  getGroupChatsByUserId?: Maybe<Array<Maybe<Chat>>>;
   getNoteById: Note;
   getPledgesByUserId?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
+  getUnreadChatsByUserId?: Maybe<Array<Maybe<Chat>>>;
   getUserTag?: Maybe<UserTag>;
   getUserTagAncestors?: Maybe<Array<Maybe<UserTag>>>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
@@ -2439,6 +2446,7 @@ export type QueryChatByIdArgs = {
 
 export type QueryChatsByUserIdArgs = {
   id: Scalars['ID']['input'];
+  where?: InputMaybe<ChatWhereInput>;
 };
 
 
@@ -2746,24 +2754,24 @@ export type RecurringEventMutationType =
 
 export type SocialMediaUrls = {
   __typename?: 'SocialMediaUrls';
+  X?: Maybe<Scalars['String']['output']>;
   facebook?: Maybe<Scalars['String']['output']>;
   gitHub?: Maybe<Scalars['String']['output']>;
   instagram?: Maybe<Scalars['String']['output']>;
   linkedIn?: Maybe<Scalars['String']['output']>;
   reddit?: Maybe<Scalars['String']['output']>;
   slack?: Maybe<Scalars['String']['output']>;
-  X?: Maybe<Scalars['String']['output']>;
   youTube?: Maybe<Scalars['String']['output']>;
 };
 
 export type SocialMediaUrlsInput = {
+  X?: InputMaybe<Scalars['String']['input']>;
   facebook?: InputMaybe<Scalars['String']['input']>;
   gitHub?: InputMaybe<Scalars['String']['input']>;
   instagram?: InputMaybe<Scalars['String']['input']>;
   linkedIn?: InputMaybe<Scalars['String']['input']>;
   reddit?: InputMaybe<Scalars['String']['input']>;
   slack?: InputMaybe<Scalars['String']['input']>;
-  X?: InputMaybe<Scalars['String']['input']>;
   youTube?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -3388,6 +3396,7 @@ export type ResolversTypes = {
   CampaignWhereInput: CampaignWhereInput;
   Chat: ResolverTypeWrapper<InterfaceChatModel>;
   ChatMessage: ResolverTypeWrapper<InterfaceChatMessageModel>;
+  ChatWhereInput: ChatWhereInput;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
   CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
@@ -3603,6 +3612,7 @@ export type ResolversParentTypes = {
   CampaignWhereInput: CampaignWhereInput;
   Chat: InterfaceChatModel;
   ChatMessage: InterfaceChatMessageModel;
+  ChatWhereInput: ChatWhereInput;
   CheckIn: InterfaceCheckInModel;
   CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
@@ -4719,9 +4729,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getFundById?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<QueryGetFundByIdArgs, 'id'>>;
   getFundraisingCampaignPledgeById?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignPledgeByIdArgs, 'id'>>;
   getFundraisingCampaigns?: Resolver<Array<Maybe<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType, Partial<QueryGetFundraisingCampaignsArgs>>;
+  getGroupChatsByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   getNoteById?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<QueryGetNoteByIdArgs, 'id'>>;
   getPledgesByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType, RequireFields<QueryGetPledgesByUserIdArgs, 'userId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
+  getUnreadChatsByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   getUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<QueryGetUserTagArgs, 'id'>>;
   getUserTagAncestors?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTag']>>>, ParentType, ContextType, RequireFields<QueryGetUserTagAncestorsArgs, 'id'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
@@ -4763,13 +4775,13 @@ export type RecurrenceRuleResolvers<ContextType = any, ParentType extends Resolv
 };
 
 export type SocialMediaUrlsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SocialMediaUrls'] = ResolversParentTypes['SocialMediaUrls']> = {
+  X?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   facebook?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   gitHub?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   instagram?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   linkedIn?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reddit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slack?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  X?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   youTube?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

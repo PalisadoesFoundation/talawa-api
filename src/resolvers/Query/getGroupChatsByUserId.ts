@@ -10,9 +10,10 @@ import type { SortOrder } from "mongoose";
  * @remarks You can learn about GraphQL `Resolvers`
  * {@link https://www.apollographql.com/docs/apollo-server/data/resolvers/ | here}.
  */
-export const chatsByUserId: QueryResolvers["chatsByUserId"] = async (
+export const getGroupChatsByUserId: QueryResolvers["getGroupChatsByUserId"] = async (
   _parent,
-  args,
+  _args,
+  context
 ) => {
   const sort = {
     updatedAt: -1,
@@ -24,7 +25,8 @@ export const chatsByUserId: QueryResolvers["chatsByUserId"] = async (
     | undefined;
 
   const chats = await Chat.find({
-    users: args.id,
+    users: context.userId,
+    isGroup: true,
   })
     .sort(sort)
     .lean();

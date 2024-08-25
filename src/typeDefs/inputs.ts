@@ -30,6 +30,11 @@ export const inputs = gql`
     title: String!
   }
 
+  input ChatWhereInput {
+    user: UserWhereInput,
+    name_contains: String
+  }
+
   input createUserFamilyInput {
     title: String!
     userIds: [ID!]!
