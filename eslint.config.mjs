@@ -4,11 +4,11 @@ import _import from "eslint-plugin-import";
 import { fixupPluginRules } from "@eslint/compat";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
-import parser from "@graphql-eslint/eslint-plugin";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
+import { parseForESLint } from "@graphql-eslint/eslint-plugin"; // Importing `parseForESLint` if needed in a custom rule
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,6 +33,7 @@ export default [{
         "@typescript-eslint": typescriptEslint,
         tsdoc,
         import: fixupPluginRules(_import),
+        // No need to include `@graphql-eslint` here
     },
 
     languageOptions: {
@@ -40,7 +41,7 @@ export default [{
             ...globals.node,
         },
 
-        parser: tsParser,
+        parser: tsParser, // Use `tsParser` to parse TypeScript
     },
 
     rules: {
@@ -62,7 +63,7 @@ export default [{
     files: ["**/*.ts"],
 
     languageOptions: {
-        parser: tsParser,
+        parser: tsParser, // Use `tsParser` to parse TypeScript
         ecmaVersion: "latest",
         sourceType: "module",
 
@@ -113,17 +114,11 @@ export default [{
     },
 }, {
     files: ["./src/typeDefs/**/*.ts"],
-    processor: "@graphql-eslint/graphql",
+    processor: "@graphql-eslint/graphql", // Use processor for TypeScript GraphQL files
 }, {
     files: ["./src/typeDefs/**/*.graphql"],
 
-    plugins: {
-        "@graphql-eslint": graphqlEslint,
-    },
-
-    languageOptions: {
-        parser: parser,
-    },
+    processor: "@graphql-eslint/graphql", // Use processor for GraphQL files
 }, {
     files: ["tests/**/*"],
 
