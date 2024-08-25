@@ -33,22 +33,36 @@ import type {
 import { requestContext } from "../../../src/libraries";
 
 import bcrypt from "bcryptjs";
+
+// Global variables to store mongoose instance and test user/appUserProfile
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAppUserProfile: TestAppUserProfileType;
 
+// Mock the uploadEncodedImage function used in the tests
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
 }));
 
+/**
+ * Establishes a connection to the database before all tests.
+ */
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 });
 
+/**
+ * Closes the database connection after all tests have completed.
+ */
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
+/**
+ * Sets up test data in the database before each test.
+ * Creates a test user and associated appUserProfile, and links them together.
+ * Also, creates a test community with a timeout value.
+ */
 beforeEach(async () => {
   const hashedPassword = await bcrypt.hash("password", 12);
 
@@ -81,13 +95,23 @@ beforeEach(async () => {
   });
 });
 
+/**
+ * Restores all mocks and resets modules after each test.
+ */
 afterEach(() => {
   vi.restoreAllMocks();
   vi.doUnmock("../../../src/constants");
   vi.resetModules();
 });
 
+/**
+ * Test suite for the `updateSessionTimeout` resolver function.
+ */
 describe("resolvers -> Mutation -> updateSessionTimeout", () => {
+  /**
+   * Tests that an error is thrown if the community does not exist.
+   * Expects a NotFoundError with a translated message.
+   */
   it("throws NotFoundError if community does not exist", async () => {
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -113,6 +137,10 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
     }
   });
 
+  /**
+   * Tests that an error is thrown if the user does not exist.
+   * Expects a NotFoundError with a translated message.
+   */
   it("throws NotFoundError if user does not exist", async () => {
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -136,6 +164,10 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
     }
   });
 
+  /**
+   * Tests that an error is thrown if the appUserProfile does not exist.
+   * Expects a NotFoundError with a translated message.
+   */
   it("throws NotFoundError if appUserProfile does not exist", async () => {
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -163,6 +195,10 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
     }
   });
 
+  /**
+   * Tests that an error is thrown if the timeout value is out of range.
+   * Expects a ValidationError with the appropriate message.
+   */
   it("throws ValidationError if timeout is out of range", async () => {
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -184,6 +220,10 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
     }
   });
 
+  /**
+   * Tests that an error is thrown if the user is not a superAdmin.
+   * Expects an UnauthorizedError with the appropriate message.
+   */
   it("throws UnauthorizedError if superAdmin is false", async () => {
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -216,6 +256,10 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
     }
   });
 
+  /**
+   * Tests that the session timeout is updated successfully.
+   * Expects the resolver to return true upon successful update.
+   */
   it("updates session timeout successfully", async () => {
     const args: MutationUpdateSessionTimeoutArgs = {
       timeout: 15,
