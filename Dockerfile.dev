@@ -1,5 +1,5 @@
 # Stage 1: Install Dependencies
-FROM node:lts AS builder
+FROM node:20.10.0 AS builder
 
 WORKDIR /usr/src/app
 
@@ -8,13 +8,6 @@ COPY package.json ./
 RUN npm install
 
 COPY . .
-
-# Stage 2: Final image
-FROM node:lts-bookworm-slim
-
-WORKDIR /usr/src/app
-
-COPY --from=builder /usr/src/app ./
 
 EXPOSE 4000
 
