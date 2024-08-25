@@ -84,7 +84,7 @@
     "lodash": "^4.17.21",
     "markdown-toc": "^1.2.0",
     "mongodb": "^6.8.0",
-    "mongoose": "^8.3.2",
+    "mongoose": "^8.4.4",
     "mongoose-paginate-v2": "^1.8.3",
     "morgan": "^1.10.0",
     "nanoid": "^5.0.7",
@@ -124,7 +124,7 @@
     "@types/nodemailer": "^6.4.15",
     "@types/uuid": "^10.0.0",
     "@types/validator": "^13.12.0",
-    "@vitest/coverage-v8": "^1.6.0",
+    "@vitest/coverage-v8": "^2.0.3",
     "cls-bluebird": "^2.1.0",
     "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
@@ -139,7 +139,7 @@
     "rimraf": "^6.0.1",
     "tsx": "^4.17.0",
     "typescript": "^5.5.4",
-    "vitest": "^1.2.1"
+    "vitest": "^2.0.3"
   },
   "overrides": {
     "graphql-voyager": {
