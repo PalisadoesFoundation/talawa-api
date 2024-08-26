@@ -134,7 +134,7 @@
     "get-graphql-schema": "^2.1.2",
     "graphql-markdown": "^7.0.0",
     "husky": "^9.1.4",
-    "lint-staged": "^15.2.7",
+    "lint-staged": "^15.2.9",
     "prettier": "^3.3.3",
     "rimraf": "^6.0.1",
     "tsx": "^4.17.0",
