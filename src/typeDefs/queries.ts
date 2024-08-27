@@ -107,6 +107,8 @@ export const queries = gql`
 
     getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
 
+    getRecurringEvents(baseRecurringEventId: ID!): [Event]
+
     advertisementsConnection(
       after: String
       before: String

@@ -2283,6 +2283,7 @@ export type Query = {
   getFundraisingCampaignPledgeById: FundraisingCampaignPledge;
   getNoteById: Note;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
+  getRecurringEvents?: Maybe<Array<Maybe<Event>>>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']['output']>;
@@ -2481,6 +2482,11 @@ export type QueryGetFundraisingCampaignPledgeByIdArgs = {
 
 export type QueryGetNoteByIdArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetRecurringEventsArgs = {
+  baseRecurringEventId: Scalars['ID']['input'];
 };
 
 
@@ -4533,6 +4539,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getFundraisingCampaignPledgeById?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignPledgeByIdArgs, 'id'>>;
   getNoteById?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<QueryGetNoteByIdArgs, 'id'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
+  getRecurringEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, RequireFields<QueryGetRecurringEventsArgs, 'baseRecurringEventId'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;

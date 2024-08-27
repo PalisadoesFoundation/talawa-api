@@ -1491,6 +1491,7 @@ type Query {
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getNoteById(id: ID!): Note!
   getPlugins: [Plugin]
+  getRecurringEvents(baseRecurringEventId: ID!): [Event]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean

@@ -47,6 +47,7 @@ import { getVenueByOrgId } from "./getVenueByOrgId";
 import { getAllNotesForAgendaItem } from "./getAllNotesForAgendaItem";
 import { getNoteById } from "./getNoteById";
 import { eventsAttendedByUser } from "./eventsAttendedByUser";
+import { getRecurringEvents } from "./getRecurringEvents";
 
 export const Query: QueryResolvers = {
   actionItemsByEvent,
@@ -77,6 +78,7 @@ export const Query: QueryResolvers = {
   getNoteById,
   getlanguage,
   getPlugins,
+  getRecurringEvents,
   isSampleOrganization,
   me,
   myLanguage,
