@@ -290,16 +290,16 @@ We have created a setup script to make configuring Talawa-API easier.
 npm run setup
 ```
 ## Install Using Devpod
-This guide provide step by step guide to setup a Talawa-Api server using devpod.
+This guide provides a step-by-step guide to setting up a Talawa-Api server using Devpod.
 
-Here is a list of steps to follow:
-1. Install the devpod gui application or devpod cli [Link](https://devpod.sh/docs/getting-started/install)
-2. Add a provider to the devpod , for [cli](https://devpod.sh/docs/getting-started/quickstart-devpod-cli#add-a-provider) and for [gui app](https://devpod.sh/docs/getting-started/quickstart-vscode#add-a-provider), You can add any provider from the list according to your needs, (we generally recommend using docker for this as this will host it on your local system , you can install docker from their official [documentation](https://docs.docker.com/engine/install/) follow this to install docker and add it as a provicder). 
-3. Then just run command ```devpod up https://github.com/PalisadoesFoundation/talawa-api@pull/2429/head``` or follow this for [cli]( https://devpod.sh/docs/developing-in-workspaces/create-a-workspace#git-repository) and for [gui app](https://devpod.sh/docs/getting-started/quickstart-vscode#start-a-workspace-with-vs-code)
-4. You can also select your desired ide .
-5. After the above steps you will get the talawa api server setup in your desired ide.
-6. After the Ide is opened run ```npm run setup``` to setup env file or you can start your server by running ```npm run dev```.
+Follow these steps:
 
+1. Install the Devpod GUI application or Devpod CLI. [Learn more](https://devpod.sh/docs/getting-started/install)
+2. Add a provider to Devpod. For CLI, see [here](https://devpod.sh/docs/getting-started/quickstart-devpod-cli#add-a-provider) and for the GUI app, see [here](https://devpod.sh/docs/getting-started/quickstart-vscode#add-a-provider). Use Docker which you can install from their [official documentation](https://docs.docker.com/engine/install/) or  docker compatible provider like podman, colima(better compatibility with macos).
+3. Run the following command: ```devpod up https://github.com/PalisadoesFoundation/talawa-api@develop```, or follow the instructions for CLI [here](https://devpod.sh/docs/developing-in-workspaces/create-a-workspace#git-repository) and for the GUI app [here](https://devpod.sh/docs/getting-started/quickstart-vscode#start-a-workspace-with-vs-code).
+4. Select your desired IDE.
+5. After completing the above steps, the Talawa API server will be set up in your chosen IDE.
+6. Once the IDE is open, run ```npm run setup``` to set up the environment file, or start your server by running ```npm run dev```.
 
 ## Install the Docker Application
 
