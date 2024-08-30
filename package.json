@@ -10,7 +10,7 @@
     "prod": "cross-env NODE_ENV=production pm2-runtime start ./build/server.js",
     "start": "cross-env pm2-runtime start ./build/server.js --watch",
     "setup": "tsx setup.ts",
-    "test": "vitest run --pool forks --poolOptions.forks.singleFork --coverage",
+    "test": "vitest run --pool=threads --no-file-parallelism --coverage",
     "typecheck": "graphql-codegen && tsc --noEmit --pretty",
     "lint:check": "eslint . --max-warnings=1500",
     "lint:fix": "eslint . --fix",
