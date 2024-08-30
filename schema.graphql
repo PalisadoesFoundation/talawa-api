@@ -5,6 +5,7 @@ directive @role(requires: UserType) on FIELD_DEFINITION
 type ActionItem {
   _id: ID!
   actionItemCategory: ActionItemCategory
+  allotedHours: Float
   assignee: User
   assigner: User
   assignmentDate: Date!
@@ -29,16 +30,24 @@ type ActionItemCategory {
   updatedAt: Date!
 }
 
+input ActionItemCategoryWhereInput {
+  is_disabled: Boolean
+  name_contains: String
+}
+
 input ActionItemWhereInput {
   actionItemCategory_id: ID
+  assigneeName: String
+  categoryName: String
   event_id: ID
-  is_active: Boolean
   is_completed: Boolean
 }
 
 enum ActionItemsOrderByInput {
   createdAt_ASC
   createdAt_DESC
+  dueDate_ASC
+  dueDate_DESC
 }
 
 type Address {
@@ -269,6 +278,7 @@ interface ConnectionPageInfo {
 scalar CountryCode
 
 input CreateActionItemInput {
+  allotedHours: Float
   assigneeId: ID!
   dueDate: Date
   eventId: ID
@@ -1080,7 +1090,7 @@ type Mutation {
   checkIn(data: CheckInCheckOutInput!): CheckIn!
   checkOut(data: CheckInCheckOutInput!): CheckOut!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
-  createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
+  createActionItemCategory(isDisabled: Boolean!, name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
@@ -1476,9 +1486,9 @@ type PostsConnection {
 }
 
 type Query {
-  actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
+  actionItemCategoriesByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemCategoryWhereInput): [ActionItemCategory]
   actionItemsByEvent(eventId: ID!): [ActionItem]
-  actionItemsByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
+  actionItemsByOrganization(eventId: ID, orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
@@ -1574,24 +1584,24 @@ enum RecurringEventMutationType {
 }
 
 type SocialMediaUrls {
+  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
-  X: String
   youTube: String
 }
 
 input SocialMediaUrlsInput {
+  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
-  X: String
   youTube: String
 }
 
@@ -1661,6 +1671,7 @@ input UpdateActionItemCategoryInput {
 }
 
 input UpdateActionItemInput {
+  allotedHours: Float
   assigneeId: ID
   completionDate: Date
   dueDate: Date

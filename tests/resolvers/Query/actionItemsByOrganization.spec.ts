@@ -116,7 +116,7 @@ describe("resolvers -> Query -> actionItemsByOrganization", () => {
   });
   it(`returns list of all action items associated with an organization that are active`, async () => {
     const where: ActionItemWhereInput = {
-      is_active: true,
+      // is_active: true,
     };
 
     const args: QueryActionItemsByOrganizationArgs = {

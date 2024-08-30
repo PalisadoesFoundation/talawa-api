@@ -5,6 +5,8 @@ export const enums = gql`
   enum ActionItemsOrderByInput {
     createdAt_ASC
     createdAt_DESC
+    dueDate_ASC
+    dueDate_DESC
   }
 
   enum EventOrderByInput {
