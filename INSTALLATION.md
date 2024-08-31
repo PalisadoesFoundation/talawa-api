@@ -289,17 +289,72 @@ We have created a setup script to make configuring Talawa-API easier.
 ```
 npm run setup
 ```
-## Install Using Devpod
+# Install Using Devpod
+
 This guide provides a step-by-step guide to setting up a Talawa-Api server using Devpod.
 
-Follow these steps:
+## Setting Up Talawa-Api with Devpod (CLI Version)
 
-1. Install the Devpod GUI application or Devpod CLI. [Learn more](https://devpod.sh/docs/getting-started/install)
-2. Add a provider to Devpod. For CLI, see [here](https://devpod.sh/docs/getting-started/quickstart-devpod-cli#add-a-provider) and for the GUI app, see [here](https://devpod.sh/docs/getting-started/quickstart-vscode#add-a-provider). Use Docker which you can install from their [official documentation](https://docs.docker.com/engine/install/) or  docker compatible provider like podman, colima(better compatibility with macos).
-3. Run the following command: ```devpod up https://github.com/PalisadoesFoundation/talawa-api@develop```, or follow the instructions for CLI [here](https://devpod.sh/docs/developing-in-workspaces/create-a-workspace#git-repository) and for the GUI app [here](https://devpod.sh/docs/getting-started/quickstart-vscode#start-a-workspace-with-vs-code).
-4. Select your desired IDE.
-5. After completing the above steps, the Talawa API server will be set up in your chosen IDE.
-6. Once the IDE is open, run ```npm run setup``` to set up the environment file, or start your server by running ```npm run dev```.
+1. **Install Devpod CLI**:
+   - Download and install the Devpod CLI from [Devpod CLI Installation Guide](https://devpod.sh/docs/getting-started/install#optional-install-devpod-cli).
+
+2. **Add a Provider**:
+   - Use Docker or a compatible provider like Podman or Colima.
+   - Install Docker from their [official documentation](https://docs.docker.com/engine/install/).
+   - Add a provider using the CLI by following [this guide](https://devpod.sh/docs/getting-started/quickstart-devpod-cli#add-a-provider).
+
+3. **Create a Workspace**:
+   - Run the following command in your terminal to start the workspace:
+     ```bash
+     devpod up https://github.com/PalisadoesFoundation/talawa-api@develop
+     ```
+   - For more information on creating a workspace, refer to the [Devpod CLI workspace guide](https://devpod.sh/docs/developing-in-workspaces/create-a-workspace#git-repository).
+
+4. **Select Your IDE**:
+   - To choose your ide refer to [Devpod CLI ide guide](https://devpod.sh/docs/developing-in-workspaces/connect-to-a-workspace#vs-code)
+
+5. **Set Up Talawa-Api**:
+   - Once your IDE is open and the workspace is ready, set up the environment by running:
+     ```bash
+     npm run setup
+     ```
+   - Start the Talawa API server by running:
+     ```bash
+     npm run dev
+     ```
+
+## Setting Up Talawa-Api with Devpod (GUI Version)
+
+1. **Install Devpod GUI Application**:
+   - Download and install the Devpod GUI from [Devpod GUI Installation Guide](https://devpod.sh/docs/getting-started/install).
+
+2. **Add a Provider**:
+   - Use Docker or a compatible provider like Podman or Colima.
+   - Install Docker from their [official documentation](https://docs.docker.com/engine/install/).
+   - Add a provider using the GUI app by following [this guide](https://devpod.sh/docs/getting-started/quickstart-vscode#add-a-provider).
+
+3. **Create a Workspace**:
+   - Open the Devpod GUI application.
+   - Start a new workspace by entering the following URL in the GUI:
+     ```
+     https://github.com/PalisadoesFoundation/talawa-api@develop
+     ```
+   - For more information on starting a workspace in the GUI, refer to [this guide](https://devpod.sh/docs/getting-started/quickstart-vscode#start-a-workspace-with-vs-code).
+
+4. **Select Your IDE**:
+   - In the Devpod GUI, select your desired IDE from the available options.
+
+5. **Set Up Talawa-Api**:
+   - Once your IDE is open and the workspace is ready, set up the environment by running:
+     ```bash
+     npm run setup
+     ```
+   - Start the Talawa API server by running:
+     ```bash
+     npm run dev
+     ```
+
+
 
 ## Install the Docker Application
 
