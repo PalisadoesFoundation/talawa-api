@@ -1,5 +1,5 @@
 # Use Debian Bookworm as the base image
-FROM debian:bookworm as builder
+FROM ubuntu:latest as builder
 
 # Update package list and install dependencies
 RUN apt-get update && \
