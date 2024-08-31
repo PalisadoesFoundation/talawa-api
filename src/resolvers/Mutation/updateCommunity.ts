@@ -92,7 +92,7 @@ export const updateCommunity: MutationResolvers["updateCommunity"] = async (
     socialMediaUrls: {
       facebook: args.data.socialMediaUrls.facebook,
       instagram: args.data.socialMediaUrls.facebook,
-      twitter: args.data.socialMediaUrls.twitter,
+      X: args.data.socialMediaUrls.X,
       linkedIn: args.data.socialMediaUrls.linkedIn,
       gitHub: args.data.socialMediaUrls.gitHub,
       youTube: args.data.socialMediaUrls.youTube,

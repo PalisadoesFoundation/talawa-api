@@ -408,7 +408,7 @@ export const inputs = gql`
     linkedIn: String
     reddit: String
     slack: String
-    twitter: String
+    X: String
     youTube: String
   }
 
@@ -490,8 +490,8 @@ export const inputs = gql`
   }
 
   input UpdateUserTagInput {
-    _id: ID!
-    tagColor: String!
+    tagId: ID!
+    tagColor: String
     name: String!
   }
 
