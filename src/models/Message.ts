@@ -3,8 +3,9 @@ import { Schema, model, models } from "mongoose";
 import type { InterfaceGroup } from "./Group";
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+
 /**
- * This is an interface that represents a database(MongoDB) document for Message.
+ * Interface representing a document for a message in the database (MongoDB).
  */
 export interface InterfaceMessage {
   _id: Types.ObjectId;
@@ -17,16 +18,18 @@ export interface InterfaceMessage {
   group: PopulatedDoc<InterfaceGroup & Document>;
   status: string;
 }
+
 /**
- * This describes the schema for a `Message` that corresponds to `InterfaceMessage` document.
- * @param text - Message content.
- * @param imageUrl - Image URL attached in the message.
- * @param videoUrl - Video URL attached in the message.
- * @param createdAt - Timestamp of data creation.
- * @param creatorId - Message Sender(User), referring to `User` model.
- * @param updatedAt - Timestamp of data updation
- * @param group - group data, referring to `Group` model.
- * @param status - Status.
+ * Mongoose schema for a Message.
+ * Defines the structure of the Message document stored in MongoDB.
+ * @param text - The content of the message.
+ * @param imageUrl - Optional URL of an image attached to the message.
+ * @param videoUrl - Optional URL of a video attached to the message.
+ * @param creatorId - Reference to the User who created the message.
+ * @param group - Reference to the Group to which the message belongs.
+ * @param status - The status of the message (e.g., ACTIVE, BLOCKED, DELETED).
+ * @param createdAt - The date and time when the message was created.
+ * @param updatedAt - The date and time when the message was last updated.
  */
 const messageSchema = new Schema(
   {
@@ -60,16 +63,26 @@ const messageSchema = new Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically adds `createdAt` and `updatedAt` fields
   },
 );
 
+// Add logging middleware for messageSchema
 createLoggingMiddleware(messageSchema, "Message");
 
+/**
+ * Function to retrieve or create the Mongoose model for the Message.
+ * This is necessary to avoid the OverwriteModelError during testing.
+ * @returns The Mongoose model for the Message.
+ */
 const messageModel = (): Model<InterfaceMessage> =>
   model<InterfaceMessage>("Message", messageSchema);
 
-// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
+/**
+ * The Mongoose model for the Message.
+ * If the model already exists (e.g., during testing), it uses the existing model.
+ * Otherwise, it creates a new model.
+ */
 export const Message = (models.Message || messageModel()) as ReturnType<
   typeof messageModel
 >;

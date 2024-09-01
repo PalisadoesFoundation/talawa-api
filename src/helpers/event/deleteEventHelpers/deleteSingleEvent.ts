@@ -9,38 +9,33 @@ import {
 import { removeDanglingDocuments } from "../recurringEventHelpers";
 
 /**
- * This function deletes a single event.
- * @param event - the event to be deleted:
- * @remarks The following steps are followed:
- * 1. remove the associations of the event.
- * 2. delete the event.
+ * Deletes a single event.
+ *
+ * @param eventId - The ID of the event to be deleted.
+ * @param session - The MongoDB client session for transactional operations.
+ * @param recurrenceRule - Optional ID of the recurrence rule associated with the event (for recurring events).
+ * @param baseRecurringEvent - Optional ID of the base recurring event (for recurring events).
+ *
+ * @remarks
+ * This function performs the following steps:
+ * 1. Removes all associations (attendees, users, profiles, action items) related to the event.
+ * 2. Deletes the event document itself.
+ * 3. If provided, removes any dangling documents related to the recurrence rule and base recurring event.
  */
-
 export const deleteSingleEvent = async (
   eventId: string,
   session: mongoose.ClientSession,
   recurrenceRule?: string,
   baseRecurringEvent?: string,
 ): Promise<void> => {
-  // remove the associations of the current event
+  // Remove associations of the current event
   await Promise.all([
-    EventAttendee.deleteMany(
-      {
-        eventId,
-      },
-      { session },
-    ),
-
+    EventAttendee.deleteMany({ eventId }, { session }),
     User.updateMany(
       { registeredEvents: eventId },
-      {
-        $pull: {
-          registeredEvents: eventId,
-        },
-      },
+      { $pull: { registeredEvents: eventId } },
       { session },
     ),
-
     AppUserProfile.updateMany(
       {
         $or: [{ createdEvents: eventId }, { eventAdmin: eventId }],
@@ -53,22 +48,12 @@ export const deleteSingleEvent = async (
       },
       { session },
     ),
-
     ActionItem.deleteMany({ eventId }, { session }),
-
-    Event.deleteOne(
-      {
-        _id: eventId,
-      },
-      {
-        session,
-      },
-    ),
+    Event.deleteOne({ _id: eventId }, { session }),
   ]);
 
+  // If deleting a recurring event, remove any dangling recurrence rule and base recurring event documents
   if (recurrenceRule && baseRecurringEvent) {
-    // they would exist while we're deleting a recurring event
-    // remove any dangling recurrence rule and base recurring event documents
     await removeDanglingDocuments(recurrenceRule, baseRecurringEvent, session);
   }
 };

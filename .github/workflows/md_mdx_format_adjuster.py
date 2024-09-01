@@ -12,7 +12,6 @@ This script complies with:
     3) Pycodestyle
     4) Flake8
 """
-
 import os
 import argparse
 import re

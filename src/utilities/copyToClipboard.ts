@@ -1,13 +1,14 @@
 import ncp from "copy-paste";
 import { IN_PRODUCTION } from "../constants";
+
 /**
- * This utility function copy the text into the clipboard (test change).
+ * Copies the given text to the clipboard.
  * @remarks
- * This is a utility method. This works only in development or test mode.
- * @param text - The content that need to be copied.
+ * This is a utility method and works only in development or test mode.
+ * @param text - The content that needs to be copied to the clipboard.
  */
 export const copyToClipboard = (text: string): void => {
-  // Only copies in development or test mode
+  // Only copies text to the clipboard in development or test mode
   if (IN_PRODUCTION !== true) {
     ncp.copy(text, () => {});
   }

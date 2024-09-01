@@ -3,7 +3,7 @@ import mongoose, { model, models } from "mongoose";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 /**
- * This is an interface representing a document for custom field in the database(MongoDB).
+ * Interface representing a document for custom field in the database (MongoDB).
  */
 export interface InterfaceUserCustomData {
   _id: string;
@@ -38,11 +38,21 @@ const userCustomDataSchema = new mongoose.Schema({
   },
 });
 
+// Create logging middleware for userCustomDataSchema
 createLoggingMiddleware(userCustomDataSchema, "UserCustomData");
 
+/**
+ * Function to retrieve or create the Mongoose model for User Custom Data.
+ * This prevents the OverwriteModelError during testing.
+ * @returns The Mongoose model for User Custom Data.
+ */
 const userCustomData = (): Model<InterfaceUserCustomData> =>
   model<InterfaceUserCustomData>("UserCustomData", userCustomDataSchema);
 
-// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
+/**
+ * The Mongoose model for User Custom Data.
+ * If the model already exists (e.g., during testing), it uses the existing model.
+ * Otherwise, it creates a new model.
+ */
 export const UserCustomData = (models.UserCustomData ||
   userCustomData()) as ReturnType<typeof userCustomData>;

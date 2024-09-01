@@ -13,5 +13,7 @@ export const agendaItemByEvent: QueryResolvers["agendaItemByEvent"] = async (
 ) => {
   return await AgendaItemModel.find({
     relatedEventId: args.relatedEventId,
-  }).lean();
+  })
+    .sort({ sequence: 1 })
+    .lean();
 };

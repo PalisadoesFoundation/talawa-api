@@ -2,10 +2,18 @@ import type { MembershipRequestResolvers } from "../../types/generatedGraphQLTyp
 import { Organization } from "../../models";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+
 /**
- * This resolver function will get and return the organisation from the database for which a membership request was sent.
- * @param parent - An object that is the return value of the resolver for this field's parent.
- * @returns An object that contains the Organization data.
+ * Resolver function for the `organization` field of a `MembershipRequest`.
+ *
+ * This function retrieves the organization associated with a specific membership request.
+ *
+ * @param parent - The parent object representing the membership request. It contains information about the membership request, including the ID of the organization it is associated with.
+ * @returns A promise that resolves to the organization document found in the database. This document represents the organization associated with the membership request.
+ *
+ * @see Organization - The Organization model used to interact with the organizations collection in the database.
+ * @see MembershipRequestResolvers - The type definition for the resolvers of the MembershipRequest fields.
+ *
  */
 export const organization: MembershipRequestResolvers["organization"] = async (
   parent,

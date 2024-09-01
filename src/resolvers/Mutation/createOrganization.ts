@@ -24,15 +24,33 @@ import { superAdminCheck } from "../../utilities";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
+
 /**
- * This function enables to create an organization.
- * @param _parent - parent of current request
- * @param args - payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * 2. If the user has appUserProfile
- * @returns Created organization
+ * Creates a new organization.
+ *
+ * This resolver performs the following steps:
+ *
+ * 1. Verifies the existence of the current user making the request.
+ * 2. Checks the user's app profile to ensure they are authenticated and authorized as a super admin.
+ * 3. Validates the provided input data, including organization name, description, and address.
+ * 4. Uploads an optional image file associated with the organization.
+ * 5. Creates a new organization with the provided data and image.
+ * 6. Creates a default action item category for the new organization.
+ * 7. Updates the current user's document to include the new organization in their `joinedOrganizations`, `createdOrganizations`, and `adminFor` lists.
+ * 8. Caches the newly created organization.
+ *
+ * @param _parent - The parent object, not used in this resolver.
+ * @param args - The input arguments for the mutation, including:
+ *   - `data`: An object containing:
+ *     - `name`: The name of the organization.
+ *     - `description`: A description of the organization.
+ *     - `address`: An optional address object for the organization.
+ *   - `file`: An optional encoded image file for the organization.
+ * @param context - The context object containing user information (context.userId).
+ *
+ * @returns The created organization object.
+ *
+ * @remarks This function creates an organization, uploads an optional image, validates the input data, creates a default action item category, updates user records, and manages caching.
  */
 export const createOrganization: MutationResolvers["createOrganization"] =
   async (_parent, args, context) => {
@@ -77,13 +95,13 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     }
     superAdminCheck(currentUserAppProfile as InterfaceAppUserProfile);
 
-    //Upload file
+    // Upload file
     let uploadImageFileName = null;
     if (args.file) {
       uploadImageFileName = await uploadEncodedImage(args.file, null);
     }
 
-    // Checks if the recieved arguments are valid according to standard input norms
+    // Validate input arguments
     let validationResultName = {
       isLessThanMaxLength: false,
     };
@@ -123,7 +141,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       throw new errors.InputValidationError("Not a Valid Address");
     }
 
-    // Creates new organization.
+    // Create new organization
     const createdOrganization = await Organization.create({
       ...args.data,
       address: args.data?.address,
@@ -133,7 +151,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       members: [context.userId],
     });
 
-    // Creating a default actionItemCategory
+    // Create default action item category
     await ActionItemCategory.create({
       name: "Default",
       organizationId: createdOrganization._id,
@@ -142,11 +160,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
 
     await cacheOrganizations([createdOrganization.toObject()]);
 
-    /*
-    Adds createdOrganization._id to joinedOrganizations, createdOrganizations
-    and adminFor lists on currentUser's document with _id === context.userId
-    */
-
+    // Update currentUser's document
     await User.updateOne(
       {
         _id: context.userId,
@@ -169,9 +183,10 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       },
     );
 
-    // Returns createdOrganization.
+    // Return created organization
     return createdOrganization.toObject();
   };
+
 /**
  * Validates an address object to ensure its fields meet specified criteria.
  * @param address - The address object to validate

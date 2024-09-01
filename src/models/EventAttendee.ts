@@ -6,6 +6,9 @@ import type { InterfaceCheckIn } from "./CheckIn";
 import type { InterfaceCheckOut } from "./CheckOut";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
+/**
+ * Interface representing a document for an event attendee in MongoDB.
+ */
 export interface InterfaceEventAttendee {
   _id: Schema.Types.ObjectId;
   userId: PopulatedDoc<InterfaceUser & Document>;
@@ -18,6 +21,17 @@ export interface InterfaceEventAttendee {
   isCheckedOut: boolean;
 }
 
+/**
+ * Mongoose schema for an event attendee.
+ * @param userId - Reference to the user attending the event.
+ * @param eventId - Reference to the event the attendee is associated with.
+ * @param checkInId - Reference to the check-in record if checked in, or null.
+ * @param checkOutId - Reference to the check-out record if checked out, or null.
+ * @param isInvited - Indicates if the attendee is invited to the event.
+ * @param isRegistered - Indicates if the attendee is registered for the event.
+ * @param isCheckedIn - Indicates if the attendee is checked in to the event.
+ * @param isCheckedOut - Indicates if the attendee is checked out from the event.
+ */
 const eventAttendeeSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
@@ -67,8 +81,10 @@ const eventAttendeeSchema = new Schema({
   },
 });
 
+// Ensure uniqueness of combinations of userId and eventId
 eventAttendeeSchema.index({ userId: 1, eventId: 1 }, { unique: true });
 
+// Add logging middleware for eventAttendeeSchema
 createLoggingMiddleware(eventAttendeeSchema, "EventAttendee");
 
 const eventAttendeeModel = (): Model<InterfaceEventAttendee> =>

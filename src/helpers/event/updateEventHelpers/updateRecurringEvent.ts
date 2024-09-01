@@ -11,29 +11,25 @@ import {
 } from "../../../constants";
 
 /**
- * This function updates the recurring event.
- * @param args - update event args.
- * @param event - the event to be updated.
- * @remarks The following steps are followed:
- * 1. get the recurrence rule.
- * 2. get the base recurring event.
- * 3. based on the type of update, call the function required.
- * @returns The updated event.
+ * This function updates a recurring event based on the provided arguments.
+ * @param args - The arguments containing data for updating the event.
+ * @param event - The event to be updated.
+ * @param session - The Mongoose client session for database transactions.
+ * @returns The updated event object.
  */
-
 export const updateRecurringEvent = async (
   args: MutationUpdateEventArgs,
   event: InterfaceEvent,
   session: mongoose.ClientSession,
 ): Promise<InterfaceEvent> => {
-  let updatedEvent: InterfaceEvent = event;
+  let updatedEvent: InterfaceEvent = event; // Initialize the updated event with the current event data
 
-  // get the recurrenceRule
+  // Step 1: Retrieve the recurrenceRule associated with the event
   const recurrenceRule = await RecurrenceRule.findOne({
     _id: event.recurrenceRuleId,
   });
 
-  // throws error if the recurrence rule doesn't exist
+  // Step 2: Throw an error if the recurrence rule is not found
   if (recurrenceRule === null) {
     throw new errors.NotFoundError(
       requestContext.translate(RECURRENCE_RULE_NOT_FOUND.MESSAGE),
@@ -42,12 +38,12 @@ export const updateRecurringEvent = async (
     );
   }
 
-  // get the baseRecurringEvent
+  // Step 3: Retrieve the baseRecurringEvent associated with the event
   const baseRecurringEvent = await Event.findOne({
     _id: event.baseRecurringEventId,
   });
 
-  // throws error if the base recurring event doesn't exist
+  // Step 4: Throw an error if the base recurring event is not found
   if (baseRecurringEvent === null) {
     throw new errors.NotFoundError(
       requestContext.translate(BASE_RECURRING_EVENT_NOT_FOUND.MESSAGE),
@@ -56,16 +52,17 @@ export const updateRecurringEvent = async (
     );
   }
 
+  // Step 5: Determine the type of update (this instance, all instances, this and following instances)
   if (
     (args.data?.isRecurringEventException !== undefined &&
       args.data?.isRecurringEventException !==
         event.isRecurringEventException) ||
     args.recurringEventUpdateType === "thisInstance"
   ) {
-    // if this is a single update or if the event's exception status has changed
+    // Update only this instance or handle exception status change
     updatedEvent = await updateThisInstance(args, event, session);
   } else if (args.recurringEventUpdateType === "allInstances") {
-    // perform a regular bulk update on all the instances
+    // Update all instances
     updatedEvent = await updateRecurringEventInstances(
       args,
       event,
@@ -75,7 +72,7 @@ export const updateRecurringEvent = async (
       session,
     );
   } else {
-    // update current and following events
+    // Update this and following instances
     updatedEvent = await updateRecurringEventInstances(
       args,
       event,

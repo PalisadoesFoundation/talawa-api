@@ -2,7 +2,7 @@ import { Schema, model, models } from "mongoose";
 import type { Types, Model } from "mongoose";
 
 /**
- * This is an interface that represents a database(MongoDB) document for Community.
+ * Interface representing a document for a community in MongoDB.
  */
 export interface InterfaceCommunity {
   _id: Types.ObjectId;
@@ -12,31 +12,30 @@ export interface InterfaceCommunity {
   socialMediaUrls: {
     facebook: string;
     instagram: string;
-    twitter: string;
+    X: string;
     linkedIn: string;
     gitHub: string;
     youTube: string;
     slack: string;
     reddit: string;
-  };
+  }; // Object containing various social media URLs for the community.
 }
 
 /**
- * This describes the schema for a `Community` that corresponds to `InterfaceCommunity` document.
- * @param logoUrl - Community logo URL.
- * @param socialMediaUrls - Social media URLs.
+ * Mongoose schema for a community.
+ * @param name - Name of the community.
+ * @param logoUrl - URL of the community's logo.
+ * @param websiteLink - URL of the community's website.
+ * @param socialMediaUrls - Object containing social media URLs for the community.
  * @param facebook - Facebook URL.
- * @param instagram - Instagram URL
- * @param twitter - Twitter URL.
+ * @param instagram - Instagram URL.
+ * @param X - X URL.
  * @param linkedIn - LinkedIn URL.
  * @param gitHub - GitHub URL.
  * @param youTube - YouTube URL.
  * @param slack - Slack URL.
  * @param reddit - Reddit URL.
- * @param websiteLink - Community website URL.
- * @param name - Community name.
  */
-
 const communitySchema = new Schema({
   name: {
     type: String,
@@ -55,7 +54,7 @@ const communitySchema = new Schema({
     instagram: {
       type: String,
     },
-    twitter: {
+    X: {
       type: String,
     },
     linkedIn: {
@@ -76,6 +75,10 @@ const communitySchema = new Schema({
   },
 });
 
+/**
+ * Retrieves or creates the Mongoose model for Community.
+ * Prevents Mongoose OverwriteModelError during testing.
+ */
 const communityModel = (): Model<InterfaceCommunity> =>
   model<InterfaceCommunity>("Community", communitySchema);
 

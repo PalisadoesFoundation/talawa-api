@@ -16,6 +16,7 @@ import {
 } from "../../helpers/FundraisingCampaignPledge";
 import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/user";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testcampaignPledge: TestPledgeType;
@@ -28,6 +29,7 @@ beforeAll(async () => {
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message,
   );
+
   const temp = await createTestFundraisingCampaignPledge();
   testUser = temp[0];
   testFundraisingCampaign = temp[3];
@@ -123,9 +125,11 @@ describe("resolvers->Mutation->updateFundCampaignPledge", () => {
   });
 
   it("should update the pledge", async () => {
+    const testUser2 = await createTestUser();
     const args: MutationUpdateFundraisingCampaignPledgeArgs = {
       id: testcampaignPledge?._id.toString() || "",
       data: {
+        users: [testUser2?._id.toString()],
         startDate: new Date(new Date().toDateString()),
         endDate: new Date(new Date().toDateString()),
         currency: "USD",
@@ -137,6 +141,10 @@ describe("resolvers->Mutation->updateFundCampaignPledge", () => {
     };
     const pledge = await updateFundraisingCampaignPledge?.({}, args, context);
     expect(pledge).toBeTruthy();
+    expect(pledge?.amount).toEqual(1000);
+    expect(pledge?.currency).toEqual("USD");
+    expect(pledge?.users[0]).toEqual(testUser2?._id);
+    expect(pledge?.users).not.toContain(testUser?._id);
   });
 
   it("throws an error when an invalid user ID is provided", async () => {

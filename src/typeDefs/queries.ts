@@ -43,6 +43,12 @@ export const queries = gql`
 
     directChatsByUserID(id: ID!): [DirectChat]
 
+    directChatById(id: ID!): DirectChat
+
+    groupChatById(id: ID!): GroupChat
+
+    groupChatsByUserId(id: ID!): [GroupChat]
+
     directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
 
     event(id: ID!): Event
@@ -58,6 +64,10 @@ export const queries = gql`
 
     eventVolunteersByEvent(id: ID!): [EventVolunteer]
 
+    getEventVolunteerGroups(
+      where: EventVolunteerGroupWhereInput
+    ): [EventVolunteerGroup]!
+
     fundsByOrganization(
       organizationId: ID!
       where: FundWhereInput
@@ -71,16 +81,26 @@ export const queries = gql`
     getEventAttendee(userId: ID!, eventId: ID!): EventAttendee
 
     getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
+
     getFundById(
       id: ID!
       orderBy: CampaignOrderByInput
       where: CampaignWhereInput
     ): Fund!
-    getFundraisingCampaignById(
-      id: ID!
-      orderBy: PledgeOrderByInput
-    ): FundraisingCampaign!
+
+    getFundraisingCampaigns(
+      where: CampaignWhereInput
+      pledgeOrderBy: PledgeOrderByInput
+      campaignOrderby: CampaignOrderByInput
+    ): [FundraisingCampaign]!
+
     getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
+
+    getPledgesByUserId(
+      userId: ID!
+      where: PledgeWhereInput
+      orderBy: PledgeOrderByInput
+    ): [FundraisingCampaignPledge]
 
     getDonationByOrgId(orgId: ID!): [Donation]
 
@@ -104,6 +124,10 @@ export const queries = gql`
     ): [Venue]
 
     getNoteById(id: ID!): Note!
+
+    getUserTag(id: ID!): UserTag
+
+    getUserTagAncestors(id: ID!): [UserTag]
 
     getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
 

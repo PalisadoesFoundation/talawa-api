@@ -27,16 +27,39 @@ import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
+
 /**
- * This function enables to create a post.
- * @param _parent - parent of current request
- * @param args -  payload provided with the request
- * @param context - context of entire application
- * @remarks The following checks are done:
- * 1. If the user exists
- * 2. If the organization exists
- * 3. If the user has appUserProfile
- * @returns Created Post
+ * Creates a new post and associates it with an organization.
+ *
+ * This function performs the following actions:
+ * 1. Verifies the existence of the current user and retrieves their details and application profile.
+ * 2. Checks if the specified organization exists and retrieves its details.
+ * 3. Validates that the user is a member of the organization or is a super admin.
+ * 4. Handles file uploads for images and videos, if provided.
+ * 5. Validates the post title and ensures it meets the criteria for pinning.
+ * 6. Checks user permissions to pin the post if required.
+ * 7. Creates the post and updates the organization with the pinned post if applicable.
+ * 8. Caches the newly created post and organization.
+ *
+ * @param _parent - The parent object for the mutation. This parameter is not used in this resolver.
+ * @param args - The arguments for the mutation, including:
+ *   - `data.organizationId`: The ID of the organization where the post will be created.
+ *   - `data.title`: The title of the post (optional but required if the post is pinned).
+ *   - `data.text`: The text content of the post.
+ *   - `data.pinned`: A boolean indicating whether the post should be pinned.
+ *   - `file`: An optional base64-encoded image or video file.
+ * @param context - The context for the mutation, including:
+ *   - `userId`: The ID of the current user creating the post.
+ *   - `apiRootUrl`: The root URL of the API for constructing file URLs.
+ *
+ * @returns The created post object, including URLs for uploaded image and video files if provided.
+ *
+ * @see User - The User model used to interact with user data in the database.
+ * @see AppUserProfile - The AppUserProfile model used to interact with user profile data in the database.
+ * @see Organization - The Organization model used to interact with organization data in the database.
+ * @see Post - The Post model used to interact with post data in the database.
+ * @see uploadEncodedImage - A utility function for uploading encoded image files.
+ * @see uploadEncodedVideo - A utility function for uploading encoded video files.
  */
 export const createPost: MutationResolvers["createPost"] = async (
   _parent,
@@ -152,7 +175,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     );
   }
 
-  // Checks if the recieved arguments are valid according to standard input norms
+  // Checks if the received arguments are valid according to standard input norms
   if (args.data?.title && args.data?.text) {
     const validationResultTitle = isValidString(args.data?.title, 256);
     const validationResultText = isValidString(args.data?.text, 500);

@@ -1,10 +1,10 @@
 import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
-/**
- * This is an interface that represents a database(MongoDB) document for Family.
- */
 
+/**
+ * Interface representing a MongoDB document for User Family.
+ */
 export interface InterfaceUserFamily {
   _id: Types.ObjectId;
   title: string;
@@ -14,13 +14,11 @@ export interface InterfaceUserFamily {
 }
 
 /**
- * @param  title - Name of the user Family (type: String)
- * Description: Name of the user Family.
- */
-
-/**
- * @param  users - Members associated with the user Family (type: String)
- * Description: Members associated with the user Family.
+ * Mongoose schema definition for User Family documents.
+ * @param title - Name of the user Family.
+ * @param users - Members associated with the user Family.
+ * @param admins - Admins of the user Family.
+ * @param creator - Creator of the user Family.
  */
 const userFamilySchema = new Schema({
   title: {
@@ -48,6 +46,7 @@ const userFamilySchema = new Schema({
   },
 });
 
+// Create and export the UserFamily model
 const userFamilyModel = (): Model<InterfaceUserFamily> =>
   model<InterfaceUserFamily>("UserFamily", userFamilySchema);
 
