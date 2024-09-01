@@ -2684,24 +2684,24 @@ export type RecurringEventMutationType =
 
 export type SocialMediaUrls = {
   __typename?: 'SocialMediaUrls';
+  X?: Maybe<Scalars['String']['output']>;
   facebook?: Maybe<Scalars['String']['output']>;
   gitHub?: Maybe<Scalars['String']['output']>;
   instagram?: Maybe<Scalars['String']['output']>;
   linkedIn?: Maybe<Scalars['String']['output']>;
   reddit?: Maybe<Scalars['String']['output']>;
   slack?: Maybe<Scalars['String']['output']>;
-  X?: Maybe<Scalars['String']['output']>;
   youTube?: Maybe<Scalars['String']['output']>;
 };
 
 export type SocialMediaUrlsInput = {
+  X?: InputMaybe<Scalars['String']['input']>;
   facebook?: InputMaybe<Scalars['String']['input']>;
   gitHub?: InputMaybe<Scalars['String']['input']>;
   instagram?: InputMaybe<Scalars['String']['input']>;
   linkedIn?: InputMaybe<Scalars['String']['input']>;
   reddit?: InputMaybe<Scalars['String']['input']>;
   slack?: InputMaybe<Scalars['String']['input']>;
-  X?: InputMaybe<Scalars['String']['input']>;
   youTube?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -4653,13 +4653,13 @@ export type RecurrenceRuleResolvers<ContextType = any, ParentType extends Resolv
 };
 
 export type SocialMediaUrlsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SocialMediaUrls'] = ResolversParentTypes['SocialMediaUrls']> = {
+  X?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   facebook?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   gitHub?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   instagram?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   linkedIn?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reddit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slack?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  X?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   youTube?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
