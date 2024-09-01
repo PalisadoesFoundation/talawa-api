@@ -157,6 +157,7 @@ export const checkMinio = (): Promise<string | void> => {
     console.log("[MINIO] Minio is already installed.");
     setPathEnvVar(path.join(os.homedir(), ".minio"));
     return Promise.resolve();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     return installMinio();
   }
