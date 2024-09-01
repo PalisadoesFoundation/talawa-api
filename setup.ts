@@ -1047,6 +1047,7 @@ async function main(): Promise<void> {
         default: false,
       });
       if (shouldOverwriteData) {
+        await wipeExistingData(process.env.MONGO_DB_URL);
         const { overwriteDefaultData } = await inquirer.prompt({
           type: "confirm",
           name: "overwriteDefaultData",
@@ -1054,7 +1055,6 @@ async function main(): Promise<void> {
           default: false,
         });
         if (overwriteDefaultData) {
-          await wipeExistingData(process.env.MONGO_DB_URL);
           await importDefaultData();
         } else {
           const { overwriteSampleData } = await inquirer.prompt({
@@ -1064,7 +1064,6 @@ async function main(): Promise<void> {
             default: false,
           });
           if (overwriteSampleData) {
-            await wipeExistingData(process.env.MONGO_DB_URL);
             await importData();
           }
         }
@@ -1076,6 +1075,7 @@ async function main(): Promise<void> {
         message: "Do you want to import Sample data?",
         default: false,
       });
+      await wipeExistingData(process.env.MONGO_DB_URL);
       if (shouldImportSampleData) {
         await importData();
       } else {
