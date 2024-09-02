@@ -1,5 +1,5 @@
-import mongoose, { model, Schema } from 'mongoose';
-import type { Model, Document } from 'mongoose';
+import mongoose, { model, Schema } from "mongoose";
+import type { Model, Document } from "mongoose";
 
 /**
  * Interface representing an identifier document in MongoDB.
@@ -38,7 +38,7 @@ const identifierSchema = new Schema<InterfaceIdentifier>({
  */
 const lastIdentifier: Model<InterfaceIdentifier> =
   mongoose.models.identifier_count ||
-  model<InterfaceIdentifier>('identifier_count', identifierSchema);
+  model<InterfaceIdentifier>("identifier_count", identifierSchema);
 
 /**
  * Export the Mongoose model for the identifier collection.
