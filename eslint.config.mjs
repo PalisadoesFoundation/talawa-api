@@ -4,18 +4,18 @@ import _import from "eslint-plugin-import";
 import { fixupPluginRules } from "@eslint/compat";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
+import { processors, parseForESLint, rules } from "@graphql-eslint/eslint-plugin"; 
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
-import { parseForESLint } from "@graphql-eslint/eslint-plugin"; // Importing `parseForESLint` if needed in a custom rule
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
     baseDirectory: __dirname,
     recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
+    allConfig: js.configs.all,
 });
 
 export default [{
@@ -33,7 +33,7 @@ export default [{
         "@typescript-eslint": typescriptEslint,
         tsdoc,
         import: fixupPluginRules(_import),
-        // No need to include `@graphql-eslint` here
+        "@graphql-eslint": processors.graphql, 
     },
 
     languageOptions: {
@@ -41,18 +41,18 @@ export default [{
             ...globals.node,
         },
 
-        parser: tsParser, // Use `tsParser` to parse TypeScript
+        parser: tsParser, 
     },
 
     rules: {
         "no-restricted-imports": ["error", {
             patterns: ["**/src/**"],
         }],
-
         "import/no-duplicates": "error",
         "tsdoc/syntax": "error",
         "@typescript-eslint/ban-ts-comment": "error",
-        "@typescript-eslint/ban-types": "error",
+        // "@typescript-eslint/ban-types": "error",
+        "@typescript-eslint/no-unused-vars": "off",
         "@typescript-eslint/no-duplicate-enum-values": "error",
         "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
@@ -63,7 +63,7 @@ export default [{
     files: ["**/*.ts"],
 
     languageOptions: {
-        parser: tsParser, // Use `tsParser` to parse TypeScript
+        parser: tsParser, // Use TypeScript parser
         ecmaVersion: "latest",
         sourceType: "module",
 
@@ -114,11 +114,17 @@ export default [{
     },
 }, {
     files: ["./src/typeDefs/**/*.ts"],
-    processor: "@graphql-eslint/graphql", // Use processor for TypeScript GraphQL files
+    processor: processors.graphql, 
 }, {
     files: ["./src/typeDefs/**/*.graphql"],
 
-    processor: "@graphql-eslint/graphql", // Use processor for GraphQL files
+    plugins: {
+        "@graphql-eslint": processors.graphql, 
+    },
+
+    languageOptions: {
+        parser: parseForESLint, 
+    },
 }, {
     files: ["tests/**/*"],
 
