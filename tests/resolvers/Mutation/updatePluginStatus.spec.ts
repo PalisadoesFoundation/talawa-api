@@ -59,6 +59,7 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
       };
 
       const context = async (): Promise<void> => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         pubsub;
       };
 

@@ -18,6 +18,7 @@ export async function checkRedisConnection(url: string): Promise<boolean> {
   try {
     await client.connect();
     response = true;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     console.log(`\nConnection to Redis failed. Please try again.\n`);
   } finally {

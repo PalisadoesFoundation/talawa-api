@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import { beforeAll, afterAll, it, expect } from "vitest";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";

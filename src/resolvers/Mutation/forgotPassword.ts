@@ -28,6 +28,7 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
 
   try {
     await jwt.verify(otpToken, ACCESS_TOKEN_SECRET as string);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     throw new Error(INVALID_OTP);
   }

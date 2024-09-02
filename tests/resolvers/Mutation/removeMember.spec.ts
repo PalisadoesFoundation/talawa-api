@@ -140,6 +140,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
         await import("../../../src/resolvers/Mutation/removeMember");
 
       await removeMemberResolverOrgNotFoundError?.({}, args, context);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }

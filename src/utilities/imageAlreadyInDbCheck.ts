@@ -78,6 +78,7 @@ export const imageAlreadyInDbCheck = async (
     }
 
     return fileName as string;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     // Handle errors, such as invalid file types
     throw new errors.ValidationError(

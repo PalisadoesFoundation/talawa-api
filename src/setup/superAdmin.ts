@@ -16,6 +16,7 @@ export async function askForSuperAdminEmail(): Promise<string> {
       name: "email",
       message:
         "Enter the email which you wish to assign as the Super Admin of last resort :",
+      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
       validate: (input: string) =>
         isValidEmail(input) || "Invalid email. Please try again.",
     },

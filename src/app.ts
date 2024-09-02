@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import cors from "cors";
 import express from "express";
 import mongoSanitize from "express-mongo-sanitize";

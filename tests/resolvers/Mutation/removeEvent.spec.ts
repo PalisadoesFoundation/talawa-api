@@ -117,6 +117,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
       if (error instanceof Error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         EVENT_NOT_FOUND_ERROR.MESSAGE;
       } else {
         fail(`Expected NotDoundError, but got ${error}`);
@@ -170,6 +171,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       if (error instanceof Error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         USER_NOT_AUTHORIZED_ERROR.MESSAGE;
       } else {
         fail(`Expected UnauthorizedError, but got ${error}`);

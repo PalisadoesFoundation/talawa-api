@@ -210,6 +210,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       if (error instanceof Error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         USER_NOT_AUTHORIZED_ERROR.MESSAGE;
       } else {
         fail(`Expected UnauthorizedError, but got ${error}`);

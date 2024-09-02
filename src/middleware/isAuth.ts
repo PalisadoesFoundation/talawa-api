@@ -58,6 +58,7 @@ export const isAuth = (request: Request): InterfaceAuthData => {
       authData.expired = true;
       return authData;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     authData.expired = true;
     return authData;
