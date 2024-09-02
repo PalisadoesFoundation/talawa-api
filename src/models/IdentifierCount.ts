@@ -7,12 +7,12 @@ import type { Model, Document } from 'mongoose';
  */
 interface InterfaceIdentifier extends Document {
   /**
-   * The unique identifier for the document.
+   *@param _id - The unique identifier for the document.
    */
   _id: string;
 
   /**
-   * The sequence value associated with the identifier.
+   *@param sequence_value - The sequence value associated with the identifier.
    */
   sequence_value: number;
 }
@@ -22,15 +22,12 @@ interface InterfaceIdentifier extends Document {
  */
 const identifierSchema = new Schema<InterfaceIdentifier>({
   /**
-   * The unique identifier for the document.
-   * @type {String}
-   * @required
+   *@param _id - Must be a string and is required.
    */
   _id: { type: String, required: true },
 
   /**
-   * The sequence value associated with the identifier.
-   * @type {Number}
+   *@param sequence_value - The sequence value associated with the identifier. Must be a number.
    */
   sequence_value: { type: Number },
 });
