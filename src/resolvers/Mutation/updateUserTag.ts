@@ -74,7 +74,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
 
   // Get the tag object
   const existingTag = await OrganizationTagUser.findOne({
-    _id: args.input._id,
+    _id: args.input.tagId,
   }).lean();
 
   if (!existingTag) {
@@ -130,7 +130,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   // Update the title of the tag and return it
   return await OrganizationTagUser.findOneAndUpdate(
     {
-      _id: args.input._id,
+      _id: args.input.tagId,
     },
     {
       name: args.input.name,

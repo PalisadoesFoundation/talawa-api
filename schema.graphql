@@ -1514,6 +1514,8 @@ type Query {
   getNoteById(id: ID!): Note!
   getPledgesByUserId(orderBy: PledgeOrderByInput, userId: ID!, where: PledgeWhereInput): [FundraisingCampaignPledge]
   getPlugins: [Plugin]
+  getUserTag(id: ID!): UserTag
+  getUserTagAncestors(id: ID!): [UserTag]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getlanguage(lang_code: String!): [Translation]
   groupChatById(id: ID!): GroupChat
@@ -1572,24 +1574,24 @@ enum RecurringEventMutationType {
 }
 
 type SocialMediaUrls {
+  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
-  twitter: String
   youTube: String
 }
 
 input SocialMediaUrlsInput {
+  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
-  twitter: String
   youTube: String
 }
 
@@ -1799,9 +1801,9 @@ input UpdateUserPasswordInput {
 }
 
 input UpdateUserTagInput {
-  _id: ID!
   name: String!
-  tagColor: String!
+  tagColor: String
+  tagId: ID!
 }
 
 scalar Upload
@@ -1940,7 +1942,7 @@ type UserTag {
 type UserTagsConnection {
   edges: [UserTagsConnectionEdge!]!
   pageInfo: DefaultConnectionPageInfo!
-  totalCount: PositiveInt
+  totalCount: Int
 }
 
 """A default connection edge on the UserTag type for UserTagsConnection."""
@@ -1988,6 +1990,7 @@ input UserWhereInput {
 type UsersConnection {
   edges: [UsersConnectionEdge!]!
   pageInfo: DefaultConnectionPageInfo!
+  totalCount: Int
 }
 
 """A default connection edge on the User type for UsersConnection."""

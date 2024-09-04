@@ -72,6 +72,7 @@ export const userTags: OrganizationResolvers["userTags"] = async (
     OrganizationTagUser.find({
       ...filter,
       organizationId: parent._id,
+      parentTagId: null,
     })
       .sort(sort)
       .limit(parsedArgs.limit)
