@@ -81,7 +81,7 @@ export const posts: OrganizationResolvers["posts"] = async (
       .limit(parsedArgs.limit)
       .populate({
         path: "likedBy",
-        select: "image",
+        select: "image firstName lastName",
       })
       .lean()
       .exec(),
