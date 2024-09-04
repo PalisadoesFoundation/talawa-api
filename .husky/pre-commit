@@ -3,6 +3,9 @@
 # Disable the hooks in CI 
 [ -n "$CI" ] && exit 0
 
+# Change to the current directory
+. "$(dirname -- "$0")/_/husky.sh"
+
 # Checks code for typescript type errors and throws errors if found.
 npm run typecheck
 
