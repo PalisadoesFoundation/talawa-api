@@ -31,6 +31,8 @@ import { askForSuperAdminEmail } from "./src/setup/superAdmin";
 import { updateEnvVariable } from "./src/setup/updateEnvVariable";
 import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
 import { loadDefaultOrganiation } from "./src/utilities/loadDefaultOrg";
+import { isMinioInstalled } from "./src/setup/isMinioInstalled";
+import { installMinio } from "./src/setup/installMinio";
 /* eslint-enable */
 
 dotenv.config();
@@ -676,12 +678,13 @@ export async function configureSmtp(): Promise<void> {
  * Configures MinIO settings by prompting the user for input and saving the configuration to the environment file.
  *
  * This function performs the following steps:
- * 1. Prompts the user for MinIO root user, root password, and bucket name.
- * 2. Determines the MinIO endpoint based on whether it's a Docker installation or not.
- * 3. Reads the current environment file (.env or .env_test based on NODE_ENV).
- * 4. Updates the environment configuration with the new MinIO settings.
- * 5. Writes the updated configuration back to the environment file.
- * 6. Logs a success message and provides information about the MinIO console access.
+ * 1. Checks if MinIO is installed. If not, prompts the user to install it if it's not a Docker installation.
+ * 2. Prompts the user to input MinIO root user, root password, and bucket name.
+ * 3. Determines the MinIO endpoint based on whether it's a Docker installation or not.
+ * 4. Reads the current environment file (.env or .env_test based on NODE_ENV).
+ * 5. Updates the environment configuration with the new MinIO settings.
+ * 6. Writes the updated configuration back to the environment file.
+ * 7. Logs a success message and provides information about accessing the MinIO console.
  *
  * @param isDockerInstallation - A boolean indicating whether the setup is for a Docker installation.
  * @throws Will throw an error if there are issues with file operations or user input validation.
@@ -690,6 +693,37 @@ export async function configureSmtp(): Promise<void> {
 export async function configureMinio(
   isDockerInstallation: boolean,
 ): Promise<void> {
+  if (!isDockerInstallation) {
+    console.log("Checking MinIO installation...");
+    if (isMinioInstalled()) {
+      console.log("MinIO is already installed.");
+    } else {
+      console.log("MinIO is not installed on your system.");
+      const { installMinioNow } = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "installMinioNow",
+          message: "Would you like to install MinIO now?",
+          default: true,
+        },
+      ]);
+
+      if (installMinioNow) {
+        try {
+          await installMinio();
+        } catch (err) {
+          console.error(err);
+          return;
+        }
+      } else {
+        console.log(
+          "MinIO installation skipped. Please install MinIO manually before proceeding.",
+        );
+        return;
+      }
+    }
+  }
+
   const minioConfig = await inquirer.prompt([
     {
       type: "input",
@@ -723,6 +757,7 @@ export async function configureMinio(
 
   const envFile = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
   const config = dotenv.parse(fs.readFileSync(envFile));
+
   config.MINIO_ENDPOINT = minioEndpoint;
   config.MINIO_ROOT_USER = minioConfig.MINIO_ROOT_USER;
   config.MINIO_ROOT_PASSWORD = minioConfig.MINIO_ROOT_PASSWORD;
@@ -730,8 +765,7 @@ export async function configureMinio(
 
   updateEnvVariable(config);
 
-  console.log("MinIO configuration saved successfully. 📦\n");
-  console.log("You can access the MinIO console at: http://localhost:9001\n");
+  console.log("[MINIO] MinIO configuration added successfully.\n");
 }
 
 /**
@@ -972,7 +1006,6 @@ async function main(): Promise<void> {
 
   console.log(
     `\nConfiguring MinIO storage...\n` +
-      `Setting up MinIO credentials and bucket configuration based on your environment.\n` +
       `${
         isDockerInstallation
           ? `Since you are using Docker, MinIO will be configured with the Docker-specific endpoint: http://minio:9000.\n`
