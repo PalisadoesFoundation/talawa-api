@@ -28,7 +28,7 @@ export const isMinioInstalled = (): boolean => {
     if (fs.existsSync(minioPath)) {
       setPathEnvVar(installDir);
       return true;
-    } else console.log("binary not availble");
+    }
   }
 
   return false;

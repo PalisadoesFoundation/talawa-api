@@ -28,6 +28,8 @@ export const checkMinio = async (): Promise<string | void> => {
       console.log("[MINIO] Minio is already installed.");
       return;
     } else {
+      console.log("[MINIO] Minio is not installed.");
+      console.log("[MINIO] Installing Minio...");
       try {
         const minioPath = await installMinio();
         console.log("[MINIO] Minio installed successfully.\n");

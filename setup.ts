@@ -709,8 +709,10 @@ export async function configureMinio(
       ]);
 
       if (installMinioNow) {
+        console.log("Installing MinIO...");
         try {
           await installMinio();
+          console.log("Successfully installed MinIO on your system.");
         } catch (err) {
           console.error(err);
           return;
