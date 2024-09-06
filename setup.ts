@@ -675,16 +675,15 @@ export async function configureSmtp(): Promise<void> {
 }
 
 /**
- * Configures MinIO settings by prompting the user for input and saving the configuration to the environment file.
+ * Configures MinIO settings, including installation check, data directory, and credentials.
  *
  * This function performs the following steps:
- * 1. Checks if MinIO is installed. If not, prompts the user to install it if it's not a Docker installation.
- * 2. Prompts the user to input MinIO root user, root password, and bucket name.
- * 3. Determines the MinIO endpoint based on whether it's a Docker installation or not.
- * 4. Reads the current environment file (.env or .env_test based on NODE_ENV).
- * 5. Updates the environment configuration with the new MinIO settings.
- * 6. Writes the updated configuration back to the environment file.
- * 7. Logs a success message and provides information about accessing the MinIO console.
+ * 1. Checks if MinIO is installed (for non-Docker installations)
+ * 2. Prompts for MinIO installation if not found
+ * 3. Checks for existing MinIO data directory configuration
+ * 4. Allows user to change the data directory if desired
+ * 5. Prompts for MinIO root user, password, and bucket name
+ * 6. Updates the environment variables with the new configuration
  *
  * @param isDockerInstallation - A boolean indicating whether the setup is for a Docker installation.
  * @throws Will throw an error if there are issues with file operations or user input validation.
@@ -707,7 +706,6 @@ export async function configureMinio(
           default: true,
         },
       ]);
-
       if (installMinioNow) {
         console.log("Installing MinIO...");
         try {
@@ -726,12 +724,70 @@ export async function configureMinio(
     }
   }
 
+  const envFile = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
+  const config = dotenv.parse(fs.readFileSync(envFile));
+
+  const currentDataDir = config.MINIO_DATA_DIR || process.env.MINIO_DATA_DIR;
+  let changeDataDir = false;
+
+  if (currentDataDir) {
+    console.log(
+      `[MINIO] Existing MinIO data directory found: ${currentDataDir}`,
+    );
+    const { confirmChange } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "confirmChange",
+        message:
+          "Do you want to change the MinIO data directory? (Warning: All existing data will be lost)",
+        default: false,
+      },
+    ]);
+    changeDataDir = confirmChange;
+  }
+
+  if (!currentDataDir || changeDataDir) {
+    const { MINIO_DATA_DIR } = await inquirer.prompt([
+      {
+        type: "input",
+        name: "MINIO_DATA_DIR",
+        message: "Enter MinIO data directory (press Enter for default):",
+        default: "./data",
+        validate: (input: string): boolean | string =>
+          input.trim() !== "" ? true : "MinIO data directory is required.",
+      },
+    ]);
+
+    if (changeDataDir && currentDataDir) {
+      try {
+        fs.rmSync(currentDataDir, { recursive: true, force: true });
+        console.log(
+          `[MINIO] Removed existing data directory: ${currentDataDir}`,
+        );
+      } catch (err) {
+        console.error(`[MINIO] Error removing existing data directory: ${err}`);
+      }
+    }
+
+    config.MINIO_DATA_DIR = MINIO_DATA_DIR;
+    console.log(`[MINIO] MinIO data directory set to: ${MINIO_DATA_DIR}`);
+
+    let fullPath = MINIO_DATA_DIR;
+    if (!path.isAbsolute(MINIO_DATA_DIR)) {
+      fullPath = path.join(process.cwd(), MINIO_DATA_DIR);
+    }
+    if (!fs.existsSync(fullPath)) {
+      fs.mkdirSync(fullPath, { recursive: true });
+    }
+  }
+
   const minioConfig = await inquirer.prompt([
     {
       type: "input",
       name: "MINIO_ROOT_USER",
       message: "Enter MinIO root user:",
-      default: process.env.MINIO_ROOT_USER || "talawa",
+      default:
+        config.MINIO_ROOT_USER || process.env.MINIO_ROOT_USER || "talawa",
       validate: (input: string): boolean | string =>
         input.trim() !== "" ? true : "MinIO root user is required.",
     },
@@ -739,7 +795,10 @@ export async function configureMinio(
       type: "password",
       name: "MINIO_ROOT_PASSWORD",
       message: "Enter MinIO root password:",
-      default: process.env.MINIO_ROOT_PASSWORD || "talawa1234",
+      default:
+        config.MINIO_ROOT_PASSWORD ||
+        process.env.MINIO_ROOT_PASSWORD ||
+        "talawa1234",
       validate: (input: string): boolean | string =>
         input.trim() !== "" ? true : "MinIO root password is required.",
     },
@@ -747,7 +806,7 @@ export async function configureMinio(
       type: "input",
       name: "MINIO_BUCKET",
       message: "Enter MinIO bucket name:",
-      default: process.env.MINIO_BUCKET || "talawa",
+      default: config.MINIO_BUCKET || process.env.MINIO_BUCKET || "talawa",
       validate: (input: string): boolean | string =>
         input.trim() !== "" ? true : "MinIO bucket name is required.",
     },
@@ -757,16 +816,12 @@ export async function configureMinio(
     ? "http://minio:9000"
     : "http://localhost:9000";
 
-  const envFile = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
-  const config = dotenv.parse(fs.readFileSync(envFile));
-
   config.MINIO_ENDPOINT = minioEndpoint;
   config.MINIO_ROOT_USER = minioConfig.MINIO_ROOT_USER;
   config.MINIO_ROOT_PASSWORD = minioConfig.MINIO_ROOT_PASSWORD;
   config.MINIO_BUCKET = minioConfig.MINIO_BUCKET;
 
   updateEnvVariable(config);
-
   console.log("[MINIO] MinIO configuration added successfully.\n");
 }
 

@@ -60,18 +60,15 @@ checkMinio()
         ".minio",
         `minio${os.platform() === "win32" ? ".exe" : ""}`,
       );
-    spawnSync(
-      minioCommand,
-      ["server", "./data", "--console-address", ":9001"],
-      {
-        env: {
-          ...process.env,
-          MINIO_ROOT_USER: process.env.MINIO_ROOT_USER,
-          MINIO_ROOT_PASSWORD: process.env.MINIO_ROOT_PASSWORD,
-        },
-        stdio: "inherit",
+    const dataDir = process.env.MINIO_DATA_DIR || "./data";
+    spawnSync(minioCommand, ["server", dataDir, "--console-address", ":9001"], {
+      env: {
+        ...process.env,
+        MINIO_ROOT_USER: process.env.MINIO_ROOT_USER,
+        MINIO_ROOT_PASSWORD: process.env.MINIO_ROOT_PASSWORD,
       },
-    );
+      stdio: "inherit",
+    });
   })
   .catch((err) => {
     console.error(

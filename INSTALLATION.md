@@ -119,6 +119,7 @@ This document provides instructions on how to set up and start a running instanc
     - [Running MinIO with Talawa-API](#running-minio-with-talawa-api)
       - [1. Using Docker](#1-using-docker)
       - [2. Running Locally](#2-running-locally)
+    - [Customize MinIO Data Directory](#customize-minio-data-directory)
     - [Access MinIO](#access-minio)
     - [Create a Bucket](#create-a-bucket)
 - [Configuration](#configuration)
@@ -337,16 +338,14 @@ Follow these steps for setting up a software development environment.
       docker-compose -f docker-compose.dev.yaml up --build
       ```
 
-   2. Using Ubuntu:
-      1. Running synchronously. Using CTRL-C will stop it.
-         ```bash
+   2. Using Ubuntu: 1. Running synchronously. Using CTRL-C will stop it.
+      `bash
          sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build
-         ```
-      2. Running asynchronously in a subshell. You will have to use the `docker-compose down` command below to stop it.
-         `bash
-      sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build &
-      `
-         This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
+         ` 2. Running asynchronously in a subshell. You will have to use the `docker-compose down` command below to stop it.
+      `bash
+sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build &
+`
+      This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
 
 2. Accessing the Development Application: Open your web browser and navigate to:
 
@@ -588,6 +587,14 @@ If you prefer to run MinIO and Talawa-API locally, use the provided npm scripts.
 
 These npm scripts will check if MinIO is installed on your system. If MinIO is not installed, the scripts will install it automatically before starting the Talawa-API server.
 
+### Customize MinIO Data Directory
+
+You can customize the local storage path for MinIO in one of the following ways:
+
+1. **Using the Setup Script**: During the configuration process, the setup script allows you to specify a custom path for MinIO's local data directory. Follow the prompts to set `MINIO_DATA_DIR` to your desired path.
+
+2. **Manually Editing the .env File**: Directly modify the `MINIO_DATA_DIR` environment variable in the `.env` file to point to a different directory for storing MinIO's data.
+
 ### Access MinIO
 
 - **MinIO Server:**
@@ -661,6 +668,7 @@ This `.env` file must be populated with the following environment variables for 
 | MINIO_ROOT_USER              | Used to authenticate with the MinIO server.                               |
 | MINIO_ROOT_PASSWORD          | Used to authenticate with the MinIO server.                               |
 | MINIO_BUCKET                 | Used for the bucket name in the MinIO storage.                            |
+| MINIO_DATA_DIR               | Defines the local directory path for MinIO storage.                       |
 
 The following sections will show you how to configure each of these parameters.
 
@@ -886,6 +894,7 @@ MINIO_ENDPOINT=<minio-endpoint>
 MINIO_ROOT_USER=<you-minio-user>
 MINIO_ROOT_PASSWORD=<your-minio-password>
 MINIO_BUCKET=<your-minio-bucket-name>
+MINIO_DATA_DIR=<path-to-local-data-directory>
 ```
 
 For example:
@@ -895,6 +904,7 @@ MINIO_ENDPOINT=http://localhost:9000
 MINIO_ROOT_USER=minioadmin
 MINIO_ROOT_PASSWORD=minioadminpassword
 MINIO_BUCKET=talawa-bucket
+MINIO_DATA_DIR=./data
 ```
 
 Here are the configuration details:
@@ -906,6 +916,8 @@ Here are the configuration details:
 `MINIO_ROOT_PASSWORD`: Root password for authenticating with MinIO. Must be kept secure.
 
 `MINIO_BUCKET`: Name of the default bucket for storing files in MinIO.
+
+`MINIO_DATA_DIR`: Specifies the directory path where MinIO stores data locally. It is used to define the storage location for the MinIO server on the host machine.
 
 ### Setting up Logger configurations
 
