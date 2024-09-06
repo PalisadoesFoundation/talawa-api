@@ -1,15 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
-import { updateIgnoreFile } from "../../src/setup/updateIgnoreFile";
+import { updateIgnoreFile } from "../../../../src/setup/updateIgnoreFile";
 
-vi.mock("fs", () => {
-  return {
-    existsSync: vi.fn().mockReturnValue(true),
-    readFileSync: vi.fn().mockReturnValue(""),
-    writeFileSync: vi.fn(),
-  };
-});
+vi.mock("fs", () => ({
+  existsSync: vi.fn().mockReturnValue(true),
+  readFileSync: vi.fn(),
+  writeFileSync: vi.fn(),
+}));
+
 vi.mock("path", async (importOriginal) => {
   const actual = await importOriginal();
   return {
@@ -27,16 +26,26 @@ describe("updateIgnoreFile", () => {
   });
 
   it("should update the ignore file if directoryToIgnore is not already included", () => {
+    vi.mocked(fs.readFileSync).mockReturnValue("");
     const writeFileSyncSpy = vi.spyOn(fs, "writeFileSync");
 
     updateIgnoreFile(mockFilePath, mockDirectoryToIgnore);
 
     const expectedContent = "\n# MinIO data directory\nminio-data/**\n";
-
     expect(writeFileSyncSpy).toHaveBeenCalledWith(
       mockFilePath,
       expectedContent,
     );
+  });
+
+  it("should not update the ignore file if directoryToIgnore is already included", () => {
+    const existingContent = "# MinIO data directory\nminio-data/**\n";
+    vi.mocked(fs.readFileSync).mockReturnValue(existingContent);
+    const writeFileSyncSpy = vi.spyOn(fs, "writeFileSync");
+
+    updateIgnoreFile(mockFilePath, mockDirectoryToIgnore);
+
+    expect(writeFileSyncSpy).not.toHaveBeenCalled();
   });
 
   it("should create the ignore file if it does not exist", () => {
@@ -47,7 +56,6 @@ describe("updateIgnoreFile", () => {
     updateIgnoreFile(mockFilePath, mockDirectoryToIgnore);
 
     const expectedContent = "\n# MinIO data directory\nminio-data/**\n";
-
     expect(writeFileSyncSpy).toHaveBeenCalledWith(
       mockFilePath,
       expectedContent,
@@ -61,5 +69,21 @@ describe("updateIgnoreFile", () => {
     updateIgnoreFile(mockFilePath, "/outside-project/minio-data");
 
     expect(writeFileSyncSpy).not.toHaveBeenCalled();
+  });
+
+  it("should remove existing MinIO data directory entries and add new one", () => {
+    const existingContent =
+      "# MinIO data directory\nold-minio-data/**\n\nOther content\n";
+    vi.mocked(fs.readFileSync).mockReturnValue(existingContent);
+    const writeFileSyncSpy = vi.spyOn(fs, "writeFileSync");
+
+    updateIgnoreFile(mockFilePath, mockDirectoryToIgnore);
+
+    const expectedContent =
+      "Other content\n\n# MinIO data directory\nminio-data/**\n";
+    expect(writeFileSyncSpy).toHaveBeenCalledWith(
+      mockFilePath,
+      expectedContent,
+    );
   });
 });
