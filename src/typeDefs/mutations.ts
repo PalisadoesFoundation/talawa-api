@@ -209,7 +209,6 @@ export const mutations = gql`
     removeAgendaItem(id: ID!): AgendaItem!
 
     removeEventVolunteer(id: ID!): EventVolunteer! @auth
-    removeFund(id: ID!): Fund! @auth
     removeFundraisingCampaign(id: ID!): FundraisingCampaign! @auth
     removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge! @auth
 
