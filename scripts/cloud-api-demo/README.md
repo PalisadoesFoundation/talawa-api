@@ -237,4 +237,3 @@ echo "0 * * * * talawa-api python3 reset_database.py --mongo-container develop-m
 ### 8.3 Logging for cron jobs
 
 This will set up logging for the cron jobs and manage log rotation using logrotate.
-

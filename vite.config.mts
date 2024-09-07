@@ -52,7 +52,7 @@ export default defineConfig({
     testTimeout: 30000,
 
     // Use a thread pool for parallel execution to improve performance
-    pool: 'threads',
+    pool: "threads",
 
     // Disable file-level parallelism to process files sequentially
     fileParallelism: false,

@@ -24,7 +24,7 @@ export const createTestUser = async (): Promise<TestUserType> => {
     password: `pass${nanoid().toLowerCase()}`,
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
-    image: null,
+    image: "exampleimageurl.com",
   });
   const testUserAppProfile = await AppUserProfile.create({
     userId: testUser._id,
