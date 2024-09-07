@@ -4,8 +4,11 @@ import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
-import type { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
-import type { InterfacePost} from "../../../src/models";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import type { InterfacePost } from "../../../src/models";
 import { Organization, Post } from "../../../src/models";
 import { posts as postResolver } from "../../../src/resolvers/Organization/posts";
 
