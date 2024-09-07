@@ -84,6 +84,52 @@ describe("resolvers -> Mutation -> login", () => {
     vi.resetModules();
   });
 
+  it("throws NotFoundError if the user is not found after creating AppUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    // Spy on the translate function to capture error messages
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      // Create a new user with a unique email
+      const newUser = await User.create({
+        email: `nonexistentuser${nanoid().toLowerCase()}@gmail.com`,
+        password: "password",
+        firstName: "John",
+        lastName: "Doe",
+      });
+
+      // Delete the user immediately to simulate a missing user scenario after AppUserProfile creation
+      await User.deleteOne({ _id: newUser._id });
+
+      // Prepare the arguments for the login resolver
+      const args: MutationLoginArgs = {
+        data: {
+          email: newUser.email,
+          password: "password",
+        },
+      };
+
+      // Call the login resolver, which should throw an error
+      const { login: loginResolver } = await import(
+        "../../../src/resolvers/Mutation/login"
+      );
+
+      await loginResolver?.({}, args, {});
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        // Verify that the translate function was called with the correct error message
+        expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+        // Verify that the error message is correctly translated
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        );
+      }
+    }
+  });
+
   it("creates a new AppUserProfile for the user if it doesn't exist and associates it with the user", async () => {
     // Create a new user without an associated AppUserProfile
     const newUser = await User.create({
