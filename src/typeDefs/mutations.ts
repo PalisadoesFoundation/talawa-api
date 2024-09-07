@@ -33,8 +33,6 @@ export const mutations = gql`
 
     addUserImage(file: String!): User! @auth
 
-    addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
-
     addUserToUserFamily(userId: ID!, familyId: ID!): UserFamily! @auth
 
     removeUserFromUserFamily(userId: ID!, familyId: ID!): UserFamily! @auth
@@ -360,5 +358,7 @@ export const mutations = gql`
       userId: ID!
       role: String!
     ): Organization! @auth
+
+    addUserToGroupChat(userId: ID!, chatId: ID!): Chat @auth
   }
 `;

@@ -1097,6 +1097,7 @@ type MinimumValueError implements FieldError {
 
 type Mutation {
   acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+  addUserToGroupChat(userId: ID!, chatId: ID!): Chat!
   addEventAttendee(data: EventAttendeeInput!): User!
   addFeedback(data: FeedbackInput!): Feedback!
   addLanguageTranslation(data: LanguageInput!): Language!
