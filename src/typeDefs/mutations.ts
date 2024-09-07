@@ -76,6 +76,7 @@ export const mutations = gql`
 
     createActionItemCategory(
       name: String!
+      isDisabled: Boolean!
       organizationId: ID!
     ): ActionItemCategory! @auth
 

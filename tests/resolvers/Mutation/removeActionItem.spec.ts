@@ -142,7 +142,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     // console.log(removedActionItemPayload);
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
-        assigneeId: assignedTestUser?._id,
+        assignee: assignedTestUser?._id,
       }),
     );
   });
@@ -152,6 +152,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       currUserId: testUser?._id,
       assignedUserId: randomUser?._id,
       actionItemCategoryId: testCategory?._id,
+      organizationId: testOrganization?._id,
     });
 
     const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
@@ -182,7 +183,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
 
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
-        assigneeId: randomUser?._id,
+        assignee: randomUser?._id,
       }),
     );
   });
@@ -192,6 +193,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       currUserId: testUser?._id,
       assignedUserId: randomUser?._id,
       actionItemCategoryId: testCategory?._id,
+      organizationId: testOrganization?._id,
     });
 
     const updatedTestActionItem = await ActionItem.findOneAndUpdate(
@@ -199,7 +201,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
         _id: newTestActionItem?._id,
       },
       {
-        eventId: new Types.ObjectId().toString(),
+        event: new Types.ObjectId().toString(),
       },
       {
         new: true,
@@ -226,6 +228,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       currUserId: testUser?._id,
       assignedUserId: randomUser?._id,
       actionItemCategoryId: testCategory?._id,
+      organizationId: testOrganization?._id,
     });
 
     const updatedTestActionItem = await ActionItem.findOneAndUpdate(
@@ -233,7 +236,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
         _id: newTestActionItem?._id,
       },
       {
-        eventId: testEvent?._id,
+        event: testEvent?._id,
       },
       {
         new: true,
@@ -256,10 +259,11 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
 
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
-        assigneeId: randomUser?._id,
+        assignee: randomUser?._id,
       }),
     );
   });
+
   it("throws an error if user does not have appUserProfile", async () => {
     await AppUserProfile.deleteOne({
       userId: testUser?._id,
