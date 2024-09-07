@@ -4,6 +4,7 @@ import yargs from "yargs";
 import { connect } from "../db";
 import {
   ActionItemCategory,
+  AgendaCategoryModel,
   AppUserProfile,
   Community,
   Event,
@@ -63,6 +64,7 @@ async function formatDatabase(): Promise<void> {
     User.deleteMany({}),
     Organization.deleteMany({}),
     ActionItemCategory.deleteMany({}),
+    AgendaCategoryModel.deleteMany({}),
     Event.deleteMany({}),
     Post.deleteMany({}),
     AppUserProfile.deleteMany({}),
@@ -120,6 +122,9 @@ async function insertCollections(collections: string[]): Promise<void> {
         case "actionItemCategories":
           await ActionItemCategory.insertMany(docs);
           break;
+        case "agendaCategories":
+          await AgendaCategoryModel.insertMany(docs);
+          break;
         case "events":
           await Event.insertMany(docs);
           break;
@@ -163,6 +168,7 @@ async function checkCountAfterImport(): Promise<void> {
       { name: "users", model: User },
       { name: "organizations", model: Organization },
       { name: "actionItemCategories", model: ActionItemCategory },
+      { name: "agendaCategories", model: AgendaCategoryModel },
       { name: "events", model: Event },
       { name: "recurrenceRules", model: RecurrenceRule },
       { name: "posts", model: Post },
@@ -198,6 +204,7 @@ const collections = [
   "recurrenceRules",
   "appUserProfiles",
   "actionItemCategories",
+  "agendaCategories",
 ];
 
 // Check if specific collections need to be inserted
