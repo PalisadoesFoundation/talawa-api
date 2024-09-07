@@ -33,10 +33,11 @@ export const createTestActionItem = async (): Promise<
   });
 
   const testActionItem = await ActionItem.create({
-    creatorId: testUser?._id,
-    assigneeId: randomUser?._id,
-    assignerId: testUser?._id,
-    actionItemCategoryId: testCategory?._id,
+    creator: testUser?._id,
+    assignee: randomUser?._id,
+    assigner: testUser?._id,
+    actionItemCategory: testCategory?._id,
+    organization: testOrganization?._id,
   });
 
   return [testUser, testOrganization, testCategory, testActionItem, randomUser];
@@ -46,25 +47,28 @@ interface InterfaceCreateNewTestAction {
   currUserId: string;
   assignedUserId: string;
   actionItemCategoryId: string;
+  organizationId: string;
 }
 
 export const createNewTestActionItem = async ({
   currUserId,
   assignedUserId,
   actionItemCategoryId,
+  organizationId,
 }: InterfaceCreateNewTestAction): Promise<TestActionItemType> => {
   const newTestActionItem = await ActionItem.create({
-    creatorId: currUserId,
-    assigneeId: assignedUserId,
-    assignerId: currUserId,
-    actionItemCategoryId: actionItemCategoryId,
+    creator: currUserId,
+    assignee: assignedUserId,
+    assigner: currUserId,
+    actionItemCategory: actionItemCategoryId,
+    organization: organizationId,
   });
 
   return newTestActionItem;
 };
 
 export const createTestActionItems = async (): Promise<
-  [TestUserType, TestEventType, TestOrganizationType]
+  [TestUserType, TestUserType, TestEventType, TestOrganizationType]
 > => {
   const randomUser = await createTestUser();
   const [testUser, testOrganization, testCategory] = await createTestCategory();
@@ -76,26 +80,29 @@ export const createTestActionItems = async (): Promise<
   });
 
   const testActionItem1 = await ActionItem.create({
-    creatorId: testUser?._id,
-    assigneeId: randomUser?._id,
-    assignerId: testUser?._id,
-    actionItemCategoryId: testCategory?._id,
+    creator: testUser?._id,
+    assignee: randomUser?._id,
+    assigner: testUser?._id,
+    actionItemCategory: testCategory?._id,
+    organization: testOrganization?._id,
     isCompleted: true,
   });
 
   const testActionItem2 = await ActionItem.create({
-    creatorId: testUser?._id,
-    assigneeId: randomUser?._id,
-    assignerId: testUser?._id,
-    actionItemCategoryId: testCategory?._id,
+    creator: testUser?._id,
+    assignee: randomUser?._id,
+    assigner: testUser?._id,
+    actionItemCategory: testCategory?._id,
+    organization: testOrganization?._id,
     isCompleted: false,
   });
 
   await ActionItem.create({
-    creatorId: testUser?._id,
-    assigneeId: randomUser?._id,
-    assignerId: testUser?._id,
-    actionItemCategoryId: testCategory2?._id,
+    creator: testUser?._id,
+    assignee: randomUser?._id,
+    assigner: testUser?._id,
+    actionItemCategory: testCategory2?._id,
+    organization: testOrganization?._id,
     isCompleted: true,
   });
 
@@ -118,7 +125,7 @@ export const createTestActionItems = async (): Promise<
       _id: testActionItem1?._id,
     },
     {
-      eventId: testEvent?._id,
+      event: testEvent?._id,
     },
   );
 
@@ -127,9 +134,9 @@ export const createTestActionItems = async (): Promise<
       _id: testActionItem2?._id,
     },
     {
-      eventId: testEvent?._id,
+      event: testEvent?._id,
     },
   );
 
-  return [testUser, testEvent, testOrganization];
+  return [testUser, randomUser, testEvent, testOrganization];
 };

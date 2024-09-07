@@ -40,6 +40,7 @@ type UpdateActionItemInputType = {
   preCompletionNotes: string;
   postCompletionNotes: string;
   dueDate: Date;
+  allotedHours: number;
   completionDate: Date;
   isCompleted: boolean;
 };
@@ -93,7 +94,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
   const actionItem = await ActionItem.findOne({
     _id: args.id,
   })
-    .populate("actionItemCategoryId")
+    .populate("actionItemCategory")
     .lean();
 
   // Checks if the actionItem exists
@@ -109,7 +110,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
 
   if (args.data.assigneeId) {
     sameAssignedUser = new mongoose.Types.ObjectId(
-      actionItem.assigneeId.toString(),
+      actionItem.assignee.toString(),
     ).equals(args.data.assigneeId);
 
     if (!sameAssignedUser) {
@@ -127,7 +128,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       }
 
       let userIsOrganizationMember = false;
-      const currorganizationId = actionItem.actionItemCategoryId.organizationId;
+      const currorganizationId = actionItem.actionItemCategory.organizationId;
       userIsOrganizationMember = newAssignedUser.joinedOrganizations.some(
         (organizationId) =>
           organizationId === currorganizationId ||
@@ -149,24 +150,24 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
 
   const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
     (ogranizationId) =>
-      ogranizationId === actionItem.actionItemCategoryId.organizationId ||
+      ogranizationId === actionItem.organization ||
       new mongoose.Types.ObjectId(ogranizationId?.toString()).equals(
-        actionItem.actionItemCategoryId.organizationId,
+        actionItem.organization,
       ),
   );
 
   let currentUserIsEventAdmin = false;
 
-  if (actionItem.eventId) {
+  if (actionItem.event) {
     let currEvent: InterfaceEvent | null;
 
-    const eventFoundInCache = await findEventsInCache([actionItem.eventId]);
+    const eventFoundInCache = await findEventsInCache([actionItem.event]);
 
     currEvent = eventFoundInCache[0];
 
     if (eventFoundInCache[0] === null) {
       currEvent = await Event.findOne({
-        _id: actionItem.eventId,
+        _id: actionItem.event,
       }).lean();
 
       if (currEvent !== null) {
@@ -209,7 +210,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     : new Date();
 
   const updatedAssigner = sameAssignedUser
-    ? actionItem.assignerId
+    ? actionItem.assigner
     : context.userId;
 
   const updatedActionItem = await ActionItem.findOneAndUpdate(
@@ -218,8 +219,9 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     },
     {
       ...(args.data as UpdateActionItemInputType),
+      assignee: args.data.assigneeId || actionItem.assignee,
       assignmentDate: updatedAssignmentDate,
-      assignerId: updatedAssigner,
+      assigner: updatedAssigner,
     },
     {
       new: true,
