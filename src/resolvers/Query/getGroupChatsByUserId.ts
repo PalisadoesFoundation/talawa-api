@@ -10,26 +10,30 @@ import type { SortOrder } from "mongoose";
  * @remarks You can learn about GraphQL `Resolvers`
  * {@link https://www.apollographql.com/docs/apollo-server/data/resolvers/ | here}.
  */
-export const getGroupChatsByUserId: QueryResolvers["getGroupChatsByUserId"] = async (
-  _parent,
-  _args,
-  context
-) => {
-  const sort = {
-    updatedAt: -1,
-  } as
-    | string
-    | { [key: string]: SortOrder | { $meta: unknown } }
-    | [string, SortOrder][]
-    | null
-    | undefined;
+export const getGroupChatsByUserId: QueryResolvers["getGroupChatsByUserId"] =
+  async (_parent, _args, context) => {
+    const sort = {
+      updatedAt: -1,
+    } as
+      | string
+      | { [key: string]: SortOrder | { $meta: unknown } }
+      | [string, SortOrder][]
+      | null
+      | undefined;
 
-  const chats = await Chat.find({
-    users: context.userId,
-    isGroup: true,
-  })
-    .sort(sort)
-    .lean();
+    const chats = await Chat.find({
+      users: context.userId,
+      isGroup: true,
+    })
+      .sort(sort)
+      .lean();
 
-  return chats;
-};
+    const chatList = chats.map((chat) => {
+      if (chat.isGroup && chat.image) {
+        return { ...chat, image: `${context.apiRootUrl}${chat.image}` };
+      }
+      return chat;
+    });
+
+    return chatList;
+  };

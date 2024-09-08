@@ -210,8 +210,8 @@ type ChatMessage {
 }
 
 input ChatWhereInput {
-  user: UserWhereInput,
   name_contains: String
+  user: UserWhereInput
 }
 
 type CheckIn {
@@ -1097,7 +1097,6 @@ type MinimumValueError implements FieldError {
 
 type Mutation {
   acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
-  addUserToGroupChat(userId: ID!, chatId: ID!): Chat!
   addEventAttendee(data: EventAttendeeInput!): User!
   addFeedback(data: FeedbackInput!): Feedback!
   addLanguageTranslation(data: LanguageInput!): Language!
@@ -1106,7 +1105,7 @@ type Mutation {
   addPledgeToFundraisingCampaign(campaignId: ID!, pledgeId: ID!): FundraisingCampaignPledge!
   addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
-  addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
+  addUserToGroupChat(chatId: ID!, userId: ID!): Chat
   addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
   adminRemoveGroup(groupId: ID!): GroupChat!
   assignUserTag(input: ToggleUserTagAssignInput!): User
@@ -1210,6 +1209,7 @@ type Mutation {
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
   updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
   updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
+  updateChat(input: UpdateChatInput!): Chat!
   updateCommunity(data: UpdateCommunityInput!): Boolean!
   updateEvent(data: UpdateEventInput!, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
@@ -1523,9 +1523,8 @@ type Query {
   agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
   agendaItemByOrganization(organizationId: ID!): [AgendaItem]
   agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
-  chatById(id: ID!, where: ChatWhereInput): Chat!
-  chatsByUserId(id: ID!): [Chat]
-  getUnreadChatsByUserId: [Chat]
+  chatById(id: ID!): Chat!
+  chatsByUserId(id: ID!, where: ChatWhereInput): [Chat]
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
@@ -1552,9 +1551,11 @@ type Query {
   getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getFundraisingCampaigns(campaignOrderby: CampaignOrderByInput, pledgeOrderBy: PledgeOrderByInput, where: CampaignWhereInput): [FundraisingCampaign]!
+  getGroupChatsByUserId: [Chat]
   getNoteById(id: ID!): Note!
   getPledgesByUserId(orderBy: PledgeOrderByInput, userId: ID!, where: PledgeWhereInput): [FundraisingCampaignPledge]
   getPlugins: [Plugin]
+  getUnreadChatsByUserId: [Chat]
   getUserTag(id: ID!): UserTag
   getUserTagAncestors(id: ID!): [UserTag]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
@@ -1615,24 +1616,24 @@ enum RecurringEventMutationType {
 }
 
 type SocialMediaUrls {
+  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
-  X: String
   youTube: String
 }
 
 input SocialMediaUrlsInput {
+  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
-  X: String
   youTube: String
 }
 
@@ -1745,6 +1746,12 @@ input UpdateAgendaSectionInput {
   description: String
   relatedEvent: ID
   sequence: Int
+}
+
+input UpdateChatInput {
+  _id: ID!
+  image: String
+  name: String
 }
 
 input UpdateCommunityInput {

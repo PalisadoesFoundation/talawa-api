@@ -13,6 +13,7 @@ import type { SortOrder } from "mongoose";
 export const chatsByUserId: QueryResolvers["chatsByUserId"] = async (
   _parent,
   args,
+  context,
 ) => {
   const sort = {
     updatedAt: -1,
@@ -29,5 +30,11 @@ export const chatsByUserId: QueryResolvers["chatsByUserId"] = async (
     .sort(sort)
     .lean();
 
-  return chats;
+  const chatList = chats.map((chat) => {
+    if (chat.isGroup && chat.image) {
+      return { ...chat, image: `${context.apiRootUrl}${chat.image}` };
+    }
+    return chat;
+  });
+  return chatList;
 };

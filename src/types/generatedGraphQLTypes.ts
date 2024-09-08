@@ -1300,6 +1300,7 @@ export type Mutation = {
   updateAgendaCategory?: Maybe<AgendaCategory>;
   updateAgendaItem?: Maybe<AgendaItem>;
   updateAgendaSection?: Maybe<AgendaSection>;
+  updateChat: Chat;
   updateCommunity: Scalars['Boolean']['output'];
   updateEvent: Event;
   updateEventVolunteer: EventVolunteer;
@@ -1896,6 +1897,11 @@ export type MutationUpdateAgendaItemArgs = {
 export type MutationUpdateAgendaSectionArgs = {
   id: Scalars['ID']['input'];
   input: UpdateAgendaSectionInput;
+};
+
+
+export type MutationUpdateChatArgs = {
+  input: UpdateChatInput;
 };
 
 
@@ -2898,6 +2904,12 @@ export type UpdateAgendaSectionInput = {
   sequence?: InputMaybe<Scalars['Int']['input']>;
 };
 
+export type UpdateChatInput = {
+  _id: Scalars['ID']['input'];
+  image?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type UpdateCommunityInput = {
   logo: Scalars['String']['input'];
   name: Scalars['String']['input'];
@@ -3546,6 +3558,7 @@ export type ResolversTypes = {
   UpdateAgendaCategoryInput: UpdateAgendaCategoryInput;
   UpdateAgendaItemInput: UpdateAgendaItemInput;
   UpdateAgendaSectionInput: UpdateAgendaSectionInput;
+  UpdateChatInput: UpdateChatInput;
   UpdateCommunityInput: UpdateCommunityInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventVolunteerGroupInput: UpdateEventVolunteerGroupInput;
@@ -3744,6 +3757,7 @@ export type ResolversParentTypes = {
   UpdateAgendaCategoryInput: UpdateAgendaCategoryInput;
   UpdateAgendaItemInput: UpdateAgendaItemInput;
   UpdateAgendaSectionInput: UpdateAgendaSectionInput;
+  UpdateChatInput: UpdateChatInput;
   UpdateCommunityInput: UpdateCommunityInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventVolunteerGroupInput: UpdateEventVolunteerGroupInput;
@@ -4528,6 +4542,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateAgendaCategory?: Resolver<Maybe<ResolversTypes['AgendaCategory']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaCategoryArgs, 'id' | 'input'>>;
   updateAgendaItem?: Resolver<Maybe<ResolversTypes['AgendaItem']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaItemArgs, 'id' | 'input'>>;
   updateAgendaSection?: Resolver<Maybe<ResolversTypes['AgendaSection']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaSectionArgs, 'id' | 'input'>>;
+  updateChat?: Resolver<ResolversTypes['Chat'], ParentType, ContextType, RequireFields<MutationUpdateChatArgs, 'input'>>;
   updateCommunity?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateCommunityArgs, 'data'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'data' | 'id'>>;
   updateEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerArgs, 'id'>>;

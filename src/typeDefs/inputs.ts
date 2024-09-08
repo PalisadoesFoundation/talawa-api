@@ -31,7 +31,7 @@ export const inputs = gql`
   }
 
   input ChatWhereInput {
-    user: UserWhereInput,
+    user: UserWhereInput
     name_contains: String
   }
 

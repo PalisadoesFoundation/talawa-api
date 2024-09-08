@@ -12,7 +12,7 @@ import type {
   VenueWhereInput,
   CampaignWhereInput,
   PledgeWhereInput,
-  ChatWhereInput
+  ChatWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
 /**
@@ -309,7 +309,7 @@ export const getWhere = <T = unknown>(
     };
   }
 
-  if(where.name) {
+  if (where.name) {
     wherePayload = {
       ...wherePayload,
       name: { $regex: where.name, $options: "i" },

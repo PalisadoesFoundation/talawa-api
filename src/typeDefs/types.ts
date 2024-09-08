@@ -799,4 +799,10 @@ export const types = gql`
     deletedBy: [User]
     updatedAt: DateTime!
   }
+
+  input UpdateChatInput {
+    _id: ID!
+    name: String
+    image: String
+  }
 `;

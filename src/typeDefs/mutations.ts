@@ -360,5 +360,7 @@ export const mutations = gql`
     ): Organization! @auth
 
     addUserToGroupChat(userId: ID!, chatId: ID!): Chat @auth
+
+    updateChat(input: UpdateChatInput!): Chat! @auth
   }
 `;
