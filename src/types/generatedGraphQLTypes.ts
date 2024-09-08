@@ -72,6 +72,7 @@ export type ActionItem = {
   __typename?: 'ActionItem';
   _id: Scalars['ID']['output'];
   actionItemCategory?: Maybe<ActionItemCategory>;
+  allotedHours?: Maybe<Scalars['Float']['output']>;
   assignee?: Maybe<User>;
   assigner?: Maybe<User>;
   assignmentDate: Scalars['Date']['output'];
@@ -97,16 +98,24 @@ export type ActionItemCategory = {
   updatedAt: Scalars['Date']['output'];
 };
 
+export type ActionItemCategoryWhereInput = {
+  is_disabled?: InputMaybe<Scalars['Boolean']['input']>;
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type ActionItemWhereInput = {
   actionItemCategory_id?: InputMaybe<Scalars['ID']['input']>;
+  assigneeName?: InputMaybe<Scalars['String']['input']>;
+  categoryName?: InputMaybe<Scalars['String']['input']>;
   event_id?: InputMaybe<Scalars['ID']['input']>;
-  is_active?: InputMaybe<Scalars['Boolean']['input']>;
   is_completed?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type ActionItemsOrderByInput =
   | 'createdAt_ASC'
-  | 'createdAt_DESC';
+  | 'createdAt_DESC'
+  | 'dueDate_ASC'
+  | 'dueDate_DESC';
 
 export type Address = {
   __typename?: 'Address';
@@ -344,6 +353,7 @@ export type ConnectionPageInfo = {
 };
 
 export type CreateActionItemInput = {
+  allotedHours?: InputMaybe<Scalars['Float']['input']>;
   assigneeId: Scalars['ID']['input'];
   dueDate?: InputMaybe<Scalars['Date']['input']>;
   eventId?: InputMaybe<Scalars['ID']['input']>;
@@ -1391,6 +1401,7 @@ export type MutationCreateActionItemArgs = {
 
 
 export type MutationCreateActionItemCategoryArgs = {
+  isDisabled: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
   organizationId: Scalars['ID']['input'];
 };
@@ -2340,7 +2351,9 @@ export type Query = {
 
 
 export type QueryActionItemCategoriesByOrganizationArgs = {
+  orderBy?: InputMaybe<ActionItemsOrderByInput>;
   organizationId: Scalars['ID']['input'];
+  where?: InputMaybe<ActionItemCategoryWhereInput>;
 };
 
 
@@ -2350,6 +2363,7 @@ export type QueryActionItemsByEventArgs = {
 
 
 export type QueryActionItemsByOrganizationArgs = {
+  eventId?: InputMaybe<Scalars['ID']['input']>;
   orderBy?: InputMaybe<ActionItemsOrderByInput>;
   organizationId: Scalars['ID']['input'];
   where?: InputMaybe<ActionItemWhereInput>;
@@ -2786,6 +2800,7 @@ export type UpdateActionItemCategoryInput = {
 };
 
 export type UpdateActionItemInput = {
+  allotedHours?: InputMaybe<Scalars['Float']['input']>;
   assigneeId?: InputMaybe<Scalars['ID']['input']>;
   completionDate?: InputMaybe<Scalars['Date']['input']>;
   dueDate?: InputMaybe<Scalars['Date']['input']>;
@@ -3305,6 +3320,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
 export type ResolversTypes = {
   ActionItem: ResolverTypeWrapper<InterfaceActionItemModel>;
   ActionItemCategory: ResolverTypeWrapper<InterfaceActionItemCategoryModel>;
+  ActionItemCategoryWhereInput: ActionItemCategoryWhereInput;
   ActionItemWhereInput: ActionItemWhereInput;
   ActionItemsOrderByInput: ActionItemsOrderByInput;
   Address: ResolverTypeWrapper<Address>;
@@ -3521,6 +3537,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   ActionItem: InterfaceActionItemModel;
   ActionItemCategory: InterfaceActionItemCategoryModel;
+  ActionItemCategoryWhereInput: ActionItemCategoryWhereInput;
   ActionItemWhereInput: ActionItemWhereInput;
   Address: Address;
   AddressInput: AddressInput;
@@ -3721,6 +3738,7 @@ export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = Role
 export type ActionItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ActionItem'] = ResolversParentTypes['ActionItem']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   actionItemCategory?: Resolver<Maybe<ResolversTypes['ActionItemCategory']>, ParentType, ContextType>;
+  allotedHours?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   assignee?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   assigner?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   assignmentDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -4327,7 +4345,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
   checkOut?: Resolver<ResolversTypes['CheckOut'], ParentType, ContextType, RequireFields<MutationCheckOutArgs, 'data'>>;
   createActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationCreateActionItemArgs, 'actionItemCategoryId' | 'data'>>;
-  createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'name' | 'organizationId'>>;
+  createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'isDisabled' | 'name' | 'organizationId'>>;
   createAdmin?: Resolver<ResolversTypes['CreateAdminPayload'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createAdvertisement?: Resolver<Maybe<ResolversTypes['CreateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'input'>>;
   createAgendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<MutationCreateAgendaCategoryArgs, 'input'>>;
