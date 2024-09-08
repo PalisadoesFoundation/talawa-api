@@ -9,7 +9,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import type { InterfacePost } from "../../../src/models";
-import { Organization, Post } from "../../../src/models";
+import { Organization, Post, User } from "../../../src/models";
 import { posts as postResolver } from "../../../src/resolvers/Organization/posts";
 
 let testPost: TestPostType;
@@ -20,6 +20,13 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization, testPost] = await createTestPost();
+
+  await User.findByIdAndUpdate(testUser?._id, {
+    $set: {
+      image: "exampleimageurl.com",
+    },
+  });
+
   await Post.updateOne(
     {
       _id: testPost?._id,
@@ -63,9 +70,6 @@ describe("resolvers -> organization -> posts", () => {
     const posts = await Post.find({
       organization: testOrganization?._id,
     }).lean();
-
-    console.log("postPayloadedge:", postPayload.edges[0].node.likedBy[0]);
-    console.log("posts:", posts[0].likedBy[0]);
 
     expect(postPayload.edges.length).toEqual(posts.length);
     expect(postPayload.totalCount).toEqual(posts.length);
