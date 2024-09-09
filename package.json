@@ -52,7 +52,7 @@
     "@graphql-tools/utils": "^10.3.2",
     "@parcel/watcher": "^2.4.1",
     "@types/graphql-upload": "^16.0.5",
-    "@types/yargs": "^17.0.32",
+    "@types/yargs": "^17.0.33",
     "@typescript-eslint/eslint-plugin": "^8.2.0",
     "@typescript-eslint/parser": "^8.0.1",
     "axios": "^1.7.4",
