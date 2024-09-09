@@ -2020,6 +2020,7 @@ type User {
   eventAdmin: [Event]
   firstName: String!
   gender: Gender
+  identifier: Int!
   image: String
   joinedOrganizations: [Organization]
   lastName: String!
