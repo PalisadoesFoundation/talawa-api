@@ -276,6 +276,7 @@ export type ChatMessage = {
   chatMessageBelongsTo: Chat;
   createdAt: Scalars['DateTime']['output'];
   deletedBy?: Maybe<Array<Maybe<User>>>;
+  media?: Maybe<Scalars['String']['output']>;
   messageContent: Scalars['String']['output'];
   replyTo?: Maybe<ChatMessage>;
   sender: User;
@@ -1807,7 +1808,8 @@ export type MutationSendMembershipRequestArgs = {
 
 export type MutationSendMessageToChatArgs = {
   chatId: Scalars['ID']['input'];
-  messageContent: Scalars['String']['input'];
+  media?: InputMaybe<Scalars['String']['input']>;
+  messageContent?: InputMaybe<Scalars['String']['input']>;
   replyTo?: InputMaybe<Scalars['ID']['input']>;
   type: Scalars['String']['input'];
 };
@@ -3979,6 +3981,7 @@ export type ChatMessageResolvers<ContextType = any, ParentType extends Resolvers
   chatMessageBelongsTo?: Resolver<ResolversTypes['Chat'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   deletedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  media?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messageContent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   replyTo?: Resolver<Maybe<ResolversTypes['ChatMessage']>, ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -4526,7 +4529,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   revokeRefreshTokenForUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   saveFcmToken?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationSaveFcmTokenArgs>>;
   sendMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationSendMembershipRequestArgs, 'organizationId'>>;
-  sendMessageToChat?: Resolver<ResolversTypes['ChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToChatArgs, 'chatId' | 'messageContent' | 'type'>>;
+  sendMessageToChat?: Resolver<ResolversTypes['ChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToChatArgs, 'chatId' | 'type'>>;
   sendMessageToDirectChat?: Resolver<ResolversTypes['DirectChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToDirectChatArgs, 'chatId' | 'messageContent'>>;
   sendMessageToGroupChat?: Resolver<ResolversTypes['GroupChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToGroupChatArgs, 'chatId' | 'messageContent'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;

@@ -794,6 +794,7 @@ export const types = gql`
     chatMessageBelongsTo: Chat!
     replyTo: ChatMessage
     messageContent: String!
+    media: String
     type: String!
     sender: User!
     deletedBy: [User]

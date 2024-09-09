@@ -2,6 +2,8 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Chat, User, ChatMessage } from "../../models";
 import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 /**
  * This function enables to send message to chat.
  * @param _parent - parent of current request
@@ -43,10 +45,24 @@ export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
 
   const now = new Date();
 
+  let mediaFile = null;
+
+    if (args.media) {
+      const dataUrlPrefix = "data:";
+      if (args.media.startsWith(dataUrlPrefix + "image/")) {
+        mediaFile = await uploadEncodedImage(args.media, null);
+      } else if (args.media.startsWith(dataUrlPrefix + "video/")) {
+        mediaFile = await uploadEncodedVideo(args.media, null);
+      } else {
+        throw new Error("Unsupported file type.");
+      }
+    }
+
   const createdChatMessage = await ChatMessage.create({
     chatMessageBelongsTo: chat._id,
     sender: context.userId,
     messageContent: args.messageContent,
+    media: mediaFile,
     type: args.type,
     replyTo: args.replyTo,
     createdAt: now,
