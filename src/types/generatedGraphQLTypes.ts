@@ -2941,6 +2941,7 @@ export type User = {
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
   firstName: Scalars['String']['output'];
   gender?: Maybe<Gender>;
+  identifier: Scalars['Int']['output'];
   image?: Maybe<Scalars['String']['output']>;
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   lastName: Scalars['String']['output'];
@@ -4723,6 +4724,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   firstName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   gender?: Resolver<Maybe<ResolversTypes['Gender']>, ParentType, ContextType>;
+  identifier?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   lastName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
