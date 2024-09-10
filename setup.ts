@@ -221,7 +221,6 @@ export async function wipeExistingData(url: string): Promise<void> {
       }
       console.log("All existing data has been deleted.");
     }
-
   } catch {
     console.error("Could not connect to database to check for data");
   }
@@ -249,7 +248,6 @@ export async function checkDb(url: string): Promise<boolean> {
     } else {
       dbEmpty = true;
     }
-
   } catch {
     console.error("Could not connect to database to check for data");
   }
