@@ -324,8 +324,8 @@ Follow these steps for setting up a software development environment.
          ```
       2. Running asynchronously in a subshell. You will have to use the `docker-compose down` command below to stop it.
          `bash
-sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build &
-`
+      sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build &
+      `
          This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
 
 2. Accessing the Development Application: Open your web browser and navigate to:
