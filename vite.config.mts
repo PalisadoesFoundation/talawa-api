@@ -47,11 +47,14 @@ export default defineConfig({
       // is used in codecov/codecov-action github action for talawa-api.
       reporter: ["lcov", "text"],
     },
-    
+
     // Tells vitest the time limit for an individual test block run.
     testTimeout: 30000,
 
     // Use a thread pool for parallel execution to improve performance
     pool: 'threads',
+
+    // Disable file-level parallelism to process files sequentially
+    fileParallelism: false,
   },
 });
