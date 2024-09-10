@@ -68,7 +68,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
       isSuperAdmin: false,
     });
 
-    user = await User.findOneAndUpdate(
+    await User.findOneAndUpdate(
       {
         _id: user._id,
       },
@@ -82,13 +82,13 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     //   email: args.data.email.toLowerCase(),
     // }).lean();
 
-    if (!user) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
-      );
-    }
+    // if (!user) {
+    //   throw new errors.NotFoundError(
+    //     requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+    //     USER_NOT_FOUND_ERROR.CODE,
+    //     USER_NOT_FOUND_ERROR.PARAM,
+    //   );
+    // }
   }
 
   const accessToken = await createAccessToken(
