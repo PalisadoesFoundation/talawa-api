@@ -221,8 +221,9 @@ export async function wipeExistingData(url: string): Promise<void> {
       }
       console.log("All existing data has been deleted.");
     }
-  } catch (error) {
-    console.error("Could not connect to database to check for data", error);
+
+  } catch {
+    console.error("Could not connect to database to check for data");
   }
   client.close();
   // return shouldImport;
@@ -248,8 +249,9 @@ export async function checkDb(url: string): Promise<boolean> {
     } else {
       dbEmpty = true;
     }
-  } catch (error) {
-    console.error("Could not connect to database to check for data", error);
+
+  } catch {
+    console.error("Could not connect to database to check for data");
   }
   client.close();
   return dbEmpty;
@@ -859,7 +861,7 @@ async function main(): Promise<void> {
   const { shouldGenerateAccessToken } = await inquirer.prompt({
     type: "confirm",
     name: "shouldGenerateAccessToken",
-    message: "Would you like to generate a new access token secret?",
+    message: "Would you like us to auto-generate a new access token secret?",
     default: process.env.ACCESS_TOKEN_SECRET ? false : true,
   });
 
@@ -875,7 +877,8 @@ async function main(): Promise<void> {
   const { shouldGenerateRefreshToken } = await inquirer.prompt({
     type: "confirm",
     name: "shouldGenerateRefreshToken",
-    message: "Would you like to generate a new refresh token secret?",
+    message:
+      "Would you like to us to auto-generate a new refresh token secret?",
     default: process.env.REFRESH_TOKEN_SECRET ? false : true,
   });
 
@@ -1016,7 +1019,7 @@ async function main(): Promise<void> {
     {
       type: "input",
       name: "serverPort",
-      message: "Enter the server port:",
+      message: "Enter the Talawa-API server port:",
       default: process.env.SERVER_PORT || 4000,
     },
   ]);
@@ -1141,7 +1144,8 @@ async function main(): Promise<void> {
         const { overwriteDefaultData } = await inquirer.prompt({
           type: "confirm",
           name: "overwriteDefaultData",
-          message: "Do you want to import default data?",
+          message:
+            "Do you want to import the required default data to start using Talawa in a production environment?",
           default: false,
         });
         if (overwriteDefaultData) {
@@ -1150,7 +1154,8 @@ async function main(): Promise<void> {
           const { overwriteSampleData } = await inquirer.prompt({
             type: "confirm",
             name: "overwriteSampleData",
-            message: "Do you want to import sample data?",
+            message:
+              "Do you want to import Talawa sample data for testing and evaluation purposes?",
             default: false,
           });
           if (overwriteSampleData) {
@@ -1162,7 +1167,8 @@ async function main(): Promise<void> {
       const { shouldImportSampleData } = await inquirer.prompt({
         type: "confirm",
         name: "shouldImportSampleData",
-        message: "Do you want to import Sample data?",
+        message:
+          "Do you want to import Talawa sample data for testing and evaluation purposes?",
         default: false,
       });
       await wipeExistingData(process.env.MONGO_DB_URL);

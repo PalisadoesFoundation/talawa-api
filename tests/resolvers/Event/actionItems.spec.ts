@@ -12,7 +12,7 @@ let testEvent: TestEventType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [, testEvent] = await createTestActionItems();
+  [, , testEvent] = await createTestActionItems();
 });
 
 afterAll(async () => {
