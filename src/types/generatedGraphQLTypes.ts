@@ -1239,8 +1239,6 @@ export type Mutation = {
   removeEventAttendee: User;
   removeEventVolunteer: EventVolunteer;
   removeEventVolunteerGroup: EventVolunteerGroup;
-  removeFund: Fund;
-  removeFundraisingCampaign: FundraisingCampaign;
   removeFundraisingCampaignPledge: FundraisingCampaignPledge;
   removeGroupChat: GroupChat;
   removeMember: Organization;
@@ -1687,16 +1685,6 @@ export type MutationRemoveEventVolunteerArgs = {
 
 
 export type MutationRemoveEventVolunteerGroupArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationRemoveFundArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationRemoveFundraisingCampaignArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -2960,6 +2948,7 @@ export type User = {
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
   firstName: Scalars['String']['output'];
   gender?: Maybe<Gender>;
+  identifier: Scalars['Int']['output'];
   image?: Maybe<Scalars['String']['output']>;
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   lastName: Scalars['String']['output'];
@@ -4402,8 +4391,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveEventAttendeeArgs, 'data'>>;
   removeEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerArgs, 'id'>>;
   removeEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerGroupArgs, 'id'>>;
-  removeFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationRemoveFundArgs, 'id'>>;
-  removeFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignArgs, 'id'>>;
   removeFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignPledgeArgs, 'id'>>;
   removeGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveGroupChatArgs, 'chatId'>>;
   removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'data'>>;
@@ -4746,6 +4733,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   firstName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   gender?: Resolver<Maybe<ResolversTypes['Gender']>, ParentType, ContextType>;
+  identifier?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   lastName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

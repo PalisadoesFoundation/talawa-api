@@ -625,6 +625,7 @@ export const types = gql`
 
   type User {
     _id: ID!
+    identifier: Int!
     appUserProfileId: AppUserProfile
     address: Address
     birthDate: Date
