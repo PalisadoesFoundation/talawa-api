@@ -10,7 +10,6 @@ export default defineConfig({
     // specifically looks for those functions in the `globalSetup.ts` file.
     // More info here https://vitest.dev/config/#globalsetup
     globalSetup: ["./tests/helpers/globalSetup.ts"],
-
     coverage: {
       // This tells vitest to include all files from ./src in test coverage.
       all: true,
@@ -48,8 +47,11 @@ export default defineConfig({
       // is used in codecov/codecov-action github action for talawa-api.
       reporter: ["lcov", "text"],
     },
-
+    
     // Tells vitest the time limit for an individual test block run.
     testTimeout: 30000,
+
+    // Use a thread pool for parallel execution to improve performance
+    pool: 'threads',
   },
 });

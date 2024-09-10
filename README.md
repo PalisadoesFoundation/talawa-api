@@ -50,7 +50,7 @@ Core features include:
 1. The `talawa` documentation can be found at our [docs.talawa.io](https://docs.talawa.io) site.
     1. It is automatically generated from the markdown files stored in our [Talawa-Docs GitHub repository](https://github.com/PalisadoesFoundation/talawa-docs). This makes it easy for you to update our documenation.
 
-# Videos
+## Videos
 
 1. Visit our [YouTube Channel playlists](https://www.youtube.com/@PalisadoesOrganization/playlists) for more insights
    1. The "[Getting Started - Developers](https://www.youtube.com/watch?v=YpBUoHxEeyg&list=PLv50qHwThlJUIzscg9a80a9-HmAlmUdCF&index=1)" videos are extremely helpful for new open source contributors.
