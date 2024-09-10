@@ -219,7 +219,8 @@ export async function wipeExistingData(url: string): Promise<void> {
       }
       console.log("All existing data has been deleted.");
     }
-  } catch {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
     console.error("Could not connect to database to check for data");
   }
   client.close();
