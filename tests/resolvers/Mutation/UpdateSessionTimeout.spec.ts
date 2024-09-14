@@ -44,6 +44,11 @@ vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
 }));
 
+// Mock bcrypt.hash to return a fixed value
+vi.mock("bcrypt", () => ({
+  hash: vi.fn().mockResolvedValue("mockedHashedPassword"),
+}));
+
 /**
  * Establishes a connection to the database before all tests.
  */
@@ -80,14 +85,19 @@ beforeEach(async () => {
     isSuperAdmin: true,
   });
 
-  await User.updateOne(
-    {
-      _id: testUser._id.toString(),
-    },
-    {
-      appUserProfileId: testAppUserProfile?._id?.toString(),
-    },
-  );
+  // testUser = await User.findByIdAndUpdate(
+  //   testUser._id.toString(),
+  //   {
+  //     appUserProfileId: testAppUserProfile?._id?.toString(),
+  //   },
+  //   {
+  //     new: true,
+  //   },
+  // );
+
+  // Instead of separate update, include appUserProfileId at creation
+  testUser.appUserProfileId = testAppUserProfile._id;
+  await testUser.save(); // Directly save the update to testUser
 
   await Community.create({
     name: "test community",
@@ -112,7 +122,7 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
    * Tests that an error is thrown if the community does not exist.
    * Expects a NotFoundError with a translated message.
    */
-  it("throws NotFoundError if community does not exist", async () => {
+  it("returns error when attempting to update timeout for non-existent community", async () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
@@ -125,7 +135,7 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
       userId: testUser?._id,
     };
 
-    await Community.deleteMany({});
+    await Community.deleteMany({}).lean();
 
     try {
       await updateSessionTimeoutResolver?.({}, args, context);
@@ -181,7 +191,7 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
       userId: testUser?._id,
     };
 
-    await AppUserProfile.deleteOne({ userId: testUser?._id });
+    await AppUserProfile.deleteOne({ userId: testUser?._id }).lean();
 
     try {
       await updateSessionTimeoutResolver?.({}, args, context);
@@ -221,6 +231,24 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
   });
 
   /**
+   * Tests that the session timeout is updated successfully.
+   * Expects the resolver to return true upon successful update.
+   */
+  it("updates session timeout successfully", async () => {
+    const args: MutationUpdateSessionTimeoutArgs = {
+      timeout: 15,
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    const result = await updateSessionTimeoutResolver?.({}, args, context);
+
+    expect(result).toEqual(true);
+  });
+
+  /**
    * Tests that an error is thrown if the user is not a superAdmin.
    * Expects an UnauthorizedError with the appropriate message.
    */
@@ -237,14 +265,16 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
       userId: testUser?._id,
     };
 
-    AppUserProfile.findByIdAndUpdate(
+    await AppUserProfile.findByIdAndUpdate(
       {
+        // userId: testUser?._id,
+        // _id: testAppUserProfile?._id,
         _id: testUser?.appUserProfileId,
       },
       {
         isSuperAdmin: false,
       },
-    );
+    ).lean();
 
     try {
       await updateSessionTimeoutResolver?.({}, args, context);
@@ -254,23 +284,5 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
         USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
       );
     }
-  });
-
-  /**
-   * Tests that the session timeout is updated successfully.
-   * Expects the resolver to return true upon successful update.
-   */
-  it("updates session timeout successfully", async () => {
-    const args: MutationUpdateSessionTimeoutArgs = {
-      timeout: 15,
-    };
-
-    const context = {
-      userId: testUser?._id,
-    };
-
-    const result = await updateSessionTimeoutResolver?.({}, args, context);
-
-    expect(result).toEqual(true);
   });
 });
