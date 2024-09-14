@@ -85,17 +85,6 @@ beforeEach(async () => {
     isSuperAdmin: true,
   });
 
-  // testUser = await User.findByIdAndUpdate(
-  //   testUser._id.toString(),
-  //   {
-  //     appUserProfileId: testAppUserProfile?._id?.toString(),
-  //   },
-  //   {
-  //     new: true,
-  //   },
-  // );
-
-  // Instead of separate update, include appUserProfileId at creation
   testUser.appUserProfileId = testAppUserProfile._id;
   await testUser.save(); // Directly save the update to testUser
 
@@ -161,7 +150,7 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
     );
   });
 
-  it("throws NotFoundError if user does not exist", async () => {
+  it("returns error when attempting to update timeout for non-existent user", async () => {
     const args: MutationUpdateSessionTimeoutArgs = {
       timeout: 15,
     };
@@ -177,7 +166,7 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
     );
   });
 
-  it("throws NotFoundError if appUserProfile does not exist", async () => {
+  it("returns error when appUserProfile is missing for the user", async () => {
     const args: MutationUpdateSessionTimeoutArgs = {
       timeout: 15,
     };
@@ -195,7 +184,7 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
     );
   });
 
-  it("throws ValidationError if timeout is out of range", async () => {
+  it("returns validation error for timeout out of valid range", async () => {
     const args: MutationUpdateSessionTimeoutArgs = {
       timeout: 3,
     };
@@ -211,7 +200,7 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
     );
   });
 
-  it("throws UnauthorizedError if superAdmin is false", async () => {
+  it("returns unauthorized error when superAdmin is set to false", async () => {
     const args: MutationUpdateSessionTimeoutArgs = {
       timeout: 15,
     };
@@ -232,7 +221,7 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
     );
   });
 
-  it("updates session timeout successfully", async () => {
+  it("successfully updates session timeout when valid arguments are provided", async () => {
     const args: MutationUpdateSessionTimeoutArgs = {
       timeout: 15,
     };
