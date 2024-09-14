@@ -115,130 +115,127 @@ afterEach(() => {
 });
 
 /**
+ * Helper function to handle error assertions.
+ * @param resolverFunc - The resolver function to call
+ * @param args - The mutation arguments
+ * @param context - The request context
+ * @param expectedErrorMessage - The expected error message for assertion
+ */
+const assertThrowsErrorWithMessage = async (
+  resolverFunc: typeof updateSessionTimeoutResolver,
+  args: MutationUpdateSessionTimeoutArgs,
+  context: { userId: string | undefined },
+  expectedErrorMessage: string,
+): Promise<void> => {
+  const spy = vi
+    .spyOn(requestContext, "translate")
+    .mockImplementation((message) => message);
+
+  try {
+    await resolverFunc?.({}, args, context);
+  } catch (error: unknown) {
+    expect(spy).toHaveBeenCalledWith(expectedErrorMessage);
+    expect((error as Error).message).toEqual(expectedErrorMessage);
+  }
+};
+
+/**
  * Test suite for the `updateSessionTimeout` resolver function.
  */
 describe("resolvers -> Mutation -> updateSessionTimeout", () => {
-  /**
-   * Tests that an error is thrown if the community does not exist.
-   * Expects a NotFoundError with a translated message.
-   */
   it("returns error when attempting to update timeout for non-existent community", async () => {
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
     const args: MutationUpdateSessionTimeoutArgs = {
       timeout: 15,
     };
-
     const context = {
       userId: testUser?._id,
     };
 
     await Community.deleteMany({}).lean();
 
-    try {
-      await updateSessionTimeoutResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toHaveBeenCalledWith(COMMUNITY_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(
-        `Translated ${COMMUNITY_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
+    await assertThrowsErrorWithMessage(
+      updateSessionTimeoutResolver,
+      args,
+      context,
+      COMMUNITY_NOT_FOUND_ERROR.MESSAGE,
+    );
   });
 
-  /**
-   * Tests that an error is thrown if the user does not exist.
-   * Expects a NotFoundError with a translated message.
-   */
   it("throws NotFoundError if user does not exist", async () => {
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationUpdateSessionTimeoutArgs = {
-        timeout: 15,
-      };
-
-      const context = {
-        userId: new Types.ObjectId().toString(),
-      };
-
-      await updateSessionTimeoutResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-  });
-
-  /**
-   * Tests that an error is thrown if the appUserProfile does not exist.
-   * Expects a NotFoundError with a translated message.
-   */
-  it("throws NotFoundError if appUserProfile does not exist", async () => {
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
     const args: MutationUpdateSessionTimeoutArgs = {
       timeout: 15,
     };
+    const context = {
+      userId: new Types.ObjectId().toString(),
+    };
 
+    await assertThrowsErrorWithMessage(
+      updateSessionTimeoutResolver,
+      args,
+      context,
+      USER_NOT_FOUND_ERROR.MESSAGE,
+    );
+  });
+
+  it("throws NotFoundError if appUserProfile does not exist", async () => {
+    const args: MutationUpdateSessionTimeoutArgs = {
+      timeout: 15,
+    };
     const context = {
       userId: testUser?._id,
     };
 
     await AppUserProfile.deleteOne({ userId: testUser?._id }).lean();
 
-    try {
-      await updateSessionTimeoutResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toHaveBeenCalledWith(
-        APP_USER_PROFILE_NOT_FOUND_ERROR.MESSAGE,
-      );
-      expect((error as Error).message).toEqual(
-        `Translated ${APP_USER_PROFILE_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
+    await assertThrowsErrorWithMessage(
+      updateSessionTimeoutResolver,
+      args,
+      context,
+      APP_USER_PROFILE_NOT_FOUND_ERROR.MESSAGE,
+    );
   });
 
-  /**
-   * Tests that an error is thrown if the timeout value is out of range.
-   * Expects a ValidationError with the appropriate message.
-   */
   it("throws ValidationError if timeout is out of range", async () => {
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementation((message) => message);
-
     const args: MutationUpdateSessionTimeoutArgs = {
       timeout: 3,
     };
-
     const context = {
       userId: testUser?._id,
     };
 
-    try {
-      await updateSessionTimeoutResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toHaveBeenCalledWith(INVALID_TIMEOUT_RANGE.MESSAGE);
-      expect((error as Error).message).toEqual(INVALID_TIMEOUT_RANGE.MESSAGE);
-    }
+    await assertThrowsErrorWithMessage(
+      updateSessionTimeoutResolver,
+      args,
+      context,
+      INVALID_TIMEOUT_RANGE.MESSAGE,
+    );
   });
 
-  /**
-   * Tests that the session timeout is updated successfully.
-   * Expects the resolver to return true upon successful update.
-   */
+  it("throws UnauthorizedError if superAdmin is false", async () => {
+    const args: MutationUpdateSessionTimeoutArgs = {
+      timeout: 15,
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+
+    await AppUserProfile.findByIdAndUpdate(
+      { _id: testUser?.appUserProfileId },
+      { isSuperAdmin: false },
+    ).lean();
+
+    await assertThrowsErrorWithMessage(
+      updateSessionTimeoutResolver,
+      args,
+      context,
+      USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
+    );
+  });
+
   it("updates session timeout successfully", async () => {
     const args: MutationUpdateSessionTimeoutArgs = {
       timeout: 15,
     };
-
     const context = {
       userId: testUser?._id,
     };
@@ -246,43 +243,5 @@ describe("resolvers -> Mutation -> updateSessionTimeout", () => {
     const result = await updateSessionTimeoutResolver?.({}, args, context);
 
     expect(result).toEqual(true);
-  });
-
-  /**
-   * Tests that an error is thrown if the user is not a superAdmin.
-   * Expects an UnauthorizedError with the appropriate message.
-   */
-  it("throws UnauthorizedError if superAdmin is false", async () => {
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementation((message) => message);
-
-    const args: MutationUpdateSessionTimeoutArgs = {
-      timeout: 15,
-    };
-
-    const context = {
-      userId: testUser?._id,
-    };
-
-    await AppUserProfile.findByIdAndUpdate(
-      {
-        // userId: testUser?._id,
-        // _id: testAppUserProfile?._id,
-        _id: testUser?.appUserProfileId,
-      },
-      {
-        isSuperAdmin: false,
-      },
-    ).lean();
-
-    try {
-      await updateSessionTimeoutResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE,
-      );
-    }
   });
 });
