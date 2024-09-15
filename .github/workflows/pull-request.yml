@@ -74,7 +74,7 @@ jobs:
         if: steps.changed_files.outputs.any_changed == 'true'
         env:
           CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
-        run: npx eslint ${CHANGED_FILES} 
+        run: npx eslint ${CHANGED_FILES} --max-warnings=1500 && python .github/workflows/eslint_disable_check.py
 
       - name: Check for formatting errors
         run: npm run format:check
