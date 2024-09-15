@@ -4,56 +4,63 @@ import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceActionItemCategory } from "./ActionItemCategory";
 import { MILLISECONDS_IN_A_WEEK } from "../constants";
+import type { InterfaceOrganization } from "./Organization";
 
 /**
  * Interface representing a database document for ActionItem in MongoDB.
  */
 export interface InterfaceActionItem {
   _id: Types.ObjectId;
-  assigneeId: PopulatedDoc<InterfaceUser & Document>;
-  assignerId: PopulatedDoc<InterfaceUser & Document>;
-  actionItemCategoryId: PopulatedDoc<InterfaceActionItemCategory & Document>;
+  assignee: PopulatedDoc<InterfaceUser & Document>;
+  assigner: PopulatedDoc<InterfaceUser & Document>;
+  actionItemCategory: PopulatedDoc<
+    InterfaceActionItemCategory & Document
+  > | null;
   preCompletionNotes: string;
   postCompletionNotes: string;
   assignmentDate: Date;
   dueDate: Date;
   completionDate: Date;
   isCompleted: boolean;
-  eventId: PopulatedDoc<InterfaceEvent & Document>;
-  creatorId: PopulatedDoc<InterfaceUser & Document>;
+  allotedHours: number | null;
+  organization: PopulatedDoc<InterfaceOrganization & Document>;
+  event: PopulatedDoc<InterfaceEvent & Document>;
+  creator: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
   updatedAt: Date;
 }
 
 /**
  * Defines the schema for the ActionItem document.
- * @param assigneeId - User to whom the ActionItem is assigned.
- * @param assignerId - User who assigned the ActionItem.
- * @param actionItemCategoryId - ActionItemCategory to which the ActionItem belongs.
+ * @param assignee - User to whom the ActionItem is assigned.
+ * @param assigner - User who assigned the ActionItem.
+ * @param actionItemCategory - ActionItemCategory to which the ActionItem belongs.
  * @param preCompletionNotes - Notes recorded before completion.
  * @param postCompletionNotes - Notes recorded after completion.
  * @param assignmentDate - Date when the ActionItem was assigned.
  * @param dueDate - Due date for the ActionItem.
  * @param completionDate - Date when the ActionItem was completed.
  * @param isCompleted - Flag indicating if the ActionItem is completed.
- * @param eventId - Optional: Event to which the ActionItem is related.
- * @param creatorId - User who created the ActionItem.
+ * @param allotedHours - Optional: Number of hours alloted for the ActionItem.
+ * @param event - Optional: Event to which the ActionItem is related.
+ * @param organization - Organization to which the ActionItem belongs.
+ * @param creator - User who created the ActionItem.
  * @param createdAt - Timestamp when the ActionItem was created.
  * @param updatedAt - Timestamp when the ActionItem was last updated.
  */
 const actionItemSchema = new Schema(
   {
-    assigneeId: {
+    assignee: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    assignerId: {
+    assigner: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    actionItemCategoryId: {
+    actionItemCategory: {
       type: Schema.Types.ObjectId,
       ref: "ActionItemCategory",
       required: true,
@@ -84,11 +91,19 @@ const actionItemSchema = new Schema(
       required: true,
       default: false,
     },
-    eventId: {
+    allotedHours: {
+      type: Number,
+    },
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+    },
+    event: {
       type: Schema.Types.ObjectId,
       ref: "Event",
     },
-    creatorId: {
+    creator: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
