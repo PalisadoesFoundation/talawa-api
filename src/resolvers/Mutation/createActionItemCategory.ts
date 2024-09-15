@@ -111,6 +111,7 @@ export const createActionItemCategory: MutationResolvers["createActionItemCatego
     // Creates new actionItemCategory.
     const createdActionItemCategory = await ActionItemCategory.create({
       name: args.name,
+      isDisabled: args.isDisabled,
       organizationId: args.organizationId,
       creatorId: context.userId,
     });

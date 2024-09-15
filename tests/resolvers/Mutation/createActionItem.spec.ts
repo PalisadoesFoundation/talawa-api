@@ -259,7 +259,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
 
     expect(createActionItemPayload).toEqual(
       expect.objectContaining({
-        actionItemCategoryId: testCategory?._id,
+        actionItemCategory: testCategory?._id,
       }),
     );
   });
@@ -284,7 +284,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
 
     expect(createActionItemPayload).toEqual(
       expect.objectContaining({
-        actionItemCategoryId: testCategory?._id,
+        actionItemCategory: testCategory?._id,
       }),
     );
   });
@@ -313,7 +313,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
 
     expect(createActionItemPayload).toEqual(
       expect.objectContaining({
-        actionItemCategoryId: testCategory?._id,
+        actionItemCategory: testCategory?._id,
       }),
     );
   });
