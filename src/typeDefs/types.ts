@@ -277,6 +277,16 @@ export const types = gql`
     agendaItems: [AgendaItem]
   }
 
+  type EventsConnection {
+    edges: [EventsConnectionEdge!]!
+    pageInfo: DefaultConnectionPageInfo!
+    totalCount: Int
+  }
+  type EventsConnectionEdge {
+    cursor: String!
+    node: Event!
+  }
+
   type EventVolunteer {
     _id: ID!
     createdAt: DateTime!
@@ -461,6 +471,12 @@ export const types = gql`
     actionItemCategories: [ActionItemCategory]
     agendaCategories: [AgendaCategory]
     admins(adminId: ID): [User!]
+    events(
+      after: String
+      before: String
+      first: Int
+      last: Int
+    ): EventsConnection
     membershipRequests(
       first: Int
       skip: Int

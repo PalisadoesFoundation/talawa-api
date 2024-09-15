@@ -875,6 +875,19 @@ export type EventWhereInput = {
   title_starts_with?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type EventsConnection = {
+  __typename?: 'EventsConnection';
+  edges: Array<EventsConnectionEdge>;
+  pageInfo: DefaultConnectionPageInfo;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+};
+
+export type EventsConnectionEdge = {
+  __typename?: 'EventsConnectionEdge';
+  cursor: Scalars['String']['output'];
+  node: Event;
+};
+
 export type ExtendSession = {
   __typename?: 'ExtendSession';
   accessToken: Scalars['String']['output'];
@@ -1970,6 +1983,7 @@ export type Organization = {
   advertisements?: Maybe<AdvertisementsConnection>;
   agendaCategories?: Maybe<Array<Maybe<AgendaCategory>>>;
   apiUrl: Scalars['URL']['output'];
+  events?: Maybe<EventsConnection>;
   blockedUsers?: Maybe<Array<Maybe<User>>>;
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
@@ -1987,6 +2001,13 @@ export type Organization = {
   userTags?: Maybe<UserTagsConnection>;
   venues?: Maybe<Array<Maybe<Venue>>>;
   visibleInSearch: Scalars['Boolean']['output'];
+};
+
+export type OrganizationEventsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -2686,24 +2707,24 @@ export type RecurringEventMutationType =
 
 export type SocialMediaUrls = {
   __typename?: 'SocialMediaUrls';
+  X?: Maybe<Scalars['String']['output']>;
   facebook?: Maybe<Scalars['String']['output']>;
   gitHub?: Maybe<Scalars['String']['output']>;
   instagram?: Maybe<Scalars['String']['output']>;
   linkedIn?: Maybe<Scalars['String']['output']>;
   reddit?: Maybe<Scalars['String']['output']>;
   slack?: Maybe<Scalars['String']['output']>;
-  X?: Maybe<Scalars['String']['output']>;
   youTube?: Maybe<Scalars['String']['output']>;
 };
 
 export type SocialMediaUrlsInput = {
+  X?: InputMaybe<Scalars['String']['input']>;
   facebook?: InputMaybe<Scalars['String']['input']>;
   gitHub?: InputMaybe<Scalars['String']['input']>;
   instagram?: InputMaybe<Scalars['String']['input']>;
   linkedIn?: InputMaybe<Scalars['String']['input']>;
   reddit?: InputMaybe<Scalars['String']['input']>;
   slack?: InputMaybe<Scalars['String']['input']>;
-  X?: InputMaybe<Scalars['String']['input']>;
   youTube?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -3369,6 +3390,8 @@ export type ResolversTypes = {
   EventVolunteerInput: EventVolunteerInput;
   EventVolunteerResponse: EventVolunteerResponse;
   EventWhereInput: EventWhereInput;
+  EventsConnection: ResolverTypeWrapper<Omit<EventsConnection, 'edges'> & { edges: Array<ResolversTypes['EventsConnectionEdge']> }>;
+  EventsConnectionEdge: ResolverTypeWrapper<Omit<EventsConnectionEdge, 'node'> & { node: ResolversTypes['Event'] }>;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
   Feedback: ResolverTypeWrapper<InterfaceFeedbackModel>;
   FeedbackInput: FeedbackInput;
@@ -3577,6 +3600,8 @@ export type ResolversParentTypes = {
   EventVolunteerGroupWhereInput: EventVolunteerGroupWhereInput;
   EventVolunteerInput: EventVolunteerInput;
   EventWhereInput: EventWhereInput;
+  EventsConnection: Omit<EventsConnection, 'edges'> & { edges: Array<ResolversParentTypes['EventsConnectionEdge']> };
+  EventsConnectionEdge: Omit<EventsConnectionEdge, 'node'> & { node: ResolversParentTypes['Event'] };
   ExtendSession: ExtendSession;
   Feedback: InterfaceFeedbackModel;
   FeedbackInput: FeedbackInput;
@@ -4108,6 +4133,19 @@ export type EventVolunteerGroupResolvers<ContextType = any, ParentType extends R
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type EventsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventsConnection'] = ResolversParentTypes['EventsConnection']> = {
+  edges?: Resolver<Array<ResolversTypes['EventsConnectionEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['DefaultConnectionPageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EventsConnectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventsConnectionEdge'] = ResolversParentTypes['EventsConnectionEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ExtendSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtendSession'] = ResolversParentTypes['ExtendSession']> = {
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -4453,6 +4491,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   customFields?: Resolver<Array<ResolversTypes['OrganizationCustomField']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  events?: Resolver<Maybe<ResolversTypes['EventsConnection']>, ParentType, ContextType, Partial<OrganizationEventsArgs>>;
   funds?: Resolver<Maybe<Array<Maybe<ResolversTypes['Fund']>>>, ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   members?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
@@ -4654,13 +4693,13 @@ export type RecurrenceRuleResolvers<ContextType = any, ParentType extends Resolv
 };
 
 export type SocialMediaUrlsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SocialMediaUrls'] = ResolversParentTypes['SocialMediaUrls']> = {
+  X?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   facebook?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   gitHub?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   instagram?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   linkedIn?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reddit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slack?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  X?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   youTube?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -4883,6 +4922,8 @@ export type Resolvers<ContextType = any> = {
   EventAttendee?: EventAttendeeResolvers<ContextType>;
   EventVolunteer?: EventVolunteerResolvers<ContextType>;
   EventVolunteerGroup?: EventVolunteerGroupResolvers<ContextType>;
+  EventsConnection?: EventsConnectionResolvers<ContextType>;
+  EventsConnectionEdge?: EventsConnectionEdgeResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Feedback?: FeedbackResolvers<ContextType>;
   FieldError?: FieldErrorResolvers<ContextType>;
