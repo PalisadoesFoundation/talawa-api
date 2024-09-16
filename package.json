@@ -92,7 +92,7 @@
     "pm2": "^5.4.0",
     "redis": "^4.7.0",
     "rrule": "^2.8.1",
-    "typedoc-plugin-markdown": "^4.2.3",
+    "typedoc-plugin-markdown": "^4.2.7",
     "uuid": "^10.0.0",
     "validator": "^13.12.0",
     "winston": "^3.14.2",
