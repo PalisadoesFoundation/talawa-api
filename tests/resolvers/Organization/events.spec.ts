@@ -79,7 +79,7 @@ describe("events resolver", () => {
       if (error instanceof GraphQLError) {
         expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
         expect(
-          (error.extensions.errors as DefaultGraphQLArgumentError[]).length,
+          (error.extensions.errors as DefaultGraphQLArgumentError[]).length
         ).toBeGreaterThan(0);
       }
     }
@@ -92,7 +92,7 @@ describe("events resolver", () => {
       {
         first: 2,
       },
-      {},
+      {}
     );
 
     const totalCount = await Event.find({
