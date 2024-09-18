@@ -79,7 +79,7 @@ describe("events resolver", () => {
       if (error instanceof GraphQLError) {
         expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
         expect(
-          (error.extensions.errors as DefaultGraphQLArgumentError[]).length,
+          (error.extensions.errors as DefaultGraphQLArgumentError[]).length
         ).toBeGreaterThan(0);
       }
     }
@@ -92,7 +92,7 @@ describe("events resolver", () => {
       {
         first: 2,
       },
-      {},
+      {}
     );
 
     const totalCount = await Event.find({
@@ -123,6 +123,36 @@ describe("events resolver", () => {
         startCursor: testEvent2?._id.toString(),
       },
       totalCount,
+    });
+  });
+
+  it(`returns the expected connection object with cursor argument`, async () => {
+    const connection = await eventsResolver?.(
+      parent,
+      {
+        first: 1,
+        after: testEvent2?._id.toString(),
+      },
+      {},
+    );
+  
+    expect(connection).toEqual({
+      edges: [
+        {
+          cursor: testEvent1?._id.toString(),
+          node: {
+            ...testEvent1,
+            _id: testEvent1?._id.toString(),
+          },
+        },
+      ],
+      pageInfo: {
+        endCursor: testEvent1?._id.toString(),
+        hasNextPage: false,
+        hasPreviousPage: true,
+        startCursor: testEvent1?._id.toString(),
+      },
+      totalCount: 2,
     });
   });
 });

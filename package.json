@@ -25,7 +25,8 @@
     "import:sample-data": "tsx ./src/utilities/loadSampleData.ts",
     "import:sample-data:prod": "node ./build/utilities/loadSampleData.js",
     "gen:schema": "graphql-inspector introspect ./src/typeDefs/**/**/*.ts --write ./schema.graphql ",
-    "update:toc": "node scripts/githooks/update-toc.js"
+    "update:toc": "node scripts/githooks/update-toc.js",
+    "docker:dev" : "sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up"
   },
   "repository": {
     "type": "git",
