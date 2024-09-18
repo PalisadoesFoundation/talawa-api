@@ -125,6 +125,36 @@ describe("events resolver", () => {
       totalCount,
     });
   });
+
+  it(`returns the expected connection object with cursor argument`, async () => {
+    const connection = await eventsResolver?.(
+      parent,
+      {
+        first: 1,
+        after: testEvent2?._id.toString(),
+      },
+      {},
+    );
+  
+    expect(connection).toEqual({
+      edges: [
+        {
+          cursor: testEvent1?._id.toString(),
+          node: {
+            ...testEvent1,
+            _id: testEvent1?._id.toString(),
+          },
+        },
+      ],
+      pageInfo: {
+        endCursor: testEvent1?._id.toString(),
+        hasNextPage: false,
+        hasPreviousPage: true,
+        startCursor: testEvent1?._id.toString(),
+      },
+      totalCount: 2,
+    });
+  });
 });
 
 describe("parseCursor function", () => {
