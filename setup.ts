@@ -1,10 +1,8 @@
-// eslint-disable-next-line
 import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
-/* eslint-disable */
 import type { ExecException } from "child_process";
 import { exec } from "child_process";
 import { MongoClient } from "mongodb";
@@ -33,7 +31,6 @@ import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
 import { loadDefaultOrganiation } from "./src/utilities/loadDefaultOrg";
 import { isMinioInstalled } from "./src/setup/isMinioInstalled";
 import { installMinio } from "./src/setup/installMinio";
-/* eslint-enable */
 
 dotenv.config();
 
@@ -171,35 +168,32 @@ function transactionLogPath(logPath: string | null): void {
 }
 
 async function askForTransactionLogPath(): Promise<string> {
-  let logPath: string | null;
-  // Keep asking for path, until user gives a valid path
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const response = await inquirer.prompt([
-      {
-        type: "input",
-        name: "logPath",
-        message: "Enter absolute path of log file:",
-        default: null,
-      },
-    ]);
-    logPath = response.logPath;
-    if (logPath && fs.existsSync(logPath)) {
-      try {
-        fs.accessSync(logPath, fs.constants.R_OK | fs.constants.W_OK);
-        break;
-      } catch {
-        console.error(
-          "The file is not readable/writable. Please enter a valid file path.",
-        );
-      }
-    } else {
-      console.error(
-        "Invalid path or file does not exist. Please enter a valid file path.",
-      );
-    }
+  const response = await inquirer.prompt([
+    {
+      type: "input",
+      name: "logPath",
+      message: "Enter absolute path of log file:",
+      default: null,
+    },
+  ]);
+  const logPath = response.logPath;
+
+  if (!logPath || !fs.existsSync(logPath)) {
+    console.error(
+      "Invalid path or file does not exist. Please enter a valid file path.",
+    );
+    return askForTransactionLogPath();
   }
-  return logPath;
+
+  try {
+    fs.accessSync(logPath, fs.constants.R_OK | fs.constants.W_OK);
+    return logPath;
+  } catch {
+    console.error(
+      "The file is not readable/writable. Please enter a valid file path.",
+    );
+    return askForTransactionLogPath();
+  }
 }
 
 //Wipes the existing data in the database
