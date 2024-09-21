@@ -168,32 +168,37 @@ function transactionLogPath(logPath: string | null): void {
 }
 
 async function askForTransactionLogPath(): Promise<string> {
-  const response = await inquirer.prompt([
-    {
-      type: "input",
-      name: "logPath",
-      message: "Enter absolute path of log file:",
-      default: null,
-    },
-  ]);
-  const logPath = response.logPath;
+  let logPath: string | null = null;
+  let isValidPath = false;
 
-  if (!logPath || !fs.existsSync(logPath)) {
-    console.error(
-      "Invalid path or file does not exist. Please enter a valid file path.",
-    );
-    return askForTransactionLogPath();
+  while (!isValidPath) {
+    const response = await inquirer.prompt([
+      {
+        type: "input",
+        name: "logPath",
+        message: "Enter absolute path of log file:",
+        default: null,
+      },
+    ]);
+    logPath = response.logPath;
+
+    if (logPath && fs.existsSync(logPath)) {
+      try {
+        fs.accessSync(logPath, fs.constants.R_OK | fs.constants.W_OK);
+        isValidPath = true;
+      } catch {
+        console.error(
+          "The file is not readable/writable. Please enter a valid file path.",
+        );
+      }
+    } else {
+      console.error(
+        "Invalid path or file does not exist. Please enter a valid file path.",
+      );
+    }
   }
 
-  try {
-    fs.accessSync(logPath, fs.constants.R_OK | fs.constants.W_OK);
-    return logPath;
-  } catch {
-    console.error(
-      "The file is not readable/writable. Please enter a valid file path.",
-    );
-    return askForTransactionLogPath();
-  }
+  return logPath as string;
 }
 
 //Wipes the existing data in the database
