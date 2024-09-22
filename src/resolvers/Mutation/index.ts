@@ -31,7 +31,6 @@ import { createFundraisingCampaign } from "./createFundraisingCampaign";
 import { createEventVolunteerGroup } from "./createEventVolunteerGroup";
 import { createFundraisingCampaignPledge } from "./createFundraisingCampaignPledge";
 import { createMember } from "./createMember";
-import { createMessageChat } from "./createMessageChat";
 import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
 import { createPost } from "./createPost";
@@ -148,7 +147,6 @@ export const Mutation: MutationResolvers = {
   createEvent,
   createFund,
   createFundraisingCampaign,
-  createMessageChat,
   createOrganization,
   createNote,
   createPlugin,

@@ -47,7 +47,6 @@ export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
     chatMessageBelongsTo: chat._id,
     sender: context.userId,
     messageContent: args.messageContent,
-    type: args.type,
     replyTo: args.replyTo,
     createdAt: now,
     updatedAt: now,

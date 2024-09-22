@@ -48,16 +48,6 @@ export const queries = gql`
 
     chatsByUserId(id: ID!): [Chat]
 
-    directChatsByUserID(id: ID!): [DirectChat]
-
-    directChatById(id: ID!): DirectChat
-
-    groupChatById(id: ID!): GroupChat
-
-    groupChatsByUserId(id: ID!): [GroupChat]
-
-    directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
-
     event(id: ID!): Event
 
     eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]

@@ -13,7 +13,6 @@ export interface InterfaceChatMessage {
   sender: PopulatedDoc<InterfaceUser & Document>;
   replyTo: PopulatedDoc<InterfaceChatMessage & Document>;
   messageContent: string;
-  type: string;
   status: string;
   deletedBy: PopulatedDoc<InterfaceUser & Document>[];
   createdAt: Date;
@@ -52,11 +51,6 @@ const chatMessageSchema = new Schema(
     messageContent: {
       type: String,
       required: true,
-    },
-    type: {
-      type: String,
-      required: true,
-      enum: ["STRING", "VIDEO", "IMAGE", "FILE"],
     },
     status: {
       type: String,

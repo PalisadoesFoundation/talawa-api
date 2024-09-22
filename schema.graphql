@@ -213,7 +213,6 @@ type ChatMessage {
   messageContent: String!
   replyTo: ChatMessage
   sender: User!
-  type: String!
   updatedAt: DateTime!
 }
 
@@ -574,27 +573,6 @@ type DeleteAdvertisementPayload {
 
 type DeletePayload {
   success: Boolean!
-}
-
-type DirectChat {
-  _id: ID!
-  createdAt: DateTime!
-  creator: User
-  messages: [DirectChatMessage]
-  organization: Organization
-  updatedAt: DateTime!
-  users: [User!]!
-}
-
-type DirectChatMessage {
-  _id: ID!
-  createdAt: DateTime!
-  directChatMessageBelongsTo: DirectChat!
-  messageContent: String!
-  receiver: User!
-  replyTo: DirectChatMessage
-  sender: User!
-  updatedAt: DateTime!
 }
 
 type Donation {
@@ -960,27 +938,6 @@ type Group {
   updatedAt: DateTime!
 }
 
-type GroupChat {
-  _id: ID!
-  createdAt: DateTime!
-  creator: User
-  messages: [GroupChatMessage]
-  organization: Organization!
-  title: String!
-  updatedAt: DateTime!
-  users: [User!]!
-}
-
-type GroupChatMessage {
-  _id: ID!
-  createdAt: DateTime!
-  groupChatMessageBelongsTo: GroupChat!
-  messageContent: String!
-  replyTo: GroupChatMessage
-  sender: User!
-  updatedAt: DateTime!
-}
-
 type InvalidCursor implements FieldError {
   message: String!
   path: [String!]!
@@ -1195,8 +1152,6 @@ type Mutation {
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
   sendMessageToChat(chatId: ID!, messageContent: String!, replyTo: ID, type: String!): ChatMessage!
-  sendMessageToDirectChat(chatId: ID!, messageContent: String!, replyTo: ID): DirectChatMessage!
-  sendMessageToGroupChat(chatId: ID!, messageContent: String!, replyTo: ID): GroupChatMessage!
   signUp(data: UserInput!, file: String): AuthData!
   togglePostPin(id: ID!, title: String): Post!
   unassignUserTag(input: ToggleUserTagAssignInput!): User
@@ -1530,7 +1485,6 @@ type Query {
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   directChatById(id: ID!): DirectChat
   directChatsByUserID(id: ID!): [DirectChat]
-  directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
   eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
@@ -1662,8 +1616,6 @@ enum Status {
 type Subscription {
   directMessageChat: MessageChat
   messageSentToChat(userId: ID!): ChatMessage
-  messageSentToDirectChat(userId: ID!): DirectChatMessage
-  messageSentToGroupChat(userId: ID!): GroupChatMessage
   onPluginUpdate: Plugin
 }
 
