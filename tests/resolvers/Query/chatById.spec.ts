@@ -24,7 +24,7 @@ describe("resolvers->Query->chatById", () => {
     const chatByIdPayload = await chatById?.({}, args, {});
     expect(chatByIdPayload).toEqual(testChat?.toObject());
   });
-  it(`throws chat not found if fund not found for args.id`, async () => {
+  it(`throws chat not found if chat not found for args.id`, async () => {
     try {
       const args = {
         id: new Types.ObjectId().toString(),
