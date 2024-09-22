@@ -32,7 +32,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
 
       - name: Count number of lines
         run: |
@@ -74,7 +74,7 @@ jobs:
         if: steps.changed_files.outputs.any_changed == 'true'
         env:
           CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
-        run: npx eslint ${CHANGED_FILES} 
+        run: npx eslint ${CHANGED_FILES} --max-warnings=1500 && python .github/workflows/eslint_disable_check.py
 
       - name: Check for formatting errors
         run: npm run format:check
@@ -174,7 +174,7 @@ jobs:
     needs: [Code-Quality-Checks]
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x]
     services:
       mongo:
         image: mongo:4.4
@@ -219,7 +219,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
 
       - name: Generate Access Token Secret
         run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV

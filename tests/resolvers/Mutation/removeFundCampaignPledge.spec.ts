@@ -40,7 +40,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers->Mutation->removeFund", () => {
+describe("resolvers->Mutation->removeFundraisingCampaignPledge", () => {
   it("throw error if no user exists with _id===context.userId", async () => {
     try {
       const args: MutationRemoveFundraisingCampaignPledgeArgs = {
