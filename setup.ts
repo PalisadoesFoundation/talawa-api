@@ -168,7 +168,6 @@ function transactionLogPath(logPath: string | null): void {
 async function askForTransactionLogPath(): Promise<string> {
   let logPath: string | null;
   // Keep asking for path, until user gives a valid path
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const response = await inquirer.prompt([
       {
