@@ -1615,7 +1615,7 @@ enum Status {
 
 type Subscription {
   directMessageChat: MessageChat
-  messageSentToChat(userId: ID!): ChatMessage
+  messageSentToChat(userId: ID!): ChatMessage @auth
   onPluginUpdate: Plugin
 }
 
