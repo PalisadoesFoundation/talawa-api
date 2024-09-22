@@ -27,8 +27,8 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
   const { userOtp, newPassword, otpToken } = args.data;
 
   try {
-    await jwt.verify(otpToken, ACCESS_TOKEN_SECRET as string);
-  } catch (error) {
+    jwt.verify(otpToken, ACCESS_TOKEN_SECRET as string);
+  } catch {
     throw new Error(INVALID_OTP);
   }
 

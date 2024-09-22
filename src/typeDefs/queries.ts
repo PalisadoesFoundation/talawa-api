@@ -11,12 +11,15 @@ export const queries = gql`
 
     actionItemsByOrganization(
       organizationId: ID!
+      eventId: ID
       where: ActionItemWhereInput
       orderBy: ActionItemsOrderByInput
     ): [ActionItem]
 
     actionItemCategoriesByOrganization(
       organizationId: ID!
+      where: ActionItemCategoryWhereInput
+      orderBy: ActionItemsOrderByInput
     ): [ActionItemCategory]
 
     agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
