@@ -6,8 +6,8 @@ const MESSAGE_SENT_TO_CHAT = "MESSAGE_SENT_TO_CHAT";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const filterFunction = async function (
-  payload: any,
-  variables: any,
+  payload: { messageSentToChat: { chatMessageBelongsTo: string } },
+  variables: { userId: string },
 ): Promise<boolean> {
   const currentUserId = variables.userId.toString();
   const chatId = payload.messageSentToChat.chatMessageBelongsTo;

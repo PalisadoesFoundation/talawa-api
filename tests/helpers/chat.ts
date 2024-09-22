@@ -6,7 +6,7 @@ import { createTestUserAndOrganization } from "./userAndOrg";
 import type { Document } from "mongoose";
 
 export type TestChatType =
-  | (InterfaceChat & Document<any, any, InterfaceChat>)
+  | (InterfaceChat & Document<unknown, unknown, InterfaceChat>)
   | null;
 
 export type TestChatMessageType =
@@ -38,9 +38,11 @@ export const createTestChatMessage = async (): Promise<
   [TestUserType, TestOrganizationType, TestChatType, TestChatMessageType]
 > => {
   const [testUser, testOrganization, testChat] = await createTestChat();
-  console.log("TEST CHAT", testChat);
 
-  const chatMessage = await createChatMessage(testUser?._id, testChat?._id);
+  const chatMessage = await createChatMessage(
+    String(testUser?._id),
+    String(testChat?._id),
+  );
 
   if (testChat && testUser) {
     const testChatMessage = await ChatMessage.create({

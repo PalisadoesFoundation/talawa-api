@@ -42,7 +42,7 @@ describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
     };
     const payload = {
       messageSentToChat: {
-        chatMessageBelongsTo: testChatMessage?.chatMessageBelongsTo,
+        chatMessageBelongsTo: testChatMessage?.chatMessageBelongsTo as string,
       },
     };
     // @ts-expect-error-ignore
@@ -74,7 +74,7 @@ describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
 
     const payload = {
       messageSentToChat: {
-        sender: "Sender",
+        chatMessageBelongsTo: "vqhgjhShja",
       },
     };
     // @ts-expect-error-ignore
