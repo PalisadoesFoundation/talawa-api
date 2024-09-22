@@ -1,5 +1,4 @@
 /* eslint-disable no-restricted-imports */
-// eslint-disable-next-line
 import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -8,29 +7,29 @@ import path from "path";
 import type { ExecException } from "child_process";
 import { exec } from "child_process";
 import { MongoClient } from "mongodb";
-import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "../src/constants";
 import {
   askForMongoDBUrl,
   checkConnection,
   checkExistingMongoDB,
-} from "./src/setup/MongoDB";
-import { askToKeepValues } from "./src/setup/askToKeepValues";
-import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
-import { isValidEmail } from "./src/setup/isValidEmail";
-import { validateRecaptcha } from "./src/setup/reCaptcha";
+} from "../src/setup/MongoDB";
+import { askToKeepValues } from "../src/setup/askToKeepValues";
+import { getNodeEnvironment } from "../src/setup/getNodeEnvironment";
+import { isValidEmail } from "../src/setup/isValidEmail";
+import { validateRecaptcha } from "../src/setup/reCaptcha";
 import {
   askForRedisUrl,
   checkExistingRedis,
   checkRedisConnection,
-} from "./src/setup/redisConfiguration";
+} from "../src/setup/redisConfiguration";
 import {
   setImageUploadSize,
   validateImageFileSize,
-} from "./src/setup/setImageUploadSize";
-import { askForSuperAdminEmail } from "./src/setup/superAdmin";
-import { updateEnvVariable } from "./src/setup/updateEnvVariable";
-import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
-import { loadDefaultOrganiation } from "./src/utilities/loadDefaultOrg";
+} from "../src/setup/setImageUploadSize";
+import { askForSuperAdminEmail } from "../src/setup/superAdmin";
+import { updateEnvVariable } from "../src/setup/updateEnvVariable";
+import { verifySmtpConnection } from "../src/setup/verifySmtpConnection";
+import { loadDefaultOrganiation } from "../src/utilities/loadDefaultOrg";
 
 dotenv.config();
 

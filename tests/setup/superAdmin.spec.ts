@@ -3,7 +3,7 @@ import inquirer from "inquirer";
 import fs from "fs";
 import dotenv from "dotenv";
 import * as askForSuperAdminEmail from "../../src/setup/superAdmin";
-import { superAdmin } from "../../setup";
+import { superAdmin } from "../../config/setup";
 
 /*
   Test Case 1:

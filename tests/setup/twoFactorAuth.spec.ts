@@ -3,7 +3,7 @@ import inquirer from "inquirer";
 import * as isValidEmail from "../../src/setup/isValidEmail";
 import dotenv from "dotenv";
 import fs from "fs";
-import { twoFactorAuth } from "../../setup";
+import { twoFactorAuth } from "../../config/setup";
 
 /*
   Test Case 1:
