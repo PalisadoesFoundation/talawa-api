@@ -272,4 +272,5 @@ jobs:
 
       - uses: kamilkisiela/graphql-inspector@master
         with:
-          schema: ${{ steps.extract_branch.outputs.branch }}:schema.graphql    
+          schema: ./schema.graphql
+          branch: ${{ steps.extract_branch.outputs.branch }}    
