@@ -79,7 +79,7 @@
       "plugins": ["@graphql-eslint"]
     },
     {
-      "files": ["tests/**/*"],
+      "files": ["tests/**/*", "setup.ts"],
       "rules": {
         "no-restricted-imports": "off"
       }
