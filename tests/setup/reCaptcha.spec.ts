@@ -3,7 +3,7 @@ import inquirer from "inquirer";
 import * as askToKeepValues from "../../src/setup/askToKeepValues";
 import fs from "fs";
 import dotenv from "dotenv";
-import { recaptcha } from "../../config/setup";
+import { recaptcha } from "../../setup";
 import { validateRecaptcha } from "../../src/setup/reCaptcha";
 
 /*

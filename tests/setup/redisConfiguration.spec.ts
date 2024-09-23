@@ -1,5 +1,5 @@
 import { it, expect, describe, vi } from "vitest";
-import { redisConfiguration } from "../../config/setup";
+import { redisConfiguration } from "../../setup";
 import inquirer from "inquirer";
 import dotenv from "dotenv";
 import fs from "fs";

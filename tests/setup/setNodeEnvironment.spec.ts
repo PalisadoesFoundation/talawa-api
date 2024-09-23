@@ -1,7 +1,7 @@
 import fs from "fs";
 import dotenv from "dotenv";
 import { vi, describe, it, expect } from "vitest";
-import { setNodeEnvironment } from "../../config/setup";
+import { setNodeEnvironment } from "../../setup";
 import * as getNodeEnvironment from "../../src/setup/getNodeEnvironment";
 
 /*

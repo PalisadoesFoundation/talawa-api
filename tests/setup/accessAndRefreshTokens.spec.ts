@@ -1,6 +1,6 @@
 import { it, expect, describe } from "vitest";
 import dotenv from "dotenv";
-import { accessAndRefreshTokens } from "../../config/setup";
+import { accessAndRefreshTokens } from "../../setup";
 import fs from "fs";
 
 /*

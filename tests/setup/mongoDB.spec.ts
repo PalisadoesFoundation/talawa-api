@@ -1,5 +1,5 @@
 import { expect, describe, it, vi } from "vitest";
-import { mongoDB } from "../../config/setup";
+import { mongoDB } from "../../setup";
 import * as module from "../../src/setup/MongoDB";
 import inquirer from "inquirer";
 import dotenv from "dotenv";
