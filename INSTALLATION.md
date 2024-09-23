@@ -29,6 +29,15 @@ This document provides instructions on how to set up and start a running instanc
   - [Install Redis](#install-redis)
     - [Performance Benefits](#performance-benefits)
     - [Setting Up Redis](#setting-up-redis)
+  - [Set Up MinIO](#set-up-minio)
+    - [Install MinIO](#install-minio)
+      - [1. Using the Setup Script](#1-using-the-setup-script)
+      - [2. Manual MinIO Installation](#2-manual-minio-installation)
+    - [Running MinIO with Talawa-API](#running-minio-with-talawa-api)
+      - [1. Using Docker](#1-using-docker)
+      - [2. Running Locally](#2-running-locally)
+    - [Access MinIO](#access-minio)
+    - [Create a Bucket](#create-a-bucket)
 - [Configuration](#configuration)
   - [Automated Configuration of `.env`](#automated-configuration-of-env)
   - [Manual Configuration of `.env`](#manual-configuration-of-env)
@@ -50,6 +59,7 @@ This document provides instructions on how to set up and start a running instanc
       - [Setting up the RECAPTCHA_SECRET_KEY](#setting-up-the-recaptcha_secret_key)
       - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
     - [Setting up SMTP Email Variables in the .env File](#setting-up-smtp-email-variables-in-the-env-file)
+    - [Setting up MinIO configurations](#setting-up-minio-configurations)
     - [Setting up Logger configurations](#setting-up-logger-configurations)
       - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
       - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
@@ -102,6 +112,16 @@ This document provides instructions on how to set up and start a running instanc
   - [Install Redis](#install-redis)
     - [Performance Benefits](#performance-benefits)
     - [Setting Up Redis](#setting-up-redis)
+  - [Set Up MinIO](#set-up-minio)
+    - [Install MinIO](#install-minio)
+      - [1. Using the Setup Script](#1-using-the-setup-script)
+      - [2. Manual MinIO Installation](#2-manual-minio-installation)
+    - [Running MinIO with Talawa-API](#running-minio-with-talawa-api)
+      - [1. Using Docker](#1-using-docker)
+      - [2. Running Locally](#2-running-locally)
+    - [Customize MinIO Data Directory](#customize-minio-data-directory)
+    - [Access MinIO](#access-minio)
+    - [Create a Bucket](#create-a-bucket)
 - [Configuration](#configuration)
   - [Automated Configuration of `.env`](#automated-configuration-of-env)
   - [Manual Configuration of `.env`](#manual-configuration-of-env)
@@ -123,6 +143,7 @@ This document provides instructions on how to set up and start a running instanc
       - [Setting up the RECAPTCHA_SECRET_KEY](#setting-up-the-recaptcha_secret_key)
       - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
     - [Setting up SMTP Email Variables in the .env File](#setting-up-smtp-email-variables-in-the-env-file)
+    - [Setting up MinIO configurations](#setting-up-minio-configurations)
     - [Setting up Logger configurations](#setting-up-logger-configurations)
       - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
       - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
@@ -317,16 +338,14 @@ Follow these steps for setting up a software development environment.
       docker-compose -f docker-compose.dev.yaml up --build
       ```
 
-   2. Using Ubuntu:
-      1. Running synchronously. Using CTRL-C will stop it.
-         ```bash
+   2. Using Ubuntu: 1. Running synchronously. Using CTRL-C will stop it.
+      `bash
          sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build
-         ```
-      2. Running asynchronously in a subshell. You will have to use the `docker-compose down` command below to stop it.
-         `bash
-      sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build &
-      `
-         This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
+         ` 2. Running asynchronously in a subshell. You will have to use the `docker-compose down` command below to stop it.
+      `bash
+sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build &
+`
+      This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
 
 2. Accessing the Development Application: Open your web browser and navigate to:
 
@@ -489,6 +508,110 @@ Talawa-api makes use of `Redis` for caching frequently accessed data items in th
 
 Remember to adjust any paths or details as needed for your specific environment. After following these steps, you will have successfully set up Redis.
 
+## Set Up MinIO
+
+Talawa-API uses MinIO, an open-source object storage system, for storing uploaded files. MinIO will be hosted alongside Talawa-API itself, providing a self-contained solution for file storage.
+
+### Install MinIO
+
+You can either use the setup script for automatic configuration or install MinIO manually.
+
+#### 1. Using the Setup Script
+
+1. Run the setup script.
+2. The script will automatically set up environment variables, including MinIO credentials.
+
+   Details of what each prompt means can be found in the [Configuration](#configuration) section of this document.
+
+   ```bash
+   npm run setup
+   ```
+
+#### 2. Manual MinIO Installation
+
+If you choose to set up MinIO manually, follow the instructions for your operating system below. Note that the MinIO server should not be started manually as it will be handled by the Talawa-API.
+
+1. For Linux Users
+
+   - Download and Install MinIO
+     ```bash
+     wget https://dl.min.io/server/minio/release/linux-amd64/archive/minio_20240817012454.0.0_amd64.deb -O minio.deb
+     sudo dpkg -i minio.deb
+     ```
+   - Follow the official installation guide: [MinIO Installation Guide for Linux](https://min.io/docs/minio/linux/index.html)
+
+2. For Windows Users
+
+   - Download and Install MinIO
+     ```
+     https://dl.min.io/server/minio/release/windows-amd64/minio.exe
+     ```
+   - Follow the official installation guide: [MinIO Installation Guide for Windows](https://min.io/docs/minio/windows/index.html)
+
+3. For macOS Users
+   - Download and Install MinIO
+     ```bash
+     brew install minio/stable/minio
+     ```
+   - Follow the official installation guide: [MinIO Installation Guide for macOS](https://min.io/docs/minio/macos/index.html)
+
+### Running MinIO with Talawa-API
+
+You can run MinIO alongside Talawa-API using Docker or locally. Both methods ensure that MinIO is set up and running with Talawa-API.
+
+#### 1. Using Docker
+
+To run MinIO along with Talawa-API using Docker, use the following command:
+
+```bash
+docker compose -f <docker-compose-file-name> up
+```
+
+Replace `<docker-compose-file-name>` with the name of the Docker Compose file. This command will start both the Talawa-API and MinIO services as defined in the Docker Compose file.
+
+#### 2. Running Locally
+
+If you prefer to run MinIO and Talawa-API locally, use the provided npm scripts. These scripts will ensure that MinIO is installed (if not already) and start the Talawa-API server along with MinIO.
+
+- To run the development server with MinIO:
+
+  ```bash
+  npm run dev:with-minio
+  ```
+
+- To start the production server with MinIO:
+
+  ```bash
+  npm run start:with-minio
+  ```
+
+These npm scripts will check if MinIO is installed on your system. If MinIO is not installed, the scripts will install it automatically before starting the Talawa-API server.
+
+### Customize MinIO Data Directory
+
+You can customize the local storage path for MinIO in one of the following ways:
+
+1. **Using the Setup Script**: During the configuration process, the setup script allows you to specify a custom path for MinIO's local data directory. Follow the prompts to set `MINIO_DATA_DIR` to your desired path.
+
+2. **Manually Editing the .env File**: Directly modify the `MINIO_DATA_DIR` environment variable in the `.env` file to point to a different directory for storing MinIO's data.
+
+### Access MinIO
+
+- **MinIO Server:**
+
+  - If using Docker, the server will be accessible at `http://minio:9000`.
+  - If not using Docker, the server will be accessible at `http://localhost:9000`.
+
+- **MinIO Console (Web UI):** Access the console at `http://localhost:9001`.
+
+  ![MinIO webUI login](public/markdown/images/mino-webui-login.png)
+
+### Create a Bucket
+
+After logging into the MinIO web UI, create a bucket with the name specified in your `.env` file under the `MINIO_BUCKET` variable.
+
+![MinIO create bucket](public/markdown/images/minio-create-bucket.png)
+
 # Configuration
 
 It's important to configure Talawa-API to complete it's setup.
@@ -541,6 +664,11 @@ This `.env` file must be populated with the following environment variables for 
 | REDIS_PORT                   | Specifies the port of the active redis-server                             |
 | REDIS_PASSWORD(optional)     | Used for authenticating the connection request to                         |
 |                              | a hosted redis-server                                                     |
+| MINIO_ENDPOINT               | Used for connecting talawa-api to the MinIO storage.                      |
+| MINIO_ROOT_USER              | Used to authenticate with the MinIO server.                               |
+| MINIO_ROOT_PASSWORD          | Used to authenticate with the MinIO server.                               |
+| MINIO_BUCKET                 | Used for the bucket name in the MinIO storage.                            |
+| MINIO_DATA_DIR               | Defines the local directory path for MinIO storage.                       |
 
 The following sections will show you how to configure each of these parameters.
 
@@ -756,6 +884,40 @@ SMTP_SSL_TLS=true
 ```
 
 For more information on setting up a smtp server, here's a [useful article](https://sendgrid.com/blog/what-is-an-smtp-server/)
+
+### Setting up MinIO configurations
+
+To use MinIO with Talawa-API, you need to set up the following environment variables in your .env file:
+
+```
+MINIO_ENDPOINT=<minio-endpoint>
+MINIO_ROOT_USER=<you-minio-user>
+MINIO_ROOT_PASSWORD=<your-minio-password>
+MINIO_BUCKET=<your-minio-bucket-name>
+MINIO_DATA_DIR=<path-to-local-data-directory>
+```
+
+For example:
+
+```
+MINIO_ENDPOINT=http://localhost:9000
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=minioadminpassword
+MINIO_BUCKET=talawa-bucket
+MINIO_DATA_DIR=./data
+```
+
+Here are the configuration details:
+
+`MINIO_ENDPOINT`: URL where MinIO is hosted. Use http://minio:9000 for Docker setups, or http://localhost:9000 otherwise.
+
+`MINIO_ROOT_USER`: Root username for authenticating and managing MinIO resources.
+
+`MINIO_ROOT_PASSWORD`: Root password for authenticating with MinIO. Must be kept secure.
+
+`MINIO_BUCKET`: Name of the default bucket for storing files in MinIO.
+
+`MINIO_DATA_DIR`: Specifies the directory path where MinIO stores data locally. It is used to define the storage location for the MinIO server on the host machine.
 
 ### Setting up Logger configurations
 
