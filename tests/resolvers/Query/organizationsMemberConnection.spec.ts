@@ -247,6 +247,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -339,6 +340,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
     // console.log(organizationsMemberConnectionPayload, usersWithPassword);
@@ -430,6 +432,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -524,6 +527,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -618,6 +622,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -700,6 +705,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -881,6 +887,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -952,6 +959,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -1052,6 +1060,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -1133,6 +1142,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 

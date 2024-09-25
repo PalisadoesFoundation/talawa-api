@@ -2536,8 +2536,6 @@ export type QueryGetRecurringEventsArgs = {
 };
 
 
-
-
 export type QueryGetUserTagArgs = {
   id: Scalars['ID']['input'];
 };
@@ -2546,6 +2544,8 @@ export type QueryGetUserTagArgs = {
 export type QueryGetUserTagAncestorsArgs = {
   id: Scalars['ID']['input'];
 };
+
+
 export type QueryGetVenueByOrgIdArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<VenueOrderByInput>;
