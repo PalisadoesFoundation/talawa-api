@@ -82,7 +82,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
   const actionItem = await ActionItem.findOne({
     _id: args.id,
   })
-    .populate("actionItemCategoryId")
+    .populate("actionItemCategory")
     .lean();
 
   // Checks if the actionItem exists
@@ -96,24 +96,24 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
 
   const currentUserIsOrgAdmin = currentUserAppProfile.adminFor.some(
     (ogranizationId) =>
-      ogranizationId === actionItem.actionItemCategoryId.organizationId ||
+      ogranizationId === actionItem.organization ||
       new mongoose.Types.ObjectId(ogranizationId?.toString()).equals(
-        actionItem.actionItemCategoryId.organizationId,
+        actionItem.organization,
       ),
   );
 
   let currentUserIsEventAdmin = false;
 
-  if (actionItem.eventId) {
+  if (actionItem.event) {
     let currEvent: InterfaceEvent | null;
 
-    const eventFoundInCache = await findEventsInCache([actionItem.eventId]);
+    const eventFoundInCache = await findEventsInCache([actionItem.event]);
 
     currEvent = eventFoundInCache[0];
 
     if (eventFoundInCache[0] === null) {
       currEvent = await Event.findOne({
-        _id: actionItem.eventId,
+        _id: actionItem.event,
       }).lean();
 
       if (currEvent !== null) {

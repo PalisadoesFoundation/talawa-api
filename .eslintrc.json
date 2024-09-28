@@ -24,7 +24,6 @@
         "@typescript-eslint/consistent-type-assertions": "error",
         "@typescript-eslint/consistent-type-imports": "error",
         "@typescript-eslint/explicit-function-return-type": "error",
-
         // Interfaces must begin with Interface or TestInterface followed by a PascalCase name
         "@typescript-eslint/naming-convention": [
           "error",
@@ -80,7 +79,7 @@
       "plugins": ["@graphql-eslint"]
     },
     {
-      "files": ["tests/**/*"],
+      "files": ["tests/**/*", "setup.ts"],
       "rules": {
         "no-restricted-imports": "off"
       }
@@ -107,13 +106,13 @@
     ],
     // restrict the use of same package in multiple import statements
     "import/no-duplicates": "error",
-
     // warn/1, error/2, off/0
     "tsdoc/syntax": "error",
-
     // Typescript Rules
     "@typescript-eslint/ban-ts-comment": "error",
-    "@typescript-eslint/ban-types": "error",
+    "@typescript-eslint/no-unsafe-function-type": "error",
+    "@typescript-eslint/no-wrapper-object-types": "error",
+    "@typescript-eslint/no-empty-object-type": "error",
     "@typescript-eslint/no-duplicate-enum-values": "error",
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-non-null-asserted-optional-chain": "error",

@@ -75,6 +75,7 @@ export const types = gql`
     actionItemCategory: ActionItemCategory
     preCompletionNotes: String
     postCompletionNotes: String
+    allotedHours: Float
     assignmentDate: Date!
     dueDate: Date!
     completionDate: Date!
@@ -623,6 +624,7 @@ export const types = gql`
 
   type User {
     _id: ID!
+    identifier: Int!
     appUserProfileId: AppUserProfile
     address: Address
     birthDate: Date

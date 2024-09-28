@@ -47,31 +47,28 @@ describe("resolvers -> Mutation -> createCategory", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationCreateActionItemCategoryArgs = {
+        isDisabled: false,
         organizationId: testOrganization?._id,
         name: "Default",
       };
-
       const context = {
         userId: new Types.ObjectId().toString(),
       };
-
       await createActionItemCategoryResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
-
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
     try {
       const args: MutationCreateActionItemCategoryArgs = {
+        isDisabled: false,
         organizationId: new Types.ObjectId().toString(),
         name: "Default",
       };
-
       const context = {
         userId: testUser?.id,
       };
-
       await createActionItemCategoryResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
@@ -79,18 +76,16 @@ describe("resolvers -> Mutation -> createCategory", () => {
       );
     }
   });
-
   it(`throws NotAuthorizedError if the user is not a superadmin or the admin of the organization`, async () => {
     try {
       const args: MutationCreateActionItemCategoryArgs = {
+        isDisabled: false,
         organizationId: testOrganization?._id,
         name: "Default",
       };
-
       const context = {
         userId: randomUser?.id,
       };
-
       await createActionItemCategoryResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
@@ -98,23 +93,20 @@ describe("resolvers -> Mutation -> createCategory", () => {
       );
     }
   });
-
   it(`creates the actionItemCategory and returns it as an admin`, async () => {
     const args: MutationCreateActionItemCategoryArgs = {
+      isDisabled: false,
       organizationId: testOrganization?._id,
       name: "Default",
     };
-
     const context = {
       userId: testUser?._id,
     };
-
     const createCategoryPayload = await createActionItemCategoryResolver?.(
       {},
       args,
       context,
     );
-
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
         organizationId: testOrganization?._id,
@@ -122,7 +114,6 @@ describe("resolvers -> Mutation -> createCategory", () => {
       }),
     );
   });
-
   it(`creates the actionItemCategory and returns it as superAdmin`, async () => {
     const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
       {
@@ -135,22 +126,19 @@ describe("resolvers -> Mutation -> createCategory", () => {
         new: true,
       },
     );
-
     const args: MutationCreateActionItemCategoryArgs = {
+      isDisabled: false,
       organizationId: testOrganization?._id,
       name: "Default2",
     };
-
     const context = {
       userId: superAdminTestUser?.userId,
     };
-
     const createCategoryPayload = await createActionItemCategoryResolver?.(
       {},
       args,
       context,
     );
-
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
         organizationId: testOrganization?._id,
@@ -158,18 +146,16 @@ describe("resolvers -> Mutation -> createCategory", () => {
       }),
     );
   });
-
   it(`throws ConflictError when the actionItemCategory with given name already exists for the current organization`, async () => {
     try {
       const args: MutationCreateActionItemCategoryArgs = {
+        isDisabled: false,
         organizationId: testOrganization?._id,
         name: "Default2",
       };
-
       const context = {
         userId: randomUser?._id,
       };
-
       await createActionItemCategoryResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
