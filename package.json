@@ -91,7 +91,7 @@
     "mongoose-paginate-v2": "^1.8.3",
     "morgan": "^1.10.0",
     "nanoid": "^5.0.7",
-    "nodemailer": "^6.9.14",
+    "nodemailer": "^6.9.15",
     "pm2": "^5.4.0",
     "redis": "^4.7.0",
     "rrule": "^2.8.1",
