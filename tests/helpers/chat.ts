@@ -39,25 +39,28 @@ export const createTestChatMessage = async (): Promise<
 > => {
   const [testUser, testOrganization, testChat] = await createTestChat();
 
-  const chatMessage = await createChatMessage(
-    String(testUser?._id),
-    String(testChat?._id),
-  );
+  if (testChat?.id) {
+    const chatMessage = await createChatMessage(
+      testUser?._id,
+      testChat?._id.toString(),
+    );
 
-  if (testChat && testUser) {
-    const testChatMessage = await ChatMessage.create({
-      chatMessageBelongsTo: testChat._id,
-      sender: testUser._id,
-      replyTo: chatMessage?._id,
-      messageContent: `msgContent${nanoid().toLowerCase()}`,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      type: "STRING",
-    });
-    return [testUser, testOrganization, testChat, testChatMessage];
-  } else {
-    return [testUser, testOrganization, testChat, null];
+    if (testChat && testUser) {
+      const testChatMessage = await ChatMessage.create({
+        chatMessageBelongsTo: testChat._id,
+        sender: testUser._id,
+        replyTo: chatMessage?._id,
+        messageContent: `msgContent${nanoid().toLowerCase()}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        type: "STRING",
+      });
+      return [testUser, testOrganization, testChat, testChatMessage];
+    } else {
+      return [testUser, testOrganization, testChat, null];
+    }
   }
+  return [testUser, testOrganization, testChat, null];
 };
 
 export const createTestChatMessageWithoutReply = async (): Promise<

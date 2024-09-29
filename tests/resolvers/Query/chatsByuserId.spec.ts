@@ -24,7 +24,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> chatsByUserId", () => {
-  it(`throws NotFoundError if no directChats exists with directChats.users
+  it(`throws NotFoundError if no Chats exists with chats.users
   containing user with _id === args.id`, async () => {
     try {
       const args: QueryChatsByUserIdArgs = {
@@ -33,11 +33,11 @@ describe("resolvers -> Query -> chatsByUserId", () => {
 
       await chatsByUserIdResolver?.({}, args, {});
     } catch (error: unknown) {
-      expect((error as Error).message).toEqual("DirectChats not found");
+      expect((error as Error).message).toEqual("Chats not found");
     }
   });
 
-  it(`returns list of all directChats with directChat.users containing the user
+  it(`returns list of all chats with chat.users containing the user
   with _id === args.id`, async () => {
     const args: QueryChatsByUserIdArgs = {
       id: testUser?._id,

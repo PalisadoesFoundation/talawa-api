@@ -12,8 +12,7 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const userOrgChat = await createTestChatMessage();
-  testChat = userOrgChat[2];
+  [, , testChat] = await createTestChatMessage();
 });
 
 afterAll(async () => {
@@ -21,13 +20,16 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Chat -> admins", () => {
-  it(`returns user object for parent.users`, async () => {
+  it(`resolves the correct admin users for the given chat`, async () => {
     const parent = testChat?.toObject();
     if (!parent) {
       throw new Error("Parent object is undefined.");
     }
 
-    const usersPayload = await adminsResolver?.(parent, {}, {});
+    if (!adminsResolver) {
+      throw new Error("adminsResolver is not defined.");
+    }
+    const usersPayload = await adminsResolver(parent, {}, {});
 
     const users = await User.find({
       _id: {
