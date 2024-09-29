@@ -30,6 +30,12 @@ def main():
         required=True,
         help="Last resort superadmin email",
     )
+    parser.add_argument(
+        "--minio_root_user", required=True, help="Minio root user"
+    )
+    parser.add_argument(
+        "--minio_root_password", required=True, help="Minio root password"
+    )
 
     # Parse the command line arguments
     args = parser.parse_args()
@@ -56,6 +62,9 @@ def main():
     REDIS_PORT=6379
     REDIS_PASSWORD=
     TALAWA_ADMIN_URL=api-demo.talawa.io
+    MINIO_ROOT_USER={args.minio_root_user}
+    MINIO_ROOT_PASSWORD={args.minio_root_password}
+    MINIO_ENDPOINT=
     """
 
     # Write the .env file

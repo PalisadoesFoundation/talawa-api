@@ -32,6 +32,15 @@ export const envSchema = z.object({
   REDIS_HOST: z.string(),
   REDIS_PORT: z.string().refine((value) => /^\d+$/.test(value)),
   REDIS_PASSWORD: z.string().optional(),
+  MINIO_ROOT_USER: z.string(),
+  MINIO_ROOT_PASSWORD: z.string(),
+  MINIO_BUCKET: z.string(),
+  MINIO_ENDPOINT: z
+    .string()
+    .url()
+    .refine((value: string) =>
+      ["http://localhost:9000", "http://minio:9000"].includes(value),
+    ),
 });
 
 export const getEnvIssues = (): z.ZodIssue[] | void => {
