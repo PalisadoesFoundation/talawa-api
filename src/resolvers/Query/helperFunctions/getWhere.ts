@@ -3,6 +3,7 @@ import type {
   ActionItemWhereInput,
   DonationWhereInput,
   EventWhereInput,
+  EventVolunteerGroupWhereInput,
   FundWhereInput,
   InputMaybe,
   OrganizationWhereInput,
@@ -10,6 +11,8 @@ import type {
   UserWhereInput,
   VenueWhereInput,
   CampaignWhereInput,
+  PledgeWhereInput,
+  ActionItemCategoryWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
 /**
@@ -30,13 +33,16 @@ export const getWhere = <T = unknown>(
     | InputMaybe<
         Partial<
           EventWhereInput &
+            EventVolunteerGroupWhereInput &
             OrganizationWhereInput &
             PostWhereInput &
             UserWhereInput &
             DonationWhereInput &
             ActionItemWhereInput &
+            ActionItemCategoryWhereInput &
             CampaignWhereInput &
             FundWhereInput &
+            PledgeWhereInput &
             VenueWhereInput
         >
       >
@@ -196,27 +202,19 @@ export const getWhere = <T = unknown>(
     };
   }
 
-  // Return action items that are active
-  if (where.is_active) {
-    wherePayload = {
-      ...wherePayload,
-      isCompleted: false,
-    };
-  }
-
   // Return action items that are completed
-  if (where.is_completed) {
+  if (where.is_completed !== undefined) {
     wherePayload = {
       ...wherePayload,
-      isCompleted: true,
+      isCompleted: where.is_completed,
     };
   }
 
   // Return action items belonging to a specific event
-  if (where.event_id) {
+  if (where.event_id || where.eventId) {
     wherePayload = {
       ...wherePayload,
-      eventId: where.event_id,
+      eventId: where.event_id || where.eventId,
     };
   }
 
@@ -344,7 +342,7 @@ export const getWhere = <T = unknown>(
     };
   }
 
-  // Returns organizations with name containing provided string
+  // Returns objects with name containing provided string
   if (where.name_contains) {
     wherePayload = {
       ...wherePayload,
@@ -352,7 +350,7 @@ export const getWhere = <T = unknown>(
     };
   }
 
-  // Returns organizations with name starts with that provided string
+  // Returns objects where name starts with provided string
   if (where.name_starts_with) {
     const regexp = new RegExp("^" + where.name_starts_with);
     wherePayload = {
@@ -742,21 +740,45 @@ export const getWhere = <T = unknown>(
     };
   }
 
-  if (where.name_starts_with) {
-    const regexp = new RegExp("^" + where.name_starts_with);
+  // Returns objects with provided fundId condition
+  if (where.fundId) {
     wherePayload = {
       ...wherePayload,
-      name: regexp,
+      fundId: where.fundId,
     };
   }
 
-  if (where.name_contains) {
+  // Returns object with provided organizationId condition
+  if (where.organizationId) {
     wherePayload = {
       ...wherePayload,
-      name: {
-        $regex: where.name_contains,
-        $options: "i",
+      organizationId: where.organizationId,
+    };
+  }
+
+  // Returns object with provided campaignId condition
+  if (where.campaignId) {
+    wherePayload = {
+      ...wherePayload,
+      _id: where.campaignId,
+    };
+  }
+
+  // Returns objects where volunteerId is present in volunteers list
+  if (where.volunteerId) {
+    wherePayload = {
+      ...wherePayload,
+      volunteers: {
+        $in: [where.volunteerId],
       },
+    };
+  }
+
+  // Returns object with provided is_disabled condition
+  if (where.is_disabled !== undefined) {
+    wherePayload = {
+      ...wherePayload,
+      isDisabled: where.is_disabled,
     };
   }
 

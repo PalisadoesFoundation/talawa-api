@@ -42,6 +42,7 @@ export const inputs = gql`
   input CreateActionItemInput {
     assigneeId: ID!
     preCompletionNotes: String
+    allotedHours: Float
     dueDate: Date
     eventId: ID
   }
@@ -74,8 +75,14 @@ export const inputs = gql`
   input ActionItemWhereInput {
     actionItemCategory_id: ID
     event_id: ID
-    is_active: Boolean
+    categoryName: String
+    assigneeName: String
     is_completed: Boolean
+  }
+
+  input ActionItemCategoryWhereInput {
+    name_contains: String
+    is_disabled: Boolean
   }
 
   input CreateAgendaCategoryInput {
@@ -151,6 +158,12 @@ export const inputs = gql`
     volunteersRequired: Int
   }
 
+  input EventVolunteerGroupWhereInput {
+    eventId: ID
+    volunteerId: ID
+    name_contains: String
+  }
+
   input UpdateEventVolunteerInput {
     eventId: ID
     isAssigned: Boolean
@@ -222,6 +235,7 @@ export const inputs = gql`
     endDate: Date!
     fundingGoal: Float!
     currency: Currency!
+    organizationId: ID!
   }
   input FundCampaignPledgeInput {
     campaignId: ID!
@@ -237,6 +251,16 @@ export const inputs = gql`
   }
 
   input CampaignWhereInput {
+    id: ID
+    fundId: ID
+    organizationId: ID
+    name_contains: String
+  }
+
+  input PledgeWhereInput {
+    id: ID
+    campaignId: ID
+    firstName_contains: String
     name_contains: String
   }
 
@@ -391,7 +415,7 @@ export const inputs = gql`
     linkedIn: String
     reddit: String
     slack: String
-    twitter: String
+    X: String
     youTube: String
   }
 
@@ -406,6 +430,7 @@ export const inputs = gql`
     postCompletionNotes: String
     dueDate: Date
     completionDate: Date
+    allotedHours: Float
     isCompleted: Boolean
   }
 
@@ -473,8 +498,8 @@ export const inputs = gql`
   }
 
   input UpdateUserTagInput {
-    _id: ID!
-    tagColor: String!
+    tagId: ID!
+    tagColor: String
     name: String!
   }
 

@@ -143,10 +143,11 @@ beforeAll(async () => {
   });
 
   testActionItem = await ActionItem.create({
-    creatorId: testUsers[0]?._id,
-    assigneeId: testUsers[1]?._id,
-    assignerId: testUsers[0]?._id,
-    actionItemCategoryId: testCategory?._id,
+    creator: testUsers[0]?._id,
+    assignee: testUsers[1]?._id,
+    assigner: testUsers[0]?._id,
+    actionItemCategory: testCategory?._id,
+    organization: testOrganization?._id,
   });
 
   await Organization.updateOne(

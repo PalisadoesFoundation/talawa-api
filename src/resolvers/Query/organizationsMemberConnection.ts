@@ -111,6 +111,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
     if (paginateOptions.pagination) {
       users = usersModel.docs.map((user) => ({
         _id: user._id,
+        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: {
           city: user.address?.city,
@@ -144,6 +145,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
     } else {
       users = usersModel.docs.map((user) => ({
         _id: user._id,
+        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: {
           city: user.address?.city,

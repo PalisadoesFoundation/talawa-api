@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       const args: MutationUpdateUserTagArgs = {
         input: {
           // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
-          _id: testTag!._id.toString(),
+          tagId: testTag!._id.toString(),
           name: "NewName",
           tagColor: "#000000",
         },
@@ -92,7 +92,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     try {
       const args: MutationUpdateUserTagArgs = {
         input: {
-          _id: new Types.ObjectId().toString(),
+          tagId: new Types.ObjectId().toString(),
           name: "NewName",
           tagColor: "#000000",
         },
@@ -125,7 +125,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       const args: MutationUpdateUserTagArgs = {
         input: {
           // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
-          _id: testTag!._id.toString(),
+          tagId: testTag!._id.toString(),
           name: "NewName",
           tagColor: "#000000",
         },
@@ -162,7 +162,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       const args: MutationUpdateUserTagArgs = {
         input: {
           // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
-          _id: testTag!._id.toString(),
+          tagId: testTag!._id.toString(),
           // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
           name: testTag!.name,
           tagColor: "#000000",
@@ -198,7 +198,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
       const args: MutationUpdateUserTagArgs = {
         input: {
           // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
-          _id: testTag!._id.toString(),
+          tagId: testTag!._id.toString(),
           // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
           name: testTag2!.name,
           // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
@@ -226,7 +226,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     const args: MutationUpdateUserTagArgs = {
       input: {
         // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
-        _id: testTag!._id.toString(),
+        tagId: testTag!._id.toString(),
         name: "NewName",
         tagColor: "#000000",
       },

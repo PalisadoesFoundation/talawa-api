@@ -1,6 +1,7 @@
 node_modules
 videos
 images
+data
 .env
 .git
 .gitignore

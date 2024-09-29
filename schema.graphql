@@ -5,6 +5,7 @@ directive @role(requires: UserType) on FIELD_DEFINITION
 type ActionItem {
   _id: ID!
   actionItemCategory: ActionItemCategory
+  allotedHours: Float
   assignee: User
   assigner: User
   assignmentDate: Date!
@@ -29,16 +30,24 @@ type ActionItemCategory {
   updatedAt: Date!
 }
 
+input ActionItemCategoryWhereInput {
+  is_disabled: Boolean
+  name_contains: String
+}
+
 input ActionItemWhereInput {
   actionItemCategory_id: ID
+  assigneeName: String
+  categoryName: String
   event_id: ID
-  is_active: Boolean
   is_completed: Boolean
 }
 
 enum ActionItemsOrderByInput {
   createdAt_ASC
   createdAt_DESC
+  dueDate_ASC
+  dueDate_DESC
 }
 
 type Address {
@@ -148,10 +157,12 @@ type AppUserProfile {
   _id: ID!
   adminFor: [Organization]
   appLanguageCode: String!
+  campaigns: [FundraisingCampaign]
   createdEvents: [Event]
   createdOrganizations: [Organization]
   eventAdmin: [Event]
   isSuperAdmin: Boolean!
+  pledges: [FundraisingCampaignPledge]
   pluginCreationAllowed: Boolean!
   userId: User!
 }
@@ -173,7 +184,10 @@ enum CampaignOrderByInput {
 }
 
 input CampaignWhereInput {
+  fundId: ID
+  id: ID
   name_contains: String
+  organizationId: ID
 }
 
 type CheckIn {
@@ -264,6 +278,7 @@ interface ConnectionPageInfo {
 scalar CountryCode
 
 input CreateActionItemInput {
+  allotedHours: Float
   assigneeId: ID!
   dueDate: Date
   eventId: ID
@@ -743,6 +758,12 @@ input EventVolunteerGroupInput {
   volunteersRequired: Int
 }
 
+input EventVolunteerGroupWhereInput {
+  eventId: ID
+  name_contains: String
+  volunteerId: ID
+}
+
 input EventVolunteerInput {
   eventId: ID!
   groupId: ID!
@@ -840,6 +861,7 @@ input FundCampaignInput {
   fundId: ID!
   fundingGoal: Float!
   name: String!
+  organizationId: ID!
   startDate: Date!
 }
 
@@ -878,6 +900,7 @@ type FundraisingCampaign {
   fundId: Fund!
   fundingGoal: Float!
   name: String!
+  organizationId: Organization!
   pledges: [FundraisingCampaignPledge]
   startDate: Date!
   updatedAt: DateTime!
@@ -886,7 +909,7 @@ type FundraisingCampaign {
 type FundraisingCampaignPledge {
   _id: ID!
   amount: Float!
-  campaigns: [FundraisingCampaign]!
+  campaign: FundraisingCampaign!
   currency: Currency!
   endDate: Date
   startDate: Date
@@ -1067,7 +1090,7 @@ type Mutation {
   checkIn(data: CheckInCheckOutInput!): CheckIn!
   checkOut(data: CheckInCheckOutInput!): CheckOut!
   createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
-  createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory!
+  createActionItemCategory(isDisabled: Boolean!, name: String!, organizationId: ID!): ActionItemCategory!
   createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
   createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
   createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
@@ -1124,8 +1147,6 @@ type Mutation {
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
   removeEventVolunteerGroup(id: ID!): EventVolunteerGroup!
-  removeFund(id: ID!): Fund!
-  removeFundraisingCampaign(id: ID!): FundraisingCampaign!
   removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
@@ -1336,6 +1357,13 @@ enum PledgeOrderByInput {
   startDate_DESC
 }
 
+input PledgeWhereInput {
+  campaignId: ID
+  firstName_contains: String
+  id: ID
+  name_contains: String
+}
+
 type Plugin {
   _id: ID!
   pluginCreatedBy: String!
@@ -1456,9 +1484,9 @@ type PostsConnection {
 }
 
 type Query {
-  actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
+  actionItemCategoriesByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemCategoryWhereInput): [ActionItemCategory]
   actionItemsByEvent(eventId: ID!): [ActionItem]
-  actionItemsByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
+  actionItemsByOrganization(eventId: ID, orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
@@ -1487,11 +1515,15 @@ type Query {
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
+  getEventVolunteerGroups(where: EventVolunteerGroupWhereInput): [EventVolunteerGroup]!
   getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
-  getFundraisingCampaignById(id: ID!, orderBy: PledgeOrderByInput): FundraisingCampaign!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
+  getFundraisingCampaigns(campaignOrderby: CampaignOrderByInput, pledgeOrderBy: PledgeOrderByInput, where: CampaignWhereInput): [FundraisingCampaign]!
   getNoteById(id: ID!): Note!
+  getPledgesByUserId(orderBy: PledgeOrderByInput, userId: ID!, where: PledgeWhereInput): [FundraisingCampaignPledge]
   getPlugins: [Plugin]
+  getUserTag(id: ID!): UserTag
+  getUserTagAncestors(id: ID!): [UserTag]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getlanguage(lang_code: String!): [Translation]
   groupChatById(id: ID!): GroupChat
@@ -1550,24 +1582,24 @@ enum RecurringEventMutationType {
 }
 
 type SocialMediaUrls {
+  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
-  twitter: String
   youTube: String
 }
 
 input SocialMediaUrlsInput {
+  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
-  twitter: String
   youTube: String
 }
 
@@ -1637,6 +1669,7 @@ input UpdateActionItemCategoryInput {
 }
 
 input UpdateActionItemInput {
+  allotedHours: Float
   assigneeId: ID
   completionDate: Date
   dueDate: Date
@@ -1777,9 +1810,9 @@ input UpdateUserPasswordInput {
 }
 
 input UpdateUserTagInput {
-  _id: ID!
   name: String!
-  tagColor: String!
+  tagColor: String
+  tagId: ID!
 }
 
 scalar Upload
@@ -1796,6 +1829,7 @@ type User {
   eventAdmin: [Event]
   firstName: String!
   gender: Gender
+  identifier: Int!
   image: String
   joinedOrganizations: [Organization]
   lastName: String!
@@ -1917,7 +1951,7 @@ type UserTag {
 type UserTagsConnection {
   edges: [UserTagsConnectionEdge!]!
   pageInfo: DefaultConnectionPageInfo!
-  totalCount: PositiveInt
+  totalCount: Int
 }
 
 """A default connection edge on the UserTag type for UserTagsConnection."""
@@ -1965,6 +1999,7 @@ input UserWhereInput {
 type UsersConnection {
   edges: [UsersConnectionEdge!]!
   pageInfo: DefaultConnectionPageInfo!
+  totalCount: Int
 }
 
 """A default connection edge on the User type for UsersConnection."""

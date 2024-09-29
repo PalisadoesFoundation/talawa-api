@@ -217,13 +217,15 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
 
   // Creates and returns the new action item.
   const createActionItem = await ActionItem.create({
-    assigneeId: args.data.assigneeId,
-    assignerId: context.userId,
-    actionItemCategoryId: args.actionItemCategoryId,
+    assignee: args.data.assigneeId,
+    assigner: context.userId,
+    actionItemCategory: args.actionItemCategoryId,
     preCompletionNotes: args.data.preCompletionNotes,
+    allotedHours: args.data.allotedHours,
     dueDate: args.data.dueDate,
-    eventId: args.data.eventId,
-    creatorId: context.userId,
+    event: args.data.eventId,
+    organization: actionItemCategory.organizationId,
+    creator: context.userId,
   });
 
   return createActionItem.toObject();

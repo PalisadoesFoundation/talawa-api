@@ -1,10 +1,11 @@
+import { Types } from "mongoose";
 import {
   FUNDRAISING_CAMPAIGN_PLEDGE_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceUser } from "../../models";
-import { User } from "../../models";
+import { AppUserProfile, User } from "../../models";
 import {
   FundraisingCampaignPledge,
   type InterfaceFundraisingCampaignPledges,
@@ -82,6 +83,53 @@ export const updateFundraisingCampaignPledge: MutationResolvers["updateFundraisi
           USER_NOT_FOUND_ERROR.PARAM,
         );
       }
+
+      // Identify all users who were previously part of the pledge and were removed
+      const usersRemoved = pledge.users.filter(
+        (userId) => userId && !args.data.users?.includes(userId.toString()),
+      );
+
+      // Update AppUserProfile for every user who was removed from the pledge
+      for (const userId of usersRemoved) {
+        const updatedUserProfile = await AppUserProfile.findOneAndUpdate(
+          { userId },
+          { $pull: { pledges: args.id } },
+          { new: true },
+        );
+
+        // Remove campaign from appUserProfile if there is no pledge left for that campaign.
+        const pledges =
+          updatedUserProfile?.pledges as InterfaceFundraisingCampaignPledges[];
+
+        const campaignId = pledge.campaign?.toString();
+        const otherPledges = pledges.filter(
+          (p) => p.campaign?.toString() === campaignId,
+        );
+
+        if (otherPledges.length === 0) {
+          await AppUserProfile.findOneAndUpdate(
+            { userId },
+            { $pull: { campaigns: campaignId } },
+            { new: true },
+          );
+        }
+      }
+
+      // Identify all users who are newly added to the pledge
+      const usersAdded = args.data.users.filter(
+        (userId) =>
+          userId && !pledge.users.includes(new Types.ObjectId(userId)),
+      );
+
+      // Update AppUserProfile for every user who is newly added to the pledge
+      await AppUserProfile.updateMany(
+        {
+          userId: { $in: usersAdded },
+        },
+        {
+          $addToSet: { pledges: pledge._id, campaigns: pledge.campaign },
+        },
+      );
     }
 
     const updatedPledge = await FundraisingCampaignPledge.findOneAndUpdate(
