@@ -1100,9 +1100,7 @@ type Mutation {
   addPledgeToFundraisingCampaign(campaignId: ID!, pledgeId: ID!): FundraisingCampaignPledge!
   addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
-  addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
   addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
-  adminRemoveGroup(groupId: ID!): GroupChat!
   assignUserTag(input: ToggleUserTagAssignInput!): User
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): AppUserProfile!
   blockUser(organizationId: ID!, userId: ID!): User!
@@ -1125,7 +1123,6 @@ type Mutation {
   createFund(data: FundInput!): Fund!
   createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
   createFundraisingCampaignPledge(data: FundCampaignPledgeInput!): FundraisingCampaignPledge!
-  createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): CreateMemberPayload!
   createMessageChat(data: MessageChatInput!): MessageChat!
   createNote(data: NoteInput!): Note!
@@ -1163,7 +1160,6 @@ type Mutation {
   removeAgendaItem(id: ID!): AgendaItem!
   removeAgendaSection(id: ID!): ID!
   removeComment(id: ID!): Comment
-  removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!, recurringEventDeleteType: RecurringEventMutationType): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
@@ -1171,7 +1167,6 @@ type Mutation {
   removeFund(id: ID!): Fund!
   removeFundraisingCampaign(id: ID!): FundraisingCampaign!
   removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge!
-  removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): UserData!
   removeOrganizationCustomField(customFieldId: ID!, organizationId: ID!): OrganizationCustomField!
@@ -1180,7 +1175,6 @@ type Mutation {
   removeSampleOrganization: Boolean!
   removeUserCustomData(organizationId: ID!): UserCustomData!
   removeUserFamily(familyId: ID!): UserFamily!
-  removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
   removeUserFromUserFamily(familyId: ID!, userId: ID!): UserFamily!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
@@ -1189,8 +1183,6 @@ type Mutation {
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
   sendMessageToChat(chatId: ID!, messageContent: String!, replyTo: ID, type: String!): ChatMessage!
-  sendMessageToDirectChat(chatId: ID!, messageContent: String!, replyTo: ID): DirectChatMessage!
-  sendMessageToGroupChat(chatId: ID!, messageContent: String!, replyTo: ID): GroupChatMessage!
   signUp(data: UserInput!, file: String): AuthData!
   togglePostPin(id: ID!, title: String): Post!
   unassignUserTag(input: ToggleUserTagAssignInput!): User
@@ -1608,24 +1600,24 @@ enum RecurringEventMutationType {
 }
 
 type SocialMediaUrls {
+  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
-  X: String
   youTube: String
 }
 
 input SocialMediaUrlsInput {
+  X: String
   facebook: String
   gitHub: String
   instagram: String
   linkedIn: String
   reddit: String
   slack: String
-  X: String
   youTube: String
 }
 

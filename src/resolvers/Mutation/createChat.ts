@@ -3,8 +3,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { Chat, Organization, User } from "../../models";
-import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { Chat, User } from "../../models";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
@@ -23,20 +22,12 @@ export const createChat: MutationResolvers["createChat"] = async (
   context,
 ) => {
   let organization;
-  const usersInChat = [];
   if (args.data.isGroup && args.data.organizationId) {
     const organizationFoundInCache = await findOrganizationsInCache([
       args.data.organizationId,
     ]);
 
     organization = organizationFoundInCache[0];
-
-    if (organizationFoundInCache.includes(null)) {
-      organization = await Organization.findOne({
-        _id: args.data.organizationId,
-      }).lean();
-      if (organization) await cacheOrganizations([organization]);
-    }
 
     // Checks whether organization with _id === args.data.organizationId exists.
     if (!organization) {
@@ -48,26 +39,26 @@ export const createChat: MutationResolvers["createChat"] = async (
     }
   }
 
-  for await (const userId of args.data.userIds) {
-    const userExists = !!(await User.exists({
-      _id: userId,
-    }));
+  const userExists = (await User.exists({
+    _id: { $in: args.data.userIds },
+  })) as unknown as string[];
 
-    // Checks whether user with _id === userId exists.
-    if (userExists === false) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
-      );
-    }
-    usersInChat.push(userId);
+  if (userExists && userExists.length !== args.data.userIds.length) {
+    // Find which user ID(s) do not exist
+    const missingUsers = args.data.userIds.filter(
+      (id) => !userExists.includes(id),
+    );
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      JSON.stringify({ missingUsers: missingUsers }),
+    );
   }
 
   const now = new Date();
 
   const unseenMessagesByUsers = JSON.stringify(
-    usersInChat.reduce((unseenMessages: Record<string, number>, user) => {
+    args.data.userIds.reduce((unseenMessages: Record<string, number>, user) => {
       unseenMessages[user] = 0;
       return unseenMessages;
     }, {}),
@@ -77,8 +68,8 @@ export const createChat: MutationResolvers["createChat"] = async (
     ? {
         isGroup: args.data.isGroup,
         creatorId: context.userId,
-        users: usersInChat,
-        organization: args.data?.organizationId,
+        users: args.data.userIds,
+        organization: args.data.organizationId,
         name: args.data?.name,
         admins: [context.userId],
         createdAt: now,
@@ -88,7 +79,7 @@ export const createChat: MutationResolvers["createChat"] = async (
       }
     : {
         creatorId: context.userId,
-        users: usersInChat,
+        users: args.data.userIds,
         isGroup: args.data.isGroup,
         createdAt: now,
         updatedAt: now,
@@ -97,5 +88,5 @@ export const createChat: MutationResolvers["createChat"] = async (
 
   const createdChat = await Chat.create(chatPayload);
 
-  return createdChat.toObject();
+  return createdChat;
 };

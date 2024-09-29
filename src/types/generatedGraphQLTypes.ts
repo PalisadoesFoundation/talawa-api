@@ -1191,9 +1191,7 @@ export type Mutation = {
   addPledgeToFundraisingCampaign: FundraisingCampaignPledge;
   addUserCustomData: UserCustomData;
   addUserImage: User;
-  addUserToGroupChat: GroupChat;
   addUserToUserFamily: UserFamily;
-  adminRemoveGroup: GroupChat;
   assignUserTag?: Maybe<User>;
   blockPluginCreationBySuperadmin: AppUserProfile;
   blockUser: User;
@@ -1216,7 +1214,6 @@ export type Mutation = {
   createFund: Fund;
   createFundraisingCampaign: FundraisingCampaign;
   createFundraisingCampaignPledge: FundraisingCampaignPledge;
-  createGroupChat: GroupChat;
   createMember: CreateMemberPayload;
   createMessageChat: MessageChat;
   createNote: Note;
@@ -1254,7 +1251,6 @@ export type Mutation = {
   removeAgendaItem: AgendaItem;
   removeAgendaSection: Scalars['ID']['output'];
   removeComment?: Maybe<Comment>;
-  removeDirectChat: DirectChat;
   removeEvent: Event;
   removeEventAttendee: User;
   removeEventVolunteer: EventVolunteer;
@@ -1262,7 +1258,6 @@ export type Mutation = {
   removeFund: Fund;
   removeFundraisingCampaign: FundraisingCampaign;
   removeFundraisingCampaignPledge: FundraisingCampaignPledge;
-  removeGroupChat: GroupChat;
   removeMember: Organization;
   removeOrganization: UserData;
   removeOrganizationCustomField: OrganizationCustomField;
@@ -1271,7 +1266,6 @@ export type Mutation = {
   removeSampleOrganization: Scalars['Boolean']['output'];
   removeUserCustomData: UserCustomData;
   removeUserFamily: UserFamily;
-  removeUserFromGroupChat: GroupChat;
   removeUserFromUserFamily: UserFamily;
   removeUserImage: User;
   removeUserTag?: Maybe<UserTag>;
@@ -1280,8 +1274,6 @@ export type Mutation = {
   saveFcmToken: Scalars['Boolean']['output'];
   sendMembershipRequest: MembershipRequest;
   sendMessageToChat: ChatMessage;
-  sendMessageToDirectChat: DirectChatMessage;
-  sendMessageToGroupChat: GroupChatMessage;
   signUp: AuthData;
   togglePostPin: Post;
   unassignUserTag?: Maybe<User>;
@@ -1365,20 +1357,9 @@ export type MutationAddUserImageArgs = {
 };
 
 
-export type MutationAddUserToGroupChatArgs = {
-  chatId: Scalars['ID']['input'];
-  userId: Scalars['ID']['input'];
-};
-
-
 export type MutationAddUserToUserFamilyArgs = {
   familyId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
-};
-
-
-export type MutationAdminRemoveGroupArgs = {
-  groupId: Scalars['ID']['input'];
 };
 
 
@@ -1500,11 +1481,6 @@ export type MutationCreateFundraisingCampaignArgs = {
 
 export type MutationCreateFundraisingCampaignPledgeArgs = {
   data: FundCampaignPledgeInput;
-};
-
-
-export type MutationCreateGroupChatArgs = {
-  data: CreateGroupChatInput;
 };
 
 
@@ -1689,12 +1665,6 @@ export type MutationRemoveCommentArgs = {
 };
 
 
-export type MutationRemoveDirectChatArgs = {
-  chatId: Scalars['ID']['input'];
-  organizationId: Scalars['ID']['input'];
-};
-
-
 export type MutationRemoveEventArgs = {
   id: Scalars['ID']['input'];
   recurringEventDeleteType?: InputMaybe<RecurringEventMutationType>;
@@ -1728,11 +1698,6 @@ export type MutationRemoveFundraisingCampaignArgs = {
 
 export type MutationRemoveFundraisingCampaignPledgeArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type MutationRemoveGroupChatArgs = {
-  chatId: Scalars['ID']['input'];
 };
 
 
@@ -1772,12 +1737,6 @@ export type MutationRemoveUserFamilyArgs = {
 };
 
 
-export type MutationRemoveUserFromGroupChatArgs = {
-  chatId: Scalars['ID']['input'];
-  userId: Scalars['ID']['input'];
-};
-
-
 export type MutationRemoveUserFromUserFamilyArgs = {
   familyId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
@@ -1804,20 +1763,6 @@ export type MutationSendMessageToChatArgs = {
   messageContent: Scalars['String']['input'];
   replyTo?: InputMaybe<Scalars['ID']['input']>;
   type: Scalars['String']['input'];
-};
-
-
-export type MutationSendMessageToDirectChatArgs = {
-  chatId: Scalars['ID']['input'];
-  messageContent: Scalars['String']['input'];
-  replyTo?: InputMaybe<Scalars['ID']['input']>;
-};
-
-
-export type MutationSendMessageToGroupChatArgs = {
-  chatId: Scalars['ID']['input'];
-  messageContent: Scalars['String']['input'];
-  replyTo?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -2746,24 +2691,24 @@ export type RecurringEventMutationType =
 
 export type SocialMediaUrls = {
   __typename?: 'SocialMediaUrls';
+  X?: Maybe<Scalars['String']['output']>;
   facebook?: Maybe<Scalars['String']['output']>;
   gitHub?: Maybe<Scalars['String']['output']>;
   instagram?: Maybe<Scalars['String']['output']>;
   linkedIn?: Maybe<Scalars['String']['output']>;
   reddit?: Maybe<Scalars['String']['output']>;
   slack?: Maybe<Scalars['String']['output']>;
-  X?: Maybe<Scalars['String']['output']>;
   youTube?: Maybe<Scalars['String']['output']>;
 };
 
 export type SocialMediaUrlsInput = {
+  X?: InputMaybe<Scalars['String']['input']>;
   facebook?: InputMaybe<Scalars['String']['input']>;
   gitHub?: InputMaybe<Scalars['String']['input']>;
   instagram?: InputMaybe<Scalars['String']['input']>;
   linkedIn?: InputMaybe<Scalars['String']['input']>;
   reddit?: InputMaybe<Scalars['String']['input']>;
   slack?: InputMaybe<Scalars['String']['input']>;
-  X?: InputMaybe<Scalars['String']['input']>;
   youTube?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -4414,9 +4359,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addPledgeToFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationAddPledgeToFundraisingCampaignArgs, 'campaignId' | 'pledgeId'>>;
   addUserCustomData?: Resolver<ResolversTypes['UserCustomData'], ParentType, ContextType, RequireFields<MutationAddUserCustomDataArgs, 'dataName' | 'dataValue' | 'organizationId'>>;
   addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
-  addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;
   addUserToUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationAddUserToUserFamilyArgs, 'familyId' | 'userId'>>;
-  adminRemoveGroup?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAdminRemoveGroupArgs, 'groupId'>>;
   assignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAssignUserTagArgs, 'input'>>;
   blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['AppUserProfile'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'blockUser' | 'userId'>>;
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
@@ -4439,7 +4382,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationCreateFundArgs, 'data'>>;
   createFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignArgs, 'data'>>;
   createFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignPledgeArgs, 'data'>>;
-  createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
   createMember?: Resolver<ResolversTypes['CreateMemberPayload'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
   createNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationCreateNoteArgs, 'data'>>;
@@ -4477,7 +4419,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeAgendaItem?: Resolver<ResolversTypes['AgendaItem'], ParentType, ContextType, RequireFields<MutationRemoveAgendaItemArgs, 'id'>>;
   removeAgendaSection?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationRemoveAgendaSectionArgs, 'id'>>;
   removeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationRemoveCommentArgs, 'id'>>;
-  removeDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationRemoveDirectChatArgs, 'chatId' | 'organizationId'>>;
   removeEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRemoveEventArgs, 'id'>>;
   removeEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveEventAttendeeArgs, 'data'>>;
   removeEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerArgs, 'id'>>;
@@ -4485,7 +4426,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationRemoveFundArgs, 'id'>>;
   removeFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignArgs, 'id'>>;
   removeFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignPledgeArgs, 'id'>>;
-  removeGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveGroupChatArgs, 'chatId'>>;
   removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'data'>>;
   removeOrganization?: Resolver<ResolversTypes['UserData'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
   removeOrganizationCustomField?: Resolver<ResolversTypes['OrganizationCustomField'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationCustomFieldArgs, 'customFieldId' | 'organizationId'>>;
@@ -4494,7 +4434,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   removeUserCustomData?: Resolver<ResolversTypes['UserCustomData'], ParentType, ContextType, RequireFields<MutationRemoveUserCustomDataArgs, 'organizationId'>>;
   removeUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationRemoveUserFamilyArgs, 'familyId'>>;
-  removeUserFromGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveUserFromGroupChatArgs, 'chatId' | 'userId'>>;
   removeUserFromUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationRemoveUserFromUserFamilyArgs, 'familyId' | 'userId'>>;
   removeUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   removeUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationRemoveUserTagArgs, 'id'>>;
@@ -4503,8 +4442,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   saveFcmToken?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationSaveFcmTokenArgs>>;
   sendMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationSendMembershipRequestArgs, 'organizationId'>>;
   sendMessageToChat?: Resolver<ResolversTypes['ChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToChatArgs, 'chatId' | 'messageContent' | 'type'>>;
-  sendMessageToDirectChat?: Resolver<ResolversTypes['DirectChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToDirectChatArgs, 'chatId' | 'messageContent'>>;
-  sendMessageToGroupChat?: Resolver<ResolversTypes['GroupChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToGroupChatArgs, 'chatId' | 'messageContent'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
   togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'id'>>;
   unassignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUnassignUserTagArgs, 'input'>>;
@@ -4763,13 +4700,13 @@ export type RecurrenceRuleResolvers<ContextType = any, ParentType extends Resolv
 };
 
 export type SocialMediaUrlsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SocialMediaUrls'] = ResolversParentTypes['SocialMediaUrls']> = {
+  X?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   facebook?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   gitHub?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   instagram?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   linkedIn?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reddit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slack?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  X?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   youTube?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

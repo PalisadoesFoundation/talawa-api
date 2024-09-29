@@ -19,7 +19,7 @@ afterAll(async () => {
 describe("resolvers->Query->chatById", () => {
   it(`returns the chat with _id === args.id`, async () => {
     const args = {
-      id: testChat?._id,
+      id: testChat?._id?.toString() || "",
     };
     const chatByIdPayload = await chatById?.({}, args, {});
     expect(chatByIdPayload).toEqual(testChat?.toObject());

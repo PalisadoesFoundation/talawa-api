@@ -5,7 +5,7 @@ import { createLoggingMiddleware } from "../libraries/dbLogger";
 import type { InterfaceChat } from "./Chat";
 
 /**
- * Represents a document for a direct chat message in the MongoDB database.
+ * Represents a document for a chat message in the MongoDB database.
  */
 export interface InterfaceChatMessage {
   _id: Types.ObjectId;
@@ -21,16 +21,32 @@ export interface InterfaceChatMessage {
 }
 
 /**
- * Mongoose schema definition for a direct chat message document.
- * @param chatMessageBelongsTo - Reference to the chat session to which the message belongs.
- * @param sender - Reference to the user who sent the message.
- * @param messageContent - Content of the direct chat message.
- * @param replyTo - Reference to the message replied to.
- * @param type - Type of the message (STRING, MEDIA, FILE).
- * @param status - Status of the message (ACTIVE, BLOCKED, DELETED).
- * @param deletedBy - List of users who have deleted the message.
- * @param createdAt - Date when the direct chat message was created.
- * @param updatedAt - Date when the direct chat message was last updated.
+ * ChatMessage Schema
+ *
+ * This schema defines the structure of a chat message document in the database.
+ *
+ * Fields:
+ * - chatMessageBelongsTo: ObjectId, ref: "Chat", required
+ *   - The chat to which this message belongs.
+ * - sender: ObjectId, ref: "User", required
+ *   - The user who sent the message.
+ * - replyTo: ObjectId, ref: "ChatMessage", optional
+ *   - The message to which this message is a reply.
+ * - messageContent: String, required
+ *   - The content of the message.
+ * - type: String, required, enum: ["STRING", "VIDEO", "IMAGE", "FILE"]
+ *   - The type of the message content.
+ * - status: String, required, enum: ["ACTIVE", "BLOCKED", "DELETED"], default: "ACTIVE"
+ *   - The status of the message.
+ * - deletedBy: Array of ObjectId, ref: "User", optional
+ *   - List of users who have deleted the message.
+ * - updatedAt: Date, required
+ *   - The date when the message was last updated.
+ * - createdAt: Date, required
+ *   - The date when the message was created.
+ *
+ * Options:
+ * - timestamps: Automatically adds createdAt and updatedAt fields.
  */
 const chatMessageSchema = new Schema(
   {
