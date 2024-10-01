@@ -175,9 +175,7 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
     );
     const payload = await addEventAttendeeResolver?.({}, args, context);
 
-    if (!payload) {
-      throw new Error("Payload is undefined");
-    }
+    expect(payload).toBeDefined();
 
     const requestUser = await User.findOne({
       _id: userId?._id,
