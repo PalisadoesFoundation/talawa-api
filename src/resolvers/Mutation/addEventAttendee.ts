@@ -190,4 +190,4 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     );
   }
   return updatedUser;
-}
+};
