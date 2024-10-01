@@ -176,36 +176,14 @@ export const checkIn: MutationResolvers["checkIn"] = async (
 
   await EventAttendee.updateOne(
     {
-      _id: attendeeData._id,
       eventId: args.data.eventId,
+      userId: args.data.userId,
     },
     {
-      $set: {
-        checkInId: checkIn._id,
-        isCheckedIn: true,
-      },
+      checkInId: checkIn._id,
+      isCheckedIn: true,
     },
   );
-
-  try {
-    const updateResult = await User.findByIdAndUpdate(
-      args.data.userId,
-      {
-        $addToSet: {
-          eventsAttended: args.data.eventId.toString(),
-        },
-      },
-      { new: true },
-    );
-
-    if (!updateResult) {
-      console.log("User not found or update failed");
-    } else {
-      console.log("Updated user:", updateResult);
-    }
-  } catch (error) {
-    console.error("Error updating user:", error);
-  }
 
   return checkIn.toObject();
 };

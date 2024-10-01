@@ -175,17 +175,19 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
     );
     const payload = await addEventAttendeeResolver?.({}, args, context);
 
+    if (!payload) {
+      throw new Error("Payload is undefined");
+    }
+
     const requestUser = await User.findOne({
       _id: userId?._id,
     }).lean();
-
+    expect(payload).toEqual(expect.objectContaining(requestUser));
     const isUserRegistered = await EventAttendee.exists({
       ...args.data,
     });
-    expect(payload).toEqual(requestUser);
     expect(isUserRegistered).toBeTruthy();
   });
-
   it(`throws UnauthorizedError if the requestUser is not a member of the organization`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
