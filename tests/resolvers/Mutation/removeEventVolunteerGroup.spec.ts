@@ -35,19 +35,19 @@ beforeAll(async () => {
   [eventAdminUser, , testEvent] = await createTestEvent();
 
   testGroup = await EventVolunteerGroup.create({
-    creatorId: eventAdminUser?._id,
-    eventId: testEvent?._id,
-    leaderId: eventAdminUser?._id,
+    creator: eventAdminUser?._id,
+    event: testEvent?._id,
+    leader: eventAdminUser?._id,
     name: "Test group",
   });
 
   await EventVolunteer.create({
-    creatorId: eventAdminUser?._id,
-    userId: testUser?._id,
-    eventId: testEvent?._id,
-    groupId: testGroup._id,
-    isInvited: true,
-    isAssigned: false,
+    creator: eventAdminUser?._id,
+    user: testUser?._id,
+    event: testEvent?._id,
+    group: testGroup._id,
+    hasAccepted: false,
+    isPublic: false,
   });
 });
 
@@ -164,10 +164,10 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
     expect(deletedVolunteerGroup).toEqual(
       expect.objectContaining({
         _id: testGroup?._id,
-        leaderId: testGroup?.leaderId,
+        leader: testGroup?.leader,
         name: testGroup?.name,
-        creatorId: testGroup?.creatorId,
-        eventId: testGroup?.eventId,
+        creator: testGroup?.creator,
+        event: testGroup?.event,
       }),
     );
   });

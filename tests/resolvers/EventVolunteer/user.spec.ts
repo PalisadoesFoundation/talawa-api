@@ -35,8 +35,6 @@ describe("resolvers -> EventVolunteer -> user", () => {
   });
   it(`returns the correct user object for parent event volunteer`, async () => {
     const parent = testEventVolunteer?.toObject();
-    console.log(testEventVolunteer?.userId);
-    console.log(testUser?._id);
 
     const userPayload = await userResolver?.(
       parent as InterfaceEventVolunteer,

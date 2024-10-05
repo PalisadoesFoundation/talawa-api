@@ -65,7 +65,7 @@ export const queries = gql`
       orderBy: EventOrderByInput
     ): [Event!]!
 
-    eventVolunteersByEvent(id: ID!): [EventVolunteer]
+    getEventVolunteers(id: ID!): [EventVolunteer]!
 
     getEventVolunteerGroups(
       where: EventVolunteerGroupWhereInput

@@ -1,6 +1,6 @@
 import type mongoose from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
-import { eventVolunteersByEvent } from "../../../src/resolvers/Query/eventVolunteersByEvent";
+import { getEventVolunteers } from "../../../src/resolvers/Query/getEventVolunteers";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEventAndVolunteer } from "../../helpers/events";
@@ -21,7 +21,7 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> eventVolunteersByEvent", () => {
   it(`returns list of all existing event volunteers with eventId === args.id`, async () => {
-    const volunteersPayload = await eventVolunteersByEvent?.(
+    const volunteersPayload = await getEventVolunteers?.(
       {},
       {
         id: testEvent?._id,
@@ -30,7 +30,7 @@ describe("resolvers -> Mutation -> eventVolunteersByEvent", () => {
     );
 
     const volunteers = await EventVolunteer.find({
-      eventId: testEvent?._id,
+      event: testEvent?._id,
     })
       .populate("userId", "-password")
       .lean();

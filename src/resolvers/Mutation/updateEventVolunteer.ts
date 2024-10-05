@@ -1,5 +1,4 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import type { EventVolunteerResponse } from "../../constants";
 import {
   EVENT_VOLUNTEER_INVITE_USER_MISTMATCH,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
@@ -55,7 +54,7 @@ export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
       );
     }
 
-    if (eventVolunteer.userId.toString() !== context.userId.toString()) {
+    if (eventVolunteer.user.toString() !== context.userId.toString()) {
       throw new errors.ConflictError(
         requestContext.translate(EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE),
         EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.CODE,
@@ -69,22 +68,18 @@ export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
       },
       {
         $set: {
-          eventId:
+          event:
             args.data?.eventId === undefined
-              ? eventVolunteer.eventId
+              ? eventVolunteer.event
               : (args?.data.eventId as string),
-          isAssigned:
-            args.data?.isAssigned === undefined
-              ? eventVolunteer.isAssigned
-              : (args.data?.isAssigned as boolean),
-          isInvited:
-            args.data?.isInvited === undefined
-              ? eventVolunteer.isInvited
-              : (args.data?.isInvited as boolean),
-          response:
-            args.data?.response === undefined
-              ? eventVolunteer.response
-              : (args.data?.response as EventVolunteerResponse),
+          hasAccepted:
+            args.data?.hasAccepted === undefined
+              ? eventVolunteer.hasAccepted
+              : (args.data?.hasAccepted as boolean),
+          isPublic:
+            args.data?.isPublic === undefined
+              ? eventVolunteer.isPublic
+              : (args.data?.isPublic as boolean),
         },
       },
       {

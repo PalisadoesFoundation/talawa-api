@@ -18,7 +18,7 @@ export const leader: EventVolunteerGroupResolvers["leader"] = async (
   parent,
 ) => {
   const groupLeader = await User.findOne({
-    _id: parent.leaderId,
+    _id: parent.leader,
   }).lean();
   return groupLeader as InterfaceUser;
 };

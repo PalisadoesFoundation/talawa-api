@@ -163,9 +163,9 @@ describe("resolvers -> Mutation -> createEventVolunteerGroup", () => {
     expect(createdGroup).toEqual(
       expect.objectContaining({
         name: "Test group",
-        eventId: new Types.ObjectId(testEvent?.id),
-        creatorId: eventAdminUser?._id,
-        leaderId: eventAdminUser?._id,
+        event: new Types.ObjectId(testEvent?.id),
+        creator: eventAdminUser?._id,
+        leader: eventAdminUser?._id,
       }),
     );
   });

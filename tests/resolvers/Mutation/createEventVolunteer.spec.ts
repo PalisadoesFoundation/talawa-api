@@ -45,9 +45,9 @@ beforeAll(async () => {
   [eventAdminUser, , testEvent] = await createTestEvent();
 
   testGroup = await EventVolunteerGroup.create({
-    creatorId: eventAdminUser?._id,
-    eventId: testEvent?._id,
-    leaderId: eventAdminUser?._id,
+    creator: eventAdminUser?._id,
+    event: testEvent?._id,
+    leader: eventAdminUser?._id,
     name: "Test group",
   });
 });
@@ -240,12 +240,12 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
 
     expect(createdVolunteer).toEqual(
       expect.objectContaining({
-        eventId: new Types.ObjectId(testEvent?.id),
-        userId: testUser2?._id,
-        groupId: testGroup?._id,
-        creatorId: eventAdminUser?._id,
-        isInvited: true,
-        isAssigned: false,
+        event: new Types.ObjectId(testEvent?.id),
+        user: testUser2?._id,
+        group: testGroup?._id,
+        creator: eventAdminUser?._id,
+        hasAccepted: false,
+        isPublic: false,
       }),
     );
   });

@@ -15,6 +15,6 @@ import type { EventVolunteerGroupResolvers } from "../../types/generatedGraphQLT
  */
 export const event: EventVolunteerGroupResolvers["event"] = async (parent) => {
   return await Event.findOne({
-    _id: parent.eventId,
+    _id: parent.event,
   }).lean();
 };

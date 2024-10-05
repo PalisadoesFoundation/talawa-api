@@ -729,21 +729,23 @@ enum EventOrderByInput {
 
 type EventVolunteer {
   _id: ID!
+  assignments: [ActionItem]
   createdAt: DateTime!
   creator: User
   event: Event
   group: EventVolunteerGroup
-  isAssigned: Boolean
-  isInvited: Boolean
-  response: String
+  hasAccepted: Boolean!
+  isPublic: Boolean!
   updatedAt: DateTime!
   user: User!
 }
 
 type EventVolunteerGroup {
   _id: ID!
+  assignments: [ActionItem]
   createdAt: DateTime!
   creator: User
+  description: String
   event: Event
   leader: User!
   name: String
@@ -1500,7 +1502,6 @@ type Query {
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
-  eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
   fundsByOrganization(orderBy: FundOrderByInput, organizationId: ID!, where: FundWhereInput): [Fund]
@@ -1516,6 +1517,7 @@ type Query {
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
   getEventVolunteerGroups(where: EventVolunteerGroupWhereInput): [EventVolunteerGroup]!
+  getEventVolunteers(id: ID!): [EventVolunteer]!
   getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getFundraisingCampaigns(campaignOrderby: CampaignOrderByInput, pledgeOrderBy: PledgeOrderByInput, where: CampaignWhereInput): [FundraisingCampaign]!
@@ -1740,6 +1742,7 @@ input UpdateEventInput {
 }
 
 input UpdateEventVolunteerGroupInput {
+  description: String
   eventId: ID
   name: String
   volunteersRequired: Int
@@ -1747,9 +1750,8 @@ input UpdateEventVolunteerGroupInput {
 
 input UpdateEventVolunteerInput {
   eventId: ID
-  isAssigned: Boolean
-  isInvited: Boolean
-  response: EventVolunteerResponse
+  hasAccepted: Boolean
+  isPublic: Boolean
 }
 
 input UpdateFundCampaignInput {

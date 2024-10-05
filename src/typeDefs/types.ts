@@ -280,14 +280,14 @@ export const types = gql`
 
   type EventVolunteer {
     _id: ID!
-    createdAt: DateTime!
+    user: User!
     creator: User
     event: Event
     group: EventVolunteerGroup
-    isAssigned: Boolean
-    isInvited: Boolean
-    response: String
-    user: User!
+    hasAccepted: Boolean!
+    isPublic: Boolean!
+    assignments: [ActionItem]
+    createdAt: DateTime!
     updatedAt: DateTime!
   }
 
@@ -307,14 +307,16 @@ export const types = gql`
 
   type EventVolunteerGroup {
     _id: ID!
-    createdAt: DateTime!
     creator: User
     event: Event
     leader: User!
     name: String
+    description: String
+    createdAt: DateTime!
     updatedAt: DateTime!
     volunteers: [EventVolunteer]
     volunteersRequired: Int
+    assignments: [ActionItem]
   }
 
   type Feedback {

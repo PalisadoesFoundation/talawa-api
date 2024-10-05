@@ -35,17 +35,17 @@ beforeAll(async () => {
   testUser = await createTestUser();
   testGroup = await EventVolunteerGroup.create({
     name: "test",
-    creatorId: eventAdminUser?._id,
-    leaderId: eventAdminUser?._id,
-    eventId: testEvent?._id,
+    creator: eventAdminUser?._id,
+    leader: eventAdminUser?._id,
+    event: testEvent?._id,
   });
   testEventVolunteer = await EventVolunteer.create({
-    eventId: testEvent?._id,
-    userId: testUser?._id,
-    creatorId: eventAdminUser?._id,
-    groupId: testGroup?._id,
-    isAssigned: false,
-    isInvited: true,
+    event: testEvent?._id,
+    user: testUser?._id,
+    creator: eventAdminUser?._id,
+    group: testGroup?._id,
+    hasAccepted: false,
+    isPublic: false,
   });
 });
 

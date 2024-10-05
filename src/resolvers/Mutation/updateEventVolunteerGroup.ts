@@ -53,7 +53,7 @@ export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerG
       );
     }
 
-    if (group.leaderId.toString() !== context.userId.toString()) {
+    if (group.leader.toString() !== context.userId.toString()) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -67,11 +67,13 @@ export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerG
       },
       {
         $set: {
-          eventId:
-            args.data?.eventId === undefined
-              ? group.eventId
-              : args?.data.eventId,
+          event:
+            args.data?.eventId === undefined ? group.event : args?.data.eventId,
           name: args.data?.name === undefined ? group.name : args?.data.name,
+          description:
+            args.data?.description === undefined
+              ? group.description
+              : args?.data.description,
           volunteersRequired:
             args.data?.volunteersRequired === undefined
               ? group.volunteersRequired

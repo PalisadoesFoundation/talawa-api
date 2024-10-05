@@ -811,13 +811,13 @@ export type EventOrderByInput =
 export type EventVolunteer = {
   __typename?: 'EventVolunteer';
   _id: Scalars['ID']['output'];
+  assignments?: Maybe<Array<Maybe<ActionItem>>>;
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   event?: Maybe<Event>;
   group?: Maybe<EventVolunteerGroup>;
-  isAssigned?: Maybe<Scalars['Boolean']['output']>;
-  isInvited?: Maybe<Scalars['Boolean']['output']>;
-  response?: Maybe<Scalars['String']['output']>;
+  hasAccepted: Scalars['Boolean']['output'];
+  isPublic: Scalars['Boolean']['output'];
   updatedAt: Scalars['DateTime']['output'];
   user: User;
 };
@@ -825,8 +825,10 @@ export type EventVolunteer = {
 export type EventVolunteerGroup = {
   __typename?: 'EventVolunteerGroup';
   _id: Scalars['ID']['output'];
+  assignments?: Maybe<Array<Maybe<ActionItem>>>;
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
+  description?: Maybe<Scalars['String']['output']>;
   event?: Maybe<Event>;
   leader: User;
   name?: Maybe<Scalars['String']['output']>;
@@ -2283,7 +2285,6 @@ export type Query = {
   directChatsByUserID?: Maybe<Array<Maybe<DirectChat>>>;
   directChatsMessagesByChatID?: Maybe<Array<Maybe<DirectChatMessage>>>;
   event?: Maybe<Event>;
-  eventVolunteersByEvent?: Maybe<Array<Maybe<EventVolunteer>>>;
   eventsByOrganization?: Maybe<Array<Maybe<Event>>>;
   eventsByOrganizationConnection: Array<Event>;
   fundsByOrganization?: Maybe<Array<Maybe<Fund>>>;
@@ -2299,6 +2300,7 @@ export type Query = {
   getEventAttendeesByEventId?: Maybe<Array<Maybe<EventAttendee>>>;
   getEventInvitesByUserId: Array<EventAttendee>;
   getEventVolunteerGroups: Array<Maybe<EventVolunteerGroup>>;
+  getEventVolunteers: Array<Maybe<EventVolunteer>>;
   getFundById: Fund;
   getFundraisingCampaignPledgeById: FundraisingCampaignPledge;
   getFundraisingCampaigns: Array<Maybe<FundraisingCampaign>>;
@@ -2414,11 +2416,6 @@ export type QueryEventArgs = {
 };
 
 
-export type QueryEventVolunteersByEventArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
 export type QueryEventsByOrganizationArgs = {
   id?: InputMaybe<Scalars['ID']['input']>;
   orderBy?: InputMaybe<EventOrderByInput>;
@@ -2491,6 +2488,11 @@ export type QueryGetEventInvitesByUserIdArgs = {
 
 export type QueryGetEventVolunteerGroupsArgs = {
   where?: InputMaybe<EventVolunteerGroupWhereInput>;
+};
+
+
+export type QueryGetEventVolunteersArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -2853,6 +2855,7 @@ export type UpdateEventInput = {
 };
 
 export type UpdateEventVolunteerGroupInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
   eventId?: InputMaybe<Scalars['ID']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   volunteersRequired?: InputMaybe<Scalars['Int']['input']>;
@@ -2860,9 +2863,8 @@ export type UpdateEventVolunteerGroupInput = {
 
 export type UpdateEventVolunteerInput = {
   eventId?: InputMaybe<Scalars['ID']['input']>;
-  isAssigned?: InputMaybe<Scalars['Boolean']['input']>;
-  isInvited?: InputMaybe<Scalars['Boolean']['input']>;
-  response?: InputMaybe<EventVolunteerResponse>;
+  hasAccepted?: InputMaybe<Scalars['Boolean']['input']>;
+  isPublic?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type UpdateFundCampaignInput = {
@@ -4090,13 +4092,13 @@ export type EventAttendeeResolvers<ContextType = any, ParentType extends Resolve
 
 export type EventVolunteerResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventVolunteer'] = ResolversParentTypes['EventVolunteer']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  assignments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   group?: Resolver<Maybe<ResolversTypes['EventVolunteerGroup']>, ParentType, ContextType>;
-  isAssigned?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  isInvited?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  response?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hasAccepted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4104,8 +4106,10 @@ export type EventVolunteerResolvers<ContextType = any, ParentType extends Resolv
 
 export type EventVolunteerGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventVolunteerGroup'] = ResolversParentTypes['EventVolunteerGroup']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  assignments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   leader?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -4596,7 +4600,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   directChatsByUserID?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChat']>>>, ParentType, ContextType, RequireFields<QueryDirectChatsByUserIdArgs, 'id'>>;
   directChatsMessagesByChatID?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChatMessage']>>>, ParentType, ContextType, RequireFields<QueryDirectChatsMessagesByChatIdArgs, 'id'>>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
-  eventVolunteersByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventVolunteer']>>>, ParentType, ContextType, RequireFields<QueryEventVolunteersByEventArgs, 'id'>>;
   eventsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsByOrganizationArgs>>;
   eventsByOrganizationConnection?: Resolver<Array<ResolversTypes['Event']>, ParentType, ContextType, Partial<QueryEventsByOrganizationConnectionArgs>>;
   fundsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Fund']>>>, ParentType, ContextType, RequireFields<QueryFundsByOrganizationArgs, 'organizationId'>>;
@@ -4612,6 +4615,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getEventAttendeesByEventId?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventAttendee']>>>, ParentType, ContextType, RequireFields<QueryGetEventAttendeesByEventIdArgs, 'eventId'>>;
   getEventInvitesByUserId?: Resolver<Array<ResolversTypes['EventAttendee']>, ParentType, ContextType, RequireFields<QueryGetEventInvitesByUserIdArgs, 'userId'>>;
   getEventVolunteerGroups?: Resolver<Array<Maybe<ResolversTypes['EventVolunteerGroup']>>, ParentType, ContextType, Partial<QueryGetEventVolunteerGroupsArgs>>;
+  getEventVolunteers?: Resolver<Array<Maybe<ResolversTypes['EventVolunteer']>>, ParentType, ContextType, RequireFields<QueryGetEventVolunteersArgs, 'id'>>;
   getFundById?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<QueryGetFundByIdArgs, 'id'>>;
   getFundraisingCampaignPledgeById?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignPledgeByIdArgs, 'id'>>;
   getFundraisingCampaigns?: Resolver<Array<Maybe<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType, Partial<QueryGetFundraisingCampaignsArgs>>;

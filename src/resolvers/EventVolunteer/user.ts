@@ -15,7 +15,7 @@ import type { EventVolunteerResolvers } from "../../types/generatedGraphQLTypes"
  */
 export const user: EventVolunteerResolvers["user"] = async (parent) => {
   const result = await User.findOne({
-    _id: parent.userId,
+    _id: parent.user,
   }).lean();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return result!;

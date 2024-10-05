@@ -75,9 +75,9 @@ export const createEventVolunteerGroup: MutationResolvers["createEventVolunteerG
     }
 
     const createdVolunteerGroup = await EventVolunteerGroup.create({
-      eventId: args.data.eventId,
-      creatorId: context.userId,
-      leaderId: context.userId,
+      event: args.data.eventId,
+      creator: context.userId,
+      leader: context.userId,
       name: args.data.name,
       volunteersRequired: args.data?.volunteersRequired,
     });

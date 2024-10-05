@@ -56,10 +56,10 @@ export const removeEventVolunteer: MutationResolvers["removeEventVolunteer"] =
       );
     }
 
-    const group = await EventVolunteerGroup.findById(volunteer.groupId);
+    const group = await EventVolunteerGroup.findById(volunteer.group);
 
     const userIsLeader =
-      group?.leaderId.toString() === currentUser._id.toString();
+      group?.leader.toString() === currentUser._id.toString();
 
     if (!userIsLeader) {
       throw new errors.NotFoundError(
@@ -75,7 +75,7 @@ export const removeEventVolunteer: MutationResolvers["removeEventVolunteer"] =
 
     await EventVolunteerGroup.updateOne(
       {
-        _id: volunteer.groupId,
+        _id: volunteer.group,
       },
       {
         $pull: {

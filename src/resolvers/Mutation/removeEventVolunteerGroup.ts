@@ -56,7 +56,7 @@ export const removeEventVolunteerGroup: MutationResolvers["removeEventVolunteerG
       );
     }
 
-    const event = await Event.findById(volunteerGroup.eventId);
+    const event = await Event.findById(volunteerGroup.event);
 
     const userIsEventAdmin = event?.admins.some(
       (admin) => admin._id.toString() === currentUser?._id.toString(),
@@ -75,7 +75,7 @@ export const removeEventVolunteerGroup: MutationResolvers["removeEventVolunteerG
     });
 
     await EventVolunteer.deleteMany({
-      groupId: args.id,
+      group: args.id,
     });
 
     return volunteerGroup;

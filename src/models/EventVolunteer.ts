@@ -4,6 +4,7 @@ import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
+import type { InterfaceActionItem } from "./ActionItem";
 
 /**
  * Represents a document for an event volunteer in the MongoDB database.
@@ -11,61 +12,67 @@ import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
  */
 export interface InterfaceEventVolunteer {
   _id: Types.ObjectId;
+  creator: PopulatedDoc<InterfaceUser & Document>;
+  event: PopulatedDoc<InterfaceEvent & Document>;
+  group: PopulatedDoc<InterfaceEventVolunteerGroup & Document>;
+  user: PopulatedDoc<InterfaceUser & Document>;
+  hasAccepted: boolean;
+  isPublic: boolean;
+  assignments: PopulatedDoc<InterfaceActionItem & Document>[];
   createdAt: Date;
-  creatorId: PopulatedDoc<InterfaceUser & Document>;
-  eventId: PopulatedDoc<InterfaceEvent & Document>;
-  groupId: PopulatedDoc<InterfaceEventVolunteerGroup & Document>;
-  isAssigned: boolean;
-  isInvited: boolean;
-  response: string;
   updatedAt: Date;
-  userId: PopulatedDoc<InterfaceUser & Document>;
 }
 
 /**
  * Mongoose schema definition for an event volunteer document.
  * This schema defines how the data will be stored in the MongoDB database.
  *
- * @param creatorId - Reference to the user who created the event volunteer entry.
- * @param eventId - Reference to the event for which the user volunteers.
- * @param groupId - Reference to the volunteer group associated with the event.
- * @param response - Response status of the volunteer ("YES", "NO", null).
- * @param isAssigned - Indicates if the volunteer is assigned to a specific role.
- * @param isInvited - Indicates if the volunteer has been invited to participate.
- * @param userId - Reference to the user who is volunteering for the event.
+ * @param creator - Reference to the user who created the event volunteer entry.
+ * @param event - Reference to the event for which the user volunteers.
+ * @param group - Reference to the volunteer group associated with the event.
+ * @param user - Reference to the user who is volunteering for the event.
+ * @param hasAccepted - Indicates if the volunteer has accepted invite.
+ * @param isPublic - Indicates if the volunteer is public.
+ * @param assignments - List of action items assigned to the volunteer.
  * @param createdAt - Timestamp of when the event volunteer document was created.
  * @param updatedAt - Timestamp of when the event volunteer document was last updated.
  */
 const eventVolunteerSchema = new Schema(
   {
-    creatorId: {
+    creator: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    eventId: {
+    event: {
       type: Schema.Types.ObjectId,
       ref: "Event",
     },
-    groupId: {
+    group: {
       type: Schema.Types.ObjectId,
       ref: "EventVolunteerGroup",
     },
-    response: {
-      type: String,
-      enum: ["YES", "NO", null],
-    },
-    isAssigned: {
-      type: Boolean,
-    },
-    isInvited: {
-      type: Boolean,
-    },
-    userId: {
+    user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    hasAccepted: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    isPublic: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    assignments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "ActionItem",
+      },
+    ],
   },
   {
     timestamps: true, // Automatically manage `createdAt` and `updatedAt` fields

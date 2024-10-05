@@ -83,7 +83,7 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
       );
     }
 
-    if (group.leaderId.toString() !== currentUser._id.toString()) {
+    if (group.leader.toString() !== currentUser._id.toString()) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -92,12 +92,12 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
     }
 
     const createdVolunteer = await EventVolunteer.create({
-      userId: args.data.userId,
-      eventId: args.data.eventId,
-      groupId: args.data.groupId,
-      isAssigned: false,
-      isInvited: true,
-      creatorId: context.userId,
+      user: args.data.userId,
+      event: args.data.eventId,
+      group: args.data.groupId,
+      creator: context.userId,
+      hasAccepted: false,
+      isPublic: false,
     });
 
     await EventVolunteerGroup.findOneAndUpdate(

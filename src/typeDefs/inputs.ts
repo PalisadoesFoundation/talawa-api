@@ -166,14 +166,14 @@ export const inputs = gql`
 
   input UpdateEventVolunteerInput {
     eventId: ID
-    isAssigned: Boolean
-    isInvited: Boolean
-    response: EventVolunteerResponse
+    hasAccepted: Boolean
+    isPublic: Boolean
   }
 
   input UpdateEventVolunteerGroupInput {
     eventId: ID
     name: String
+    description: String
     volunteersRequired: Int
   }
 

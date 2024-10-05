@@ -17,6 +17,6 @@ export const creator: EventVolunteerGroupResolvers["creator"] = async (
   parent,
 ) => {
   return await User.findOne({
-    _id: parent.creatorId,
+    _id: parent.creator,
   }).lean();
 };

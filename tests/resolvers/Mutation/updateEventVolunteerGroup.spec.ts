@@ -35,9 +35,9 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [eventAdminUser, , testEvent] = await createTestEvent();
   testGroup = await EventVolunteerGroup.create({
-    creatorId: eventAdminUser?._id,
-    eventId: testEvent?._id,
-    leaderId: eventAdminUser?._id,
+    creator: eventAdminUser?._id,
+    event: testEvent?._id,
+    leader: eventAdminUser?._id,
     name: "Test group",
     volunteersRequired: 2,
   });
@@ -182,10 +182,10 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
   it(`updates the Event Volunteer group with _id === args.id, even if args.data is empty object`, async () => {
     const testGroup2 = await EventVolunteerGroup.create({
       name: "test",
-      eventId: testEvent?._id,
-      creatorId: eventAdminUser?._id,
+      event: testEvent?._id,
+      creator: eventAdminUser?._id,
       volunteersRequired: 2,
-      leaderId: eventAdminUser?._id,
+      leader: eventAdminUser?._id,
     });
     const args: MutationUpdateEventVolunteerArgs = {
       id: testGroup2?._id.toString(),
@@ -205,12 +205,11 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
 
     console.log(updatedGroup);
 
-    console.log();
     expect(updatedGroup).toEqual(
       expect.objectContaining({
         name: testGroup2?.name,
         volunteersRequired: testGroup2?.volunteersRequired,
-        eventId: testGroup2?.eventId,
+        event: testGroup2?.event,
       }),
     );
   });
