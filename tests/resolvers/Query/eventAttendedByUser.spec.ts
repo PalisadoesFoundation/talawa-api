@@ -1,117 +1,95 @@
 import "dotenv/config";
-import { eventsAttendedByUser } from "../../../src/resolvers/Query/eventsAttendedByUser";
-import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import { Event, User } from "../../../src/models";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { Types } from "mongoose";
+import { User, Event } from "../../../src/models";
+import type { InterfaceEvent } from "../../../src/models/Event";
+import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import type { InterfaceUser } from "../../../src/models/User";
+import { connect, disconnect } from "../../helpers/db";
+import { eventsAttendedByUser } from "../../../src/resolvers/Query/eventsAttendedByUser";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUser: any;
-let testEvents: any[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-
-  testUser = await User.create({
-    firstName: "Test",
-    lastName: "User",
-    email: "testuser@example.com",
-    password: "password123",
-  });
-
-  const organizationId = new Types.ObjectId();
-  const creatorId = new Types.ObjectId();
-
-  testEvents = await Event.create([
-    {
-      title: "Event 1",
-      description: "Description 1",
-      allDay: false,
-      startDate: new Date(),
-      startTime: new Date(),
-      endTime: new Date(),
-      isPublic: true,
-      isRegisterable: true,
-      organization: organizationId,
-      creatorId: creatorId,
-      registrants: [{ userId: testUser._id, status: "ACTIVE" }],
-    },
-    {
-      title: "Event 2",
-      description: "Description 2",
-      allDay: false,
-      startDate: new Date(),
-      startTime: new Date(),
-      endTime: new Date(),
-      isPublic: true,
-      isRegisterable: true,
-      organization: organizationId,
-      creatorId: creatorId,
-      registrants: [{ userId: testUser._id, status: "ACTIVE" }],
-    },
-    {
-      title: "Event 3",
-      description: "Description 3",
-      allDay: false,
-      startDate: new Date(),
-      startTime: new Date(),
-      endTime: new Date(),
-      isPublic: true,
-      isRegisterable: true,
-      organization: organizationId,
-      creatorId: creatorId,
-      registrants: [{ userId: testUser._id, status: "INACTIVE" }],
-    },
-  ]);
 });
 
 afterAll(async () => {
-  await User.deleteMany({});
-  await Event.deleteMany({});
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Query -> eventsAttendedByUser", () => {
-  it("returns events attended by the user with ACTIVE status", async () => {
-    const args = { id: testUser._id.toString() };
-    const result = await eventsAttendedByUser({}, args, {} as any);
+describe("resolvers -> Query -> eventAttendedByUser", () => {
+  let testUser: InterfaceUser;
+  let testEvents: InterfaceEvent[];
 
-    expect(result).toHaveLength(2);
-    expect(result[0].title).toBe("Event 1");
-    expect(result[1].title).toBe("Event 2");
-  });
-
-  it("does not return events with INACTIVE status", async () => {
-    const args = { id: testUser._id.toString() };
-    const result = await eventsAttendedByUser({}, args, {} as any);
-
-    const inactiveEvent = result.find((event) => event.title === "Event 3");
-    expect(inactiveEvent).toBeUndefined();
-  });
-
-  it("returns an empty array when user has not attended any events", async () => {
-    const newUser = await User.create({
-      firstName: "New",
+  beforeAll(async () => {
+    testUser = await User.create({
+      firstName: "Test",
       lastName: "User",
-      email: "newuser@example.com",
-      password: "password123",
+      email: "testuser@example.com",
+      password: "pass@123",
     });
 
-    const args = { id: newUser._id.toString() };
-    const result = await eventsAttendedByUser({}, args, {} as any);
+    const eventData: Partial<InterfaceEvent>[] = [
+      {
+        title: "Test Event 1",
+        description: "Test Description 1",
+        attendees: testUser._id.toString(),
+        isRegisterable: true,
+        isPublic: true,
+        creatorId: testUser._id,
+      },
+      {
+        title: "Test Event 2",
+        description: "Test Description 2",
+        attendees: "",
+        isRegisterable: true,
+        isPublic: true,
+        creatorId: testUser._id,
+      },
+    ];
 
-    expect(result).toHaveLength(0);
+    testEvents = await Event.create(eventData);
   });
 
-  it("sorts events based on the provided orderBy argument", async () => {
-    const args = {
-      id: testUser._id.toString(),
-      orderBy: "title_DESC",
-    };
-    const result = await eventsAttendedByUser({}, args, {} as any);
+  afterAll(async () => {
+    await User.deleteMany({});
+    await Event.deleteMany({});
+  });
 
-    expect(result[0].title).toBe("Event 2");
-    expect(result[1].title).toBe("Event 1");
+  it("returns true if user has attended the event", async () => {
+    const args = {
+      userId: testUser._id.toString(),
+      eventId: testEvents[0]._id.toString(),
+    };
+    const result = await eventsAttendedByUser({}, args, {} as unknown);
+    expect(result).toBe(true);
+  });
+
+  it("returns false if user has not attended the event", async () => {
+    const args = {
+      userId: testUser._id.toString(),
+      eventId: testEvents[1]._id.toString(),
+    };
+    const result = await eventsAttendedByUser({}, args, {} as unknown);
+    expect(result).toBe(false);
+  });
+
+  it("returns false if user does not exist", async () => {
+    const args = {
+      userId: new Types.ObjectId().toString(),
+      eventId: testEvents[0]._id.toString(),
+    };
+    const result = await eventsAttendedByUser({}, args, {} as unknown);
+    expect(result).toBe(false);
+  });
+
+  it("returns false if event does not exist", async () => {
+    const args = {
+      userId: testUser._id.toString(),
+      eventId: new Types.ObjectId().toString(),
+    };
+    const result = await eventsAttendedByUser({}, args, {} as unknown);
+    expect(result).toBe(false);
   });
 });

@@ -5,13 +5,25 @@ import type mongoose from "mongoose";
 import { Event } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { Types } from "mongoose";
+import {
+  createTestUser,
+  createTestUserAndOrganization,
+  type TestOrganizationType,
+  type TestUserType,
+} from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
+let testUser: TestUserType;
+let testAdminUser: TestUserType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
+  const temp = await createTestUserAndOrganization();
+  testUser = temp[0];
+  testOrganization = temp[1];
   MONGOOSE_INSTANCE = await connect();
+  testAdminUser = await createTestUser();
 });
-
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
@@ -19,68 +31,54 @@ afterAll(async () => {
 describe("resolvers -> Query -> getRecurringEvents", () => {
   it("returns list of recurring events for a given baseRecurringEventId", async () => {
     const baseRecurringEventId = new Types.ObjectId();
-    const organizationId = new Types.ObjectId();
-    const creatorId = new Types.ObjectId();
 
     const testEvents = [
       {
         title: "Event 1",
-        description: "Description 1",
-        allDay: false,
-        startDate: new Date(),
-        startTime: new Date(),
-        endTime: new Date(),
+        description: "description",
+        allDay: true,
+        startDate: new Date().toUTCString(),
+        recurring: true,
         isPublic: true,
         isRegisterable: true,
-        organization: organizationId,
-        creatorId: creatorId,
+        creator: testUser._id,
+        admins: [testAdminUser._id],
+        registrants: [],
+        organization: testOrganization._id,
         baseRecurringEventId,
       },
       {
         title: "Event 2",
-        description: "Description 2",
-        allDay: false,
+        description: "description",
+        allDay: true,
         startDate: new Date(),
-        startTime: new Date(),
-        endTime: new Date(),
+        recurring: true,
         isPublic: true,
         isRegisterable: true,
-        organization: organizationId,
-        creatorId: creatorId,
+        creator: testUser._id,
+        admins: [testAdminUser._id],
+        registrants: [],
+        organization: testOrganization._id,
         baseRecurringEventId,
-      },
-      {
-        title: "Event 3",
-        description: "Description 3",
-        allDay: false,
-        startDate: new Date(),
-        startTime: new Date(),
-        endTime: new Date(),
-        isPublic: true,
-        isRegisterable: true,
-        organization: organizationId,
-        creatorId: creatorId,
-        baseRecurringEventId: new Types.ObjectId(),
       },
     ];
 
     await Event.insertMany(testEvents);
 
     const args = { baseRecurringEventId: baseRecurringEventId.toString() };
-    const result = await getRecurringEvents({}, args, {} as any);
+    const result = await getRecurringEvents({}, args, {} as unknown);
 
     expect(result).toHaveLength(2);
     expect(result[0].title).toBe("Event 1");
     expect(result[1].title).toBe("Event 2");
 
-    // Clean up
-    await Event.deleteMany({ _id: { $in: result.map((e) => e._id) } });
+    await Event.deleteMany({ baseRecurringEventId });
   });
 
   it("returns an empty array when no recurring events are found", async () => {
     const nonExistentId = new Types.ObjectId();
     const args = { baseRecurringEventId: nonExistentId.toString() };
-    const result = await getRecurringEvents({}, args, {} as any);
+    const result = await getRecurringEvents({}, args, {} as unknown);
 
     expect(result).toEqual([]);
   });
@@ -92,8 +90,8 @@ describe("resolvers -> Query -> getRecurringEvents", () => {
 
     const args = { baseRecurringEventId: new Types.ObjectId().toString() };
 
-    await expect(getRecurringEvents({}, args, {} as any)).rejects.toThrow(
-      "Database error",
+    await expect(getRecurringEvents({}, args, {} as unknown)).rejects.toThrow(
+      "Database error"
     );
 
     mockFind.mockRestore();

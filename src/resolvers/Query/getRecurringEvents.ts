@@ -1,6 +1,6 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Event } from "../../models";
-
+import type { InterfaceEvent } from "../../models/Event";
 /**
  * This query will fetch all the events with the same BaseRecurringEventId from the database.
  * @param _parent -
@@ -17,7 +17,7 @@ export const getRecurringEvents: QueryResolvers["getRecurringEvents"] = async (
       baseRecurringEventId: args.baseRecurringEventId,
     }).lean();
 
-    return recurringEvents;
+    return recurringEvents as InterfaceEvent[];
   } catch (error) {
     console.error("Error fetching recurring events:", error);
     throw error;
