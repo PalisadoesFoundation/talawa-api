@@ -11,12 +11,15 @@ export const queries = gql`
 
     actionItemsByOrganization(
       organizationId: ID!
+      eventId: ID
       where: ActionItemWhereInput
       orderBy: ActionItemsOrderByInput
     ): [ActionItem]
 
     actionItemCategoriesByOrganization(
       organizationId: ID!
+      where: ActionItemCategoryWhereInput
+      orderBy: ActionItemsOrderByInput
     ): [ActionItemCategory]
 
     agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
@@ -124,6 +127,10 @@ export const queries = gql`
     ): [Venue]
 
     getNoteById(id: ID!): Note!
+
+    getUserTag(id: ID!): UserTag
+
+    getUserTagAncestors(id: ID!): [UserTag]
 
     getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
 

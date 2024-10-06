@@ -75,6 +75,7 @@ export const types = gql`
     actionItemCategory: ActionItemCategory
     preCompletionNotes: String
     postCompletionNotes: String
+    allotedHours: Float
     assignmentDate: Date!
     dueDate: Date!
     completionDate: Date!
@@ -589,7 +590,7 @@ export const types = gql`
   type SocialMediaUrls {
     facebook: String
     instagram: String
-    twitter: String
+    X: String
     linkedIn: String
     gitHub: String
     youTube: String
@@ -623,6 +624,7 @@ export const types = gql`
 
   type User {
     _id: ID!
+    identifier: Int!
     appUserProfileId: AppUserProfile
     address: Address
     birthDate: Date
@@ -742,7 +744,7 @@ export const types = gql`
   type UserTagsConnection {
     edges: [UserTagsConnectionEdge!]!
     pageInfo: DefaultConnectionPageInfo!
-    totalCount: PositiveInt
+    totalCount: Int
   }
 
   """
@@ -759,6 +761,7 @@ export const types = gql`
   type UsersConnection {
     edges: [UsersConnectionEdge!]!
     pageInfo: DefaultConnectionPageInfo!
+    totalCount: Int
   }
 
   """
