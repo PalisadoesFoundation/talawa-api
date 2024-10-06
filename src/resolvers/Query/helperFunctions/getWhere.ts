@@ -12,6 +12,7 @@ import type {
   VenueWhereInput,
   CampaignWhereInput,
   PledgeWhereInput,
+  ActionItemCategoryWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
 /**
@@ -38,6 +39,7 @@ export const getWhere = <T = unknown>(
             UserWhereInput &
             DonationWhereInput &
             ActionItemWhereInput &
+            ActionItemCategoryWhereInput &
             CampaignWhereInput &
             FundWhereInput &
             PledgeWhereInput &
@@ -200,19 +202,11 @@ export const getWhere = <T = unknown>(
     };
   }
 
-  // Return action items that are active
-  if (where.is_active) {
-    wherePayload = {
-      ...wherePayload,
-      isCompleted: false,
-    };
-  }
-
   // Return action items that are completed
-  if (where.is_completed) {
+  if (where.is_completed !== undefined) {
     wherePayload = {
       ...wherePayload,
-      isCompleted: true,
+      isCompleted: where.is_completed,
     };
   }
 
@@ -348,7 +342,7 @@ export const getWhere = <T = unknown>(
     };
   }
 
-  // Returns organizations with name containing provided string
+  // Returns objects with name containing provided string
   if (where.name_contains) {
     wherePayload = {
       ...wherePayload,
@@ -356,7 +350,7 @@ export const getWhere = <T = unknown>(
     };
   }
 
-  // Returns organizations with name starts with that provided string
+  // Returns objects where name starts with provided string
   if (where.name_starts_with) {
     const regexp = new RegExp("^" + where.name_starts_with);
     wherePayload = {
@@ -746,24 +740,7 @@ export const getWhere = <T = unknown>(
     };
   }
 
-  if (where.name_starts_with) {
-    const regexp = new RegExp("^" + where.name_starts_with);
-    wherePayload = {
-      ...wherePayload,
-      name: regexp,
-    };
-  }
-
-  if (where.name_contains) {
-    wherePayload = {
-      ...wherePayload,
-      name: {
-        $regex: where.name_contains,
-        $options: "i",
-      },
-    };
-  }
-
+  // Returns objects with provided fundId condition
   if (where.fundId) {
     wherePayload = {
       ...wherePayload,
@@ -771,6 +748,7 @@ export const getWhere = <T = unknown>(
     };
   }
 
+  // Returns object with provided organizationId condition
   if (where.organizationId) {
     wherePayload = {
       ...wherePayload,
@@ -778,6 +756,7 @@ export const getWhere = <T = unknown>(
     };
   }
 
+  // Returns object with provided campaignId condition
   if (where.campaignId) {
     wherePayload = {
       ...wherePayload,
@@ -785,12 +764,21 @@ export const getWhere = <T = unknown>(
     };
   }
 
+  // Returns objects where volunteerId is present in volunteers list
   if (where.volunteerId) {
     wherePayload = {
       ...wherePayload,
       volunteers: {
         $in: [where.volunteerId],
       },
+    };
+  }
+
+  // Returns object with provided is_disabled condition
+  if (where.is_disabled !== undefined) {
+    wherePayload = {
+      ...wherePayload,
+      isDisabled: where.is_disabled,
     };
   }
 
