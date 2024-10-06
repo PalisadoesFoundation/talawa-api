@@ -32,7 +32,7 @@ export default [{
     plugins: {
         "@typescript-eslint": typescriptEslint,
         tsdoc,
-        import: fixupPluginRules(_import),
+        "import": fixupPluginRules(_import),
     },
 
     languageOptions: {
