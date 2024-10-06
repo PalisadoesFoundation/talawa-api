@@ -1,10 +1,8 @@
-// eslint-disable-next-line
 import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
-/* eslint-disable */
 import type { ExecException } from "child_process";
 import { exec } from "child_process";
 import { MongoClient } from "mongodb";
@@ -33,7 +31,6 @@ import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
 import { loadDefaultOrganiation } from "./src/utilities/loadDefaultOrg";
 import { isMinioInstalled } from "./src/setup/isMinioInstalled";
 import { installMinio } from "./src/setup/installMinio";
-
 
 dotenv.config();
 
