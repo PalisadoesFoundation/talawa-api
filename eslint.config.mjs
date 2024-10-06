@@ -36,12 +36,12 @@ export default [{
     },
 
     languageOptions: {
-        globals: {
-            ...globals.node,
-        },
-
-        parser: tsParser,
+    env: {
+        node: true,  
     },
+    parser: tsParser,  
+}
+,
 
     rules: {
         "no-restricted-imports": ["error", {
