@@ -1,4 +1,4 @@
-import * as cryptolib from "crypto";
+import cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";

@@ -1,5 +1,5 @@
 import inquirer from "inquirer";
-import * as redis from "redis";
+import redis from "redis";
 
 // Check connection to Redis with the specified URL.
 /**
@@ -19,7 +19,11 @@ export async function checkRedisConnection(url: string): Promise<boolean> {
     await client.connect();
     response = true;
   } catch (error) {
-    console.log(`\nConnection to Redis failed. Please try again.\n`);
+    if (error instanceof Error) {
+      console.error(`\nConnection to Redis failed: ${error.message}\n`);
+    } else {
+      console.error(`\nConnection to Redis failed. Please try again\n`);
+    }
   } finally {
     client.quit();
   }
