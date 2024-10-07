@@ -7,6 +7,7 @@ import { Chat, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to create a chat.
  * @param _parent - parent of current request
@@ -72,6 +73,13 @@ export const createChat: MutationResolvers["createChat"] = async (
       return unseenMessages;
     }, {}),
   );
+
+  let uploadMediaFile = null;
+
+  if (args.data.isGroup && args.data.image) {
+    uploadMediaFile = await uploadEncodedImage(args.data.image);
+    args.data.image = uploadMediaFile;
+  }
 
   const chatPayload = args.data.isGroup
     ? {

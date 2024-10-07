@@ -202,8 +202,8 @@ type ChatMessage {
   chatMessageBelongsTo: Chat!
   createdAt: DateTime!
   deletedBy: [User]
-  messageContent: String!
   media: String
+  messageContent: String!
   replyTo: ChatMessage
   sender: User!
   type: String!
@@ -1194,7 +1194,7 @@ type Mutation {
   revokeRefreshTokenForUser: Boolean!
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
-  sendMessageToChat(chatId: ID!, messageContent: String, replyTo: ID, type: String!, media: String): ChatMessage!
+  sendMessageToChat(chatId: ID!, media: String, messageContent: String, replyTo: ID, type: String!): ChatMessage!
   sendMessageToDirectChat(chatId: ID!, messageContent: String!, replyTo: ID): DirectChatMessage!
   sendMessageToGroupChat(chatId: ID!, messageContent: String!, replyTo: ID): GroupChatMessage!
   signUp(data: UserInput!, file: String): AuthData!
@@ -1211,6 +1211,7 @@ type Mutation {
   updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
   updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
   updateChat(input: UpdateChatInput!): Chat!
+  updateChatMessage(input: UpdateChatMessageInput!): ChatMessage!
   updateCommunity(data: UpdateCommunityInput!): Boolean!
   updateEvent(data: UpdateEventInput!, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
@@ -1753,6 +1754,12 @@ input UpdateChatInput {
   _id: ID!
   image: String
   name: String
+}
+
+input UpdateChatMessageInput {
+  chatId: ID!
+  messageContent: String!
+  messageId: ID!
 }
 
 input UpdateCommunityInput {

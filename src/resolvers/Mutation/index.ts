@@ -119,6 +119,7 @@ import { deleteNote } from "./deleteNote";
 import { updateNote } from "./updateNote";
 import { addUserToGroupChat } from "./addUserToGroupChat";
 import { updateChat } from "./updateChat";
+import { updateChatMessage } from "./updateChatMessage";
 
 export const Mutation: MutationResolvers = {
   acceptMembershipRequest,
@@ -241,4 +242,5 @@ export const Mutation: MutationResolvers = {
   markChatMessagesAsRead,
   addUserToGroupChat,
   updateChat,
+  updateChatMessage,
 };

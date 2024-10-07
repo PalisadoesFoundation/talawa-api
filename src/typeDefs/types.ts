@@ -806,4 +806,10 @@ export const types = gql`
     name: String
     image: String
   }
+
+  input UpdateChatMessageInput {
+    chatId: ID!
+    messageContent: String!
+    messageId: ID!
+  }
 `;
