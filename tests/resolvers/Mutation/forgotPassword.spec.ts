@@ -125,6 +125,40 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       }
     }
   });
+
+  it(`Throws an error when otp is invalid in compare function`, async () => {
+    const otp = "otp";
+
+    const hashedOtp = await bcrypt.hash(otp + "1", 1);
+
+    const otpToken = jwt.sign(
+      {
+        email: testUser?.email ?? "",
+        otp: hashedOtp,
+      },
+      ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: 99999999,
+      },
+    );
+
+    const args: MutationForgotPasswordArgs = {
+      data: {
+        newPassword: "newPassword",
+        otpToken,
+        userOtp: otp,
+      },
+    };
+
+    try {
+      await forgotPasswordResolver?.({}, args, {});
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(INVALID_OTP);
+      }
+    }
+  });
+
   it(`changes the password if args.otp is correct`, async () => {
     const otp = "otp";
 

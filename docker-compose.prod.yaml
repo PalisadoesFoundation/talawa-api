@@ -1,5 +1,4 @@
-version: '3.8'
-
+version: "3.8"
 services:
   mongodb:
     image: mongo:latest
@@ -7,14 +6,29 @@ services:
       - 27017:27017
     volumes:
       - mongodb-data:/data/db
-
+    networks:
+      - talawa-network
   redis-stack-server:
     image: redis/redis-stack-server:latest
     ports:
       - 6379:6379
     volumes:
       - redis-data:/data/redis
-
+    networks:
+      - talawa-network
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - talawa-network
   talawa-api-prod-container:
     build:
       context: .
@@ -24,11 +38,20 @@ services:
     depends_on:
       - mongodb
       - redis-stack-server
+      - minio
     environment:
       - MONGO_DB_URL=mongodb://mongodb:27017
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+    networks:
+      - talawa-network
 
 volumes:
   mongodb-data:
   redis-data:
+  minio-data:
+
+networks:
+  talawa-network:
+    driver: bridge
