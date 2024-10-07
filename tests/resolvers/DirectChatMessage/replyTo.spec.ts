@@ -62,7 +62,6 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
     }
 
     try {
-      // @ts-expect-error - Testing for error
       await replyToResolver(parent, {}, {});
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(MESSAGE_NOT_FOUND_ERROR.MESSAGE);
@@ -84,7 +83,6 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
       throw new Error("replyToResolver is not a function.");
     }
 
-    // @ts-expect-error - Testing for error
     const replyToPayload = await replyToResolver(parent, {}, {});
     expect(replyToPayload).toEqual(null);
   });

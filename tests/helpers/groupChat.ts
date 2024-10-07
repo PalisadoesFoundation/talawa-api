@@ -12,10 +12,8 @@ export type TestGroupChatType =
   | (InterfaceGroupChat & Document<unknown, unknown, InterfaceGroupChat>)
   | null;
 
-export type TestGroupChatMessageType =
-  | (InterfaceGroupChatMessage &
-      Document<unknown, unknown, InterfaceGroupChatMessage>)
-  | null;
+export type TestGroupChatMessageType = InterfaceGroupChatMessage &
+  Document<unknown, unknown, InterfaceGroupChatMessage>;
 
 export const createTestGroupChat = async (): Promise<
   [TestUserType, TestOrganizationType, TestGroupChatType]
@@ -46,12 +44,11 @@ export const createTestGroupChatMessage = async (): Promise<
   const [testUser, testOrganization, testGroupChat] =
     await createTestGroupChat();
 
-  const message = await createGroupChatMessage(
-    testUser?._id,
-    testGroupChat?._id,
-  );
-
   if (testGroupChat && testUser) {
+    const message = await createGroupChatMessage(
+      testUser?._id,
+      testGroupChat._id.toString(),
+    );
     const testGroupChatMessage = await GroupChatMessage.create({
       groupChatMessageBelongsTo: testGroupChat._id,
       sender: testUser._id,
@@ -62,7 +59,12 @@ export const createTestGroupChatMessage = async (): Promise<
 
     return [testUser, testOrganization, testGroupChat, testGroupChatMessage];
   } else {
-    return [testUser, testOrganization, testGroupChat, null];
+    return [
+      testUser,
+      testOrganization,
+      testGroupChat,
+      {} as TestGroupChatMessageType,
+    ];
   }
 };
 

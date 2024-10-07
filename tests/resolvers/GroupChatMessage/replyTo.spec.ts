@@ -53,7 +53,6 @@ describe("resolvers -> GroupChatMessage -> replyTo", () => {
 
     try {
       if (replyToResolver) {
-        // @ts-expect-error - Testing for error
         await replyToResolver(parent, {}, {});
       }
     } catch (error: unknown) {
@@ -68,14 +67,11 @@ describe("resolvers -> GroupChatMessage -> replyTo", () => {
       replyTo: "",
     };
 
-    console;
-
     if (!parent) {
       throw new Error("Parent object is undefined.");
     }
 
     if (replyToResolver) {
-      // @ts-expect-error - Testing for error
       const replyToPayload = await replyToResolver(parent, {}, {});
       expect(replyToPayload).toEqual(null);
     }
