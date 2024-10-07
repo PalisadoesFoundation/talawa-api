@@ -127,7 +127,7 @@
     "@types/nodemailer": "^6.4.15",
     "@types/uuid": "^10.0.0",
     "@types/validator": "^13.12.2",
-    "@vitest/coverage-v8": "^2.1.1",
+    "@vitest/coverage-v8": "^2.1.2",
     "cls-bluebird": "^2.1.0",
     "concurrently": "^9.0.1",
     "eslint": "^8.56.0",
