@@ -19,7 +19,13 @@ export async function checkRedisConnection(url: string): Promise<boolean> {
     await client.connect();
     response = true;
   } catch (error) {
-    console.log(`\nConnection to Redis failed. Please try again.\n`);
+    if (error instanceof Error) {
+      console.error(`\nConnection to Redis failed: ${error.message}\n`);
+    } else {
+      console.error(
+        `\nConnection to Redis failed: An unknown error occurred.\n`,
+      );
+    }
   } finally {
     client.quit();
   }
