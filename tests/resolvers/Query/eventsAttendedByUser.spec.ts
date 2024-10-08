@@ -4,7 +4,10 @@ import { Event } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import type { QueryEventsAttendedByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type { TestUserType, TestOrganizationType } from "../../helpers/userAndOrg";
+import type {
+  TestUserType,
+  TestOrganizationType,
+} from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
 
@@ -15,7 +18,7 @@ let testOrganization: TestOrganizationType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
-  
+
   await createEventWithRegistrant(testUser?._id, testOrganization?._id, true);
   await createEventWithRegistrant(testUser?._id, testOrganization?._id, true);
 });
