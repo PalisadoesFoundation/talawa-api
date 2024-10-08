@@ -18,18 +18,22 @@ let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
-  const temp = await createTestUserAndOrganization();
-  testUser = temp[0];
-  testOrganization = temp[1];
   MONGOOSE_INSTANCE = await connect();
+  const result = await createTestUserAndOrganization();
+  testUser = result[0];
+  testOrganization = result[1];
   testAdminUser = await createTestUser();
 });
+
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> getRecurringEvents", () => {
   it("returns list of recurring events for a given baseRecurringEventId", async () => {
+    if (!testUser || !testAdminUser || !testOrganization) {
+      throw new Error("Test setup failed");
+    }
     const baseRecurringEventId = new Types.ObjectId();
 
     const testEvents = [
@@ -41,7 +45,7 @@ describe("resolvers -> Query -> getRecurringEvents", () => {
         recurring: true,
         isPublic: true,
         isRegisterable: true,
-        creator: testUser._id,
+        creatorId: testUser._id,
         admins: [testAdminUser._id],
         registrants: [],
         organization: testOrganization._id,
@@ -55,7 +59,7 @@ describe("resolvers -> Query -> getRecurringEvents", () => {
         recurring: true,
         isPublic: true,
         isRegisterable: true,
-        creator: testUser._id,
+        creatorId: testUser._id,
         admins: [testAdminUser._id],
         registrants: [],
         organization: testOrganization._id,
@@ -66,7 +70,8 @@ describe("resolvers -> Query -> getRecurringEvents", () => {
     await Event.insertMany(testEvents);
 
     const args = { baseRecurringEventId: baseRecurringEventId.toString() };
-    const result = await getRecurringEvents({}, args, {} as unknown);
+    const getRecurringEventsFunction = getRecurringEvents as unknown as (parent: any, args: any, context: any) => Promise<any[]>;
+    const result = await getRecurringEventsFunction({}, args, {});
 
     expect(result).toHaveLength(2);
     expect(result[0].title).toBe("Event 1");
@@ -78,7 +83,8 @@ describe("resolvers -> Query -> getRecurringEvents", () => {
   it("returns an empty array when no recurring events are found", async () => {
     const nonExistentId = new Types.ObjectId();
     const args = { baseRecurringEventId: nonExistentId.toString() };
-    const result = await getRecurringEvents({}, args, {} as unknown);
+    const getRecurringEventsFunction = getRecurringEvents as unknown as (parent: any, args: any, context: any) => Promise<any[]>;
+    const result = await getRecurringEventsFunction({}, args, {});
 
     expect(result).toEqual([]);
   });
@@ -89,8 +95,9 @@ describe("resolvers -> Query -> getRecurringEvents", () => {
     });
 
     const args = { baseRecurringEventId: new Types.ObjectId().toString() };
+    const getRecurringEventsFunction = getRecurringEvents as unknown as (parent: any, args: any, context: any) => Promise<any[]>;
 
-    await expect(getRecurringEvents({}, args, {} as unknown)).rejects.toThrow(
+    await expect(getRecurringEventsFunction({}, args, {})).rejects.toThrow(
       "Database error"
     );
 
