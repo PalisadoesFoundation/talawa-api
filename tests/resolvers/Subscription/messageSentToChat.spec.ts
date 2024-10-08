@@ -74,7 +74,7 @@ describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
 
     const payload = {
       messageSentToChat: {
-        chatMessageBelongsTo: "vqhgjhShja",
+        chatMessageBelongsTo: "",
       },
     };
     // @ts-expect-error-ignore

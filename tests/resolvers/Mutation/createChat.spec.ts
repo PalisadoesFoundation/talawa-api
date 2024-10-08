@@ -29,7 +29,6 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const resultsArray = await createTestUserAndOrganization();
-
   testUser = resultsArray[0];
   testOrganization = resultsArray[1];
 });
@@ -81,7 +80,7 @@ describe("resolvers -> Mutation -> createChat", () => {
     try {
       const args: MutationCreateChatArgs = {
         data: {
-          organizationId: testOrganization?.id,
+          organizationId: testOrganization?._id,
           userIds: [new Types.ObjectId().toString()],
           isGroup: true,
         },
@@ -105,7 +104,7 @@ describe("resolvers -> Mutation -> createChat", () => {
       data: {
         organizationId: testOrganization?.id,
         userIds: [testUser?.id],
-        isGroup: true,
+        isGroup: false,
       },
     };
 
