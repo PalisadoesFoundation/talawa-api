@@ -6,6 +6,7 @@ import type { TestChatMessageType } from "../../helpers/chat";
 import { createTestChatMessage } from "../../helpers/chat";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToChat";
+import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testChatMessage: TestChatMessageType;
@@ -74,7 +75,7 @@ describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
 
     const payload = {
       messageSentToChat: {
-        chatMessageBelongsTo: "",
+        chatMessageBelongsTo: new Types.ObjectId().toString(),
       },
     };
     // @ts-expect-error-ignore

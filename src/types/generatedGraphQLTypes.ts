@@ -1689,7 +1689,6 @@ export type MutationSendMessageToChatArgs = {
   chatId: Scalars['ID']['input'];
   messageContent: Scalars['String']['input'];
   replyTo?: InputMaybe<Scalars['ID']['input']>;
-  type: Scalars['String']['input'];
 };
 
 
@@ -4252,7 +4251,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   revokeRefreshTokenForUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   saveFcmToken?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationSaveFcmTokenArgs>>;
   sendMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationSendMembershipRequestArgs, 'organizationId'>>;
-  sendMessageToChat?: Resolver<ResolversTypes['ChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToChatArgs, 'chatId' | 'messageContent' | 'type'>>;
+  sendMessageToChat?: Resolver<ResolversTypes['ChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToChatArgs, 'chatId' | 'messageContent'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
   togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'id'>>;
   unassignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUnassignUserTagArgs, 'input'>>;

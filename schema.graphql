@@ -1134,7 +1134,7 @@ type Mutation {
   revokeRefreshTokenForUser: Boolean!
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
-  sendMessageToChat(chatId: ID!, messageContent: String!, replyTo: ID, type: String!): ChatMessage!
+  sendMessageToChat(chatId: ID!, messageContent: String!, replyTo: ID): ChatMessage!
   signUp(data: UserInput!, file: String): AuthData!
   togglePostPin(id: ID!, title: String): Post!
   unassignUserTag(input: ToggleUserTagAssignInput!): User

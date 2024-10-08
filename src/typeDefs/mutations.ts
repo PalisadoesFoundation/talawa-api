@@ -235,7 +235,6 @@ export const mutations = gql`
     sendMessageToChat(
       chatId: ID!
       messageContent: String!
-      type: String!
       replyTo: ID
     ): ChatMessage! @auth
 
