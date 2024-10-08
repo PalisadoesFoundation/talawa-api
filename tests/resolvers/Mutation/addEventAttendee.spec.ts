@@ -320,9 +320,9 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
       await addEventAttendeeResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
     mockFindByIdAndUpdate.mockRestore();
   });
