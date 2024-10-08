@@ -181,13 +181,5 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     },
     { new: true },
   );
-
-  if (!updatedUser) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
-    );
-  }
   return updatedUser;
 };
