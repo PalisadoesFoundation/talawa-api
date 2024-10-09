@@ -1111,6 +1111,10 @@ export type MembershipRequest = {
 };
 
 export type MembershipRequestsWhereInput = {
+  creatorId?: InputMaybe<Scalars['ID']['input']>;
+  creatorId_in?: InputMaybe<Array<Scalars['ID']['input']>>;
+  creatorId_not?: InputMaybe<Scalars['ID']['input']>;
+  creatorId_not_in?: InputMaybe<Array<Scalars['ID']['input']>>;
   id?: InputMaybe<Scalars['ID']['input']>;
   id_contains?: InputMaybe<Scalars['ID']['input']>;
   id_in?: InputMaybe<Array<Scalars['ID']['input']>>;

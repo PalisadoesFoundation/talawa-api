@@ -284,6 +284,11 @@ export const inputs = gql`
     id_starts_with: ID
 
     user: UserWhereInput
+
+    creatorId: ID
+    creatorId_not: ID
+    creatorId_in: [ID!]
+    creatorId_not_in: [ID!]
   }
 
   input MessageChatInput {
