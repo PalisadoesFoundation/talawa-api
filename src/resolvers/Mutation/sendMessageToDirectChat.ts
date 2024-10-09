@@ -48,6 +48,7 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
       sender: context.userId,
       receiver: directChat.users[receiverIndex],
       messageContent: args.messageContent,
+      replyTo: args.replyTo,
     });
 
     // add createdDirectChatMessage to directChat

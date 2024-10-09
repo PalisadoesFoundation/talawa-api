@@ -12,10 +12,8 @@ export type TestGroupChatType =
   | (InterfaceGroupChat & Document<unknown, unknown, InterfaceGroupChat>)
   | null;
 
-export type TestGroupChatMessageType =
-  | (InterfaceGroupChatMessage &
-      Document<unknown, unknown, InterfaceGroupChatMessage>)
-  | null;
+export type TestGroupChatMessageType = InterfaceGroupChatMessage &
+  Document<unknown, unknown, InterfaceGroupChatMessage>;
 
 export const createTestGroupChat = async (): Promise<
   [TestUserType, TestOrganizationType, TestGroupChatType]
@@ -47,15 +45,39 @@ export const createTestGroupChatMessage = async (): Promise<
     await createTestGroupChat();
 
   if (testGroupChat && testUser) {
+    const message = await createGroupChatMessage(
+      testUser?._id,
+      testGroupChat._id.toString(),
+    );
     const testGroupChatMessage = await GroupChatMessage.create({
       groupChatMessageBelongsTo: testGroupChat._id,
       sender: testUser._id,
       createdAt: new Date(),
       messageContent: `messageContent${nanoid().toLowerCase()}`,
+      replyTo: message?._id,
     });
 
     return [testUser, testOrganization, testGroupChat, testGroupChatMessage];
   } else {
-    return [testUser, testOrganization, testGroupChat, null];
+    return [
+      testUser,
+      testOrganization,
+      testGroupChat,
+      {} as TestGroupChatMessageType,
+    ];
   }
+};
+
+export const createGroupChatMessage = async (
+  senderId: string,
+  groupChatId: string,
+): Promise<TestGroupChatMessageType> => {
+  const directChatMessage = await GroupChatMessage.create({
+    groupChatMessageBelongsTo: groupChatId,
+    sender: senderId,
+    createdAt: new Date(),
+    messageContent: `messageContent${nanoid().toLowerCase()}`,
+  });
+
+  return directChatMessage;
 };

@@ -53,7 +53,6 @@ describe("resolvers -> DirectChatMessage -> receiver", () => {
 
     try {
       if (receiverResolver) {
-        // @ts-expect-error - Testing for error
         await receiverResolver(parent, {}, {});
       }
     } catch (error: unknown) {
