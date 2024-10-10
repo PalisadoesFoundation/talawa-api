@@ -3,6 +3,18 @@
 	"bugs": {
 		"url": "https://github.com/PalisadoesFoundation/talawa-api/issues"
 	},
+	"dependencies": {
+		"@fastify/cors": "^10.0.1",
+		"@fastify/helmet": "^12.0.1",
+		"@fastify/jwt": "^9.0.1",
+		"@fastify/rate-limit": "^10.1.1",
+		"@fastify/type-provider-typebox": "^5.0.0",
+		"@sinclair/typebox": "^0.33.15",
+		"ajv-formats": "^3.0.1",
+		"close-with-grace": "^2.1.0",
+		"env-schema": "^6.0.0",
+		"fastify": "^5.0.0"
+	},
 	"description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.3",
@@ -10,6 +22,7 @@
 		"@swc/core": "^1.7.35",
 		"@types/node": "^22.7.5",
 		"lefthook": "^1.7.21",
+		"pino-pretty": "^11.2.2",
 		"tsx": "^4.19.1",
 		"typescript": "^5.6.3"
 	},
@@ -32,7 +45,10 @@
 		"check_type_errors": "tsc",
 		"disable_git_hooks": "lefthook uninstall",
 		"enable_git_hooks": "lefthook install",
-		"fix_code_quality": "biome check --error-on-warnings --write"
+		"fix_code_quality": "biome check --error-on-warnings --write",
+		"prestart_production": "pnpm build_production",
+		"start_development_server": "tsx watch ./src/index.ts",
+		"start_production_server": "node ./dist/index.js"
 	},
 	"type": "module",
 	"version": "1.0.0"
