@@ -1,0 +1,5 @@
+pre-commit:
+  commands:
+    check_type_errors:
+      run: pnpm check_type_errors
+  piped: true
