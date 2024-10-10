@@ -21,6 +21,29 @@ describe("Setup -> superAdmin", () => {
     vi.clearAllMocks();
   });
 
+  it("should validate the email and return an error message for invalid email", async () => {
+    const invalidEmail = "invalid-email";
+
+    vi.spyOn(inquirer, "prompt").mockImplementationOnce((questions: any) => {
+      // Assuming questions is an array
+      const questionArray = Array.isArray(questions) ? questions : [questions];
+      const question = questionArray.find((q: any) => q.name === "email");
+      const validate = question?.validate;
+
+      if (typeof validate === "function") {
+        const validationResult = validate(invalidEmail);
+        return Promise.resolve({
+          email: validationResult === true ? invalidEmail : validationResult,
+        });
+      }
+
+      return Promise.resolve({ email: invalidEmail });
+    });
+
+    const result = await askForSuperAdminEmail.askForSuperAdminEmail();
+    expect(result).toEqual("Invalid email. Please try again.");
+  });
+
   it("function askForSuperAdminEmail should return email as entered", async () => {
     const testEmail = "testemail@test.com";
     vi.spyOn(inquirer, "prompt").mockImplementationOnce(() =>

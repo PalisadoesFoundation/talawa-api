@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "../constants";
 import type { InterfaceAppUserProfile, InterfaceUser } from "../models";
-import { User } from "../models";
+import { Community, User } from "../models";
 
 /**
  * Interface representing the payload of a JWT token.
@@ -22,10 +22,17 @@ export interface InterfaceJwtTokenPayload {
  * @param appUserProfile - Application user profile data
  * @returns JSON Web Token string payload
  */
-export const createAccessToken = (
+export const createAccessToken = async (
   user: InterfaceUser,
   appUserProfile: InterfaceAppUserProfile,
-): string => {
+): Promise<string> => {
+  let timeout = 30; //in minutes
+  const community = await Community.findOne().lean();
+
+  if (community) {
+    timeout = community.timeout;
+  }
+
   return jwt.sign(
     {
       tokenVersion: appUserProfile.tokenVersion,
@@ -33,6 +40,7 @@ export const createAccessToken = (
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      timeout: timeout,
     },
     ACCESS_TOKEN_SECRET as string,
     {
