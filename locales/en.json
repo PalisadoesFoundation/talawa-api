@@ -29,6 +29,7 @@
   "invalid.fileType": "Invalid file type",
   "invalid.refreshToken": "Invalid refresh token",
   "invalid.credentials": "Invalid credentials",
+  "invalid.timeoutRange": "Invalid timeout range",
   "registrant.alreadyExist": "Already registered for the event",
   "member.notFound": "Member not found",
   "registrant.alreadyUnregistered": "Already unregistered for the event",

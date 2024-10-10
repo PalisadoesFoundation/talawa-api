@@ -19,6 +19,7 @@ export interface InterfaceCommunity {
     slack: string;
     reddit: string;
   }; // Object containing various social media URLs for the community.
+  timeout: number;
 }
 
 /**
@@ -35,6 +36,9 @@ export interface InterfaceCommunity {
  * @param youTube - YouTube URL.
  * @param slack - Slack URL.
  * @param reddit - Reddit URL.
+ * @param websiteLink - Community website URL.
+ * @param name - Community name.
+ * @param timeout - Timeout duration in minutes (default is 30 minutes).
  */
 const communitySchema = new Schema({
   name: {
@@ -72,6 +76,12 @@ const communitySchema = new Schema({
     reddit: {
       type: String,
     },
+  },
+  timeout: {
+    type: Number,
+    default: 30,
+    min: [15, "Timeout should be at least 15 minutes."],
+    max: [60, "Timeout should not exceed 60 minutes."],
   },
 });
 

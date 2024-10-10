@@ -28,6 +28,7 @@
   "invalid.fileType": "無效的文件類型",
   "invalid.refreshToken": "無效的刷新令牌",
   "invalid.credentials": "無效的憑據",
+  "invalid.timeoutRange": "无效的超时范围",
   "registrant.alreadyExist": "已经报名参加活动",
   "member.notFound": "未找到成员",
   "registrant.alreadyUnregistered": "已取消注册该活动",
