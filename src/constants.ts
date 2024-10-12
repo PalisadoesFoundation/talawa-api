@@ -57,13 +57,6 @@ export const CHAT_NOT_FOUND_ERROR = Object.freeze({
   PARAM: "chat",
 });
 
-export const MESSAGE_NOT_FOUND_ERROR = Object.freeze({
-  DESC: "Message not found",
-  CODE: "message.notFound",
-  MESSAGE: "message.notFound",
-  PARAM: "message",
-});
-
 export const VENUE_ALREADY_EXISTS_ERROR = Object.freeze({
   DESC: "Venue already exists",
   CODE: "venue.alreadyExists",
