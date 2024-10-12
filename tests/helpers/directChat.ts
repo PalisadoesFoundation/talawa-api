@@ -12,10 +12,8 @@ export type TestDirectChatType =
   | (InterfaceDirectChat & Document<unknown, unknown, InterfaceDirectChat>)
   | null;
 
-export type TestDirectChatMessageType =
-  | (InterfaceDirectChatMessage &
-      Document<unknown, unknown, InterfaceDirectChatMessage>)
-  | null;
+export type TestDirectChatMessageType = InterfaceDirectChatMessage &
+  Document<unknown, unknown, InterfaceDirectChatMessage>;
 
 export const createTestDirectChat = async (): Promise<
   [TestUserType, TestOrganizationType, TestDirectChatType]
@@ -46,15 +44,27 @@ export const createTestDirectChatMessage = async (): Promise<
     await createTestDirectChat();
 
   if (testDirectChat && testUser) {
+    const directChatMessage = await createDirectChatMessage(
+      testUser?._id,
+      testUser?._id,
+      testDirectChat?._id.toString(),
+    );
+
     const testDirectChatMessage = await DirectChatMessage.create({
       directChatMessageBelongsTo: testDirectChat._id,
       sender: testUser._id,
       receiver: testUser._id,
+      replyTo: directChatMessage?._id,
       messageContent: `msgContent${nanoid().toLowerCase()}`,
     });
     return [testUser, testOrganization, testDirectChat, testDirectChatMessage];
   } else {
-    return [testUser, testOrganization, testDirectChat, null];
+    return [
+      testUser,
+      testOrganization,
+      testDirectChat,
+      {} as TestDirectChatMessageType,
+    ];
   }
 };
 
