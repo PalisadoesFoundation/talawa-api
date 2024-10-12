@@ -306,6 +306,7 @@ jobs:
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
   
   Branch-check:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: "Base branch check"
     runs-on: ubuntu-latest
     steps:
