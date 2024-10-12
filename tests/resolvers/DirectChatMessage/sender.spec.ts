@@ -52,6 +52,7 @@ describe("resolvers -> DirectChatMessage -> sender", () => {
 
     try {
       if (senderResolver) {
+        // @ts-expect-error - Testing for error
         await senderResolver(parent, {}, {});
       }
     } catch (error: unknown) {

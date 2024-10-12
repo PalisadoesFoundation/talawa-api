@@ -192,7 +192,6 @@ export const types = gql`
     directChatMessageBelongsTo: DirectChat!
     sender: User!
     receiver: User!
-    replyTo: DirectChatMessage
     createdAt: DateTime!
     updatedAt: DateTime!
     messageContent: String!
@@ -388,7 +387,6 @@ export const types = gql`
     _id: ID!
     groupChatMessageBelongsTo: GroupChat!
     sender: User!
-    replyTo: GroupChatMessage
     createdAt: DateTime!
     updatedAt: DateTime!
     messageContent: String!

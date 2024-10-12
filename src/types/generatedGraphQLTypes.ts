@@ -643,7 +643,6 @@ export type DirectChatMessage = {
   directChatMessageBelongsTo: DirectChat;
   messageContent: Scalars['String']['output'];
   receiver: User;
-  replyTo?: Maybe<DirectChatMessage>;
   sender: User;
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -1036,7 +1035,6 @@ export type GroupChatMessage = {
   createdAt: Scalars['DateTime']['output'];
   groupChatMessageBelongsTo: GroupChat;
   messageContent: Scalars['String']['output'];
-  replyTo?: Maybe<GroupChatMessage>;
   sender: User;
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -1241,6 +1239,7 @@ export type Mutation = {
   removeEventVolunteer: EventVolunteer;
   removeEventVolunteerGroup: EventVolunteerGroup;
   removeFundraisingCampaignPledge: FundraisingCampaignPledge;
+  removeGroupChat: GroupChat;
   removeMember: Organization;
   removeOrganization: UserData;
   removeOrganizationCustomField: OrganizationCustomField;
@@ -1693,6 +1692,11 @@ export type MutationRemoveFundraisingCampaignPledgeArgs = {
 };
 
 
+export type MutationRemoveGroupChatArgs = {
+  chatId: Scalars['ID']['input'];
+};
+
+
 export type MutationRemoveMemberArgs = {
   data: UserAndOrganizationInput;
 };
@@ -1759,14 +1763,12 @@ export type MutationSendMembershipRequestArgs = {
 export type MutationSendMessageToDirectChatArgs = {
   chatId: Scalars['ID']['input'];
   messageContent: Scalars['String']['input'];
-  replyTo?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
 export type MutationSendMessageToGroupChatArgs = {
   chatId: Scalars['ID']['input'];
   messageContent: Scalars['String']['input'];
-  replyTo?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -4011,7 +4013,6 @@ export type DirectChatMessageResolvers<ContextType = any, ParentType extends Res
   directChatMessageBelongsTo?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType>;
   messageContent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   receiver?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  replyTo?: Resolver<Maybe<ResolversTypes['DirectChatMessage']>, ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4205,7 +4206,6 @@ export type GroupChatMessageResolvers<ContextType = any, ParentType extends Reso
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   groupChatMessageBelongsTo?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType>;
   messageContent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  replyTo?: Resolver<Maybe<ResolversTypes['GroupChatMessage']>, ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4384,6 +4384,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerArgs, 'id'>>;
   removeEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerGroupArgs, 'id'>>;
   removeFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignPledgeArgs, 'id'>>;
+  removeGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveGroupChatArgs, 'chatId'>>;
   removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'data'>>;
   removeOrganization?: Resolver<ResolversTypes['UserData'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
   removeOrganizationCustomField?: Resolver<ResolversTypes['OrganizationCustomField'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationCustomFieldArgs, 'customFieldId' | 'organizationId'>>;

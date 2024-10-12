@@ -65,6 +65,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
     }
 
     try {
+      // @ts-expect-error - Testing for error
       await directChatMessageBelongsToResolver(parent, {}, {});
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);

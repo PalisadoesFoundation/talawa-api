@@ -54,6 +54,7 @@ describe("resolvers -> GroupChatMessage -> groupChatMessageBelongsTo", () => {
 
     try {
       if (groupChatMessageBelongsToResolver) {
+        // @ts-expect-error - Testing for error
         await groupChatMessageBelongsToResolver(parent, {}, {});
       }
     } catch (error: unknown) {
