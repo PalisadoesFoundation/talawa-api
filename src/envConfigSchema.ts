@@ -16,6 +16,10 @@ export const envConfigSchema = Type.Composite([
 			minLength: 1,
 		}),
 		/**
+		 * Used for providing the decision for whether to enable graphiql web client. It is useful to enable the graphiql web client in development environments for easier graphql schema exploration.
+		 */
+		API_IS_GRAPHIQL: Type.Boolean(),
+		/**
 		 * Used for providing the decision for whether to enable pretty logging with pino.js logger. It is useful to enable prettier logging in development environments for easier developer log comprehension.
 		 */
 		API_IS_PINO_PRETTY: Type.Boolean(),

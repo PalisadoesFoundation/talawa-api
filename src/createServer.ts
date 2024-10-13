@@ -10,6 +10,7 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "./envConfigSchema";
+import routes from "./routes/index";
 
 // Currently fastify provides typescript integration through the usage of ambient typescript declarations where the type of global fastify instance is extended with our custom types. This approach is not sustainable for implementing scoped and encapsulated business logic which is meant to be the main advantage of fastify plugins. The fastify team is aware of this problem and is currently looking for a more elegant approach for typescript integration. More information can be found at this link: https://github.com/fastify/fastify/issues/5061
 declare module "fastify" {
@@ -68,12 +69,17 @@ export const createServer = async (options?: {
 	fastify.register(fastifyCors, {});
 
 	// More information at this link: https://github.com/fastify/fastify-helmet
-	fastify.register(fastifyHelmet, {});
+	fastify.register(fastifyHelmet, {
+		// This field needs to be `false` for mercurius graphiql web client to work.
+		contentSecurityPolicy: !fastify.envConfig.API_IS_GRAPHIQL,
+	});
 
 	// More information at this link: https://github.com/fastify/fastify-jwt
 	fastify.register(fastifyJwt, {
 		secret: fastify.envConfig.API_JWT_SECRET,
 	});
+
+	fastify.register(routes, {});
 
 	return fastify;
 };

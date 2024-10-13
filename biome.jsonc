@@ -5,7 +5,12 @@
 	// https://biomejs.dev/reference/configuration/#files
 	"files": {
 		// https://biomejs.dev/reference/configuration/#filesignore
-		"ignore": ["./node_modules", "./package.json", "./pnpm-lock.yaml"],
+		"ignore": [
+			"./node_modules",
+			"./package.json",
+			"./pnpm-lock.yaml",
+			"./schema.graphql"
+		],
 		// https://biomejs.dev/reference/configuration/#filesignoreunknown
 		"ignoreUnknown": true
 	},

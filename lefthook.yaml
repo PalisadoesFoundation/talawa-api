@@ -1,10 +1,15 @@
 pre-commit:
   commands:
-    1_fix_code_quality:
+    1_generate_graphql_sdl_file:
+      run: |
+        set -e
+        pnpm generate_graphql_sdl_file
+        git add ./schema.graphql
+    2_fix_code_quality:
       run: |
         set -e
         pnpm fix_code_quality
         git add {staged_files}
-    2_check_type_errors:
+    3_check_type_errors:
       run: pnpm check_type_errors
   piped: true
