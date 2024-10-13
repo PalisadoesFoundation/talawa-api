@@ -13,18 +13,22 @@
 		"@sinclair/typebox": "^0.33.16",
 		"ajv-formats": "^3.0.1",
 		"close-with-grace": "^2.1.0",
+		"drizzle-orm": "^0.35.1",
 		"env-schema": "^6.0.0",
 		"fastify": "^5.0.0",
 		"fastify-plugin": "^5.0.1",
 		"graphql": "^16.9.0",
-		"mercurius": "^15.1.0"
+		"mercurius": "^15.1.0",
+		"postgres": "^3.4.4",
+		"zod": "^3.23.8"
 	},
 	"description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.3",
 		"@swc/cli": "0.4.1-nightly.20240914",
-		"@swc/core": "^1.7.35",
+		"@swc/core": "^1.7.36",
 		"@types/node": "^22.7.5",
+		"drizzle-kit": "^0.26.2",
 		"lefthook": "^1.7.21",
 		"pino-pretty": "^11.3.0",
 		"tsx": "^4.19.1",
@@ -49,16 +53,22 @@
 		"url": "https://github.com/PalisadoesFoundation/talawa-api"
 	},
 	"scripts": {
+		"apply_drizzle_migrations": "drizzle-kit migrate",
 		"build_production": "swc ./src/ --ignore \"**/*.spec.ts,**/*.test.ts\" --out-dir ./dist/ --strip-leading-paths",
 		"check_code_quality": "biome check --error-on-warnings",
+		"check_drizzle_migrations": "drizzle-kit check",
 		"check_type_errors": "tsc",
 		"disable_git_hooks": "lefthook uninstall",
+		"drop_drizzle_migrations": "drizzle-kit drop",
 		"enable_git_hooks": "lefthook install",
 		"fix_code_quality": "biome check --error-on-warnings --write",
+		"generate_drizzle_migrations": "drizzle-kit generate",
 		"generate_graphql_sdl_file": "tsx ./scripts/generateGraphQLSDLFile.ts",
 		"prestart_production": "pnpm build_production",
+		"push_drizzle_schema": "drizzle-kit push",
 		"start_development_server": "tsx watch ./src/index.ts",
-		"start_production_server": "node ./dist/index.js"
+		"start_production_server": "node ./dist/index.js",
+		"upgrade_drizzle_metadata": "drizzle-kit up"
 	},
 	"type": "module",
 	"version": "1.0.0"

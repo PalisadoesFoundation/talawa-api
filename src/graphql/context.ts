@@ -1,3 +1,5 @@
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type * as drizzleSchema from "~/src/drizzle/schema";
 import type { PubSub } from "./pubsub";
 
 /**
@@ -11,7 +13,7 @@ export type ImplicitMercuriusContext = {
  * Type of the transport protocol agnostic explicit context object that is merged with the implcit mercurius context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
  */
 export type ExplicitGraphQLContext = {
-	placeholder: string;
+	drizzleClient: PostgresJsDatabase<typeof drizzleSchema>;
 };
 
 /**
