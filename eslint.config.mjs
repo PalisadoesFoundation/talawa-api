@@ -2,19 +2,17 @@ import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import tsdoc from "eslint-plugin-tsdoc";
 import _import from "eslint-plugin-import";
 import { fixupPluginRules } from "@eslint/compat";
-import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
-import parser from "@graphql-eslint/eslint-plugin";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
-import graphqlEslint from "@graphql-eslint/eslint-plugin";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
-    baseDirectory: __dirname
+    baseDirectory: __dirname,
+    recommendedConfig: js.configs.recommended,
 });
 
 export default [{
@@ -35,12 +33,8 @@ export default [{
     },
 
     languageOptions: {
-    env: {
-        node: true,  
+        parser: tsParser,  
     },
-    parser: tsParser,  
-}
-,
 
     rules: {
         "no-restricted-imports": ["error", {
@@ -50,7 +44,6 @@ export default [{
         "import/no-duplicates": "error",
         "tsdoc/syntax": "error",
         "@typescript-eslint/ban-ts-comment": "error",
-        "@typescript-eslint/ban-types": "error",
         "@typescript-eslint/no-duplicate-enum-values": "error",
         "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
@@ -117,11 +110,7 @@ export default [{
     files: ["./src/typeDefs/**/*.graphql"],
 
     plugins: {
-        "@graphql-eslint": graphqlEslint,
-    },
-
-    languageOptions: {
-        parser: parser,
+        "@graphql-eslint": typescriptEslint,
     },
 }, {
     files: ["tests/**/*"],
