@@ -105,6 +105,9 @@
     "zod-error": "^1.5.0"
   },
   "devDependencies": {
+    "@eslint/compat": "^1.1.1",
+    "@eslint/eslintrc": "^2.1.4",
+    "@eslint/js": "^8.57.0",
     "@graphql-codegen/cli": "^5.0.2",
     "@graphql-codegen/typescript": "^4.0.9",
     "@graphql-codegen/typescript-resolvers": "^4.2.1",
