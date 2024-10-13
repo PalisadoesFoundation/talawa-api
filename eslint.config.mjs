@@ -33,12 +33,8 @@ export default [{
     },
 
     languageOptions: {
-    env: {
-        node: true,  
+      parser: tsParser,  
     },
-    parser: tsParser,  
-}
-,
 
     rules: {
         "no-restricted-imports": ["error", {
