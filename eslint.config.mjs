@@ -112,10 +112,6 @@ export default [{
     plugins: {
         "@typescript-eslint": typescriptEslint,
     },
-
-    languageOptions: {
-        parser: tsParser,
-    },
 }, {
     files: ["tests/**/*"],
 
