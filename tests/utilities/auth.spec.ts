@@ -38,7 +38,7 @@ afterAll(async () => {
 
 describe("createAccessToken", () => {
   it("should create a JWT token with the correct payload", async () => {
-    const token = createAccessToken(
+    const token = await createAccessToken(
       user ? user.toObject() : ({} as InterfaceUser),
       appUserProfile
         ? appUserProfile.toObject()
