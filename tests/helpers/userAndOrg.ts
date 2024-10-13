@@ -7,10 +7,13 @@ import type {
   InterfaceUser,
 } from "../../src/models";
 import { AppUserProfile, Organization, User } from "../../src/models";
+import { encryptEmail } from "../../src/utilities/encryption";
 
 export type TestOrganizationType =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (InterfaceOrganization & Document<any, any, InterfaceOrganization>) | null;
+
+const encryptedEmail = encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`);
 
 export type TestUserType =
   | (InterfaceUser & Document<any, any, InterfaceUser>)
@@ -20,7 +23,7 @@ export type TestAppUserProfileType =
   | null;
 export const createTestUser = async (): Promise<TestUserType> => {
   let testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptedEmail,
     password: `pass${nanoid().toLowerCase()}`,
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
@@ -29,8 +32,6 @@ export const createTestUser = async (): Promise<TestUserType> => {
   const testUserAppProfile = await AppUserProfile.create({
     userId: testUser._id,
     appLanguageCode: "en",
-    pledges: [],
-    campaigns: [],
   });
   testUser = (await User.findOneAndUpdate(
     {

@@ -5,10 +5,12 @@ import {
 import { errors } from "../../libraries";
 import {
   AppUserProfile,
+  InterfaceUser,
   User,
   type InterfaceAppUserProfile,
 } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import { decryptEmail } from "../../utilities/encryption";
 /**
  * This query fetch the current user from the database.
  * @param _parent-
@@ -42,8 +44,6 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
     .populate("createdEvents")
     .populate("eventAdmin")
     .populate("adminFor")
-    .populate("pledges")
-    .populate("campaigns")
     .lean();
   if (!userAppProfile) {
     throw new errors.NotFoundError(
@@ -52,8 +52,12 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
       USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
+
+  const { decrypted } = decryptEmail(currentUser.email);
+  currentUser.email = decrypted;
+
   return {
-    user: currentUser,
+    user: currentUser as InterfaceUser,
     appUserProfile: userAppProfile as InterfaceAppUserProfile,
   };
 };

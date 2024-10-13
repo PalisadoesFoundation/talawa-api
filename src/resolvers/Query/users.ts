@@ -3,6 +3,7 @@ import { errors, requestContext } from "../../libraries";
 import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
 import { AppUserProfile, User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import { decryptEmail } from "../../utilities/encryption";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -53,6 +54,7 @@ export const users: QueryResolvers["users"] = async (
     .limit(args.first ?? 0)
     .skip(args.skip ?? 0)
     .select(["-password"])
+
     .populate("joinedOrganizations")
     .populate("registeredEvents")
     .populate("organizationsBlockedBy")
@@ -60,18 +62,18 @@ export const users: QueryResolvers["users"] = async (
 
   return await Promise.all(
     users.map(async (user) => {
+      const { decrypted } = decryptEmail(user.email);
       const isSuperAdmin = currentUserAppProfile.isSuperAdmin;
       const appUserProfile = await AppUserProfile.findOne({ userId: user._id })
         .populate("createdOrganizations")
         .populate("createdEvents")
         .populate("eventAdmin")
-        .populate("adminFor")
-        .populate("pledges")
-        .populate("campaigns");
+        .populate("adminFor");
 
       return {
         user: {
           ...user,
+          email: decrypted,
           image: user.image ? `${context.apiRootUrl}${user.image}` : null,
           organizationsBlockedBy:
             isSuperAdmin && currentUser._id !== user._id
@@ -85,8 +87,6 @@ export const users: QueryResolvers["users"] = async (
           createdOrganizations: [],
           createdEvents: [],
           eventAdmin: [],
-          pledges: [],
-          campaigns: [],
         },
       };
     }),

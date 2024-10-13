@@ -8,6 +8,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
+import { decryptEmail } from "../../../src/utilities/encryption";
 
 let testPost: TestPostType;
 let testUser: TestUserType;
@@ -36,6 +37,10 @@ describe("resolvers -> Post -> creatorId", () => {
     const creatorIdObject = await User.findOne({
       _id: testPost!.creatorId,
     }).lean();
+
+    if (creatorIdObject && creatorIdObject.email) {
+      creatorIdObject.email = decryptEmail(creatorIdObject.email).decrypted;
+    }
 
     expect(creatorIdPayload).toEqual(creatorIdObject);
   });

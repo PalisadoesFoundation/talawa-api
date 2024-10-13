@@ -8,6 +8,7 @@ import type { TestMembershipRequestType } from "../../helpers/membershipRequests
 import { createTestMembershipRequest } from "../../helpers/membershipRequests";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import { decryptEmail } from "../../../src/utilities/encryption";
 
 let testMembershipRequest: TestMembershipRequestType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -33,6 +34,12 @@ describe("resolvers -> MembershipRequest -> user", () => {
     const user = await User.findOne({
       _id: testMembershipRequest?.user,
     }).lean();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const { decrypted } = decryptEmail(user.email);
+    user.email = decrypted;
 
     expect(userPayload).toEqual(user);
   });

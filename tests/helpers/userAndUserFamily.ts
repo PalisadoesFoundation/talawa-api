@@ -5,6 +5,7 @@ import type { InterfaceUserFamily } from "../../src/models/userFamily";
 import { UserFamily } from "../../src/models/userFamily";
 
 import type { Document } from "mongoose";
+import { encryptEmail } from "../../src/utilities/encryption";
 /* eslint-disable */
 export type TestUserFamilyType =
   | (InterfaceUserFamily & Document<any, any, InterfaceUserFamily>)
@@ -16,7 +17,7 @@ export type TestUserType =
 /* eslint-enable */
 export const createTestUserFunc = async (): Promise<TestUserType> => {
   const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
     password: `pass${nanoid().toLowerCase()}`,
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,

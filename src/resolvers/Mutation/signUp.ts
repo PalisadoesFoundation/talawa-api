@@ -22,6 +22,7 @@ import {
   createRefreshToken,
 } from "../../utilities";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { decryptEmail, encryptEmail } from "../../utilities/encryption";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -31,16 +32,20 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
  * @returns Sign up details.
  */
 export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
-  const userWithEmailExists = await User.exists({
-    email: args.data.email.toLowerCase(),
-  });
-
-  if (userWithEmailExists) {
-    throw new errors.ConflictError(
-      requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
-      EMAIL_ALREADY_EXISTS_ERROR.CODE,
-      EMAIL_ALREADY_EXISTS_ERROR.PARAM,
-    );
+  const allUsers = await User.find({});
+  for (const user of allUsers) {
+    try {
+      const { decrypted } = decryptEmail(user.email);
+      if (decrypted == args.data.email) {
+        throw new errors.ConflictError(
+          requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
+          EMAIL_ALREADY_EXISTS_ERROR.CODE,
+          EMAIL_ALREADY_EXISTS_ERROR.PARAM,
+        );
+      }
+    } catch (error) {
+      console.error("Error decrypting email:", error);
+    }
   }
 
   const organizationFoundInCache = await findOrganizationsInCache([
@@ -64,6 +69,8 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
       ),
     );
   }
+
+  const encryptedEmail = encryptEmail(args.data.email);
 
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
@@ -110,7 +117,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     //if required then the membership request to the organization would be send.
     createdUser = await User.create({
       ...args.data,
-      email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
+      email: encryptedEmail,
       image: uploadImageFileName,
       password: hashedPassword,
     });

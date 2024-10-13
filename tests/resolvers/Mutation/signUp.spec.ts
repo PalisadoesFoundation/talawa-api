@@ -26,6 +26,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import _ from "lodash";
+import { decryptEmail } from "../../../src/utilities/encryption";
 
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -83,15 +84,27 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     const signUpPayload = await signUpResolver?.({}, args, {});
 
-    const createdUser = await User.findOne({
-      email,
-    })
-      .populate("joinedOrganizations")
-      .populate("registeredEvents")
-      .populate("membershipRequests")
-      .populate("organizationsBlockedBy")
-      .select("-password")
-      .lean();
+    const allUsers = await User.find({});
+
+    let createdUser;
+
+    for (const user of allUsers) {
+      try {
+        const { decrypted } = decryptEmail(user.email);
+        if (decrypted == email) {
+          createdUser = await User.findById(user._id)
+            .populate("joinedOrganizations")
+            .populate("registeredEvents")
+            .populate("membershipRequests")
+            .populate("organizationsBlockedBy")
+            .select("-password");
+
+          break;
+        }
+      } catch (error) {
+        console.error("Error decrypting email:", error);
+      }
+    }
 
     const createdUserAppProfile = await AppUserProfile.findOne({
       userId: createdUser?._id,

@@ -4,6 +4,7 @@ import { User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
+import { decryptEmail } from "../../utilities/encryption";
 
 /**
  * This query will retrieve from the database a list of members
@@ -126,7 +127,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -160,7 +161,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,

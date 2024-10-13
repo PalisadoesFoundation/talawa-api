@@ -1,5 +1,6 @@
 import { User } from "../../models";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
+import { decryptEmail } from "../../utilities/encryption";
 
 /**
  * Resolver function for the `members` field of an `Organization`.
@@ -14,9 +15,16 @@ import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
  *
  */
 export const members: OrganizationResolvers["members"] = async (parent) => {
-  return await User.find({
+  const users = await User.find({
     _id: {
       $in: parent.members,
     },
   }).lean();
+
+  const decryptedUsers = users.map((user: any) => {
+    const { decrypted } = decryptEmail(user.email);
+    return { ...user, email: decrypted };
+  });
+
+  return decryptedUsers;
 };

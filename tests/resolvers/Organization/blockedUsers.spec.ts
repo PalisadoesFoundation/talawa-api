@@ -6,6 +6,7 @@ import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { decryptEmail } from "../../../src/utilities/encryption";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
@@ -30,6 +31,11 @@ describe("resolvers -> Organization -> blockedUsers", () => {
           $in: testOrganization?.blockedUsers,
         },
       }).lean();
+
+      for (const user of blockedUsers) {
+        const { decrypted } = decryptEmail(user.email);
+        user.email = decrypted;
+      }
 
       expect(blockedUsersPayload).toEqual(blockedUsers);
     }

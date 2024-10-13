@@ -1,8 +1,10 @@
+// eslint-disable-next-line
 import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
+/* eslint-disable */
 import type { ExecException } from "child_process";
 import { exec } from "child_process";
 import { MongoClient } from "mongodb";
@@ -12,6 +14,7 @@ import {
   checkConnection,
   checkExistingMongoDB,
 } from "./src/setup/MongoDB";
+import crypto from "crypto";
 import { askToKeepValues } from "./src/setup/askToKeepValues";
 import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
 import { isValidEmail } from "./src/setup/isValidEmail";
@@ -29,8 +32,7 @@ import { askForSuperAdminEmail } from "./src/setup/superAdmin";
 import { updateEnvVariable } from "./src/setup/updateEnvVariable";
 import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
 import { loadDefaultOrganiation } from "./src/utilities/loadDefaultOrg";
-import { isMinioInstalled } from "./src/setup/isMinioInstalled";
-import { installMinio } from "./src/setup/installMinio";
+/* eslint-enable */
 
 dotenv.config();
 
@@ -168,10 +170,10 @@ function transactionLogPath(logPath: string | null): void {
 }
 
 async function askForTransactionLogPath(): Promise<string> {
-  let logPath: string | null = null;
-  let isValidPath = false;
-
-  while (!isValidPath) {
+  let logPath: string | null;
+  // Keep asking for path, until user gives a valid path
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
     const response = await inquirer.prompt([
       {
         type: "input",
@@ -181,11 +183,10 @@ async function askForTransactionLogPath(): Promise<string> {
       },
     ]);
     logPath = response.logPath;
-
     if (logPath && fs.existsSync(logPath)) {
       try {
         fs.accessSync(logPath, fs.constants.R_OK | fs.constants.W_OK);
-        isValidPath = true;
+        break;
       } catch {
         console.error(
           "The file is not readable/writable. Please enter a valid file path.",
@@ -197,8 +198,7 @@ async function askForTransactionLogPath(): Promise<string> {
       );
     }
   }
-
-  return logPath as string;
+  return logPath;
 }
 
 //Wipes the existing data in the database
@@ -220,7 +220,7 @@ export async function wipeExistingData(url: string): Promise<void> {
       }
       console.log("All existing data has been deleted.");
     }
-  } catch {
+  } catch (error) {
     console.error("Could not connect to database to check for data");
   }
   client.close();
@@ -247,7 +247,7 @@ export async function checkDb(url: string): Promise<boolean> {
     } else {
       dbEmpty = true;
     }
-  } catch {
+  } catch (error) {
     console.error("Could not connect to database to check for data");
   }
   client.close();
@@ -370,6 +370,35 @@ export async function redisConfiguration(): Promise<void> {
   } catch (err) {
     console.error(err);
     abort();
+  }
+}
+
+/**
+ * The code checks if the environment variable 'ENCRYPTION_KEY' is already set.
+ * If 'ENCRYPTION_KEY' is set, it retrieves its value and uses it as the encryption key.
+ * If 'ENCRYPTION_KEY' is not set, a random 256-bit (32-byte) key is generated using
+ * the crypto library and set as the 'ENCRYPTION_KEY' environment variable.
+ * @remarks
+ * This ensures that a consistent encryption key is used if already set, or generates
+ * and sets a new key if one doesn't exist. The 'ENCRYPTION_KEY' is intended to be used
+ * for secure operations such as email encryption and decryption.
+ */
+
+export async function setEncryptionKey(): Promise<void> {
+  try {
+    if (process.env.ENCRYPTION_KEY) {
+      console.log("\n Encryption Key already present.");
+    } else {
+      const encryptionKey = await crypto.randomBytes(32).toString("hex");
+
+      process.env.ENCRYPTION_KEY = encryptionKey;
+
+      updateEnvVariable({ ENCRYPTION_KEY: encryptionKey });
+
+      console.log("\n Encryption key set successfully.");
+    }
+  } catch (err) {
+    console.error("An error occured:", err);
   }
 }
 
@@ -674,157 +703,6 @@ export async function configureSmtp(): Promise<void> {
 }
 
 /**
- * Configures MinIO settings, including installation check, data directory, and credentials.
- *
- * This function performs the following steps:
- * 1. Checks if MinIO is installed (for non-Docker installations)
- * 2. Prompts for MinIO installation if not found
- * 3. Checks for existing MinIO data directory configuration
- * 4. Allows user to change the data directory if desired
- * 5. Prompts for MinIO root user, password, and bucket name
- * 6. Updates the environment variables with the new configuration
- *
- * @param isDockerInstallation - A boolean indicating whether the setup is for a Docker installation.
- * @throws Will throw an error if there are issues with file operations or user input validation.
- * @returns A Promise that resolves when the configuration is complete.
- */
-export async function configureMinio(
-  isDockerInstallation: boolean,
-): Promise<void> {
-  if (!isDockerInstallation) {
-    console.log("Checking MinIO installation...");
-    if (isMinioInstalled()) {
-      console.log("MinIO is already installed.");
-    } else {
-      console.log("MinIO is not installed on your system.");
-      const { installMinioNow } = await inquirer.prompt([
-        {
-          type: "confirm",
-          name: "installMinioNow",
-          message: "Would you like to install MinIO now?",
-          default: true,
-        },
-      ]);
-      if (installMinioNow) {
-        console.log("Installing MinIO...");
-        try {
-          await installMinio();
-          console.log("Successfully installed MinIO on your system.");
-        } catch (err) {
-          console.error(err);
-          return;
-        }
-      } else {
-        console.log(
-          "MinIO installation skipped. Please install MinIO manually before proceeding.",
-        );
-        return;
-      }
-    }
-  }
-
-  const envFile = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
-  const config = dotenv.parse(fs.readFileSync(envFile));
-
-  const currentDataDir = config.MINIO_DATA_DIR || process.env.MINIO_DATA_DIR;
-  let changeDataDir = false;
-
-  if (currentDataDir) {
-    console.log(
-      `[MINIO] Existing MinIO data directory found: ${currentDataDir}`,
-    );
-    const { confirmChange } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "confirmChange",
-        message:
-          "Do you want to change the MinIO data directory? (Warning: All existing data will be lost)",
-        default: false,
-      },
-    ]);
-    changeDataDir = confirmChange;
-  }
-
-  if (!currentDataDir || changeDataDir) {
-    const { MINIO_DATA_DIR } = await inquirer.prompt([
-      {
-        type: "input",
-        name: "MINIO_DATA_DIR",
-        message: "Enter MinIO data directory (press Enter for default):",
-        default: "./data",
-        validate: (input: string): boolean | string =>
-          input.trim() !== "" ? true : "MinIO data directory is required.",
-      },
-    ]);
-
-    if (changeDataDir && currentDataDir) {
-      try {
-        fs.rmSync(currentDataDir, { recursive: true, force: true });
-        console.log(
-          `[MINIO] Removed existing data directory: ${currentDataDir}`,
-        );
-      } catch (err) {
-        console.error(`[MINIO] Error removing existing data directory: ${err}`);
-      }
-    }
-
-    config.MINIO_DATA_DIR = MINIO_DATA_DIR;
-    console.log(`[MINIO] MinIO data directory set to: ${MINIO_DATA_DIR}`);
-
-    let fullPath = MINIO_DATA_DIR;
-    if (!path.isAbsolute(MINIO_DATA_DIR)) {
-      fullPath = path.join(process.cwd(), MINIO_DATA_DIR);
-    }
-    if (!fs.existsSync(fullPath)) {
-      fs.mkdirSync(fullPath, { recursive: true });
-    }
-  }
-
-  const minioConfig = await inquirer.prompt([
-    {
-      type: "input",
-      name: "MINIO_ROOT_USER",
-      message: "Enter MinIO root user:",
-      default:
-        config.MINIO_ROOT_USER || process.env.MINIO_ROOT_USER || "talawa",
-      validate: (input: string): boolean | string =>
-        input.trim() !== "" ? true : "MinIO root user is required.",
-    },
-    {
-      type: "password",
-      name: "MINIO_ROOT_PASSWORD",
-      message: "Enter MinIO root password:",
-      default:
-        config.MINIO_ROOT_PASSWORD ||
-        process.env.MINIO_ROOT_PASSWORD ||
-        "talawa1234",
-      validate: (input: string): boolean | string =>
-        input.trim() !== "" ? true : "MinIO root password is required.",
-    },
-    {
-      type: "input",
-      name: "MINIO_BUCKET",
-      message: "Enter MinIO bucket name:",
-      default: config.MINIO_BUCKET || process.env.MINIO_BUCKET || "talawa",
-      validate: (input: string): boolean | string =>
-        input.trim() !== "" ? true : "MinIO bucket name is required.",
-    },
-  ]);
-
-  const minioEndpoint = isDockerInstallation
-    ? "http://minio:9000"
-    : "http://localhost:9000";
-
-  config.MINIO_ENDPOINT = minioEndpoint;
-  config.MINIO_ROOT_USER = minioConfig.MINIO_ROOT_USER;
-  config.MINIO_ROOT_PASSWORD = minioConfig.MINIO_ROOT_PASSWORD;
-  config.MINIO_BUCKET = minioConfig.MINIO_BUCKET;
-
-  updateEnvVariable(config);
-  console.log("[MINIO] MinIO configuration added successfully.\n");
-}
-
-/**
  * The main function sets up the Talawa API by prompting the user to configure various environment
  * variables and import sample data if desired.
  */
@@ -858,7 +736,7 @@ async function main(): Promise<void> {
   const { shouldGenerateAccessToken } = await inquirer.prompt({
     type: "confirm",
     name: "shouldGenerateAccessToken",
-    message: "Would you like us to auto-generate a new access token secret?",
+    message: "Would you like to generate a new access token secret?",
     default: process.env.ACCESS_TOKEN_SECRET ? false : true,
   });
 
@@ -874,8 +752,7 @@ async function main(): Promise<void> {
   const { shouldGenerateRefreshToken } = await inquirer.prompt({
     type: "confirm",
     name: "shouldGenerateRefreshToken",
-    message:
-      "Would you like to us to auto-generate a new refresh token secret?",
+    message: "Would you like to generate a new refresh token secret?",
     default: process.env.REFRESH_TOKEN_SECRET ? false : true,
   });
 
@@ -924,7 +801,6 @@ async function main(): Promise<void> {
     const REDIS_HOST = "localhost";
     const REDIS_PORT = "6379"; // default Redis port
     const REDIS_PASSWORD = "";
-    const MINIO_ENDPOINT = "http://minio:9000";
 
     const config = dotenv.parse(fs.readFileSync(".env"));
 
@@ -932,19 +808,16 @@ async function main(): Promise<void> {
     config.REDIS_HOST = REDIS_HOST;
     config.REDIS_PORT = REDIS_PORT;
     config.REDIS_PASSWORD = REDIS_PASSWORD;
-    config.MINIO_ENDPOINT = MINIO_ENDPOINT;
 
     process.env.MONGO_DB_URL = DB_URL;
     process.env.REDIS_HOST = REDIS_HOST;
     process.env.REDIS_PORT = REDIS_PORT;
     process.env.REDIS_PASSWORD = REDIS_PASSWORD;
-    process.env.MINIO_ENDPOINT = MINIO_ENDPOINT;
 
     updateEnvVariable(config);
     console.log(`Your MongoDB URL is:\n${process.env.MONGO_DB_URL}`);
     console.log(`Your Redis host is:\n${process.env.REDIS_HOST}`);
     console.log(`Your Redis port is:\n${process.env.REDIS_PORT}`);
-    console.log(`Your MinIO endpoint is:\n${process.env.MINIO_ENDPOINT}`);
   }
 
   if (!isDockerInstallation) {
@@ -1016,7 +889,7 @@ async function main(): Promise<void> {
     {
       type: "input",
       name: "serverPort",
-      message: "Enter the Talawa-API server port:",
+      message: "Enter the server port:",
       default: process.env.SERVER_PORT || 4000,
     },
   ]);
@@ -1060,17 +933,6 @@ async function main(): Promise<void> {
       console.log("SMTP configuration skipped.\n");
     }
   }
-
-  console.log(
-    `\nConfiguring MinIO storage...\n` +
-      `${
-        isDockerInstallation
-          ? `Since you are using Docker, MinIO will be configured with the Docker-specific endpoint: http://minio:9000.\n`
-          : `Since you are not using Docker, MinIO will be configured with the local endpoint: http://localhost:9000.\n`
-      }`,
-  );
-
-  await configureMinio(isDockerInstallation);
 
   if (process.env.LAST_RESORT_SUPERADMIN_EMAIL) {
     console.log(
@@ -1123,6 +985,8 @@ async function main(): Promise<void> {
 
   await setImageUploadSize(imageSizeLimit * 1000);
 
+  await setEncryptionKey();
+
   if (!isDockerInstallation) {
     if (!process.env.MONGO_DB_URL) {
       console.log("Couldn't find mongodb url");
@@ -1137,25 +1001,24 @@ async function main(): Promise<void> {
         default: false,
       });
       if (shouldOverwriteData) {
-        await wipeExistingData(process.env.MONGO_DB_URL);
         const { overwriteDefaultData } = await inquirer.prompt({
           type: "confirm",
           name: "overwriteDefaultData",
-          message:
-            "Do you want to import the required default data to start using Talawa in a production environment?",
+          message: "Do you want to import default data?",
           default: false,
         });
         if (overwriteDefaultData) {
+          await wipeExistingData(process.env.MONGO_DB_URL);
           await importDefaultData();
         } else {
           const { overwriteSampleData } = await inquirer.prompt({
             type: "confirm",
             name: "overwriteSampleData",
-            message:
-              "Do you want to import Talawa sample data for testing and evaluation purposes?",
+            message: "Do you want to import sample data?",
             default: false,
           });
           if (overwriteSampleData) {
+            await wipeExistingData(process.env.MONGO_DB_URL);
             await importData();
           }
         }
@@ -1164,11 +1027,9 @@ async function main(): Promise<void> {
       const { shouldImportSampleData } = await inquirer.prompt({
         type: "confirm",
         name: "shouldImportSampleData",
-        message:
-          "Do you want to import Talawa sample data for testing and evaluation purposes?",
+        message: "Do you want to import Sample data?",
         default: false,
       });
-      await wipeExistingData(process.env.MONGO_DB_URL);
       if (shouldImportSampleData) {
         await importData();
       } else {

@@ -1,6 +1,7 @@
 import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
 import { AppUserProfile, User } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import { decryptEmail } from "../../utilities/encryption";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -28,8 +29,12 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
     .populate("joinedOrganizations")
     .populate("registeredEvents")
     .lean();
+
   return await Promise.all(
     users.map(async (user) => {
+      const { decrypted } = decryptEmail(user.email);
+      user.email = decrypted;
+
       const userAppProfile = await AppUserProfile.findOne({
         userId: user._id,
       })
@@ -37,8 +42,6 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
         .populate("createdEvents")
         .populate("eventAdmin")
         .populate("adminFor")
-        .populate("pledges")
-        .populate("campaigns")
         .lean();
       return {
         user: user as InterfaceUser,
