@@ -141,6 +141,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       }));
     } else {
       users = usersModel.docs.map((user) => ({
@@ -175,6 +176,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       }));
     }
 
