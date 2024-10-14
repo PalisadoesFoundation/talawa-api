@@ -126,7 +126,7 @@
     "@types/lodash": "^4.17.7",
     "@types/mongoose-paginate-v2": "^1.6.5",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^22.5.4",
+    "@types/node": "^22.7.5",
     "@types/nodemailer": "^6.4.15",
     "@types/uuid": "^10.0.0",
     "@types/validator": "^13.12.2",
