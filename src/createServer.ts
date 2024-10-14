@@ -32,6 +32,7 @@ export const createServer = async (options?: {
 	 */
 	envConfig?: Partial<EnvConfig>;
 }) => {
+	// Configuration environment variables used by talawa api.
 	const envConfig = envSchema<EnvConfig>({
 		ajv: envSchemaAjv,
 		dotenv: true,

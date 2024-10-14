@@ -18,6 +18,17 @@
 		"paths": {
 			"~/src/*": ["./src/*"]
 		} /* Specify a set of entries that re-map imports to additional lookup locations. */,
+		"plugins": [
+			/* https://www.typescriptlang.org/tsconfig/#plugins */
+			{
+				"name": "gql.tada/ts-plugin" /* https://gql-tada.0no.co/reference/config-format */,
+				"schema": "./schema.graphql" /* https://gql-tada.0no.co/reference/config-format#schema */,
+				"shouldCheckForColocatedFragments": false /* https://gql-tada.0no.co/reference/config-format#shouldcheckforcolocatedfragments */,
+				"trackFieldUsage": false /* https://gql-tada.0no.co/reference/config-format#trackfieldusage */,
+				"tadaOutputLocation": "./test/routes/graphql/gql.tada.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaoutputlocation */,
+				"tadaTurboLocation": "./test/routes/graphql/gql.tada-cache.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaturbolocation */
+			}
+		],
 		"skipLibCheck": true /* Skip type checking all .d.ts files. */,
 		"strict": true /* Enable all strict type-checking options. */,
 		"target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,

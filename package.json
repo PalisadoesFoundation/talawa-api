@@ -28,22 +28,22 @@
 		"@swc/cli": "0.4.1-nightly.20240914",
 		"@swc/core": "^1.7.36",
 		"@types/node": "^22.7.5",
+		"@vitest/coverage-v8": "^2.1.3",
 		"drizzle-kit": "^0.26.2",
 		"lefthook": "^1.7.21",
+		"gql.tada": "^1.8.10",
+		"mercurius-integration-testing": "^9.0.0",
 		"pino-pretty": "^11.3.0",
 		"tsx": "^4.19.1",
-		"typescript": "^5.6.3"
+		"typescript": "^5.6.3",
+		"vite-tsconfig-paths": "^5.0.1",
+		"vitest": "^2.1.3"
 	},
 	"engines": {
 		"node": "22.9.0"
 	},
 	"homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
-	"keywords": [
-		"chats",
-		"community",
-		"events",
-		"organization"
-	],
+	"keywords": ["chats", "community", "events", "organization"],
 	"license": "GNU General Public License v3.0",
 	"main": "./dist/index.js",
 	"name": "talawa-api",
@@ -57,6 +57,7 @@
 		"build_production": "swc ./src/ --ignore \"**/*.spec.ts,**/*.test.ts\" --out-dir ./dist/ --strip-leading-paths",
 		"check_code_quality": "biome check --error-on-warnings",
 		"check_drizzle_migrations": "drizzle-kit check",
+		"check_gql_tada": "gql.tada doctor && gql.tada check --fail-on-warn",
 		"check_type_errors": "tsc",
 		"disable_git_hooks": "lefthook uninstall",
 		"drop_drizzle_migrations": "drizzle-kit drop",
@@ -64,8 +65,10 @@
 		"fix_code_quality": "biome check --error-on-warnings --write",
 		"generate_drizzle_migrations": "drizzle-kit generate",
 		"generate_graphql_sdl_file": "tsx ./scripts/generateGraphQLSDLFile.ts",
+		"generate_gql_tada":"gql.tada generate-output && gql.tada turbo --fail-on-warn",
 		"prestart_production": "pnpm build_production",
 		"push_drizzle_schema": "drizzle-kit push",
+		"run_api_tests": "vitest",
 		"start_development_server": "tsx watch ./src/index.ts",
 		"start_production_server": "node ./dist/index.js",
 		"upgrade_drizzle_metadata": "drizzle-kit up"

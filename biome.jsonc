@@ -10,7 +10,9 @@
 			"./node_modules",
 			"./package.json",
 			"./pnpm-lock.yaml",
-			"./schema.graphql"
+			"./schema.graphql",
+			"./test/routes/graphql/gql.tada.d.ts",
+			"./test/routes/graphql/gql.tada-cache.d.ts"
 		],
 		// https://biomejs.dev/reference/configuration/#filesignoreunknown
 		"ignoreUnknown": true
