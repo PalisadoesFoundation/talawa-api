@@ -30,11 +30,6 @@ export default [
       "docs/Schema.md",
     ],
   },
-  {
-    env: {
-      node: true,
-    },
-  },
   ...compat.extends(
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
@@ -49,6 +44,7 @@ export default [
 
     languageOptions: {
       parser: tsParser,
+      globals: globals.node,
     },
     rules: {
       "no-restricted-imports": [
