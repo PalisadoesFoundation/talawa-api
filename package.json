@@ -109,7 +109,7 @@
     "@eslint/eslintrc": "^2.1.4",
     "@eslint/js": "^8.57.0",
     "@graphql-codegen/cli": "^5.0.2",
-    "@graphql-codegen/typescript": "^4.0.9",
+    "@graphql-codegen/typescript": "^4.1.0",
     "@graphql-codegen/typescript-resolvers": "^4.2.1",
     "@graphql-eslint/eslint-plugin": "^3.20.1",
     "@parcel/watcher": "^2.4.1",
