@@ -103,9 +103,6 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       user: context.userId,
       organization: organization._id,
     });
-
-    // console.log("Membership request already exists:", membershipRequestExists);
-
     if (membershipRequestExists) {
       // Check if the request is already in the user's document
       if (!user.membershipRequests.includes(membershipRequestExists._id)) {
@@ -154,7 +151,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
     }
 
     // Updating User
-    const updateResult = await User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
       context.userId,
       {
         $push: {
@@ -163,10 +160,6 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       },
       { new: true, runValidators: true },
     );
-
-    if (!updateResult) {
-      throw new Error("Failed to update user with membership request");
-    }
 
     return createdMembershipRequest.toObject();
   };
