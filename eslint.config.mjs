@@ -4,7 +4,7 @@ import _import from "eslint-plugin-import";
 import { fixupPluginRules } from "@eslint/compat";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
-import parser from "@graphql-eslint/eslint-plugin";
+import * as parser from "@graphql-eslint/eslint-plugin";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
