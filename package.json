@@ -68,7 +68,7 @@
 		"generate_gql_tada":"gql.tada generate-output && gql.tada turbo --fail-on-warn",
 		"prestart_production": "pnpm build_production",
 		"push_drizzle_schema": "drizzle-kit push",
-		"run_api_tests": "vitest",
+		"run_tests": "vitest",
 		"start_development_server": "tsx watch ./src/index.ts",
 		"start_production_server": "node ./dist/index.js",
 		"upgrade_drizzle_metadata": "drizzle-kit up"
