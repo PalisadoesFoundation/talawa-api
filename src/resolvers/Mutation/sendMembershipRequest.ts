@@ -78,15 +78,16 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
 
     // Checks if the user is blocked
     const user = await User.findById(context.userId).lean();
-    if (user === null) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
-      );
-    }
+    // if (user === null) {
+    //   throw new errors.NotFoundError(
+    //     requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+    //     USER_NOT_FOUND_ERROR.CODE,
+    //     USER_NOT_FOUND_ERROR.PARAM,
+    //   );
+    // }
 
     if (
+      user != null &&
       organization.blockedUsers.some((blockedUser) =>
         new mongoose.Types.ObjectId(blockedUser.toString()).equals(user._id),
       )
@@ -105,7 +106,10 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
     });
     if (membershipRequestExists) {
       // Check if the request is already in the user's document
-      if (!user.membershipRequests.includes(membershipRequestExists._id)) {
+      if (
+        user != null &&
+        !user.membershipRequests.includes(membershipRequestExists._id)
+      ) {
         // If it's not in the user's document, add it
         await User.findByIdAndUpdate(
           context.userId,

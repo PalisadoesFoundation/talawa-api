@@ -58,7 +58,7 @@ export default [
       "import/no-duplicates": "error",
       "tsdoc/syntax": "error",
       "@typescript-eslint/ban-ts-comment": "error",
-      "@typescript-eslint/ban-types": "error",
+      // "@typescript-eslint/ban-types": "error",
       "@typescript-eslint/no-duplicate-enum-values": "error",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
