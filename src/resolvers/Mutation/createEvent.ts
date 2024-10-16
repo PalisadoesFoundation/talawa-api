@@ -25,6 +25,7 @@ import { findAppUserProfileCache } from "../../services/AppUserProfileCache/find
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { createChat } from "./createChat";
 
 /**
  * Creates a new event and associates it with an organization.
@@ -177,6 +178,12 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
+  let chat;
+
+  if (args.data.createChat && typeof createChat === 'function') {
+    chat = await createChat(_parent, { data: { name: args.data.title, organizationId: args.data.organizationId, userIds: [ currentUser._id.toString() ], isGroup: true, image: null } }, context);
+  }
+
   /* c8 ignore start */
   if (session) {
     // start a transaction
@@ -194,6 +201,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
         currentUser?._id.toString(),
         organization?._id.toString(),
         session,
+        chat ? chat : null,
       );
     } else {
       // create a single non-recurring event
@@ -202,6 +210,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
         currentUser?._id.toString(),
         organization?._id.toString(),
         session,
+        chat ? chat : null,
       );
     }
 

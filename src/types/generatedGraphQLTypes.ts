@@ -795,6 +795,7 @@ export type EventAttendeeInput = {
 
 export type EventInput = {
   allDay: Scalars['Boolean']['input'];
+  createChat: Scalars['Boolean']['input'];
   description: Scalars['String']['input'];
   endDate: Scalars['Date']['input'];
   endTime?: InputMaybe<Scalars['Time']['input']>;

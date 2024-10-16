@@ -145,6 +145,7 @@ export const inputs = gql`
     latitude: Latitude
     longitude: Longitude
     organizationId: ID!
+    createChat: Boolean!
   }
 
   input EventVolunteerInput {

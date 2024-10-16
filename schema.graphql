@@ -727,6 +727,7 @@ input EventInput {
   startDate: Date!
   startTime: Time
   title: String!
+  createChat: Boolean!
 }
 
 enum EventOrderByInput {
