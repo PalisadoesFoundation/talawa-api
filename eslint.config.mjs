@@ -4,6 +4,7 @@ import _import from "eslint-plugin-import";
 import { fixupPluginRules } from "@eslint/compat";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
+import * as parser from "@graphql-eslint/eslint-plugin";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
@@ -59,6 +60,9 @@ export default [
       "tsdoc/syntax": "error",
       "@typescript-eslint/ban-ts-comment": "error",
       "@typescript-eslint/ban-types": "error",
+      "@typescript-eslint/no-empty-object-type": "error", 
+      "@typescript-eslint/no-unsafe-function-type": "error", 
+      "@typescript-eslint/no-wrapper-object-types": "error", 
       "@typescript-eslint/no-duplicate-enum-values": "error",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-non-null-asserted-optional-chain": "error",

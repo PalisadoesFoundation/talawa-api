@@ -22,6 +22,7 @@ import { Community } from "../../models/Community";
  * @throws - NotFoundError: If the user, appuserprofile or organization is not found
  * @throws - ValidationError: If the user is not an admin or superadmin, or if the timeout is outside the valid range
  * @throws - InternalServerError: If there is an error updating the organization timeout
+ *
  */
 
 export const updateSessionTimeout: MutationResolvers["updateSessionTimeout"] =
