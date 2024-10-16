@@ -2,6 +2,7 @@ import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import tsdoc from "eslint-plugin-tsdoc";
 import _import from "eslint-plugin-import";
 import { fixupPluginRules } from "@eslint/compat";
+import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
 import * as parser from "@graphql-eslint/eslint-plugin";
 import path from "node:path";
