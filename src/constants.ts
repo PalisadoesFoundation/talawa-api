@@ -64,6 +64,13 @@ export const CHAT_NOT_FOUND_ERROR = Object.freeze({
   PARAM: "chat",
 });
 
+export const MESSAGE_NOT_FOUND_ERROR = Object.freeze({
+  DESC: "Message not found",
+  CODE: "message.notFound",
+  MESSAGE: "message.notFound",
+  PARAM: "message",
+});
+
 export const COMMUNITY_NOT_FOUND_ERROR = Object.freeze({
   DESC: "Community not found",
   CODE: "community.notFound",

@@ -53,7 +53,6 @@ export default [
           patterns: ["**/src/**"],
         },
       ],
-
       "import/no-duplicates": "error",
       "tsdoc/syntax": "error",
       "@typescript-eslint/ban-ts-comment": "error",
