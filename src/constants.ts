@@ -69,7 +69,7 @@ export const MESSAGE_NOT_FOUND_ERROR = Object.freeze({
   CODE: "message.notFound",
   MESSAGE: "message.notFound",
   PARAM: "message",
- });
+});
 
 export const COMMUNITY_NOT_FOUND_ERROR = Object.freeze({
   DESC: "Community not found",
