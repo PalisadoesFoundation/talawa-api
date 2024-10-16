@@ -16,9 +16,12 @@ export const inputs = gql`
     userId: ID!
   }
 
-  input createChatInput {
-    userIds: [ID!]!
+  input chatInput {
+    isGroup: Boolean!
     organizationId: ID
+    userIds: [ID!]!
+    name: String
+    image: String
   }
 
   input createGroupChatInput {

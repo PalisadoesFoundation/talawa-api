@@ -18,14 +18,12 @@ import { AgendaSection } from "./AgendaSection";
 import { AgendaCategory } from "./AgendaCategory";
 import { CheckIn } from "./CheckIn";
 import { Comment } from "./Comment";
-import { DirectChat } from "./DirectChat";
-import { DirectChatMessage } from "./DirectChatMessage";
+import { Chat } from "./Chat";
+import { ChatMessage } from "./ChatMessage";
 import { Event } from "./Event";
 import { EventVolunteer } from "./EventVolunteer";
 import { Feedback } from "./Feedback";
 import { Fund } from "./Fund";
-import { GroupChat } from "./GroupChat";
-import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
 import { Mutation } from "./Mutation";
 import { Organization } from "./Organization";
@@ -50,15 +48,13 @@ const resolvers: Resolvers = {
   Advertisement,
   CheckIn,
   Comment,
-  DirectChat,
-  DirectChatMessage,
+  Chat,
+  ChatMessage,
   Event,
   EventVolunteer,
   Feedback,
   Fund,
-  GroupChat,
   UserFamily,
-  GroupChatMessage,
   MembershipRequest,
   Mutation,
   Organization,
@@ -89,6 +85,7 @@ const resolversComposition = {
   "Mutation.addOrganizationImage": [currentUserExists()],
   "Mutation.blockPluginCreationBySuperadmin": [currentUserExists()],
   "Mutation.createComment": [currentUserExists()],
+  "Mutation.createChat": [currentUserExists()],
   "Mutation.createDirectChat": [currentUserExists()],
   "Mutation.createGroupChat": [currentUserExists()],
   "Mutation.createOrganization": [currentUserExists()],
