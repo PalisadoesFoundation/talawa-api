@@ -28,6 +28,7 @@
   "invalid.fileType": "Tipo de archivo no válido",
   "invalid.refreshToken": "Token de actualización no válido",
   "invalid.credentials": "Credenciales no válidas",
+  "invalid.timeoutRange": "Rango de tiempo de espera no válido",
   "registrant.alreadyExist": "Ya inscrito para el evento",
   "member.notFound": "Miembro no encontrado",
   "registrant.alreadyUnregistered": "Ya no está registrado para el evento",
