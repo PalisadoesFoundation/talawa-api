@@ -1,4 +1,5 @@
 // eslint-disable-next-line
+/* eslint-disable no-restricted-imports */
 import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
