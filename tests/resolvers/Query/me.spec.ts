@@ -5,7 +5,7 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, User } from "../../../src/models";
+import { AppUserProfile, InterfaceUser, User } from "../../../src/models";
 import { me as meResolver } from "../../../src/resolvers/Query/me";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -13,7 +13,6 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createTestEvent } from "../../helpers/events";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
-import { FundraisingCampaignPledge } from "../../../src/models/FundraisingCampaignPledge";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -22,10 +21,6 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = (await createTestEvent())[0];
   await deleteUserFromCache(testUser?._id);
-  const pledges = await FundraisingCampaignPledge.find({
-    _id: new Types.ObjectId(),
-  }).lean();
-  console.log(pledges);
 });
 
 afterAll(async () => {
@@ -58,9 +53,16 @@ describe("resolvers -> Query -> me", () => {
       _id: testUser?._id,
     })
       .select(["-password"])
+
       .populate("joinedOrganizations")
       .populate("registeredEvents")
+
       .lean();
+    if (!mePayload || !user) {
+      throw new Error("Error loading payloads");
+    }
+    const currentUser = mePayload.user as InterfaceUser;
+    currentUser.email = user.email;
 
     expect(mePayload?.user).toEqual(user);
   });

@@ -19,6 +19,7 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { decryptEmail } from "../../../src/utilities/encryption";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -103,6 +104,13 @@ describe("resolvers -> Organization -> creatorId", () => {
       const creator = await User.findOne({
         _id: testOrganization?.creatorId,
       }).lean();
+
+      if (!creator) {
+        throw new Error("Creator not Found");
+      }
+
+      const { decrypted } = decryptEmail(creator?.email);
+      creator.email = decrypted;
 
       expect(creatorPayload).toEqual(creator);
     }
