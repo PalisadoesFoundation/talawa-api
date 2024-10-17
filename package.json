@@ -5,6 +5,7 @@
 	},
 	"description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
 	"devDependencies": {
+		"@biomejs/biome": "^1.9.3",
 		"@types/node": "^22.7.5",
 		"lefthook": "^1.7.21",
 		"tsx": "^4.19.1",
@@ -28,9 +29,11 @@
 		"url": "https://github.com/PalisadoesFoundation/talawa-api"
 	},
 	"scripts": {
+		"check_code_quality": "biome check --error-on-warnings",
 		"check_type_errors": "tsc",
 		"disable_git_hooks": "lefthook uninstall",
-		"enable_git_hooks": "lefthook install"
+		"enable_git_hooks": "lefthook install",
+		"fix_code_quality": "biome check --error-on-warnings --write"
 	},
 	"type": "module",
 	"version": "1.0.0"

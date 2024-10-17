@@ -1,5 +1,10 @@
 pre-commit:
   commands:
-    check_type_errors:
+    1_fix_code_quality:
+      run: |
+        set -e
+        pnpm fix_code_quality
+        git add {staged_files}
+    2_check_type_errors:
       run: pnpm check_type_errors
   piped: true
