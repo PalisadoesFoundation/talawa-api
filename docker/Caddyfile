@@ -1,0 +1,34 @@
+# https://caddyserver.com/docs/caddyfile/options#global-options
+{
+    # https://caddyserver.com/docs/caddyfile/options#email
+    email {$CADDY_TALAWA_API_EMAIL}
+}
+
+# https://caddyserver.com/docs/caddyfile/concepts#addresses
+{$CADDY_TALAWA_API_DOMAIN_NAME} {
+    # https://caddyserver.com/docs/caddyfile/directives/encode
+    encode zstd gzip
+
+    # https://caddyserver.com/docs/caddyfile/directives/log
+    log {
+        # https://caddyserver.com/docs/caddyfile/directives/log#json
+        format json
+        # https://caddyserver.com/docs/caddyfile/directives/log#stdout
+        output stdout
+    }
+    
+    # https://caddyserver.com/docs/quick-starts/reverse-proxy
+    # https://caddyserver.com/docs/caddyfile/directives/reverse_proxy
+    reverse_proxy {$CADDY_TALAWA_API_HOST}:{$CADDY_TALAWA_API_PORT} {
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+        # https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#header_down
+        header_down Strict-Transport-Security max-age=31536000
+    }
+}
+
+# https://caddyserver.com/docs/caddyfile/concepts#addresses
+www.{$CADDY_TALAWA_API_DOMAIN_NAME} {
+    # https://caddyserver.com/docs/caddyfile/patterns#redirect-www-subdomain
+    # https://caddyserver.com/docs/caddyfile/directives/redir
+    redir https://{$CADDY_TALAWA_API_DOMAIN_NAME}{uri}
+}

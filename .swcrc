@@ -1,0 +1,33 @@
+// More information at this link: https://swc.rs/docs/configuration/swcrc
+{
+	"$schema": "https://swc.rs/schema.json",
+	"jsc": {
+		// https://swc.rs/docs/configuration/compilation#jscbaseurl
+		"baseUrl": "./",
+		// https://swc.rs/docs/configuration/compilation#jscparser
+		"parser": {
+			"decorators": false,
+			"dynamicImport": false,
+			"syntax": "typescript",
+			"tsx": false
+		},
+		// https://swc.rs/docs/configuration/compilation#jscpaths
+		"paths": {
+			"~/src/*": ["./src/*"]
+		},
+		// https://swc.rs/docs/configuration/compilation#jscpreserveallcomments
+		"preserveAllComments": false,
+		// https://swc.rs/docs/configuration/compilation#jsctarget
+		"target": "esnext"
+	},
+	// https://swc.rs/docs/configuration/minification
+	"minify": true,
+	// https://swc.rs/docs/configuration/modules
+	"module": {
+		// https://swc.rs/docs/configuration/modules#resolvefully
+		"resolveFully": true,
+		// https://swc.rs/docs/configuration/modules#strict
+		"strict": true,
+		"type": "nodenext"
+	}
+}

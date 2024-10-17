@@ -1,5 +1,0 @@
-api-demo.talawa.io {
-  reverse_proxy talawa-api-dev:4000  {
-    header_down Strict-Transport-Security max-age=31536000;
-   }
-}
