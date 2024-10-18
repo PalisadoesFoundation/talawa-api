@@ -11,6 +11,7 @@ import { connect, disconnect } from "../../helpers/db";
 import { nanoid } from "nanoid";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { BASE_URL } from "../../../src/constants";
+import { decryptEmail, encryptEmail } from "../../../src/utilities/encryption";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: (InterfaceUser & Document<unknown, unknown, InterfaceUser>)[];
@@ -22,7 +23,7 @@ beforeAll(async () => {
 
   testUsers = await User.insertMany([
     {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
       password: "password",
       firstName: `1firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
@@ -38,7 +39,7 @@ beforeAll(async () => {
       },
     },
     {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
       password: "password",
       firstName: `2firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
@@ -54,7 +55,7 @@ beforeAll(async () => {
       },
     },
     {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
       password: "password",
       firstName: `3firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
@@ -227,13 +228,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         _id: user._id,
-        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -320,13 +320,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         _id: user._id,
-        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -412,13 +411,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         _id: user._id,
-        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -507,13 +505,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         _id: user._id,
-        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -602,13 +599,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         _id: user._id,
-        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -685,13 +681,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         _id: user._id,
-        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -867,13 +862,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         _id: user._id,
-        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -939,13 +933,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         _id: user._id,
-        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -1040,13 +1033,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = usersTestModel.docs.map((user) => {
       return {
         _id: user._id,
-        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -1122,13 +1114,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersWithPassword = users.map((user) => {
       return {
         _id: user._id,
-        identifier: user.identifier,
         appUserProfileId: user.appUserProfileId,
         address: user.address,
         birthDate: user.birthDate,
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
-        email: user.email,
+        email: decryptEmail(user.email).decrypted,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,

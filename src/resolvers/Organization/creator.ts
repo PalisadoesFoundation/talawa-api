@@ -2,6 +2,7 @@ import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { decryptEmail } from "../../utilities/encryption";
 
 /**
  * Resolver function for the `creator` field of an `Organization`.
@@ -27,6 +28,9 @@ export const creator: OrganizationResolvers["creator"] = async (parent) => {
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+
+  const { decrypted } = decryptEmail(user.email);
+  user.email = decrypted;
 
   return user;
 };

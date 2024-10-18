@@ -4,7 +4,6 @@ import yargs from "yargs";
 import { connect } from "../db";
 import {
   ActionItemCategory,
-  AgendaCategoryModel,
   AppUserProfile,
   Community,
   Event,
@@ -13,6 +12,7 @@ import {
   User,
 } from "../models";
 import { RecurrenceRule } from "../models/RecurrenceRule";
+import { encryptEmail } from "./encryption";
 
 interface InterfaceArgs {
   items?: string;
@@ -64,7 +64,6 @@ async function formatDatabase(): Promise<void> {
     User.deleteMany({}),
     Organization.deleteMany({}),
     ActionItemCategory.deleteMany({}),
-    AgendaCategoryModel.deleteMany({}),
     Event.deleteMany({}),
     Post.deleteMany({}),
     AppUserProfile.deleteMany({}),
@@ -114,6 +113,10 @@ async function insertCollections(collections: string[]): Promise<void> {
 
       switch (collection) {
         case "users":
+          for (const user of docs) {
+            const encryptedEmail = encryptEmail(user.email as string);
+            user.email = encryptedEmail;
+          }
           await User.insertMany(docs);
           break;
         case "organizations":
@@ -121,9 +124,6 @@ async function insertCollections(collections: string[]): Promise<void> {
           break;
         case "actionItemCategories":
           await ActionItemCategory.insertMany(docs);
-          break;
-        case "agendaCategories":
-          await AgendaCategoryModel.insertMany(docs);
           break;
         case "events":
           await Event.insertMany(docs);
@@ -168,7 +168,6 @@ async function checkCountAfterImport(): Promise<void> {
       { name: "users", model: User },
       { name: "organizations", model: Organization },
       { name: "actionItemCategories", model: ActionItemCategory },
-      { name: "agendaCategories", model: AgendaCategoryModel },
       { name: "events", model: Event },
       { name: "recurrenceRules", model: RecurrenceRule },
       { name: "posts", model: Post },
@@ -204,7 +203,6 @@ const collections = [
   "recurrenceRules",
   "appUserProfiles",
   "actionItemCategories",
-  "agendaCategories",
 ];
 
 // Check if specific collections need to be inserted

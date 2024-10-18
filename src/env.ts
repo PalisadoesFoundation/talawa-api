@@ -32,6 +32,7 @@ export const envSchema = z.object({
   REDIS_HOST: z.string(),
   REDIS_PORT: z.string().refine((value) => /^\d+$/.test(value)),
   REDIS_PASSWORD: z.string().optional(),
+  ENCRYPTION_KEY: z.string(),
   MINIO_ROOT_USER: z.string(),
   MINIO_ROOT_PASSWORD: z.string(),
   MINIO_BUCKET: z.string(),
