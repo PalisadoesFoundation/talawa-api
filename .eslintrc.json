@@ -109,8 +109,8 @@
     // warn/1, error/2, off/0
     "tsdoc/syntax": "error",
     // Typescript Rules
-    "@typescript-eslint/ban-types": "error",
     "@typescript-eslint/ban-ts-comment": "error",
+    "@typescript-eslint/ban-types": "error",
     "@typescript-eslint/no-unsafe-function-type": "error",
     "@typescript-eslint/no-wrapper-object-types": "error",
     "@typescript-eslint/no-empty-object-type": "error",
