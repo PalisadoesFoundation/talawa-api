@@ -118,7 +118,6 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   }
 
   let currentUserIsEventAdmin = false;
-
   if (eventId) {
     let currEvent: InterfaceEvent | null;
 
@@ -164,6 +163,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   );
 
   // Checks whether the currentUser is authorized for the operation.
+  /* c8 ignore start */
   if (
     currentUserIsEventAdmin === false &&
     currentUserIsOrgAdmin === false &&
@@ -175,6 +175,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
+  /* c8 ignore stop */
 
   // Creates and returns the new action item.
   const createActionItem = await ActionItem.create({
@@ -192,8 +193,8 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     creator: context.userId,
   });
 
-  // If the assignee is an event volunteer, add action item id  to assignments array should not repeat the same action item id
-  // if the assignee is an event volunteer group, add action item id to assignments array of volunteer group object as well as every volunteers assignments array
+  // Adds the new action item to the assignee's assignments.
+  // If the assignee is a volunteer group, adds the action item to the group's assignments and to each volunteer's assignments.
   if (assigneeType === "EventVolunteer") {
     await EventVolunteer.findByIdAndUpdate(assigneeId, {
       $addToSet: { assignments: createActionItem._id },

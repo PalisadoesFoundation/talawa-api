@@ -42,7 +42,6 @@ input ActionItemWhereInput {
   assigneeName: String
   categoryName: String
   event_id: ID
-  is_active: Boolean
   is_completed: Boolean
 }
 
