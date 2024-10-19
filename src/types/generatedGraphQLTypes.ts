@@ -70,6 +70,7 @@ export type ActionItem = {
   __typename?: 'ActionItem';
   _id: Scalars['ID']['output'];
   actionItemCategory?: Maybe<ActionItemCategory>;
+  allotedHours?: Maybe<Scalars['Float']['output']>;
   assignee?: Maybe<User>;
   assigner?: Maybe<User>;
   assignmentDate: Scalars['Date']['output'];
@@ -95,16 +96,24 @@ export type ActionItemCategory = {
   updatedAt: Scalars['Date']['output'];
 };
 
+export type ActionItemCategoryWhereInput = {
+  is_disabled?: InputMaybe<Scalars['Boolean']['input']>;
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type ActionItemWhereInput = {
   actionItemCategory_id?: InputMaybe<Scalars['ID']['input']>;
+  assigneeName?: InputMaybe<Scalars['String']['input']>;
+  categoryName?: InputMaybe<Scalars['String']['input']>;
   event_id?: InputMaybe<Scalars['ID']['input']>;
-  is_active?: InputMaybe<Scalars['Boolean']['input']>;
   is_completed?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type ActionItemsOrderByInput =
   | 'createdAt_ASC'
-  | 'createdAt_DESC';
+  | 'createdAt_DESC'
+  | 'dueDate_ASC'
+  | 'dueDate_DESC';
 
 export type Address = {
   __typename?: 'Address';
@@ -279,7 +288,6 @@ export type ChatMessage = {
   messageContent: Scalars['String']['output'];
   replyTo?: Maybe<ChatMessage>;
   sender: User;
-  type: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
 
@@ -337,6 +345,7 @@ export type Community = {
   logoUrl?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   socialMediaUrls?: Maybe<SocialMediaUrls>;
+  timeout?: Maybe<Scalars['Int']['output']>;
   websiteLink?: Maybe<Scalars['String']['output']>;
 };
 
@@ -371,6 +380,7 @@ export type ConnectionPageInfo = {
 };
 
 export type CreateActionItemInput = {
+  allotedHours?: InputMaybe<Scalars['Float']['input']>;
   assigneeId: Scalars['ID']['input'];
   dueDate?: InputMaybe<Scalars['Date']['input']>;
   eventId?: InputMaybe<Scalars['ID']['input']>;
@@ -641,29 +651,6 @@ export type DeleteAdvertisementPayload = {
 export type DeletePayload = {
   __typename?: 'DeletePayload';
   success: Scalars['Boolean']['output'];
-};
-
-export type DirectChat = {
-  __typename?: 'DirectChat';
-  _id: Scalars['ID']['output'];
-  createdAt: Scalars['DateTime']['output'];
-  creator?: Maybe<User>;
-  messages?: Maybe<Array<Maybe<DirectChatMessage>>>;
-  organization?: Maybe<Organization>;
-  updatedAt: Scalars['DateTime']['output'];
-  users: Array<User>;
-};
-
-export type DirectChatMessage = {
-  __typename?: 'DirectChatMessage';
-  _id: Scalars['ID']['output'];
-  createdAt: Scalars['DateTime']['output'];
-  directChatMessageBelongsTo: DirectChat;
-  messageContent: Scalars['String']['output'];
-  receiver: User;
-  replyTo?: Maybe<DirectChatMessage>;
-  sender: User;
-  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type Donation = {
@@ -1036,29 +1023,6 @@ export type Group = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
-export type GroupChat = {
-  __typename?: 'GroupChat';
-  _id: Scalars['ID']['output'];
-  createdAt: Scalars['DateTime']['output'];
-  creator?: Maybe<User>;
-  messages?: Maybe<Array<Maybe<GroupChatMessage>>>;
-  organization: Organization;
-  title: Scalars['String']['output'];
-  updatedAt: Scalars['DateTime']['output'];
-  users: Array<User>;
-};
-
-export type GroupChatMessage = {
-  __typename?: 'GroupChatMessage';
-  _id: Scalars['ID']['output'];
-  createdAt: Scalars['DateTime']['output'];
-  groupChatMessageBelongsTo: GroupChat;
-  messageContent: Scalars['String']['output'];
-  replyTo?: Maybe<GroupChatMessage>;
-  sender: User;
-  updatedAt: Scalars['DateTime']['output'];
-};
-
 export type InvalidCursor = FieldError & {
   __typename?: 'InvalidCursor';
   message: Scalars['String']['output'];
@@ -1151,17 +1115,6 @@ export type Message = {
   videoUrl?: Maybe<Scalars['URL']['output']>;
 };
 
-export type MessageChat = {
-  __typename?: 'MessageChat';
-  _id: Scalars['ID']['output'];
-  createdAt: Scalars['DateTime']['output'];
-  languageBarrier?: Maybe<Scalars['Boolean']['output']>;
-  message: Scalars['String']['output'];
-  receiver: User;
-  sender: User;
-  updatedAt: Scalars['DateTime']['output'];
-};
-
 export type MessageChatInput = {
   message: Scalars['String']['input'];
   receiver: Scalars['ID']['input'];
@@ -1215,7 +1168,6 @@ export type Mutation = {
   createFundraisingCampaign: FundraisingCampaign;
   createFundraisingCampaignPledge: FundraisingCampaignPledge;
   createMember: CreateMemberPayload;
-  createMessageChat: MessageChat;
   createNote: Note;
   createOrganization: Organization;
   createPlugin: Plugin;
@@ -1255,8 +1207,6 @@ export type Mutation = {
   removeEventAttendee: User;
   removeEventVolunteer: EventVolunteer;
   removeEventVolunteerGroup: EventVolunteerGroup;
-  removeFund: Fund;
-  removeFundraisingCampaign: FundraisingCampaign;
   removeFundraisingCampaignPledge: FundraisingCampaignPledge;
   removeMember: Organization;
   removeOrganization: UserData;
@@ -1299,6 +1249,7 @@ export type Mutation = {
   updateOrganization: Organization;
   updatePluginStatus: Plugin;
   updatePost: Post;
+  updateSessionTimeout: Scalars['Boolean']['output'];
   updateUserPassword: UserData;
   updateUserProfile: User;
   updateUserRoleInOrganization: Organization;
@@ -1402,6 +1353,7 @@ export type MutationCreateActionItemArgs = {
 
 
 export type MutationCreateActionItemCategoryArgs = {
+  isDisabled: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
   organizationId: Scalars['ID']['input'];
 };
@@ -1486,11 +1438,6 @@ export type MutationCreateFundraisingCampaignPledgeArgs = {
 
 export type MutationCreateMemberArgs = {
   input: UserAndOrganizationInput;
-};
-
-
-export type MutationCreateMessageChatArgs = {
-  data: MessageChatInput;
 };
 
 
@@ -1686,16 +1633,6 @@ export type MutationRemoveEventVolunteerGroupArgs = {
 };
 
 
-export type MutationRemoveFundArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationRemoveFundraisingCampaignArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
 export type MutationRemoveFundraisingCampaignPledgeArgs = {
   id: Scalars['ID']['input'];
 };
@@ -1762,7 +1699,6 @@ export type MutationSendMessageToChatArgs = {
   chatId: Scalars['ID']['input'];
   messageContent: Scalars['String']['input'];
   replyTo?: InputMaybe<Scalars['ID']['input']>;
-  type: Scalars['String']['input'];
 };
 
 
@@ -1909,6 +1845,11 @@ export type MutationUpdatePluginStatusArgs = {
 export type MutationUpdatePostArgs = {
   data?: InputMaybe<PostUpdateInput>;
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdateSessionTimeoutArgs = {
+  timeout: Scalars['Int']['input'];
 };
 
 
@@ -2275,9 +2216,6 @@ export type Query = {
   checkAuth: User;
   customDataByOrganization: Array<UserCustomData>;
   customFieldsByOrganization?: Maybe<Array<Maybe<OrganizationCustomField>>>;
-  directChatById?: Maybe<DirectChat>;
-  directChatsByUserID?: Maybe<Array<Maybe<DirectChat>>>;
-  directChatsMessagesByChatID?: Maybe<Array<Maybe<DirectChatMessage>>>;
   event?: Maybe<Event>;
   eventVolunteersByEvent?: Maybe<Array<Maybe<EventVolunteer>>>;
   eventsByOrganization?: Maybe<Array<Maybe<Event>>>;
@@ -2305,8 +2243,6 @@ export type Query = {
   getUserTagAncestors?: Maybe<Array<Maybe<UserTag>>>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
-  groupChatById?: Maybe<GroupChat>;
-  groupChatsByUserId?: Maybe<Array<Maybe<GroupChat>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']['output']>;
   isSampleOrganization: Scalars['Boolean']['output'];
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
@@ -2328,7 +2264,9 @@ export type Query = {
 
 
 export type QueryActionItemCategoriesByOrganizationArgs = {
+  orderBy?: InputMaybe<ActionItemsOrderByInput>;
   organizationId: Scalars['ID']['input'];
+  where?: InputMaybe<ActionItemCategoryWhereInput>;
 };
 
 
@@ -2338,6 +2276,7 @@ export type QueryActionItemsByEventArgs = {
 
 
 export type QueryActionItemsByOrganizationArgs = {
+  eventId?: InputMaybe<Scalars['ID']['input']>;
   orderBy?: InputMaybe<ActionItemsOrderByInput>;
   organizationId: Scalars['ID']['input'];
   where?: InputMaybe<ActionItemWhereInput>;
@@ -2393,21 +2332,6 @@ export type QueryCustomDataByOrganizationArgs = {
 
 
 export type QueryCustomFieldsByOrganizationArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryDirectChatByIdArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryDirectChatsByUserIdArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryDirectChatsMessagesByChatIdArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -2549,16 +2473,6 @@ export type QueryGetVenueByOrgIdArgs = {
 
 export type QueryGetlanguageArgs = {
   lang_code: Scalars['String']['input'];
-};
-
-
-export type QueryGroupChatByIdArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryGroupChatsByUserIdArgs = {
-  id: Scalars['ID']['input'];
 };
 
 
@@ -2735,25 +2649,12 @@ export type Status =
 
 export type Subscription = {
   __typename?: 'Subscription';
-  directMessageChat?: Maybe<MessageChat>;
   messageSentToChat?: Maybe<ChatMessage>;
-  messageSentToDirectChat?: Maybe<DirectChatMessage>;
-  messageSentToGroupChat?: Maybe<GroupChatMessage>;
   onPluginUpdate?: Maybe<Plugin>;
 };
 
 
 export type SubscriptionMessageSentToChatArgs = {
-  userId: Scalars['ID']['input'];
-};
-
-
-export type SubscriptionMessageSentToDirectChatArgs = {
-  userId: Scalars['ID']['input'];
-};
-
-
-export type SubscriptionMessageSentToGroupChatArgs = {
   userId: Scalars['ID']['input'];
 };
 
@@ -2790,6 +2691,7 @@ export type UpdateActionItemCategoryInput = {
 };
 
 export type UpdateActionItemInput = {
+  allotedHours?: InputMaybe<Scalars['Float']['input']>;
   assigneeId?: InputMaybe<Scalars['ID']['input']>;
   completionDate?: InputMaybe<Scalars['Date']['input']>;
   dueDate?: InputMaybe<Scalars['Date']['input']>;
@@ -2949,6 +2851,7 @@ export type User = {
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
   firstName: Scalars['String']['output'];
   gender?: Maybe<Gender>;
+  identifier: Scalars['Int']['output'];
   image?: Maybe<Scalars['String']['output']>;
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   lastName: Scalars['String']['output'];
@@ -3212,12 +3115,6 @@ export type ChatInput = {
   userIds: Array<Scalars['ID']['input']>;
 };
 
-export type CreateDirectChatPayload = {
-  __typename?: 'createDirectChatPayload';
-  directChat?: Maybe<DirectChat>;
-  userErrors: Array<CreateDirectChatError>;
-};
-
 export type CreateGroupChatInput = {
   organizationId: Scalars['ID']['input'];
   title: Scalars['String']['input'];
@@ -3312,6 +3209,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
 export type ResolversTypes = {
   ActionItem: ResolverTypeWrapper<InterfaceActionItemModel>;
   ActionItemCategory: ResolverTypeWrapper<InterfaceActionItemCategoryModel>;
+  ActionItemCategoryWhereInput: ActionItemCategoryWhereInput;
   ActionItemWhereInput: ActionItemWhereInput;
   ActionItemsOrderByInput: ActionItemsOrderByInput;
   Address: ResolverTypeWrapper<Address>;
@@ -3364,8 +3262,6 @@ export type ResolversTypes = {
   DefaultConnectionPageInfo: ResolverTypeWrapper<DefaultConnectionPageInfo>;
   DeleteAdvertisementPayload: ResolverTypeWrapper<Omit<DeleteAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   DeletePayload: ResolverTypeWrapper<DeletePayload>;
-  DirectChat: ResolverTypeWrapper<Omit<DirectChat, 'creator' | 'messages' | 'organization' | 'users'> & { creator?: Maybe<ResolversTypes['User']>, messages?: Maybe<Array<Maybe<ResolversTypes['DirectChatMessage']>>>, organization?: Maybe<ResolversTypes['Organization']>, users: Array<ResolversTypes['User']> }>;
-  DirectChatMessage: ResolverTypeWrapper<Omit<DirectChatMessage, 'directChatMessageBelongsTo' | 'receiver' | 'replyTo' | 'sender'> & { directChatMessageBelongsTo: ResolversTypes['DirectChat'], receiver: ResolversTypes['User'], replyTo?: Maybe<ResolversTypes['DirectChatMessage']>, sender: ResolversTypes['User'] }>;
   Donation: ResolverTypeWrapper<InterfaceDonationModel>;
   DonationWhereInput: DonationWhereInput;
   EditVenueInput: EditVenueInput;
@@ -3402,8 +3298,6 @@ export type ResolversTypes = {
   FundraisingCampaignPledge: ResolverTypeWrapper<InterfaceFundraisingCampaignPledgesModel>;
   Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
-  GroupChat: ResolverTypeWrapper<Omit<GroupChat, 'creator' | 'messages' | 'organization' | 'users'> & { creator?: Maybe<ResolversTypes['User']>, messages?: Maybe<Array<Maybe<ResolversTypes['GroupChatMessage']>>>, organization: ResolversTypes['Organization'], users: Array<ResolversTypes['User']> }>;
-  GroupChatMessage: ResolverTypeWrapper<Omit<GroupChatMessage, 'groupChatMessageBelongsTo' | 'replyTo' | 'sender'> & { groupChatMessageBelongsTo: ResolversTypes['GroupChat'], replyTo?: Maybe<ResolversTypes['GroupChatMessage']>, sender: ResolversTypes['User'] }>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   InvalidCursor: ResolverTypeWrapper<InvalidCursor>;
@@ -3422,7 +3316,6 @@ export type ResolversTypes = {
   MembershipRequest: ResolverTypeWrapper<InterfaceMembershipRequestModel>;
   MembershipRequestsWhereInput: MembershipRequestsWhereInput;
   Message: ResolverTypeWrapper<InterfaceMessageModel>;
-  MessageChat: ResolverTypeWrapper<InterfaceMessageChatModel>;
   MessageChatInput: MessageChatInput;
   MinimumLengthError: ResolverTypeWrapper<MinimumLengthError>;
   MinimumValueError: ResolverTypeWrapper<MinimumValueError>;
@@ -3521,7 +3414,6 @@ export type ResolversTypes = {
   VenueWhereInput: VenueWhereInput;
   WeekDays: WeekDays;
   chatInput: ChatInput;
-  createDirectChatPayload: ResolverTypeWrapper<Omit<CreateDirectChatPayload, 'directChat' | 'userErrors'> & { directChat?: Maybe<ResolversTypes['DirectChat']>, userErrors: Array<ResolversTypes['CreateDirectChatError']> }>;
   createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
 };
@@ -3530,6 +3422,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   ActionItem: InterfaceActionItemModel;
   ActionItemCategory: InterfaceActionItemCategoryModel;
+  ActionItemCategoryWhereInput: ActionItemCategoryWhereInput;
   ActionItemWhereInput: ActionItemWhereInput;
   Address: Address;
   AddressInput: AddressInput;
@@ -3578,8 +3471,6 @@ export type ResolversParentTypes = {
   DefaultConnectionPageInfo: DefaultConnectionPageInfo;
   DeleteAdvertisementPayload: Omit<DeleteAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   DeletePayload: DeletePayload;
-  DirectChat: Omit<DirectChat, 'creator' | 'messages' | 'organization' | 'users'> & { creator?: Maybe<ResolversParentTypes['User']>, messages?: Maybe<Array<Maybe<ResolversParentTypes['DirectChatMessage']>>>, organization?: Maybe<ResolversParentTypes['Organization']>, users: Array<ResolversParentTypes['User']> };
-  DirectChatMessage: Omit<DirectChatMessage, 'directChatMessageBelongsTo' | 'receiver' | 'replyTo' | 'sender'> & { directChatMessageBelongsTo: ResolversParentTypes['DirectChat'], receiver: ResolversParentTypes['User'], replyTo?: Maybe<ResolversParentTypes['DirectChatMessage']>, sender: ResolversParentTypes['User'] };
   Donation: InterfaceDonationModel;
   DonationWhereInput: DonationWhereInput;
   EditVenueInput: EditVenueInput;
@@ -3609,8 +3500,6 @@ export type ResolversParentTypes = {
   FundraisingCampaign: InterfaceFundraisingCampaignModel;
   FundraisingCampaignPledge: InterfaceFundraisingCampaignPledgesModel;
   Group: InterfaceGroupModel;
-  GroupChat: Omit<GroupChat, 'creator' | 'messages' | 'organization' | 'users'> & { creator?: Maybe<ResolversParentTypes['User']>, messages?: Maybe<Array<Maybe<ResolversParentTypes['GroupChatMessage']>>>, organization: ResolversParentTypes['Organization'], users: Array<ResolversParentTypes['User']> };
-  GroupChatMessage: Omit<GroupChatMessage, 'groupChatMessageBelongsTo' | 'replyTo' | 'sender'> & { groupChatMessageBelongsTo: ResolversParentTypes['GroupChat'], replyTo?: Maybe<ResolversParentTypes['GroupChatMessage']>, sender: ResolversParentTypes['User'] };
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
   InvalidCursor: InvalidCursor;
@@ -3627,7 +3516,6 @@ export type ResolversParentTypes = {
   MembershipRequest: InterfaceMembershipRequestModel;
   MembershipRequestsWhereInput: MembershipRequestsWhereInput;
   Message: InterfaceMessageModel;
-  MessageChat: InterfaceMessageChatModel;
   MessageChatInput: MessageChatInput;
   MinimumLengthError: MinimumLengthError;
   MinimumValueError: MinimumValueError;
@@ -3714,7 +3602,6 @@ export type ResolversParentTypes = {
   VenueInput: VenueInput;
   VenueWhereInput: VenueWhereInput;
   chatInput: ChatInput;
-  createDirectChatPayload: Omit<CreateDirectChatPayload, 'directChat' | 'userErrors'> & { directChat?: Maybe<ResolversParentTypes['DirectChat']>, userErrors: Array<ResolversParentTypes['CreateDirectChatError']> };
   createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
 };
@@ -3732,6 +3619,7 @@ export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = Role
 export type ActionItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ActionItem'] = ResolversParentTypes['ActionItem']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   actionItemCategory?: Resolver<Maybe<ResolversTypes['ActionItemCategory']>, ParentType, ContextType>;
+  allotedHours?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   assignee?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   assigner?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   assignmentDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -3903,7 +3791,6 @@ export type ChatMessageResolvers<ContextType = any, ParentType extends Resolvers
   messageContent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   replyTo?: Resolver<Maybe<ResolversTypes['ChatMessage']>, ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -3952,6 +3839,7 @@ export type CommunityResolvers<ContextType = any, ParentType extends ResolversPa
   logoUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   socialMediaUrls?: Resolver<Maybe<ResolversTypes['SocialMediaUrls']>, ParentType, ContextType>;
+  timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   websiteLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -4034,29 +3922,6 @@ export type DeleteAdvertisementPayloadResolvers<ContextType = any, ParentType ex
 
 export type DeletePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeletePayload'] = ResolversParentTypes['DeletePayload']> = {
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type DirectChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['DirectChat'] = ResolversParentTypes['DirectChat']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChatMessage']>>>, ParentType, ContextType>;
-  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type DirectChatMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['DirectChatMessage'] = ResolversParentTypes['DirectChatMessage']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  directChatMessageBelongsTo?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType>;
-  messageContent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  receiver?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  replyTo?: Resolver<Maybe<ResolversTypes['DirectChatMessage']>, ParentType, ContextType>;
-  sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4231,29 +4096,6 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type GroupChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupChat'] = ResolversParentTypes['GroupChat']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChatMessage']>>>, ParentType, ContextType>;
-  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
-  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type GroupChatMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupChatMessage'] = ResolversParentTypes['GroupChatMessage']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  groupChatMessageBelongsTo?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType>;
-  messageContent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  replyTo?: Resolver<Maybe<ResolversTypes['GroupChatMessage']>, ParentType, ContextType>;
-  sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type InvalidCursorResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvalidCursor'] = ResolversParentTypes['InvalidCursor']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -4325,17 +4167,6 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type MessageChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessageChat'] = ResolversParentTypes['MessageChat']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  languageBarrier?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  receiver?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type MinimumLengthErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MinimumLengthError'] = ResolversParentTypes['MinimumLengthError']> = {
   limit?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -4367,7 +4198,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
   checkOut?: Resolver<ResolversTypes['CheckOut'], ParentType, ContextType, RequireFields<MutationCheckOutArgs, 'data'>>;
   createActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationCreateActionItemArgs, 'actionItemCategoryId' | 'data'>>;
-  createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'name' | 'organizationId'>>;
+  createActionItemCategory?: Resolver<ResolversTypes['ActionItemCategory'], ParentType, ContextType, RequireFields<MutationCreateActionItemCategoryArgs, 'isDisabled' | 'name' | 'organizationId'>>;
   createAdmin?: Resolver<ResolversTypes['CreateAdminPayload'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createAdvertisement?: Resolver<Maybe<ResolversTypes['CreateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'input'>>;
   createAgendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<MutationCreateAgendaCategoryArgs, 'input'>>;
@@ -4383,7 +4214,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignArgs, 'data'>>;
   createFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationCreateFundraisingCampaignPledgeArgs, 'data'>>;
   createMember?: Resolver<ResolversTypes['CreateMemberPayload'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
-  createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
   createNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationCreateNoteArgs, 'data'>>;
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginName'>>;
@@ -4423,8 +4253,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveEventAttendeeArgs, 'data'>>;
   removeEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerArgs, 'id'>>;
   removeEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerGroupArgs, 'id'>>;
-  removeFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationRemoveFundArgs, 'id'>>;
-  removeFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignArgs, 'id'>>;
   removeFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignPledgeArgs, 'id'>>;
   removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'data'>>;
   removeOrganization?: Resolver<ResolversTypes['UserData'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
@@ -4441,7 +4269,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   revokeRefreshTokenForUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   saveFcmToken?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationSaveFcmTokenArgs>>;
   sendMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationSendMembershipRequestArgs, 'organizationId'>>;
-  sendMessageToChat?: Resolver<ResolversTypes['ChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToChatArgs, 'chatId' | 'messageContent' | 'type'>>;
+  sendMessageToChat?: Resolver<ResolversTypes['ChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToChatArgs, 'chatId' | 'messageContent'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
   togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'id'>>;
   unassignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUnassignUserTagArgs, 'input'>>;
@@ -4467,6 +4295,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'orgId'>>;
   updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
+  updateSessionTimeout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateSessionTimeoutArgs, 'timeout'>>;
   updateUserPassword?: Resolver<ResolversTypes['UserData'], ParentType, ContextType, RequireFields<MutationUpdateUserPasswordArgs, 'data'>>;
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
   updateUserRoleInOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateUserRoleInOrganizationArgs, 'organizationId' | 'role' | 'userId'>>;
@@ -4633,9 +4462,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
   customFieldsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['OrganizationCustomField']>>>, ParentType, ContextType, RequireFields<QueryCustomFieldsByOrganizationArgs, 'id'>>;
-  directChatById?: Resolver<Maybe<ResolversTypes['DirectChat']>, ParentType, ContextType, RequireFields<QueryDirectChatByIdArgs, 'id'>>;
-  directChatsByUserID?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChat']>>>, ParentType, ContextType, RequireFields<QueryDirectChatsByUserIdArgs, 'id'>>;
-  directChatsMessagesByChatID?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChatMessage']>>>, ParentType, ContextType, RequireFields<QueryDirectChatsMessagesByChatIdArgs, 'id'>>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   eventVolunteersByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventVolunteer']>>>, ParentType, ContextType, RequireFields<QueryEventVolunteersByEventArgs, 'id'>>;
   eventsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsByOrganizationArgs>>;
@@ -4663,8 +4489,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getUserTagAncestors?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTag']>>>, ParentType, ContextType, RequireFields<QueryGetUserTagAncestorsArgs, 'id'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
-  groupChatById?: Resolver<Maybe<ResolversTypes['GroupChat']>, ParentType, ContextType, RequireFields<QueryGroupChatByIdArgs, 'id'>>;
-  groupChatsByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChat']>>>, ParentType, ContextType, RequireFields<QueryGroupChatsByUserIdArgs, 'id'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
   isSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<QueryIsSampleOrganizationArgs, 'id'>>;
   joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryJoinedOrganizationsArgs>>;
@@ -4712,10 +4536,7 @@ export type SocialMediaUrlsResolvers<ContextType = any, ParentType extends Resol
 };
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
-  directMessageChat?: SubscriptionResolver<Maybe<ResolversTypes['MessageChat']>, "directMessageChat", ParentType, ContextType>;
   messageSentToChat?: SubscriptionResolver<Maybe<ResolversTypes['ChatMessage']>, "messageSentToChat", ParentType, ContextType, RequireFields<SubscriptionMessageSentToChatArgs, 'userId'>>;
-  messageSentToDirectChat?: SubscriptionResolver<Maybe<ResolversTypes['DirectChatMessage']>, "messageSentToDirectChat", ParentType, ContextType, RequireFields<SubscriptionMessageSentToDirectChatArgs, 'userId'>>;
-  messageSentToGroupChat?: SubscriptionResolver<Maybe<ResolversTypes['GroupChatMessage']>, "messageSentToGroupChat", ParentType, ContextType, RequireFields<SubscriptionMessageSentToGroupChatArgs, 'userId'>>;
   onPluginUpdate?: SubscriptionResolver<Maybe<ResolversTypes['Plugin']>, "onPluginUpdate", ParentType, ContextType>;
 };
 
@@ -4766,6 +4587,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   firstName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   gender?: Resolver<Maybe<ResolversTypes['Gender']>, ParentType, ContextType>;
+  identifier?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   lastName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -4879,12 +4701,6 @@ export type VenueResolvers<ContextType = any, ParentType extends ResolversParent
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type CreateDirectChatPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['createDirectChatPayload'] = ResolversParentTypes['createDirectChatPayload']> = {
-  directChat?: Resolver<Maybe<ResolversTypes['DirectChat']>, ParentType, ContextType>;
-  userErrors?: Resolver<Array<ResolversTypes['CreateDirectChatError']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type Resolvers<ContextType = any> = {
   ActionItem?: ActionItemResolvers<ContextType>;
   ActionItemCategory?: ActionItemCategoryResolvers<ContextType>;
@@ -4923,8 +4739,6 @@ export type Resolvers<ContextType = any> = {
   DefaultConnectionPageInfo?: DefaultConnectionPageInfoResolvers<ContextType>;
   DeleteAdvertisementPayload?: DeleteAdvertisementPayloadResolvers<ContextType>;
   DeletePayload?: DeletePayloadResolvers<ContextType>;
-  DirectChat?: DirectChatResolvers<ContextType>;
-  DirectChatMessage?: DirectChatMessageResolvers<ContextType>;
   Donation?: DonationResolvers<ContextType>;
   EmailAddress?: GraphQLScalarType;
   Error?: ErrorResolvers<ContextType>;
@@ -4939,8 +4753,6 @@ export type Resolvers<ContextType = any> = {
   FundraisingCampaign?: FundraisingCampaignResolvers<ContextType>;
   FundraisingCampaignPledge?: FundraisingCampaignPledgeResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
-  GroupChat?: GroupChatResolvers<ContextType>;
-  GroupChatMessage?: GroupChatMessageResolvers<ContextType>;
   InvalidCursor?: InvalidCursorResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   Language?: LanguageResolvers<ContextType>;
@@ -4952,7 +4764,6 @@ export type Resolvers<ContextType = any> = {
   MemberNotFoundError?: MemberNotFoundErrorResolvers<ContextType>;
   MembershipRequest?: MembershipRequestResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
-  MessageChat?: MessageChatResolvers<ContextType>;
   MinimumLengthError?: MinimumLengthErrorResolvers<ContextType>;
   MinimumValueError?: MinimumValueErrorResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
@@ -4998,7 +4809,6 @@ export type Resolvers<ContextType = any> = {
   UsersConnection?: UsersConnectionResolvers<ContextType>;
   UsersConnectionEdge?: UsersConnectionEdgeResolvers<ContextType>;
   Venue?: VenueResolvers<ContextType>;
-  createDirectChatPayload?: CreateDirectChatPayloadResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {

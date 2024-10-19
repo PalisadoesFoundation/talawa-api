@@ -38,7 +38,6 @@ export const createTestChatMessage = async (): Promise<
   [TestUserType, TestOrganizationType, TestChatType, TestChatMessageType]
 > => {
   const [testUser, testOrganization, testChat] = await createTestChat();
-  console.log("TEST CHAT", testChat);
 
   if (testChat?.id) {
     const chatMessage = await createChatMessage(

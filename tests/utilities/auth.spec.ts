@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { InterfaceAppUserProfile, InterfaceUser } from "../../src/models";
-import { AppUserProfile } from "../../src/models";
+import { AppUserProfile, Community } from "../../src/models";
 import {
   createAccessToken,
   createRefreshToken,
@@ -17,6 +17,7 @@ let user: TestUserType;
 let appUserProfile: TestAppUserProfileType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 export interface InterfaceJwtTokenPayload {
+  timeout: number;
   tokenVersion: number;
   userId: string;
   firstName: string;
@@ -37,8 +38,54 @@ afterAll(async () => {
 });
 
 describe("createAccessToken", () => {
+  it("should use the timeout from the Community document if it exists", async () => {
+    // Set up a Community document with a specific timeout
+    const community = await Community.create({
+      name: "Test Community",
+      timeout: 45, // Custom timeout in minutes
+    });
+
+    const token = await createAccessToken(
+      user ? user.toObject() : ({} as InterfaceUser),
+      appUserProfile
+        ? appUserProfile.toObject()
+        : ({} as InterfaceAppUserProfile),
+    );
+
+    expect(token).toBeDefined();
+
+    const decodedToken = jwt.decode(token);
+
+    expect(decodedToken).not.toBeNull();
+    expect((decodedToken as InterfaceJwtTokenPayload).timeout).toBe(
+      community.timeout,
+    );
+
+    // Clean up
+    await Community.deleteMany({});
+  });
+
+  it("should default to 30 minutes if no Community document exists", async () => {
+    // Ensure no Community documents exist
+    await Community.deleteMany({});
+
+    const token = await createAccessToken(
+      user ? user.toObject() : ({} as InterfaceUser),
+      appUserProfile
+        ? appUserProfile.toObject()
+        : ({} as InterfaceAppUserProfile),
+    );
+
+    expect(token).toBeDefined();
+
+    const decodedToken = jwt.decode(token);
+
+    expect(decodedToken).not.toBeNull();
+    expect((decodedToken as InterfaceJwtTokenPayload).timeout).toBe(30);
+  });
+
   it("should create a JWT token with the correct payload", async () => {
-    const token = createAccessToken(
+    const token = await createAccessToken(
       user ? user.toObject() : ({} as InterfaceUser),
       appUserProfile
         ? appUserProfile.toObject()

@@ -32,7 +32,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
 
       - name: Count number of lines
         run: |
@@ -74,7 +74,7 @@ jobs:
         if: steps.changed_files.outputs.any_changed == 'true'
         env:
           CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
-        run: npx eslint ${CHANGED_FILES} 
+        run: npx eslint ${CHANGED_FILES} --max-warnings=1500 && python .github/workflows/eslint_disable_check.py
 
       - name: Check for formatting errors
         run: npm run format:check
@@ -91,6 +91,7 @@ jobs:
           exit 1
 
   Check-Unauthorized-Changes:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Checks if no unauthorized files are changed
     runs-on: ubuntu-latest
     steps:
@@ -138,6 +139,7 @@ jobs:
           exit 1
 
   File-count-check:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Checks if number of files changed is acceptable
     runs-on: ubuntu-latest
     steps:
@@ -174,7 +176,7 @@ jobs:
     needs: [Code-Quality-Checks]
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x]
     services:
       mongo:
         image: mongo:4.4
@@ -219,7 +221,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
 
       - name: Generate Access Token Secret
         run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
@@ -288,6 +290,7 @@ jobs:
           min_coverage: 95.0
           
   JSDocs:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: 'JSDocs comments and pipeline'
     runs-on: ubuntu-latest
     needs: Test-Application
@@ -303,6 +306,7 @@ jobs:
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
   
   Branch-check:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: "Base branch check"
     runs-on: ubuntu-latest
     steps:
