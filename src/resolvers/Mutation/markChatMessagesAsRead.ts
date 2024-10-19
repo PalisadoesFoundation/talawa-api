@@ -26,9 +26,9 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
       );
     }
 
-    const currentUserExists = !!(await User.exists({
+    const currentUserExists = await User.exists({
       _id: context.userId,
-    }));
+    }).lean();
 
     if (!currentUserExists) {
       throw new errors.NotFoundError(
@@ -58,8 +58,6 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
         },
       },
     );
-
-    console.log("updatedChat", updatedChat);
 
     return updatedChat;
   };

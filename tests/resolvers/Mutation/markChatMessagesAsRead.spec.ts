@@ -7,7 +7,6 @@ import { User, Organization, Chat } from "../../../src/models";
 import type { MutationMarkChatMessagesAsReadArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { markChatMessagesAsRead as markChatMessagesAsReadResolver } from "../../../src/resolvers/Mutation/markChatMessagesAsRead";
 import {
   CHAT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -90,10 +89,13 @@ describe("resolvers -> Mutation -> markChatMessagesAsRead", () => {
     try {
       const args: MutationMarkChatMessagesAsReadArgs = {
         chatId: new Types.ObjectId().toString(),
-        userId: testUsers[0]?.id,
+        userId: testUsers[0]?._id.toString(),
       };
 
       const context = { userId: testUsers[0]?.id };
+
+      const { markChatMessagesAsRead: markChatMessagesAsReadResolver } =
+        await import("../../../src/resolvers/Mutation/markChatMessagesAsRead");
 
       await markChatMessagesAsReadResolver?.({}, args, context);
     } catch (error: unknown) {
@@ -101,8 +103,7 @@ describe("resolvers -> Mutation -> markChatMessagesAsRead", () => {
       expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
-
-  it(`throws NotFoundError current user with _id === context.userId does not exist`, async () => {
+  it(`throws NotFoundError if current user with _id === context.userId does not exist`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -114,8 +115,11 @@ describe("resolvers -> Mutation -> markChatMessagesAsRead", () => {
       };
 
       const context = {
-        userId: "",
+        userId: new Types.ObjectId().toString(),
       };
+
+      const { markChatMessagesAsRead: markChatMessagesAsReadResolver } =
+        await import("../../../src/resolvers/Mutation/markChatMessagesAsRead");
 
       await markChatMessagesAsReadResolver?.({}, args, context);
     } catch (error: unknown) {
@@ -144,6 +148,9 @@ describe("resolvers -> Mutation -> markChatMessagesAsRead", () => {
     const context = {
       userId: testUsers[0]?.id,
     };
+
+    const { markChatMessagesAsRead: markChatMessagesAsReadResolver } =
+      await import("../../../src/resolvers/Mutation/markChatMessagesAsRead");
 
     const sendMessageToChatPayload = await markChatMessagesAsReadResolver?.(
       {},
