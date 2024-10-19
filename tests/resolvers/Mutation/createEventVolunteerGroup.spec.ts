@@ -54,6 +54,8 @@ describe("resolvers -> Mutation -> createEventVolunteerGroup", () => {
       const args: MutationCreateEventVolunteerGroupArgs = {
         data: {
           name: "Test group",
+          leaderId: testUser?._id,
+          volunteerUserIds: [testUser?._id],
           eventId: testEvent?._id,
         },
       };
@@ -82,6 +84,8 @@ describe("resolvers -> Mutation -> createEventVolunteerGroup", () => {
       const args: MutationCreateEventVolunteerGroupArgs = {
         data: {
           name: "Test group",
+          leaderId: testUser?._id,
+          volunteerUserIds: [testUser?._id],
           eventId: new Types.ObjectId().toString(),
         },
       };
@@ -111,6 +115,8 @@ describe("resolvers -> Mutation -> createEventVolunteerGroup", () => {
       const args: MutationCreateEventVolunteerGroupArgs = {
         data: {
           name: "Test group",
+          leaderId: testUser?._id,
+          volunteerUserIds: [testUser?._id],
           eventId: testEvent?._id,
         },
       };
@@ -137,6 +143,8 @@ describe("resolvers -> Mutation -> createEventVolunteerGroup", () => {
     const args: MutationCreateEventVolunteerGroupArgs = {
       data: {
         name: "Test group",
+        leaderId: eventAdminUser?._id,
+        volunteerUserIds: [testUser?._id],
         eventId: testEvent?._id,
       },
     };

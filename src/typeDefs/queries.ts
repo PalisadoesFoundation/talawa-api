@@ -60,16 +60,26 @@ export const queries = gql`
 
     eventsByOrganizationConnection(
       where: EventWhereInput
+      currentDate: DateTime
       first: Int
       skip: Int
       orderBy: EventOrderByInput
     ): [Event!]!
 
-    getEventVolunteers(id: ID!): [EventVolunteer]!
+    getEventVolunteers(
+      where: EventVolunteerWhereInput!
+      orderBy: EventVolunteersOrderByInput
+    ): [EventVolunteer]!
 
     getEventVolunteerGroups(
-      where: EventVolunteerGroupWhereInput
+      where: EventVolunteerGroupWhereInput!
+      orderBy: EventVolunteerGroupOrderByInput
     ): [EventVolunteerGroup]!
+
+    getVolunteerMembership(
+      where: VolunteerMembershipWhereInput!
+      orderBy: VolunteerMembershipOrderByInput
+    ): [VolunteerMembership]
 
     fundsByOrganization(
       organizationId: ID!

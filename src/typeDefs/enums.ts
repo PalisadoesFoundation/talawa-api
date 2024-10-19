@@ -141,6 +141,22 @@ export const enums = gql`
     endDate_DESC
   }
 
+  enum EventVolunteersOrderByInput {
+    hoursVolunteered_ASC
+    hoursVolunteered_DESC
+  }
+
+  enum EventVolunteerGroupOrderByInput {
+    members_ASC
+    members_DESC
+    assignments_ASC
+    assignments_DESC
+  }
+  enum VolunteerMembershipOrderByInput {
+    createdAt_ASC
+    createdAt_DESC
+  }
+
   enum WeekDays {
     MONDAY
     TUESDAY

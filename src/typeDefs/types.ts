@@ -276,6 +276,8 @@ export const types = gql`
     feedback: [Feedback!]!
     averageFeedbackScore: Float
     agendaItems: [AgendaItem]
+    volunteers: [EventVolunteer]
+    volunteerGroups: [EventVolunteerGroup]
   }
 
   type EventVolunteer {
@@ -283,9 +285,10 @@ export const types = gql`
     user: User!
     creator: User
     event: Event
-    group: EventVolunteerGroup
+    groups: [EventVolunteerGroup]
     hasAccepted: Boolean!
     isPublic: Boolean!
+    hoursVolunteered: Float!
     assignments: [ActionItem]
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -317,6 +320,16 @@ export const types = gql`
     volunteers: [EventVolunteer]
     volunteersRequired: Int
     assignments: [ActionItem]
+  }
+
+  type VolunteerMembership {
+    _id: ID!
+    status: String!
+    volunteer: EventVolunteer!
+    event: Event!
+    group: EventVolunteerGroup
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type Feedback {

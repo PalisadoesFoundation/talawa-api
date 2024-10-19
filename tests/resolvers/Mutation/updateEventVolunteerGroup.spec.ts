@@ -1,9 +1,6 @@
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type {
-  MutationUpdateEventVolunteerArgs,
-  MutationUpdateEventVolunteerGroupArgs,
-} from "../../../src/types/generatedGraphQLTypes";
+import type { MutationUpdateEventVolunteerGroupArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import {
   USER_NOT_FOUND_ERROR,
@@ -187,7 +184,7 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
       volunteersRequired: 2,
       leader: eventAdminUser?._id,
     });
-    const args: MutationUpdateEventVolunteerArgs = {
+    const args: MutationUpdateEventVolunteerGroupArgs = {
       id: testGroup2?._id.toString(),
       data: {},
     };

@@ -38,5 +38,6 @@ export * from "./RecurrenceRule";
 export * from "./SampleData";
 export * from "./TagUser";
 export * from "./Venue";
+export * from "./VolunteerMembership";
 export * from "./User";
 export * from "./Note";

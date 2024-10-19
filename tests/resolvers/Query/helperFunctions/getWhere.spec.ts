@@ -335,15 +335,6 @@ describe("getWhere function", () => {
       { organizationId: "6f6cd" },
     ],
     ["campaignId", { campaignId: "6f6c" }, { _id: "6f6c" }],
-    [
-      "volunteerId",
-      { volunteerId: "6f43d" },
-      {
-        volunteers: {
-          $in: ["6f43d"],
-        },
-      },
-    ],
     ["is_disabled", { is_disabled: true }, { isDisabled: true }],
     ["is_disabled", { is_disabled: false }, { isDisabled: false }],
   ];

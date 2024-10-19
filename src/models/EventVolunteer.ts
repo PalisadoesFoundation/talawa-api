@@ -14,10 +14,11 @@ export interface InterfaceEventVolunteer {
   _id: Types.ObjectId;
   creator: PopulatedDoc<InterfaceUser & Document>;
   event: PopulatedDoc<InterfaceEvent & Document>;
-  group: PopulatedDoc<InterfaceEventVolunteerGroup & Document>;
+  groups: PopulatedDoc<InterfaceEventVolunteerGroup & Document>[];
   user: PopulatedDoc<InterfaceUser & Document>;
   hasAccepted: boolean;
   isPublic: boolean;
+  hoursVolunteered: number;
   assignments: PopulatedDoc<InterfaceActionItem & Document>[];
   createdAt: Date;
   updatedAt: Date;
@@ -29,10 +30,11 @@ export interface InterfaceEventVolunteer {
  *
  * @param creator - Reference to the user who created the event volunteer entry.
  * @param event - Reference to the event for which the user volunteers.
- * @param group - Reference to the volunteer group associated with the event.
+ * @param groups - Reference to the volunteer groups associated with the event.
  * @param user - Reference to the user who is volunteering for the event.
  * @param hasAccepted - Indicates if the volunteer has accepted invite.
  * @param isPublic - Indicates if the volunteer is public.
+ * @param hoursVolunteered - Total hours volunteered by the user.
  * @param assignments - List of action items assigned to the volunteer.
  * @param createdAt - Timestamp of when the event volunteer document was created.
  * @param updatedAt - Timestamp of when the event volunteer document was last updated.
@@ -48,10 +50,13 @@ const eventVolunteerSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Event",
     },
-    group: {
-      type: Schema.Types.ObjectId,
-      ref: "EventVolunteerGroup",
-    },
+    groups: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "EventVolunteerGroup",
+        default: [],
+      },
+    ],
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -67,10 +72,15 @@ const eventVolunteerSchema = new Schema(
       required: true,
       default: true,
     },
+    hoursVolunteered: {
+      type: Number,
+      default: 0,
+    },
     assignments: [
       {
         type: Schema.Types.ObjectId,
         ref: "ActionItem",
+        default: [],
       },
     ],
   },

@@ -665,6 +665,8 @@ type Event {
   startTime: Time
   title: String!
   updatedAt: DateTime!
+  volunteerGroups: [EventVolunteerGroup]
+  volunteers: [EventVolunteer]
 }
 
 type EventAttendee {
@@ -733,8 +735,9 @@ type EventVolunteer {
   createdAt: DateTime!
   creator: User
   event: Event
-  group: EventVolunteerGroup
+  groups: [EventVolunteerGroup]
   hasAccepted: Boolean!
+  hoursVolunteered: Float!
   isPublic: Boolean!
   updatedAt: DateTime!
   user: User!
@@ -755,26 +758,49 @@ type EventVolunteerGroup {
 }
 
 input EventVolunteerGroupInput {
+  description: String
   eventId: ID!
-  name: String
+  leaderId: ID!
+  name: String!
+  volunteerUserIds: [ID!]!
   volunteersRequired: Int
 }
 
+enum EventVolunteerGroupOrderByInput {
+  assignments_ASC
+  assignments_DESC
+  members_ASC
+  members_DESC
+}
+
 input EventVolunteerGroupWhereInput {
-  eventId: ID
+  eventId: ID!
+  leaderName: String
   name_contains: String
-  volunteerId: ID
 }
 
 input EventVolunteerInput {
   eventId: ID!
-  groupId: ID!
+  groupId: ID
   userId: ID!
 }
 
 enum EventVolunteerResponse {
   NO
   YES
+}
+
+input EventVolunteerWhereInput {
+  eventId: ID
+  groupId: ID
+  hasAccepted: Boolean
+  id: ID
+  name_contains: String
+}
+
+enum EventVolunteersOrderByInput {
+  hoursVolunteered_ASC
+  hoursVolunteered_DESC
 }
 
 input EventWhereInput {
@@ -1118,6 +1144,7 @@ type Mutation {
   createUserFamily(data: createUserFamilyInput!): UserFamily!
   createUserTag(input: CreateUserTagInput!): UserTag
   createVenue(data: VenueInput!): Venue
+  createVolunteerMembership(data: VolunteerMembershipInput!): VolunteerMembership!
   deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
   deleteAgendaCategory(id: ID!): ID!
   deleteDonationById(id: ID!): DeletePayload!
@@ -1198,6 +1225,7 @@ type Mutation {
   updateUserProfile(data: UpdateUserInput, file: String): User!
   updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
   updateUserTag(input: UpdateUserTagInput!): UserTag
+  updateVolunteerMembership(id: ID!, status: String!): VolunteerMembership!
 }
 
 type Note {
@@ -1503,7 +1531,7 @@ type Query {
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
-  eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
+  eventsByOrganizationConnection(currentDate: DateTime, first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
   fundsByOrganization(orderBy: FundOrderByInput, organizationId: ID!, where: FundWhereInput): [Fund]
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
@@ -1516,8 +1544,8 @@ type Query {
   getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
   getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
   getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
-  getEventVolunteerGroups(where: EventVolunteerGroupWhereInput): [EventVolunteerGroup]!
-  getEventVolunteers(id: ID!): [EventVolunteer]!
+  getEventVolunteerGroups(orderBy: EventVolunteerGroupOrderByInput, where: EventVolunteerGroupWhereInput!): [EventVolunteerGroup]!
+  getEventVolunteers(orderBy: EventVolunteersOrderByInput, where: EventVolunteerWhereInput!): [EventVolunteer]!
   getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getFundraisingCampaigns(campaignOrderby: CampaignOrderByInput, pledgeOrderBy: PledgeOrderByInput, where: CampaignWhereInput): [FundraisingCampaign]!
@@ -1527,6 +1555,7 @@ type Query {
   getUserTag(id: ID!): UserTag
   getUserTagAncestors(id: ID!): [UserTag]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
+  getVolunteerMembership(orderBy: VolunteerMembershipOrderByInput, where: VolunteerMembershipWhereInput!): [VolunteerMembership]
   getlanguage(lang_code: String!): [Translation]
   groupChatById(id: ID!): GroupChat
   groupChatsByUserId(id: ID!): [GroupChat]
@@ -1749,7 +1778,7 @@ input UpdateEventVolunteerGroupInput {
 }
 
 input UpdateEventVolunteerInput {
-  eventId: ID
+  assignments: [ID]
   hasAccepted: Boolean
   isPublic: Boolean
 }
@@ -2037,6 +2066,37 @@ input VenueWhereInput {
   description_starts_with: String
   name_contains: String
   name_starts_with: String
+}
+
+type VolunteerMembership {
+  _id: ID!
+  createdAt: DateTime!
+  event: Event!
+  group: EventVolunteerGroup
+  status: String!
+  updatedAt: DateTime!
+  volunteer: EventVolunteer!
+}
+
+input VolunteerMembershipInput {
+  event: ID!
+  group: ID
+  status: String!
+  userId: ID!
+}
+
+enum VolunteerMembershipOrderByInput {
+  createdAt_ASC
+  createdAt_DESC
+}
+
+input VolunteerMembershipWhereInput {
+  eventId: ID
+  eventTitle: String
+  filter: String
+  status: String
+  userId: ID
+  userName: String
 }
 
 enum WeekDays {

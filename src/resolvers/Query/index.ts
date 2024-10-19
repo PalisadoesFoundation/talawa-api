@@ -21,6 +21,7 @@ import { groupChatsByUserId } from "./groupChatsByUserId";
 import { event } from "./event";
 import { eventsByOrganization } from "./eventsByOrganization";
 import { eventsByOrganizationConnection } from "./eventsByOrganizationConnection";
+import { getEventVolunteers } from "./getEventVolunteers";
 import { getEventVolunteerGroups } from "./getEventVolunteerGroups";
 import { fundsByOrganization } from "./fundsByOrganization";
 import { getAllAgendaItems } from "./getAllAgendaItems";
@@ -53,6 +54,7 @@ import { getEventAttendeesByEventId } from "./getEventAttendeesByEventId";
 import { getVenueByOrgId } from "./getVenueByOrgId";
 import { getAllNotesForAgendaItem } from "./getAllNotesForAgendaItem";
 import { getNoteById } from "./getNoteById";
+import { getVolunteerMembership } from "./getVolunteerMembership";
 export const Query: QueryResolvers = {
   actionItemsByEvent,
   agendaCategory,
@@ -81,6 +83,7 @@ export const Query: QueryResolvers = {
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getEventInvitesByUserId,
+  getEventVolunteers,
   getEventVolunteerGroups,
   getAllNotesForAgendaItem,
   getNoteById,
@@ -108,4 +111,5 @@ export const Query: QueryResolvers = {
   getEventAttendee,
   getEventAttendeesByEventId,
   getVenueByOrgId,
+  getVolunteerMembership,
 };

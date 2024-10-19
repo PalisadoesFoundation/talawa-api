@@ -24,7 +24,7 @@ describe("resolvers -> Mutation -> eventVolunteersByEvent", () => {
     const volunteersPayload = await getEventVolunteers?.(
       {},
       {
-        id: testEvent?._id,
+        where: { id: testEvent?._id },
       },
       {},
     );

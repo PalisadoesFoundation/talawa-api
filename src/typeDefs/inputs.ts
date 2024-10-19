@@ -149,23 +149,43 @@ export const inputs = gql`
   input EventVolunteerInput {
     userId: ID!
     eventId: ID!
-    groupId: ID!
+    groupId: ID
   }
 
-  input EventVolunteerGroupInput {
-    name: String
-    eventId: ID!
-    volunteersRequired: Int
-  }
-
-  input EventVolunteerGroupWhereInput {
+  input EventVolunteerWhereInput {
+    id: ID
     eventId: ID
-    volunteerId: ID
+    groupId: ID
+    hasAccepted: Boolean
     name_contains: String
   }
 
-  input UpdateEventVolunteerInput {
+  input EventVolunteerGroupInput {
+    name: String!
+    description: String
+    eventId: ID!
+    leaderId: ID!
+    volunteersRequired: Int
+    volunteerUserIds: [ID!]!
+  }
+
+  input EventVolunteerGroupWhereInput {
+    eventId: ID!
+    leaderName: String
+    name_contains: String
+  }
+
+  input VolunteerMembershipWhereInput {
+    eventTitle: String
+    userName: String
+    status: String
+    userId: ID
     eventId: ID
+    filter: String
+  }
+
+  input UpdateEventVolunteerInput {
+    assignments: [ID]
     hasAccepted: Boolean
     isPublic: Boolean
   }
@@ -622,6 +642,13 @@ export const inputs = gql`
     capacity: Int!
     description: String
     file: String
+  }
+
+  input VolunteerMembershipInput {
+    event: ID!
+    group: ID
+    status: String!
+    userId: ID!
   }
 
   input VenueWhereInput {
