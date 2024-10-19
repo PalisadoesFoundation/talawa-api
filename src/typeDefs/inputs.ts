@@ -41,6 +41,7 @@ export const inputs = gql`
 
   input CreateActionItemInput {
     assigneeId: ID!
+    assigneeType: String!
     preCompletionNotes: String
     allotedHours: Float
     dueDate: Date
@@ -191,7 +192,7 @@ export const inputs = gql`
   }
 
   input UpdateEventVolunteerGroupInput {
-    eventId: ID
+    eventId: ID!
     name: String
     description: String
     volunteersRequired: Int
@@ -446,6 +447,7 @@ export const inputs = gql`
 
   input UpdateActionItemInput {
     assigneeId: ID
+    assigneeType: String
     preCompletionNotes: String
     postCompletionNotes: String
     dueDate: Date

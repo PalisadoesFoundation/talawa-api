@@ -2,6 +2,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { isSampleOrganization } from "../Query/organizationIsSample";
 import { actionItemCategoriesByOrganization } from "./actionItemCategoriesByOrganization";
 import { actionItemsByEvent } from "./actionItemsByEvent";
+import { actionItemsByUser } from "./actionItemsByUser";
 import { actionItemsByOrganization } from "./actionItemsByOrganization";
 import { advertisementsConnection } from "./advertisementsConnection";
 import { agendaCategory } from "./agendaCategory";
@@ -57,6 +58,7 @@ import { getNoteById } from "./getNoteById";
 import { getVolunteerMembership } from "./getVolunteerMembership";
 export const Query: QueryResolvers = {
   actionItemsByEvent,
+  actionItemsByUser,
   agendaCategory,
   getAgendaItem,
   getAgendaSection,

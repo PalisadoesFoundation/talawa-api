@@ -16,6 +16,12 @@ export const queries = gql`
       orderBy: ActionItemsOrderByInput
     ): [ActionItem]
 
+    actionItemsByUser(
+      userId: ID!
+      where: ActionItemWhereInput
+      orderBy: ActionItemsOrderByInput
+    ): [ActionItem]
+
     actionItemCategoriesByOrganization(
       organizationId: ID!
       where: ActionItemCategoryWhereInput

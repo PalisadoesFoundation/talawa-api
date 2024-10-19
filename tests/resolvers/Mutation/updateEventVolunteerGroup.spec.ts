@@ -62,6 +62,7 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
         id: testGroup?._id,
         data: {
           name: "updated name",
+          eventId: testEvent?._id,
         },
       };
 
@@ -93,6 +94,7 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
         id: new Types.ObjectId().toString(),
         data: {
           name: "updated name",
+          eventId: testEvent?._id,
         },
       };
 
@@ -126,6 +128,7 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
         id: testGroup?._id,
         data: {
           name: "updated name",
+          eventId: testEvent?._id,
         },
       };
 
@@ -186,7 +189,9 @@ describe("resolvers -> Mutation -> updateEventVolunteerGroup", () => {
     });
     const args: MutationUpdateEventVolunteerGroupArgs = {
       id: testGroup2?._id.toString(),
-      data: {},
+      data: {
+        eventId: testEvent?._id,
+      },
     };
 
     const context = { userId: eventAdminUser?._id };

@@ -74,7 +74,9 @@ export type ActionItem = {
   _id: Scalars['ID']['output'];
   actionItemCategory?: Maybe<ActionItemCategory>;
   allotedHours?: Maybe<Scalars['Float']['output']>;
-  assignee?: Maybe<User>;
+  assignee?: Maybe<EventVolunteer>;
+  assigneeGroup?: Maybe<EventVolunteerGroup>;
+  assigneeType: Scalars['String']['output'];
   assigner?: Maybe<User>;
   assignmentDate: Scalars['Date']['output'];
   completionDate: Scalars['Date']['output'];
@@ -355,6 +357,7 @@ export type ConnectionPageInfo = {
 export type CreateActionItemInput = {
   allotedHours?: InputMaybe<Scalars['Float']['input']>;
   assigneeId: Scalars['ID']['input'];
+  assigneeType: Scalars['String']['input'];
   dueDate?: InputMaybe<Scalars['Date']['input']>;
   eventId?: InputMaybe<Scalars['ID']['input']>;
   preCompletionNotes?: InputMaybe<Scalars['String']['input']>;
@@ -1899,7 +1902,7 @@ export type MutationUpdateEventVolunteerArgs = {
 
 
 export type MutationUpdateEventVolunteerGroupArgs = {
-  data?: InputMaybe<UpdateEventVolunteerGroupInput>;
+  data: UpdateEventVolunteerGroupInput;
   id: Scalars['ID']['input'];
 };
 
@@ -2310,6 +2313,7 @@ export type Query = {
   actionItemCategoriesByOrganization?: Maybe<Array<Maybe<ActionItemCategory>>>;
   actionItemsByEvent?: Maybe<Array<Maybe<ActionItem>>>;
   actionItemsByOrganization?: Maybe<Array<Maybe<ActionItem>>>;
+  actionItemsByUser?: Maybe<Array<Maybe<ActionItem>>>;
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   advertisementsConnection?: Maybe<AdvertisementsConnection>;
   agendaCategory: AgendaCategory;
@@ -2388,6 +2392,13 @@ export type QueryActionItemsByOrganizationArgs = {
   eventId?: InputMaybe<Scalars['ID']['input']>;
   orderBy?: InputMaybe<ActionItemsOrderByInput>;
   organizationId: Scalars['ID']['input'];
+  where?: InputMaybe<ActionItemWhereInput>;
+};
+
+
+export type QueryActionItemsByUserArgs = {
+  orderBy?: InputMaybe<ActionItemsOrderByInput>;
+  userId: Scalars['ID']['input'];
   where?: InputMaybe<ActionItemWhereInput>;
 };
 
@@ -2833,6 +2844,7 @@ export type UpdateActionItemCategoryInput = {
 export type UpdateActionItemInput = {
   allotedHours?: InputMaybe<Scalars['Float']['input']>;
   assigneeId?: InputMaybe<Scalars['ID']['input']>;
+  assigneeType?: InputMaybe<Scalars['String']['input']>;
   completionDate?: InputMaybe<Scalars['Date']['input']>;
   dueDate?: InputMaybe<Scalars['Date']['input']>;
   isCompleted?: InputMaybe<Scalars['Boolean']['input']>;
@@ -2904,7 +2916,7 @@ export type UpdateEventInput = {
 
 export type UpdateEventVolunteerGroupInput = {
   description?: InputMaybe<Scalars['String']['input']>;
-  eventId?: InputMaybe<Scalars['ID']['input']>;
+  eventId: Scalars['ID']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
   volunteersRequired?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -3813,7 +3825,9 @@ export type ActionItemResolvers<ContextType = any, ParentType extends ResolversP
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   actionItemCategory?: Resolver<Maybe<ResolversTypes['ActionItemCategory']>, ParentType, ContextType>;
   allotedHours?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  assignee?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  assignee?: Resolver<Maybe<ResolversTypes['EventVolunteer']>, ParentType, ContextType>;
+  assigneeGroup?: Resolver<Maybe<ResolversTypes['EventVolunteerGroup']>, ParentType, ContextType>;
+  assigneeType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   assigner?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   assignmentDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   completionDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -4517,7 +4531,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCommunity?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateCommunityArgs, 'data'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'data' | 'id'>>;
   updateEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerArgs, 'id'>>;
-  updateEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerGroupArgs, 'id'>>;
+  updateEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerGroupArgs, 'data' | 'id'>>;
   updateFund?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<MutationUpdateFundArgs, 'data' | 'id'>>;
   updateFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaign'], ParentType, ContextType, RequireFields<MutationUpdateFundraisingCampaignArgs, 'data' | 'id'>>;
   updateFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationUpdateFundraisingCampaignPledgeArgs, 'data' | 'id'>>;
@@ -4682,6 +4696,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   actionItemCategoriesByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItemCategory']>>>, ParentType, ContextType, RequireFields<QueryActionItemCategoriesByOrganizationArgs, 'organizationId'>>;
   actionItemsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByEventArgs, 'eventId'>>;
   actionItemsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByOrganizationArgs, 'organizationId'>>;
+  actionItemsByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByUserArgs, 'userId'>>;
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   advertisementsConnection?: Resolver<Maybe<ResolversTypes['AdvertisementsConnection']>, ParentType, ContextType, Partial<QueryAdvertisementsConnectionArgs>>;
   agendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<QueryAgendaCategoryArgs, 'id'>>;

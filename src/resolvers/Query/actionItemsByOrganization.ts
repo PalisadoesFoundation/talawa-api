@@ -2,9 +2,10 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import type {
   InterfaceActionItem,
   InterfaceActionItemCategory,
+  InterfaceEventVolunteer,
   InterfaceUser,
 } from "../../models";
-import { ActionItem } from "../../models";
+import { ActionItem, User } from "../../models";
 import { getWhere } from "./helperFunctions/getWhere";
 import { getSort } from "./helperFunctions/getSort";
 /**
@@ -24,7 +25,13 @@ export const actionItemsByOrganization: QueryResolvers["actionItemsByOrganizatio
       ...where,
     })
       .populate("creator")
-      .populate("assignee")
+      .populate({
+        path: "assignee",
+        populate: {
+          path: "user",
+        },
+      })
+      .populate("assigneeGroup")
       .populate("assigner")
       .populate("actionItemCategory")
       .populate("organization")
@@ -46,10 +53,23 @@ export const actionItemsByOrganization: QueryResolvers["actionItemsByOrganizatio
 
     // Filter the action items based on assignee name
     if (args.where?.assigneeName) {
-      filteredActionItems = filteredActionItems.filter((item) => {
+      filteredActionItems = filteredActionItems.filter(async (item) => {
         const tempItem = item as InterfaceActionItem;
-        const assignee = tempItem.assignee as InterfaceUser;
-        return assignee.firstName.includes(args?.where?.assigneeName as string);
+        const assigneeType = tempItem.assigneeType;
+
+        if (assigneeType === "EventVolunteer") {
+          const assignee = tempItem.assignee as InterfaceEventVolunteer;
+          const assigneeUser = (await User.findById(
+            assignee.user,
+          )) as InterfaceUser;
+          return assigneeUser.firstName.includes(
+            args?.where?.assigneeName as string,
+          );
+        } else if (assigneeType === "EventVolunteerGroup") {
+          return tempItem.assigneeGroup.name.includes(
+            args?.where?.assigneeName as string,
+          );
+        }
       });
     }
 

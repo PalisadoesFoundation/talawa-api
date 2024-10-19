@@ -6,7 +6,9 @@ type ActionItem {
   _id: ID!
   actionItemCategory: ActionItemCategory
   allotedHours: Float
-  assignee: User
+  assignee: EventVolunteer
+  assigneeGroup: EventVolunteerGroup
+  assigneeType: String!
   assigner: User
   assignmentDate: Date!
   completionDate: Date!
@@ -280,6 +282,7 @@ scalar CountryCode
 input CreateActionItemInput {
   allotedHours: Float
   assigneeId: ID!
+  assigneeType: String!
   dueDate: Date
   eventId: ID
   preCompletionNotes: String
@@ -1212,7 +1215,7 @@ type Mutation {
   updateCommunity(data: UpdateCommunityInput!): Boolean!
   updateEvent(data: UpdateEventInput!, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
-  updateEventVolunteerGroup(data: UpdateEventVolunteerGroupInput, id: ID!): EventVolunteerGroup!
+  updateEventVolunteerGroup(data: UpdateEventVolunteerGroupInput!, id: ID!): EventVolunteerGroup!
   updateFund(data: UpdateFundInput!, id: ID!): Fund!
   updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
   updateFundraisingCampaignPledge(data: UpdateFundCampaignPledgeInput!, id: ID!): FundraisingCampaignPledge!
@@ -1517,6 +1520,7 @@ type Query {
   actionItemCategoriesByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemCategoryWhereInput): [ActionItemCategory]
   actionItemsByEvent(eventId: ID!): [ActionItem]
   actionItemsByOrganization(eventId: ID, orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
+  actionItemsByUser(orderBy: ActionItemsOrderByInput, userId: ID!, where: ActionItemWhereInput): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
@@ -1702,6 +1706,7 @@ input UpdateActionItemCategoryInput {
 input UpdateActionItemInput {
   allotedHours: Float
   assigneeId: ID
+  assigneeType: String
   completionDate: Date
   dueDate: Date
   isCompleted: Boolean
@@ -1772,7 +1777,7 @@ input UpdateEventInput {
 
 input UpdateEventVolunteerGroupInput {
   description: String
-  eventId: ID
+  eventId: ID!
   name: String
   volunteersRequired: Int
 }

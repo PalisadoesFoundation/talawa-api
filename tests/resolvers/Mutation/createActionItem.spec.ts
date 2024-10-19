@@ -92,6 +92,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       const args: MutationCreateActionItemArgs = {
         data: {
           assigneeId: randomUser?._id,
+          assigneeType: "EventVolunteer",
         },
         actionItemCategoryId: testCategory?._id,
       };
@@ -111,6 +112,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       const args: MutationCreateActionItemArgs = {
         data: {
           assigneeId: randomUser?._id,
+          assigneeType: "EventVolunteer",
         },
         actionItemCategoryId: new Types.ObjectId().toString(),
       };
@@ -132,6 +134,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       const args: MutationCreateActionItemArgs = {
         data: {
           assigneeId: randomUser?._id,
+          assigneeType: "EventVolunteer",
         },
         actionItemCategoryId: testDisabledCategory._id,
       };
@@ -153,6 +156,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       const args: MutationCreateActionItemArgs = {
         data: {
           assigneeId: new Types.ObjectId().toString(),
+          assigneeType: "EventVolunteer",
         },
         actionItemCategoryId: testCategory?._id,
       };
@@ -172,6 +176,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       const args: MutationCreateActionItemArgs = {
         data: {
           assigneeId: randomUser?._id,
+          assigneeType: "EventVolunteer",
         },
         actionItemCategoryId: testCategory?._id,
       };
@@ -203,6 +208,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
         data: {
           assigneeId: randomUser?._id,
           eventId: new Types.ObjectId().toString(),
+          assigneeType: "EventVolunteer",
         },
         actionItemCategoryId: testCategory?._id,
       };
@@ -222,6 +228,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       const args: MutationCreateActionItemArgs = {
         data: {
           assigneeId: randomUser?._id,
+          assigneeType: "EventVolunteer",
         },
         actionItemCategoryId: testCategory?._id,
       };
@@ -243,6 +250,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       data: {
         assigneeId: randomUser?._id,
         eventId: testEvent?._id.toString() ?? "",
+        assigneeType: "EventVolunteer",
       },
       actionItemCategoryId: testCategory?._id,
     };
@@ -268,6 +276,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     const args: MutationCreateActionItemArgs = {
       data: {
         assigneeId: randomUser?._id,
+        assigneeType: "EventVolunteer",
       },
       actionItemCategoryId: testCategory?._id,
     };
@@ -293,6 +302,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     const args: MutationCreateActionItemArgs = {
       data: {
         assigneeId: randomUser?._id,
+        assigneeType: "EventVolunteer",
       },
       actionItemCategoryId: testCategory?._id,
     };
@@ -324,6 +334,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     const args: MutationCreateActionItemArgs = {
       data: {
         assigneeId: randomUser?._id,
+        assigneeType: "EventVolunteer",
       },
       actionItemCategoryId: testCategory?._id,
     };

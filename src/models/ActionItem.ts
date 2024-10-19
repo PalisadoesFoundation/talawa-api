@@ -5,13 +5,17 @@ import type { InterfaceEvent } from "./Event";
 import type { InterfaceActionItemCategory } from "./ActionItemCategory";
 import { MILLISECONDS_IN_A_WEEK } from "../constants";
 import type { InterfaceOrganization } from "./Organization";
+import { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
+import { InterfaceEventVolunteer } from "./EventVolunteer";
 
 /**
  * Interface representing a database document for ActionItem in MongoDB.
  */
 export interface InterfaceActionItem {
   _id: Types.ObjectId;
-  assignee: PopulatedDoc<InterfaceUser & Document>;
+  assignee: PopulatedDoc<InterfaceEventVolunteer & Document>;
+  assigneeGroup: PopulatedDoc<InterfaceEventVolunteerGroup & Document>;
+  assigneeType: "EventVolunteer" | "EventVolunteerGroup";
   assigner: PopulatedDoc<InterfaceUser & Document>;
   actionItemCategory: PopulatedDoc<
     InterfaceActionItemCategory & Document
@@ -33,6 +37,8 @@ export interface InterfaceActionItem {
 /**
  * Defines the schema for the ActionItem document.
  * @param assignee - User to whom the ActionItem is assigned.
+ * @param assigneeGroup - Group to whom the ActionItem is assigned.
+ * @param assigneeType - Type of assignee (User or Group).
  * @param assigner - User who assigned the ActionItem.
  * @param actionItemCategory - ActionItemCategory to which the ActionItem belongs.
  * @param preCompletionNotes - Notes recorded before completion.
@@ -52,8 +58,16 @@ const actionItemSchema = new Schema(
   {
     assignee: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "EventVolunteer",
+    },
+    assigneeGroup: {
+      type: Schema.Types.ObjectId,
+      ref: "EventVolunteerGroup",
+    },
+    assigneeType: {
+      type: String,
       required: true,
+      enum: ["EventVolunteer", "EventVolunteerGroup"],
     },
     assigner: {
       type: Schema.Types.ObjectId,

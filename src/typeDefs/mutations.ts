@@ -316,7 +316,7 @@ export const mutations = gql`
 
     updateEventVolunteerGroup(
       id: ID!
-      data: UpdateEventVolunteerGroupInput
+      data: UpdateEventVolunteerGroupInput!
     ): EventVolunteerGroup! @auth
 
     updateVolunteerMembership(id: ID!, status: String!): VolunteerMembership!

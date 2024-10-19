@@ -67,10 +67,13 @@ export const types = gql`
     createdBy: User
     updatedBy: User
   }
+
   # Action Item for a ActionItemCategory
   type ActionItem {
     _id: ID!
-    assignee: User
+    assignee: EventVolunteer
+    assigneeGroup: EventVolunteerGroup
+    assigneeType: String!
     assigner: User
     actionItemCategory: ActionItemCategory
     preCompletionNotes: String
