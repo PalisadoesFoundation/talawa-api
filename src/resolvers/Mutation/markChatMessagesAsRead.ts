@@ -30,7 +30,7 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
       _id: context.userId,
     }));
 
-    if (currentUserExists === false) {
+    if (!currentUserExists) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
@@ -48,9 +48,6 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
       }
     });
 
-    console.log("unseenMessagesByUsers", unseenMessagesByUsers);
-
-    // add createdDirectChatMessage to directChat
     const updatedChat = await Chat.findByIdAndUpdate(
       {
         _id: chat._id,

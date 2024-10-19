@@ -2,12 +2,12 @@ import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceChat, InterfaceChatMessage } from "../../../src/models";
+import type { InterfaceChat } from "../../../src/models";
 import { User, Organization, Chat } from "../../../src/models";
-import type { MutationSendMessageToChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationMarkChatMessagesAsReadArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { sendMessageToChat as sendMessageToChatResolver } from "../../../src/resolvers/Mutation/sendMessageToChat";
+import { markChatMessagesAsRead as markChatMessagesAsReadResolver } from "../../../src/resolvers/Mutation/markChatMessagesAsRead";
 import {
   CHAT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -76,7 +76,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
+describe("resolvers -> Mutation -> markChatMessagesAsRead", () => {
   afterEach(async () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
@@ -88,18 +88,14 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      const args: MutationSendMessageToChatArgs = {
+      const args: MutationMarkChatMessagesAsReadArgs = {
         chatId: new Types.ObjectId().toString(),
-        messageContent: "",
+        userId: testUsers[0]?.id,
       };
 
       const context = { userId: testUsers[0]?.id };
 
-      const { sendMessageToChat: sendMessageToChatResolver } = await import(
-        "../../../src/resolvers/Mutation/sendMessageToChat"
-      );
-
-      await sendMessageToChatResolver?.({}, args, context);
+      await markChatMessagesAsReadResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
@@ -112,20 +108,16 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      const args: MutationSendMessageToChatArgs = {
+      const args: MutationMarkChatMessagesAsReadArgs = {
         chatId: testChat.id,
-        messageContent: "",
+        userId: testUsers[0]?.id,
       };
 
       const context = {
-        userId: new Types.ObjectId().toString(),
+        userId: "",
       };
 
-      const { sendMessageToChat: sendMessageToChatResolver } = await import(
-        "../../../src/resolvers/Mutation/sendMessageToChat"
-      );
-
-      await sendMessageToChatResolver?.({}, args, context);
+      await markChatMessagesAsReadResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -144,31 +136,16 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
       },
     );
 
-    const args: MutationSendMessageToChatArgs = {
+    const args: MutationMarkChatMessagesAsReadArgs = {
       chatId: testChat.id,
-      messageContent: "messageContent",
-    };
-
-    const pubsub = {
-      publish: (
-        _action: "MESSAGE_SENT_TO_CHAT",
-        _payload: {
-          messageSentToChat: InterfaceChatMessage;
-        },
-      ): {
-        _action: string;
-        _payload: { messageSentToChat: InterfaceChatMessage };
-      } => {
-        return { _action, _payload };
-      },
+      userId: testUsers[0]?.id,
     };
 
     const context = {
       userId: testUsers[0]?.id,
-      pubsub,
     };
 
-    const sendMessageToChatPayload = await sendMessageToChatResolver?.(
+    const sendMessageToChatPayload = await markChatMessagesAsReadResolver?.(
       {},
       args,
       context,
@@ -176,9 +153,10 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
 
     expect(sendMessageToChatPayload).toEqual(
       expect.objectContaining({
-        chatMessageBelongsTo: testChat._id,
-        sender: testUsers[0]?._id,
-        messageContent: "messageContent",
+        unseenMessagesByUsers: JSON.stringify({
+          [testUsers[0]?._id]: 0,
+          [testUsers[1]?._id]: 0,
+        }),
       }),
     );
   });
