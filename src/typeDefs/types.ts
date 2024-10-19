@@ -133,6 +133,7 @@ export const types = gql`
     logoUrl: String
     websiteLink: String
     socialMediaUrls: SocialMediaUrls
+    timeout: Int
   }
   type CreateAdminPayload {
     user: AppUserProfile
