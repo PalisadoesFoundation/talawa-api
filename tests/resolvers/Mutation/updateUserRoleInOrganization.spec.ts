@@ -30,6 +30,7 @@ import type {
   TestAppUserProfileType,
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
+import { encryptEmail } from "../../../src/utilities/encryption";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUserSuperAdmin: TestUserType;
@@ -48,8 +49,12 @@ let hashedPassword: string;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   hashedPassword = await bcrypt.hash("password", 12);
+  const adminEmail = `email${nanoid().toLowerCase()}@gmail.com`;
+
+  const hashedAdminEmail = bcrypt.hash(adminEmail, 12);
   testUserSuperAdmin = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(adminEmail),
+    hashedEmail: hashedAdminEmail,
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",
@@ -68,8 +73,12 @@ beforeAll(async () => {
     },
   );
 
+  const adminUserEmail = `email${nanoid().toLowerCase()}@gmail.com`;
+  const adminHashedUserEmail = bcrypt.hash(adminUserEmail, 12);
+
   testAdminUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(adminUserEmail),
+    hashedEmail: adminHashedUserEmail,
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",
@@ -89,8 +98,12 @@ beforeAll(async () => {
     },
   );
 
+  const testMemberUserEmail = `email${nanoid().toLowerCase()}@gmail.com`;
+  const testMemberUserHashedEmail = bcrypt.hash(testMemberUserEmail, 12);
+
   testMemberUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(testMemberUserEmail),
+    hashedEmail: testMemberUserHashedEmail,
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",
@@ -105,8 +118,15 @@ beforeAll(async () => {
     },
   );
 
+  const testBlockedMemberUserEmail = `email${nanoid().toLowerCase()}@gmail.com`;
+  const testBlockedMemberHashedUserEmail = bcrypt.hash(
+    testBlockedMemberUserEmail,
+    12,
+  );
+
   testBlockedMemberUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(testBlockedMemberUserEmail),
+    hashedEmail: testBlockedMemberHashedUserEmail,
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",
@@ -120,8 +140,16 @@ beforeAll(async () => {
       appUserProfileId: testBlockedMemberUserAppProfile._id,
     },
   );
+
+  const testNonMemberAdminEmail = `email${nanoid().toLowerCase()}@gmail.com`;
+  const testNonMemberHashedAdminEmail = bcrypt.hash(
+    testNonMemberAdminEmail,
+    12,
+  );
+
   testNonMemberAdmin = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(testNonMemberAdminEmail),
+    hashedEmail: testNonMemberHashedAdminEmail,
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",

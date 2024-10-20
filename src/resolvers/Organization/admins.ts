@@ -22,8 +22,17 @@ export const admins: OrganizationResolvers["admins"] = async (parent) => {
   }).lean();
 
   const decryptedAdmins = admins.map((admin: any) => {
-    const { decrypted } = decryptEmail(admin.email);
-    return { ...admin, email: decrypted };
+    if (!admin.email) {
+      console.warn(`User ${admin._id} has no email`);
+      return admin;
+    }
+    try {
+      const { decrypted } = decryptEmail(admin.email);
+      return { ...admin, email: decrypted };
+    } catch (error) {
+      console.error(`Failed to decrypt email for user ${admin._id}:`, error);
+      return admin;
+    }
   });
 
   return decryptedAdmins;

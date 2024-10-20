@@ -114,8 +114,12 @@ async function insertCollections(collections: string[]): Promise<void> {
       switch (collection) {
         case "users":
           for (const user of docs) {
-            const encryptedEmail = encryptEmail(user.email as string);
-            user.email = encryptedEmail;
+            if (user.email && typeof user.email === "string") {
+              const encryptedEmail = encryptEmail(user.email as string);
+              user.email = encryptedEmail;
+            } else {
+              console.warn(`User with ID ${user.id} has an invalid email.`);
+            }
           }
           await User.insertMany(docs);
           break;

@@ -1,12 +1,8 @@
 import crypto from "crypto";
-import { setEncryptionKey } from "../../setup";
 
-const algorithm = "aes-256-ctr";
+const algorithm = "aes-256-gcm";
 
 const saltlength = 16;
-if (!process.env.ENCRYPTION_KEY) {
-  setEncryptionKey();
-}
 
 export function generateRandomSalt(): string {
   return crypto.randomBytes(saltlength).toString("hex");
@@ -19,40 +15,53 @@ export function encryptEmail(email: string): string {
     throw new Error("Encryption key is not defined.");
   }
 
-  const salt = generateRandomSalt();
+  const iv = generateRandomSalt();
   const cipher = crypto.createCipheriv(
     algorithm,
     Buffer.from(encryptionKey, "hex"),
-    Buffer.from(salt, "hex"),
+    Buffer.from(iv, "hex"),
   );
 
-  let encrypted = cipher.update(email, "utf-8", "hex");
-  encrypted += cipher.final("hex");
-  return salt + encrypted;
+  const encrypted = Buffer.concat([
+    cipher.update(email, "utf8"),
+    cipher.final(),
+  ]);
+  const authTag = cipher.getAuthTag();
+  return iv + authTag.toString("hex") + encrypted.toString("hex");
 }
 
 export function decryptEmail(encryptedWithEmailSalt: string): {
   decrypted: string;
   salt: string;
 } {
+  if (encryptedWithEmailSalt.length < saltlength * 2) {
+    throw new Error("Invalid encrypted data: input is too short.");
+  }
+
   const encryptionKey = process.env.ENCRYPTION_KEY;
 
   if (!encryptionKey) {
     throw new Error("Encryption key is not defined.");
   }
 
-  const salt = encryptedWithEmailSalt.slice(0, saltlength * 2);
-
-  const encrypted = encryptedWithEmailSalt.slice(saltlength * 2);
+  const iv = encryptedWithEmailSalt.slice(0, saltlength * 2);
+  const authTag = Buffer.from(
+    encryptedWithEmailSalt.slice(saltlength * 2, saltlength * 2 + 32),
+    "hex",
+  );
+  const encrypted = encryptedWithEmailSalt.slice(saltlength * 2 + 32);
 
   const decipher = crypto.createDecipheriv(
     algorithm,
     Buffer.from(encryptionKey, "hex"),
-    Buffer.from(salt, "hex"),
+    Buffer.from(iv, "hex"),
   );
 
-  let decrypted = decipher.update(encrypted, "hex", "utf-8");
-  decrypted += decipher.final("utf-8");
+  decipher.setAuthTag(authTag);
 
-  return { decrypted, salt };
+  const decrypted = Buffer.concat([
+    decipher.update(Buffer.from(encrypted, "hex")),
+    decipher.final(),
+  ]).toString("utf8");
+  return { decrypted, salt: iv };
 }

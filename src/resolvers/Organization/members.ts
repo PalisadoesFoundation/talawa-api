@@ -1,4 +1,4 @@
-import { User } from "../../models";
+import { InterfaceUser, User } from "../../models";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 import { decryptEmail } from "../../utilities/encryption";
 
@@ -21,9 +21,18 @@ export const members: OrganizationResolvers["members"] = async (parent) => {
     },
   }).lean();
 
-  const decryptedUsers = users.map((user: any) => {
-    const { decrypted } = decryptEmail(user.email);
-    return { ...user, email: decrypted };
+  const decryptedUsers = users.map((user: InterfaceUser) => {
+    if (!user.email) {
+      console.warn(`User ${user._id} has no email`);
+      return user;
+    }
+    try {
+      const { decrypted } = decryptEmail(user.email);
+      return { ...user, email: decrypted };
+    } catch (error) {
+      console.error(`Failed to decrypt email for user ${user._id}:`, error);
+      return user;
+    }
   });
 
   return decryptedUsers;

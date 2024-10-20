@@ -21,6 +21,8 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import type { TestUserType } from "../../helpers/userAndOrg";
+import { encryptEmail } from "../../../src/utilities/encryption";
+import bcrypt from "bcrypt";
 
 let testUsers: TestUserType[];
 // let testAppUserProfile: TestAppUserProfileType[];
@@ -125,8 +127,11 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
+      const email = `email${nanoid().toLowerCase()}@gmail.com`;
+      const hashedEmail = bcrypt.hash(email, 12);
       const newUser = await User.create({
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        email: encryptEmail(email),
+        hashedEmail: hashedEmail,
         password: `pass${nanoid().toLowerCase()}`,
         firstName: `firstName${nanoid().toLowerCase()}`,
         lastName: `lastName${nanoid().toLowerCase()}`,
@@ -161,8 +166,11 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
+      const email = "email${nanoid().toLowerCase()}@gmail.com";
+      const hashedEmail = bcrypt.hash(email, 12);
       const newUser = await User.create({
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        email: encryptEmail(email),
+        hashedEmail: hashedEmail,
         password: `pass${nanoid().toLowerCase()}`,
         firstName: `firstName${nanoid().toLowerCase()}`,
         lastName: `lastName${nanoid().toLowerCase()}`,

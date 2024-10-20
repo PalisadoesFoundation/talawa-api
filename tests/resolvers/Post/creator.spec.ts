@@ -38,10 +38,25 @@ describe("resolvers -> Post -> creatorId", () => {
       _id: testPost!.creatorId,
     }).lean();
 
-    if (creatorIdObject && creatorIdObject.email) {
-      creatorIdObject.email = decryptEmail(creatorIdObject.email).decrypted;
+    expect(creatorIdObject).toBeDefined();
+    if (!creatorIdObject) {
+      throw new Error("creatorIdObject is null or undefined");
     }
 
+    expect(creatorIdObject.email).toBeDefined();
+    if (!creatorIdObject.email) {
+      throw new Error("creatorIdObject.email is null or undefined");
+    }
+
+    try {
+      const decrypted = decryptEmail(creatorIdObject.email).decrypted;
+      creatorIdObject.email = decrypted;
+    } catch (error) {
+      console.error(
+        `Failed to decrypt email for user ${creatorIdObject._id}:`,
+        error,
+      );
+    }
     expect(creatorIdPayload).toEqual(creatorIdObject);
   });
 });

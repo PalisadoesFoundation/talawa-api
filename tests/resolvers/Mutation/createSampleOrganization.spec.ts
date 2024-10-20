@@ -20,6 +20,8 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { connect, disconnect } from "../../helpers/db";
+import { encryptEmail } from "../../../src/utilities/encryption";
+import bcrypt from "bcrypt";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -132,8 +134,12 @@ describe("createSampleOrganization resolver", async () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
+
     const newUser = await User.create({
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(email),
+      hashedEmail: hashedEmail,
       password: `pass${nanoid().toLowerCase()}`,
       firstName: `firstName${nanoid().toLowerCase()}`,
       lastName: `lastName${nanoid().toLowerCase()}`,

@@ -68,7 +68,10 @@ export const users: QueryResolvers["users"] = async (
         .populate("createdOrganizations")
         .populate("createdEvents")
         .populate("eventAdmin")
-        .populate("adminFor");
+        .populate("adminFor")
+        .populate("campaigns")
+        .populate("adminFor")
+        .populate("pledges");
 
       return {
         user: {

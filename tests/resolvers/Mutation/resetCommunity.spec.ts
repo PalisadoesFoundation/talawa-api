@@ -21,6 +21,8 @@ import {
 import { AppUserProfile, Community, User } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { resetCommunity } from "../../../src/resolvers/Mutation/resetCommunity";
+import { encryptEmail } from "../../../src/utilities/encryption";
+import bcrypt from "bcrypt";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser1: TestUserType;
@@ -82,9 +84,13 @@ describe("resolvers -> Mutation -> resetCommunity", () => {
       .spyOn(requestContext, "translate")
       .mockImplementation((message) => `Translated ${message}`);
 
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
+
     try {
       const newUser = await User.create({
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        email: encryptEmail(email),
+        hashedEmail: hashedEmail,
         password: `pass${nanoid().toLowerCase()}`,
         firstName: `firstName${nanoid().toLowerCase()}`,
         lastName: `lastName${nanoid().toLowerCase()}`,

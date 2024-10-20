@@ -1,4 +1,4 @@
-import { User } from "../../models";
+import { InterfaceUser, User } from "../../models";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 import { decryptEmail } from "../../utilities/encryption";
 
@@ -23,10 +23,24 @@ export const blockedUsers: OrganizationResolvers["blockedUsers"] = async (
     },
   }).lean();
 
-  const decryptedBlockedUsers = blockedUsers.map((blockedUser: any) => {
-    const { decrypted } = decryptEmail(blockedUser.email);
-    return { ...blockedUser, email: decrypted };
-  });
+  const decryptedBlockedUsers = blockedUsers.map(
+    (blockedUser: InterfaceUser) => {
+      if (!blockedUser.email) {
+        console.warn(`User ${blockedUser._id} has no email`);
+        return blockedUser;
+      }
+      try {
+        const { decrypted } = decryptEmail(blockedUser.email);
+        return { ...blockedUser, email: decrypted };
+      } catch (error) {
+        console.error(
+          `Failed to decrypt email for user ${blockedUser._id}:`,
+          error,
+        );
+        return blockedUser;
+      }
+    },
+  );
 
   return decryptedBlockedUsers;
 };

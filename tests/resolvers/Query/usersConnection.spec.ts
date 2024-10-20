@@ -59,7 +59,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       .lean();
 
     expect(usersPayload).toBeDefined();
+    expect(Array.isArray(usersPayload)).toBe(true);
     expect(users).toBeDefined();
+    expect(Array.isArray(users)).toBe(true);
+    expect(users.length).toBeGreaterThan(0);
   });
 
   it(`returns paginated list of users filtered by
@@ -104,7 +107,9 @@ describe("resolvers -> Query -> usersConnection", () => {
       .lean();
 
     expect(usersConnectionPayload).toBeDefined();
+    expect(Array.isArray(usersConnectionPayload)).toBe(true);
     expect(users).toBeDefined();
+    expect(Array.isArray(users)).toBe(true);
   });
 
   it(`returns paginated list of users filtered by

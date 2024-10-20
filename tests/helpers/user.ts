@@ -3,15 +3,20 @@ import { nanoid } from "nanoid";
 import type { InterfaceUser } from "../../src/models";
 import { AppUserProfile, User } from "../../src/models";
 import { encryptEmail } from "../../src/utilities/encryption";
+import bcrypt from "bcrypt";
 
 export type TestUserType =
   | (InterfaceUser & Document<unknown, unknown, InterfaceUser>)
   | null;
 
 export const createTestUser = async (): Promise<TestUserType> => {
+  const email = `email${nanoid().toLowerCase()}@gmail.com`;
+  const hashedEmail = await bcrypt.hash(email.toLowerCase(), 12);
+
   const testUser = await User.create({
-    email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
+    email: encryptEmail(email),
     password: `pass${nanoid().toLowerCase()}`,
+    hashedEmail: hashedEmail,
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
   });

@@ -27,6 +27,7 @@ import type {
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import _ from "lodash";
 import { decryptEmail } from "../../../src/utilities/encryption";
+import bcrypt from "bcrypt";
 
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -109,8 +110,6 @@ describe("resolvers -> Mutation -> signUp", () => {
     const createdUserAppProfile = await AppUserProfile.findOne({
       userId: createdUser?._id,
     })
-      .populate("createdOrganizations")
-      .populate("createdEvents")
       .populate("eventAdmin")
       .populate("adminFor")
       .lean();
@@ -133,6 +132,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     );
 
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
 
     const args: MutationSignUpArgs = {
       data: {
@@ -147,7 +147,7 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     const signedUpUserPayload = await signUpResolverImage?.({}, args, {});
     await User.findOne({
-      email,
+      hashedEmail: hashedEmail,
     })
       .select("-password")
       .lean();
@@ -159,6 +159,12 @@ describe("resolvers -> Mutation -> signUp", () => {
 
   it(`Promotes the user to SUPER ADMIN if the email registering with is same that as provided in configuration file`, async () => {
     const email = LAST_RESORT_SUPERADMIN_EMAIL;
+    if (!email) {
+      console.error("LAST_RESORT_SUPERADMIN_EMAIL is undefined");
+      throw Error;
+    }
+    const hashedEmail = bcrypt.hash(email, 12);
+
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -174,7 +180,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     );
     await signUpResolver?.({}, args, {});
     const createdUser = await User.findOne({
-      email,
+      hashedEmail: hashedEmail,
     });
     const createdAppUserProfile = await AppUserProfile.findOne({
       userId: createdUser?._id,
@@ -183,6 +189,8 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it(`Check if the User is not being promoted to SUPER ADMIN automatically`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
+
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -198,7 +206,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     );
     await signUpResolver?.({}, args, {});
     const createdUser = await User.findOne({
-      email,
+      hashedEmail: hashedEmail,
     });
     const createdAppUserProfile = await AppUserProfile.findOne({
       userId: createdUser?._id,
@@ -274,6 +282,7 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it("creates user with joining the organization if userRegistrationRequired is false", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
 
     const args: MutationSignUpArgs = {
       data: {
@@ -292,7 +301,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     await signUpResolver?.({}, args, {});
 
     const createdUser = await User.findOne({
-      email,
+      hashedEmail: hashedEmail,
     }).select("-password");
 
     // console.log(createdUser?.joinedOrganizations, testOrganization?._id);
@@ -313,6 +322,9 @@ describe("resolvers -> Mutation -> signUp", () => {
       members: [testUser?._id],
       visibleInSearch: false,
     });
+
+    const hashedEmail = bcrypt.hash(email, 12);
+
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -330,7 +342,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     await signUpResolver?.({}, args, {});
 
     const createdUser = await User.findOne({
-      email,
+      hashedEmail: hashedEmail,
     })
       .select("-password")
       .lean();
@@ -343,6 +355,7 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it("creates appUserProfile with userId === createdUser._id", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
 
     const args: MutationSignUpArgs = {
       data: {
@@ -361,7 +374,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     await signUpResolver?.({}, args, {});
 
     const createdUser = await User.findOne({
-      email,
+      hashedEmail: hashedEmail,
     }).select("-password");
 
     const appUserProfile = await AppUserProfile.findOne({

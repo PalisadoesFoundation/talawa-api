@@ -32,12 +32,23 @@ describe("resolvers -> Organization -> blockedUsers", () => {
         },
       }).lean();
 
-      for (const user of blockedUsers) {
-        const { decrypted } = decryptEmail(user.email);
-        user.email = decrypted;
-      }
+      try {
+        const decryptedBlockedUsers = blockedUsers.map((user) => ({
+          ...user,
+          email: decryptEmail(user.email).decrypted,
+        }));
 
-      expect(blockedUsersPayload).toEqual(blockedUsers);
+        expect(blockedUsersPayload).toEqual(decryptedBlockedUsers);
+        expect(
+          decryptedBlockedUsers.every(
+            (user) =>
+              user.email !== blockedUsers.find((u) => u._id == user._id)?.email,
+          ),
+        ).toBe(true);
+      } catch (error) {
+        console.error("Error decrypting emails:", error);
+        throw error;
+      }
     }
   });
 });

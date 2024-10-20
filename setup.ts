@@ -222,7 +222,7 @@ export async function wipeExistingData(url: string): Promise<void> {
       console.log("All existing data has been deleted.");
     }
   } catch (error) {
-    console.error("Could not connect to database to check for data");
+    console.error("Could not connect to database to check for data:", error);
   }
   client.close();
   // return shouldImport;
@@ -249,7 +249,7 @@ export async function checkDb(url: string): Promise<boolean> {
       dbEmpty = true;
     }
   } catch (error) {
-    console.error("Could not connect to database to check for data");
+    console.error("Could not connect to database to check for data:", error);
   }
   client.close();
   return dbEmpty;
@@ -390,7 +390,7 @@ export async function setEncryptionKey(): Promise<void> {
     if (process.env.ENCRYPTION_KEY) {
       console.log("\n Encryption Key already present.");
     } else {
-      const encryptionKey = await crypto.randomBytes(32).toString("hex");
+      const encryptionKey = crypto.randomBytes(32).toString("hex");
 
       process.env.ENCRYPTION_KEY = encryptionKey;
 
@@ -399,7 +399,7 @@ export async function setEncryptionKey(): Promise<void> {
       console.log("\n Encryption key set successfully.");
     }
   } catch (err) {
-    console.error("An error occured:", err);
+    console.error("An error occurred:", err);
   }
 }
 

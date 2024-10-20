@@ -10,6 +10,7 @@ import { deleteUserFromCache } from "../../services/UserCache/deleteUserFromCach
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import bcrypt from "bcrypt";
 /**
  * This function enables to update user profile.
  * @param _parent - parent of current request
@@ -44,9 +45,11 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     );
   }
 
+  const hashedEmail = bcrypt.hash(args.data?.email.toLowerCase(), 12);
+
   if (args.data?.email && args.data?.email !== currentUser?.email) {
     const userWithEmailExists = await User.findOne({
-      email: args.data?.email.toLowerCase(),
+      hashedEmail: hashedEmail,
     });
 
     if (userWithEmailExists) {

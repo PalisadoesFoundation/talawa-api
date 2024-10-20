@@ -22,7 +22,7 @@ import {
   createRefreshToken,
 } from "../../utilities";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-import { decryptEmail, encryptEmail } from "../../utilities/encryption";
+import { encryptEmail } from "../../utilities/encryption";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -34,17 +34,13 @@ import { decryptEmail, encryptEmail } from "../../utilities/encryption";
 export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const allUsers = await User.find({});
   for (const user of allUsers) {
-    try {
-      const { decrypted } = decryptEmail(user.email);
-      if (decrypted == args.data.email) {
-        throw new errors.ConflictError(
-          requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
-          EMAIL_ALREADY_EXISTS_ERROR.CODE,
-          EMAIL_ALREADY_EXISTS_ERROR.PARAM,
-        );
-      }
-    } catch (error) {
-      console.error("Error decrypting email:", error);
+    const hashedEmail = await bcrypt.hash(args.data.email.toLowerCase(), 12);
+    if (hashedEmail == user.hashedEmail) {
+      throw new errors.ConflictError(
+        requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
+        EMAIL_ALREADY_EXISTS_ERROR.CODE,
+        EMAIL_ALREADY_EXISTS_ERROR.PARAM,
+      );
     }
   }
 
@@ -70,9 +66,11 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     );
   }
 
-  const encryptedEmail = encryptEmail(args.data.email);
+  const encryptedEmail = encryptEmail(args.data.email.toLowerCase());
 
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
+
+  const hashedEmail = await bcrypt.hash(args.data.email.toLowerCase(), 12);
 
   // Upload file
   let uploadImageFileName = null;
@@ -97,7 +95,8 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     //if it is not then user directly joined the organization
     createdUser = await User.create({
       ...args.data,
-      email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
+      email: encryptedEmail,
+      hashedEmail: hashedEmail,
       image: uploadImageFileName,
       password: hashedPassword,
       joinedOrganizations: [organization._id],
@@ -118,6 +117,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     createdUser = await User.create({
       ...args.data,
       email: encryptedEmail,
+      hashedEmail: hashedEmail,
       image: uploadImageFileName,
       password: hashedPassword,
     });

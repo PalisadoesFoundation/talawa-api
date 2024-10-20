@@ -47,17 +47,19 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
     throw new Error(INVALID_OTP);
   }
 
-  const user = await User.findOne({ email }).lean();
+  const hashedEmail = await bcrypt.hash(email.toLowerCase(), 12);
+
+  const user = await User.findOne({ hashedEmail: hashedEmail }).lean();
 
   if (!user) {
     throw new Error(USER_NOT_FOUND_ERROR.MESSAGE);
   }
   const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-  // Updates password field for user's document with email === email.
+  // Updates password field for user's document with hashedemail === hashedemail.
   await User.updateOne(
     {
-      email,
+      hashedEmail,
     },
     {
       password: hashedPassword,

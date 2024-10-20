@@ -94,9 +94,12 @@ describe("resolvers -> Mutation -> login", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
+      const email = `nonexistentuser${nanoid().toLowerCase()}@gmail.com`;
+      const hashedEmail = bcrypt.hash(email, 12);
       // Create a new user with a unique email
       const newUser = await User.create({
-        email: `nonexistentuser${nanoid().toLowerCase()}@gmail.com`,
+        email: encryptEmail(email),
+        hashedEmail: hashedEmail,
         password: "password",
         firstName: "John",
         lastName: "Doe",
@@ -133,8 +136,11 @@ describe("resolvers -> Mutation -> login", () => {
 
   it("creates a new AppUserProfile for the user if it doesn't exist and associates it with the user", async () => {
     // Create a new user without an associated AppUserProfile
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
     const newUser = await User.create({
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(email),
+      hashedEmail: hashedEmail,
       password: "password",
       firstName: "firstName",
       lastName: "lastName",
@@ -208,8 +214,11 @@ describe("resolvers -> Mutation -> login", () => {
     }
   });
   it("creates a appUserProfile of the user if does not exist", async () => {
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
     const newUser = await User.create({
-      email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
+      email: encryptEmail(email),
+      hashedEmail: hashedEmail,
       password: "password",
       firstName: "firstName",
       lastName: "lastName",

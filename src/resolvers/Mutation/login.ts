@@ -13,7 +13,6 @@ import {
   createAccessToken,
   createRefreshToken,
 } from "../../utilities";
-import { decryptEmail } from "../../utilities/encryption";
 /**
  * This function enables login. (note: only works when using the last resort SuperAdmin credentials)
  * @param _parent - parent of current request
@@ -24,22 +23,14 @@ import { decryptEmail } from "../../utilities/encryption";
  * @returns Updated user
  */
 export const login: MutationResolvers["login"] = async (_parent, args) => {
-  const allUsers = await User.find({});
-  let foundUser, email;
-  for (const user of allUsers) {
-    try {
-      const { decrypted } = decryptEmail(user.email);
-      if (decrypted == args.data.email) {
-        foundUser = user;
-        email = args.data.email;
-      }
-    } catch (error) {
-      console.error("Error decrypting email:", error);
-    }
-  }
+  const hashedEmail = await bcrypt.hash(args.data.email.toLowerCase(), 12);
+
+  let user = await User.findOne({
+    hashedEmail: hashedEmail,
+  }).lean();
 
   // Checks whether user exists.
-  if (!foundUser) {
+  if (!user) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -49,7 +40,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
 
   const isPasswordValid = await bcrypt.compare(
     args.data.password,
-    foundUser.password as string,
+    user.password as string,
   );
   // Checks whether password is invalid.
   if (isPasswordValid === false) {
@@ -66,22 +57,22 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   }
   let appUserProfile: InterfaceAppUserProfile | null =
     await AppUserProfile.findOne({
-      userId: foundUser._id,
+      userId: user._id,
       appLanguageCode: "en",
       tokenVersion: 0,
     }).lean();
 
   if (!appUserProfile) {
     appUserProfile = await AppUserProfile.create({
-      userId: foundUser._id,
+      userId: user._id,
       appLanguageCode: "en",
       tokenVersion: 0,
       isSuperAdmin: false,
     });
 
-    foundUser = await User.findOneAndUpdate(
+    user = await User.findOneAndUpdate(
       {
-        _id: foundUser._id,
+        _id: user._id,
       },
       {
         appUserProfileId: appUserProfile?._id,
@@ -93,7 +84,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     //   email: args.data.email.toLowerCase(),
     // }).lean();
 
-    if (!foundUser) {
+    if (!user) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
@@ -103,11 +94,11 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   }
 
   const accessToken = await createAccessToken(
-    foundUser,
+    user,
     appUserProfile as InterfaceAppUserProfile,
   );
   const refreshToken = createRefreshToken(
-    foundUser,
+    user,
     appUserProfile as InterfaceAppUserProfile,
   );
   copyToClipboard(`{
@@ -116,7 +107,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
 
   // Updates the user to SUPERADMIN if the email of the user matches the LAST_RESORT_SUPERADMIN_EMAIL
   if (
-    foundUser?.email.toLowerCase() === LAST_RESORT_SUPERADMIN_EMAIL?.toLowerCase() &&
+    user?.email.toLowerCase() === LAST_RESORT_SUPERADMIN_EMAIL?.toLowerCase() &&
     !appUserProfile.isSuperAdmin
   ) {
     // await User.updateOne(
@@ -129,7 +120,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     // );
     await AppUserProfile.findOneAndUpdate(
       {
-        _id: foundUser.appUserProfileId,
+        _id: user.appUserProfileId,
       },
       {
         isSuperAdmin: true,
@@ -143,7 +134,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   // );
   await AppUserProfile.findOneAndUpdate(
     {
-      user: foundUser._id,
+      user: user._id,
     },
     {
       token: refreshToken,
@@ -153,8 +144,8 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     },
   );
   // Assigns new value with populated fields to user object.
-  foundUser = await User.findOne({
-    _id: foundUser._id.toString(),
+  user = await User.findOne({
+    _id: user._id.toString(),
   })
     .select(["-password"])
     .populate("joinedOrganizations")
@@ -163,7 +154,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     .populate("organizationsBlockedBy")
     .lean();
   appUserProfile = await AppUserProfile.findOne({
-    userId: foundUser?._id.toString(),
+    userId: user?._id.toString(),
   })
     .populate("createdOrganizations")
     .populate("createdEvents")
@@ -171,7 +162,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     .populate("adminFor");
 
   return {
-    user: foundUser as InterfaceUser,
+    user: user as InterfaceUser,
     appUserProfile: appUserProfile as InterfaceAppUserProfile,
     accessToken,
     refreshToken,
