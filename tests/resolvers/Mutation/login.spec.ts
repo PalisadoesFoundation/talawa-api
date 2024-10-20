@@ -26,6 +26,7 @@ import type { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes
 import { connect, disconnect } from "../../helpers/db";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 import type { TestUserType } from "../../helpers/userAndOrg";
+import { decryptEmail, encryptEmail } from "../../../src/utilities/encryption";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -93,9 +94,12 @@ describe("resolvers -> Mutation -> login", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
+      const email = `nonexistentuser${nanoid().toLowerCase()}@gmail.com`;
+      const hashedEmail = bcrypt.hash(email, 12);
       // Create a new user with a unique email
       const newUser = await User.create({
-        email: `nonexistentuser${nanoid().toLowerCase()}@gmail.com`,
+        email: encryptEmail(email),
+        hashedEmail: hashedEmail,
         password: "password",
         firstName: "John",
         lastName: "Doe",
@@ -132,8 +136,11 @@ describe("resolvers -> Mutation -> login", () => {
 
   it("creates a new AppUserProfile for the user if it doesn't exist and associates it with the user", async () => {
     // Create a new user without an associated AppUserProfile
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
     const newUser = await User.create({
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(email),
+      hashedEmail: hashedEmail,
       password: "password",
       firstName: "firstName",
       lastName: "lastName",
@@ -207,8 +214,11 @@ describe("resolvers -> Mutation -> login", () => {
     }
   });
   it("creates a appUserProfile of the user if does not exist", async () => {
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
     const newUser = await User.create({
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(email),
+      hashedEmail: hashedEmail,
       password: "password",
       firstName: "firstName",
       lastName: "lastName",
@@ -257,9 +267,12 @@ email === args.data.email`, async () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
+      if (!testUser) {
+        throw new Error("Error creating Test User.");
+      }
       const args: MutationLoginArgs = {
         data: {
-          email: testUser?.email,
+          email: decryptEmail(testUser.email).decrypted,
           password: "incorrectPassword",
         },
       };
@@ -280,15 +293,22 @@ email === args.data.email`, async () => {
     // Set the LAST_RESORT_SUPERADMIN_EMAIL to equal to the test user's email
     vi.doMock("../../../src/constants", async () => {
       const constants: object = await vi.importActual("../../../src/constants");
+      if (!testUser) {
+        throw new Error("Error creating test user.");
+      }
       return {
         ...constants,
-        LAST_RESORT_SUPERADMIN_EMAIL: testUser?.email,
+        LAST_RESORT_SUPERADMIN_EMAIL: decryptEmail(testUser?.email).decrypted,
       };
     });
 
+    if (!testUser) {
+      throw new Error("Error creating test user.");
+    }
+
     const args: MutationLoginArgs = {
       data: {
-        email: testUser?.email,
+        email: decryptEmail(testUser?.email).decrypted,
         password: "password",
       },
     };
@@ -329,9 +349,13 @@ email === args.data.email`, async () => {
   it(`returns the user object with populated fields joinedOrganizations,
  registeredEvents,  membershipRequests, 
   organizationsBlockedBy`, async () => {
+    if (!testUser) {
+      throw new Error("Error creating test user.");
+    }
+
     const args: MutationLoginArgs = {
       data: {
-        email: testUser?.email,
+        email: decryptEmail(testUser?.email).decrypted,
         password: "password",
       },
     };

@@ -7,6 +7,8 @@ import type {
   InterfaceUser,
 } from "../../src/models";
 import { AppUserProfile, Organization, User } from "../../src/models";
+import { encryptEmail } from "../../src/utilities/encryption";
+import bcrypt from "bcrypt";
 
 export type TestOrganizationType =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,8 +21,12 @@ export type TestAppUserProfileType =
   | (InterfaceAppUserProfile & Document<any, any, InterfaceAppUserProfile>)
   | null;
 export const createTestUser = async (): Promise<TestUserType> => {
+  const email = `email${nanoid().toLowerCase()}@gmail.com`;
+  const hashedEmail = bcrypt.hash(email, 12);
+
   let testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(email),
+    hashedEmail: hashedEmail,
     password: `pass${nanoid().toLowerCase()}`,
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
@@ -29,8 +35,6 @@ export const createTestUser = async (): Promise<TestUserType> => {
   const testUserAppProfile = await AppUserProfile.create({
     userId: testUser._id,
     appLanguageCode: "en",
-    pledges: [],
-    campaigns: [],
   });
   testUser = (await User.findOneAndUpdate(
     {

@@ -23,6 +23,7 @@ import {
 } from "../../../src/constants";
 import { updateUserPassword as updateUserPasswordResolver } from "../../../src/resolvers/Mutation/updateUserPassword";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
+import { encryptEmail } from "../../../src/utilities/encryption";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -36,8 +37,12 @@ let hashedPassword: string;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   hashedPassword = await bcrypt.hash("password", 12);
+
+  const email = `email${nanoid().toLowerCase()}@gmail.com`;
+  const hashedEmail = bcrypt.hash(email, 12);
   testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(email),
+    hashedEmail: hashedEmail,
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",

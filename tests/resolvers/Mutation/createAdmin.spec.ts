@@ -20,6 +20,8 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { encryptEmail } from "../../../src/utilities/encryption";
+import bcrypt from "bcrypt";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -149,8 +151,13 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         userId: new Types.ObjectId().toString(),
       },
     };
+
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
+
     const newUser = await User.create({
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(email),
+      hashedEmail: hashedEmail,
       password: `pass${nanoid().toLowerCase()}`,
       firstName: `firstName${nanoid().toLowerCase()}`,
       lastName: `lastName${nanoid().toLowerCase()}`,
@@ -171,8 +178,12 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     // }
   });
   it("throws error if user does not exists", async () => {
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
+
     const newUser = await User.create({
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: encryptEmail(email),
+      hashedEmail: hashedEmail,
       password: `pass${nanoid().toLowerCase()}`,
       firstName: `firstName${nanoid().toLowerCase()}`,
       lastName: `lastName${nanoid().toLowerCase()}`,

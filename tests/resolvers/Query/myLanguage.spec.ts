@@ -9,6 +9,7 @@ import { connect, disconnect } from "../../helpers/db";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createTestUser } from "../../helpers/userAndOrg";
+import bcrypt from "bcrypt";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -34,8 +35,11 @@ describe("resolvers -> Query -> myLanguage", () => {
   });
 
   it(`returns current user's appLanguageCode`, async () => {
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = bcrypt.hash(email, 12);
     const testUser = await User.create({
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      email: email,
+      hashedEmail: hashedEmail,
       password: "password",
       firstName: "firstName",
       lastName: "lastName",

@@ -32,6 +32,8 @@ import {
   createTestUser,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
+import { encryptEmail } from "../../../src/utilities/encryption";
+import bcrypt from "bcrypt";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUserRemoved: TestUserType;
@@ -146,8 +148,12 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
+      const email = `email${nanoid().toLowerCase()}@gmail.com`;
+      const hashedEmail = bcrypt.hash(email, 12);
+
       const newUser = await User.create({
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        email: encryptEmail(email),
+        hashedEmail: hashedEmail,
         password: `pass${nanoid().toLowerCase()}`,
         firstName: `firstName${nanoid().toLowerCase()}`,
         lastName: `lastName${nanoid().toLowerCase()}`,
@@ -185,8 +191,12 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
           userId: testUserRemoved?.id,
         },
       };
+      const email = `email${nanoid().toLowerCase()}@gmail.com`;
+      const hashedEmail = bcrypt.hash(email, 12);
+
       const newUser = await User.create({
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        email: encryptEmail(email),
+        hashedEmail: hashedEmail,
         password: `pass${nanoid().toLowerCase()}`,
         firstName: `firstName${nanoid().toLowerCase()}`,
         lastName: `lastName${nanoid().toLowerCase()}`,

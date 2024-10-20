@@ -14,8 +14,9 @@ import { logger } from "../../libraries";
  * @returns Email to the user with the otp.
  */
 export const otp: MutationResolvers["otp"] = async (_parent, args) => {
+  const hashedEmail = await bcrypt.hash(args.data.email.toLowerCase(), 12);
   const user = await User.findOne({
-    email: args.data.email,
+    hashedEmail: hashedEmail,
   }).lean();
 
   if (!user) {

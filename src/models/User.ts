@@ -1,13 +1,14 @@
 import type { Document, PaginateModel, PopulatedDoc, Types } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
-import validator from "validator";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 import type { InterfaceAppUserProfile } from "./AppUserProfile";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
 import { identifier_count } from "./IdentifierCount";
+import validator from "validator";
+import { decryptEmail } from "../utilities/encryption";
 
 /**
  * Represents a MongoDB document for User in the database.
@@ -32,6 +33,7 @@ export interface InterfaceUser {
 
   educationGrade: string;
   email: string;
+  hashedEmail: string;
   employmentStatus: string;
 
   firstName: string;
@@ -146,7 +148,23 @@ const userSchema = new Schema(
       type: String,
       lowercase: true,
       required: true,
-      validate: [validator.isEmail, "invalid email"],
+      validate: [
+        {
+          validator: function (value: string) {
+            try {
+              const decrypted = decryptEmail(value).decrypted;
+              return [validator.isEmail(decrypted), "invalid email"];
+            } catch (error) {
+              console.error("error decrypting the email", error);
+              return false;
+            }
+          },
+        },
+      ],
+    },
+    hashedEmail: {
+      type: String,
+      required: true,
     },
     employmentStatus: {
       type: String,

@@ -6,6 +6,7 @@ import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { decryptEmail } from "../../../src/utilities/encryption";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
@@ -31,7 +32,23 @@ describe("resolvers -> Organization -> blockedUsers", () => {
         },
       }).lean();
 
-      expect(blockedUsersPayload).toEqual(blockedUsers);
+      try {
+        const decryptedBlockedUsers = blockedUsers.map((user) => ({
+          ...user,
+          email: decryptEmail(user.email).decrypted,
+        }));
+
+        expect(blockedUsersPayload).toEqual(decryptedBlockedUsers);
+        expect(
+          decryptedBlockedUsers.every(
+            (user) =>
+              user.email !== blockedUsers.find((u) => u._id == user._id)?.email,
+          ),
+        ).toBe(true);
+      } catch (error) {
+        console.error("Error decrypting emails:", error);
+        throw error;
+      }
     }
   });
 });

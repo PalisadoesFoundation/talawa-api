@@ -33,6 +33,7 @@ import type {
 import { requestContext } from "../../../src/libraries";
 
 import bcrypt from "bcryptjs";
+import { encryptEmail } from "../../../src/utilities/encryption";
 
 // Global variables to store mongoose instance and test user/appUserProfile
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -71,8 +72,12 @@ afterAll(async () => {
 beforeEach(async () => {
   const hashedPassword = await bcrypt.hash("password", 12);
 
+  const email = `email${nanoid().toLowerCase()}@gmail.com`;
+  const hashedEmail = bcrypt.hash(email, 12);
+
   testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(email),
+    hashedEmail: hashedEmail,
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",

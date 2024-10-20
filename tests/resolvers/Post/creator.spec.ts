@@ -8,6 +8,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
+import { decryptEmail } from "../../../src/utilities/encryption";
 
 let testPost: TestPostType;
 let testUser: TestUserType;
@@ -37,6 +38,25 @@ describe("resolvers -> Post -> creatorId", () => {
       _id: testPost!.creatorId,
     }).lean();
 
+    expect(creatorIdObject).toBeDefined();
+    if (!creatorIdObject) {
+      throw new Error("creatorIdObject is null or undefined");
+    }
+
+    expect(creatorIdObject.email).toBeDefined();
+    if (!creatorIdObject.email) {
+      throw new Error("creatorIdObject.email is null or undefined");
+    }
+
+    try {
+      const decrypted = decryptEmail(creatorIdObject.email).decrypted;
+      creatorIdObject.email = decrypted;
+    } catch (error) {
+      console.error(
+        `Failed to decrypt email for user ${creatorIdObject._id}:`,
+        error,
+      );
+    }
     expect(creatorIdPayload).toEqual(creatorIdObject);
   });
 });

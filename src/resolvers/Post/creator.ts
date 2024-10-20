@@ -1,5 +1,6 @@
 import type { PostResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
+import { decryptEmail } from "../../utilities/encryption";
 
 /**
  * Resolver function for the `creator` field of a `Post`.
@@ -14,7 +15,13 @@ import { User } from "../../models";
  *
  */
 export const creator: PostResolvers["creator"] = async (parent) => {
-  return await User.findOne({
+  const creator = await User.findOne({
     _id: parent.creatorId,
   }).lean();
+
+  if (creator && creator.email) {
+    creator.email = decryptEmail(creator.email).decrypted;
+  }
+
+  return creator;
 };

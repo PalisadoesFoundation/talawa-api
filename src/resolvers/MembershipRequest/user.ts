@@ -2,6 +2,7 @@ import type { MembershipRequestResolvers } from "../../types/generatedGraphQLTyp
 import { User } from "../../models";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import { decryptEmail } from "../../utilities/encryption";
 
 /**
  * Resolver function for the `user` field of a `MembershipRequest`.
@@ -19,6 +20,12 @@ export const user: MembershipRequestResolvers["user"] = async (parent) => {
   const result = await User.findOne({
     _id: parent.user,
   }).lean();
+
+  if (!result) {
+    throw new errors.NotFoundError("User not found");
+  }
+  const { decrypted } = decryptEmail(result.email);
+  result.email = decrypted;
 
   if (result) {
     return result;

@@ -3,6 +3,8 @@ import { nanoid } from "nanoid";
 import type { InterfaceAdvertisement, InterfaceUser } from "../../src/models";
 import { Advertisement, AppUserProfile, User } from "../../src/models";
 import { createTestUserAndOrganization } from "./userAndOrg";
+import { encryptEmail } from "../../src/utilities/encryption";
+import bcrypt from "bcrypt";
 
 export type TestAdvertisementType = {
   _id: string;
@@ -41,9 +43,13 @@ export type TestSuperAdminType =
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
+const email = `email${nanoid().toLowerCase()}@gmail.com`;
+const hashedEmail = bcrypt.hash(email, 12);
+
 export const createTestSuperAdmin = async (): Promise<TestSuperAdminType> => {
   const testSuperAdmin = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(email),
+    hashedEmail: hashedEmail,
     password: `pass${nanoid().toLowerCase()}`,
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,

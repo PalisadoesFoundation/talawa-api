@@ -1,5 +1,6 @@
 import { User } from "../../models";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
+import { decryptEmail } from "../../utilities/encryption";
 
 /**
  * Resolver function for the `admins` field of an `Organization`.
@@ -14,9 +15,25 @@ import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
  *
  */
 export const admins: OrganizationResolvers["admins"] = async (parent) => {
-  return await User.find({
+  const admins = await User.find({
     _id: {
       $in: parent.admins,
     },
   }).lean();
+
+  const decryptedAdmins = admins.map((admin: any) => {
+    if (!admin.email) {
+      console.warn(`User ${admin._id} has no email`);
+      return admin;
+    }
+    try {
+      const { decrypted } = decryptEmail(admin.email);
+      return { ...admin, email: decrypted };
+    } catch (error) {
+      console.error(`Failed to decrypt email for user ${admin._id}:`, error);
+      return admin;
+    }
+  });
+
+  return decryptedAdmins;
 };

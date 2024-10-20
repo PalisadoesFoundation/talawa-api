@@ -25,6 +25,8 @@ import {
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
 import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { encryptEmail } from "../../../src/utilities/encryption";
+import bcrypt from "bcrypt";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -42,8 +44,12 @@ const date = new Date("2002-03-04T18:30:00.000Z");
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
+  const firstEmail = `email${nanoid().toLowerCase()}@gmail.com`;
+  const hashedFirstEmail = bcrypt.hash(firstEmail, 12);
+
   testUser = (await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(firstEmail),
+    hashedEmail: hashedFirstEmail,
     password: "password",
     firstName: "firstName",
     lastName: "lastName",
@@ -71,8 +77,11 @@ beforeAll(async () => {
     },
   })) as UserDocument;
 
+  const hashedSecondEmail = bcrypt.hash(email, 12);
+
   testUser2 = (await User.create({
-    email: email,
+    email: encryptEmail(email),
+    hashedEmail: hashedSecondEmail,
     password: "password",
     firstName: "firstName",
     lastName: "lastName",

@@ -22,6 +22,8 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import bcrypt from "bcrypt";
+import { encryptEmail } from "../../../src/utilities/encryption";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -52,8 +54,12 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         groupId: testGroupChat?.id,
       };
 
+      const email = `email${nanoid().toLowerCase()}@gmail.com`;
+      const hashedEmail = bcrypt.hash(email, 12);
+
       const newUser = await User.create({
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        email: encryptEmail(email),
+        hashedEmail: hashedEmail,
         password: `pass${nanoid().toLowerCase()}`,
         firstName: `firstName${nanoid().toLowerCase()}`,
         lastName: `lastName${nanoid().toLowerCase()}`,

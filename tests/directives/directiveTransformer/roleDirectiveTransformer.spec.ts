@@ -16,6 +16,8 @@ import { errors } from "../../../src/libraries";
 import { User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/userAndOrg";
+import { encryptEmail } from "../../../src/utilities/encryption";
+import bcrypt from "bcrypt";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -57,9 +59,13 @@ const resolvers = {
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
+  const email = `email${nanoid().toLowerCase()}@gmail.com`;
+  const hashedEmail = await bcrypt.hash(email, 12);
+
   testUser = await User.create({
     userId: new Types.ObjectId().toString(),
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    email: encryptEmail(email),
+    hashedEmail: hashedEmail,
     password: "password",
     firstName: "firstName",
     lastName: "lastName",

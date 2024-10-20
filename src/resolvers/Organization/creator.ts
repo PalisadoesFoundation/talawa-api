@@ -2,6 +2,7 @@ import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { decryptEmail } from "../../utilities/encryption";
 
 /**
  * Resolver function for the `creator` field of an `Organization`.
@@ -28,5 +29,11 @@ export const creator: OrganizationResolvers["creator"] = async (parent) => {
     );
   }
 
-  return user;
+  try {
+    const { decrypted } = decryptEmail(user.email);
+    return { ...user, email: decrypted };
+  } catch (error) {
+    console.error(`Failed to decrypt email for user ${user._id}:`, error);
+    return user;
+  }
 };
