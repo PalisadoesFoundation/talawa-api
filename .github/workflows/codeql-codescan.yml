@@ -21,7 +21,8 @@ on:
 
 jobs:
   CodeQL:
-    name: CodeQL
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Analyse Code With CodeQL
     runs-on: ubuntu-latest
     permissions:
       actions: read

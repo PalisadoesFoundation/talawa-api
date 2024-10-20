@@ -40,6 +40,7 @@ input ActionItemWhereInput {
   assigneeName: String
   categoryName: String
   event_id: ID
+  is_active: Boolean
   is_completed: Boolean
 }
 
@@ -239,6 +240,7 @@ type Community {
   logoUrl: String
   name: String!
   socialMediaUrls: SocialMediaUrls
+  timeout: Int
   websiteLink: String
 }
 
@@ -1025,6 +1027,10 @@ type MembershipRequest {
 }
 
 input MembershipRequestsWhereInput {
+  creatorId: ID
+  creatorId_in: [ID!]
+  creatorId_not: ID
+  creatorId_not_in: [ID!]
   id: ID
   id_contains: ID
   id_in: [ID!]
@@ -1192,6 +1198,7 @@ type Mutation {
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
+  updateSessionTimeout(timeout: Int!): Boolean!
   updateUserPassword(data: UpdateUserPasswordInput!): UserData!
   updateUserProfile(data: UpdateUserInput, file: String): User!
   updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!

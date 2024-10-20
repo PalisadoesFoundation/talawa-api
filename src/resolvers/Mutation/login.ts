@@ -14,7 +14,7 @@ import {
   createRefreshToken,
 } from "../../utilities";
 /**
- * This function enables login.
+ * This function enables login. (note: only works when using the last resort SuperAdmin credentials)
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @remarks The following checks are done:
@@ -55,29 +55,43 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   }
   let appUserProfile: InterfaceAppUserProfile | null =
     await AppUserProfile.findOne({
-      userId: user._id.toString(),
+      userId: user._id,
       appLanguageCode: "en",
       tokenVersion: 0,
     }).lean();
 
   if (!appUserProfile) {
     appUserProfile = await AppUserProfile.create({
-      userId: user._id.toString(),
+      userId: user._id,
       appLanguageCode: "en",
       tokenVersion: 0,
       isSuperAdmin: false,
     });
-    await User.updateOne(
+
+    await User.findOneAndUpdate(
       {
-        _id: user._id.toString(),
+        _id: user._id,
       },
       {
-        appUserProfileId: appUserProfile?._id?.toString(),
+        appUserProfileId: appUserProfile?._id,
       },
+      { new: true, lean: true },
     );
+
+    // user = await User.findOne({
+    //   email: args.data.email.toLowerCase(),
+    // }).lean();
+
+    // if (!user) {
+    //   throw new errors.NotFoundError(
+    //     requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+    //     USER_NOT_FOUND_ERROR.CODE,
+    //     USER_NOT_FOUND_ERROR.PARAM,
+    //   );
+    // }
   }
 
-  const accessToken = createAccessToken(
+  const accessToken = await createAccessToken(
     user,
     appUserProfile as InterfaceAppUserProfile,
   );
@@ -104,7 +118,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     // );
     await AppUserProfile.findOneAndUpdate(
       {
-        user: user._id,
+        _id: user.appUserProfileId,
       },
       {
         isSuperAdmin: true,

@@ -114,6 +114,7 @@ import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
 import { updatePluginStatus } from "./updatePluginStatus";
 import { updatePost } from "./updatePost";
+import { updateSessionTimeout } from "./updateSessionTimeout";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
@@ -236,6 +237,7 @@ export const Mutation: MutationResolvers = {
   updateLanguage,
   updateOrganization,
   updatePluginStatus,
+  updateSessionTimeout,
   updateUserProfile,
   updateUserPassword,
   updateUserTag,
