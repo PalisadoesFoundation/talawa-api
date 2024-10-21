@@ -1028,6 +1028,10 @@ type MembershipRequest {
 }
 
 input MembershipRequestsWhereInput {
+  creatorId: ID
+  creatorId_in: [ID!]
+  creatorId_not: ID
+  creatorId_not_in: [ID!]
   id: ID
   id_contains: ID
   id_in: [ID!]
