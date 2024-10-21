@@ -65,7 +65,7 @@
     "copy-paste": "^1.5.3",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
-    "date-fns": "^3.3.1",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.1",
     "express": "^4.19.2",
     "express-mongo-sanitize": "^2.2.0",
