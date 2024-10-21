@@ -50,7 +50,7 @@
     "@apollo/server": "^4.11.0",
     "@faker-js/faker": "^9.0.1",
     "@graphql-inspector/cli": "^5.0.6",
-    "@graphql-tools/resolvers-composition": "^7.0.1",
+    "@graphql-tools/resolvers-composition": "^7.0.2",
     "@graphql-tools/schema": "^10.0.6",
     "@graphql-tools/utils": "^10.3.2",
     "@parcel/watcher": "^2.4.1",
