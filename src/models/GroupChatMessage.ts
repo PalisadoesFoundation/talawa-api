@@ -13,6 +13,7 @@ export interface InterfaceGroupChatMessage {
   sender: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
   updatedAt: Date;
+  replyTo: PopulatedDoc<InterfaceGroupChatMessage & Document>;
   messageContent: string;
   status: string;
 }
@@ -38,6 +39,11 @@ const groupChatMessageSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    replyTo: {
+      type: Schema.Types.ObjectId,
+      ref: "GroupChatMessage",
+      required: false,
     },
     messageContent: {
       type: String,

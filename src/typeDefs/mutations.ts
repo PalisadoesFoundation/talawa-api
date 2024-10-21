@@ -214,8 +214,6 @@ export const mutations = gql`
 
     removeEventVolunteerGroup(id: ID!): EventVolunteerGroup! @auth
 
-    removeGroupChat(chatId: ID!): GroupChat! @auth
-
     removeMember(data: UserAndOrganizationInput!): Organization! @auth
 
     removeOrganization(id: ID!): UserData! @auth @role(requires: SUPERADMIN)
@@ -249,11 +247,13 @@ export const mutations = gql`
     sendMessageToDirectChat(
       chatId: ID!
       messageContent: String!
+      replyTo: ID
     ): DirectChatMessage! @auth
 
     sendMessageToGroupChat(
       chatId: ID!
       messageContent: String!
+      replyTo: ID
     ): GroupChatMessage! @auth
 
     signUp(data: UserInput!, file: String): AuthData!
