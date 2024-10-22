@@ -29,7 +29,5 @@ export const chatsByUserId: QueryResolvers["chatsByUserId"] = async (
     .sort(sort)
     .lean();
 
-  console.log("CHATS AFTER UPDATE", chats);
-
   return chats;
 };
