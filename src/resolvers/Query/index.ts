@@ -13,11 +13,8 @@ import { getAgendaSection } from "./getAgendaSection";
 import { checkAuth } from "./checkAuth";
 import { customDataByOrganization } from "./customDataByOrganization";
 import { customFieldsByOrganization } from "./customFieldsByOrganization";
-import { directChatsByUserID } from "./directChatsByUserID";
-import { directChatsMessagesByChatID } from "./directChatsMessagesByChatID";
-import { directChatById } from "./directChatById";
-import { groupChatById } from "./groupChatById";
-import { groupChatsByUserId } from "./groupChatsByUserId";
+import { chatById } from "./chatById";
+import { chatsByUserId } from "./chatsByUserId";
 import { event } from "./event";
 import { eventsByOrganization } from "./eventsByOrganization";
 import { eventsByOrganizationConnection } from "./eventsByOrganizationConnection";
@@ -71,11 +68,8 @@ export const Query: QueryResolvers = {
   getCommunityData,
   customFieldsByOrganization,
   customDataByOrganization,
-  directChatsByUserID,
-  directChatsMessagesByChatID,
-  directChatById,
-  groupChatById,
-  groupChatsByUserId,
+  chatById,
+  chatsByUserId,
   event,
   eventsByOrganization,
   eventsByOrganizationConnection,
