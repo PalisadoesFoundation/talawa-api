@@ -123,7 +123,7 @@
     "@types/i18n": "^0.13.12",
     "@types/inquirer": "^9.0.7",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/lodash": "^4.17.10",
+    "@types/lodash": "^4.17.12",
     "@types/mongoose-paginate-v2": "^1.6.5",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.7.5",
