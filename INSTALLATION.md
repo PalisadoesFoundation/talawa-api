@@ -836,7 +836,7 @@ We use `reCAPTCHA` for two factor authentication (2FA). Follow these steps:
 
 1. Visit the [reCAPTCHA Key Generation](https://www.google.com/recaptcha/admin/create) URL.
 1. Fill in the input blocks as shown in the screenshot:
-   ![Set up recaptcha page](public/markdown/images/recaptcha_set_up.webp)
+   ![Set up recaptcha page](public/markdown/images/recaptcha_set_up.png)
 1. Click on `Submit` button.
 1. Copy the generated `Secret Key` to variable named `RECAPTCHA_SECRET_KEY` in `.env` file.
 
