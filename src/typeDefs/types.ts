@@ -130,6 +130,7 @@ export const types = gql`
     logoUrl: String
     websiteLink: String
     socialMediaUrls: SocialMediaUrls
+    timeout: Int
   }
   type CreateAdminPayload {
     user: AppUserProfile
@@ -164,37 +165,12 @@ export const types = gql`
     userErrors: [CreateCommentError!]!
   }
 
-  type createDirectChatPayload {
-    directChat: DirectChat
-    userErrors: [CreateDirectChatError!]!
-  }
-
   type DeletePayload {
     success: Boolean!
   }
 
   type DeleteAdvertisementPayload {
     advertisement: Advertisement
-  }
-
-  type DirectChat {
-    _id: ID!
-    users: [User!]!
-    messages: [DirectChatMessage]
-    creator: User
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    organization: Organization
-  }
-
-  type DirectChatMessage {
-    _id: ID!
-    directChatMessageBelongsTo: DirectChat!
-    sender: User!
-    receiver: User!
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    messageContent: String!
   }
 
   type Donation {
@@ -372,26 +348,6 @@ export const types = gql`
     admins: [User!]!
   }
 
-  type GroupChat {
-    _id: ID!
-    title: String!
-    users: [User!]!
-    messages: [GroupChatMessage]
-    creator: User
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    organization: Organization!
-  }
-
-  type GroupChatMessage {
-    _id: ID!
-    groupChatMessageBelongsTo: GroupChat!
-    sender: User!
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    messageContent: String!
-  }
-
   type Language {
     _id: ID!
     en: String!
@@ -421,16 +377,6 @@ export const types = gql`
     imageUrl: URL
     videoUrl: URL
     creator: User
-  }
-
-  type MessageChat {
-    _id: ID!
-    sender: User!
-    receiver: User!
-    message: String!
-    languageBarrier: Boolean
-    createdAt: DateTime!
-    updatedAt: DateTime!
   }
 
   type Note {
@@ -770,5 +716,31 @@ export const types = gql`
   type UsersConnectionEdge {
     cursor: String!
     node: User!
+  }
+
+  type Chat {
+    _id: ID!
+    isGroup: Boolean!
+    name: String
+    createdAt: DateTime!
+    creator: User
+    messages: [ChatMessage]
+    organization: Organization
+    updatedAt: DateTime!
+    users: [User!]!
+    admins: [User]
+    lastMessageId: String
+    image: String
+  }
+
+  type ChatMessage {
+    _id: ID!
+    createdAt: DateTime!
+    chatMessageBelongsTo: Chat!
+    replyTo: ChatMessage
+    messageContent: String!
+    sender: User!
+    deletedBy: [User]
+    updatedAt: DateTime!
   }
 `;

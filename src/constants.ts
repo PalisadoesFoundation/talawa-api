@@ -43,6 +43,13 @@ export const AGENDA_CATEGORY_NOT_FOUND_ERROR = Object.freeze({
   PARAM: "agendaCategory",
 });
 
+export const APP_USER_PROFILE_NOT_FOUND_ERROR = Object.freeze({
+  DESC: "appUserProfile not found",
+  CODE: "appUserProfile.notFound",
+  MESSAGE: "appUserProfile.notFound",
+  PARAM: "appUserProfile",
+});
+
 export const BASE_RECURRING_EVENT_NOT_FOUND = Object.freeze({
   DESC: "Base Recurring Event not found",
   CODE: "baseRecurringEvent.notFound",
@@ -55,6 +62,20 @@ export const CHAT_NOT_FOUND_ERROR = Object.freeze({
   CODE: "chat.notFound",
   MESSAGE: "chat.notFound",
   PARAM: "chat",
+});
+
+export const MESSAGE_NOT_FOUND_ERROR = Object.freeze({
+  DESC: "Message not found",
+  CODE: "message.notFound",
+  MESSAGE: "message.notFound",
+  PARAM: "message",
+});
+
+export const COMMUNITY_NOT_FOUND_ERROR = Object.freeze({
+  DESC: "Community not found",
+  CODE: "community.notFound",
+  MESSAGE: "community.notFound",
+  PARAM: "community",
 });
 
 export const VENUE_ALREADY_EXISTS_ERROR = Object.freeze({
@@ -144,6 +165,14 @@ export const FUND_NOT_FOUND_ERROR = Object.freeze({
 export const INVALID_OTP = "Invalid OTP";
 
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";
+
+export const INVALID_TIMEOUT_RANGE = Object.freeze({
+  DESC: "Timeout should be in the range of 15 to 60 minutes.",
+  CODE: "invalid.timeoutRange",
+  MESSAGE: "invalid.timeoutRange",
+  PARAM: "timeout",
+});
+
 export const MEMBER_NOT_FOUND_ERROR = Object.freeze({
   DESC: "Member not found",
   CODE: "member.notFound",
@@ -695,6 +724,9 @@ export const PRELOGIN_IMAGERY_FIELD_EMPTY = Object.freeze({
   CODE: "preLoginImagery.empty",
   PARAM: "preLoginImagery.empty",
 });
+
+export const MINIMUM_TIMEOUT_MINUTES = 15;
+export const MAXIMUM_TIMEOUT_MINUTES = 60;
 
 export const MAXIMUM_FETCH_LIMIT = 100;
 
