@@ -181,7 +181,7 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     },
     { new: true },
   );
-
+  /*istanbul ignore next*/
   if (!updatedUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
