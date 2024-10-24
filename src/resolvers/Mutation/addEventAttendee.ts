@@ -172,5 +172,23 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
 
   await EventAttendee.create({ ...args.data });
 
-  return requestUser;
+  const updatedUser = await User.findByIdAndUpdate(
+    args.data.userId,
+    {
+      $push: {
+        eventsAttended: args.data.eventId,
+      },
+    },
+    { new: true },
+  );
+  /*istanbul ignore next*/
+  if (!updatedUser) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  return updatedUser;
 };

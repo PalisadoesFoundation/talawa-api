@@ -117,7 +117,7 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
       {
         $set: {
           updatedBy: context.userId,
-          // eslint-disable-next-line
+
           ...(args.input as UpdateAgendaCategoryInput),
         },
       },
