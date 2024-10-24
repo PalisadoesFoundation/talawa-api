@@ -22,7 +22,7 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { encryptEmail } from "../../../src/utilities/encryption";
 
 let testUser: TestUserType;
@@ -55,8 +55,10 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       };
 
       const email = `email${nanoid().toLowerCase()}@gmail.com`;
-      const hashedEmail = bcrypt.hash(email, 12);
-
+      const hashedEmail = crypto
+        .createHash("sha256")
+        .update(email.toLowerCase() + process.env.HASH_PEPPER)
+        .digest("hex");
       const newUser = await User.create({
         email: encryptEmail(email),
         hashedEmail: hashedEmail,

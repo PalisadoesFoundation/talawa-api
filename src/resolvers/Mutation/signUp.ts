@@ -23,6 +23,7 @@ import {
 } from "../../utilities";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { encryptEmail } from "../../utilities/encryption";
+import crypto from "crypto";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -32,16 +33,17 @@ import { encryptEmail } from "../../utilities/encryption";
  * @returns Sign up details.
  */
 export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
-  const allUsers = await User.find({});
-  for (const user of allUsers) {
-    const hashedEmail = await bcrypt.hash(args.data.email.toLowerCase(), 12);
-    if (hashedEmail == user.hashedEmail) {
-      throw new errors.ConflictError(
-        requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
-        EMAIL_ALREADY_EXISTS_ERROR.CODE,
-        EMAIL_ALREADY_EXISTS_ERROR.PARAM,
-      );
-    }
+  const hashedEmail = crypto
+    .createHash("sha256")
+    .update(args.data.email.toLowerCase() + process.env.HASH_PEPPER)
+    .digest("hex");
+  const existingUser = await User.findOne({ hashedEmail });
+  if (existingUser) {
+    throw new errors.ConflictError(
+      requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
+      EMAIL_ALREADY_EXISTS_ERROR.CODE,
+      EMAIL_ALREADY_EXISTS_ERROR.PARAM,
+    );
   }
 
   const organizationFoundInCache = await findOrganizationsInCache([
@@ -69,8 +71,6 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const encryptedEmail = encryptEmail(args.data.email.toLowerCase());
 
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
-
-  const hashedEmail = await bcrypt.hash(args.data.email.toLowerCase(), 12);
 
   // Upload file
   let uploadImageFileName = null;

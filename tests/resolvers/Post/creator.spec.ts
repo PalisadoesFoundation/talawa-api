@@ -38,14 +38,9 @@ describe("resolvers -> Post -> creatorId", () => {
       _id: testPost!.creatorId,
     }).lean();
 
-    expect(creatorIdObject).toBeDefined();
-    if (!creatorIdObject) {
-      throw new Error("creatorIdObject is null or undefined");
-    }
-
-    expect(creatorIdObject.email).toBeDefined();
-    if (!creatorIdObject.email) {
-      throw new Error("creatorIdObject.email is null or undefined");
+    expect(creatorIdObject?.email).toBeDefined();
+    if (creatorIdObject?.email == null) {
+      throw new Error("creatorIdObject or its email is null or undefined");
     }
 
     try {

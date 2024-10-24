@@ -32,6 +32,7 @@ import type {
 
 import { requestContext } from "../../../src/libraries";
 
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { encryptEmail } from "../../../src/utilities/encryption";
 
@@ -73,11 +74,13 @@ beforeEach(async () => {
   const hashedPassword = await bcrypt.hash("password", 12);
 
   const email = `email${nanoid().toLowerCase()}@gmail.com`;
-  const hashedEmail = bcrypt.hash(email, 12);
-
+  const hashedEmail = crypto
+    .createHash("sha256")
+    .update(email.toLowerCase() + process.env.HASH_PEPPER)
+    .digest("hex");
   testUser = await User.create({
     email: encryptEmail(email),
-    hashedEmail: hashedEmail,
+    hashedEmail,
     password: hashedPassword,
     firstName: "firstName",
     lastName: "lastName",

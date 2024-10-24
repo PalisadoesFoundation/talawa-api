@@ -27,6 +27,7 @@ import { connect, disconnect } from "../../helpers/db";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { decryptEmail, encryptEmail } from "../../../src/utilities/encryption";
+import crypto from "crypto";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -95,8 +96,10 @@ describe("resolvers -> Mutation -> login", () => {
 
     try {
       const email = `nonexistentuser${nanoid().toLowerCase()}@gmail.com`;
-      const hashedEmail = bcrypt.hash(email, 12);
-      // Create a new user with a unique email
+      const hashedEmail = crypto
+        .createHash("sha256")
+        .update(email.toLowerCase() + process.env.HASH_PEPPER)
+        .digest("hex"); // Create a new user with a unique email
       const newUser = await User.create({
         email: encryptEmail(email),
         hashedEmail: hashedEmail,
@@ -137,7 +140,10 @@ describe("resolvers -> Mutation -> login", () => {
   it("creates a new AppUserProfile for the user if it doesn't exist and associates it with the user", async () => {
     // Create a new user without an associated AppUserProfile
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = bcrypt.hash(email, 12);
+    const hashedEmail = crypto
+      .createHash("sha256")
+      .update(email.toLowerCase() + process.env.HASH_PEPPER)
+      .digest("hex");
     const newUser = await User.create({
       email: encryptEmail(email),
       hashedEmail: hashedEmail,
@@ -215,7 +221,10 @@ describe("resolvers -> Mutation -> login", () => {
   });
   it("creates a appUserProfile of the user if does not exist", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = bcrypt.hash(email, 12);
+    const hashedEmail = crypto
+      .createHash("sha256")
+      .update(email.toLowerCase() + process.env.HASH_PEPPER)
+      .digest("hex");
     const newUser = await User.create({
       email: encryptEmail(email),
       hashedEmail: hashedEmail,

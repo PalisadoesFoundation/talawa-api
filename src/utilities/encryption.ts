@@ -2,10 +2,13 @@ import crypto from "crypto";
 
 const algorithm = "aes-256-gcm";
 
-const saltlength = 16;
+const authTagLength = 16;
+const authTagHexLength = authTagLength * 2;
 
-export function generateRandomSalt(): string {
-  return crypto.randomBytes(saltlength).toString("hex");
+const saltLength = 16;
+
+export function generateRandomIV(): string {
+  return crypto.randomBytes(saltLength).toString("hex");
 }
 
 export function encryptEmail(email: string): string {
@@ -13,9 +16,13 @@ export function encryptEmail(email: string): string {
 
   if (!encryptionKey) {
     throw new Error("Encryption key is not defined.");
+  } else if (encryptionKey.length !== 64) {
+    throw new Error(
+      "Encryption key must be a 256-bit hexadecimal string (64 characters).",
+    );
   }
 
-  const iv = generateRandomSalt();
+  const iv = generateRandomIV();
   const cipher = crypto.createCipheriv(
     algorithm,
     Buffer.from(encryptionKey, "hex"),
@@ -30,11 +37,11 @@ export function encryptEmail(email: string): string {
   return iv + authTag.toString("hex") + encrypted.toString("hex");
 }
 
-export function decryptEmail(encryptedWithEmailSalt: string): {
+export function decryptEmail(encryptedData: string): {
   decrypted: string;
-  salt: string;
+  iv: string;
 } {
-  if (encryptedWithEmailSalt.length < saltlength * 2) {
+  if (encryptedData.length < saltLength * 2) {
     throw new Error("Invalid encrypted data: input is too short.");
   }
 
@@ -42,14 +49,18 @@ export function decryptEmail(encryptedWithEmailSalt: string): {
 
   if (!encryptionKey) {
     throw new Error("Encryption key is not defined.");
+  } else if (encryptionKey.length !== 64) {
+    throw new Error(
+      "Encryption key must be a 256-bit hexadecimal string (64 characters).",
+    );
   }
 
-  const iv = encryptedWithEmailSalt.slice(0, saltlength * 2);
+  const iv = encryptedData.slice(0, saltLength * 2);
   const authTag = Buffer.from(
-    encryptedWithEmailSalt.slice(saltlength * 2, saltlength * 2 + 32),
+    encryptedData.slice(saltLength * 2, saltLength * 2 + authTagHexLength),
     "hex",
   );
-  const encrypted = encryptedWithEmailSalt.slice(saltlength * 2 + 32);
+  const encrypted = encryptedData.slice(saltLength * 2 + authTagHexLength);
 
   const decipher = crypto.createDecipheriv(
     algorithm,
@@ -59,9 +70,14 @@ export function decryptEmail(encryptedWithEmailSalt: string): {
 
   decipher.setAuthTag(authTag);
 
-  const decrypted = Buffer.concat([
-    decipher.update(Buffer.from(encrypted, "hex")),
-    decipher.final(),
-  ]).toString("utf8");
-  return { decrypted, salt: iv };
+  let decrypted;
+  try {
+    decrypted = Buffer.concat([
+      decipher.update(Buffer.from(encrypted, "hex")),
+      decipher.final(),
+    ]).toString("utf8");
+  } catch (error) {
+    throw new Error("Decryption failed: invalid data or authentication tag.");
+  }
+  return { decrypted, iv };
 }

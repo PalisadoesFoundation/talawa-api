@@ -33,8 +33,7 @@ import {
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 import { encryptEmail } from "../../../src/utilities/encryption";
-import bcrypt from "bcrypt";
-
+import crypto from "crypto";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUserRemoved: TestUserType;
 let testUserRemover: TestUserType;
@@ -149,11 +148,13 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       .mockImplementationOnce((message) => message);
     try {
       const email = `email${nanoid().toLowerCase()}@gmail.com`;
-      const hashedEmail = bcrypt.hash(email, 12);
-
+      const hashedEmail = crypto
+        .createHash("sha256")
+        .update(email.toLowerCase() + process.env.HASH_PEPPER)
+        .digest("hex");
       const newUser = await User.create({
         email: encryptEmail(email),
-        hashedEmail: hashedEmail,
+        hashedEmail,
         password: `pass${nanoid().toLowerCase()}`,
         firstName: `firstName${nanoid().toLowerCase()}`,
         lastName: `lastName${nanoid().toLowerCase()}`,
@@ -192,11 +193,13 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
         },
       };
       const email = `email${nanoid().toLowerCase()}@gmail.com`;
-      const hashedEmail = bcrypt.hash(email, 12);
-
+      const hashedEmail = crypto
+        .createHash("sha256")
+        .update(email.toLowerCase() + process.env.HASH_PEPPER)
+        .digest("hex");
       const newUser = await User.create({
         email: encryptEmail(email),
-        hashedEmail: hashedEmail,
+        hashedEmail,
         password: `pass${nanoid().toLowerCase()}`,
         firstName: `firstName${nanoid().toLowerCase()}`,
         lastName: `lastName${nanoid().toLowerCase()}`,

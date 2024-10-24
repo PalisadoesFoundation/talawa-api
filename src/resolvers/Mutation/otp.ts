@@ -5,6 +5,7 @@ import { User } from "../../models";
 import { mailer } from "../../utilities";
 import { ACCESS_TOKEN_SECRET, USER_NOT_FOUND_ERROR } from "../../constants";
 import { logger } from "../../libraries";
+import crypto from "crypto";
 /**
  * This function generates otp.
  * @param _parent - parent of current request
@@ -14,7 +15,11 @@ import { logger } from "../../libraries";
  * @returns Email to the user with the otp.
  */
 export const otp: MutationResolvers["otp"] = async (_parent, args) => {
-  const hashedEmail = await bcrypt.hash(args.data.email.toLowerCase(), 12);
+  const hashedEmail = crypto
+    .createHash("sha256")
+    .update(args.data.email.toLowerCase() + process.env.HASH_PEPPER)
+    .digest("hex");
+
   const user = await User.findOne({
     hashedEmail: hashedEmail,
   }).lean();

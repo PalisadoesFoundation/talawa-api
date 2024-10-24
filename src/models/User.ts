@@ -148,23 +148,24 @@ const userSchema = new Schema(
       type: String,
       lowercase: true,
       required: true,
-      validate: [
-        {
-          validator: function (value: string) {
-            try {
-              const decrypted = decryptEmail(value).decrypted;
-              return [validator.isEmail(decrypted), "invalid email"];
-            } catch (error) {
-              console.error("error decrypting the email", error);
-              return false;
-            }
-          },
+      validate: {
+        validator: function (value: string) {
+          try {
+            const decrypted = decryptEmail(value).decrypted;
+            return validator.isEmail(decrypted);
+          } catch (error) {
+            console.error("Error decrypting the email", error);
+            return false;
+          }
         },
-      ],
+        message: "Invalid email",
+      },
     },
     hashedEmail: {
       type: String,
       required: true,
+      unique: true,
+      index: true,
     },
     employmentStatus: {
       type: String,

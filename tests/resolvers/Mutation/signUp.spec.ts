@@ -27,8 +27,7 @@ import type {
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import _ from "lodash";
 import { decryptEmail } from "../../../src/utilities/encryption";
-import bcrypt from "bcrypt";
-
+import crypto from "crypto";
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -85,27 +84,17 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     const signUpPayload = await signUpResolver?.({}, args, {});
 
-    const allUsers = await User.find({});
-
-    let createdUser;
-
-    for (const user of allUsers) {
-      try {
-        const { decrypted } = decryptEmail(user.email);
-        if (decrypted == email) {
-          createdUser = await User.findById(user._id)
-            .populate("joinedOrganizations")
-            .populate("registeredEvents")
-            .populate("membershipRequests")
-            .populate("organizationsBlockedBy")
-            .select("-password");
-
-          break;
-        }
-      } catch (error) {
-        console.error("Error decrypting email:", error);
-      }
-    }
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = crypto
+      .createHash("sha256")
+      .update(email.toLowerCase() + process.env.HASH_PEPPER)
+      .digest("hex");
+    const createdUser = await User.findOne({ hashedEmail: hashedEmail })
+      .populate("joinedOrganizations")
+      .populate("registeredEvents")
+      .populate("membershipRequests")
+      .populate("organizationsBlockedBy")
+      .select("-password");
 
     const createdUserAppProfile = await AppUserProfile.findOne({
       userId: createdUser?._id,
@@ -132,8 +121,10 @@ describe("resolvers -> Mutation -> signUp", () => {
     );
 
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = bcrypt.hash(email, 12);
-
+    const hashedEmail = crypto
+      .createHash("sha256")
+      .update(email.toLowerCase() + process.env.HASH_PEPPER)
+      .digest("hex");
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -160,11 +151,12 @@ describe("resolvers -> Mutation -> signUp", () => {
   it(`Promotes the user to SUPER ADMIN if the email registering with is same that as provided in configuration file`, async () => {
     const email = LAST_RESORT_SUPERADMIN_EMAIL;
     if (!email) {
-      console.error("LAST_RESORT_SUPERADMIN_EMAIL is undefined");
-      throw Error;
+      throw new Error("LAST_RESORT_SUPERADMIN_EMAIL is undefined");
     }
-    const hashedEmail = bcrypt.hash(email, 12);
-
+    const hashedEmail = crypto
+      .createHash("sha256")
+      .update(email.toLowerCase() + process.env.HASH_PEPPER)
+      .digest("hex");
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -189,8 +181,10 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it(`Check if the User is not being promoted to SUPER ADMIN automatically`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = bcrypt.hash(email, 12);
-
+    const hashedEmail = crypto
+      .createHash("sha256")
+      .update(email.toLowerCase() + process.env.HASH_PEPPER)
+      .digest("hex");
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -282,8 +276,10 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it("creates user with joining the organization if userRegistrationRequired is false", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = bcrypt.hash(email, 12);
-
+    const hashedEmail = crypto
+      .createHash("sha256")
+      .update(email.toLowerCase() + process.env.HASH_PEPPER)
+      .digest("hex");
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -323,8 +319,10 @@ describe("resolvers -> Mutation -> signUp", () => {
       visibleInSearch: false,
     });
 
-    const hashedEmail = bcrypt.hash(email, 12);
-
+    const hashedEmail = crypto
+      .createHash("sha256")
+      .update(email.toLowerCase() + process.env.HASH_PEPPER)
+      .digest("hex");
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -355,8 +353,10 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it("creates appUserProfile with userId === createdUser._id", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = bcrypt.hash(email, 12);
-
+    const hashedEmail = crypto
+      .createHash("sha256")
+      .update(email.toLowerCase() + process.env.HASH_PEPPER)
+      .digest("hex");
     const args: MutationSignUpArgs = {
       data: {
         email,

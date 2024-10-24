@@ -21,8 +21,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { encryptEmail } from "../../../src/utilities/encryption";
-import bcrypt from "bcrypt";
-
+import crypto from "crypto";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -153,11 +152,14 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     };
 
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = bcrypt.hash(email, 12);
+    const hashedEmail = crypto
+      .createHash("sha256")
+      .update(email.toLowerCase() + process.env.HASH_PEPPER)
+      .digest("hex");
 
     const newUser = await User.create({
       email: encryptEmail(email),
-      hashedEmail: hashedEmail,
+      hashedEmail,
       password: `pass${nanoid().toLowerCase()}`,
       firstName: `firstName${nanoid().toLowerCase()}`,
       lastName: `lastName${nanoid().toLowerCase()}`,
@@ -179,8 +181,10 @@ describe("resolvers -> Mutation -> createAdmin", () => {
   });
   it("throws error if user does not exists", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = bcrypt.hash(email, 12);
-
+    const hashedEmail = crypto
+      .createHash("sha256")
+      .update(email.toLowerCase() + process.env.HASH_PEPPER)
+      .digest("hex");
     const newUser = await User.create({
       email: encryptEmail(email),
       hashedEmail: hashedEmail,

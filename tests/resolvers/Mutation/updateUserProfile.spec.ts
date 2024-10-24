@@ -26,8 +26,7 @@ import { updateUserProfile as updateUserProfileResolver } from "../../../src/res
 import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { encryptEmail } from "../../../src/utilities/encryption";
-import bcrypt from "bcrypt";
-
+import crypto from "crypto";
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 type UserDocument = InterfaceUser &
@@ -45,8 +44,10 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
   const firstEmail = `email${nanoid().toLowerCase()}@gmail.com`;
-  const hashedFirstEmail = bcrypt.hash(firstEmail, 12);
-
+  const hashedFirstEmail = crypto
+    .createHash("sha256")
+    .update(email.toLowerCase() + process.env.HASH_PEPPER)
+    .digest("hex");
   testUser = (await User.create({
     email: encryptEmail(firstEmail),
     hashedEmail: hashedFirstEmail,
@@ -77,8 +78,10 @@ beforeAll(async () => {
     },
   })) as UserDocument;
 
-  const hashedSecondEmail = bcrypt.hash(email, 12);
-
+  const hashedSecondEmail = crypto
+    .createHash("sha256")
+    .update(email.toLowerCase() + process.env.HASH_PEPPER)
+    .digest("hex");
   testUser2 = (await User.create({
     email: encryptEmail(email),
     hashedEmail: hashedSecondEmail,

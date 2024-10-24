@@ -8,6 +8,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 /**
  * This function enables a user to restore password.
@@ -47,7 +48,10 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
     throw new Error(INVALID_OTP);
   }
 
-  const hashedEmail = await bcrypt.hash(email.toLowerCase(), 12);
+  const hashedEmail = crypto
+    .createHash("sha256")
+    .update(email.toLowerCase() + process.env.HASH_PEPPER)
+    .digest("hex");
 
   const user = await User.findOne({ hashedEmail: hashedEmail }).lean();
 

@@ -3,7 +3,7 @@ import type { InterfaceUser } from "../../src/models";
 import { AppUserProfile, User } from "../../src/models";
 import type { InterfaceUserFamily } from "../../src/models/userFamily";
 import { UserFamily } from "../../src/models/userFamily";
-import bcrypt from "bcrypt";
+import crypto from "crypto";
 import type { Document } from "mongoose";
 import { encryptEmail } from "../../src/utilities/encryption";
 /* eslint-disable */
@@ -17,11 +17,14 @@ export type TestUserType =
 /* eslint-enable */
 export const createTestUserFunc = async (): Promise<TestUserType> => {
   const email = `email${nanoid().toLowerCase()}@gmail.com`;
-  const hashedEmail = bcrypt.hash(email, 12);
+  const hashedEmail = crypto
+    .createHash("sha256")
+    .update(email.toLowerCase() + process.env.HASH_PEPPER)
+    .digest("hex");
 
   const testUser = await User.create({
     email: encryptEmail(email),
-    hashedEmail: hashedEmail,
+    hashedEmail,
     password: `pass${nanoid().toLowerCase()}`,
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,

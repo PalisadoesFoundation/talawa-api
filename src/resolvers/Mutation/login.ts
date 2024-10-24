@@ -13,6 +13,7 @@ import {
   createAccessToken,
   createRefreshToken,
 } from "../../utilities";
+import crypto from "crypto";
 /**
  * This function enables login. (note: only works when using the last resort SuperAdmin credentials)
  * @param _parent - parent of current request
@@ -23,8 +24,10 @@ import {
  * @returns Updated user
  */
 export const login: MutationResolvers["login"] = async (_parent, args) => {
-  const hashedEmail = await bcrypt.hash(args.data.email.toLowerCase(), 12);
-
+  const hashedEmail = crypto
+    .createHash("sha256")
+    .update(args.data.email.toLowerCase() + process.env.HASH_PEPPER)
+    .digest("hex");
   let user = await User.findOne({
     hashedEmail: hashedEmail,
   }).lean();
