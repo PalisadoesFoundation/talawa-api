@@ -183,11 +183,11 @@ export const addPeopleToUserTag: MutationResolvers["addPeopleToUserTag"] =
       }
     }
 
-    const tagUserDocs = newAssignments.flatMap((userId) =>
+    const tagUserDocs = newAssignments.flatMap((user) =>
       allAncestorTags.map((tagId) => ({
         updateOne: {
-          filter: { userId, tagId },
-          update: { $setOnInsert: { userId, tagId } },
+          filter: { userId: user._id, tagId },
+          update: { $setOnInsert: { userId: user._id, tagId } },
           upsert: true,
           setDefaultsOnInsert: true,
         },

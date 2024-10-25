@@ -1,15 +1,19 @@
 import type { UserTagResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
+import type {
+  DefaultGraphQLArgumentError,
+  GraphQLConnectionTraversalDirection,
+  ParseGraphQLConnectionCursorArguments,
+  ParseGraphQLConnectionCursorResult,
+} from "../../utilities/graphQLConnection";
+
 import {
-  type DefaultGraphQLArgumentError,
-  type GraphQLConnectionTraversalDirection,
-  type ParseGraphQLConnectionCursorArguments,
-  type ParseGraphQLConnectionCursorResult,
   getCommonGraphQLConnectionSort,
   parseGraphQLConnectionArguments,
   transformToDefaultGraphQLConnection,
 } from "../../utilities/graphQLConnection";
+
 import { GraphQLError } from "graphql";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import { Types } from "mongoose";
@@ -65,58 +69,47 @@ export const usersToAssignTo: UserTagResolvers["usersToAssignTo"] = async (
     direction: parsedArgs.direction,
   });
 
-  const [objectList, totalCountResult] = await Promise.all([
-    // find all the users belonging to the current organization
-    // who haven't been assigned to this tag
-    User.aggregate([
-      // Step 1: Match users whose joinedOrgs contains the orgId
-      {
-        $match: {
-          ...filter,
-          joinedOrganizations: parent.organizationId,
-        },
+  const commonPipeline = [
+    // Step 1: Match users whose joinedOrgs contains the orgId
+    {
+      $match: {
+        ...filter,
+        joinedOrganizations: parent.organizationId,
       },
-      // Step 2: Perform a left join with TagUser collection on userId
-      {
-        $lookup: {
-          from: "tagusers", // Name of the collection holding TagUser documents
-          localField: "_id",
-          foreignField: "userId",
-          as: "tagUsers",
-        },
+    },
+    // Step 2: Perform a left join with TagUser collection on userId
+    {
+      $lookup: {
+        from: "tagusers", // Name of the collection holding TagUser documents
+        localField: "_id",
+        foreignField: "userId",
+        as: "tagUsers",
       },
-      // Step 3: Filter out users that have a tagUser document with the specified tagId
-      {
-        $match: {
-          tagUsers: {
-            $not: {
-              $elemMatch: { tagId: parent._id },
-            },
+    },
+    // Step 3: Filter out users that have a tagUser document with the specified tagId
+    {
+      $match: {
+        tagUsers: {
+          $not: {
+            $elemMatch: { tagId: parent._id },
           },
         },
       },
+    },
+  ];
+
+  // Execute the queries using the common pipeline
+  const [objectList, totalCountResult] = await Promise.all([
+    // First aggregation to get the user list
+    User.aggregate([
+      ...commonPipeline,
       {
         $sort: { ...sort },
       },
       { $limit: parsedArgs.limit },
     ]),
-    User.aggregate([
-      { $match: { joinedOrganizations: parent.organizationId } },
-      {
-        $lookup: {
-          from: "tagusers",
-          localField: "_id",
-          foreignField: "userId",
-          as: "tagUsers",
-        },
-      },
-      {
-        $match: {
-          tagUsers: { $not: { $elemMatch: { tagId: parent._id } } },
-        },
-      },
-      { $count: "totalCount" },
-    ]),
+    // Second aggregation to count total users
+    User.aggregate([...commonPipeline, { $count: "totalCount" }]),
   ]);
 
   const totalCount =
