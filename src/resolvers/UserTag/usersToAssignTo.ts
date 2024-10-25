@@ -134,9 +134,9 @@ This is typescript type of the parsed cursor for this connection resolver.
 type ParsedCursor = string;
 
 /**
- * Parses the cursor value for the `To` connection resolver.
+ * Parses the cursor value for the `usersToAssignTo` connection resolver.
  *
- * This function is used to parse the cursor value provided to the `usersAssignedTo` connection resolver.
+ * This function is used to parse the cursor value provided to the `usersToAssignTo` connection resolver.
  *
  * @param cursorValue - The cursor value to be parsed.
  * @param cursorName - The name of the cursor argument.
@@ -155,11 +155,11 @@ export const parseCursor = async ({
   cursorPath,
 }: ParseGraphQLConnectionCursorArguments): ParseGraphQLConnectionCursorResult<ParsedCursor> => {
   const errors: DefaultGraphQLArgumentError[] = [];
-  const tagUser = await User.findOne({
+  const user = await User.findOne({
     _id: cursorValue,
   });
 
-  if (!tagUser) {
+  if (!user) {
     errors.push({
       message: `Argument ${cursorName} is an invalid cursor.`,
       path: cursorPath,
