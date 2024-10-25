@@ -77,6 +77,7 @@ export type ActionItem = {
   assignee?: Maybe<EventVolunteer>;
   assigneeGroup?: Maybe<EventVolunteerGroup>;
   assigneeType: Scalars['String']['output'];
+  assigneeUser?: Maybe<User>;
   assigner?: Maybe<User>;
   assignmentDate: Scalars['Date']['output'];
   completionDate: Scalars['Date']['output'];
@@ -824,6 +825,7 @@ export type EventVolunteer = {
   event?: Maybe<Event>;
   groups?: Maybe<Array<Maybe<EventVolunteerGroup>>>;
   hasAccepted: Scalars['Boolean']['output'];
+  hoursHistory?: Maybe<Array<Maybe<HoursHistory>>>;
   hoursVolunteered: Scalars['Float']['output'];
   isPublic: Scalars['Boolean']['output'];
   updatedAt: Scalars['DateTime']['output'];
@@ -861,9 +863,10 @@ export type EventVolunteerGroupOrderByInput =
   | 'members_DESC';
 
 export type EventVolunteerGroupWhereInput = {
-  eventId: Scalars['ID']['input'];
+  eventId?: InputMaybe<Scalars['ID']['input']>;
   leaderName?: InputMaybe<Scalars['String']['input']>;
   name_contains?: InputMaybe<Scalars['String']['input']>;
+  userId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type EventVolunteerInput = {
@@ -1068,6 +1071,12 @@ export type GroupChatMessage = {
   messageContent: Scalars['String']['output'];
   sender: User;
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type HoursHistory = {
+  __typename?: 'HoursHistory';
+  date: Scalars['Date']['output'];
+  hours: Scalars['Float']['output'];
 };
 
 export type InvalidCursor = FieldError & {
@@ -2364,6 +2373,7 @@ export type Query = {
   getUserTagAncestors?: Maybe<Array<Maybe<UserTag>>>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
   getVolunteerMembership?: Maybe<Array<Maybe<VolunteerMembership>>>;
+  getVolunteerRanks?: Maybe<Array<Maybe<VolunteerRank>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   groupChatById?: Maybe<GroupChat>;
   groupChatsByUserId?: Maybe<Array<Maybe<GroupChat>>>;
@@ -2613,6 +2623,12 @@ export type QueryGetVenueByOrgIdArgs = {
 export type QueryGetVolunteerMembershipArgs = {
   orderBy?: InputMaybe<VolunteerMembershipOrderByInput>;
   where: VolunteerMembershipWhereInput;
+};
+
+
+export type QueryGetVolunteerRanksArgs = {
+  orgId: Scalars['ID']['input'];
+  where: VolunteerRankWhereInput;
 };
 
 
@@ -3292,6 +3308,20 @@ export type VolunteerMembershipWhereInput = {
   userName?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type VolunteerRank = {
+  __typename?: 'VolunteerRank';
+  hoursVolunteered: Scalars['Float']['output'];
+  rank: Scalars['Int']['output'];
+  user: User;
+};
+
+export type VolunteerRankWhereInput = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  nameContains?: InputMaybe<Scalars['String']['input']>;
+  orderBy: Scalars['String']['input'];
+  timeFrame: Scalars['String']['input'];
+};
+
 export type WeekDays =
   | 'FRIDAY'
   | 'MONDAY'
@@ -3500,6 +3530,7 @@ export type ResolversTypes = {
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
   GroupChat: ResolverTypeWrapper<InterfaceGroupChatModel>;
   GroupChatMessage: ResolverTypeWrapper<InterfaceGroupChatMessageModel>;
+  HoursHistory: ResolverTypeWrapper<HoursHistory>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   InvalidCursor: ResolverTypeWrapper<InvalidCursor>;
@@ -3619,6 +3650,8 @@ export type ResolversTypes = {
   VolunteerMembershipInput: VolunteerMembershipInput;
   VolunteerMembershipOrderByInput: VolunteerMembershipOrderByInput;
   VolunteerMembershipWhereInput: VolunteerMembershipWhereInput;
+  VolunteerRank: ResolverTypeWrapper<Omit<VolunteerRank, 'user'> & { user: ResolversTypes['User'] }>;
+  VolunteerRankWhereInput: VolunteerRankWhereInput;
   WeekDays: WeekDays;
   createChatInput: CreateChatInput;
   createDirectChatPayload: ResolverTypeWrapper<Omit<CreateDirectChatPayload, 'directChat' | 'userErrors'> & { directChat?: Maybe<ResolversTypes['DirectChat']>, userErrors: Array<ResolversTypes['CreateDirectChatError']> }>;
@@ -3711,6 +3744,7 @@ export type ResolversParentTypes = {
   Group: InterfaceGroupModel;
   GroupChat: InterfaceGroupChatModel;
   GroupChatMessage: InterfaceGroupChatMessageModel;
+  HoursHistory: HoursHistory;
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
   InvalidCursor: InvalidCursor;
@@ -3816,6 +3850,8 @@ export type ResolversParentTypes = {
   VolunteerMembership: InterfaceVolunteerMembershipModel;
   VolunteerMembershipInput: VolunteerMembershipInput;
   VolunteerMembershipWhereInput: VolunteerMembershipWhereInput;
+  VolunteerRank: Omit<VolunteerRank, 'user'> & { user: ResolversParentTypes['User'] };
+  VolunteerRankWhereInput: VolunteerRankWhereInput;
   createChatInput: CreateChatInput;
   createDirectChatPayload: Omit<CreateDirectChatPayload, 'directChat' | 'userErrors'> & { directChat?: Maybe<ResolversParentTypes['DirectChat']>, userErrors: Array<ResolversParentTypes['CreateDirectChatError']> };
   createGroupChatInput: CreateGroupChatInput;
@@ -3839,6 +3875,7 @@ export type ActionItemResolvers<ContextType = any, ParentType extends ResolversP
   assignee?: Resolver<Maybe<ResolversTypes['EventVolunteer']>, ParentType, ContextType>;
   assigneeGroup?: Resolver<Maybe<ResolversTypes['EventVolunteerGroup']>, ParentType, ContextType>;
   assigneeType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  assigneeUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   assigner?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   assignmentDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   completionDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -4216,6 +4253,7 @@ export type EventVolunteerResolvers<ContextType = any, ParentType extends Resolv
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   groups?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventVolunteerGroup']>>>, ParentType, ContextType>;
   hasAccepted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  hoursHistory?: Resolver<Maybe<Array<Maybe<ResolversTypes['HoursHistory']>>>, ParentType, ContextType>;
   hoursVolunteered?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -4331,6 +4369,12 @@ export type GroupChatMessageResolvers<ContextType = any, ParentType extends Reso
   messageContent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type HoursHistoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['HoursHistory'] = ResolversParentTypes['HoursHistory']> = {
+  date?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  hours?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4749,6 +4793,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getUserTagAncestors?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTag']>>>, ParentType, ContextType, RequireFields<QueryGetUserTagAncestorsArgs, 'id'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
   getVolunteerMembership?: Resolver<Maybe<Array<Maybe<ResolversTypes['VolunteerMembership']>>>, ParentType, ContextType, RequireFields<QueryGetVolunteerMembershipArgs, 'where'>>;
+  getVolunteerRanks?: Resolver<Maybe<Array<Maybe<ResolversTypes['VolunteerRank']>>>, ParentType, ContextType, RequireFields<QueryGetVolunteerRanksArgs, 'orgId' | 'where'>>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   groupChatById?: Resolver<Maybe<ResolversTypes['GroupChat']>, ParentType, ContextType, RequireFields<QueryGroupChatByIdArgs, 'id'>>;
   groupChatsByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChat']>>>, ParentType, ContextType, RequireFields<QueryGroupChatsByUserIdArgs, 'id'>>;
@@ -4977,6 +5022,13 @@ export type VolunteerMembershipResolvers<ContextType = any, ParentType extends R
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type VolunteerRankResolvers<ContextType = any, ParentType extends ResolversParentTypes['VolunteerRank'] = ResolversParentTypes['VolunteerRank']> = {
+  hoursVolunteered?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  rank?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type CreateDirectChatPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['createDirectChatPayload'] = ResolversParentTypes['createDirectChatPayload']> = {
   directChat?: Resolver<Maybe<ResolversTypes['DirectChat']>, ParentType, ContextType>;
   userErrors?: Resolver<Array<ResolversTypes['CreateDirectChatError']>, ParentType, ContextType>;
@@ -5037,6 +5089,7 @@ export type Resolvers<ContextType = any> = {
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;
+  HoursHistory?: HoursHistoryResolvers<ContextType>;
   InvalidCursor?: InvalidCursorResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   Language?: LanguageResolvers<ContextType>;
@@ -5095,6 +5148,7 @@ export type Resolvers<ContextType = any> = {
   UsersConnectionEdge?: UsersConnectionEdgeResolvers<ContextType>;
   Venue?: VenueResolvers<ContextType>;
   VolunteerMembership?: VolunteerMembershipResolvers<ContextType>;
+  VolunteerRank?: VolunteerRankResolvers<ContextType>;
   createDirectChatPayload?: CreateDirectChatPayloadResolvers<ContextType>;
 };
 

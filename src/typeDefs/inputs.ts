@@ -171,7 +171,8 @@ export const inputs = gql`
   }
 
   input EventVolunteerGroupWhereInput {
-    eventId: ID!
+    eventId: ID
+    userId: ID
     leaderName: String
     name_contains: String
   }
@@ -656,6 +657,13 @@ export const inputs = gql`
     group: ID
     status: String!
     userId: ID!
+  }
+
+  input VolunteerRankWhereInput {
+    nameContains: String
+    orderBy: String!
+    timeFrame: String!
+    limit: Int
   }
 
   input VenueWhereInput {

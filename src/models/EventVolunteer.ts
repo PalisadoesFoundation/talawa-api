@@ -20,6 +20,10 @@ export interface InterfaceEventVolunteer {
   isPublic: boolean;
   hoursVolunteered: number;
   assignments: PopulatedDoc<InterfaceActionItem & Document>[];
+  hoursHistory: {
+    hours: number;
+    date: Date;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -83,11 +87,29 @@ const eventVolunteerSchema = new Schema(
         default: [],
       },
     ],
+    hoursHistory: {
+      type: [
+        {
+          hours: {
+            type: Number,
+            required: true,
+          },
+          date: {
+            type: Date,
+            required: true,
+          },
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true, // Automatically manage `createdAt` and `updatedAt` fields
   },
 );
+
+// Add index on hourHistory.date
+eventVolunteerSchema.index({ "hourHistory.date": 1 });
 
 // Apply logging middleware to the schema
 createLoggingMiddleware(eventVolunteerSchema, "EventVolunteer");

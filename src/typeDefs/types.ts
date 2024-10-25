@@ -73,6 +73,7 @@ export const types = gql`
     _id: ID!
     assignee: EventVolunteer
     assigneeGroup: EventVolunteerGroup
+    assigneeUser: User
     assigneeType: String!
     assigner: User
     actionItemCategory: ActionItemCategory
@@ -294,8 +295,20 @@ export const types = gql`
     isPublic: Boolean!
     hoursVolunteered: Float!
     assignments: [ActionItem]
+    hoursHistory: [HoursHistory]
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  type HoursHistory {
+    hours: Float!
+    date: Date!
+  }
+
+  type VolunteerRank {
+    rank: Int!
+    user: User!
+    hoursVolunteered: Float!
   }
 
   type EventAttendee {

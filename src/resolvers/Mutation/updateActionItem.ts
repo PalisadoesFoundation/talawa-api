@@ -5,18 +5,21 @@ import {
   EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type {
   InterfaceEvent,
   InterfaceEventVolunteer,
   InterfaceEventVolunteerGroup,
+  InterfaceUser,
 } from "../../models";
 import {
   ActionItem,
   Event,
   EventVolunteer,
   EventVolunteerGroup,
+  User,
 } from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
@@ -81,13 +84,16 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     sameAssignee = new mongoose.Types.ObjectId(
       assigneeType === "EventVolunteer"
         ? actionItem.assignee.toString()
-        : actionItem.assigneeGroup.toString(),
+        : assigneeType === "EventVolunteerGroup"
+          ? actionItem.assigneeGroup.toString()
+          : actionItem.assigneeUser.toString(),
     ).equals(assigneeId);
 
     if (!sameAssignee) {
       let assignee:
         | InterfaceEventVolunteer
         | InterfaceEventVolunteerGroup
+        | InterfaceUser
         | null;
       if (assigneeType === "EventVolunteer") {
         assignee = await EventVolunteer.findById(assigneeId)
@@ -109,6 +115,15 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
             ),
             EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.CODE,
             EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM,
+          );
+        }
+      } else if (assigneeType === "User") {
+        assignee = await User.findById(assigneeId).lean();
+        if (!assignee) {
+          throw new errors.NotFoundError(
+            requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+            USER_NOT_FOUND_ERROR.CODE,
+            USER_NOT_FOUND_ERROR.PARAM,
           );
         }
       }
@@ -185,6 +200,16 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
               ? actionItem.allotedHours
               : 0,
           },
+          ...(actionItem.allotedHours
+            ? {
+                $push: {
+                  hoursHistory: {
+                    hours: actionItem.allotedHours,
+                    date: new Date(),
+                  },
+                },
+              }
+            : {}),
         });
       } else if (isCompleted == false) {
         await EventVolunteer.findByIdAndUpdate(assigneeId, {
@@ -193,6 +218,16 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
               ? -actionItem.allotedHours
               : -0,
           },
+          ...(actionItem.allotedHours
+            ? {
+                $push: {
+                  hoursHistory: {
+                    hours: -actionItem.allotedHours,
+                    date: new Date(),
+                  },
+                },
+              }
+            : {}),
         });
       }
     }
@@ -200,15 +235,25 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     const volunteerGroup =
       await EventVolunteerGroup.findById(assigneeId).lean();
     if (volunteerGroup) {
+      const dividedHours =
+        (actionItem.allotedHours ?? 0) / volunteerGroup.volunteers.length;
       if (isCompleted == true) {
         await EventVolunteer.updateMany(
           { _id: { $in: volunteerGroup.volunteers } },
           {
             $inc: {
-              allotedHours: actionItem.allotedHours
-                ? actionItem.allotedHours / volunteerGroup.volunteers.length
-                : 0,
+              hoursVolunteered: dividedHours,
             },
+            ...(dividedHours
+              ? {
+                  $push: {
+                    hoursHistory: {
+                      hours: dividedHours,
+                      date: new Date(),
+                    },
+                  },
+                }
+              : {}),
           },
         );
       } else if (isCompleted == false) {
@@ -216,10 +261,18 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
           { _id: { $in: volunteerGroup.volunteers } },
           {
             $inc: {
-              allotedHours: actionItem.allotedHours
-                ? -actionItem.allotedHours / volunteerGroup.volunteers.length
-                : -0,
+              hoursVolunteered: -dividedHours,
             },
+            ...(dividedHours
+              ? {
+                  $push: {
+                    hoursHistory: {
+                      hours: dividedHours,
+                      date: new Date(),
+                    },
+                  },
+                }
+              : {}),
           },
         );
       }
@@ -251,6 +304,12 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
           : isCompleted === undefined
             ? null
             : actionItem.assigneeGroup,
+      assigneeUser:
+        !sameAssignee && assigneeType === "User"
+          ? assigneeId || actionItem.assigneeUser
+          : isCompleted === undefined
+            ? null
+            : actionItem.assigneeUser,
       assignmentDate: updatedAssignmentDate,
       assigner: updatedAssigner,
     },

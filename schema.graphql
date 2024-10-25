@@ -9,6 +9,7 @@ type ActionItem {
   assignee: EventVolunteer
   assigneeGroup: EventVolunteerGroup
   assigneeType: String!
+  assigneeUser: User
   assigner: User
   assignmentDate: Date!
   completionDate: Date!
@@ -741,6 +742,7 @@ type EventVolunteer {
   event: Event
   groups: [EventVolunteerGroup]
   hasAccepted: Boolean!
+  hoursHistory: [HoursHistory]
   hoursVolunteered: Float!
   isPublic: Boolean!
   updatedAt: DateTime!
@@ -778,9 +780,10 @@ enum EventVolunteerGroupOrderByInput {
 }
 
 input EventVolunteerGroupWhereInput {
-  eventId: ID!
+  eventId: ID
   leaderName: String
   name_contains: String
+  userId: ID
 }
 
 input EventVolunteerInput {
@@ -982,6 +985,11 @@ type GroupChatMessage {
   messageContent: String!
   sender: User!
   updatedAt: DateTime!
+}
+
+type HoursHistory {
+  date: Date!
+  hours: Float!
 }
 
 type InvalidCursor implements FieldError {
@@ -1566,6 +1574,7 @@ type Query {
   getUserTagAncestors(id: ID!): [UserTag]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getVolunteerMembership(orderBy: VolunteerMembershipOrderByInput, where: VolunteerMembershipWhereInput!): [VolunteerMembership]
+  getVolunteerRanks(orgId: ID!, where: VolunteerRankWhereInput!): [VolunteerRank]
   getlanguage(lang_code: String!): [Translation]
   groupChatById(id: ID!): GroupChat
   groupChatsByUserId(id: ID!): [GroupChat]
@@ -2108,6 +2117,19 @@ input VolunteerMembershipWhereInput {
   status: String
   userId: ID
   userName: String
+}
+
+type VolunteerRank {
+  hoursVolunteered: Float!
+  rank: Int!
+  user: User!
+}
+
+input VolunteerRankWhereInput {
+  limit: Int
+  nameContains: String
+  orderBy: String!
+  timeFrame: String!
 }
 
 enum WeekDays {

@@ -182,6 +182,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     assignee: assigneeType === "EventVolunteer" ? assigneeId : undefined,
     assigneeGroup:
       assigneeType === "EventVolunteerGroup" ? assigneeId : undefined,
+    assigneeUser: assigneeType === "User" ? assigneeId : undefined,
     assigneeType,
     assigner: context.userId,
     actionItemCategory: args.actionItemCategoryId,

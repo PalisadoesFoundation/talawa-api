@@ -56,6 +56,7 @@ import { getVenueByOrgId } from "./getVenueByOrgId";
 import { getAllNotesForAgendaItem } from "./getAllNotesForAgendaItem";
 import { getNoteById } from "./getNoteById";
 import { getVolunteerMembership } from "./getVolunteerMembership";
+import { getVolunteerRanks } from "./getVolunteerRanks";
 export const Query: QueryResolvers = {
   actionItemsByEvent,
   actionItemsByUser,
@@ -114,4 +115,5 @@ export const Query: QueryResolvers = {
   getEventAttendeesByEventId,
   getVenueByOrgId,
   getVolunteerMembership,
+  getVolunteerRanks,
 };

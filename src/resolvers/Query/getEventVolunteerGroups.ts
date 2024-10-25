@@ -1,6 +1,9 @@
+import type {
+  InterfaceEventVolunteer,
+  InterfaceEventVolunteerGroup} from "../../models";
 import {
-  EventVolunteerGroup,
-  InterfaceEventVolunteerGroup,
+  EventVolunteer,
+  EventVolunteerGroup
 } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getWhere } from "./helperFunctions/getWhere";
@@ -12,28 +15,65 @@ import { getWhere } from "./helperFunctions/getWhere";
  */
 export const getEventVolunteerGroups: QueryResolvers["getEventVolunteerGroups"] =
   async (_parent, args) => {
-    const { eventId, leaderName } = args.where;
-    const where = getWhere({ name_contains: args.where.name_contains });
-    const eventVolunteerGroups = await EventVolunteerGroup.find({
-      event: eventId,
-      ...where,
-    })
-      .populate("event")
-      .populate("creator")
-      .populate("leader")
-      .populate({
-        path: "volunteers",
-        populate: {
-          path: "user",
-        },
+    const { eventId, leaderName, userId } = args.where;
+    let eventVolunteerGroups: InterfaceEventVolunteerGroup[] = [];
+    if (eventId) {
+      const where = getWhere({ name_contains: args.where.name_contains });
+      eventVolunteerGroups = await EventVolunteerGroup.find({
+        event: eventId,
+        ...where,
       })
-      .populate({
-        path: "assignments",
-        populate: {
-          path: "actionItemCategory",
-        },
+        .populate("event")
+        .populate("creator")
+        .populate("leader")
+        .populate({
+          path: "volunteers",
+          populate: {
+            path: "user",
+          },
+        })
+        .populate({
+          path: "assignments",
+          populate: {
+            path: "actionItemCategory",
+          },
+        })
+        .lean();
+    } else if (userId) {
+      const eventVolunteer = (await EventVolunteer.findOne({
+        user: userId,
       })
-      .lean();
+        .populate({
+          path: "groups",
+          //  populate multiple fields with groups (event, creator, leader, volunteers (eithin it users), assigments (within it actionItemCategory)) all fields from above
+          populate: [
+            {
+              path: "event",
+            },
+            {
+              path: "creator",
+            },
+            {
+              path: "leader",
+            },
+            {
+              path: "volunteers",
+              populate: {
+                path: "user",
+              },
+            },
+            {
+              path: "assignments",
+              populate: {
+                path: "actionItemCategory",
+              },
+            },
+          ],
+        })
+        .lean()) as InterfaceEventVolunteer;
+
+      eventVolunteerGroups = eventVolunteer.groups;
+    }
 
     let filteredEventVolunteerGroups: InterfaceEventVolunteerGroup[] =
       eventVolunteerGroups;
@@ -42,7 +82,7 @@ export const getEventVolunteerGroups: QueryResolvers["getEventVolunteerGroups"] 
       filteredEventVolunteerGroups = filteredEventVolunteerGroups.filter(
         (group) => {
           const tempGroup = group as InterfaceEventVolunteerGroup;
-          let name =
+          const name =
             tempGroup.leader.firstName + " " + tempGroup.leader.lastName;
           return name.includes(leaderName);
         },

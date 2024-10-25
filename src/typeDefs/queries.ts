@@ -87,6 +87,11 @@ export const queries = gql`
       orderBy: VolunteerMembershipOrderByInput
     ): [VolunteerMembership]
 
+    getVolunteerRanks(
+      orgId: ID!
+      where: VolunteerRankWhereInput!
+    ): [VolunteerRank]
+
     fundsByOrganization(
       organizationId: ID!
       where: FundWhereInput

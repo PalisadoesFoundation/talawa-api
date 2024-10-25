@@ -42,14 +42,7 @@ export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerG
       event.organization,
       false,
     );
-    // Checks if user is Event Admin or Admin of the organization
-    if (!isAdmin && !userIsEventAdmin) {
-      throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-        USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
-      );
-    }
+
     const group = await EventVolunteerGroup.findOne({
       _id: args.id,
     }).lean();
@@ -59,6 +52,19 @@ export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerG
         requestContext.translate(EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE),
         EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.CODE,
         EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    // Checks if user is Event Admin or Admin of the organization or Leader of the group
+    if (
+      !isAdmin &&
+      !userIsEventAdmin &&
+      group.leader.toString() !== currentUser._id.toString()
+    ) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 

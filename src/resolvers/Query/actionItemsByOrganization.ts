@@ -31,6 +31,7 @@ export const actionItemsByOrganization: QueryResolvers["actionItemsByOrganizatio
           path: "user",
         },
       })
+      .populate("assigneeUser")
       .populate("assigneeGroup")
       .populate("assigner")
       .populate("actionItemCategory")
@@ -62,13 +63,20 @@ export const actionItemsByOrganization: QueryResolvers["actionItemsByOrganizatio
           const assigneeUser = (await User.findById(
             assignee.user,
           )) as InterfaceUser;
-          return assigneeUser.firstName.includes(
-            args?.where?.assigneeName as string,
-          );
+          const name = assigneeUser.firstName + " " + assigneeUser.lastName;
+          return name
+            .toLowerCase()
+            .includes(args?.where?.assigneeName?.toLowerCase() as string);
         } else if (assigneeType === "EventVolunteerGroup") {
-          return tempItem.assigneeGroup.name.includes(
-            args?.where?.assigneeName as string,
-          );
+          return tempItem.assigneeGroup.name
+            .toLowerCase()
+            .includes(args?.where?.assigneeName?.toLowerCase() as string);
+        } else if (assigneeType === "User") {
+          const assigneeUser = tempItem.assigneeUser as InterfaceUser;
+          const name = assigneeUser.firstName + " " + assigneeUser.lastName;
+          return name
+            .toLowerCase()
+            .includes(args?.where?.assigneeName?.toLowerCase() as string);
         }
       });
     }
