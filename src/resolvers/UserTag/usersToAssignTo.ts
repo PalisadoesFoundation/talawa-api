@@ -3,7 +3,7 @@ import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import {
   type DefaultGraphQLArgumentError,
-  GraphQLConnectionTraversalDirection,
+  type GraphQLConnectionTraversalDirection,
   type ParseGraphQLConnectionCursorArguments,
   type ParseGraphQLConnectionCursorResult,
   getCommonGraphQLConnectionSort,
