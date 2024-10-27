@@ -58,7 +58,6 @@ export default [
       "import/no-duplicates": "error",
       "tsdoc/syntax": "error",
       "@typescript-eslint/ban-ts-comment": "error",
-      "@typescript-eslint/ban-types": "error",
       "@typescript-eslint/no-empty-object-type": "error", 
       "@typescript-eslint/no-unsafe-function-type": "error", 
       "@typescript-eslint/no-wrapper-object-types": "error", 
