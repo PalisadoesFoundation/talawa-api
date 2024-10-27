@@ -1,10 +1,10 @@
 import type {
+  InterfaceEvent,
   InterfaceEventVolunteer,
-  InterfaceEventVolunteerGroup} from "../../models";
-import {
-  EventVolunteer,
-  EventVolunteerGroup
+  InterfaceEventVolunteerGroup,
+  InterfaceUser,
 } from "../../models";
+import { EventVolunteer, EventVolunteerGroup } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { getWhere } from "./helperFunctions/getWhere";
 /**
@@ -15,7 +15,7 @@ import { getWhere } from "./helperFunctions/getWhere";
  */
 export const getEventVolunteerGroups: QueryResolvers["getEventVolunteerGroups"] =
   async (_parent, args) => {
-    const { eventId, leaderName, userId } = args.where;
+    const { eventId, leaderName, userId, orgId } = args.where;
     let eventVolunteerGroups: InterfaceEventVolunteerGroup[] = [];
     if (eventId) {
       const where = getWhere({ name_contains: args.where.name_contains });
@@ -39,13 +39,12 @@ export const getEventVolunteerGroups: QueryResolvers["getEventVolunteerGroups"] 
           },
         })
         .lean();
-    } else if (userId) {
-      const eventVolunteer = (await EventVolunteer.findOne({
+    } else if (userId && orgId) {
+      const volunteerProfiles = (await EventVolunteer.find({
         user: userId,
       })
         .populate({
           path: "groups",
-          //  populate multiple fields with groups (event, creator, leader, volunteers (eithin it users), assigments (within it actionItemCategory)) all fields from above
           populate: [
             {
               path: "event",
@@ -70,21 +69,27 @@ export const getEventVolunteerGroups: QueryResolvers["getEventVolunteerGroups"] 
             },
           ],
         })
-        .lean()) as InterfaceEventVolunteer;
-
-      eventVolunteerGroups = eventVolunteer.groups;
+        .populate("event")
+        .lean()) as InterfaceEventVolunteer[];
+      volunteerProfiles.forEach((volunteer) => {
+        const tempEvent = volunteer.event as InterfaceEvent;
+        if (tempEvent.organization.toString() === orgId)
+          eventVolunteerGroups.push(...volunteer.groups);
+      });
     }
 
     let filteredEventVolunteerGroups: InterfaceEventVolunteerGroup[] =
       eventVolunteerGroups;
 
     if (leaderName) {
+      const tempName = leaderName.toLowerCase();
       filteredEventVolunteerGroups = filteredEventVolunteerGroups.filter(
         (group) => {
           const tempGroup = group as InterfaceEventVolunteerGroup;
-          const name =
-            tempGroup.leader.firstName + " " + tempGroup.leader.lastName;
-          return name.includes(leaderName);
+          const tempLeader = tempGroup.leader as InterfaceUser;
+          const { firstName, lastName } = tempLeader;
+          const name = `${firstName} ${lastName}`.toLowerCase();
+          return name.includes(tempName);
         },
       );
     }
@@ -109,8 +114,6 @@ export const getEventVolunteerGroups: QueryResolvers["getEventVolunteerGroups"] 
         filteredEventVolunteerGroups = filteredEventVolunteerGroups.sort(
           (a, b) => b.assignments.length - a.assignments.length,
         );
-        break;
-      default:
         break;
     }
 

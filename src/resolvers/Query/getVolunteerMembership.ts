@@ -3,11 +3,8 @@ import type {
   QueryResolvers,
   VolunteerMembershipOrderByInput,
 } from "../../types/generatedGraphQLTypes";
-import {
-  EventVolunteer,
-  InterfaceVolunteerMembership,
-  VolunteerMembership,
-} from "../../models";
+import type { InterfaceVolunteerMembership } from "../../models";
+import { EventVolunteer, VolunteerMembership } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 
 /**

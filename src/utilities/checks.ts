@@ -5,14 +5,16 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../constants";
 import { errors, requestContext } from "../libraries";
-import {
-  AppUserProfile,
-  EventVolunteer,
-  EventVolunteerGroup,
+import type {
   InterfaceAppUserProfile,
   InterfaceEventVolunteer,
   InterfaceEventVolunteerGroup,
   InterfaceUser,
+} from "../models";
+import {
+  AppUserProfile,
+  EventVolunteer,
+  EventVolunteerGroup,
   User,
 } from "../models";
 import { cacheAppUserProfile } from "../services/AppUserProfileCache/cacheAppUserProfile";

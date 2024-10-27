@@ -1,28 +1,25 @@
 import type mongoose from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type { TestEventType } from "../../helpers/events";
 import type { TestUserType } from "../../helpers/user";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import { createVolunteerAndActions } from "../../helpers/volunteers";
 import type { InterfaceActionItem } from "../../../src/models";
 import { ActionItem } from "../../../src/models";
 import type { TestActionItemType } from "../../helpers/actionItem";
-import { actionItemsByOrganization } from "../../../src/resolvers/Query/actionItemsByOrganization";
+import { actionItemsByUser } from "../../../src/resolvers/Query/actionItemsByUser";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
-let testEvent: TestEventType;
 let testUser1: TestUserType;
 let testActionItem1: TestActionItemType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const [organization, event, user1, , , , , actionItem1] =
+  const [organization, , user1, , , , , actionItem1] =
     await createVolunteerAndActions();
 
   testOrganization = organization;
-  testEvent = event;
   testUser1 = user1;
   testActionItem1 = actionItem1;
 
@@ -47,38 +44,55 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Query -> actionItemsByOrganization", () => {
-  it(`actionItemsByOrganization - organizationId, eventId, assigneeName`, async () => {
-    const actionItems = (await actionItemsByOrganization?.(
+describe("resolvers -> Query -> actionItemsByUser", () => {
+  it(`actionItemsByUser for userId, categoryName, dueDate_ASC`, async () => {
+    const actionItems = (await actionItemsByUser?.(
       {},
       {
-        organizationId: testOrganization?._id,
-        eventId: testEvent?._id,
+        userId: testUser1?._id.toString() ?? "testUserId",
+        orderBy: "dueDate_ASC",
         where: {
           categoryName: "Test Action Item Category 1",
-          assigneeName: testUser1?.firstName,
+          orgId: testOrganization?._id.toString(),
         },
       },
       {},
     )) as unknown as InterfaceActionItem[];
     expect(actionItems[0].assigneeType).toEqual("EventVolunteer");
-    expect(actionItems[0].assignee.user.firstName).toEqual(
-      testUser1?.firstName,
-    );
+    expect(actionItems[1].assigneeType).toEqual("EventVolunteerGroup");
   });
 
-  it(`actionItemsByOrganization - organizationId, assigneeName`, async () => {
-    const actionItems = (await actionItemsByOrganization?.(
+  it(`actionItemsByUser for userId, assigneeName, dueDate_DESC`, async () => {
+    const actionItems = (await actionItemsByUser?.(
       {},
       {
-        organizationId: testOrganization?._id,
+        userId: testUser1?._id.toString() ?? "testUserId",
+        orderBy: "dueDate_DESC",
         where: {
+          categoryName: "Test Action Item Category 1",
           assigneeName: testUser1?.firstName,
+          orgId: testOrganization?._id.toString(),
         },
       },
       {},
     )) as unknown as InterfaceActionItem[];
-    expect(actionItems[0].assigneeType).toEqual("User");
-    expect(actionItems[0].assigneeUser.firstName).toEqual(testUser1?.firstName);
+    expect(actionItems[1].assignee.user.firstName).toEqual(
+      testUser1?.firstName,
+    );
+  });
+
+  it(`actionItemsByUser for userId, assigneeName doesn't match`, async () => {
+    const actionItems = (await actionItemsByUser?.(
+      {},
+      {
+        userId: testUser1?._id.toString() ?? "testUserId",
+        where: {
+          assigneeName: "xyz",
+          orgId: testOrganization?._id.toString(),
+        },
+      },
+      {},
+    )) as unknown as InterfaceActionItem[];
+    expect(actionItems.length).toEqual(0);
   });
 });

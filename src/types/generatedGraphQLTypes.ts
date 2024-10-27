@@ -111,6 +111,7 @@ export type ActionItemWhereInput = {
   categoryName?: InputMaybe<Scalars['String']['input']>;
   event_id?: InputMaybe<Scalars['ID']['input']>;
   is_completed?: InputMaybe<Scalars['Boolean']['input']>;
+  orgId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type ActionItemsOrderByInput =
@@ -870,6 +871,7 @@ export type EventVolunteerGroupWhereInput = {
   eventId?: InputMaybe<Scalars['ID']['input']>;
   leaderName?: InputMaybe<Scalars['String']['input']>;
   name_contains?: InputMaybe<Scalars['String']['input']>;
+  orgId?: InputMaybe<Scalars['ID']['input']>;
   userId?: InputMaybe<Scalars['ID']['input']>;
 };
 

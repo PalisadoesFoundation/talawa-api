@@ -77,6 +77,7 @@ export const inputs = gql`
   }
 
   input ActionItemWhereInput {
+    orgId: ID
     actionItemCategory_id: ID
     event_id: ID
     categoryName: String
@@ -176,6 +177,7 @@ export const inputs = gql`
   input EventVolunteerGroupWhereInput {
     eventId: ID
     userId: ID
+    orgId: ID
     leaderName: String
     name_contains: String
   }

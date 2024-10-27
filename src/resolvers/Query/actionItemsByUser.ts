@@ -2,10 +2,11 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import type {
   InterfaceActionItem,
   InterfaceActionItemCategory,
+  InterfaceEvent,
   InterfaceEventVolunteer,
   InterfaceUser,
 } from "../../models";
-import { EventVolunteer } from "../../models";
+import { ActionItem, EventVolunteer } from "../../models";
 
 /**
  * This query will fetch all action items for an organization from database.
@@ -35,12 +36,29 @@ export const actionItemsByUser: QueryResolvers["actionItemsByUser"] = async (
         { path: "event" },
       ],
     })
+    .populate("event")
     .lean();
 
-  let actionItems: InterfaceActionItem[] = [];
+  const userActionItems = await ActionItem.find({
+    assigneeType: "User",
+    assigneeUser: args.userId,
+    organization: args.where?.orgId,
+  })
+    .populate("creator")
+    .populate("assigner")
+    .populate("actionItemCategory")
+    .populate("organization")
+    .populate("assigneeUser")
+    .lean();
+
+  const actionItems: InterfaceActionItem[] = [];
   volunteerObjects.forEach((volunteer) => {
-    actionItems = actionItems.concat(volunteer.assignments);
+    const tempEvent = volunteer.event as InterfaceEvent;
+    if (tempEvent.organization._id.toString() === args.where?.orgId)
+      actionItems.push(...volunteer.assignments);
   });
+
+  actionItems.push(...userActionItems);
 
   let filteredActionItems: InterfaceActionItem[] = actionItems;
 
@@ -63,13 +81,17 @@ export const actionItemsByUser: QueryResolvers["actionItemsByUser"] = async (
       if (assigneeType === "EventVolunteer") {
         const assignee = item.assignee as InterfaceEventVolunteer;
         const assigneeUser = assignee.user as InterfaceUser;
+        const name =
+          `${assigneeUser.firstName} ${assigneeUser.lastName}`.toLowerCase();
 
-        return assigneeUser.firstName.toLowerCase().includes(assigneeName);
+        return name.includes(assigneeName);
       } else if (assigneeType === "EventVolunteerGroup") {
         return item.assigneeGroup.name.toLowerCase().includes(assigneeName);
+      } else if (assigneeType === "User") {
+        const name =
+          `${item.assigneeUser.firstName} ${item.assigneeUser.lastName}`.toLowerCase();
+        return name.includes(assigneeName);
       }
-
-      return false;
     });
   }
 

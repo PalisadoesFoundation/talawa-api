@@ -44,6 +44,7 @@ input ActionItemWhereInput {
   categoryName: String
   event_id: ID
   is_completed: Boolean
+  orgId: ID
 }
 
 enum ActionItemsOrderByInput {
@@ -789,6 +790,7 @@ input EventVolunteerGroupWhereInput {
   eventId: ID
   leaderName: String
   name_contains: String
+  orgId: ID
   userId: ID
 }
 

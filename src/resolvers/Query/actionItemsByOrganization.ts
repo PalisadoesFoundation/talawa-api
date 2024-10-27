@@ -5,7 +5,7 @@ import type {
   InterfaceEventVolunteer,
   InterfaceUser,
 } from "../../models";
-import { ActionItem, User } from "../../models";
+import { ActionItem } from "../../models";
 import { getWhere } from "./helperFunctions/getWhere";
 import { getSort } from "./helperFunctions/getSort";
 /**
@@ -54,29 +54,23 @@ export const actionItemsByOrganization: QueryResolvers["actionItemsByOrganizatio
 
     // Filter the action items based on assignee name
     if (args.where?.assigneeName) {
-      filteredActionItems = filteredActionItems.filter(async (item) => {
-        const tempItem = item as InterfaceActionItem;
-        const assigneeType = tempItem.assigneeType;
+      const assigneeName = args.where.assigneeName.toLowerCase();
+      filteredActionItems = filteredActionItems.filter((item) => {
+        const assigneeType = item.assigneeType;
 
         if (assigneeType === "EventVolunteer") {
-          const assignee = tempItem.assignee as InterfaceEventVolunteer;
-          const assigneeUser = (await User.findById(
-            assignee.user,
-          )) as InterfaceUser;
-          const name = assigneeUser.firstName + " " + assigneeUser.lastName;
-          return name
-            .toLowerCase()
-            .includes(args?.where?.assigneeName?.toLowerCase() as string);
+          const assignee = item.assignee as InterfaceEventVolunteer;
+          const assigneeUser = assignee.user as InterfaceUser;
+          const name =
+            `${assigneeUser.firstName} ${assigneeUser.lastName}`.toLowerCase();
+
+          return name.includes(assigneeName);
         } else if (assigneeType === "EventVolunteerGroup") {
-          return tempItem.assigneeGroup.name
-            .toLowerCase()
-            .includes(args?.where?.assigneeName?.toLowerCase() as string);
+          return item.assigneeGroup.name.toLowerCase().includes(assigneeName);
         } else if (assigneeType === "User") {
-          const assigneeUser = tempItem.assigneeUser as InterfaceUser;
-          const name = assigneeUser.firstName + " " + assigneeUser.lastName;
-          return name
-            .toLowerCase()
-            .includes(args?.where?.assigneeName?.toLowerCase() as string);
+          const name =
+            `${item.assigneeUser.firstName} ${item.assigneeUser.lastName}`.toLowerCase();
+          return name.includes(assigneeName);
         }
       });
     }

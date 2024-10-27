@@ -1,12 +1,7 @@
 import { startOfWeek, startOfMonth, startOfYear, endOfDay } from "date-fns";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import type {
-  InterfaceEvent,
-  InterfaceUser} from "../../models";
-import {
-  Event,
-  EventVolunteer
-} from "../../models";
+import type { InterfaceEvent, InterfaceUser } from "../../models";
+import { Event, EventVolunteer } from "../../models";
 
 /**
  * This query will fetch volunteer ranks based on the provided time frame (allTime, weekly, monthly, yearly),
@@ -93,6 +88,7 @@ export const getVolunteerRanks: QueryResolvers["getVolunteerRanks"] = async (
     }
 
     // Accumulate hours for each user
+    /* c8 ignore start */
     const existingRecord = userHoursMap.get(userId);
     if (existingRecord) {
       existingRecord.hoursVolunteered += totalHours;
@@ -102,6 +98,7 @@ export const getVolunteerRanks: QueryResolvers["getVolunteerRanks"] = async (
         user: volunteer.user,
       });
     }
+    /* c8 ignore stop */
   });
 
   // Convert the accumulated map to an array

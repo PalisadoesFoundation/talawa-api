@@ -1,5 +1,6 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { EventVolunteer, InterfaceEventVolunteer } from "../../models";
+import type { InterfaceEventVolunteer, InterfaceUser } from "../../models";
+import { EventVolunteer } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -49,9 +50,10 @@ export const getEventVolunteers: QueryResolvers["getEventVolunteers"] = async (
   if (nameContains) {
     filteredVolunteers = filteredVolunteers.filter((volunteer) => {
       const tempVolunteer = volunteer as InterfaceEventVolunteer;
-      let name =
-        tempVolunteer.user.firstName + " " + tempVolunteer.user.lastName;
-      return name.includes(nameContains);
+      const tempUser = tempVolunteer.user as InterfaceUser;
+      const { firstName, lastName } = tempUser;
+      const name = `${firstName} ${lastName}`.toLowerCase();
+      return name.includes(nameContains.toLowerCase());
     });
   }
 
