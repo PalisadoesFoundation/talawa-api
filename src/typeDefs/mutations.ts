@@ -35,6 +35,10 @@ export const mutations = gql`
 
     addUserToUserFamily(userId: ID!, familyId: ID!): UserFamily! @auth
 
+    addPeopleToUserTag(input: AddPeopleToUserTagInput!): UserTag
+      @auth
+      @role(requires: ADMIN)
+
     removeUserFromUserFamily(userId: ID!, familyId: ID!): UserFamily! @auth
 
     removeUserFamily(familyId: ID!): UserFamily! @auth

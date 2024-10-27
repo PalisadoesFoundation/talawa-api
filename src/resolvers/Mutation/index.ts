@@ -8,6 +8,7 @@ import { addOrganizationImage } from "./addOrganizationImage";
 import { addUserCustomData } from "./addUserCustomData";
 import { addUserImage } from "./addUserImage";
 import { addUserToUserFamily } from "./addUserToUserFamily";
+import { addPeopleToUserTag } from "./addPeopleToUserTag";
 import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
@@ -127,6 +128,7 @@ export const Mutation: MutationResolvers = {
   addUserCustomData,
   addUserImage,
   addUserToUserFamily,
+  addPeopleToUserTag,
   removeUserFamily,
   removeUserFromUserFamily,
   createUserFamily,

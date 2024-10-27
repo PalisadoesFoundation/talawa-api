@@ -120,6 +120,11 @@ export type ActionItemsOrderByInput =
   | 'dueDate_ASC'
   | 'dueDate_DESC';
 
+export type AddPeopleToUserTagInput = {
+  tagId: Scalars['ID']['input'];
+  userIds: Array<Scalars['ID']['input']>;
+};
+
 export type Address = {
   __typename?: 'Address';
   city?: Maybe<Scalars['String']['output']>;
@@ -1185,6 +1190,7 @@ export type Mutation = {
   addLanguageTranslation: Language;
   addOrganizationCustomField: OrganizationCustomField;
   addOrganizationImage: Organization;
+  addPeopleToUserTag?: Maybe<UserTag>;
   addPledgeToFundraisingCampaign: FundraisingCampaignPledge;
   addUserCustomData: UserCustomData;
   addUserImage: User;
@@ -1332,6 +1338,11 @@ export type MutationAddOrganizationCustomFieldArgs = {
 export type MutationAddOrganizationImageArgs = {
   file: Scalars['String']['input'];
   organizationId: Scalars['String']['input'];
+};
+
+
+export type MutationAddPeopleToUserTagArgs = {
+  input: AddPeopleToUserTagInput;
 };
 
 
@@ -3063,6 +3074,11 @@ export type UserTag = {
    * to.
    */
   usersAssignedTo?: Maybe<UsersConnection>;
+  /**
+   * A connection field to traverse a list of Users this UserTag is not assigned
+   * to, to see and select among them and assign this tag.
+   */
+  usersToAssignTo?: Maybe<UsersConnection>;
 };
 
 
@@ -3075,6 +3091,14 @@ export type UserTagChildTagsArgs = {
 
 
 export type UserTagUsersAssignedToArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['PositiveInt']['input']>;
+  last?: InputMaybe<Scalars['PositiveInt']['input']>;
+};
+
+
+export type UserTagUsersToAssignToArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
@@ -3335,6 +3359,7 @@ export type ResolversTypes = {
   ActionItemCategoryWhereInput: ActionItemCategoryWhereInput;
   ActionItemWhereInput: ActionItemWhereInput;
   ActionItemsOrderByInput: ActionItemsOrderByInput;
+  AddPeopleToUserTagInput: AddPeopleToUserTagInput;
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
   Advertisement: ResolverTypeWrapper<InterfaceAdvertisementModel>;
@@ -3557,6 +3582,7 @@ export type ResolversParentTypes = {
   ActionItemCategory: InterfaceActionItemCategoryModel;
   ActionItemCategoryWhereInput: ActionItemCategoryWhereInput;
   ActionItemWhereInput: ActionItemWhereInput;
+  AddPeopleToUserTagInput: AddPeopleToUserTagInput;
   Address: Address;
   AddressInput: AddressInput;
   Advertisement: InterfaceAdvertisementModel;
@@ -4341,6 +4367,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addLanguageTranslation?: Resolver<ResolversTypes['Language'], ParentType, ContextType, RequireFields<MutationAddLanguageTranslationArgs, 'data'>>;
   addOrganizationCustomField?: Resolver<ResolversTypes['OrganizationCustomField'], ParentType, ContextType, RequireFields<MutationAddOrganizationCustomFieldArgs, 'name' | 'organizationId' | 'type'>>;
   addOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationAddOrganizationImageArgs, 'file' | 'organizationId'>>;
+  addPeopleToUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationAddPeopleToUserTagArgs, 'input'>>;
   addPledgeToFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationAddPledgeToFundraisingCampaignArgs, 'campaignId' | 'pledgeId'>>;
   addUserCustomData?: Resolver<ResolversTypes['UserCustomData'], ParentType, ContextType, RequireFields<MutationAddUserCustomDataArgs, 'dataName' | 'dataValue' | 'organizationId'>>;
   addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
@@ -4820,6 +4847,7 @@ export type UserTagResolvers<ContextType = any, ParentType extends ResolversPare
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType>;
   usersAssignedTo?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType, Partial<UserTagUsersAssignedToArgs>>;
+  usersToAssignTo?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType, Partial<UserTagUsersToAssignToArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
