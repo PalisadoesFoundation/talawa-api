@@ -1,5 +1,6 @@
 import {
   EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
+  EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -10,12 +11,14 @@ import type {
   InterfaceEventVolunteer,
   InterfaceEventVolunteerGroup,
   InterfaceUser,
+  InterfaceVolunteerMembership,
 } from "../models";
 import {
   AppUserProfile,
   EventVolunteer,
   EventVolunteerGroup,
   User,
+  VolunteerMembership,
 } from "../models";
 import { cacheAppUserProfile } from "../services/AppUserProfileCache/cacheAppUserProfile";
 import { findAppUserProfileCache } from "../services/AppUserProfileCache/findAppUserProfileCache";
@@ -102,6 +105,12 @@ export const checkEventVolunteerExists = async (
   return volunteer;
 };
 
+/**
+ * This function checks if the volunteer group exists.
+ * @param groupId - event volunteer group id
+ * @returns EventVolunteerGroup
+ */
+
 export const checkVolunteerGroupExists = async (
   groupId: string,
 ): Promise<InterfaceEventVolunteerGroup> => {
@@ -117,4 +126,28 @@ export const checkVolunteerGroupExists = async (
     );
   }
   return volunteerGroup;
+};
+
+/**
+ * This function checks if the volunteerMembership exists.
+ * @param membershipId - id
+ * @returns VolunteerMembership
+ */
+export const checkVolunteerMembershipExists = async (
+  membershipId: string,
+): Promise<InterfaceVolunteerMembership> => {
+  const volunteerMembership = await VolunteerMembership.findOne({
+    _id: membershipId,
+  });
+
+  if (!volunteerMembership) {
+    throw new errors.NotFoundError(
+      requestContext.translate(
+        EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR.MESSAGE,
+      ),
+      EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR.CODE,
+      EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+  return volunteerMembership;
 };

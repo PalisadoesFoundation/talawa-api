@@ -195,7 +195,6 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   });
 
   // Adds the new action item to the assignee's assignments.
-  // If the assignee is a volunteer group, adds the action item to the group's assignments and to each volunteer's assignments.
   if (assigneeType === "EventVolunteer") {
     await EventVolunteer.findByIdAndUpdate(assigneeId, {
       $addToSet: { assignments: createActionItem._id },

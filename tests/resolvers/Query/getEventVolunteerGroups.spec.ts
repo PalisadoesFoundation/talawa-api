@@ -83,7 +83,7 @@ describe("resolvers -> Query -> getEventVolunteerGroups", () => {
       },
       {},
     )) as unknown as InterfaceEventVolunteerGroup[];
-    expect(groups).toEqual([]);
+    expect(groups.length).toEqual(2);
   });
 
   it(`getEventVolunteerGroups - eventId, orderBy is assignments_ASC`, async () => {

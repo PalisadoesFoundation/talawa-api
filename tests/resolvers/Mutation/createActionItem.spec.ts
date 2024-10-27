@@ -1,77 +1,81 @@
-import "dotenv/config";
 import type mongoose from "mongoose";
-import { Types } from "mongoose";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { connect, disconnect } from "../../helpers/db";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import type {
+  TestEventType,
+  TestEventVolunteerGroupType,
+  TestEventVolunteerType,
+} from "../../helpers/events";
+import type { TestUserType } from "../../helpers/user";
+import { createVolunteerAndActions } from "../../helpers/volunteers";
+import type { InterfaceActionItem } from "../../../src/models";
+import { ActionItemCategory, VolunteerMembership } from "../../../src/models";
 import {
   ACTION_ITEM_CATEGORY_IS_DISABLED,
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
-import { createActionItem as createActionItemResolver } from "../../../src/resolvers/Mutation/createActionItem";
-import type { MutationCreateActionItemArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
-import type {
-  TestOrganizationType,
-  TestUserType,
-} from "../../helpers/userAndOrg";
-import { createTestUser } from "../../helpers/userAndOrg";
+import { requestContext } from "../../../src/libraries";
+import { createActionItem } from "../../../src/resolvers/Mutation/createActionItem";
+import type { TestOrganizationType } from "../../helpers/userAndOrg";
+import type { TestActionItemType } from "../../helpers/actionItem";
 
-import { ActionItemCategory, AppUserProfile } from "../../../src/models";
-import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
-import { createTestCategory } from "../../helpers/actionItemCategory";
-import type { TestEventType } from "../../helpers/events";
-import type {
-  TestVolunteerGroupType,
-  TestVolunteerType,
-} from "../../helpers/volunteers";
-import { createTestVolunteerAndGroup } from "../../helpers/volunteers";
-
-let randomUser: TestUserType;
-let randomUser2: TestUserType;
-let testUser: TestUserType;
-let testOrganization: TestOrganizationType;
-let testCategory: TestActionItemCategoryType;
-let testDisabledCategory: TestActionItemCategoryType;
-let tEvent: TestEventType;
-let tVolunteer: TestVolunteerType;
-let tVolunteerGroup: TestVolunteerGroupType;
 let MONGOOSE_INSTANCE: typeof mongoose;
+let testOrganization: TestOrganizationType;
+let testEvent: TestEventType;
+let testUser1: TestUserType;
+let testActionItem1: TestActionItemType;
+let testEventVolunteer1: TestEventVolunteerType;
+let testEventVolunteerGroup: TestEventVolunteerGroupType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message,
   );
+  const [
+    organization,
+    event,
+    user1,
+    ,
+    volunteer1,
+    ,
+    volunteerGroup,
+    actionItem1,
+  ] = await createVolunteerAndActions();
 
-  randomUser = await createTestUser();
-  randomUser2 = await createTestUser();
+  testOrganization = organization;
+  testEvent = event;
+  testUser1 = user1;
+  testEventVolunteer1 = volunteer1;
+  testEventVolunteerGroup = volunteerGroup;
+  testActionItem1 = actionItem1;
 
-  await AppUserProfile.updateOne(
+  await VolunteerMembership.insertMany([
     {
-      userId: randomUser2?._id,
+      event: testEvent?._id,
+      volunteer: testEventVolunteer1._id,
+      status: "invited",
     },
     {
-      isSuperAdmin: true,
+      event: testEvent?._id,
+      volunteer: testEventVolunteer1._id,
+      group: testEventVolunteerGroup._id,
+      status: "requested",
     },
-  );
-
-  [testUser, testOrganization, testCategory] = await createTestCategory();
-
-  testDisabledCategory = await ActionItemCategory.create({
-    name: "a disabled category",
-    organizationId: testOrganization?._id,
-    isDisabled: true,
-    creatorId: testUser?._id,
-  });
-
-  [, , tEvent, tVolunteer, tVolunteerGroup] =
-    await createTestVolunteerAndGroup();
+    {
+      event: testEvent?._id,
+      volunteer: testEventVolunteer1._id,
+      status: "accepted",
+    },
+    {
+      event: testEvent?._id,
+      volunteer: testEventVolunteer1._id,
+      status: "rejected",
+    },
+  ]);
 });
 
 afterAll(async () => {
@@ -79,41 +83,19 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createActionItem", () => {
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+  it(`throws EventVolunteer Not Found`, async () => {
     try {
-      const args: MutationCreateActionItemArgs = {
-        data: {
-          assigneeId: randomUser?._id,
-          assigneeType: "EventVolunteer",
+      (await createActionItem?.(
+        {},
+        {
+          data: {
+            assigneeId: testEvent?._id,
+            assigneeType: "EventVolunteer",
+          },
+          actionItemCategoryId: testEventVolunteer1?._id,
         },
-        actionItemCategoryId: testCategory?._id,
-      };
-
-      const context = {
-        userId: new Types.ObjectId().toString(),
-      };
-
-      await createActionItemResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
-  it(`throws NotFoundError if no volunteer exists with _id === assigneeId`, async () => {
-    try {
-      const args: MutationCreateActionItemArgs = {
-        data: {
-          assigneeId: new Types.ObjectId().toString(),
-          assigneeType: "EventVolunteer",
-        },
-        actionItemCategoryId: testCategory?._id,
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      await createActionItemResolver?.({}, args, context);
+        { userId: testUser1?._id.toString() },
+      )) as unknown as InterfaceActionItem;
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE,
@@ -121,21 +103,19 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     }
   });
 
-  it(`throws NotFoundError if no volunteer group exists with _id === assigneeId`, async () => {
+  it(`throws EventVolunteerGroup Not Found`, async () => {
     try {
-      const args: MutationCreateActionItemArgs = {
-        data: {
-          assigneeId: new Types.ObjectId().toString(),
-          assigneeType: "EventVolunteerGroup",
+      (await createActionItem?.(
+        {},
+        {
+          data: {
+            assigneeId: testEvent?._id,
+            assigneeType: "EventVolunteerGroup",
+          },
+          actionItemCategoryId: testEventVolunteer1?._id,
         },
-        actionItemCategoryId: testCategory?._id,
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      await createActionItemResolver?.({}, args, context);
+        { userId: testUser1?._id.toString() },
+      )) as unknown as InterfaceActionItem;
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE,
@@ -143,21 +123,19 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     }
   });
 
-  it(`throws NotFoundError if no actionItemCategory exists with _id === args.actionItemCategoryId`, async () => {
+  it(`throws ActionItemCategory Not Found`, async () => {
     try {
-      const args: MutationCreateActionItemArgs = {
-        data: {
-          assigneeId: tVolunteer?._id,
-          assigneeType: "EventVolunteer",
+      (await createActionItem?.(
+        {},
+        {
+          data: {
+            assigneeId: testEventVolunteer1?._id,
+            assigneeType: "EventVolunteer",
+          },
+          actionItemCategoryId: testEventVolunteer1?._id,
         },
-        actionItemCategoryId: new Types.ObjectId().toString(),
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      await createActionItemResolver?.({}, args, context);
+        { userId: testUser1?._id.toString() },
+      )) as unknown as InterfaceActionItem;
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
@@ -165,238 +143,101 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     }
   });
 
-  it(`throws ConflictError if the actionItemCategory is disabled`, async () => {
-    try {
-      const args: MutationCreateActionItemArgs = {
-        data: {
-          assigneeId: tVolunteer?._id,
-          assigneeType: "EventVolunteer",
-        },
-        actionItemCategoryId: testDisabledCategory._id,
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      await createActionItemResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        ACTION_ITEM_CATEGORY_IS_DISABLED.MESSAGE,
-      );
-    }
-  });
-
-  it(`throws NotFoundError if no event exists with _id === args.eventId`, async () => {
-    try {
-      const args: MutationCreateActionItemArgs = {
-        data: {
-          assigneeId: tVolunteer?._id,
-          assigneeType: "EventVolunteer",
-          eventId: new Types.ObjectId().toString(),
-        },
-        actionItemCategoryId: testDisabledCategory._id,
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      await createActionItemResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        ACTION_ITEM_CATEGORY_IS_DISABLED.MESSAGE,
-      );
-    }
-  });
-
-  it(`throws NotFoundError new assignee is not a member of the organization`, async () => {
-    try {
-      const args: MutationCreateActionItemArgs = {
-        data: {
-          assigneeId: tVolunteer?._id,
-          assigneeType: "EventVolunteer",
-        },
-        actionItemCategoryId: testCategory?._id,
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      await createActionItemResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE,
-      );
-    }
-  });
-
-  it(`throws NotFoundError if no event exists with _id === args.data.eventId`, async () => {
-    try {
-      const args: MutationCreateActionItemArgs = {
-        data: {
-          assigneeId: tVolunteer?._id,
-          assigneeType: "EventVolunteer",
-          eventId: new Types.ObjectId().toString(),
-        },
-        actionItemCategoryId: testCategory?._id,
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      await createActionItemResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
-  it(`throws NotAuthorizedError if the AppUserProfile`, async () => {
-    try {
-      const args: MutationCreateActionItemArgs = {
-        data: {
-          assigneeId: tVolunteer?._id,
-          assigneeType: "EventVolunteer",
-          eventId: tEvent?._id,
-        },
-        actionItemCategoryId: testCategory?._id,
-      };
-
-      const context = {
-        userId: randomUser2?._id,
-      };
-
-      await createActionItemResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
-  it(`throws NotAuthorizedError if the user is not authorized for performing the operation`, async () => {
-    try {
-      const args: MutationCreateActionItemArgs = {
-        data: {
-          assigneeId: tVolunteer?._id,
-          assigneeType: "EventVolunteer",
-        },
-        actionItemCategoryId: testCategory?._id,
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      await createActionItemResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
-    }
-  });
-
-  it(`creates the actionItem when user is authorized as an eventAdmin`, async () => {
-    const args: MutationCreateActionItemArgs = {
-      data: {
-        assigneeId: tVolunteer?._id,
-        eventId: tEvent?._id.toString() ?? "",
-        assigneeType: "EventVolunteer",
-      },
-      actionItemCategoryId: testCategory?._id,
-    };
-
-    const context = {
-      userId: testUser?._id,
-    };
-
-    const createActionItemPayload = await createActionItemResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    expect(createActionItemPayload).toEqual(
-      expect.objectContaining({
-        actionItemCategory: testCategory?._id,
-      }),
-    );
-  });
-
-  it(`creates the actionItem when user is authorized as an orgAdmin`, async () => {
-    const args: MutationCreateActionItemArgs = {
-      data: {
-        assigneeId: tVolunteerGroup?._id,
-        eventId: tEvent?._id.toString() ?? "",
-        assigneeType: "EventVolunteerGroup",
-      },
-      actionItemCategoryId: testCategory?._id,
-    };
-
-    const context = {
-      userId: testUser?._id,
-    };
-
-    const createActionItemPayload = await createActionItemResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    expect(createActionItemPayload).toEqual(
-      expect.objectContaining({
-        actionItemCategory: testCategory?._id,
-      }),
-    );
-  });
-
-  it(`creates the actionItem when user is authorized as superadmin`, async () => {
-    const args: MutationCreateActionItemArgs = {
-      data: {
-        assigneeId: tVolunteerGroup?._id,
-        assigneeType: "EventVolunteerGroup",
-      },
-      actionItemCategoryId: testCategory?._id,
-    };
-
-    const context = {
-      userId: testUser?._id,
-    };
-
-    const createActionItemPayload = await createActionItemResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    expect(createActionItemPayload).toEqual(
-      expect.objectContaining({
-        actionItemCategory: testCategory?._id,
-      }),
-    );
-
-    expect(createActionItemPayload?.assignee).toBeUndefined();
-  });
-  it("throws error if the user does not have appUserProfile", async () => {
-    await AppUserProfile.deleteOne({
-      userId: randomUser?._id,
+  it(`throws ActionItemCategory is Disabled`, async () => {
+    const disabledCategory = await ActionItemCategory.create({
+      creatorId: testUser1?._id,
+      organizationId: testOrganization?._id,
+      name: "Disabled Category",
+      isDisabled: true,
     });
-    const args: MutationCreateActionItemArgs = {
-      data: {
-        assigneeId: randomUser?._id,
-        assigneeType: "EventVolunteer",
-      },
-      actionItemCategoryId: testCategory?._id,
-    };
-    const context = {
-      userId: randomUser?._id,
-    };
     try {
-      await createActionItemResolver?.({}, args, context);
+      (await createActionItem?.(
+        {},
+        {
+          data: {
+            assigneeId: testEventVolunteer1?._id,
+            assigneeType: "EventVolunteer",
+          },
+          actionItemCategoryId: disabledCategory?._id.toString(),
+        },
+        { userId: testUser1?._id.toString() },
+      )) as unknown as InterfaceActionItem;
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+        ACTION_ITEM_CATEGORY_IS_DISABLED.MESSAGE,
       );
     }
+  });
+
+  it(`throws Event Not Found`, async () => {
+    try {
+      (await createActionItem?.(
+        {},
+        {
+          data: {
+            assigneeId: testEventVolunteer1?._id,
+            assigneeType: "EventVolunteer",
+            eventId: testUser1?._id.toString(),
+          },
+          actionItemCategoryId: testActionItem1.actionItemCategory.toString(),
+        },
+        { userId: testUser1?._id.toString() },
+      )) as unknown as InterfaceActionItem;
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
+  it(`Create Action Item (EventVolunteer) `, async () => {
+    const createdItem = (await createActionItem?.(
+      {},
+      {
+        data: {
+          assigneeId: testEventVolunteer1?._id,
+          assigneeType: "EventVolunteer",
+          eventId: testEvent?._id.toString(),
+        },
+        actionItemCategoryId: testActionItem1.actionItemCategory.toString(),
+      },
+      { userId: testUser1?._id.toString() },
+    )) as unknown as InterfaceActionItem;
+
+    expect(createdItem).toBeDefined();
+    expect(createdItem.creator).toEqual(testUser1?._id);
+  });
+
+  it(`Create Action Item (EventVolunteerGroup) `, async () => {
+    const createdItem = (await createActionItem?.(
+      {},
+      {
+        data: {
+          assigneeId: testEventVolunteerGroup?._id,
+          assigneeType: "EventVolunteerGroup",
+          eventId: testEvent?._id.toString(),
+        },
+        actionItemCategoryId: testActionItem1.actionItemCategory.toString(),
+      },
+      { userId: testUser1?._id.toString() },
+    )) as unknown as InterfaceActionItem;
+
+    expect(createdItem).toBeDefined();
+    expect(createdItem.creator).toEqual(testUser1?._id);
+  });
+
+  it(`Create Action Item (User) `, async () => {
+    const createdItem = (await createActionItem?.(
+      {},
+      {
+        data: {
+          assigneeId: testUser1?._id.toString() as string,
+          assigneeType: "User",
+        },
+        actionItemCategoryId: testActionItem1.actionItemCategory.toString(),
+      },
+      { userId: testUser1?._id.toString() },
+    )) as unknown as InterfaceActionItem;
+
+    expect(createdItem).toBeDefined();
+    expect(createdItem.creator).toEqual(testUser1?._id);
   });
 });

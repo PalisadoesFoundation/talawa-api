@@ -73,7 +73,7 @@ export const getEventVolunteerGroups: QueryResolvers["getEventVolunteerGroups"] 
         .lean()) as InterfaceEventVolunteer[];
       volunteerProfiles.forEach((volunteer) => {
         const tempEvent = volunteer.event as InterfaceEvent;
-        if (tempEvent.organization.toString() === orgId)
+        if (tempEvent.organization.toString() == orgId)
           eventVolunteerGroups.push(...volunteer.groups);
       });
     }

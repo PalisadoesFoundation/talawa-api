@@ -6,7 +6,10 @@ import {
   EventVolunteerGroup,
   VolunteerMembership,
 } from "../../models";
-import { checkUserExists } from "../../utilities/checks";
+import {
+  checkUserExists,
+  checkVolunteerMembershipExists,
+} from "../../utilities/checks";
 
 /**
  * Helper function to handle updates when status is accepted
@@ -62,8 +65,9 @@ const handleAcceptedStatusUpdates = async (
 export const updateVolunteerMembership: MutationResolvers["updateVolunteerMembership"] =
   async (_parent, args, context) => {
     await checkUserExists(context.userId);
+    await checkVolunteerMembershipExists(args.id);
     const updatedVolunteerMembership =
-      await VolunteerMembership.findOneAndUpdate(
+      (await VolunteerMembership.findOneAndUpdate(
         {
           _id: args.id,
         },
@@ -80,16 +84,12 @@ export const updateVolunteerMembership: MutationResolvers["updateVolunteerMember
           new: true,
           runValidators: true,
         },
-      ).lean();
-
-    if (!updatedVolunteerMembership) {
-      throw new Error("Volunteer membership not found");
-    }
+      ).lean()) as InterfaceVolunteerMembership;
 
     // Handle additional updates if the status is accepted
     if (args.status === "accepted") {
       await handleAcceptedStatusUpdates(updatedVolunteerMembership);
     }
 
-    return updatedVolunteerMembership as InterfaceVolunteerMembership;
+    return updatedVolunteerMembership;
   };

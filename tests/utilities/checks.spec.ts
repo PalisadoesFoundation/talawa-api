@@ -11,13 +11,14 @@ import {
 } from "vitest";
 import {
   EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
+  EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../src/constants";
 
 import type { InterfaceUser } from "../../src/models";
-import { AppUserProfile } from "../../src/models";
+import { AppUserProfile, VolunteerMembership } from "../../src/models";
 import { connect, disconnect } from "../helpers/db";
 import type { TestUserType } from "../helpers/userAndOrg";
 import { requestContext } from "../../src/libraries";
@@ -26,6 +27,7 @@ import {
   checkEventVolunteerExists,
   checkUserExists,
   checkVolunteerGroupExists,
+  checkVolunteerMembershipExists,
 } from "../../src/utilities/checks";
 import { createTestUser } from "../helpers/user";
 import { createVolunteerAndActions } from "../helpers/volunteers";
@@ -143,5 +145,37 @@ describe("utilities -> checks", () => {
     expect((await checkVolunteerGroupExists(testGroup?._id))._id).toEqual(
       testGroup?._id,
     );
+  });
+
+  it("checkVolunteerMembershipExists -> invalid membershipId", async () => {
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      await checkVolunteerMembershipExists(testUser?._id);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
+    expect(spy).toBeCalledWith(
+      EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR.MESSAGE,
+    );
+  });
+
+  it("checkVolunteerMembershipExists -> valid membershipId", async () => {
+    const volunteerMembership = await VolunteerMembership.create({
+      event: testVolunteer?._id,
+      volunteer: testUser?._id,
+      status: "invited",
+    });
+    expect(
+      (
+        await checkVolunteerMembershipExists(
+          volunteerMembership?._id.toString(),
+        )
+      )._id,
+    ).toEqual(volunteerMembership?._id);
   });
 });
