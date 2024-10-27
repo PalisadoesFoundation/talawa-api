@@ -202,6 +202,11 @@ export const enums = gql`
     MENU
   }
 
+  enum FileVisibility {
+    PRIVATE
+    PUBLIC
+  }
+
   enum ItemType {
     Regular
     Note

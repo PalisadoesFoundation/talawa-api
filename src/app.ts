@@ -6,10 +6,15 @@ import { express as voyagerMiddleware } from "graphql-voyager/middleware";
 import helmet from "helmet";
 import i18n from "i18n";
 import requestLogger from "morgan";
-import path from "path";
 import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
-import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
+import routes from "./REST/routes";
+
+import * as enLocale from "../locales/en.json";
+import * as hiLocale from "../locales/hi.json";
+import * as zhLocale from "../locales/zh.json";
+import * as spLocale from "../locales/sp.json";
+import * as frLocale from "../locales/fr.json";
 
 const app = express();
 
@@ -27,7 +32,7 @@ const apiLimiter = rateLimit({
 });
 app.use(apiLimiter);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, next) => {
     if (process.env.NODE_ENV === "development") {
@@ -42,17 +47,18 @@ const corsOptions: cors.CorsOptions = {
     }
     next(new Error("Unauthorized")); // Reject other origins
   },
+  optionsSuccessStatus: 200,
 };
 
 // Configure i18n settings
 i18n.configure({
   directory: `${__dirname}/../locales`,
   staticCatalog: {
-    en: require("../locales/en.json"),
-    hi: require("../locales/hi.json"),
-    zh: require("../locales/zh.json"),
-    sp: require("../locales/sp.json"),
-    fr: require("../locales/fr.json"),
+    en: enLocale,
+    hi: hiLocale,
+    zh: zhLocale,
+    sp: spLocale,
+    fr: frLocale,
   },
   queryParameter: "lang",
   defaultLocale: appConfig.defaultLocale,
@@ -73,19 +79,10 @@ app.use(
 
 // Sanitize data to prevent MongoDB operator injection
 app.use(mongoSanitize());
-app.use(cors());
-
-// Serve static files with Cross-Origin-Resource-Policy header set
-app.use("/images", (req, res, next) => {
-  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-  next();
-});
+app.use(cors(corsOptions));
 
 // Parse JSON requests with a size limit of 50mb
 app.use(express.json({ limit: "50mb" }));
-
-// Handle file uploads using graphql-upload
-app.use(graphqlUploadExpress());
 
 // Parse URL-encoded requests with a size limit of 50mb
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -100,12 +97,10 @@ app.use(
   ),
 );
 
-// Serve static files for images and videos
-app.use("/images", express.static(path.join(__dirname, "./../images")));
-app.use("/videos", express.static(path.join(__dirname, "./../videos")));
-
 // Middleware for managing request context (e.g., user session)
 app.use(requestContext.middleware());
+
+app.use("/api", routes);
 
 // Enable GraphQL Voyager visualization in development
 if (process.env.NODE_ENV !== "production") {

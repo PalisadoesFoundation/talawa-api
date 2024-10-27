@@ -3,6 +3,7 @@ import { Schema, model, models } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
+import type { InterfaceFile } from "./File";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 /**
@@ -13,7 +14,7 @@ export interface InterfacePost {
   commentCount: number;
   createdAt: Date;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
-  imageUrl: string | undefined | null;
+  file: PopulatedDoc<InterfaceFile & Document> | null;
   likeCount: number;
   likedBy: PopulatedDoc<InterfaceUser & Document>[];
   organization: PopulatedDoc<InterfaceOrganization & Document>;
@@ -22,7 +23,6 @@ export interface InterfacePost {
   text: string;
   title: string | undefined;
   updatedAt: Date;
-  videoUrl: string | undefined | null;
 }
 
 /**
@@ -54,13 +54,9 @@ const postSchema = new Schema(
       enum: ["ACTIVE", "BLOCKED", "DELETED"],
       default: "ACTIVE",
     },
-    imageUrl: {
-      type: String,
-      required: false,
-    },
-    videoUrl: {
-      type: String,
-      required: false,
+    file: {
+      type: Schema.Types.ObjectId,
+      ref: "File",
     },
     creatorId: {
       type: Schema.Types.ObjectId,

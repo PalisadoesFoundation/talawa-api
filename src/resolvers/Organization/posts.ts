@@ -36,11 +36,7 @@ import { MAXIMUM_FETCH_LIMIT } from "../../constants";
  * @see OrganizationResolvers - The type definition for the resolvers of the Organization fields.
  *
  */
-export const posts: OrganizationResolvers["posts"] = async (
-  parent,
-  args,
-  context,
-) => {
+export const posts: OrganizationResolvers["posts"] = async (parent, args) => {
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArguments({
       args,
@@ -79,10 +75,13 @@ export const posts: OrganizationResolvers["posts"] = async (
     })
       .sort(sort)
       .limit(parsedArgs.limit)
-      .populate({
-        path: "likedBy",
-        select: "image firstName lastName",
-      })
+      .populate([
+        {
+          path: "likedBy",
+          select: "image firstName lastName",
+        },
+        { path: "file" },
+      ])
       .lean()
       .exec(),
 
@@ -92,21 +91,12 @@ export const posts: OrganizationResolvers["posts"] = async (
       .countDocuments()
       .exec(),
   ]);
-  const posts = objectList.map((post: InterfacePost) => ({
-    ...post,
-    imageUrl: post.imageUrl
-      ? new URL(post.imageUrl, context.apiRootUrl).toString()
-      : null,
-    videoUrl: post.videoUrl
-      ? new URL(post.videoUrl, context.apiRootUrl).toString()
-      : null,
-  }));
   return transformToDefaultGraphQLConnection<
     ParsedCursor,
     InterfacePost,
     InterfacePost
   >({
-    objectList: posts,
+    objectList,
     parsedArgs,
     totalCount,
   });

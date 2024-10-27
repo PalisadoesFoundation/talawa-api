@@ -154,11 +154,11 @@ describe("resolvers -> Mutation -> removePost", () => {
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`,
     );
-    const deletePreviousImage = await import(
-      "../../../src/utilities/encodedImageStorage/deletePreviousImage"
+    const deletePreviousFiile = await import(
+      "../../../src/utilities/encodedImageStorage/deletePreviousFile"
     );
     const deleteImageSpy = vi
-      .spyOn(deletePreviousImage, "deletePreviousImage")
+      .spyOn(deletePreviousFiile, "deletePreviousFile")
       .mockImplementation(() => {
         return Promise.resolve();
       });
