@@ -169,6 +169,71 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     }
   });
 
+  it(`throws NotFoundError if no user exists with _id === args.data.assigneeId`, async () => {
+    try {
+      const testActionItem2 = await ActionItem.create({
+        title: `title${nanoid().toLowerCase()}`,
+        description: `description${nanoid().toLowerCase()}`,
+        creator: testUser?._id,
+        assigneeType: "EventVolunteerGroup",
+        assigneeGroup: new Types.ObjectId().toString(),
+        organization: testOrganization?._id,
+        assigner: testUser?._id,
+        actionItemCategory: testCategory?._id,
+        event: testEvent?._id,
+      });
+
+      const args: MutationUpdateActionItemArgs = {
+        id: testActionItem2?._id.toString() ?? "",
+        data: {
+          assigneeId: new Types.ObjectId().toString(),
+          assigneeType: "EventVolunteerGroup",
+        },
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      await updateActionItemResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE,
+      );
+    }
+  });
+  it(`throws NotFoundError if no user exists when assigneeUser (doesn't exist)`, async () => {
+    try {
+      const testActionItem2 = await ActionItem.create({
+        title: `title${nanoid().toLowerCase()}`,
+        description: `description${nanoid().toLowerCase()}`,
+        creator: testUser?._id,
+        assigneeType: "User",
+        assigneeUser: new Types.ObjectId().toString(),
+        organization: testOrganization?._id,
+        assigner: testUser?._id,
+        actionItemCategory: testCategory?._id,
+        event: null,
+      });
+
+      const args: MutationUpdateActionItemArgs = {
+        id: testActionItem2?._id.toString() ?? "",
+        data: {
+          assigneeId: new Types.ObjectId().toString(),
+          assigneeType: "User",
+        },
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      await updateActionItemResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
   it(`throws NotAuthorizedError if the user is not a superadmin/orgAdmin/eventAdmin`, async () => {
     try {
       const args: MutationUpdateActionItemArgs = {
@@ -314,7 +379,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
         data: {
           assigneeId: tVolunteer?._id,
           assigneeType: "EventVolunteer",
-          isCompleted: true,
+          isCompleted: false,
         },
       };
 
@@ -323,7 +388,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
         data: {
           assigneeId: tVolunteer?._id,
           assigneeType: "EventVolunteer",
-          isCompleted: true,
+          isCompleted: false,
         },
       };
 
@@ -429,7 +494,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
         data: {
           assigneeId: tVolunteerGroup?._id,
           assigneeType: "EventVolunteerGroup",
-          isCompleted: true,
+          isCompleted: false,
         },
       };
 
@@ -438,7 +503,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
         data: {
           assigneeId: tVolunteerGroup?._id,
           assigneeType: "EventVolunteerGroup",
-          isCompleted: true,
+          isCompleted: false,
         },
       };
 
@@ -452,45 +517,6 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       console.log(error);
     }
   });
-
-  // it(`updates the action item and returns it as superadmin`, async () => {
-  //   const superAdminTestUser = await AppUserProfile.findOneAndUpdate(
-  //     {
-  //       userId: randomUser?._id,
-  //     },
-  //     {
-  //       isSuperAdmin: true,
-  //     },
-  //     {
-  //       new: true,
-  //     },
-  //   );
-
-  //   const args: MutationUpdateActionItemArgs = {
-  //     id: testActionItem?._id,
-  //     data: {
-  //       assigneeId: tVolunteer?._id,
-  //       assigneeType: "EventVolunteer",
-  //     },
-  //   };
-
-  //   const context = {
-  //     userId: superAdminTestUser?.userId,
-  //   };
-
-  //   const updatedActionItemPayload = await updateActionItemResolver?.(
-  //     {},
-  //     args,
-  //     context,
-  //   );
-
-  //   expect(updatedActionItemPayload).toEqual(
-  //     expect.objectContaining({
-  //       assignee: testUser?._id,
-  //       actionItemCategory: testCategory?._id,
-  //     }),
-  //   );
-  // });
 
   it(`updates the actionItem when the user is authorized as an eventAdmin`, async () => {
     const updatedTestActionItem = await ActionItem.findOneAndUpdate(
@@ -529,6 +555,127 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       }),
     );
   });
+
+  it(`updates the actionItem isCompleted is undefined (EventVolunteer)`, async () => {
+    const updatedTestActionItem = await ActionItem.findOneAndUpdate(
+      {
+        _id: testActionItem?._id,
+      },
+      {
+        event: testEvent?._id,
+      },
+      {
+        new: true,
+      },
+    );
+
+    const args: MutationUpdateActionItemArgs = {
+      data: {
+        isCompleted: undefined,
+        assigneeId: undefined,
+        assigneeType: "EventVolunteer",
+      },
+      id: updatedTestActionItem?._id.toString() ?? "",
+    };
+
+    const context = {
+      userId: testUser2?._id,
+    };
+
+    const updatedActionItemPayload = await updateActionItemResolver?.(
+      {},
+      args,
+      context,
+    );
+
+    expect(updatedActionItemPayload).toEqual(
+      expect.objectContaining({
+        actionItemCategory: testCategory?._id,
+        isCompleted: true,
+      }),
+    );
+  });
+
+  it(`updates the actionItem isCompleted is undefined (EventVolunteerGroup)`, async () => {
+    const updatedTestActionItem = await ActionItem.findOneAndUpdate(
+      {
+        _id: testActionItem?._id,
+      },
+      {
+        event: testEvent?._id,
+      },
+      {
+        new: true,
+      },
+    );
+
+    const args: MutationUpdateActionItemArgs = {
+      data: {
+        isCompleted: undefined,
+        assigneeId: undefined,
+        assigneeType: "EventVolunteerGroup",
+      },
+      id: updatedTestActionItem?._id.toString() ?? "",
+    };
+
+    const context = {
+      userId: testUser2?._id,
+    };
+
+    const updatedActionItemPayload = await updateActionItemResolver?.(
+      {},
+      args,
+      context,
+    );
+
+    expect(updatedActionItemPayload).toEqual(
+      expect.objectContaining({
+        actionItemCategory: testCategory?._id,
+        isCompleted: true,
+      }),
+    );
+  });
+
+  it(`updates the actionItem isCompleted is undefined (User)`, async () => {
+    const updatedTestActionItem = await ActionItem.findOneAndUpdate(
+      {
+        _id: testActionItem?._id,
+      },
+      {
+        event: testEvent?._id,
+      },
+      {
+        new: true,
+      },
+    );
+
+    const args: MutationUpdateActionItemArgs = {
+      data: {
+        isCompleted: undefined,
+        assigneeId: undefined,
+        assigneeType: "User",
+      },
+      id: updatedTestActionItem?._id.toString() ?? "",
+    };
+
+    const context = {
+      userId: testUser2?._id,
+    };
+
+    const updatedActionItemPayload = await updateActionItemResolver?.(
+      {},
+      args,
+      context,
+    );
+
+    expect(updatedActionItemPayload).toEqual(
+      expect.objectContaining({
+        actionItemCategory: testCategory?._id,
+        isCompleted: true,
+      }),
+    );
+  });
+
   it("throws error if user does not have appUserProfile", async () => {
     await AppUserProfile.deleteOne({
       userId: testUser2?._id,
