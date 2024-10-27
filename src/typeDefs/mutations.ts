@@ -39,10 +39,13 @@ export const mutations = gql`
       @auth
       @role(requires: ADMIN)
 
+<<<<<<< HEAD
     assignToUserTags(input: TagActionsInput!): UserTag
       @auth
       @role(requires: ADMIN)
 
+=======
+>>>>>>> 7e5ec1c0d40d9648529c7a59e87fb5a29ddcfa5c
     removeUserFromUserFamily(userId: ID!, familyId: ID!): UserFamily! @auth
 
     removeUserFamily(familyId: ID!): UserFamily! @auth
