@@ -130,7 +130,7 @@ export const removeFromUserTags: MutationResolvers["removeFromUserTags"] =
     }
 
     // Get all descendant tags of the selected tags (including the selected tags themselves)
-    let allTagsToRemove = new Set<string>();
+    const allTagsToRemove = new Set<string>();
     let currentParents = selectedTags.map((tag) => tag._id.toString());
 
     while (currentParents.length > 0) {
