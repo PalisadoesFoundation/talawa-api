@@ -21,9 +21,6 @@ const app = express();
 // Middleware for tracing requests
 app.use(requestTracing.middleware());
 
-// Initialize i18n for internationalization
-app.use(i18n.init);
-
 // Rate limiting middleware to prevent abuse
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour window
@@ -32,7 +29,6 @@ const apiLimiter = rateLimit({
 });
 app.use(apiLimiter);
 
- 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, next) => {
     if (process.env.NODE_ENV === "development") {

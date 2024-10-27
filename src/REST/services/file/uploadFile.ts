@@ -14,7 +14,7 @@ import {
   INVALID_FILE_TYPE,
 } from "../../../constants";
 
-interface InterfaceUploadedFileResponse extends Partial<InterfaceFile> {
+export interface InterfaceUploadedFileResponse extends Partial<InterfaceFile> {
   objectKey: string;
 }
 
