@@ -17,7 +17,6 @@ import {
 import { adminCheck } from "../../utilities";
 import { errors, requestContext } from "../../libraries";
 import { USER_NOT_AUTHORIZED_ERROR } from "../../constants";
-import mongoose from "mongoose";
 
 /**
  * Helper function to handle updates when status is accepted
@@ -25,54 +24,39 @@ import mongoose from "mongoose";
 const handleAcceptedStatusUpdates = async (
   membership: InterfaceVolunteerMembership,
 ): Promise<void> => {
-  const session = await mongoose.startSession();
-  try {
-    await session.withTransaction(async () => {
-      const updatePromises = [];
+  const updatePromises = [];
 
-      // Always update EventVolunteer to set hasAccepted to true
-      updatePromises.push(
-        EventVolunteer.findOneAndUpdate(
-          { _id: membership.volunteer, event: membership.event },
-          {
-            $set: { hasAccepted: true },
-            ...(membership.group && { $push: { groups: membership.group } }),
-          },
-          { session },
-        ),
-      );
+  // Always update EventVolunteer to set hasAccepted to true
+  updatePromises.push(
+    EventVolunteer.findOneAndUpdate(
+      { _id: membership.volunteer, event: membership.event },
+      {
+        $set: { hasAccepted: true },
+        ...(membership.group && { $push: { groups: membership.group } }),
+      },
+    ),
+  );
 
-      // Always update Event to add volunteer
-      updatePromises.push(
-        Event.findOneAndUpdate(
-          { _id: membership.event },
-          { $addToSet: { volunteers: membership.volunteer } },
-          { session },
-        ),
-      );
+  // Always update Event to add volunteer
+  updatePromises.push(
+    Event.findOneAndUpdate(
+      { _id: membership.event },
+      { $addToSet: { volunteers: membership.volunteer } },
+    ),
+  );
 
-      // If group exists, update the EventVolunteerGroup as well
-      if (membership.group) {
-        updatePromises.push(
-          EventVolunteerGroup.findOneAndUpdate(
-            { _id: membership.group },
-            { $addToSet: { volunteers: membership.volunteer } },
-            { session },
-          ),
-        );
-      }
-
-      // Execute all updates in parallel
-      await Promise.all(updatePromises);
-    });
-    /* c8 ignore start */
-  } catch (error: unknown) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    /* c8 ignore stop */
-    session.endSession();
+  // If group exists, update the EventVolunteerGroup as well
+  if (membership.group) {
+    updatePromises.push(
+      EventVolunteerGroup.findOneAndUpdate(
+        { _id: membership.group },
+        { $addToSet: { volunteers: membership.volunteer } },
+      ),
+    );
   }
+
+  // Execute all updates in parallel
+  await Promise.all(updatePromises);
 };
 
 /**
