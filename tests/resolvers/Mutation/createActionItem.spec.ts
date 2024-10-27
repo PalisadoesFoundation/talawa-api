@@ -9,7 +9,7 @@ import type {
 import type { TestUserType } from "../../helpers/user";
 import { createVolunteerAndActions } from "../../helpers/volunteers";
 import type { InterfaceActionItem } from "../../../src/models";
-import { ActionItemCategory, VolunteerMembership } from "../../../src/models";
+import { ActionItemCategory } from "../../../src/models";
 import {
   ACTION_ITEM_CATEGORY_IS_DISABLED,
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
@@ -52,30 +52,6 @@ beforeAll(async () => {
   testEventVolunteer1 = volunteer1;
   testEventVolunteerGroup = volunteerGroup;
   testActionItem1 = actionItem1;
-
-  await VolunteerMembership.insertMany([
-    {
-      event: testEvent?._id,
-      volunteer: testEventVolunteer1._id,
-      status: "invited",
-    },
-    {
-      event: testEvent?._id,
-      volunteer: testEventVolunteer1._id,
-      group: testEventVolunteerGroup._id,
-      status: "requested",
-    },
-    {
-      event: testEvent?._id,
-      volunteer: testEventVolunteer1._id,
-      status: "accepted",
-    },
-    {
-      event: testEvent?._id,
-      volunteer: testEventVolunteer1._id,
-      status: "rejected",
-    },
-  ]);
 });
 
 afterAll(async () => {

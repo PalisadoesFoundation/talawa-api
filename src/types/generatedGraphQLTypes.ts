@@ -3178,10 +3178,12 @@ export type VolunteerMembership = {
   __typename?: 'VolunteerMembership';
   _id: Scalars['ID']['output'];
   createdAt: Scalars['DateTime']['output'];
+  createdBy?: Maybe<User>;
   event: Event;
   group?: Maybe<EventVolunteerGroup>;
   status: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
+  updatedBy?: Maybe<User>;
   volunteer: EventVolunteer;
 };
 
@@ -4860,10 +4862,12 @@ export type VenueResolvers<ContextType = any, ParentType extends ResolversParent
 export type VolunteerMembershipResolvers<ContextType = any, ParentType extends ResolversParentTypes['VolunteerMembership'] = ResolversParentTypes['VolunteerMembership']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  createdBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
   group?: Resolver<Maybe<ResolversTypes['EventVolunteerGroup']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   volunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

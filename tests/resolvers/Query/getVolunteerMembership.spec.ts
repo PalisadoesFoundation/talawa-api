@@ -12,6 +12,13 @@ import type { InterfaceVolunteerMembership } from "../../../src/models";
 import { VolunteerMembership } from "../../../src/models";
 import { getVolunteerMembership } from "../../../src/resolvers/Query/getVolunteerMembership";
 
+export enum MembershipStatus {
+  INVITED = "invited",
+  REQUESTED = "requested",
+  ACCEPTED = "accepted",
+  REJECTED = "rejected",
+}
+
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
 let testUser1: TestUserType;
@@ -32,23 +39,23 @@ beforeAll(async () => {
     {
       event: testEvent?._id,
       volunteer: testEventVolunteer1._id,
-      status: "invited",
+      status: MembershipStatus.INVITED,
     },
     {
       event: testEvent?._id,
       volunteer: testEventVolunteer1._id,
       group: testEventVolunteerGroup._id,
-      status: "requested",
+      status: MembershipStatus.REQUESTED,
     },
     {
       event: testEvent?._id,
       volunteer: testEventVolunteer1._id,
-      status: "accepted",
+      status: MembershipStatus.ACCEPTED,
     },
     {
       event: testEvent?._id,
       volunteer: testEventVolunteer1._id,
-      status: "rejected",
+      status: MembershipStatus.REJECTED,
     },
   ]);
 });
@@ -64,7 +71,7 @@ describe("resolvers -> Query -> getVolunteerMembership", () => {
       {
         where: {
           userId: testUser1?._id.toString(),
-          status: "invited",
+          status: MembershipStatus.INVITED,
         },
       },
       {},
@@ -72,7 +79,7 @@ describe("resolvers -> Query -> getVolunteerMembership", () => {
     expect(volunteerMemberships[0].volunteer?._id).toEqual(
       testEventVolunteer1?._id,
     );
-    expect(volunteerMemberships[0].status).toEqual("invited");
+    expect(volunteerMemberships[0].status).toEqual(MembershipStatus.INVITED);
   });
 
   it(`getVolunteerMembership for eventId, status accepted`, async () => {
@@ -82,7 +89,7 @@ describe("resolvers -> Query -> getVolunteerMembership", () => {
         where: {
           eventId: testEvent?._id,
           eventTitle: testEvent?.title,
-          status: "accepted",
+          status: MembershipStatus.ACCEPTED,
         },
         orderBy: "createdAt_ASC",
       },
@@ -91,7 +98,7 @@ describe("resolvers -> Query -> getVolunteerMembership", () => {
     expect(volunteerMemberships[0].volunteer?._id).toEqual(
       testEventVolunteer1?._id,
     );
-    expect(volunteerMemberships[0].status).toEqual("accepted");
+    expect(volunteerMemberships[0].status).toEqual(MembershipStatus.ACCEPTED);
     expect(volunteerMemberships[0].event._id).toEqual(testEvent?._id);
   });
 
@@ -110,7 +117,7 @@ describe("resolvers -> Query -> getVolunteerMembership", () => {
     expect(volunteerMemberships[0].volunteer?._id).toEqual(
       testEventVolunteer1?._id,
     );
-    expect(volunteerMemberships[0].status).toEqual("requested");
+    expect(volunteerMemberships[0].status).toEqual(MembershipStatus.REQUESTED);
     expect(volunteerMemberships[0].event._id).toEqual(testEvent?._id);
     expect(volunteerMemberships[0].group?._id).toEqual(
       testEventVolunteerGroup?._id,

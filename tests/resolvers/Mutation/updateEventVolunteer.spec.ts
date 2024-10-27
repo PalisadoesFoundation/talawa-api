@@ -1,63 +1,29 @@
 import type mongoose from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type {
-  TestEventType,
-  TestEventVolunteerGroupType,
-  TestEventVolunteerType,
-} from "../../helpers/events";
+import type { TestEventVolunteerType } from "../../helpers/events";
 import type { TestUserType } from "../../helpers/user";
 import { createVolunteerAndActions } from "../../helpers/volunteers";
 import type { InterfaceEventVolunteer } from "../../../src/models";
-import { VolunteerMembership } from "../../../src/models";
 import { updateEventVolunteer } from "../../../src/resolvers/Mutation/updateEventVolunteer";
 import { EVENT_VOLUNTEER_INVITE_USER_MISTMATCH } from "../../../src/constants";
 import { requestContext } from "../../../src/libraries";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testEvent: TestEventType;
 let testUser1: TestUserType;
 let testUser2: TestUserType;
 let testEventVolunteer1: TestEventVolunteerType;
-let testEventVolunteerGroup: TestEventVolunteerGroupType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message,
   );
-  const [, event, user1, user2, volunteer1, , volunteerGroup, , ,] =
-    await createVolunteerAndActions();
+  const [, , user1, user2, volunteer1] = await createVolunteerAndActions();
 
-  testEvent = event;
   testUser1 = user1;
   testUser2 = user2;
   testEventVolunteer1 = volunteer1;
-  testEventVolunteerGroup = volunteerGroup;
-
-  await VolunteerMembership.insertMany([
-    {
-      event: testEvent?._id,
-      volunteer: testEventVolunteer1._id,
-      status: "invited",
-    },
-    {
-      event: testEvent?._id,
-      volunteer: testEventVolunteer1._id,
-      group: testEventVolunteerGroup._id,
-      status: "requested",
-    },
-    {
-      event: testEvent?._id,
-      volunteer: testEventVolunteer1._id,
-      status: "accepted",
-    },
-    {
-      event: testEvent?._id,
-      volunteer: testEventVolunteer1._id,
-      status: "rejected",
-    },
-  ]);
 });
 
 afterAll(async () => {

@@ -2056,10 +2056,12 @@ input VenueWhereInput {
 type VolunteerMembership {
   _id: ID!
   createdAt: DateTime!
+  createdBy: User
   event: Event!
   group: EventVolunteerGroup
   status: String!
   updatedAt: DateTime!
+  updatedBy: User
   volunteer: EventVolunteer!
 }
 

@@ -40,6 +40,23 @@ let testVolunteer: TestEventVolunteerType;
 let testGroup: TestEventVolunteerGroupType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
+const expectError = async (
+  fn: () => Promise<unknown>,
+  expectedMessage: string,
+): Promise<void> => {
+  const spy = vi
+    .spyOn(requestContext, "translate")
+    .mockImplementationOnce((message) => `Translated ${message}`);
+
+  try {
+    await fn();
+  } catch (error: unknown) {
+    expect((error as Error).message).toEqual(`Translated ${expectedMessage}`);
+  }
+
+  expect(spy).toBeCalledWith(expectedMessage);
+};
+
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
@@ -62,22 +79,14 @@ afterAll(async () => {
 
 describe("utilities -> checks", () => {
   afterEach(() => {
-    vi.resetModules();
+    vi.restoreAllMocks();
   });
 
   it("checkUserExists -> invalid userId", async () => {
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      await checkUserExists(testUser?.appUserProfileId);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-    expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+    await expectError(
+      () => checkUserExists(testUser?.appUserProfileId),
+      USER_NOT_FOUND_ERROR.MESSAGE,
+    );
   });
 
   it("checkUserExists -> valid userId", async () => {
@@ -85,18 +94,10 @@ describe("utilities -> checks", () => {
   });
 
   it("checkAppUserProfileExists -> unauthorized user", async () => {
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      await checkAppUserProfileExists(randomUser);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
-      );
-    }
-    expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    await expectError(
+      () => checkAppUserProfileExists(randomUser),
+      USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+    );
   });
 
   it("checkAppUserProfileExists -> authorized user", async () => {
@@ -106,18 +107,10 @@ describe("utilities -> checks", () => {
   });
 
   it("checkEventVolunteerExists -> invalid volunteerId", async () => {
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      await checkEventVolunteerExists(testUser?._id);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-    expect(spy).toBeCalledWith(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE);
+    await expectError(
+      () => checkEventVolunteerExists(testUser?._id),
+      EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE,
+    );
   });
 
   it("checkEventVolunteerExists -> valid volunteerId", async () => {
@@ -127,18 +120,10 @@ describe("utilities -> checks", () => {
   });
 
   it("checkVolunteerGroupExists -> invalid groupId", async () => {
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      await checkVolunteerGroupExists(testUser?._id);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-    expect(spy).toBeCalledWith(EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE);
+    await expectError(
+      () => checkVolunteerGroupExists(testUser?._id),
+      EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE,
+    );
   });
 
   it("checkVolunteerGroupExists -> valid groupId", async () => {
@@ -148,18 +133,8 @@ describe("utilities -> checks", () => {
   });
 
   it("checkVolunteerMembershipExists -> invalid membershipId", async () => {
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      await checkVolunteerMembershipExists(testUser?._id);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-    expect(spy).toBeCalledWith(
+    await expectError(
+      () => checkVolunteerMembershipExists(testUser?._id),
       EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR.MESSAGE,
     );
   });

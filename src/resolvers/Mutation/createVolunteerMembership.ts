@@ -74,6 +74,7 @@ export const createVolunteerMembership: MutationResolvers["createVolunteerMember
       event: eventId,
       status: status,
       ...(group && { group }),
+      createdBy: context.userId,
     });
 
     return membership.toObject();

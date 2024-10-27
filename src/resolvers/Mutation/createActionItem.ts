@@ -194,26 +194,29 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     creator: context.userId,
   });
 
-  // Adds the new action item to the assignee's assignments.
-  if (assigneeType === "EventVolunteer") {
-    await EventVolunteer.findByIdAndUpdate(assigneeId, {
-      $addToSet: { assignments: createActionItem._id },
-    });
-  } else if (assigneeType === "EventVolunteerGroup") {
-    const newGrp = (await EventVolunteerGroup.findByIdAndUpdate(
-      assigneeId,
-      {
-        $addToSet: { assignments: createActionItem._id },
-      },
-      { new: true },
-    ).lean()) as InterfaceEventVolunteerGroup;
-    await EventVolunteer.updateMany(
-      { _id: { $in: newGrp.volunteers } },
-      {
-        $addToSet: { assignments: createActionItem._id },
-      },
-    );
-  }
+  const session = await mongoose.startSession();
+  await session.withTransaction(async () => {
+    if (assigneeType === "EventVolunteer") {
+      await EventVolunteer.findByIdAndUpdate(
+        assigneeId,
+        { $addToSet: { assignments: createActionItem._id } },
+        { session },
+      );
+    } else if (assigneeType === "EventVolunteerGroup") {
+      const newGrp = (await EventVolunteerGroup.findByIdAndUpdate(
+        assigneeId,
+        { $addToSet: { assignments: createActionItem._id } },
+        { new: true, session },
+      ).lean()) as InterfaceEventVolunteerGroup;
+
+      await EventVolunteer.updateMany(
+        { _id: { $in: newGrp.volunteers } },
+        { $addToSet: { assignments: createActionItem._id } },
+        { session },
+      );
+    }
+  });
+  session.endSession();
 
   return createActionItem.toObject();
 };

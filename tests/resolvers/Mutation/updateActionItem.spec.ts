@@ -316,34 +316,31 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       allotedHours: 0,
       isCompleted: false,
     });
-    try {
-      const args: MutationUpdateActionItemArgs = {
-        id: testActionItem2?._id.toString() ?? "",
-        data: {
-          assigneeId: tVolunteer?._id,
-          assigneeType: "EventVolunteer",
-          isCompleted: true,
-        },
-      };
 
-      const args2: MutationUpdateActionItemArgs = {
-        id: testActionItem3?._id.toString() ?? "",
-        data: {
-          assigneeId: tVolunteer?._id,
-          assigneeType: "EventVolunteer",
-          isCompleted: true,
-        },
-      };
+    const args: MutationUpdateActionItemArgs = {
+      id: testActionItem2?._id.toString() ?? "",
+      data: {
+        assigneeId: tVolunteer?._id,
+        assigneeType: "EventVolunteer",
+        isCompleted: true,
+      },
+    };
 
-      const context = {
-        userId: testUser?._id,
-      };
+    const args2: MutationUpdateActionItemArgs = {
+      id: testActionItem3?._id.toString() ?? "",
+      data: {
+        assigneeId: tVolunteer?._id,
+        assigneeType: "EventVolunteer",
+        isCompleted: true,
+      },
+    };
 
-      await updateActionItemResolver?.({}, args, context);
-      await updateActionItemResolver?.({}, args2, context);
-    } catch (error: unknown) {
-      console.log(error);
-    }
+    const context = {
+      userId: testUser?._id,
+    };
+
+    await updateActionItemResolver?.({}, args, context);
+    await updateActionItemResolver?.({}, args2, context);
   });
 
   it(`updates the action item and sets action item as not completed`, async () => {
@@ -373,34 +370,31 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       event: testEvent?._id,
       isCompleted: true,
     });
-    try {
-      const args: MutationUpdateActionItemArgs = {
-        id: testActionItem2?._id.toString() ?? "",
-        data: {
-          assigneeId: tVolunteer?._id,
-          assigneeType: "EventVolunteer",
-          isCompleted: false,
-        },
-      };
 
-      const args2: MutationUpdateActionItemArgs = {
-        id: testActionItem3?._id.toString() ?? "",
-        data: {
-          assigneeId: tVolunteer?._id,
-          assigneeType: "EventVolunteer",
-          isCompleted: false,
-        },
-      };
+    const args: MutationUpdateActionItemArgs = {
+      id: testActionItem2?._id.toString() ?? "",
+      data: {
+        assigneeId: tVolunteer?._id,
+        assigneeType: "EventVolunteer",
+        isCompleted: false,
+      },
+    };
 
-      const context = {
-        userId: testUser?._id,
-      };
+    const args2: MutationUpdateActionItemArgs = {
+      id: testActionItem3?._id.toString() ?? "",
+      data: {
+        assigneeId: tVolunteer?._id,
+        assigneeType: "EventVolunteer",
+        isCompleted: false,
+      },
+    };
 
-      await updateActionItemResolver?.({}, args, context);
-      await updateActionItemResolver?.({}, args2, context);
-    } catch (error: unknown) {
-      console.log(error);
-    }
+    const context = {
+      userId: testUser?._id,
+    };
+
+    await updateActionItemResolver?.({}, args, context);
+    await updateActionItemResolver?.({}, args2, context);
   });
 
   it(`updates the action item and sets action item as completed (Volunteer Group)`, async () => {
@@ -431,34 +425,31 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       allotedHours: 0,
       isCompleted: false,
     });
-    try {
-      const args: MutationUpdateActionItemArgs = {
-        id: testActionItem2?._id.toString() ?? "",
-        data: {
-          assigneeId: tVolunteerGroup?._id,
-          assigneeType: "EventVolunteerGroup",
-          isCompleted: true,
-        },
-      };
 
-      const args2: MutationUpdateActionItemArgs = {
-        id: testActionItem3?._id.toString() ?? "",
-        data: {
-          assigneeId: tVolunteerGroup?._id,
-          assigneeType: "EventVolunteerGroup",
-          isCompleted: true,
-        },
-      };
+    const args: MutationUpdateActionItemArgs = {
+      id: testActionItem2?._id.toString() ?? "",
+      data: {
+        assigneeId: tVolunteerGroup?._id,
+        assigneeType: "EventVolunteerGroup",
+        isCompleted: true,
+      },
+    };
 
-      const context = {
-        userId: testUser?._id,
-      };
+    const args2: MutationUpdateActionItemArgs = {
+      id: testActionItem3?._id.toString() ?? "",
+      data: {
+        assigneeId: tVolunteerGroup?._id,
+        assigneeType: "EventVolunteerGroup",
+        isCompleted: true,
+      },
+    };
 
-      await updateActionItemResolver?.({}, args, context);
-      await updateActionItemResolver?.({}, args2, context);
-    } catch (error: unknown) {
-      console.log(error);
-    }
+    const context = {
+      userId: testUser?._id,
+    };
+
+    await updateActionItemResolver?.({}, args, context);
+    await updateActionItemResolver?.({}, args2, context);
   });
 
   it(`updates the action item and sets action item as not completed (Volunteer Group)`, async () => {
@@ -488,34 +479,31 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       event: testEvent?._id,
       isCompleted: true,
     });
-    try {
-      const args: MutationUpdateActionItemArgs = {
-        id: testActionItem2?._id.toString() ?? "",
-        data: {
-          assigneeId: tVolunteerGroup?._id,
-          assigneeType: "EventVolunteerGroup",
-          isCompleted: false,
-        },
-      };
 
-      const args2: MutationUpdateActionItemArgs = {
-        id: testActionItem3?._id.toString() ?? "",
-        data: {
-          assigneeId: tVolunteerGroup?._id,
-          assigneeType: "EventVolunteerGroup",
-          isCompleted: false,
-        },
-      };
+    const args: MutationUpdateActionItemArgs = {
+      id: testActionItem2?._id.toString() ?? "",
+      data: {
+        assigneeId: tVolunteerGroup?._id,
+        assigneeType: "EventVolunteerGroup",
+        isCompleted: false,
+      },
+    };
 
-      const context = {
-        userId: testUser?._id,
-      };
+    const args2: MutationUpdateActionItemArgs = {
+      id: testActionItem3?._id.toString() ?? "",
+      data: {
+        assigneeId: tVolunteerGroup?._id,
+        assigneeType: "EventVolunteerGroup",
+        isCompleted: false,
+      },
+    };
 
-      await updateActionItemResolver?.({}, args, context);
-      await updateActionItemResolver?.({}, args2, context);
-    } catch (error: unknown) {
-      console.log(error);
-    }
+    const context = {
+      userId: testUser?._id,
+    };
+
+    await updateActionItemResolver?.({}, args, context);
+    await updateActionItemResolver?.({}, args2, context);
   });
 
   it(`updates the actionItem when the user is authorized as an eventAdmin`, async () => {

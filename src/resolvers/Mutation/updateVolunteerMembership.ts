@@ -1,5 +1,9 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import type { InterfaceVolunteerMembership } from "../../models";
+import type {
+  InterfaceEvent,
+  InterfaceEventVolunteerGroup,
+  InterfaceVolunteerMembership,
+} from "../../models";
 import {
   Event,
   EventVolunteer,
@@ -10,6 +14,10 @@ import {
   checkUserExists,
   checkVolunteerMembershipExists,
 } from "../../utilities/checks";
+import { adminCheck } from "../../utilities";
+import { errors, requestContext } from "../../libraries";
+import { USER_NOT_AUTHORIZED_ERROR } from "../../constants";
+import mongoose from "mongoose";
 
 /**
  * Helper function to handle updates when status is accepted
@@ -17,39 +25,54 @@ import {
 const handleAcceptedStatusUpdates = async (
   membership: InterfaceVolunteerMembership,
 ): Promise<void> => {
-  const updatePromises = [];
+  const session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async () => {
+      const updatePromises = [];
 
-  // Always update EventVolunteer to set hasAccepted to true
-  updatePromises.push(
-    EventVolunteer.findOneAndUpdate(
-      { _id: membership.volunteer, event: membership.event },
-      {
-        $set: { hasAccepted: true },
-        ...(membership.group && { $push: { groups: membership.group } }),
-      },
-    ),
-  );
+      // Always update EventVolunteer to set hasAccepted to true
+      updatePromises.push(
+        EventVolunteer.findOneAndUpdate(
+          { _id: membership.volunteer, event: membership.event },
+          {
+            $set: { hasAccepted: true },
+            ...(membership.group && { $push: { groups: membership.group } }),
+          },
+          { session },
+        ),
+      );
 
-  // Always update Event to add volunteer
-  updatePromises.push(
-    Event.findOneAndUpdate(
-      { _id: membership.event },
-      { $addToSet: { volunteers: membership.volunteer } },
-    ),
-  );
+      // Always update Event to add volunteer
+      updatePromises.push(
+        Event.findOneAndUpdate(
+          { _id: membership.event },
+          { $addToSet: { volunteers: membership.volunteer } },
+          { session },
+        ),
+      );
 
-  // If group exists, update the EventVolunteerGroup as well
-  if (membership.group) {
-    updatePromises.push(
-      EventVolunteerGroup.findOneAndUpdate(
-        { _id: membership.group },
-        { $addToSet: { volunteers: membership.volunteer } },
-      ),
-    );
+      // If group exists, update the EventVolunteerGroup as well
+      if (membership.group) {
+        updatePromises.push(
+          EventVolunteerGroup.findOneAndUpdate(
+            { _id: membership.group },
+            { $addToSet: { volunteers: membership.volunteer } },
+            { session },
+          ),
+        );
+      }
+
+      // Execute all updates in parallel
+      await Promise.all(updatePromises);
+    });
+    /* c8 ignore start */
+  } catch (error: unknown) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    /* c8 ignore stop */
+    session.endSession();
   }
-
-  // Execute all updates in parallel
-  await Promise.all(updatePromises);
 };
 
 /**
@@ -64,8 +87,40 @@ const handleAcceptedStatusUpdates = async (
  */
 export const updateVolunteerMembership: MutationResolvers["updateVolunteerMembership"] =
   async (_parent, args, context) => {
-    await checkUserExists(context.userId);
-    await checkVolunteerMembershipExists(args.id);
+    const currentUser = await checkUserExists(context.userId);
+    const volunteerMembership = await checkVolunteerMembershipExists(args.id);
+
+    const event = (await Event.findById(volunteerMembership.event)
+      .populate("organization")
+      .lean()) as InterfaceEvent;
+
+    // Check if the user is authorized to update the volunteer membership
+    const isAdminOrSuperAdmin = await adminCheck(
+      currentUser._id,
+      event.organization,
+      false,
+    );
+    const isEventAdmin = event.admins.some(
+      (admin) => admin.toString() == currentUser._id.toString(),
+    );
+    let isGroupLeader = false;
+    if (volunteerMembership.group != undefined) {
+      // check if current user is group leader
+      const group = (await EventVolunteerGroup.findById(
+        volunteerMembership.group,
+      ).lean()) as InterfaceEventVolunteerGroup;
+      isGroupLeader = group.leader.toString() == currentUser._id.toString();
+    }
+
+    // If the user is not an admin or super admin, event admin, or group leader, throw an error
+    if (!isAdminOrSuperAdmin && !isEventAdmin && !isGroupLeader) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+
     const updatedVolunteerMembership =
       (await VolunteerMembership.findOneAndUpdate(
         {
@@ -78,6 +133,7 @@ export const updateVolunteerMembership: MutationResolvers["updateVolunteerMember
               | "requested"
               | "accepted"
               | "rejected",
+            updatedBy: context.userId,
           },
         },
         {

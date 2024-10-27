@@ -87,6 +87,7 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
       volunteer: createdVolunteer._id,
       event: eventId,
       status: "invited",
+      createdBy: context.userId,
     });
 
     return createdVolunteer.toObject();

@@ -4,6 +4,7 @@ import type { InterfaceEvent } from "./Event";
 import type { InterfaceEventVolunteer } from "./EventVolunteer";
 import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
+import type { InterfaceUser } from "./User";
 
 /**
  * Represents a document for a volunteer membership in the MongoDB database.
@@ -15,6 +16,8 @@ export interface InterfaceVolunteerMembership {
   group: PopulatedDoc<InterfaceEventVolunteerGroup & Document>;
   event: PopulatedDoc<InterfaceEvent & Document>;
   status: "invited" | "requested" | "accepted" | "rejected";
+  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +30,8 @@ export interface InterfaceVolunteerMembership {
  * @param group - Reference to the event volunteer group. Absence denotes a request for individual volunteer request.
  * @param event - Reference to the event that the group is part of.
  * @param status - Current status of the membership (invited, requested, accepted, rejected).
+ * @param createdBy - Reference to the user who created the group membership document.
+ * @param updatedBy - Reference to the user who last updated the group membership document.
  * @param createdAt - Timestamp of when the group membership document was created.
  * @param updatedAt - Timestamp of when the group membership document was last updated.
  */
@@ -51,6 +56,14 @@ const volunteerMembershipSchema = new Schema(
       enum: ["invited", "requested", "accepted", "rejected"],
       required: true,
       default: "invited",
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   {

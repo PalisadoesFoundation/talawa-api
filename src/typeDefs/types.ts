@@ -320,6 +320,8 @@ export const types = gql`
     volunteer: EventVolunteer!
     event: Event!
     group: EventVolunteerGroup
+    createdBy: User
+    updatedBy: User
     createdAt: DateTime!
     updatedAt: DateTime!
   }

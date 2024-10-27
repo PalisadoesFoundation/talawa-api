@@ -127,6 +127,7 @@ export const createEventVolunteerGroup: MutationResolvers["createEventVolunteerG
         group: createdVolunteerGroup._id,
         event: eventId,
         status: "invited",
+        createdBy: context.userId,
       })),
     );
 
