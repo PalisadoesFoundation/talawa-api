@@ -13,6 +13,7 @@ import type {
   EventVolunteerGroupWhereInput,
   PledgeWhereInput,
   ActionItemCategoryWhereInput,
+  EventVolunteerWhereInput,
 } from "../../../../src/types/generatedGraphQLTypes";
 
 describe("getWhere function", () => {
@@ -30,7 +31,8 @@ describe("getWhere function", () => {
         FundWhereInput &
         CampaignWhereInput &
         VenueWhereInput &
-        PledgeWhereInput
+        PledgeWhereInput &
+        EventVolunteerWhereInput
     >,
     Record<string, unknown>,
   ][] = [
@@ -337,6 +339,8 @@ describe("getWhere function", () => {
     ["campaignId", { campaignId: "6f6c" }, { _id: "6f6c" }],
     ["is_disabled", { is_disabled: true }, { isDisabled: true }],
     ["is_disabled", { is_disabled: false }, { isDisabled: false }],
+    ["hasAccepted", { hasAccepted: true }, { hasAccepted: true }],
+    ["hasAccepted", { hasAccepted: false }, { hasAccepted: false }],
   ];
 
   it.each(testCases)(

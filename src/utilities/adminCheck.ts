@@ -19,7 +19,7 @@ export const adminCheck = async (
   userId: string | Types.ObjectId,
   organization: InterfaceOrganization,
   throwError: boolean = true,
-): Promise<Boolean> => {
+): Promise<boolean> => {
   /**
    * Check if the user is listed as an admin in the organization.
    * Compares the user ID with the admin IDs in the organization.
