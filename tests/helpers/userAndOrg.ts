@@ -9,6 +9,7 @@ import type {
 import { AppUserProfile, Organization, User } from "../../src/models";
 import { encryptEmail } from "../../src/utilities/encryption";
 import crypto from "crypto";
+import { hashEmail } from "../../src/utilities/hashEmail";
 export type TestOrganizationType =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (InterfaceOrganization & Document<any, any, InterfaceOrganization>) | null;
@@ -21,10 +22,7 @@ export type TestAppUserProfileType =
   | null;
 export const createTestUser = async (): Promise<TestUserType> => {
   const email = `email${nanoid().toLowerCase()}@gmail.com`;
-  const hashedEmail = crypto
-    .createHash("sha256")
-    .update(email.toLowerCase() + process.env.HASH_PEPPER)
-    .digest("hex");
+  const hashedEmail = hashEmail(email);
 
   let testUser = await User.create({
     email: encryptEmail(email),

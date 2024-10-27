@@ -2,13 +2,13 @@ import { describe, it, expect } from "vitest";
 import {
   decryptEmail,
   encryptEmail,
-  generateRandomSalt,
+  generateRandomIV,
 } from "../../src/utilities/encryption";
 
 describe("encryptionModule", () => {
   describe("generateRandomSalt", () => {
     it("should generate a random salt of the specified length", () => {
-      const salt = generateRandomSalt();
+      const salt = generateRandomIV();
       expect(salt.length).toEqual(2 * 16);
     });
   });
@@ -19,10 +19,9 @@ describe("encryptionModule", () => {
 
       const encryptedWithEmailSalt = encryptEmail(email);
 
-      const { decrypted, salt } = decryptEmail(encryptedWithEmailSalt);
-
+      const { decrypted } = decryptEmail(encryptedWithEmailSalt);
+      expect(encryptEmail).not.toEqual(email);
       expect(decrypted).toEqual(email);
-      expect(salt.length).toEqual(2 * 16);
     });
   });
 });

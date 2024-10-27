@@ -22,7 +22,7 @@ import {
 } from "../../../src/constants";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { encryptEmail } from "../../../src/utilities/encryption";
-import crypto from "crypto";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 let testUsers: TestUserType[];
 // let testAppUserProfile: TestAppUserProfileType[];
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -127,10 +127,8 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
 
     try {
       const email = `email${nanoid().toLowerCase()}@gmail.com`;
-      const hashedEmail = crypto
-        .createHash("sha256")
-        .update(email.toLowerCase() + process.env.HASH_PEPPER)
-        .digest("hex");
+      const hashedEmail = hashEmail(email)
+
       const newUser = await User.create({
         email: encryptEmail(email),
         hashedEmail: hashedEmail,
@@ -168,11 +166,9 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      const email = "email${nanoid().toLowerCase()}@gmail.com";
-      const hashedEmail = crypto
-        .createHash("sha256")
-        .update(email.toLowerCase() + process.env.HASH_PEPPER)
-        .digest("hex");
+      const email = 'email${nanoid().toLowerCase()}@gmail.com';
+      const hashedEmail = hashEmail(email)
+
       const newUser = await User.create({
         email: encryptEmail(email),
         hashedEmail: hashedEmail,

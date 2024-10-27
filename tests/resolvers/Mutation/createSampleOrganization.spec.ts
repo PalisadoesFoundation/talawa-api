@@ -21,7 +21,7 @@ import {
 } from "../../../src/constants";
 import { connect, disconnect } from "../../helpers/db";
 import { encryptEmail } from "../../../src/utilities/encryption";
-import crypto from "crypto";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -136,10 +136,7 @@ describe("createSampleOrganization resolver", async () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email)
 
     const newUser = await User.create({
       email: encryptEmail(email),

@@ -39,11 +39,14 @@ export function encryptEmail(email: string): string {
 
 export function decryptEmail(encryptedData: string): {
   decrypted: string;
-  iv: string;
 } {
-  if (encryptedData.length < saltLength * 2) {
-    throw new Error("Invalid encrypted data: input is too short.");
-  }
+  const minLength = saltLength * 2 + authTagHexLength + 2; 
+ const maxLength = saltLength * 2 + authTagHexLength + 1000; 
+    if (encryptedData.length < minLength) {
+       throw new Error("Invalid encrypted data: input is too short.");
+   } else if (encryptedData.length > maxLength) {
+      throw new Error("Invalid encrypted data: input is too long.");
+     }
 
   const encryptionKey = process.env.ENCRYPTION_KEY;
 
@@ -79,5 +82,5 @@ export function decryptEmail(encryptedData: string): {
   } catch (error) {
     throw new Error("Decryption failed: invalid data or authentication tag.");
   }
-  return { decrypted, iv };
+  return {decrypted};
 }

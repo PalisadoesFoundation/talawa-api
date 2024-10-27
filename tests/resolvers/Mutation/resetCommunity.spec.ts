@@ -22,7 +22,7 @@ import { AppUserProfile, Community, User } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { resetCommunity } from "../../../src/resolvers/Mutation/resetCommunity";
 import { encryptEmail } from "../../../src/utilities/encryption";
-import crypto from "crypto";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser1: TestUserType;
 let testUser2: TestUserType;
@@ -84,10 +84,7 @@ describe("resolvers -> Mutation -> resetCommunity", () => {
       .mockImplementation((message) => `Translated ${message}`);
 
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email)
 
     try {
       const newUser = await User.create({

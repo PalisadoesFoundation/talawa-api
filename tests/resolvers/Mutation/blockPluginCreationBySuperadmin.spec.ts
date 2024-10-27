@@ -24,7 +24,7 @@ import { blockPluginCreationBySuperadmin as blockPluginCreationBySuperadminResol
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import { encryptEmail } from "../../../src/utilities/encryption";
-import crypto from "crypto";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -65,10 +65,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
   });
   it("throws error if user  does not have AppUserProfile", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email)
 
     try {
       const newUser = await User.create({
@@ -107,10 +104,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
   });
   it("throws error if current appUser does not have AppUserProfile", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email)
 
     try {
       const newUser = await User.create({

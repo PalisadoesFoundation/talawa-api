@@ -5,7 +5,7 @@ import { User } from "../../models";
 import { mailer } from "../../utilities";
 import { ACCESS_TOKEN_SECRET, USER_NOT_FOUND_ERROR } from "../../constants";
 import { logger } from "../../libraries";
-import crypto from "crypto";
+import { hashEmail } from "../../utilities/hashEmail";
 /**
  * This function generates otp.
  * @param _parent - parent of current request
@@ -15,10 +15,7 @@ import crypto from "crypto";
  * @returns Email to the user with the otp.
  */
 export const otp: MutationResolvers["otp"] = async (_parent, args) => {
-  const hashedEmail = crypto
-    .createHash("sha256")
-    .update(args.data.email.toLowerCase() + process.env.HASH_PEPPER)
-    .digest("hex");
+  const hashedEmail = hashEmail(args.data.email);
 
   const user = await User.findOne({
     hashedEmail: hashedEmail,

@@ -406,15 +406,21 @@ export async function setEncryptionKey(): Promise<void> {
 export async function setHashPepper(): Promise<void> {
   try {
     if (process.env.HASH_PEPPER) {
+     if (!/^[a-f0-9]{64}$/.test(process.env.HASH_PEPPER)) {
+       throw new Error("Existing hash pepper has invalid format");
+     }
       console.log("\n Hash Pepper is already present.");
     } else {
       const hashPepper = crypto.randomBytes(32).toString("hex");
       process.env.HASH_PEPPER = hashPepper;
 
+     updateEnvVariable({ HASH_PEPPER: hashPepper });
+
       console.log("\n Hash Pepper set successfully");
     }
-  } catch (err) {
-    console.error("An error occurred", err);
+  } 
+  catch (err) {
+      console.error("An error occurred:", err);
   }
 }
 
@@ -1000,6 +1006,8 @@ async function main(): Promise<void> {
   ]);
 
   await setImageUploadSize(imageSizeLimit * 1000);
+
+  await setHashPepper();
 
   await setEncryptionKey();
 

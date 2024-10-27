@@ -26,8 +26,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import _ from "lodash";
-import { decryptEmail } from "../../../src/utilities/encryption";
-import crypto from "crypto";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -84,11 +83,8 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     const signUpPayload = await signUpResolver?.({}, args, {});
 
-    const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email)
+
     const createdUser = await User.findOne({ hashedEmail: hashedEmail })
       .populate("joinedOrganizations")
       .populate("registeredEvents")
@@ -121,10 +117,8 @@ describe("resolvers -> Mutation -> signUp", () => {
     );
 
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email)
+
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -153,10 +147,8 @@ describe("resolvers -> Mutation -> signUp", () => {
     if (!email) {
       throw new Error("LAST_RESORT_SUPERADMIN_EMAIL is undefined");
     }
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email)
+    
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -181,10 +173,8 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it(`Check if the User is not being promoted to SUPER ADMIN automatically`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email)
+
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -276,10 +266,8 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it("creates user with joining the organization if userRegistrationRequired is false", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email)
+
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -319,10 +307,8 @@ describe("resolvers -> Mutation -> signUp", () => {
       visibleInSearch: false,
     });
 
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email)
+
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -353,10 +339,8 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it("creates appUserProfile with userId === createdUser._id", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email)
+
     const args: MutationSignUpArgs = {
       data: {
         email,

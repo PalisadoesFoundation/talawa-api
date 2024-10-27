@@ -31,6 +31,7 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { encryptEmail } from "../../../src/utilities/encryption";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUserSuperAdmin: TestUserType;
@@ -51,7 +52,8 @@ beforeAll(async () => {
   hashedPassword = await bcrypt.hash("password", 12);
   const adminEmail = `email${nanoid().toLowerCase()}@gmail.com`;
 
-  const hashedAdminEmail = bcrypt.hash(adminEmail, 12);
+  const hashedAdminEmail = hashEmail(adminEmail);
+
   testUserSuperAdmin = await User.create({
     email: encryptEmail(adminEmail),
     hashedEmail: hashedAdminEmail,
@@ -74,7 +76,7 @@ beforeAll(async () => {
   );
 
   const adminUserEmail = `email${nanoid().toLowerCase()}@gmail.com`;
-  const adminHashedUserEmail = bcrypt.hash(adminUserEmail, 12);
+  const adminHashedUserEmail = hashEmail(adminUserEmail);
 
   testAdminUser = await User.create({
     email: encryptEmail(adminUserEmail),
@@ -99,7 +101,7 @@ beforeAll(async () => {
   );
 
   const testMemberUserEmail = `email${nanoid().toLowerCase()}@gmail.com`;
-  const testMemberUserHashedEmail = bcrypt.hash(testMemberUserEmail, 12);
+  const testMemberUserHashedEmail = hashEmail(testMemberUserEmail)
 
   testMemberUser = await User.create({
     email: encryptEmail(testMemberUserEmail),
@@ -119,10 +121,7 @@ beforeAll(async () => {
   );
 
   const testBlockedMemberUserEmail = `email${nanoid().toLowerCase()}@gmail.com`;
-  const testBlockedMemberHashedUserEmail = bcrypt.hash(
-    testBlockedMemberUserEmail,
-    12,
-  );
+  const testBlockedMemberHashedUserEmail = hashEmail(testBlockedMemberUserEmail);
 
   testBlockedMemberUser = await User.create({
     email: encryptEmail(testBlockedMemberUserEmail),
@@ -142,10 +141,7 @@ beforeAll(async () => {
   );
 
   const testNonMemberAdminEmail = `email${nanoid().toLowerCase()}@gmail.com`;
-  const testNonMemberHashedAdminEmail = bcrypt.hash(
-    testNonMemberAdminEmail,
-    12,
-  );
+  const testNonMemberHashedAdminEmail = hashEmail(testNonMemberAdminEmail)
 
   testNonMemberAdmin = await User.create({
     email: encryptEmail(testNonMemberAdminEmail),

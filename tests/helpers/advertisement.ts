@@ -4,7 +4,7 @@ import type { InterfaceAdvertisement, InterfaceUser } from "../../src/models";
 import { Advertisement, AppUserProfile, User } from "../../src/models";
 import { createTestUserAndOrganization } from "./userAndOrg";
 import { encryptEmail } from "../../src/utilities/encryption";
-import crypto from "crypto";
+import { hashEmail } from "../../src/utilities/hashEmail";
 export type TestAdvertisementType = {
   _id: string;
   organizationId: PopulatedDoc<InterfaceAdvertisement & Document>;
@@ -43,10 +43,7 @@ export type TestSuperAdminType =
   (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
 const email = `email${nanoid().toLowerCase()}@gmail.com`;
-const hashedEmail = crypto
-  .createHash("sha256")
-  .update(email.toLowerCase() + process.env.HASH_PEPPER)
-  .digest("hex");
+const hashedEmail = hashEmail(email)
 
 export const createTestSuperAdmin = async (): Promise<TestSuperAdminType> => {
   const testSuperAdmin = await User.create({

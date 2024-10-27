@@ -23,7 +23,7 @@ import {
 } from "../../utilities";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { encryptEmail } from "../../utilities/encryption";
-import crypto from "crypto";
+import { hashEmail } from "../../utilities/hashEmail";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -33,10 +33,8 @@ import crypto from "crypto";
  * @returns Sign up details.
  */
 export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
-  const hashedEmail = crypto
-    .createHash("sha256")
-    .update(args.data.email.toLowerCase() + process.env.HASH_PEPPER)
-    .digest("hex");
+  const hashedEmail = hashEmail(args.data.email);
+
   const existingUser = await User.findOne({ hashedEmail });
   if (existingUser) {
     throw new errors.ConflictError(

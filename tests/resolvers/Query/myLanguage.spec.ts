@@ -9,8 +9,8 @@ import { connect, disconnect } from "../../helpers/db";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createTestUser } from "../../helpers/userAndOrg";
-import crypto from "crypto";
 import { encryptEmail } from "../../../src/utilities/encryption";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
@@ -36,10 +36,8 @@ describe("resolvers -> Query -> myLanguage", () => {
 
   it(`returns current user's appLanguageCode`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = crypto
-      .createHash("sha256")
-      .update(email.toLowerCase() + process.env.HASH_PEPPER)
-      .digest("hex");
+    const hashedEmail = hashEmail(email);
+
     const testUser = await User.create({
       email: encryptEmail(email),
       hashedEmail,

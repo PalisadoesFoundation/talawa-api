@@ -11,6 +11,7 @@ import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import crypto from "crypto";
+import { hashEmail } from "../../utilities/hashEmail";
 /**
  * This function enables to update user profile.
  * @param _parent - parent of current request
@@ -45,10 +46,8 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     );
   }
 
-  const hashedEmail = crypto
-    .createHash("sha256")
-    .update(args.data?.email.toLowerCase() + process.env.HASH_PEPPER)
-    .digest("hex");
+  const hashedEmail = hashEmail(args.data?.email);
+
   if (args.data?.email && args.data?.email !== currentUser?.email) {
     const userWithEmailExists = await User.findOne({
       hashedEmail: hashedEmail,

@@ -150,15 +150,9 @@ const userSchema = new Schema(
       required: true,
       validate: {
         validator: function (value: string) {
-          try {
-            const decrypted = decryptEmail(value).decrypted;
-            return validator.isEmail(decrypted);
-          } catch (error) {
-            console.error("Error decrypting the email", error);
-            return false;
-          }
+          return /^[A-Za-z0-9+/=]+$/.test(value);
         },
-        message: "Invalid email",
+        message: "Invalid email format",
       },
     },
     hashedEmail: {

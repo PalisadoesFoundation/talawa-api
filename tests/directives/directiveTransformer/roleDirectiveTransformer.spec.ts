@@ -17,7 +17,7 @@ import { User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { encryptEmail } from "../../../src/utilities/encryption";
-import crypto from "crypto";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 const app = express();
@@ -59,10 +59,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
   const email = `email${nanoid().toLowerCase()}@gmail.com`;
-  const hashedEmail = crypto
-    .createHash("sha256")
-    .update(email.toLowerCase() + process.env.HASH_PEPPER)
-    .digest("hex");
+  const hashedEmail = hashEmail(email)
 
   testUser = await User.create({
     userId: new Types.ObjectId().toString(),

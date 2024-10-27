@@ -24,7 +24,7 @@ import {
 import { updateUserPassword as updateUserPasswordResolver } from "../../../src/resolvers/Mutation/updateUserPassword";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import { encryptEmail } from "../../../src/utilities/encryption";
-import crypto from "crypto";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -40,10 +40,8 @@ beforeAll(async () => {
   hashedPassword = await bcrypt.hash("password", 12);
 
   const email = `email${nanoid().toLowerCase()}@gmail.com`;
-  const hashedEmail = crypto
-    .createHash("sha256")
-    .update(email.toLowerCase() + process.env.HASH_PEPPER)
-    .digest("hex");
+  const hashedEmail = hashEmail(email)
+
   testUser = await User.create({
     email: encryptEmail(email),
     hashedEmail: hashedEmail,

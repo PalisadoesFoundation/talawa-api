@@ -22,8 +22,8 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import crypto from "crypto";
 import { encryptEmail } from "../../../src/utilities/encryption";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -55,10 +55,8 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       };
 
       const email = `email${nanoid().toLowerCase()}@gmail.com`;
-      const hashedEmail = crypto
-        .createHash("sha256")
-        .update(email.toLowerCase() + process.env.HASH_PEPPER)
-        .digest("hex");
+      const hashedEmail = hashEmail(email);
+
       const newUser = await User.create({
         email: encryptEmail(email),
         hashedEmail: hashedEmail,

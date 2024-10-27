@@ -9,6 +9,7 @@ import {
 } from "../../constants";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { hashEmail } from "../../utilities/hashEmail";
 
 /**
  * This function enables a user to restore password.
@@ -48,10 +49,8 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
     throw new Error(INVALID_OTP);
   }
 
-  const hashedEmail = crypto
-    .createHash("sha256")
-    .update(email.toLowerCase() + process.env.HASH_PEPPER)
-    .digest("hex");
+  const hashedEmail = hashEmail(email);
+
 
   const user = await User.findOne({ hashedEmail: hashedEmail }).lean();
 
