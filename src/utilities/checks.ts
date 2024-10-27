@@ -31,12 +31,15 @@ import { findUserInCache } from "../services/UserCache/findUserInCache";
 export const checkUserExists = async (
   userId: string,
 ): Promise<InterfaceUser> => {
+  let currentUser: InterfaceUser | null;
   const userFoundInCache = await findUserInCache([userId]);
-  if (userFoundInCache[0]) {
-    return userFoundInCache[0];
+  currentUser = userFoundInCache[0];
+
+  if (currentUser === null) {
+    currentUser = await User.findById(userId).lean();
+    if (currentUser !== null) await cacheUsers([currentUser]);
   }
 
-  const currentUser = await User.findById(userId).lean();
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -44,8 +47,6 @@ export const checkUserExists = async (
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-
-  await cacheUsers([currentUser]);
   return currentUser;
 };
 
