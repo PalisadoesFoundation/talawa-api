@@ -125,7 +125,7 @@ export const assignToUserTags: MutationResolvers["assignToUserTags"] = async (
   const selectedTags = await OrganizationTagUser.find({
     _id: { $in: args.input.selectedTagIds },
   }).lean();
-  
+
   // Check if all requested tags were found
   if (selectedTags.length !== args.input.selectedTagIds.length) {
     throw new errors.NotFoundError(
