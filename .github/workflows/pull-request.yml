@@ -90,9 +90,9 @@ jobs:
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
           exit 1
 
-  Check-Unauthorized-Changes:
+  Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Checks if no unauthorized files are changed
+    name: Checks if sensitive files have been changed without authorization
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
