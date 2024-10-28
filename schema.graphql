@@ -1068,6 +1068,7 @@ type Mutation {
   addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
   addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
+  assignToUserTags(input: TagActionsInput!): UserTag
   assignUserTag(input: ToggleUserTagAssignInput!): User
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): AppUserProfile!
   blockUser(organizationId: ID!, userId: ID!): User!
@@ -1129,6 +1130,7 @@ type Mutation {
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
   removeEventVolunteerGroup(id: ID!): EventVolunteerGroup!
+  removeFromUserTags(input: TagActionsInput!): UserTag
   removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): UserData!
@@ -1607,6 +1609,11 @@ enum Status {
 type Subscription {
   messageSentToChat(userId: ID!): ChatMessage
   onPluginUpdate: Plugin
+}
+
+input TagActionsInput {
+  currentTagId: ID!
+  selectedTagIds: [ID!]!
 }
 
 scalar Time
