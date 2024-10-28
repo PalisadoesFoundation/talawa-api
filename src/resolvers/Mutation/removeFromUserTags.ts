@@ -92,9 +92,7 @@ export const removeFromUserTags: MutationResolvers["removeFromUserTags"] =
 
     // Boolean to determine whether user is an admin of the organization of the current tag.
     const currentUserIsOrganizationAdmin = currentUserAppProfile.adminFor.some(
-      (orgId) =>
-        orgId &&
-        new Types.ObjectId(orgId.toString()).equals(currentTag.organizationId),
+      (orgId) => orgId?.toString() === currentTag.organizationId.toString(),
     );
 
     if (
@@ -107,19 +105,17 @@ export const removeFromUserTags: MutationResolvers["removeFromUserTags"] =
       );
     }
 
-    // Find all users with the currentTagId
-    const usersWithCurrentTag = await TagUser.find({
-      tagId: currentTag._id,
-    }).lean();
+    // Find selected tags & all users tagged with the current tag
+    const [selectedTags, usersWithCurrentTag] = await Promise.all([
+      OrganizationTagUser.find({
+        _id: { $in: args.input.selectedTagIds },
+      }).lean(),
+      TagUser.find({ tagId: currentTag._id }).lean(),
+    ]);
 
     const userIdsWithCurrentTag = usersWithCurrentTag.map(
       (userTag) => userTag.userId,
     );
-
-    // Validate selected tags
-    const selectedTags = await OrganizationTagUser.find({
-      _id: { $in: args.input.selectedTagIds },
-    }).lean();
 
     if (selectedTags.length !== args.input.selectedTagIds.length) {
       throw new errors.NotFoundError(

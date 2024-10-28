@@ -125,42 +125,21 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
   });
 
   it("throws error if user does not have appUserProfile", async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
+    const temp = await createTestUser();
+    await AppUserProfile.deleteOne({
+      userId: temp?._id,
+    });
 
-    try {
-      const args: MutationRemoveFromUserTagsArgs = {
+    await testErrorScenario({
+      args: {
         input: {
           selectedTagIds: [testTag?._id.toString() ?? ""],
           currentTagId: testTag?._id.toString() ?? "",
         },
-      };
-
-      const temp = await createTestUser();
-
-      await AppUserProfile.deleteOne({
-        userId: temp?._id,
-      });
-
-      const context = {
-        userId: temp?._id,
-      };
-
-      const { removeFromUserTags: removeFromUserTagsResolver } = await import(
-        "../../../src/resolvers/Mutation/removeFromUserTags"
-      );
-
-      await removeFromUserTagsResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
-      );
-      expect(spy).toHaveBeenLastCalledWith(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
-      );
-    }
+      },
+      context: { userId: temp?._id },
+      expectedError: USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+    });
   });
 
   it(`Tag removal should be successful and the tag is returned`, async () => {
