@@ -124,6 +124,7 @@ export const assignToUserTags: MutationResolvers["assignToUserTags"] = async (
   // Validate selected tags
   const selectedTags = await OrganizationTagUser.find({
     _id: { $in: args.input.selectedTagIds },
+    organizationId: currentTag.organizationId,
   }).lean();
 
   // Check if all requested tags were found
@@ -157,7 +158,7 @@ export const assignToUserTags: MutationResolvers["assignToUserTags"] = async (
     Array.from(allTagsToAssign).map((tagId) => ({
       updateOne: {
         filter: { userId, tagId: new Types.ObjectId(tagId) },
-        update: { $setOnInsert: { userId, tagId } },
+        update: { $setOnInsert: { userId, tagId: new Types.ObjectId(tagId) } },
         upsert: true,
         setDefaultsOnInsert: true,
       },

@@ -70,70 +70,62 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
   });
 
   it(`throws NotFoundError if no user exists with _id === context.userId `, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationRemoveFromUserTagsArgs = {
+    await testErrorScenario({
+      args: {
         input: {
           selectedTagIds: [testTag?._id.toString() ?? ""],
           currentTagId: testTag?._id.toString() ?? "",
         },
-      };
-
-      const context = { userId: new Types.ObjectId().toString() };
-
-      const { removeFromUserTags: removeFromUserTagsResolver } = await import(
-        "../../../src/resolvers/Mutation/removeFromUserTags"
-      );
-
-      await removeFromUserTagsResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
+      },
+      context: { userId: new Types.ObjectId().toString() },
+      expectedError: USER_NOT_FOUND_ERROR.MESSAGE,
+    });
   });
 
   it(`throws NotFoundError if no tag exists with _id === args.input.currentTagId `, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationRemoveFromUserTagsArgs = {
+    await testErrorScenario({
+      args: {
         input: {
           selectedTagIds: [testTag?._id.toString() ?? ""],
-          currentTagId: new Types.ObjectId().toString(),
+          currentTagId: adminUser?._id,
         },
-      };
-
-      const context = {
-        userId: adminUser?._id,
-      };
-
-      const { removeFromUserTags: removeFromUserTagsResolver } = await import(
-        "../../../src/resolvers/Mutation/removeFromUserTags"
-      );
-
-      await removeFromUserTagsResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toHaveBeenLastCalledWith(TAG_NOT_FOUND.MESSAGE);
-      expect((error as Error).message).toEqual(
-        `Translated ${TAG_NOT_FOUND.MESSAGE}`,
-      );
-    }
+      },
+      context: { userId: adminUser?._id },
+      expectedError: TAG_NOT_FOUND.MESSAGE,
+    });
   });
 
-  it(`throws Not Authorized Error if the current user is not a superadmin or admin of the organization of the tag being assigned`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
+  it(`throws Not Authorized Error if the current user is not a superadmin or admin of the organization `, async () => {
+    await testErrorScenario({
+      args: {
+        input: {
+          selectedTagIds: [testTag?._id.toString() ?? ""],
+          currentTagId: testTag?._id.toString() ?? "",
+        },
+      },
+      context: { userId: randomUser?._id },
+      expectedError: USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+    });
+  });
 
+  it(`throws NotFoundError if one of the selected tags doesn't exist `, async () => {
+    await testErrorScenario({
+      args: {
+        input: {
+          selectedTagIds: [
+            testTag?._id.toString() ?? "",
+            new Types.ObjectId().toString(),
+          ],
+          currentTagId: testTag?._id.toString() ?? "",
+        },
+      },
+      context: { userId: adminUser?._id },
+      expectedError: TAG_NOT_FOUND.MESSAGE,
+    });
+  });
+
+  it("throws error if user does not have appUserProfile", async () => {
+    const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
@@ -146,8 +138,14 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
         },
       };
 
+      const temp = await createTestUser();
+
+      await AppUserProfile.deleteOne({
+        userId: temp?._id,
+      });
+
       const context = {
-        userId: randomUser?._id,
+        userId: temp?._id,
       };
 
       const { removeFromUserTags: removeFromUserTagsResolver } = await import(
@@ -162,39 +160,6 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
       expect(spy).toHaveBeenLastCalledWith(
         `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
-    }
-  });
-
-  it(`throws NotFoundError if one of the selected tags doesn't exist`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationRemoveFromUserTagsArgs = {
-        input: {
-          selectedTagIds: [
-            testTag?._id.toString() ?? "",
-            new Types.ObjectId().toString(),
-          ],
-          currentTagId: testTag?._id.toString() ?? "",
-        },
-      };
-
-      const context = { userId: adminUser?._id };
-
-      const { removeFromUserTags: removeFromUserTagsResolver } = await import(
-        "../../../src/resolvers/Mutation/removeFromUserTags"
-      );
-
-      await removeFromUserTagsResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Translated ${TAG_NOT_FOUND.MESSAGE}`,
-      );
-      expect(spy).toHaveBeenLastCalledWith(TAG_NOT_FOUND.MESSAGE);
     }
   });
 
@@ -263,7 +228,7 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
 
     const tagAssignedToRandomUser2 = await TagUser.exists({
       tagId: testTag3,
-      userId: randomUser1?._id,
+      userId: randomUser2?._id,
     });
 
     expect(tagAssignedToRandomUser1).toBeTruthy();
@@ -296,7 +261,7 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
 
     const tagExistsForRandomUser2 = await TagUser.exists({
       tagId: testTag3,
-      userId: randomUser1?._id,
+      userId: randomUser2?._id,
     });
 
     expect(tagExistsForRandomUser1).toBeFalsy();
@@ -437,43 +402,30 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
     expect(ancestorTagExistsForRandomUser1).toBeFalsy();
     expect(ancestorTagExistsForRandomUser2).toBeFalsy();
   });
-
-  it("throws error if user does not have appUserProfile", async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationRemoveFromUserTagsArgs = {
-        input: {
-          selectedTagIds: [testTag?._id.toString() ?? ""],
-          currentTagId: testTag?._id.toString() ?? "",
-        },
-      };
-
-      const temp = await createTestUser();
-
-      await AppUserProfile.deleteOne({
-        userId: temp?._id,
-      });
-
-      const context = {
-        userId: temp?._id,
-      };
-
-      const { removeFromUserTags: removeFromUserTagsResolver } = await import(
-        "../../../src/resolvers/Mutation/removeFromUserTags"
-      );
-
-      await removeFromUserTagsResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
-      );
-      expect(spy).toHaveBeenLastCalledWith(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
-      );
-    }
-  });
 });
+
+const testErrorScenario = async ({
+  args,
+  context,
+  expectedError,
+}: {
+  args: MutationRemoveFromUserTagsArgs;
+  context: { userId: string };
+  expectedError: string;
+}): Promise<void> => {
+  const { requestContext } = await import("../../../src/libraries");
+  const spy = vi
+    .spyOn(requestContext, "translate")
+    .mockImplementationOnce((message) => `Translated ${message}`);
+
+  try {
+    const { removeFromUserTags: removeFromUserTagsResolver } = await import(
+      "../../../src/resolvers/Mutation/removeFromUserTags"
+    );
+    await removeFromUserTagsResolver?.({}, args, context);
+    throw new Error("Expected error was not thrown");
+  } catch (error: unknown) {
+    expect((error as Error).message).toEqual(`Translated ${expectedError}`);
+    expect(spy).toHaveBeenLastCalledWith(expectedError);
+  }
+};
