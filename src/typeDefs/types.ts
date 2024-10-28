@@ -663,6 +663,10 @@ export const types = gql`
     """
     parentTag: UserTag
     """
+    A field to traverse the ancestor tags of this UserTag.
+    """
+    ancestorTags: [UserTag]
+    """
     A connection field to traverse a list of UserTag this UserTag is a
     parent to.
     """

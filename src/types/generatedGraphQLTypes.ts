@@ -2995,6 +2995,8 @@ export type UserTag = {
   __typename?: 'UserTag';
   /** A field to get the mongodb object id identifier for this UserTag. */
   _id: Scalars['ID']['output'];
+  /** A field to traverse the ancestor tags of this UserTag. */
+  ancestorTags?: Maybe<Array<Maybe<UserTag>>>;
   /**
    * A connection field to traverse a list of UserTag this UserTag is a
    * parent to.
@@ -4699,6 +4701,7 @@ export type UserPhoneResolvers<ContextType = any, ParentType extends ResolversPa
 
 export type UserTagResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTag'] = ResolversParentTypes['UserTag']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ancestorTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTag']>>>, ParentType, ContextType>;
   childTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagChildTagsArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;

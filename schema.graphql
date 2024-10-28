@@ -1907,6 +1907,9 @@ type UserTag {
   """A field to get the mongodb object id identifier for this UserTag."""
   _id: ID!
 
+  """A field to traverse the ancestor tags of this UserTag."""
+  ancestorTags: [UserTag]
+
   """
   A connection field to traverse a list of UserTag this UserTag is a
   parent to.
