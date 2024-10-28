@@ -192,18 +192,18 @@ describe("resolvers -> Mutation -> assignToUserTags", () => {
 
     expect(payload?._id.toString()).toEqual(testTag2?._id.toString());
 
-    const tagAssignedToRandomUser1 = await TagUser.exists({
+    const tagAssignedToRandomUser2 = await TagUser.exists({
       tagId: testTag3,
       userId: randomUser2?._id,
     });
 
-    const tagAssignedToRandomUser2 = await TagUser.exists({
+    const tagAssignedToRandomUser3 = await TagUser.exists({
       tagId: testTag3,
       userId: randomUser3?._id,
     });
 
-    expect(tagAssignedToRandomUser1).toBeTruthy();
     expect(tagAssignedToRandomUser2).toBeTruthy();
+    expect(tagAssignedToRandomUser3).toBeTruthy();
   });
 
   it(`Should assign all the ancestor tags and returns the current tag`, async () => {
@@ -260,31 +260,31 @@ describe("resolvers -> Mutation -> assignToUserTags", () => {
 
     expect(payload?._id.toString()).toEqual(newTestTag?._id.toString());
 
-    const subTagAssignedToRandomUser1 = await TagUser.exists({
+    const subTagAssignedToRandomUser2 = await TagUser.exists({
       tagId: testSubTag1?._id,
       userId: randomUser2?._id,
     });
 
-    const subTagAssignedToRandomUser2 = await TagUser.exists({
+    const subTagAssignedToRandomUser3 = await TagUser.exists({
       tagId: testSubTag1?._id,
       userId: randomUser3?._id,
     });
 
-    expect(subTagAssignedToRandomUser1).toBeTruthy();
     expect(subTagAssignedToRandomUser2).toBeTruthy();
-
-    const ancestorTagAssignedToRandomUser1 = await TagUser.exists({
-      tagId: testTag?._id.toString() ?? "",
-      userId: randomUser2?._id,
-    });
+    expect(subTagAssignedToRandomUser3).toBeTruthy();
 
     const ancestorTagAssignedToRandomUser2 = await TagUser.exists({
       tagId: testTag?._id.toString() ?? "",
+      userId: randomUser2?._id,
+    });
+
+    const ancestorTagAssignedToRandomUser3 = await TagUser.exists({
+      tagId: testTag?._id.toString() ?? "",
       userId: randomUser3?._id,
     });
 
-    expect(ancestorTagAssignedToRandomUser1).toBeTruthy();
     expect(ancestorTagAssignedToRandomUser2).toBeTruthy();
+    expect(ancestorTagAssignedToRandomUser3).toBeTruthy();
   });
 });
 
@@ -302,10 +302,10 @@ const testErrorScenario = async ({
     .spyOn(requestContext, "translate")
     .mockImplementationOnce((message) => `Translated ${message}`);
   try {
-    const { assignToUserTags: assignToUserTags } = await import(
+    const { assignToUserTags: assignToUserTagsResolver } = await import(
       "../../../src/resolvers/Mutation/assignToUserTags"
     );
-    await assignToUserTags?.({}, args, context);
+    await assignToUserTagsResolver?.({}, args, context);
     throw new Error("Expected error was not thrown");
   } catch (error: unknown) {
     if (error instanceof Error) {

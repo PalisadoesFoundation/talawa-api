@@ -201,18 +201,18 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
       testTag2?._id.toString(),
     );
 
-    const tagAssignedToRandomUser1 = await TagUser.exists({
+    const tagAssignedToRandomUser2 = await TagUser.exists({
       tagId: testTag3,
       userId: randomUser2?._id,
     });
 
-    const tagAssignedToRandomUser2 = await TagUser.exists({
+    const tagAssignedToRandomUser3 = await TagUser.exists({
       tagId: testTag3,
       userId: randomUser3?._id,
     });
 
-    expect(tagAssignedToRandomUser1).toBeTruthy();
     expect(tagAssignedToRandomUser2).toBeTruthy();
+    expect(tagAssignedToRandomUser3).toBeTruthy();
 
     // now remove them from that tag with the help of removeFromUserTags mutation
     const args: MutationRemoveFromUserTagsArgs = {
@@ -234,18 +234,18 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
 
     expect(payload?._id.toString()).toEqual(testTag2?._id.toString());
 
-    const tagExistsForRandomUser1 = await TagUser.exists({
+    const tagExistsForRandomUser2 = await TagUser.exists({
       tagId: testTag3,
       userId: randomUser2?._id,
     });
 
-    const tagExistsForRandomUser2 = await TagUser.exists({
+    const tagExistsForRandomUser3 = await TagUser.exists({
       tagId: testTag3,
       userId: randomUser3?._id,
     });
 
-    expect(tagExistsForRandomUser1).toBeFalsy();
     expect(tagExistsForRandomUser2).toBeFalsy();
+    expect(tagExistsForRandomUser3).toBeFalsy();
   });
 
   it(`Should remove all the decendent tags too and returns the current tag`, async () => {
@@ -308,31 +308,31 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
       newTestTag?._id.toString(),
     );
 
-    const subTagAssignedToRandomUser1 = await TagUser.exists({
+    const subTagAssignedToRandomUser2 = await TagUser.exists({
       tagId: testSubTag1?._id,
       userId: randomUser2?._id,
     });
 
-    const subTagAssignedToRandomUser2 = await TagUser.exists({
+    const subTagAssignedToRandomUser3 = await TagUser.exists({
       tagId: testSubTag1?._id,
       userId: randomUser3?._id,
     });
 
-    expect(subTagAssignedToRandomUser1).toBeTruthy();
     expect(subTagAssignedToRandomUser2).toBeTruthy();
-
-    const ancestorTagAssignedToRandomUser1 = await TagUser.exists({
-      tagId: testTag?._id.toString() ?? "",
-      userId: randomUser2?._id,
-    });
+    expect(subTagAssignedToRandomUser3).toBeTruthy();
 
     const ancestorTagAssignedToRandomUser2 = await TagUser.exists({
       tagId: testTag?._id.toString() ?? "",
+      userId: randomUser2?._id,
+    });
+
+    const ancestorTagAssignedToRandomUser3 = await TagUser.exists({
+      tagId: testTag?._id.toString() ?? "",
       userId: randomUser3?._id,
     });
 
-    expect(ancestorTagAssignedToRandomUser1).toBeTruthy();
     expect(ancestorTagAssignedToRandomUser2).toBeTruthy();
+    expect(ancestorTagAssignedToRandomUser3).toBeTruthy();
 
     // now remove the parent tag, which will also remove the subtags
     const args: MutationRemoveFromUserTagsArgs = {
@@ -353,31 +353,31 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
 
     expect(payload?._id.toString()).toEqual(newTestTag?._id.toString());
 
-    const subTagExistsForRandomUser1 = await TagUser.exists({
+    const subTagExistsForRandomUser2 = await TagUser.exists({
       tagId: testSubTag1?._id,
       userId: randomUser2?._id,
     });
 
-    const subTagExistsForRandomUser2 = await TagUser.exists({
+    const subTagExistsForRandomUser3 = await TagUser.exists({
       tagId: testSubTag1?._id,
       userId: randomUser3?._id,
     });
 
-    expect(subTagExistsForRandomUser1).toBeFalsy();
     expect(subTagExistsForRandomUser2).toBeFalsy();
-
-    const ancestorTagExistsForRandomUser1 = await TagUser.exists({
-      tagId: testTag?._id.toString() ?? "",
-      userId: randomUser2?._id,
-    });
+    expect(subTagExistsForRandomUser3).toBeFalsy();
 
     const ancestorTagExistsForRandomUser2 = await TagUser.exists({
       tagId: testTag?._id.toString() ?? "",
+      userId: randomUser2?._id,
+    });
+
+    const ancestorTagExistsForRandomUser3 = await TagUser.exists({
+      tagId: testTag?._id.toString() ?? "",
       userId: randomUser3?._id,
     });
 
-    expect(ancestorTagExistsForRandomUser1).toBeFalsy();
     expect(ancestorTagExistsForRandomUser2).toBeFalsy();
+    expect(ancestorTagExistsForRandomUser3).toBeFalsy();
   });
 });
 
