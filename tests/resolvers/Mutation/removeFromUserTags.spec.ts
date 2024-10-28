@@ -48,14 +48,18 @@ let testTag: TestUserTagType;
 let testSubTag1: TestUserTagType;
 let testOrg1: TestOrganizationType;
 let testOrg2: TestOrganizationType;
-let randomUser: TestUserType;
+let randomUser1: TestUserType;
+let randomUser2: TestUserType;
+let randomUser3: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [adminUser, testOrg1, [testTag, testSubTag1]] =
     await createTwoLevelTagsWithOrg();
   [adminUser2, testOrg2, [testTag2, testTag3]] = await createRootTagsWithOrg(2);
-  randomUser = await createTestUser();
+  randomUser1 = await createTestUser();
+  randomUser2 = await createTestUser();
+  randomUser3 = await createTestUser();
 });
 
 afterAll(async () => {
@@ -103,7 +107,7 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
           currentTagId: testTag?._id.toString() ?? "",
         },
       },
-      context: { userId: randomUser?._id },
+      context: { userId: randomUser1?._id },
       expectedError: USER_NOT_AUTHORIZED_ERROR.MESSAGE,
     });
   });
@@ -143,19 +147,8 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
   });
 
   it(`Tag removal should be successful and the tag is returned`, async () => {
-    // create random users and assign them testTag2
-    const randomUser1 = await createTestUser();
-    const randomUser2 = await createTestUser();
-
+    // assign testTag2 to random users
     await Promise.all([
-      User.findOneAndUpdate(
-        {
-          _id: randomUser1?._id,
-        },
-        {
-          joinedOrganizations: testOrg2,
-        },
-      ),
       User.findOneAndUpdate(
         {
           _id: randomUser2?._id,
@@ -164,12 +157,20 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
           joinedOrganizations: testOrg2,
         },
       ),
+      User.findOneAndUpdate(
+        {
+          _id: randomUser3?._id,
+        },
+        {
+          joinedOrganizations: testOrg2,
+        },
+      ),
       TagUser.create({
-        userId: randomUser1?._id,
+        userId: randomUser2?._id,
         tagId: testTag2?._id,
       }),
       TagUser.create({
-        userId: randomUser2?._id,
+        userId: randomUser3?._id,
         tagId: testTag2?._id,
       }),
     ]);
@@ -202,12 +203,12 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
 
     const tagAssignedToRandomUser1 = await TagUser.exists({
       tagId: testTag3,
-      userId: randomUser1?._id,
+      userId: randomUser2?._id,
     });
 
     const tagAssignedToRandomUser2 = await TagUser.exists({
       tagId: testTag3,
-      userId: randomUser2?._id,
+      userId: randomUser3?._id,
     });
 
     expect(tagAssignedToRandomUser1).toBeTruthy();
@@ -235,12 +236,12 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
 
     const tagExistsForRandomUser1 = await TagUser.exists({
       tagId: testTag3,
-      userId: randomUser1?._id,
+      userId: randomUser2?._id,
     });
 
     const tagExistsForRandomUser2 = await TagUser.exists({
       tagId: testTag3,
-      userId: randomUser2?._id,
+      userId: randomUser3?._id,
     });
 
     expect(tagExistsForRandomUser1).toBeFalsy();
@@ -254,19 +255,8 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
       organizationId: testOrg1?._id,
     });
 
-    // create random users and assign them this new test tag
-    const randomUser1 = await createTestUser();
-    const randomUser2 = await createTestUser();
-
+    // assign this new test tag to random users
     await Promise.all([
-      User.findOneAndUpdate(
-        {
-          _id: randomUser1?._id,
-        },
-        {
-          joinedOrganizations: testOrg1,
-        },
-      ),
       User.findOneAndUpdate(
         {
           _id: randomUser2?._id,
@@ -275,12 +265,20 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
           joinedOrganizations: testOrg1,
         },
       ),
+      User.findOneAndUpdate(
+        {
+          _id: randomUser3?._id,
+        },
+        {
+          joinedOrganizations: testOrg1,
+        },
+      ),
       TagUser.create({
-        userId: randomUser1?._id,
+        userId: randomUser2?._id,
         tagId: newTestTag?._id,
       }),
       TagUser.create({
-        userId: randomUser2?._id,
+        userId: randomUser3?._id,
         tagId: newTestTag?._id,
       }),
     ]);
@@ -312,12 +310,12 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
 
     const subTagAssignedToRandomUser1 = await TagUser.exists({
       tagId: testSubTag1?._id,
-      userId: randomUser1?._id,
+      userId: randomUser2?._id,
     });
 
     const subTagAssignedToRandomUser2 = await TagUser.exists({
       tagId: testSubTag1?._id,
-      userId: randomUser2?._id,
+      userId: randomUser3?._id,
     });
 
     expect(subTagAssignedToRandomUser1).toBeTruthy();
@@ -325,12 +323,12 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
 
     const ancestorTagAssignedToRandomUser1 = await TagUser.exists({
       tagId: testTag?._id.toString() ?? "",
-      userId: randomUser1?._id,
+      userId: randomUser2?._id,
     });
 
     const ancestorTagAssignedToRandomUser2 = await TagUser.exists({
       tagId: testTag?._id.toString() ?? "",
-      userId: randomUser2?._id,
+      userId: randomUser3?._id,
     });
 
     expect(ancestorTagAssignedToRandomUser1).toBeTruthy();
@@ -357,12 +355,12 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
 
     const subTagExistsForRandomUser1 = await TagUser.exists({
       tagId: testSubTag1?._id,
-      userId: randomUser1?._id,
+      userId: randomUser2?._id,
     });
 
     const subTagExistsForRandomUser2 = await TagUser.exists({
       tagId: testSubTag1?._id,
-      userId: randomUser2?._id,
+      userId: randomUser3?._id,
     });
 
     expect(subTagExistsForRandomUser1).toBeFalsy();
@@ -370,12 +368,12 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
 
     const ancestorTagExistsForRandomUser1 = await TagUser.exists({
       tagId: testTag?._id.toString() ?? "",
-      userId: randomUser1?._id,
+      userId: randomUser2?._id,
     });
 
     const ancestorTagExistsForRandomUser2 = await TagUser.exists({
       tagId: testTag?._id.toString() ?? "",
-      userId: randomUser2?._id,
+      userId: randomUser3?._id,
     });
 
     expect(ancestorTagExistsForRandomUser1).toBeFalsy();
@@ -404,7 +402,11 @@ const testErrorScenario = async ({
     await removeFromUserTagsResolver?.({}, args, context);
     throw new Error("Expected error was not thrown");
   } catch (error: unknown) {
-    expect((error as Error).message).toEqual(`Translated ${expectedError}`);
+    if (error instanceof Error) {
+      expect(error.message).toEqual(`Translated ${expectedError}`);
+    } else {
+      throw new Error("Unexpected error type");
+    }
     expect(spy).toHaveBeenLastCalledWith(expectedError);
   }
 };
