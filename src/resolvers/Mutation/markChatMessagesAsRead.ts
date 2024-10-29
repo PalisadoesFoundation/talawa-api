@@ -43,11 +43,9 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
       chat.unseenMessagesByUsers as unknown as string,
     );
 
-    Object.keys(unseenMessagesByUsers).map((user: string) => {
-      if (user === context.userId) {
-        unseenMessagesByUsers[user] = 0;
-      }
-    });
+    if (unseenMessagesByUsers[context.userId] !== undefined) {
+      unseenMessagesByUsers[context.userId] = 0;
+    }
 
     const updatedChat = await Chat.findByIdAndUpdate(
       {
