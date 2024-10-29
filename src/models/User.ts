@@ -248,15 +248,11 @@ userSchema.pre('save', async function (next) {
       throw new Error('HASH_PEPPER environment variable is not configured');
     }
     
-    try {
-      if (!/^[A-Za-z0-9+/=]+$/.test(this.email)) {
-        throw new Error('Invalid encrypted email format');
-      }
-      
+    try {     
       const decrypted = decryptEmail(this.email).decrypted;
       if (!validator.isEmail(decrypted)) {
-        throw new Error('Invalid email format');
-      }
+        throw new Error('The provided email address is invalid');
+        }
       
       this.hashedEmail = crypto
         .createHmac('sha256', process.env.HASH_PEPPER)

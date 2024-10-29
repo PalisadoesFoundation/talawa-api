@@ -12,6 +12,7 @@ import { faker } from "@faker-js/faker";
 import type mongoose from "mongoose";
 import { SampleData } from "../models/SampleData";
 import { encryptEmail } from "./encryption";
+import { hashEmail } from "./hashEmail";
 
 /* eslint-disable */
 
@@ -40,18 +41,19 @@ export const generateUserData = async (
     adminFor.push(organizationId);
   }
 
-  const encryptedEmail = encryptEmail(
-    `${fname.toLowerCase()}${lname.toLowerCase()}@${faker.helpers.arrayElement([
+  const email = `${fname.toLowerCase()}${lname.toLowerCase()}@${faker.helpers.arrayElement([
       "xyz",
       "abc",
       "lmnop",
-    ])}.com`,
-  );
+    ])}.com`
+
+  const hashedEmail = hashEmail(email);
 
   const user = new User({
     firstName: fname,
     lastName: lname,
-    email: encryptedEmail,
+    email: encryptEmail(email),
+    hashedEmail: hashedEmail,
     password: "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
     joinedOrganizations: [organizationId],
   });

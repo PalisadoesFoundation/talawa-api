@@ -11,6 +11,7 @@ import type { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestUser } from "../../helpers/user";
 import { decryptEmail, encryptEmail } from "../../../src/utilities/encryption";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 
 let testUsers: (InterfaceUser & Document<unknown, unknown, InterfaceUser>)[];
 
@@ -82,33 +83,43 @@ describe("resolvers -> Query -> users", () => {
 
   describe("", () => {
     beforeAll(async () => {
+      const email1 = `email${nanoid().toLowerCase()}@gmail.com`;
+      const email2 = `email${nanoid().toLowerCase()}@gmail.com`;
+      const email3 = `email${nanoid().toLowerCase()}@gmail.com`;
+      const email4 = `email${nanoid().toLowerCase()}@gmail.com`;
+      const email5 = `email${nanoid().toLowerCase()}@gmail.com`;
       testUsers = await User.insertMany([
         {
-          email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
+          email: encryptEmail(email1),
+          hashedEmail: hashEmail(email1),
           password: "password",
           firstName: `firstName${nanoid()}`,
           lastName: `lastName${nanoid()}`,
         },
         {
-          email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
+          email: encryptEmail(email2),
+          hashedEmail: hashEmail(email2),
           password: "password",
           firstName: `firstName${nanoid()}`,
           lastName: `lastName${nanoid()}`,
         },
         {
-          email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
+          email: encryptEmail(email3),
+          hashedEmail: hashEmail(email3),
           password: "password",
           firstName: `firstName${nanoid()}`,
           lastName: `lastName${nanoid()}`,
         },
         {
-          email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
+          email: encryptEmail(email4),
+          hashedEmail: hashEmail(email4),
           password: "password",
           firstName: `firstName${nanoid()}`,
           lastName: `lastName${nanoid()}`,
         },
         {
-          email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
+          email: encryptEmail(email5),
+          hashedEmail: hashEmail(email5),
           password: "password",
           firstName: `firstName${nanoid()}`,
           lastName: `lastName${nanoid()}`,

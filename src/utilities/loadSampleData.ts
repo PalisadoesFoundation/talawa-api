@@ -13,6 +13,7 @@ import {
 } from "../models";
 import { RecurrenceRule } from "../models/RecurrenceRule";
 import { encryptEmail } from "./encryption";
+import { hashEmail } from "./hashEmail";
 
 interface InterfaceArgs {
   items?: string;
@@ -116,6 +117,8 @@ async function insertCollections(collections: string[]): Promise<void> {
           for (const user of docs) {
             if (user.email && typeof user.email === "string") {
               const encryptedEmail = encryptEmail(user.email as string);
+              const hashedEmail = hashEmail(user.email);
+              user.hashedEmail = hashedEmail;
               user.email = encryptedEmail;
             } else {
               console.warn(`User with ID ${user.id} has an invalid email.`);
