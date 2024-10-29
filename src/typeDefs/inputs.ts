@@ -438,6 +438,16 @@ export const inputs = gql`
     tagId: ID!
   }
 
+  input AddPeopleToUserTagInput {
+    userIds: [ID!]!
+    tagId: ID!
+  }
+
+  input TagActionsInput {
+    currentTagId: ID!
+    selectedTagIds: [ID!]!
+  }
+
   input UpdateActionItemInput {
     assigneeId: ID
     preCompletionNotes: String

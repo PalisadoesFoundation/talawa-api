@@ -35,6 +35,14 @@ export const mutations = gql`
 
     addUserToUserFamily(userId: ID!, familyId: ID!): UserFamily! @auth
 
+    addPeopleToUserTag(input: AddPeopleToUserTagInput!): UserTag
+      @auth
+      @role(requires: ADMIN)
+
+    assignToUserTags(input: TagActionsInput!): UserTag
+      @auth
+      @role(requires: ADMIN)
+
     removeUserFromUserFamily(userId: ID!, familyId: ID!): UserFamily! @auth
 
     removeUserFamily(familyId: ID!): UserFamily! @auth
@@ -223,6 +231,10 @@ export const mutations = gql`
     removeSampleOrganization: Boolean! @auth
 
     removeUserImage: User! @auth
+
+    removeFromUserTags(input: TagActionsInput!): UserTag
+      @auth
+      @role(requires: ADMIN)
 
     resetCommunity: Boolean! @auth @role(requires: SUPERADMIN)
 
