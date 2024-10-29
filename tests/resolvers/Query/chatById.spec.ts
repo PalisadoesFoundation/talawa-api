@@ -27,7 +27,6 @@ describe("resolvers->Query->chatById", () => {
       id: testChat?._id?.toString() ?? "",
     };
     const chatByIdPayload = await chatById?.({}, args, { apiRootUrl: "" });
-    console.log(chatByIdPayload, testChat?.toObject());
     expect(chatByIdPayload).toEqual(testChat?.toObject());
   });
   it(`throws chat not found if chat not found for args.id`, async () => {
@@ -54,7 +53,6 @@ describe("resolvers->Query->chatById", () => {
       id: chat?._id?.toString() ?? "",
     };
     const chatByIdPayload = await chatById?.({}, args, { apiRootUrl: "" });
-    console.log(chatByIdPayload);
     expect(chatByIdPayload).toEqual(chat?.toObject());
   });
 });
