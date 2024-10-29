@@ -10,8 +10,21 @@ import { Chat, ChatMessage, User } from "../../models";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-// import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 
+// generate the snippet from the following code
+/**
+ * This function enables to update a chat message.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the chat message exists.
+ * 2. If the chat exists.
+ * 3. If the user exists.
+ * 4. If the user is a member of the chat.
+ * 5. If the user is the sender of the message.
+ * @returns Updated chat message.
+ */
 export const updateChatMessage: MutationResolvers["updateChatMessage"] = async (
   _parent,
   args,
