@@ -7,10 +7,20 @@ const authTagHexLength = authTagLength * 2;
 
 const ivLength = 16;
 
+/**
+ * Generates a random initialization vector (IV) for encryption.
+ * @returns {string} A randomly generated IV as a hexadecimal string.
+ */
 export function generateRandomIV(): string {
   return crypto.randomBytes(ivLength).toString("hex");
 }
 
+/**
+ * Encrypts an email using AES-256-GCM with the provided encryption key.
+ * @param email - The email address to be encrypted.
+ * @returns {string} The encrypted email in the format "iv:authTag:encryptedData".
+ * @throws Will throw an error if the encryption key is not defined or is invalid.
+ */
 export function encryptEmail(email: string): string {
   const encryptionKey = process.env.ENCRYPTION_KEY;
 
@@ -37,6 +47,12 @@ export function encryptEmail(email: string): string {
   return [iv, authTag.toString("hex"), encrypted.toString("hex")].join(":");
 }
 
+/**
+ * Decrypts an encrypted email string using AES-256-GCM.
+ * @param encryptedData - The encrypted email string in the format "iv:authTag:encryptedData".
+ * @returns {object} An object containing the decrypted email.
+ * @throws Will throw an error if the encrypted data format is invalid or if decryption fails.
+ */
 export function decryptEmail(encryptedData: string): {
   decrypted: string;
 } {
@@ -93,6 +109,11 @@ export function decryptEmail(encryptedData: string): {
   return {decrypted};
 }
 
+/**
+ * Checks if a given string is a valid hexadecimal string.
+ * @param str - The string to be validated.
+ * @returns {boolean} True if the string is valid hexadecimal, false otherwise.
+ */
 function isValidHex(str: string): boolean {
   return /^[0-9a-fA-F]+$/.test(str);
 }
