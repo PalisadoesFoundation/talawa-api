@@ -40,7 +40,7 @@ export function encryptEmail(email: string): string {
 export function decryptEmail(encryptedData: string): {
   decrypted: string;
 } {
-  let [iv, authTagHex, encryptedHex] = encryptedData.split(":");
+  const [iv, authTagHex, encryptedHex] = encryptedData.split(":");
   if (!isValidHex(iv)) {
     throw new Error("Invalid IV: not a hex string");
   }

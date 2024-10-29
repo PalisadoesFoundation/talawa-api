@@ -9,6 +9,7 @@ import type { InterfaceOrganization } from "./Organization";
 import { identifier_count } from "./IdentifierCount";
 import validator from "validator";
 import { decryptEmail } from "../utilities/encryption";
+import crypto from 'crypto'
 
 /**
  * Represents a MongoDB document for User in the database.
@@ -242,29 +243,33 @@ const userSchema = new Schema(
 userSchema.plugin(mongoosePaginate);
 
 userSchema.pre('save', async function (next) {
-  if(this.isModified('email'))
-  {
-    try {
-      const decrypted = decryptEmail(this.email).decrypted;
-      if(!validator.isEmail(decrypted))
-      {
-        throw new Error(`Invalid email format: ${decrypted}`);
-      }
-      // Generate hashedEmail when email changes
-      const crypto = require('crypto');
-      this.hashedEmail = crypto
-      .createHmac("sha256", process.env.HASH_PEPPER)
-      .update(decrypted.toLowerCase())
-      .digest("hex");
+  if (this.isModified('email')) {
+    if (!process.env.HASH_PEPPER) {
+      throw new Error('HASH_PEPPER environment variable is not configured');
     }
-    catch(error: unknown)
-    {
+    
+    try {
+      if (!/^[A-Za-z0-9+/=]+$/.test(this.email)) {
+        throw new Error('Invalid encrypted email format');
+      }
+      
+      const decrypted = decryptEmail(this.email).decrypted;
+      if (!validator.isEmail(decrypted)) {
+        throw new Error('Invalid email format');
+      }
+      
+      this.hashedEmail = crypto
+        .createHmac('sha256', process.env.HASH_PEPPER)
+        .update(decrypted.toLowerCase())
+        .digest('hex');
+        
+    } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       throw new Error(`Email validation failed: ${errorMessage}`);
     }
   }
   next();
-})
+});
 
 userSchema.pre<InterfaceUser>("validate", async function (next) {
   if (!this.identifier) {

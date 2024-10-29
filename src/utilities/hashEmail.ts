@@ -45,6 +45,7 @@ export function compareHashedEmails(a: string, b: string): boolean {
          Buffer.from(b, 'hex')
        );
     } catch (error) {
+      console.error("Failed to compare hashes, likely due to invalid hex encoding");
       return false;
     }
    }
