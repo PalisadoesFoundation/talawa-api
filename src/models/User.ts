@@ -259,7 +259,7 @@ userSchema.pre('save', async function (next) {
         
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Email validation failed: ${errorMessage}`);
+      throw new Error('Email validation failed. Please ensure the email is valid.');
     }
   }
   next();

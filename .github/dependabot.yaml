@@ -7,7 +7,7 @@ updates:
     directory: "/"
     # Schedule automated updates to run weekly
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     # Labels to apply to Dependabot PRs
     labels:
       - "dependencies"
