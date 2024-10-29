@@ -91,7 +91,7 @@ jobs:
           exit 1
 
   Check-Unauthorized-Changes:
-    if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.pull_request.labels.*.name, 'GitHub action to be ignored') }}
+    if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.pull_request.labels.*.name, 'ignore-protected-files-pr') }}
     name: Checks if no unauthorized files are changed
     runs-on: ubuntu-latest
     steps:
