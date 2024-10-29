@@ -72,16 +72,20 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
       );
     }
 
-    // check whether the currect is an admin, check userId exists in chat.admins array.
-    //   if (!chat.admins.includes(currentUser._id.toString())) {
-    //     throw new errors.UnauthorizedError(
-    //       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-    //       USER_NOT_AUTHORIZED_ERROR.CODE,
-    //       USER_NOT_AUTHORIZED_ERROR.PARAM,
-    //     );
-    //   }
+    // check whether the current user is an admin, check userId exists in chat.admins array.
+    if (
+      !chat.admins
+        .map((admin) => admin.toString())
+        .includes(currentUser._id.toString())
+    ) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
 
-    // check whether the user to make admins exists
+    // check whether the user to be added exists
     const user = await User.findOne({
       _id: args.userId,
     }).lean();

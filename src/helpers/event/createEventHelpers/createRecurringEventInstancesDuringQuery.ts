@@ -62,6 +62,7 @@ export const createRecurringEventInstancesDuringQuery = async (
       // Prepare input data for generating recurring event instances
       const currentInputData: InterfaceRecurringEvent = {
         ...data,
+        createChat: false,
         organizationId: recurrenceRule.organizationId.toString(),
       };
 

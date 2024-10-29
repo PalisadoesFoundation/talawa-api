@@ -41,23 +41,25 @@ describe("resolvers -> DirectChatMessage -> sender", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
-    const parent = {
-      ...testChatMessage?.toObject(),
-      sender: new Types.ObjectId(), // Set to a non-existing ObjectId
-    };
+    if (testChatMessage?._id) {
+      const parent = {
+        ...testChatMessage?.toObject(),
+        _id: testChatMessage._id,
+        sender: new Types.ObjectId(), // Set to a non-existing ObjectId
+      };
 
-    if (!parent) {
-      throw new Error("Parent object is undefined.");
-    }
-
-    try {
-      if (senderResolver) {
-        // @ts-expect-error - Testing for error
-        await senderResolver(parent, {}, {});
+      if (!parent) {
+        throw new Error("Parent object is undefined.");
       }
-    } catch (error: unknown) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+
+      try {
+        if (senderResolver) {
+          await senderResolver(parent, {}, {});
+        }
+      } catch (error: unknown) {
+        expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+        expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      }
     }
   });
 });

@@ -36,6 +36,9 @@ pnpm-lock.yaml
 coverage
 build
 
+# Ignore the folder for file uploads meta data in minio
+data/**
+
 serviceAccountKey.json
 cert.pem
 key.pem

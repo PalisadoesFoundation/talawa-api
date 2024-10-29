@@ -12,7 +12,6 @@ import {
 } from "graphql-scalars";
 import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
 import type { Resolvers } from "../types/generatedGraphQLTypes";
-import { ActionItem } from "./ActionItem";
 import { ActionItemCategory } from "./ActionItemCategory";
 import { AgendaItem } from "./AgendaItem";
 import { AgendaSection } from "./AgendaSection";
@@ -42,7 +41,6 @@ import { Advertisement } from "./Advertisement";
 import { currentUserExists } from "./middleware/currentUserExists";
 
 const resolvers: Resolvers = {
-  ActionItem,
   ActionItemCategory,
   AgendaItem,
   AgendaSection,

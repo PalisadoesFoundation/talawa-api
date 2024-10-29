@@ -65,6 +65,10 @@ beforeAll(async () => {
     isGroup: false,
     createdAt: "23456789",
     updatedAt: "23456789",
+    unseenMessagesByUsers: JSON.stringify({
+      [testUsers[0]?._id]: 0,
+      [testUsers[1]?._id]: 0,
+    }),
   });
 });
 
@@ -87,7 +91,6 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
       const args: MutationSendMessageToChatArgs = {
         chatId: new Types.ObjectId().toString(),
         messageContent: "",
-        type: "STRING",
       };
 
       const context = { userId: testUsers[0]?.id };
@@ -112,7 +115,6 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
       const args: MutationSendMessageToChatArgs = {
         chatId: testChat.id,
         messageContent: "",
-        type: "STRING",
       };
 
       const context = {
@@ -145,7 +147,6 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
     const args: MutationSendMessageToChatArgs = {
       chatId: testChat.id,
       messageContent: "messageContent",
-      type: "STRING",
     };
 
     const pubsub = {
@@ -178,7 +179,6 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         chatMessageBelongsTo: testChat._id,
         sender: testUsers[0]?._id,
         messageContent: "messageContent",
-        type: "STRING",
       }),
     );
   });

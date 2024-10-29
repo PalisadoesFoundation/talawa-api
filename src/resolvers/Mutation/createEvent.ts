@@ -180,8 +180,20 @@ export const createEvent: MutationResolvers["createEvent"] = async (
 
   let chat;
 
-  if (args.data.createChat && typeof createChat === 'function') {
-    chat = await createChat(_parent, { data: { name: args.data.title, organizationId: args.data.organizationId, userIds: [ currentUser._id.toString() ], isGroup: true, image: null } }, context);
+  if (args.data.createChat && typeof createChat === "function") {
+    chat = await createChat(
+      _parent,
+      {
+        data: {
+          name: args.data.title,
+          organizationId: args.data.organizationId,
+          userIds: [currentUser._id.toString()],
+          isGroup: true,
+          image: null,
+        },
+      },
+      context,
+    );
   }
 
   /* c8 ignore start */

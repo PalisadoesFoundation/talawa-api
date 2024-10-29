@@ -419,6 +419,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         startDate,
         endDate,
         title: "newTitle",
+        createChat: true,
       },
       recurrenceRuleData: {
         recurrenceStartDate: startDate,
@@ -533,6 +534,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         startDate,
         endDate,
         title: "newTitle",
+        createChat: true,
       },
       recurrenceRuleData: {
         recurrenceStartDate: startDate,

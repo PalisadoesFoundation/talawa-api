@@ -21,7 +21,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Chat -> organization", () => {
-  it(`returns user object for parent.users`, async () => {
+  it(`resolves the correct organization for the given chat`, async () => {
     const parent = testChat?.toObject();
     if (!parent) {
       throw new Error("Parent object is undefined.");
@@ -30,22 +30,24 @@ describe("resolvers -> Chat -> organization", () => {
     const organizationPayload = await organizationResolver?.(parent, {}, {});
 
     const organization = await Organization.findOne({
-      _id: {
-        $in: testChat?.organization,
-      },
+      _id: testChat?.organization,
     }).lean();
 
     expect(organizationPayload).toEqual(organization);
   });
-  it(`returns user objects for parent.organization from cache`, async () => {
+  it("resolves the organization from cache", async () => {
     const parent = testChat?.toObject();
-    if (parent) {
-      const organizationPayload = await organizationResolver?.(parent, {}, {});
-      const organization = await Organization.findOne({
-        _id: testChat?.organization,
-      }).lean();
-
-      expect(organizationPayload).toEqual(organization);
+    if (!parent) {
+      throw new Error("Parent object is undefined.");
     }
+
+    // Simulate the cache resolution logic here (if applicable)
+    const organizationPayload = await organizationResolver?.(parent, {}, {});
+
+    const organization = await Organization.findOne({
+      _id: testChat?.organization,
+    }).lean();
+
+    expect(organizationPayload).toEqual(organization);
   });
 });

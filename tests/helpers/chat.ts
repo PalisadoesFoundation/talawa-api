@@ -6,7 +6,7 @@ import { createTestUserAndOrganization } from "./userAndOrg";
 import type { Document } from "mongoose";
 
 export type TestChatType =
-  | (InterfaceChat & Document<any, any, InterfaceChat>)
+  | (InterfaceChat & Document<unknown, unknown, InterfaceChat>)
   | null;
 
 export type TestChatMessageType =
@@ -14,6 +14,32 @@ export type TestChatMessageType =
   | null;
 
 export const createTestChat = async (): Promise<
+  [TestUserType, TestOrganizationType, TestChatType]
+> => {
+  const [testUser, testOrganization] = await createTestUserAndOrganization();
+  const [testUser2] = await createTestUserAndOrganization();
+  if (testUser && testOrganization) {
+    const testChat = await Chat.create({
+      creatorId: testUser._id,
+      users: [testUser._id, testUser2?._id],
+      organization: testOrganization._id,
+      isGroup: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      admins: [testUser._id],
+      image: "image",
+      unseenMessagesByUsers: JSON.stringify({
+        [testUser._id]: 5,
+      }),
+    });
+
+    return [testUser, testOrganization, testChat];
+  } else {
+    return [testUser, testOrganization, null];
+  }
+};
+
+export const createTestGroupChatWithoutImage = async (): Promise<
   [TestUserType, TestOrganizationType, TestChatType]
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
@@ -26,6 +52,58 @@ export const createTestChat = async (): Promise<
       createdAt: new Date(),
       updatedAt: new Date(),
       admins: [testUser._id],
+      unseenMessagesByUsers: JSON.stringify({
+        [testUser._id]: 5,
+      }),
+    });
+
+    return [testUser, testOrganization, testChat];
+  } else {
+    return [testUser, testOrganization, null];
+  }
+};
+
+export const createTestDirectChat = async (): Promise<
+  [TestUserType, TestOrganizationType, TestChatType]
+> => {
+  const [testUser, testOrganization] = await createTestUserAndOrganization();
+  if (testUser && testOrganization) {
+    const testChat = await Chat.create({
+      creatorId: testUser._id,
+      users: [testUser._id],
+      organization: testOrganization._id,
+      isGroup: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      admins: [testUser._id],
+      unseenMessagesByUsers: JSON.stringify({
+        [testUser._id]: 5,
+      }),
+    });
+
+    return [testUser, testOrganization, testChat];
+  } else {
+    return [testUser, testOrganization, null];
+  }
+};
+
+export const createTestChatWithImage = async (): Promise<
+  [TestUserType, TestOrganizationType, TestChatType]
+> => {
+  const [testUser, testOrganization] = await createTestUserAndOrganization();
+  if (testUser && testOrganization) {
+    const testChat = await Chat.create({
+      creatorId: testUser._id,
+      users: [testUser._id],
+      organization: testOrganization._id,
+      isGroup: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      admins: [testUser._id],
+      unseenMessagesByUsers: JSON.stringify({
+        [testUser._id]: 0,
+      }),
+      image: "image",
     });
 
     return [testUser, testOrganization, testChat];
@@ -38,24 +116,42 @@ export const createTestChatMessage = async (): Promise<
   [TestUserType, TestOrganizationType, TestChatType, TestChatMessageType]
 > => {
   const [testUser, testOrganization, testChat] = await createTestChat();
-  console.log("TEST CHAT", testChat);
 
-  const chatMessage = await createChatMessage(testUser?._id, testChat?._id);
+  if (testChat?.id) {
+    const chatMessage = await createChatMessage(
+      testUser?._id,
+      testChat?._id.toString(),
+    );
 
-  if (testChat && testUser) {
-    const testChatMessage = await ChatMessage.create({
-      chatMessageBelongsTo: testChat._id,
-      sender: testUser._id,
-      replyTo: chatMessage?._id,
-      messageContent: `msgContent${nanoid().toLowerCase()}`,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      type: "STRING",
-    });
-    return [testUser, testOrganization, testChat, testChatMessage];
-  } else {
-    return [testUser, testOrganization, testChat, null];
+    if (testChat && testUser) {
+      const testChatMessage = await ChatMessage.create({
+        chatMessageBelongsTo: testChat._id,
+        sender: testUser._id,
+        replyTo: chatMessage?._id,
+        messageContent: `msgContent${nanoid().toLowerCase()}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        media: "media",
+        type: "STRING",
+      });
+
+      await Chat.findByIdAndUpdate(
+        {
+          _id: testChat._id,
+        },
+        {
+          messages: [testChatMessage._id],
+        },
+      );
+
+      const chat = await Chat.findById(testChat._id);
+
+      return [testUser, testOrganization, chat, testChatMessage];
+    } else {
+      return [testUser, testOrganization, testChat, null];
+    }
   }
+  return [testUser, testOrganization, testChat, null];
 };
 
 export const createTestChatMessageWithoutReply = async (): Promise<

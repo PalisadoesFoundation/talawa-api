@@ -1,7 +1,12 @@
-import { USER_NOT_FOUND_ERROR, MESSAGE_NOT_FOUND_ERROR } from "../../constants";
+import {
+  USER_NOT_FOUND_ERROR,
+  MESSAGE_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  CHAT_NOT_FOUND_ERROR,
+} from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceChatMessage, InterfaceUser } from "../../models";
-import { ChatMessage, User } from "../../models";
+import { Chat, ChatMessage, User } from "../../models";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -13,7 +18,7 @@ export const updateChatMessage: MutationResolvers["updateChatMessage"] = async (
   context,
 ) => {
   const { messageId } = args.input;
-  // Check if the chat exists
+  // Check if the chat message exists
   const existingChatMessage = await ChatMessage.findById(messageId);
   if (!existingChatMessage) {
     throw new errors.NotFoundError(
@@ -23,7 +28,20 @@ export const updateChatMessage: MutationResolvers["updateChatMessage"] = async (
     );
   }
 
-  // Check if the user is a member of the chat
+  // check if the chat exists
+  const chat = await Chat.findOne({
+    _id: args.input.chatId,
+  });
+
+  if (!chat) {
+    throw new errors.NotFoundError(
+      requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+      CHAT_NOT_FOUND_ERROR.CODE,
+      CHAT_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  // Check if the user exists
   let currentUser: InterfaceUser | null;
   const userFoundInCache = await findUserInCache([context.userId]);
   currentUser = userFoundInCache[0];
@@ -44,7 +62,29 @@ export const updateChatMessage: MutationResolvers["updateChatMessage"] = async (
     );
   }
 
-  // Update the advertisement in the database
+  //Check if user is a member of the chat
+  if (
+    !chat.users
+      .map((user: string) => user.toString())
+      .includes(currentUser._id.toString())
+  ) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
+
+  // Check if the user is the sender of the message
+  if (existingChatMessage.sender.toString() !== currentUser._id.toString()) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
+
+  // Update the chat message
   const updatedChatMessage = await ChatMessage.findOneAndUpdate(
     {
       _id: messageId,

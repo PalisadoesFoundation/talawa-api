@@ -50,6 +50,7 @@ export const inputs = gql`
   input CreateActionItemInput {
     assigneeId: ID!
     preCompletionNotes: String
+    allotedHours: Float
     dueDate: Date
     eventId: ID
   }
@@ -82,8 +83,14 @@ export const inputs = gql`
   input ActionItemWhereInput {
     actionItemCategory_id: ID
     event_id: ID
-    is_active: Boolean
+    categoryName: String
+    assigneeName: String
     is_completed: Boolean
+  }
+
+  input ActionItemCategoryWhereInput {
+    name_contains: String
+    is_disabled: Boolean
   }
 
   input CreateAgendaCategoryInput {
@@ -286,6 +293,11 @@ export const inputs = gql`
     id_starts_with: ID
 
     user: UserWhereInput
+
+    creatorId: ID
+    creatorId_not: ID
+    creatorId_in: [ID!]
+    creatorId_not_in: [ID!]
   }
 
   input MessageChatInput {
@@ -432,6 +444,7 @@ export const inputs = gql`
     postCompletionNotes: String
     dueDate: Date
     completionDate: Date
+    allotedHours: Float
     isCompleted: Boolean
   }
 

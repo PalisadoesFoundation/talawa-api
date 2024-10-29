@@ -114,7 +114,11 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
 
     if (event.chat && addUserToGroupChat) {
       // add user to event chat
-      await addUserToGroupChat(_parent, {chatId: event.chat, userId: context.userId}, context);
+      await addUserToGroupChat(
+        _parent,
+        { chatId: event.chat, userId: context.userId },
+        context,
+      );
     }
 
     return registeredAttendee.toObject();

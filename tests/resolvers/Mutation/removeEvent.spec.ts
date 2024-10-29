@@ -116,11 +116,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       await removeEventResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
-      if (error instanceof Error) {
-        EVENT_NOT_FOUND_ERROR.MESSAGE;
-      } else {
-        fail(`Expected NotDoundError, but got ${error}`);
-      }
+      expect((error as Error).message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -169,11 +165,9 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       await removeEventResolver?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      if (error instanceof Error) {
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE;
-      } else {
-        fail(`Expected UnauthorizedError, but got ${error}`);
-      }
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
   });
 
@@ -240,7 +234,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
   });
 
   it(`removes the events and all action items assiciated with it`, async () => {
-    [newTestUser, newTestEvent] = await createTestActionItems();
+    [newTestUser, , newTestEvent] = await createTestActionItems();
 
     const args: MutationRemoveEventArgs = {
       id: newTestEvent?.id,
@@ -280,6 +274,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         recurring: true,
         startDate,
         title: "newTitle",
+        createChat: true,
       },
       recurrenceRuleData: {
         recurrenceStartDate: startDate,
@@ -908,6 +903,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         recurring: true,
         startDate,
         title: "newTitle",
+        createChat: true,
       },
       recurrenceRuleData: {
         recurrenceStartDate: startDate,
@@ -1081,6 +1077,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
           recurring: true,
           startDate,
           title: "newTitle",
+          createChat: false,
         },
         recurrenceRuleData: {
           recurrenceStartDate: startDate,

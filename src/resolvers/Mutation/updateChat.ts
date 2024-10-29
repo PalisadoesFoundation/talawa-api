@@ -1,4 +1,8 @@
-import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import {
+  CHAT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceChat, InterfaceUser } from "../../models";
 import { Chat, User } from "../../models";
@@ -41,6 +45,19 @@ export const updateChat: MutationResolvers["updateChat"] = async (
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
+
+  // Check if the user is a member of the chat
+  if (
+    !existingchat.users
+      .map((user) => user.toString())
+      .includes(currentUser._id.toString())
+  ) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 

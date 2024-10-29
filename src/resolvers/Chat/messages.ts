@@ -5,7 +5,11 @@ import type { ChatResolvers } from "../../types/generatedGraphQLTypes";
  * @param parent - An object that is the return value of the resolver for this field's parent.
  * @returns An `object` that contains the list of messages.
  */
-export const messages: ChatResolvers["messages"] = async (parent, _args, context) => {
+export const messages: ChatResolvers["messages"] = async (
+  parent,
+  _args,
+  context,
+) => {
   let messages = await ChatMessage.find({
     _id: {
       $in: parent.messages,
@@ -18,5 +22,5 @@ export const messages: ChatResolvers["messages"] = async (parent, _args, context
     }
     return message;
   });
-  return messages
+  return messages;
 };

@@ -47,23 +47,22 @@ export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
 
   let mediaFile = null;
 
-    if (args.media) {
-      const dataUrlPrefix = "data:";
-      if (args.media.startsWith(dataUrlPrefix + "image/")) {
-        mediaFile = await uploadEncodedImage(args.media, null);
-      } else if (args.media.startsWith(dataUrlPrefix + "video/")) {
-        mediaFile = await uploadEncodedVideo(args.media, null);
-      } else {
-        throw new Error("Unsupported file type.");
-      }
+  if (args.media) {
+    const dataUrlPrefix = "data:";
+    if (args.media.startsWith(dataUrlPrefix + "image/")) {
+      mediaFile = await uploadEncodedImage(args.media, null);
+    } else if (args.media.startsWith(dataUrlPrefix + "video/")) {
+      mediaFile = await uploadEncodedVideo(args.media, null);
+    } else {
+      throw new Error("Unsupported file type.");
     }
+  }
 
   const createdChatMessage = await ChatMessage.create({
     chatMessageBelongsTo: chat._id,
     sender: context.userId,
     messageContent: args.messageContent,
     media: mediaFile,
-    type: args.type,
     replyTo: args.replyTo,
     createdAt: now,
     updatedAt: now,
@@ -75,7 +74,6 @@ export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
 
   Object.keys(unseenMessagesByUsers).map((user: string) => {
     if (user !== context.userId) {
-      console.log("user", user, context.userId);
       unseenMessagesByUsers[user] += 1;
     }
   });

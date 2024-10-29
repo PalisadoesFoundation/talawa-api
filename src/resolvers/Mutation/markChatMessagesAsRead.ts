@@ -1,7 +1,11 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Chat, User } from "../../models";
-import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import {
+  CHAT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
 /**
  * This function enables to send message to direct chat.
  * @param _parent - parent of current request
@@ -30,11 +34,24 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
       _id: context.userId,
     }));
 
-    if (currentUserExists === false) {
+    if (!currentUserExists) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    //check if the user is member of the chat
+    const isMember = chat.users
+      .map((user) => user.toString())
+      .includes(context.userId);
+
+    if (!isMember) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
@@ -48,9 +65,6 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
       }
     });
 
-    console.log("unseenMessagesByUsers", unseenMessagesByUsers);
-
-    // add createdDirectChatMessage to directChat
     const updatedChat = await Chat.findByIdAndUpdate(
       {
         _id: chat._id,
@@ -60,9 +74,10 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
           unseenMessagesByUsers: JSON.stringify(unseenMessagesByUsers),
         },
       },
+      {
+        new: true,
+      },
     );
-
-    console.log("updatedChat", updatedChat);
 
     return updatedChat;
   };

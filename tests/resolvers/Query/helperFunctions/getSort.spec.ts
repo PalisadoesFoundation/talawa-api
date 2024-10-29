@@ -59,6 +59,8 @@ describe("getSort function", () => {
     ["commentCount_DESC", { commentCount: -1 }],
     ["fundingGoal_ASC", { fundingGoal: 1 }],
     ["fundingGoal_DESC", { fundingGoal: -1 }],
+    ["dueDate_ASC", { dueDate: 1 }],
+    ["dueDate_DESC", { dueDate: -1 }],
   ];
 
   it.each(testCases)(

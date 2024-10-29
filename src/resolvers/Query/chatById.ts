@@ -30,14 +30,5 @@ export const chatById: QueryResolvers["chatById"] = async (
     chat = { ...chat, image: `${context.apiRootUrl}${chat.image}` };
   }
 
-  chat.messages = chat.messages.map((message) => {
-    if (message.media) {
-      return { ...message, media: `${context.apiRootUrl}${message.media}` };
-    }
-    return message;
-  });
-
-  console.log("CHAT BY ID ", chat.messages)
-
   return chat;
 };

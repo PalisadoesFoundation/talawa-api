@@ -26,11 +26,12 @@ jobs:
   ##############################################################################
 
   Push-Workflow:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Testing Application
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x]
     services:
       redis:
         image: redis:6.0
@@ -54,8 +55,6 @@ jobs:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-#       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-#       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
     # We checkout the content of the Talawa-API repository in a directory called `api`
     steps:
@@ -95,6 +94,7 @@ jobs:
             
 # You can find the deployment instructions in the scripts/cloud-api-demo/README.md file
   Deploy-Workflow:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Deploying Application to Cloud VPS
     needs: Push-Workflow
     runs-on: ubuntu-latest
@@ -130,6 +130,7 @@ jobs:
             python3 /usr/local/bin/scripts/deploy.py --path ~/develop --branch develop
 
   Check-Schema: 
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Check Schema
     runs-on: ubuntu-latest
 
