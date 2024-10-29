@@ -5,10 +5,10 @@ const algorithm = "aes-256-gcm";
 const authTagLength = 16;
 const authTagHexLength = authTagLength * 2;
 
-const saltLength = 16;
+const ivLength = 16;
 
 export function generateRandomIV(): string {
-  return crypto.randomBytes(saltLength).toString("hex");
+  return crypto.randomBytes(ivLength).toString("hex");
 }
 
 export function encryptEmail(email: string): string {
@@ -52,8 +52,8 @@ export function decryptEmail(encryptedData: string): {
   if (!isValidHex(encryptedHex)) {
     throw new Error("Invalid encrypted data: not a hex string");
   }
-const minLength = saltLength * 2 + authTagHexLength + 2; 
-const maxLength = saltLength * 2 + authTagHexLength + 1000; 
+const minLength = ivLength * 2 + authTagHexLength + 2; 
+const maxLength = ivLength * 2 + authTagHexLength + 1000; 
     if (encryptedData.length < minLength) {
        throw new Error("Invalid encrypted data: input is too short.");
    } else if (encryptedData.length > maxLength) {
@@ -71,10 +71,10 @@ const maxLength = saltLength * 2 + authTagHexLength + 1000;
   }
 
   const authTag = Buffer.from(
-    encryptedData.slice(saltLength * 2, saltLength * 2 + authTagHexLength),
+    encryptedData.slice(ivLength * 2, ivLength * 2 + authTagHexLength),
     "hex",
   );
-  const encrypted = encryptedData.slice(saltLength * 2 + authTagHexLength);
+  const encrypted = encryptedData.slice(ivLength * 2 + authTagHexLength);
 
   const decipher = crypto.createDecipheriv(
     algorithm,
@@ -90,7 +90,7 @@ const maxLength = saltLength * 2 + authTagHexLength + 1000;
       decipher.update(Buffer.from(encrypted, "hex")),
       decipher.final(),
     ]).toString("utf8");
-  } catch (error) {
+  } catch {
     throw new Error("Decryption failed: invalid data or authentication tag.");
   }
   return {decrypted};

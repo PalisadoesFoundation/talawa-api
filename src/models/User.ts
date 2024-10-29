@@ -248,12 +248,19 @@ userSchema.pre('save', async function (next) {
       const decrypted = decryptEmail(this.email).decrypted;
       if(!validator.isEmail(decrypted))
       {
-        throw new Error('Invalid email format');
+        throw new Error(`Invalid email format: ${decrypted}`);
       }
+      // Generate hashedEmail when email changes
+      const crypto = require('crypto');
+      this.hashedEmail = crypto
+      .createHmac("sha256", process.env.HASH_PEPPER)
+      .update(decrypted.toLowerCase())
+      .digest("hex");
     }
-    catch(error)
+    catch(error: unknown)
     {
-      throw new Error('Email validation failed');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Email validation failed: ${errorMessage}`);
     }
   }
   next();

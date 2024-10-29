@@ -22,13 +22,15 @@ describe("hashingModule", () => {
             });
         });
 
-        it("should produce diffrent hashes with diffrent HASH_PEPPER values", () => {
-            const email = "test@example.com"
-            process.env.HASH_PEPPER = "pepper1";
-            const hash1 = hashEmail(email);
-            process.env.HASH_PEPPER = "pepper2";
-            const hash2 = hashEmail(email);
-            expect(hash1).not.toEqual(hash2);
+        it("should produce different hashes with different HASH_PEPPER values", () => {
+        const email = "test@example.com"
+        const originalPepper = process.env.HASH_PEPPER;
+        process.env.HASH_PEPPER = "pepper1";
+        const hash1 = hashEmail(email);
+        process.env.HASH_PEPPER = "pepper2";
+        const hash2 = hashEmail(email);
+        expect(hash1).not.toEqual(hash2);
+        process.env.HASH_PEPPER = originalPepper;
         })
     })
 })

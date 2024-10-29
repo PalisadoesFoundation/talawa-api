@@ -31,8 +31,20 @@ export function hashEmail(email: string) : string  {
 }
 
 export function compareHashedEmails(a: string, b: string): boolean {
-  return crypto.timingSafeEqual(
-    Buffer.from(a, 'hex'),
-    Buffer.from(b, 'hex')
-  );
-}
+    if (!a || !b || typeof a !== 'string' || typeof b !== 'string') {
+      return false;
+    }
+    
+    if (!/^[0-9a-f]+$/i.test(a) || !/^[0-9a-f]+$/i.test(b)) {
+      return false;
+    }
+  
+    try {
+       return crypto.timingSafeEqual(
+         Buffer.from(a, 'hex'),
+         Buffer.from(b, 'hex')
+       );
+    } catch (error) {
+      return false;
+    }
+   }

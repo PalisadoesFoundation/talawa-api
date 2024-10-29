@@ -388,6 +388,9 @@ export async function redisConfiguration(): Promise<void> {
 export async function setEncryptionKey(): Promise<void> {
   try {
     if (process.env.ENCRYPTION_KEY) {
+      if (!/^[a-f0-9]{64}$/.test(process.env.ENCRYPTION_KEY)) {
+          throw new Error("Existing encryption key has invalid format");
+        }
       console.log("\n Encryption Key already present.");
     } else {
       const encryptionKey = crypto.randomBytes(32).toString("hex");
