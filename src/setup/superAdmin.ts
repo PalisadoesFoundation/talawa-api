@@ -1,4 +1,3 @@
- 
 import inquirer from "inquirer";
 import { isValidEmail } from "./isValidEmail";
 
