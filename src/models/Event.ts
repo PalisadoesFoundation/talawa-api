@@ -6,7 +6,7 @@ import { createLoggingMiddleware } from "../libraries/dbLogger";
 import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
 import type { InterfaceRecurrenceRule } from "./RecurrenceRule";
 import type { InterfaceAgendaItem } from "./AgendaItem";
-import { InterfaceChat } from "./Chat";
+import type { InterfaceChat } from "./Chat";
 
 /**
  * Represents a document for an event in the MongoDB database.
