@@ -166,7 +166,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      const email = 'email${nanoid().toLowerCase()}@gmail.com';
+      const email = `email${nanoid().toLowerCase()}@gmail.com`;
       const hashedEmail = hashEmail(email)
 
       const newUser = await User.create({

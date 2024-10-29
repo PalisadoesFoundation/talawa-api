@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       },
     };
 
-    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const email = `email${nanoid().toLowerCase()}@gmail.com`  ;
     const hashedEmail = hashEmail(email)
 
     const newUser = await User.create({

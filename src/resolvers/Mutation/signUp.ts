@@ -33,7 +33,9 @@ import { hashEmail } from "../../utilities/hashEmail";
  * @returns Sign up details.
  */
 export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
-  const hashedEmail = hashEmail(args.data.email);
+  const normalizedEmail = args.data.email.toLowerCase();
+
+  const hashedEmail = hashEmail(normalizedEmail);
 
   const existingUser = await User.findOne({ hashedEmail });
   if (existingUser) {
@@ -66,7 +68,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     );
   }
 
-  const encryptedEmail = encryptEmail(args.data.email.toLowerCase());
+  const encryptedEmail = encryptEmail(normalizedEmail);
 
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
@@ -77,7 +79,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   }
 
   const isLastResortSuperAdmin =
-    args.data.email.toLowerCase() ===
+    normalizedEmail ===
     LAST_RESORT_SUPERADMIN_EMAIL?.toLowerCase();
 
   let createdUser:

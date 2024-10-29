@@ -842,6 +842,9 @@ async function main(): Promise<void> {
     console.log(`Your Redis port is:\n${process.env.REDIS_PORT}`);
   }
 
+  await setHashPepper();
+  await setEncryptionKey();
+
   if (!isDockerInstallation) {
     // Redis configuration
     if (process.env.REDIS_HOST && process.env.REDIS_PORT) {
@@ -1006,10 +1009,6 @@ async function main(): Promise<void> {
   ]);
 
   await setImageUploadSize(imageSizeLimit * 1000);
-
-  await setHashPepper();
-
-  await setEncryptionKey();
 
   if (!isDockerInstallation) {
     if (!process.env.MONGO_DB_URL) {

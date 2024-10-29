@@ -20,7 +20,7 @@ describe("encryptionModule", () => {
       const encryptedWithEmailSalt = encryptEmail(email);
 
       const { decrypted } = decryptEmail(encryptedWithEmailSalt);
-      expect(encryptEmail).not.toEqual(email);
+      expect(encryptedWithEmailSalt).not.toEqual(email);
       expect(decrypted).toEqual(email);
     });
   });

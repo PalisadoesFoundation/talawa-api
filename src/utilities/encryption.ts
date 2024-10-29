@@ -34,14 +34,26 @@ export function encryptEmail(email: string): string {
     cipher.final(),
   ]);
   const authTag = cipher.getAuthTag();
-  return iv + authTag.toString("hex") + encrypted.toString("hex");
+  return [iv, authTag.toString("hex"), encrypted.toString("hex")].join(":");
 }
 
 export function decryptEmail(encryptedData: string): {
   decrypted: string;
 } {
-  const minLength = saltLength * 2 + authTagHexLength + 2; 
- const maxLength = saltLength * 2 + authTagHexLength + 1000; 
+  let [iv, authTagHex, encryptedHex] = encryptedData.split(":");
+  if (!isValidHex(iv)) {
+    throw new Error("Invalid IV: not a hex string");
+  }
+
+  if (!isValidHex(authTagHex)) {
+    throw new Error("Invalid auth tag: not a hex string");
+  }
+
+  if (!isValidHex(encryptedHex)) {
+    throw new Error("Invalid encrypted data: not a hex string");
+  }
+const minLength = saltLength * 2 + authTagHexLength + 2; 
+const maxLength = saltLength * 2 + authTagHexLength + 1000; 
     if (encryptedData.length < minLength) {
        throw new Error("Invalid encrypted data: input is too short.");
    } else if (encryptedData.length > maxLength) {
@@ -58,7 +70,6 @@ export function decryptEmail(encryptedData: string): {
     );
   }
 
-  const iv = encryptedData.slice(0, saltLength * 2);
   const authTag = Buffer.from(
     encryptedData.slice(saltLength * 2, saltLength * 2 + authTagHexLength),
     "hex",
@@ -83,4 +94,8 @@ export function decryptEmail(encryptedData: string): {
     throw new Error("Decryption failed: invalid data or authentication tag.");
   }
   return {decrypted};
+}
+
+function isValidHex(str: string): boolean {
+  return /^[0-9a-fA-F]+$/.test(str);
 }

@@ -148,12 +148,6 @@ const userSchema = new Schema(
       type: String,
       lowercase: true,
       required: true,
-      validate: {
-        validator: function (value: string) {
-          return /^[A-Za-z0-9+/=]+$/.test(value);
-        },
-        message: "Invalid email format",
-      },
     },
     hashedEmail: {
       type: String,
@@ -246,6 +240,24 @@ const userSchema = new Schema(
 );
 
 userSchema.plugin(mongoosePaginate);
+
+userSchema.pre('save', async function (next) {
+  if(this.isModified('email'))
+  {
+    try {
+      const decrypted = decryptEmail(this.email).decrypted;
+      if(!validator.isEmail(decrypted))
+      {
+        throw new Error('Invalid email format');
+      }
+    }
+    catch(error)
+    {
+      throw new Error('Email validation failed');
+    }
+  }
+  next();
+})
 
 userSchema.pre<InterfaceUser>("validate", async function (next) {
   if (!this.identifier) {
