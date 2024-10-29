@@ -59,11 +59,6 @@ export function decryptEmail(encryptedData: string): {
   if (!isValidHex(encryptedHex)) {
     throw new Error("Invalid encrypted data: not a hex string");
   }
-    if (encryptedData.length < minLength) {
-       throw new Error("Invalid encrypted data: input is too short.");
-   } else if (encryptedData.length > maxLength) {
-      throw new Error("Invalid encrypted data: input is too long.");
-     }
 
   const encryptionKey = process.env.ENCRYPTION_KEY;
 

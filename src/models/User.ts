@@ -10,6 +10,7 @@ import { identifier_count } from "./IdentifierCount";
 import validator from "validator";
 import { decryptEmail } from "../utilities/encryption";
 import crypto from 'crypto'
+import { hashEmail } from "../utilities/hashEmail";
 
 /**
  * Represents a MongoDB document for User in the database.
@@ -253,11 +254,8 @@ userSchema.pre('save', async function (next) {
       if (!validator.isEmail(decrypted)) {
         throw new Error('The provided email address is invalid');
         }
-      
-      this.hashedEmail = crypto
-        .createHmac('sha256', process.env.HASH_PEPPER)
-        .update(decrypted.toLowerCase())
-        .digest('hex');
+
+        this.hashedEmail = hashEmail(decrypted);
         
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

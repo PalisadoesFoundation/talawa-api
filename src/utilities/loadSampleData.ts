@@ -116,10 +116,18 @@ async function insertCollections(collections: string[]): Promise<void> {
         case "users":
           for (const user of docs) {
             if (user.email && typeof user.email === "string") {
-              const encryptedEmail = encryptEmail(user.email as string);
-              const hashedEmail = hashEmail(user.email);
-              user.hashedEmail = hashedEmail;
-              user.email = encryptedEmail;
+              try {
+                    const encryptedEmail = encryptEmail(user.email as string);
+                    const hashedEmail = hashEmail(user.email);
+                    if (!encryptedEmail || !hashedEmail) {
+                      throw new Error("Encryption or hashing failed");
+                    }
+                    user.hashedEmail = hashedEmail;
+                    user.email = encryptedEmail;
+                  } catch (error) {
+                      console.error(`Failed to process email for user: ${error}`);
+                      continue;
+                   }
             } else {
               console.warn(`User with ID ${user.id} has an invalid email.`);
             }
