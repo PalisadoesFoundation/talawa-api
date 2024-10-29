@@ -3,14 +3,15 @@ import { errors, requestContext } from "../../libraries";
 import { Chat, User } from "../../models";
 import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 /**
- * This function enables to send message to direct chat.
+ /**
+ * This function marks all messages as read for the current user in a chat.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the direct chat exists.
  * 2. If the user exists
- * @returns Direct chat message.
+ * @returns Updated chat object.
  */
 export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"] =
   async (_parent, args, context) => {
