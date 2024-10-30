@@ -1,11 +1,9 @@
 // eslint-disable-next-line
-/* eslint-disable no-restricted-imports */
 import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
-/* eslint-disable */
 import type { ExecException } from "child_process";
 import { exec } from "child_process";
 import { MongoClient } from "mongodb";
@@ -173,7 +171,7 @@ function transactionLogPath(logPath: string | null): void {
 async function askForTransactionLogPath(): Promise<string> {
   let logPath: string | null;
   // Keep asking for path, until user gives a valid path
-  // eslint-disable-next-line no-constant-condition
+  // eslint-disable-next-line
   while (true) {
     const response = await inquirer.prompt([
       {

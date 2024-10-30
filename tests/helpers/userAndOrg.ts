@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 import type {
