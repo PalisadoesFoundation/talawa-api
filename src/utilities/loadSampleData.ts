@@ -119,7 +119,8 @@ async function insertCollections(collections: string[]): Promise<void> {
           * 1. Validates email existence and type
           * 2. Encrypts email using encryption utility
           * 3. Generates hash for email lookup
-          * @throws {Error} If encryption or hashing fails
+          * 
+          * @throws \{Error\} If encryption or hashing fails          
           */
           for (const user of docs) {
             if (user.email && typeof user.email === "string") {

@@ -10,7 +10,6 @@ import { deleteUserFromCache } from "../../services/UserCache/deleteUserFromCach
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-import crypto from "crypto";
 import { hashEmail } from "../../utilities/hashEmail";
 /**
  * This function enables to update user profile.

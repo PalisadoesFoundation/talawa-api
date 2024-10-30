@@ -32,8 +32,14 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
 
   return await Promise.all(
     users.map(async (user) => {
-      const { decrypted } = decryptEmail(user.email);
-      user.email = decrypted;
+      try {
+        const decrypted  = decryptEmail(user.email).decrypted;
+        user.email = decrypted;
+      }
+      catch(error)
+      {
+        console.error(`Failed to decrypt email`, error);
+      }
 
       const userAppProfile = await AppUserProfile.findOne({
         userId: user._id,

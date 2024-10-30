@@ -24,6 +24,18 @@ import { hashEmail } from "../../utilities/hashEmail";
  * @returns Updated user
  */
 export const login: MutationResolvers["login"] = async (_parent, args) => {
+   if (!args.data.email) {
+       throw new errors.ValidationError(
+         [
+          {
+             message: 'Email is required',
+           code: 'EMAIL_REQUIRED',
+             param: 'email',
+           },
+         ],
+         'Email is required',
+       );
+     }
   const hashedEmail = hashEmail(args.data.email);
 
   let user = await User.findOne({

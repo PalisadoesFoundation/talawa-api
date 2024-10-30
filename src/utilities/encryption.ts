@@ -9,7 +9,7 @@ const ivLength = 16;
 
 /**
  * Generates a random initialization vector (IV) for encryption.
- * @returns {string} A randomly generated IV as a hexadecimal string.
+ * @returns A randomly generated IV as a hexadecimal string.
  */
 export function generateRandomIV(): string {
   return crypto.randomBytes(ivLength).toString("hex");
@@ -18,11 +18,16 @@ export function generateRandomIV(): string {
 /**
  * Encrypts an email using AES-256-GCM with the provided encryption key.
  * @param email - The email address to be encrypted.
- * @returns {string} The encrypted email in the format "iv:authTag:encryptedData".
+ * @returns The encrypted email in the format "iv:authTag:encryptedData".
  * @throws Will throw an error if the encryption key is not defined or is invalid.
  */
 export function encryptEmail(email: string): string {
   const encryptionKey = process.env.ENCRYPTION_KEY;
+
+  if(email.length < 1)
+  {
+    throw new Error("Empty or invalid email input.");
+  }
 
   if (!encryptionKey) {
     throw new Error("Encryption key is not defined.");
@@ -50,18 +55,15 @@ export function encryptEmail(email: string): string {
 /**
  * Decrypts an encrypted email string using AES-256-GCM.
  * @param encryptedData - The encrypted email string in the format "iv:authTag:encryptedData".
- * @returns {object} An object containing the decrypted email.
+ * @returns An object containing the decrypted email.
  * @throws Will throw an error if the encrypted data format is invalid or if decryption fails.
  */
 export function decryptEmail(encryptedData: string): {
   decrypted: string;
 } {
     const minLength = ivLength * 2 + authTagHexLength + 2;
-    const maxLength = ivLength * 2 + authTagHexLength + 1000;
     if (encryptedData.length < minLength) {
       throw new Error("Invalid encrypted data: input is too short.");
-    } else if (encryptedData.length > maxLength) {
-      throw new Error("Invalid encrypted data: input is too long.");
     }
   const [iv, authTagHex, encryptedHex] = encryptedData.split(":");
   if (!isValidHex(iv)) {
@@ -112,7 +114,7 @@ export function decryptEmail(encryptedData: string): {
 /**
  * Checks if a given string is a valid hexadecimal string.
  * @param str - The string to be validated.
- * @returns {boolean} True if the string is valid hexadecimal, false otherwise.
+ * @returns True if the string is valid hexadecimal, false otherwise.
  */
 function isValidHex(str: string): boolean {
   return /^[0-9a-fA-F]+$/.test(str);

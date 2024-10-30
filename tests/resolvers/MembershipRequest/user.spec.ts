@@ -9,6 +9,7 @@ import { createTestMembershipRequest } from "../../helpers/membershipRequests";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { decryptEmail } from "../../../src/utilities/encryption";
+import { afterEach } from "node:test";
 
 let testMembershipRequest: TestMembershipRequestType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -36,10 +37,15 @@ describe("resolvers -> MembershipRequest -> user", () => {
     }).lean();
 
     if (!user) {
-      throw new Error("User not found");
+      throw new Error(USER_NOT_FOUND_ERROR.MESSAGE);
     }
+    const encryptedEmail = user.email;
     const { decrypted } = decryptEmail(user.email);
     user.email = decrypted;
+    
+    afterEach(() => {
+    user.email = encryptedEmail;
+    });
 
     expect(userPayload).toEqual(user);
   });

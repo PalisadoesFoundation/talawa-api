@@ -9,7 +9,6 @@ import type { InterfaceOrganization } from "./Organization";
 import { identifier_count } from "./IdentifierCount";
 import validator from "validator";
 import { decryptEmail } from "../utilities/encryption";
-import crypto from 'crypto'
 import { hashEmail } from "../utilities/hashEmail";
 
 /**
@@ -246,20 +245,20 @@ userSchema.plugin(mongoosePaginate);
 userSchema.pre('save', async function (next) {
   if (this.isModified('email')) {
     if (!process.env.HASH_PEPPER) {
-      throw new Error('HASH_PEPPER environment variable is not configured');
+      return next(new Error('HASH_PEPPER environment variable is not configured'));
     }
     
     try {     
       const decrypted = decryptEmail(this.email).decrypted;
       if (!validator.isEmail(decrypted)) {
-        throw new Error('The provided email address is invalid');
-        }
+        return next(new Error('The provided email address is invalid'));
+      }
 
         this.hashedEmail = hashEmail(decrypted);
         
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error('Email validation failed. Please ensure the email is valid.');
+      return next(new Error(`Email validation failed: ${errorMessage}`));
     }
   }
   next();

@@ -8,7 +8,6 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
 import { hashEmail } from "../../utilities/hashEmail";
 
 /**

@@ -32,7 +32,21 @@ export const envSchema = z.object({
   REDIS_HOST: z.string(),
   REDIS_PORT: z.string().refine((value) => /^\d+$/.test(value)),
   REDIS_PASSWORD: z.string().optional(),
-  ENCRYPTION_KEY: z.string(),
+  ENCRYPTION_KEY: z
+     .string()
+     .describe("Base64-encoded 32-byte encryption key for securing user emails")
+     .refine(
+      (value) => {
+  // Validate Base64 format and length
+       try {
+          const decoded = Buffer.from(value, 'base64');
+          return decoded.length === 32;
+      } catch {
+           return false;
+         }
+       },
+     "ENCRYPTION_KEY must be a valid Base64-encoded 32-byte string"
+     ),  
   MINIO_ROOT_USER: z.string(),
   MINIO_ROOT_PASSWORD: z.string(),
   MINIO_BUCKET: z.string(),

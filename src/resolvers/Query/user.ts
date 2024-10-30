@@ -34,8 +34,15 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
-  const { decrypted } = decryptEmail(user.email);
 
+  try {
+    const decrypted = decryptEmail(user.email).decrypted;
+    user.email = decrypted;
+  }
+  catch(error)
+  {
+    console.error(`Failed to decrypt email`, error);
+  }
   const userAppProfile: InterfaceAppUserProfile = (await AppUserProfile.findOne(
     {
       userId: user._id,
@@ -46,12 +53,10 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     .populate("eventAdmin")
     .populate("adminFor")
     .lean()) as InterfaceAppUserProfile;
-
   // This Query field doesn't allow client to see organizations they are blocked by
   return {
     user: {
       ...user,
-      email: decrypted,
       image: user?.image ? `${context.apiRootUrl}${user.image}` : null,
       organizationsBlockedBy: [],
     },

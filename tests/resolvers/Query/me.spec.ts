@@ -5,7 +5,8 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, InterfaceUser, User } from "../../../src/models";
+import { AppUserProfile, User } from "../../../src/models";
+import type { InterfaceUser } from "../../../src/models";
 import { me as meResolver } from "../../../src/resolvers/Query/me";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -13,6 +14,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createTestEvent } from "../../helpers/events";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
+import { decryptEmail } from "../../../src/utilities/encryption";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -62,7 +64,7 @@ describe("resolvers -> Query -> me", () => {
       throw new Error("Error loading payloads");
     }
     const currentUser = mePayload.user as InterfaceUser;
-    currentUser.email = user.email;
+    currentUser.email = decryptEmail(user.email).decrypted;
 
     expect(mePayload?.user).toEqual(user);
   });

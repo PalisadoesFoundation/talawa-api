@@ -388,8 +388,8 @@ export async function redisConfiguration(): Promise<void> {
 export async function setEncryptionKey(): Promise<void> {
   try {
     if (process.env.ENCRYPTION_KEY) {
-      if (!/^[a-f0-9]{64}$/.test(process.env.ENCRYPTION_KEY)) {
-          throw new Error("Existing encryption key has invalid format");
+      if (!/^[a-f0-9]{64}$/i.test(process.env.ENCRYPTION_KEY)) {
+        throw new Error("Existing encryption key has invalid format");
         }
       console.log("\n Encryption Key already present.");
     } else {
@@ -403,14 +403,15 @@ export async function setEncryptionKey(): Promise<void> {
     }
   } catch (err) {
     console.error("An error occurred:", err);
+    abort();
   }
 }
 
 export async function setHashPepper(): Promise<void> {
   try {
     if (process.env.HASH_PEPPER) {
-     if (!/^[a-f0-9]{64}$/.test(process.env.HASH_PEPPER)) {
-       throw new Error("Existing hash pepper has invalid format");
+     if (!/^[a-f0-9]{64}$/i.test(process.env.HASH_PEPPER)) {
+        throw new Error("Existing hash pepper has invalid format");
      }
       console.log("\n Hash Pepper is already present.");
     } else {

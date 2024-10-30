@@ -1,4 +1,5 @@
-import { InterfaceUser, User } from "../../models";
+import { User } from "../../models";
+import type { InterfaceUser } from "../../models";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 import { decryptEmail } from "../../utilities/encryption";
 
@@ -34,7 +35,7 @@ export const blockedUsers: OrganizationResolvers["blockedUsers"] = async (
         return { ...blockedUser, email: decrypted };
       } catch (error) {
         console.error(
-          `Failed to decrypt email for user ${blockedUser._id}:`,
+          `Failed to decrypt email`,
           error,
         );
         return blockedUser;

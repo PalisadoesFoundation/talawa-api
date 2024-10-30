@@ -33,7 +33,7 @@ export const creator: OrganizationResolvers["creator"] = async (parent) => {
     const { decrypted } = decryptEmail(user.email);
     return { ...user, email: decrypted };
   } catch (error) {
-    console.error(`Failed to decrypt email for user ${user._id}:`, error);
+    console.error(`Failed to decrypt email`, error);
     return user;
   }
 };

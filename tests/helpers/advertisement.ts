@@ -42,10 +42,9 @@ export type TestSuperAdminType =
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   (InterfaceUser & Document<any, any, InterfaceUser>) | null;
 
-const email = `email${nanoid().toLowerCase()}@gmail.com`;
-const hashedEmail = hashEmail(email)
-
 export const createTestSuperAdmin = async (): Promise<TestSuperAdminType> => {
+  const email = `email${nanoid().toLowerCase()}@gmail.com`;
+  const hashedEmail = hashEmail(email)
   const testSuperAdmin = await User.create({
     email: encryptEmail(email),
     hashedEmail: hashedEmail,

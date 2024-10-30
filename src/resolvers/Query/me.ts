@@ -5,10 +5,10 @@ import {
 import { errors } from "../../libraries";
 import {
   AppUserProfile,
-  InterfaceUser,
   User,
   type InterfaceAppUserProfile,
 } from "../../models";
+import type { InterfaceUser } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { decryptEmail } from "../../utilities/encryption";
 /**
@@ -53,8 +53,14 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
     );
   }
 
-  const { decrypted } = decryptEmail(currentUser.email);
-  currentUser.email = decrypted;
+  try {
+    const { decrypted } = decryptEmail(currentUser.email);
+    currentUser.email = decrypted;
+  }
+  catch(error)
+  {
+    console.error(`Failed to decrypt email`, error);
+  }
 
   return {
     user: currentUser as InterfaceUser,

@@ -62,7 +62,14 @@ export const users: QueryResolvers["users"] = async (
 
   return await Promise.all(
     users.map(async (user) => {
-      const { decrypted } = decryptEmail(user.email);
+      try {
+        const decrypted = decryptEmail(user.email).decrypted;
+        user.email = decrypted;
+      }
+      catch(error)
+      {
+        console.error(`Failed to decrypt email`, error);
+      }
       const isSuperAdmin = currentUserAppProfile.isSuperAdmin;
       const appUserProfile = await AppUserProfile.findOne({ userId: user._id })
         .populate("createdOrganizations")
@@ -76,7 +83,6 @@ export const users: QueryResolvers["users"] = async (
       return {
         user: {
           ...user,
-          email: decrypted,
           image: user.image ? `${context.apiRootUrl}${user.image}` : null,
           organizationsBlockedBy:
             isSuperAdmin && currentUser._id !== user._id

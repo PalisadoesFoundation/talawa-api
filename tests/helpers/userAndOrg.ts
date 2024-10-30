@@ -8,7 +8,6 @@ import type {
 } from "../../src/models";
 import { AppUserProfile, Organization, User } from "../../src/models";
 import { encryptEmail } from "../../src/utilities/encryption";
-import crypto from "crypto";
 import { hashEmail } from "../../src/utilities/hashEmail";
 export type TestOrganizationType =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,11 +20,19 @@ export type TestAppUserProfileType =
   | (InterfaceAppUserProfile & Document<any, any, InterfaceAppUserProfile>)
   | null;
 export const createTestUser = async (): Promise<TestUserType> => {
-  const email = `email${nanoid().toLowerCase()}@gmail.com`;
+  const email = `${nanoid(8)}${['', '.', '_'][Math.floor(Math.random() * 3)]}${nanoid(8)}@${['gmail.com', 'example.com', 'test.org'][Math.floor(Math.random() * 3)]}`;
   const hashedEmail = hashEmail(email);
 
+   if (!hashedEmail || hashedEmail.length < 32) {
+       throw new Error('Invalid hashed email generated');
+     }
+    const encryptedEmail = encryptEmail(email);
+     if (!encryptedEmail) {
+       throw new Error('Email encryption failed');
+     }
+
   let testUser = await User.create({
-    email: encryptEmail(email),
+    email: encryptedEmail,
     hashedEmail: hashedEmail,
     password: `pass${nanoid().toLowerCase()}`,
     firstName: `firstName${nanoid().toLowerCase()}`,

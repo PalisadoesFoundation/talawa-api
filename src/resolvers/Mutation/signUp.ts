@@ -24,6 +24,7 @@ import {
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { encryptEmail } from "../../utilities/encryption";
 import { hashEmail } from "../../utilities/hashEmail";
+import { isValidEmail } from "../../setup/isValidEmail";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -33,7 +34,11 @@ import { hashEmail } from "../../utilities/hashEmail";
  * @returns Sign up details.
  */
 export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
-  const normalizedEmail = args.data.email.toLowerCase();
+
+const normalizedEmail = args.data.email.toLowerCase();
+if (!isValidEmail(normalizedEmail)) {
+  throw new Error ("Invalid email format");
+}
 
   const hashedEmail = hashEmail(normalizedEmail);
 
