@@ -1,6 +1,7 @@
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR, BASE_URL } from "../../../src/constants";
 import type mongoose from "mongoose";
-import { user } from "../../../src/resolvers/Query/user";
+import { user as userResolver } from "../../../src/resolvers/Query/user";
+import { User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
@@ -23,6 +24,7 @@ afterAll(async () => {
 describe("user Query", () => {
   // Test case 1: Invalid user ID scenario
   it("throws error if user doesn't exist", async () => {
+    expect.assertions(1);
     const args = {
       id: "invalidUserId",
     };
@@ -32,7 +34,7 @@ describe("user Query", () => {
     };
 
     try {
-      await user?.({}, args, context);
+      await userResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
@@ -40,6 +42,7 @@ describe("user Query", () => {
 
   // Test case 2: Unauthorized access scenario
   it("throws unauthorized error when trying to access another user's data", async () => {
+    expect.assertions(1);
     const args = {
       id: anotherTestUser?.id,
     };
@@ -49,7 +52,7 @@ describe("user Query", () => {
     };
 
     try {
-      await user?.({}, args, context);
+      await userResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
         "Access denied. You can only view your own profile.",
@@ -65,10 +68,17 @@ describe("user Query", () => {
 
     const context = {
       userId: testUser?.id,
+      apiRootURL: BASE_URL,
     };
 
-    const result = await user?.({}, args, context);
+    const result = await userResolver?.({}, args, context);
 
-    expect(result).toBeDefined();
+    const user = await User.findById(testUser?._id).lean();
+
+    expect(result?.user).toEqual({
+      ...user,
+      organizationsBlockedBy: [],
+      image: user?.image ? `${BASE_URL}${user.image}` : null,
+    });
   });
 });
