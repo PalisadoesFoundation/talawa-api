@@ -7,8 +7,8 @@ import {
   AppUserProfile,
   User,
   type InterfaceAppUserProfile,
+  type InterfaceUser
 } from "../../models";
-import type { InterfaceUser } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { decryptEmail } from "../../utilities/encryption";
 /**

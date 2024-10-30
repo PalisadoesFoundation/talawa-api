@@ -18,17 +18,22 @@ import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { encryptEmail } from "../../../src/utilities/encryption";
 import { hashEmail } from "../../../src/utilities/hashEmail";
+import en from "../../../locales/en.json"; 
+import hi from "../../../locales/hi.json"; 
+import zh from "../../../locales/zh.json"; 
+import sp from "../../../locales/sp.json"; 
+import fr from "../../../locales/fr.json"; 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 const app = express();
 i18n.configure({
   directory: `${__dirname}/locales`,
   staticCatalog: {
-    en: require("../../../locales/en.json"),
-    hi: require("../../../locales/hi.json"),
-    zh: require("../../../locales/zh.json"),
-    sp: require("../../../locales/sp.json"),
-    fr: require("../../../locales/fr.json"),
+    en,
+    hi,
+    zh,
+    sp,
+    fr,
   },
   queryParameter: "lang",
   defaultLocale: appConfig.defaultLocale,
