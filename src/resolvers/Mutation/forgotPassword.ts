@@ -50,7 +50,6 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
 
   const hashedEmail = hashEmail(email);
 
-
   const user = await User.findOne({ hashedEmail: hashedEmail }).lean();
 
   if (!user) {

@@ -17,8 +17,7 @@ export type TestUserType =
 /* eslint-enable */
 export const createTestUserFunc = async (): Promise<TestUserType> => {
   const email = `email${nanoid().toLowerCase()}@gmail.com`;
-  const hashedEmail = hashEmail(email)
-
+  const hashedEmail = hashEmail(email);
 
   const testUser = await User.create({
     email: encryptEmail(email),

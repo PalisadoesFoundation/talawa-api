@@ -59,7 +59,7 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
   const email = `email${nanoid().toLowerCase()}@gmail.com`;
-  const hashedEmail = hashEmail(email)
+  const hashedEmail = hashEmail(email);
 
   testUser = await User.create({
     userId: new Types.ObjectId().toString(),

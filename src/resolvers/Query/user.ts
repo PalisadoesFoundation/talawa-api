@@ -38,9 +38,7 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
   try {
     const decrypted = decryptEmail(user.email).decrypted;
     user.email = decrypted;
-  }
-  catch(error)
-  {
+  } catch (error) {
     console.error(`Failed to decrypt email`, error);
   }
   const userAppProfile: InterfaceAppUserProfile = (await AppUserProfile.findOne(

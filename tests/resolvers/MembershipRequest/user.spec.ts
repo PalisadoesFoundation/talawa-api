@@ -42,9 +42,9 @@ describe("resolvers -> MembershipRequest -> user", () => {
     const encryptedEmail = user.email;
     const { decrypted } = decryptEmail(user.email);
     user.email = decrypted;
-    
+
     afterEach(() => {
-    user.email = encryptedEmail;
+      user.email = encryptedEmail;
     });
 
     expect(userPayload).toEqual(user);

@@ -11,7 +11,7 @@
     "firstName": "Default",
     "lastName": "Admin",
     "email": "SAMPLE_IV:SAMPLE_SALT:SAMPLE_ENCRYPTED_EMAIL",
-    "hashedEmail":  "SAMPLE_HASHED_EMAIL_VALUE",
+    "hashedEmail": "SAMPLE_HASHED_EMAIL_VALUE",
     "password": "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
     "image": null,
     "createdAt": "2023-04-13T04:53:17.742Z",

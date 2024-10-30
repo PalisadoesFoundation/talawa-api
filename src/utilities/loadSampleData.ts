@@ -115,26 +115,26 @@ async function insertCollections(collections: string[]): Promise<void> {
       switch (collection) {
         case "users":
           /**
-          * Process user emails in sample data:
-          * 1. Validates email existence and type
-          * 2. Encrypts email using encryption utility
-          * 3. Generates hash for email lookup
-          * 
-          * @throws \{Error\} If encryption or hashing fails          
-          */
+           * Process user emails in sample data:
+           * 1. Validates email existence and type
+           * 2. Encrypts email using encryption utility
+           * 3. Generates hash for email lookup
+           *
+           * @throws \{Error\} If encryption or hashing fails
+           */
           for (const user of docs) {
             if (user.email && typeof user.email === "string") {
               try {
-                    const encryptedEmail = encryptEmail(user.email as string);
-                    const hashedEmail = hashEmail(user.email);
-                    if (!encryptedEmail || !hashedEmail) {
-                      throw new Error("Encryption or hashing failed");
-                    }
-                    user.hashedEmail = hashedEmail;
-                    user.email = encryptedEmail;
-                  } catch (error) {
-                      console.error(`Failed to process email for user: ${error}`);
-                   }
+                const encryptedEmail = encryptEmail(user.email as string);
+                const hashedEmail = hashEmail(user.email);
+                if (!encryptedEmail || !hashedEmail) {
+                  throw new Error("Encryption or hashing failed");
+                }
+                user.hashedEmail = hashedEmail;
+                user.email = encryptedEmail;
+              } catch (error) {
+                console.error(`Failed to process email for user: ${error}`);
+              }
             } else {
               console.warn(`User with ID ${user.id} has an invalid email.`);
             }

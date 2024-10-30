@@ -77,7 +77,7 @@ beforeAll(async () => {
     },
   })) as UserDocument;
 
-  const hashedSecondEmail = hashEmail(email)
+  const hashedSecondEmail = hashEmail(email);
 
   testUser2 = (await User.create({
     email: encryptEmail(email),

@@ -74,7 +74,7 @@ beforeEach(async () => {
   const hashedPassword = await bcrypt.hash("password", 12);
 
   const email = `email${nanoid().toLowerCase()}@gmail.com`;
-  const hashedEmail = hashEmail(email)
+  const hashedEmail = hashEmail(email);
 
   testUser = await User.create({
     email: encryptEmail(email),

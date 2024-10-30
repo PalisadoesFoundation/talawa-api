@@ -19,19 +19,19 @@ export const creator: PostResolvers["creator"] = async (parent) => {
     _id: parent.creatorId,
   }).lean();
 
-    if (creator?.email) {
-        try {
-          const decryptionResult = decryptEmail(creator.email);
-          if (!decryptionResult?.decrypted) {
-            console.error('Invalid decryption result');
-            throw new Error('Failed to decrypt email');
-          }
-          creator.email = decryptionResult.decrypted;
-        } catch (error) {
-        console.error('Failed to decrypt email:', error);
-          throw new Error('Failed to process creator email');
-        }
+  if (creator?.email) {
+    try {
+      const decryptionResult = decryptEmail(creator.email);
+      if (!decryptionResult?.decrypted) {
+        console.error("Invalid decryption result");
+        throw new Error("Failed to decrypt email");
       }
+      creator.email = decryptionResult.decrypted;
+    } catch (error) {
+      console.error("Failed to decrypt email:", error);
+      throw new Error("Failed to process creator email");
+    }
+  }
 
   return creator;
 };

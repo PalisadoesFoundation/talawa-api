@@ -24,8 +24,7 @@ export function generateRandomIV(): string {
 export function encryptEmail(email: string): string {
   const encryptionKey = process.env.ENCRYPTION_KEY;
 
-  if(email.length < 1)
-  {
+  if (email.length < 1) {
     throw new Error("Empty or invalid email input.");
   }
 
@@ -61,10 +60,10 @@ export function encryptEmail(email: string): string {
 export function decryptEmail(encryptedData: string): {
   decrypted: string;
 } {
-    const minLength = ivLength * 2 + authTagHexLength + 2;
-    if (encryptedData.length < minLength) {
-      throw new Error("Invalid encrypted data: input is too short.");
-    }
+  const minLength = ivLength * 2 + authTagHexLength + 2;
+  if (encryptedData.length < minLength) {
+    throw new Error("Invalid encrypted data: input is too short.");
+  }
   const [iv, authTagHex, encryptedHex] = encryptedData.split(":");
   if (!isValidHex(iv)) {
     throw new Error("Invalid IV: not a hex string");
@@ -108,7 +107,7 @@ export function decryptEmail(encryptedData: string): {
   } catch {
     throw new Error("Decryption failed: invalid data or authentication tag.");
   }
-  return {decrypted};
+  return { decrypted };
 }
 
 /**

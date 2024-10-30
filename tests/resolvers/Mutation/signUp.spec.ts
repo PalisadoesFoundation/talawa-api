@@ -83,7 +83,7 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     const signUpPayload = await signUpResolver?.({}, args, {});
 
-    const hashedEmail = hashEmail(email)
+    const hashedEmail = hashEmail(email);
 
     const createdUser = await User.findOne({ hashedEmail: hashedEmail })
       .populate("joinedOrganizations")
@@ -117,7 +117,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     );
 
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = hashEmail(email)
+    const hashedEmail = hashEmail(email);
 
     const args: MutationSignUpArgs = {
       data: {
@@ -147,8 +147,8 @@ describe("resolvers -> Mutation -> signUp", () => {
     if (!email) {
       throw new Error("LAST_RESORT_SUPERADMIN_EMAIL is undefined");
     }
-    const hashedEmail = hashEmail(email)
-    
+    const hashedEmail = hashEmail(email);
+
     const args: MutationSignUpArgs = {
       data: {
         email,
@@ -173,7 +173,7 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it(`Check if the User is not being promoted to SUPER ADMIN automatically`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = hashEmail(email)
+    const hashedEmail = hashEmail(email);
 
     const args: MutationSignUpArgs = {
       data: {
@@ -266,7 +266,7 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it("creates user with joining the organization if userRegistrationRequired is false", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = hashEmail(email)
+    const hashedEmail = hashEmail(email);
 
     const args: MutationSignUpArgs = {
       data: {
@@ -307,7 +307,7 @@ describe("resolvers -> Mutation -> signUp", () => {
       visibleInSearch: false,
     });
 
-    const hashedEmail = hashEmail(email)
+    const hashedEmail = hashEmail(email);
 
     const args: MutationSignUpArgs = {
       data: {
@@ -339,7 +339,7 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
   it("creates appUserProfile with userId === createdUser._id", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = hashEmail(email)
+    const hashedEmail = hashEmail(email);
 
     const args: MutationSignUpArgs = {
       data: {

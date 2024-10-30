@@ -390,7 +390,7 @@ export async function setEncryptionKey(): Promise<void> {
     if (process.env.ENCRYPTION_KEY) {
       if (!/^[a-f0-9]{64}$/i.test(process.env.ENCRYPTION_KEY)) {
         throw new Error("Existing encryption key has invalid format");
-        }
+      }
       console.log("\n Encryption Key already present.");
     } else {
       const encryptionKey = crypto.randomBytes(32).toString("hex");
@@ -410,21 +410,20 @@ export async function setEncryptionKey(): Promise<void> {
 export async function setHashPepper(): Promise<void> {
   try {
     if (process.env.HASH_PEPPER) {
-     if (!/^[a-f0-9]{64}$/i.test(process.env.HASH_PEPPER)) {
+      if (!/^[a-f0-9]{64}$/i.test(process.env.HASH_PEPPER)) {
         throw new Error("Existing hash pepper has invalid format");
-     }
+      }
       console.log("\n Hash Pepper is already present.");
     } else {
       const hashPepper = crypto.randomBytes(32).toString("hex");
       process.env.HASH_PEPPER = hashPepper;
 
-     updateEnvVariable({ HASH_PEPPER: hashPepper });
+      updateEnvVariable({ HASH_PEPPER: hashPepper });
 
       console.log("\n Hash Pepper set successfully");
     }
-  } 
-  catch (err) {
-      console.error("An error occurred:", err);
+  } catch (err) {
+    console.error("An error occurred:", err);
   }
 }
 

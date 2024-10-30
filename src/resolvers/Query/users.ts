@@ -65,9 +65,7 @@ export const users: QueryResolvers["users"] = async (
       try {
         const decrypted = decryptEmail(user.email).decrypted;
         user.email = decrypted;
-      }
-      catch(error)
-      {
+      } catch (error) {
         console.error(`Failed to decrypt email`, error);
       }
       const isSuperAdmin = currentUserAppProfile.isSuperAdmin;

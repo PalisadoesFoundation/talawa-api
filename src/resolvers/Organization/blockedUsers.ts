@@ -34,10 +34,7 @@ export const blockedUsers: OrganizationResolvers["blockedUsers"] = async (
         const { decrypted } = decryptEmail(blockedUser.email);
         return { ...blockedUser, email: decrypted };
       } catch (error) {
-        console.error(
-          `Failed to decrypt email`,
-          error,
-        );
+        console.error(`Failed to decrypt email`, error);
         return blockedUser;
       }
     },

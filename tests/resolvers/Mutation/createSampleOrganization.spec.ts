@@ -136,7 +136,7 @@ describe("createSampleOrganization resolver", async () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = hashEmail(email)
+    const hashedEmail = hashEmail(email);
 
     const newUser = await User.create({
       email: encryptEmail(email),

@@ -101,7 +101,7 @@ beforeAll(async () => {
   );
 
   const testMemberUserEmail = `email${nanoid().toLowerCase()}@gmail.com`;
-  const testMemberUserHashedEmail = hashEmail(testMemberUserEmail)
+  const testMemberUserHashedEmail = hashEmail(testMemberUserEmail);
 
   testMemberUser = await User.create({
     email: encryptEmail(testMemberUserEmail),
@@ -121,7 +121,9 @@ beforeAll(async () => {
   );
 
   const testBlockedMemberUserEmail = `email${nanoid().toLowerCase()}@gmail.com`;
-  const testBlockedMemberHashedUserEmail = hashEmail(testBlockedMemberUserEmail);
+  const testBlockedMemberHashedUserEmail = hashEmail(
+    testBlockedMemberUserEmail,
+  );
 
   testBlockedMemberUser = await User.create({
     email: encryptEmail(testBlockedMemberUserEmail),
@@ -141,7 +143,7 @@ beforeAll(async () => {
   );
 
   const testNonMemberAdminEmail = `email${nanoid().toLowerCase()}@gmail.com`;
-  const testNonMemberHashedAdminEmail = hashEmail(testNonMemberAdminEmail)
+  const testNonMemberHashedAdminEmail = hashEmail(testNonMemberAdminEmail);
 
   testNonMemberAdmin = await User.create({
     email: encryptEmail(testNonMemberAdminEmail),

@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
 /**
  * Securely hashes email addresses using HMAC-SHA256.
@@ -13,32 +13,32 @@ import crypto from 'crypto';
  * @throws error If the email format is invalid or `HASH_PEPPER` is missing or improperly configured.
  */
 
-export function hashEmail(email: string) : string  {
-  if (!email || typeof email !== 'string') {
-        throw new Error('Email parameter must be a non-empty string');
-    }
+export function hashEmail(email: string): string {
+  if (!email || typeof email !== "string") {
+    throw new Error("Email parameter must be a non-empty string");
+  }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    throw new Error('Invalid email format');
+    throw new Error("Invalid email format");
   }
 
-    if(!process.env.HASH_PEPPER)
-    {
-        throw new Error('Missing HASH_PEPPER environment variable required for secure email hashing');
-    }
+  if (!process.env.HASH_PEPPER) {
+    throw new Error(
+      "Missing HASH_PEPPER environment variable required for secure email hashing",
+    );
+  }
 
-      if(process.env.HASH_PEPPER.length < 32) {
-         throw new Error('HASH_PEPPER must be at least 32 characters long');
-       }
-      
+  if (process.env.HASH_PEPPER.length < 32) {
+    throw new Error("HASH_PEPPER must be at least 32 characters long");
+  }
 
-    const hashedEmail = crypto
+  const hashedEmail = crypto
     .createHmac("sha256", process.env.HASH_PEPPER)
     .update(email.toLowerCase().trim())
     .digest("hex");
 
-    return hashedEmail;
+  return hashedEmail;
 }
 
 /**
@@ -55,21 +55,20 @@ export function hashEmail(email: string) : string  {
  */
 
 export function compareHashedEmails(a: string, b: string): boolean {
-    if (!a || !b || typeof a !== 'string' || typeof b !== 'string') {
-      return false;
-    }
-    
-    if (!/^[0-9a-f]{64}$/i.test(a) || !/^[0-9a-f]{64}$/i.test(b)) {
-      return false;
-    }
-  
-    try {
-       return crypto.timingSafeEqual(
-         Buffer.from(a, 'hex'),
-         Buffer.from(b, 'hex')
-       );
-    } catch {
-      console.error("Failed to compare hashes, likely due to invalid hex encoding");
-      return false;
-    }
-   }
+  if (!a || !b || typeof a !== "string" || typeof b !== "string") {
+    return false;
+  }
+
+  if (!/^[0-9a-f]{64}$/i.test(a) || !/^[0-9a-f]{64}$/i.test(b)) {
+    return false;
+  }
+
+  try {
+    return crypto.timingSafeEqual(Buffer.from(a, "hex"), Buffer.from(b, "hex"));
+  } catch {
+    console.error(
+      "Failed to compare hashes, likely due to invalid hex encoding",
+    );
+    return false;
+  }
+}

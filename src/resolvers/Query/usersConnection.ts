@@ -33,11 +33,9 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
   return await Promise.all(
     users.map(async (user) => {
       try {
-        const decrypted  = decryptEmail(user.email).decrypted;
+        const decrypted = decryptEmail(user.email).decrypted;
         user.email = decrypted;
-      }
-      catch(error)
-      {
+      } catch (error) {
         console.error(`Failed to decrypt email`, error);
       }
 

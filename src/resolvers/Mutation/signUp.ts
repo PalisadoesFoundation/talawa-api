@@ -34,11 +34,10 @@ import { isValidEmail } from "../../setup/isValidEmail";
  * @returns Sign up details.
  */
 export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
-
-const normalizedEmail = args.data.email.toLowerCase();
-if (!isValidEmail(normalizedEmail)) {
-  throw new Error ("Invalid email format");
-}
+  const normalizedEmail = args.data.email.toLowerCase();
+  if (!isValidEmail(normalizedEmail)) {
+    throw new Error("Invalid email format");
+  }
 
   const hashedEmail = hashEmail(normalizedEmail);
 
@@ -84,8 +83,7 @@ if (!isValidEmail(normalizedEmail)) {
   }
 
   const isLastResortSuperAdmin =
-    normalizedEmail ===
-    LAST_RESORT_SUPERADMIN_EMAIL?.toLowerCase();
+    normalizedEmail === LAST_RESORT_SUPERADMIN_EMAIL?.toLowerCase();
 
   let createdUser:
     | (InterfaceUser & Document<unknown, unknown, InterfaceUser>)

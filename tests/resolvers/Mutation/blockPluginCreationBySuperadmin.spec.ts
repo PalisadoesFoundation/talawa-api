@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
   });
   it("throws error if user  does not have AppUserProfile", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = hashEmail(email)
+    const hashedEmail = hashEmail(email);
 
     try {
       const newUser = await User.create({
@@ -104,7 +104,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
   });
   it("throws error if current appUser does not have AppUserProfile", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = hashEmail(email)
+    const hashedEmail = hashEmail(email);
 
     try {
       const newUser = await User.create({

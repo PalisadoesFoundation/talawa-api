@@ -151,8 +151,8 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       },
     };
 
-    const email = `email${nanoid().toLowerCase()}@gmail.com`  ;
-    const hashedEmail = hashEmail(email)
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = hashEmail(email);
 
     const newUser = await User.create({
       email: encryptEmail(email),
@@ -178,7 +178,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
   });
   it("throws error if user does not exists", async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
-    const hashedEmail = hashEmail(email)
+    const hashedEmail = hashEmail(email);
 
     const newUser = await User.create({
       email: encryptEmail(email),

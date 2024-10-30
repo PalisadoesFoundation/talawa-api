@@ -41,11 +41,9 @@ export const generateUserData = async (
     adminFor.push(organizationId);
   }
 
-  const email = `${fname.toLowerCase()}${lname.toLowerCase()}@${faker.helpers.arrayElement([
-      "xyz",
-      "abc",
-      "lmnop",
-    ])}.com`
+  const email = `${fname.toLowerCase()}${lname.toLowerCase()}@${faker.helpers.arrayElement(
+    ["xyz", "abc", "lmnop"],
+  )}.com`;
 
   const hashedEmail = hashEmail(email);
 

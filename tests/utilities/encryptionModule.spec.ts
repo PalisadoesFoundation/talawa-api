@@ -16,19 +16,21 @@ describe("encryptionModule", () => {
       const iv1 = generateRandomIV();
       const iv2 = generateRandomIV();
       expect(iv1).not.toEqual(iv2);
-   });
-   
-   it("should generate IV with valid hex characters", () => {
+    });
+
+    it("should generate IV with valid hex characters", () => {
       const iv = generateRandomIV();
       expect(iv).toMatch(/^[0-9a-f]+$/i);
+    });
   });
-});
 
   describe("encryptEmail and decryptEmail", () => {
     it("should encrypt and decrypt an email correctly", () => {
       const email = "test@example.com";
       const encryptedWithEmailSalt = encryptEmail(email);
-      const { decrypted }: { decrypted: string } = decryptEmail(encryptedWithEmailSalt);
+      const { decrypted }: { decrypted: string } = decryptEmail(
+        encryptedWithEmailSalt,
+      );
       expect(encryptedWithEmailSalt).not.toEqual(email);
       expect(decrypted).toEqual(email);
     });
@@ -41,7 +43,7 @@ describe("encryptionModule", () => {
       const originalKey = process.env.ENCRYPTION_KEY;
       process.env.ENCRYPTION_KEY = "invalid_key";
       expect(() => encryptEmail("test@example.com")).toThrow(
-        "Encryption key must be a 256-bit hexadecimal string (64 characters)."
+        "Encryption key must be a 256-bit hexadecimal string (64 characters).",
       );
       process.env.ENCRYPTION_KEY = originalKey;
     });
