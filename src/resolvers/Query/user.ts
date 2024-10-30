@@ -34,10 +34,18 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     );
   }
 
-  //Fetch the user data from the database based on the provided ID (args.id)
+  // Fetch the user data from the database based on the provided ID (args.id)
   const user: InterfaceUser = (await User.findById(
     args.id,
   ).lean()) as InterfaceUser;
+
+  if (!user) {
+    throw new errors.NotFoundError(
+      USER_NOT_FOUND_ERROR.DESC,
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM,
+    );
+  }
 
   const userAppProfile: InterfaceAppUserProfile = (await AppUserProfile.findOne(
     {
