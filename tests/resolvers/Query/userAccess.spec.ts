@@ -1,7 +1,7 @@
 import { USER_NOT_FOUND_ERROR, BASE_URL } from "../../../src/constants";
 import type mongoose from "mongoose";
 import { user as userResolver } from "../../../src/resolvers/Query/user";
-import { User } from "../../../src/models";
+import { User, Organization, AppUserProfile } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
@@ -9,12 +9,27 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 let testUser: TestUserType;
 let anotherTestUser: TestUserType;
+let adminUser: TestUserType;
+let superAdminUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
   anotherTestUser = await createTestUser();
+  adminUser = await createTestUser();
+  superAdminUser = await createTestUser();
+
+  // Set up admin and super admin roles
+  await Organization.create({
+    members: [anotherTestUser?.id],
+    admins: [adminUser?.id],
+  });
+
+  await AppUserProfile.create({
+    userId: superAdminUser?.id,
+    isSuperAdmin: true,
+  });
 });
 
 afterAll(async () => {
@@ -60,7 +75,51 @@ describe("user Query", () => {
     }
   });
 
-  // Test case 3: Successful access scenario
+  // Test case 3: Admin access scenario
+  it("allows an admin to access another user's data within the same organization", async () => {
+    const args = {
+      id: anotherTestUser?.id,
+    };
+
+    const context = {
+      userId: adminUser?.id,
+      apiRootURL: BASE_URL,
+    };
+
+    const result = await userResolver?.({}, args, context);
+
+    const user = await User.findById(anotherTestUser?._id).lean();
+
+    expect(result?.user).toEqual({
+      ...user,
+      organizationsBlockedBy: [],
+      image: user?.image ? `${BASE_URL}${user.image}` : null,
+    });
+  });
+
+  // Test case 4: SuperAdmin access scenario
+  it("allows a super admin to access any user's data", async () => {
+    const args = {
+      id: anotherTestUser?.id,
+    };
+
+    const context = {
+      userId: superAdminUser?.id,
+      apiRootURL: BASE_URL,
+    };
+
+    const result = await userResolver?.({}, args, context);
+
+    const user = await User.findById(anotherTestUser?._id).lean();
+
+    expect(result?.user).toEqual({
+      ...user,
+      organizationsBlockedBy: [],
+      image: user?.image ? `${BASE_URL}${user.image}` : null,
+    });
+  });
+
+  // Test case 5: Successful access to own profile
   it("successfully returns user data when accessing own profile", async () => {
     const args = {
       id: testUser?.id,

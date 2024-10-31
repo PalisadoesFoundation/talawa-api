@@ -1,7 +1,7 @@
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors } from "../../libraries";
 import type { InterfaceAppUserProfile, InterfaceUser } from "../../models";
-import { AppUserProfile, User } from "../../models";
+import { AppUserProfile, User, Organization } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This query fetch the user from the database.
@@ -19,7 +19,7 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     _id: context.userId,
   }));
 
-  if (currentUserExists === false) {
+  if (!currentUserExists) {
     throw new errors.NotFoundError(
       USER_NOT_FOUND_ERROR.DESC,
       USER_NOT_FOUND_ERROR.CODE,
@@ -27,10 +27,21 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     );
   }
 
-  // Check if the requesting user is trying to access their own data
-  if (context.userId !== args.id) {
+  // Check if the requesting user is an admin of the organization the target user belongs to
+  const userOrganization = await Organization.exists({
+    members: args.id,
+    admins: context.userId, // Ensure the current user is an admin in the target user's organization
+  });
+
+  // Check if the requesting user is a SuperAdmin
+  const isSuperAdmin = await AppUserProfile.exists({
+    userId: context.userId,
+    isSuperAdmin: true,
+  });
+
+  if (!userOrganization && context.userId !== args.id && !isSuperAdmin) {
     throw new errors.UnauthorizedError(
-      "Access denied. You can only view your own profile.",
+      "Access denied. Only admins of the organization can view this profile.",
     );
   }
 
