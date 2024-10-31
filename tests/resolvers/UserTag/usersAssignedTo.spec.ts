@@ -1,4 +1,3 @@
- 
 import "dotenv/config";
 import {
   parseCursor,
@@ -10,10 +9,9 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserTagType } from "../../helpers/tags";
 import type {
   TestOrganizationType,
-  createTestUser,
-  type TestUserType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
-
+import { createTestUser } from "../../helpers/userAndOrg";
 import { createTagsAndAssignToUser } from "../../helpers/tags";
 import { GraphQLError } from "graphql";
 import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";

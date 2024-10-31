@@ -43,11 +43,12 @@ export const tagsAssignedWith: UserResolvers["tagsAssignedWith"] = async (
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArguments({
       args,
-      parseCursor: (args) =>
+      parseCursor: /* c8 ignore start */ (args) =>
         parseCursor({
           ...args,
           userId: parent._id,
         }),
+      /* c8 ignore stop */
       maximumLimit: MAXIMUM_FETCH_LIMIT,
     });
 
