@@ -1,4 +1,8 @@
 import type { UserTagWhereInput } from "../../types/generatedGraphQLTypes";
+import type {
+  DefaultGraphQLArgumentError,
+  ParseGraphQLConnectionWhereResult,
+} from "../graphQLConnection";
 
 /*
  * function to parse the args.where for UserTag queries
@@ -10,14 +14,34 @@ export type ParseUserTagWhereResult = {
 
 export function parseUserTagWhere(
   where: UserTagWhereInput | null | undefined,
-): ParseUserTagWhereResult {
+): ParseGraphQLConnectionWhereResult<ParseUserTagWhereResult> {
+  const errors: DefaultGraphQLArgumentError[] = [];
+
   if (!where) {
     return {
-      nameStartsWith: "",
+      isSuccessful: true,
+      parsedWhere: {
+        nameStartsWith: "",
+      },
     };
   } else {
-    return {
-      nameStartsWith: where.name.starts_with.trim(),
-    };
+    if (typeof where.name.starts_with !== "string") {
+      errors.push({
+        message: "Invalid name provided. It must be a string.",
+        path: ["whereUserTagNameInput"],
+      });
+
+      return {
+        isSuccessful: false,
+        errors,
+      };
+    } else {
+      return {
+        isSuccessful: true,
+        parsedWhere: {
+          nameStartsWith: where.name.starts_with.trim(),
+        },
+      };
+    }
   }
 }

@@ -2,6 +2,10 @@ import type {
   SortedByOrder,
   UserTagSortedByInput,
 } from "../../types/generatedGraphQLTypes";
+import type {
+  DefaultGraphQLArgumentError,
+  ParseGraphQLConnectionSortedByResult,
+} from "../graphQLConnection";
 
 /*
  * function to parse the args.sortedBy for UserTag queries
@@ -13,14 +17,33 @@ export type ParseSortedByResult = {
 
 export function parseUserTagSortedBy(
   sortedBy: UserTagSortedByInput | null | undefined,
-): ParseSortedByResult {
+): ParseGraphQLConnectionSortedByResult<ParseSortedByResult> {
+  const errors: DefaultGraphQLArgumentError[] = [];
+
   if (!sortedBy) {
     return {
-      sortById: "DESCENDING",
+      isSuccessful: true,
+      parsedSortedBy: { sortById: "DESCENDING" },
     };
   } else {
+    if (sortedBy.id !== "DESCENDING" && sortedBy.id !== "ASCENDING") {
+      errors.push({
+        message:
+          "Invalid sortedByInput provided. It must be a of type SortedByOrder.",
+        path: ["sortUserTagInput"],
+      });
+
+      return {
+        isSuccessful: false,
+        errors,
+      };
+    }
+
     return {
-      sortById: sortedBy.id,
+      isSuccessful: true,
+      parsedSortedBy: {
+        sortById: sortedBy.id,
+      },
     };
   }
 }

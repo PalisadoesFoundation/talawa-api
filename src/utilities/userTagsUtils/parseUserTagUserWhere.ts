@@ -30,7 +30,7 @@ export function parseUserTagUserWhere(
     if (!where.firstName && !where.lastName) {
       errors.push({
         message: `Atleast one of firstName or lastName should be provided`,
-        path: ["whereInput"],
+        path: ["whereUserNameInput"],
       });
 
       return {

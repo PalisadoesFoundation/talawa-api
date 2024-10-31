@@ -41,20 +41,14 @@ export const userTags: OrganizationResolvers["userTags"] = async (
   parent,
   args,
 ) => {
-  const parsedWhere = parseUserTagWhere(args.where);
-  const parsedSortedBy = parseUserTagSortedBy(args.sortedBy);
+  const parseWhereResult = parseUserTagWhere(args.where);
+  const parseSortedByResult = parseUserTagSortedBy(args.sortedBy);
 
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args,
-      parseSortedByResult: {
-        isSuccessful: true,
-        parsedSortedBy,
-      },
-      parseWhereResult: {
-        isSuccessful: true,
-        parsedWhere,
-      },
+      parseSortedByResult,
+      parseWhereResult,
       parseCursor: (args) =>
         parseCursor({
           ...args,
@@ -94,7 +88,7 @@ export const userTags: OrganizationResolvers["userTags"] = async (
 
   // if there's no search input, we'll list all the root tag
   // otherwise we'll also list the subtags matching the filter
-  const parentTagIdFilter = parsedWhere.nameStartsWith
+  const parentTagIdFilter = parsedArgs.filter.nameStartsWith
     ? {}
     : { parentTagId: null };
 

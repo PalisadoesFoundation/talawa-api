@@ -41,17 +41,14 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   parent,
   args,
 ) => {
-  const parsedWhere = parseUserTagUserWhere(args.where);
-  const parsedSortedBy = parseUserTagSortedBy(args.sortedBy);
+  const parseWhereResult = parseUserTagUserWhere(args.where);
+  const parseSortedByResult = parseUserTagSortedBy(args.sortedBy);
 
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args,
-      parseSortedByResult: {
-        isSuccessful: true,
-        parsedSortedBy,
-      },
-      parseWhereResult: parsedWhere,
+      parseSortedByResult,
+      parseWhereResult,
       parseCursor: (args) =>
         parseCursor({
           ...args,

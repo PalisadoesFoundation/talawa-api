@@ -3,7 +3,6 @@ import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import type {
   DefaultGraphQLArgumentError,
-  GraphQLConnectionTraversalDirection,
   ParseGraphQLConnectionCursorArguments,
   ParseGraphQLConnectionCursorResult,
 } from "../../utilities/graphQLConnection";
@@ -41,12 +40,12 @@ export const usersToAssignTo: UserTagResolvers["usersToAssignTo"] = async (
   parent,
   args,
 ) => {
-  const parsedWhere = parseUserTagUserWhere(args.where);
+  const parseWhereResult = parseUserTagUserWhere(args.where);
 
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArgumentsWithWhere({
       args,
-      parseWhereResult: parsedWhere,
+      parseWhereResult,
       parseCursor: (args) =>
         parseCursor({
           ...args,
@@ -194,43 +193,4 @@ export const parseCursor = async ({
     isSuccessful: true,
     parsedCursor: cursorValue,
   };
-};
-
-type GraphQLConnectionFilter =
-  | {
-      _id: {
-        $lt: Types.ObjectId;
-      };
-    }
-  | {
-      _id: {
-        $gt: Types.ObjectId;
-      };
-    }
-  | Record<string, never>;
-
-export const getGraphQLConnectionFilter = ({
-  cursor,
-  direction,
-}: {
-  cursor: string | null;
-  direction: GraphQLConnectionTraversalDirection;
-}): GraphQLConnectionFilter => {
-  if (cursor !== null) {
-    if (direction === "BACKWARD") {
-      return {
-        _id: {
-          $gt: new Types.ObjectId(cursor),
-        },
-      };
-    } else {
-      return {
-        _id: {
-          $lt: new Types.ObjectId(cursor),
-        },
-      };
-    }
-  } else {
-    return {};
-  }
 };
