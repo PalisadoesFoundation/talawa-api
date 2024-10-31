@@ -14,9 +14,9 @@ import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import { Types } from "mongoose";
 import {
   parseUserTagSortedBy,
-  parseUserTagUserWhere,
+  parseUserTagMemberWhere,
 } from "../../utilities/userTagsPaginationUtils";
-import { getUserTagUserGraphQLConnectionFilter } from "../../utilities/graphQLConnection";
+import { getUserTagMemberGraphQLConnectionFilter } from "../../utilities/graphQLConnection";
 
 /**
  * Resolver function for the `usersAssignedTo` field of a `UserTag`.
@@ -41,7 +41,7 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   parent,
   args,
 ) => {
-  const parseWhereResult = parseUserTagUserWhere(args.where);
+  const parseWhereResult = parseUserTagMemberWhere(args.where);
   const parseSortedByResult = parseUserTagSortedBy(args.sortedBy);
 
   const parseGraphQLConnectionArgumentsResult =
@@ -69,7 +69,7 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
 
   const { parsedArgs } = parseGraphQLConnectionArgumentsResult;
 
-  const objectListFilter = getUserTagUserGraphQLConnectionFilter({
+  const objectListFilter = getUserTagMemberGraphQLConnectionFilter({
     cursor: parsedArgs.cursor,
     direction: parsedArgs.direction,
     sortById: parsedArgs.sort.sortById,

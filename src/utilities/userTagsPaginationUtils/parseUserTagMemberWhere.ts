@@ -8,14 +8,14 @@ import type {
  * function to parse the args.where for UserTag member assignment queries
  */
 
-export type ParseUserTagUserWhereResult = {
+export type ParseUserTagMemberWhereResult = {
   firstNameStartsWith: string;
   lastNameStartsWith: string;
 };
 
-export function parseUserTagUserWhere(
+export function parseUserTagMemberWhere(
   where: UserTagUsersAssignedToWhereInput | null | undefined,
-): ParseGraphQLConnectionWhereResult<ParseUserTagUserWhereResult> {
+): ParseGraphQLConnectionWhereResult<ParseUserTagMemberWhereResult> {
   const errors: DefaultGraphQLArgumentError[] = [];
 
   if (!where) {

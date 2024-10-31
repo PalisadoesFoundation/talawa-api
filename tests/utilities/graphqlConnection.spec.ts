@@ -10,7 +10,7 @@ import {
   getCommonGraphQLConnectionFilter,
   getCommonGraphQLConnectionSort,
   getUserTagGraphQLConnectionSort,
-  getUserTagUserGraphQLConnectionFilter,
+  getUserTagMemberGraphQLConnectionFilter,
   getUserTagGraphQLConnectionFilter,
 } from "../../src/utilities/graphQLConnection";
 import { Types } from "mongoose";
@@ -715,12 +715,12 @@ describe("getUserTagGraphQLConnectionFilter function", () => {
   });
 });
 
-describe("getUserTagUserGraphQLConnectionFilter function", () => {
+describe("getUserTagMemberGraphQLConnectionFilter function", () => {
   it(`when sort order is "ASCENDING" argument cursor is non-null and argument direction corresponds to backward`, async () => {
     const cursor = new Types.ObjectId().toString();
 
     expect(
-      getUserTagUserGraphQLConnectionFilter({
+      getUserTagMemberGraphQLConnectionFilter({
         cursor,
         direction: "BACKWARD",
         sortById: "ASCENDING",
@@ -744,7 +744,7 @@ describe("getUserTagUserGraphQLConnectionFilter function", () => {
     const cursor = new Types.ObjectId().toString();
 
     expect(
-      getUserTagUserGraphQLConnectionFilter({
+      getUserTagMemberGraphQLConnectionFilter({
         cursor,
         direction: "FORWARD",
         sortById: "ASCENDING",
@@ -768,7 +768,7 @@ describe("getUserTagUserGraphQLConnectionFilter function", () => {
     const cursor = new Types.ObjectId().toString();
 
     expect(
-      getUserTagUserGraphQLConnectionFilter({
+      getUserTagMemberGraphQLConnectionFilter({
         cursor,
         direction: "BACKWARD",
         sortById: "DESCENDING",
@@ -792,7 +792,7 @@ describe("getUserTagUserGraphQLConnectionFilter function", () => {
     const cursor = new Types.ObjectId().toString();
 
     expect(
-      getUserTagUserGraphQLConnectionFilter({
+      getUserTagMemberGraphQLConnectionFilter({
         cursor,
         direction: "FORWARD",
         sortById: "DESCENDING",

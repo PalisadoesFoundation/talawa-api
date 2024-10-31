@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 import type { GraphQLConnectionTraversalDirection } from ".";
 import type {
   ParseSortedByResult,
-  ParseUserTagUserWhereResult,
+  ParseUserTagMemberWhereResult,
 } from "../userTagsPaginationUtils";
 
 /**
@@ -35,14 +35,14 @@ type GraphQLConnectionFilter =
 /**
  * This function is used to get an object containing filtering logic.
  */
-export function getUserTagUserGraphQLConnectionFilter({
+export function getUserTagMemberGraphQLConnectionFilter({
   cursor,
   direction,
   sortById,
   firstNameStartsWith,
   lastNameStartsWith,
 }: ParseSortedByResult &
-  ParseUserTagUserWhereResult & {
+  ParseUserTagMemberWhereResult & {
     cursor: string | null;
     direction: GraphQLConnectionTraversalDirection;
   }): GraphQLConnectionFilter {

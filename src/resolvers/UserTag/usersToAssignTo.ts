@@ -11,13 +11,13 @@ import {
   getCommonGraphQLConnectionSort,
   parseGraphQLConnectionArgumentsWithWhere,
   transformToDefaultGraphQLConnection,
- getUserTagUserGraphQLConnectionFilter } from "../../utilities/graphQLConnection";
+  getUserTagMemberGraphQLConnectionFilter,
+} from "../../utilities/graphQLConnection";
 
 import { GraphQLError } from "graphql";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import { Types } from "mongoose";
-import { parseUserTagUserWhere } from "../../utilities/userTagsPaginationUtils";
-
+import { parseUserTagMemberWhere } from "../../utilities/userTagsPaginationUtils";
 
 /**
  * Resolver function for the `usersToAssignTo` field of a `UserTag`.
@@ -40,7 +40,7 @@ export const usersToAssignTo: UserTagResolvers["usersToAssignTo"] = async (
   parent,
   args,
 ) => {
-  const parseWhereResult = parseUserTagUserWhere(args.where);
+  const parseWhereResult = parseUserTagMemberWhere(args.where);
 
   const parseGraphQLConnectionArgumentsResult =
     await parseGraphQLConnectionArgumentsWithWhere({
@@ -65,7 +65,7 @@ export const usersToAssignTo: UserTagResolvers["usersToAssignTo"] = async (
 
   const { parsedArgs } = parseGraphQLConnectionArgumentsResult;
 
-  const objectListFilter = getUserTagUserGraphQLConnectionFilter({
+  const objectListFilter = getUserTagMemberGraphQLConnectionFilter({
     cursor: parsedArgs.cursor,
     direction: parsedArgs.direction,
     sortById: "DESCENDING",
