@@ -37,14 +37,40 @@ export function parseUserTagUserWhere(
         isSuccessful: false,
         errors,
       };
-    }
+    } else if (
+      where.firstName &&
+      typeof where.firstName.starts_with !== "string"
+    ) {
+      errors.push({
+        message: "Invalid firstName provided. It must be a string.",
+        path: ["whereUserTagUserNameInput"],
+      });
 
-    return {
-      isSuccessful: true,
-      parsedWhere: {
-        firstNameStartsWith: where.firstName?.starts_with.trim() ?? "",
-        lastNameStartsWith: where.lastName?.starts_with.trim() ?? "",
-      },
-    };
+      return {
+        isSuccessful: false,
+        errors,
+      };
+    } else if (
+      where.lastName &&
+      typeof where.lastName.starts_with !== "string"
+    ) {
+      errors.push({
+        message: "Invalid lastName provided. It must be a string.",
+        path: ["whereUserTagUserNameInput"],
+      });
+
+      return {
+        isSuccessful: false,
+        errors,
+      };
+    } else {
+      return {
+        isSuccessful: true,
+        parsedWhere: {
+          firstNameStartsWith: where.firstName?.starts_with.trim() ?? "",
+          lastNameStartsWith: where.lastName?.starts_with.trim() ?? "",
+        },
+      };
+    }
   }
 }

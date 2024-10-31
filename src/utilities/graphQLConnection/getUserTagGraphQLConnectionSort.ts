@@ -1,5 +1,5 @@
 import type { GraphQLConnectionTraversalDirection } from ".";
-import type { ParseSortedByResult } from "../userTagsUtils";
+import type { ParseSortedByResult } from "../userTagsPaginationUtils";
 
 /**
  *This is typescript type of the object returned from `getGraphQLConnectionSort` function.

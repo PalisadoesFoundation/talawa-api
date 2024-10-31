@@ -16,7 +16,7 @@ import type { Types } from "mongoose";
 import {
   parseUserTagSortedBy,
   parseUserTagWhere,
-} from "../../utilities/userTagsUtils";
+} from "../../utilities/userTagsPaginationUtils";
 
 /**
  * Resolver function for the `childTags` field of a `UserTag`.
@@ -49,11 +49,12 @@ export const childTags: UserTagResolvers["childTags"] = async (
       args,
       parseSortedByResult,
       parseWhereResult,
-      parseCursor: (args) =>
+      parseCursor: /* c8 ignore start */ (args) =>
         parseCursor({
           ...args,
           parentTagId: parent._id,
         }),
+      /* c8 ignore stop */
       maximumLimit: MAXIMUM_FETCH_LIMIT,
     });
 

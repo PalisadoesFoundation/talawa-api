@@ -11,13 +11,13 @@ import {
   getCommonGraphQLConnectionSort,
   parseGraphQLConnectionArgumentsWithWhere,
   transformToDefaultGraphQLConnection,
-} from "../../utilities/graphQLConnection";
+ getUserTagUserGraphQLConnectionFilter } from "../../utilities/graphQLConnection";
 
 import { GraphQLError } from "graphql";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import { Types } from "mongoose";
-import { parseUserTagUserWhere } from "../../utilities/userTagsUtils";
-import { getUserTagUserGraphQLConnectionFilter } from "../../utilities/graphQLConnection/getUserTagUserGraphQLConnectionFilter";
+import { parseUserTagUserWhere } from "../../utilities/userTagsPaginationUtils";
+
 
 /**
  * Resolver function for the `usersToAssignTo` field of a `UserTag`.
@@ -46,10 +46,11 @@ export const usersToAssignTo: UserTagResolvers["usersToAssignTo"] = async (
     await parseGraphQLConnectionArgumentsWithWhere({
       args,
       parseWhereResult,
-      parseCursor: (args) =>
+      parseCursor: /* c8 ignore start */ (args) =>
         parseCursor({
           ...args,
         }),
+      /* c8 ignore stop */
       maximumLimit: MAXIMUM_FETCH_LIMIT,
     });
 

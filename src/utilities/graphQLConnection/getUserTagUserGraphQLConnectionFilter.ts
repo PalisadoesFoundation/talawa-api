@@ -3,7 +3,7 @@ import type { GraphQLConnectionTraversalDirection } from ".";
 import type {
   ParseSortedByResult,
   ParseUserTagUserWhereResult,
-} from "../userTagsUtils";
+} from "../userTagsPaginationUtils";
 
 /**
  * This is typescript type of the object returned from function `getGraphQLConnectionFilter`.
@@ -30,8 +30,7 @@ type GraphQLConnectionFilter =
       lastName: {
         $regex: RegExp;
       };
-    }
-  | Record<string, never>;
+    };
 
 /**
  * This function is used to get an object containing filtering logic.

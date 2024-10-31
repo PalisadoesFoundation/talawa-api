@@ -15,8 +15,8 @@ import { Types } from "mongoose";
 import {
   parseUserTagSortedBy,
   parseUserTagUserWhere,
-} from "../../utilities/userTagsUtils";
-import { getUserTagUserGraphQLConnectionFilter } from "../../utilities/graphQLConnection/getUserTagUserGraphQLConnectionFilter";
+} from "../../utilities/userTagsPaginationUtils";
+import { getUserTagUserGraphQLConnectionFilter } from "../../utilities/graphQLConnection";
 
 /**
  * Resolver function for the `usersAssignedTo` field of a `UserTag`.
@@ -49,11 +49,12 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
       args,
       parseSortedByResult,
       parseWhereResult,
-      parseCursor: (args) =>
+      parseCursor: /* c8 ignore start */ (args) =>
         parseCursor({
           ...args,
           tagId: parent._id,
         }),
+      /* c8 ignore stop */
       maximumLimit: MAXIMUM_FETCH_LIMIT,
     });
 

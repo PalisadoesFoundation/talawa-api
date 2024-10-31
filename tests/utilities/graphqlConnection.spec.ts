@@ -9,7 +9,11 @@ import {
   parseGraphQLConnectionArgumentsWithSortedByAndWhere,
   getCommonGraphQLConnectionFilter,
   getCommonGraphQLConnectionSort,
+  getUserTagGraphQLConnectionSort,
+  getUserTagUserGraphQLConnectionFilter,
+  getUserTagGraphQLConnectionFilter,
 } from "../../src/utilities/graphQLConnection";
+import { Types } from "mongoose";
 
 describe("isNotNullish function", () => {
   it("returns false when argument value is undefined", () => {
@@ -622,6 +626,232 @@ describe("getCommonGraphQLConnectionSort function", () => {
     expect(
       getCommonGraphQLConnectionSort({
         direction: "FORWARD",
+      }),
+    ).toEqual({
+      _id: -1,
+    });
+  });
+});
+
+describe("getUserTagGraphQLConnectionFilter function", () => {
+  it(`when sort order is "ASCENDING" argument cursor is non-null and argument direction corresponds to backward`, async () => {
+    const cursor = "cursor";
+
+    expect(
+      getUserTagGraphQLConnectionFilter({
+        cursor,
+        direction: "BACKWARD",
+        sortById: "ASCENDING",
+        nameStartsWith: "userName",
+      }),
+    ).toEqual({
+      _id: {
+        $lt: cursor,
+      },
+      name: {
+        $regex: /^userName/i,
+      },
+    });
+  });
+
+  it(`when sort order is "ASCENDING" argument cursor is non-null and argument direction corresponds to forward`, async () => {
+    const cursor = "cursor";
+
+    expect(
+      getUserTagGraphQLConnectionFilter({
+        cursor,
+        direction: "FORWARD",
+        sortById: "ASCENDING",
+        nameStartsWith: "userName",
+      }),
+    ).toEqual({
+      _id: {
+        $gt: cursor,
+      },
+      name: {
+        $regex: /^userName/i,
+      },
+    });
+  });
+
+  it(`when sort order is "DESCENDING" argument cursor is non-null and argument direction corresponds to backward`, async () => {
+    const cursor = "cursor";
+
+    expect(
+      getUserTagGraphQLConnectionFilter({
+        cursor,
+        direction: "BACKWARD",
+        sortById: "DESCENDING",
+        nameStartsWith: "userName",
+      }),
+    ).toEqual({
+      _id: {
+        $gt: cursor,
+      },
+      name: {
+        $regex: /^userName/i,
+      },
+    });
+  });
+
+  it(`when sort order is "DESCENDING" argument cursor is non-null and argument direction corresponds to forward`, async () => {
+    const cursor = "cursor";
+
+    expect(
+      getUserTagGraphQLConnectionFilter({
+        cursor,
+        direction: "FORWARD",
+        sortById: "DESCENDING",
+        nameStartsWith: "userName",
+      }),
+    ).toEqual({
+      _id: {
+        $lt: cursor,
+      },
+      name: {
+        $regex: /^userName/i,
+      },
+    });
+  });
+});
+
+describe("getUserTagUserGraphQLConnectionFilter function", () => {
+  it(`when sort order is "ASCENDING" argument cursor is non-null and argument direction corresponds to backward`, async () => {
+    const cursor = new Types.ObjectId().toString();
+
+    expect(
+      getUserTagUserGraphQLConnectionFilter({
+        cursor,
+        direction: "BACKWARD",
+        sortById: "ASCENDING",
+        firstNameStartsWith: "firstName",
+        lastNameStartsWith: "lastName",
+      }),
+    ).toEqual({
+      _id: {
+        $lt: new Types.ObjectId(cursor),
+      },
+      firstName: {
+        $regex: /^firstName/i,
+      },
+      lastName: {
+        $regex: /^lastName/i,
+      },
+    });
+  });
+
+  it(`when sort order is "ASCENDING" argument cursor is non-null and argument direction corresponds to forward`, async () => {
+    const cursor = new Types.ObjectId().toString();
+
+    expect(
+      getUserTagUserGraphQLConnectionFilter({
+        cursor,
+        direction: "FORWARD",
+        sortById: "ASCENDING",
+        firstNameStartsWith: "firstName",
+        lastNameStartsWith: "lastName",
+      }),
+    ).toEqual({
+      _id: {
+        $gt: new Types.ObjectId(cursor),
+      },
+      firstName: {
+        $regex: /^firstName/i,
+      },
+      lastName: {
+        $regex: /^lastName/i,
+      },
+    });
+  });
+
+  it(`when sort order is "DESCENDING" argument cursor is non-null and argument direction corresponds to backward`, async () => {
+    const cursor = new Types.ObjectId().toString();
+
+    expect(
+      getUserTagUserGraphQLConnectionFilter({
+        cursor,
+        direction: "BACKWARD",
+        sortById: "DESCENDING",
+        firstNameStartsWith: "firstName",
+        lastNameStartsWith: "lastName",
+      }),
+    ).toEqual({
+      _id: {
+        $gt: new Types.ObjectId(cursor),
+      },
+      firstName: {
+        $regex: /^firstName/i,
+      },
+      lastName: {
+        $regex: /^lastName/i,
+      },
+    });
+  });
+
+  it(`when sort order is "DESCENDING" argument cursor is non-null and argument direction corresponds to forward`, async () => {
+    const cursor = new Types.ObjectId().toString();
+
+    expect(
+      getUserTagUserGraphQLConnectionFilter({
+        cursor,
+        direction: "FORWARD",
+        sortById: "DESCENDING",
+        firstNameStartsWith: "firstName",
+        lastNameStartsWith: "lastName",
+      }),
+    ).toEqual({
+      _id: {
+        $lt: new Types.ObjectId(cursor),
+      },
+      firstName: {
+        $regex: /^firstName/i,
+      },
+      lastName: {
+        $regex: /^lastName/i,
+      },
+    });
+  });
+});
+
+describe("getUserTagGraphQLConnectionSort function", () => {
+  it(`when sort order is "ASCENDING" and argument direction corresponds to backward`, async () => {
+    expect(
+      getUserTagGraphQLConnectionSort({
+        direction: "BACKWARD",
+        sortById: "ASCENDING",
+      }),
+    ).toEqual({
+      _id: -1,
+    });
+  });
+
+  it(`when sort order is "ASCENDING" and argument direction corresponds to forward`, async () => {
+    expect(
+      getUserTagGraphQLConnectionSort({
+        direction: "FORWARD",
+        sortById: "ASCENDING",
+      }),
+    ).toEqual({
+      _id: 1,
+    });
+  });
+
+  it(`when sort order is "DESCENDING" and argument direction corresponds to backward`, async () => {
+    expect(
+      getUserTagGraphQLConnectionSort({
+        direction: "BACKWARD",
+        sortById: "DESCENDING",
+      }),
+    ).toEqual({
+      _id: 1,
+    });
+  });
+
+  it(`when sort order is "DESCENDING" and argument direction corresponds to forward`, async () => {
+    expect(
+      getUserTagGraphQLConnectionSort({
+        direction: "FORWARD",
+        sortById: "DESCENDING",
       }),
     ).toEqual({
       _id: -1,
