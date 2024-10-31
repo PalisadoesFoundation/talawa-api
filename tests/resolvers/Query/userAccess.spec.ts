@@ -15,24 +15,43 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  testUser = await createTestUser();
-  anotherTestUser = await createTestUser();
-  adminUser = await createTestUser();
-  superAdminUser = await createTestUser();
+  try {
+    testUser = await createTestUser();
+    anotherTestUser = await createTestUser();
+    adminUser = await createTestUser();
+    superAdminUser = await createTestUser();
 
-  // Set up admin and super admin roles
-  await Organization.create({
-    members: [anotherTestUser?.id],
-    admins: [adminUser?.id],
-  });
+    // Set up admin and super admin roles
+    await Organization.create({
+      members: [anotherTestUser?.id],
+      admins: [adminUser?.id],
+    });
 
-  await AppUserProfile.create({
-    userId: superAdminUser?.id,
-    isSuperAdmin: true,
-  });
+    await AppUserProfile.create({
+      userId: superAdminUser?.id,
+      isSuperAdmin: true,
+    });
+  } catch (error) {
+    console.error("Failed to set up test data:", error);
+    throw error;
+  }
 });
 
 afterAll(async () => {
+  await Promise.all([
+    User.deleteMany({
+      _id: {
+        $in: [
+          testUser?.id,
+          anotherTestUser?.id,
+          adminUser?.id,
+          superAdminUser?.id,
+        ],
+      },
+    }),
+    Organization.deleteMany({}),
+    AppUserProfile.deleteMany({ userId: superAdminUser?.id }),
+  ]);
   await disconnect(MONGOOSE_INSTANCE);
 });
 
@@ -50,8 +69,11 @@ describe("user Query", () => {
 
     try {
       await userResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect(error instanceof Error && error.message).toEqual(
+        USER_NOT_FOUND_ERROR.DESC,
+      );
     }
   });
 
@@ -85,6 +107,9 @@ describe("user Query", () => {
       userId: adminUser?.id,
       apiRootURL: BASE_URL,
     };
+
+    const org = await Organization.findOne({ admins: adminUser?.id });
+    expect(org?.members).toContain(anotherTestUser?.id);
 
     const result = await userResolver?.({}, args, context);
 

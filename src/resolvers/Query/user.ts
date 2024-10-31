@@ -27,21 +27,20 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     );
   }
 
-  // Check if the requesting user is an admin of the organization the target user belongs to
-  const userOrganization = await Organization.exists({
-    members: args.id,
-    admins: context.userId, // Ensure the current user is an admin in the target user's organization
-  });
+  const [userOrganization, superAdminProfile] = await Promise.all([
+    Organization.exists({
+      members: args.id,
+      admins: context.userId,
+    }),
+    AppUserProfile.exists({
+      userId: context.userId,
+      isSuperAdmin: true,
+    }),
+  ]);
 
-  // Check if the requesting user is a SuperAdmin
-  const isSuperAdmin = await AppUserProfile.exists({
-    userId: context.userId,
-    isSuperAdmin: true,
-  });
-
-  if (!userOrganization && context.userId !== args.id && !isSuperAdmin) {
+  if (!userOrganization && context.userId !== args.id && !superAdminProfile) {
     throw new errors.UnauthorizedError(
-      "Access denied. Only admins of the organization can view this profile.",
+      "Access denied. Only the user themselves, organization admins, or super admins can view this profile.",
     );
   }
 
