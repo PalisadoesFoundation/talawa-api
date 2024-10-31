@@ -1976,6 +1976,8 @@ export type OrganizationUserTagsArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
   last?: InputMaybe<Scalars['PositiveInt']['input']>;
+  sortedBy?: InputMaybe<UserTagSortedByInput>;
+  where?: InputMaybe<UserTagWhereInput>;
 };
 
 export type OrganizationCustomField = {
@@ -2951,6 +2953,10 @@ export type UserInput = {
   selectedOrganization: Scalars['ID']['input'];
 };
 
+export type UserNameWhereInput = {
+  starts_with: Scalars['String']['input'];
+};
+
 export type UserNotAuthorizedAdminError = Error & {
   __typename?: 'UserNotAuthorizedAdminError';
   message: Scalars['String']['output'];
@@ -3026,6 +3032,8 @@ export type UserTagChildTagsArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
   last?: InputMaybe<Scalars['PositiveInt']['input']>;
+  sortedBy?: InputMaybe<UserTagSortedByInput>;
+  where?: InputMaybe<UserTagWhereInput>;
 };
 
 
@@ -3034,6 +3042,8 @@ export type UserTagUsersAssignedToArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
   last?: InputMaybe<Scalars['PositiveInt']['input']>;
+  sortedBy?: InputMaybe<UserTagUsersAssignedToSortedByInput>;
+  where?: InputMaybe<UserTagUsersAssignedToWhereInput>;
 };
 
 
@@ -3042,6 +3052,33 @@ export type UserTagUsersToAssignToArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
   last?: InputMaybe<Scalars['PositiveInt']['input']>;
+  where?: InputMaybe<UserTagUsersToAssignToWhereInput>;
+};
+
+export type UserTagNameWhereInput = {
+  starts_with: Scalars['String']['input'];
+};
+
+export type UserTagSortedByInput = {
+  id: SortedByOrder;
+};
+
+export type UserTagUsersAssignedToSortedByInput = {
+  id: SortedByOrder;
+};
+
+export type UserTagUsersAssignedToWhereInput = {
+  firstName?: InputMaybe<UserNameWhereInput>;
+  lastName?: InputMaybe<UserNameWhereInput>;
+};
+
+export type UserTagUsersToAssignToWhereInput = {
+  firstName?: InputMaybe<UserNameWhereInput>;
+  lastName?: InputMaybe<UserNameWhereInput>;
+};
+
+export type UserTagWhereInput = {
+  name: UserTagNameWhereInput;
 };
 
 /** A default connection on the UserTag type. */
@@ -3436,6 +3473,7 @@ export type ResolversTypes = {
   UserData: ResolverTypeWrapper<Omit<UserData, 'appUserProfile' | 'user'> & { appUserProfile?: Maybe<ResolversTypes['AppUserProfile']>, user: ResolversTypes['User'] }>;
   UserFamily: ResolverTypeWrapper<InterfaceUserFamilyModel>;
   UserInput: UserInput;
+  UserNameWhereInput: UserNameWhereInput;
   UserNotAuthorizedAdminError: ResolverTypeWrapper<UserNotAuthorizedAdminError>;
   UserNotAuthorizedError: ResolverTypeWrapper<UserNotAuthorizedError>;
   UserNotFoundError: ResolverTypeWrapper<UserNotFoundError>;
@@ -3443,6 +3481,12 @@ export type ResolversTypes = {
   UserPhone: ResolverTypeWrapper<UserPhone>;
   UserPhoneInput: UserPhoneInput;
   UserTag: ResolverTypeWrapper<InterfaceOrganizationTagUserModel>;
+  UserTagNameWhereInput: UserTagNameWhereInput;
+  UserTagSortedByInput: UserTagSortedByInput;
+  UserTagUsersAssignedToSortedByInput: UserTagUsersAssignedToSortedByInput;
+  UserTagUsersAssignedToWhereInput: UserTagUsersAssignedToWhereInput;
+  UserTagUsersToAssignToWhereInput: UserTagUsersToAssignToWhereInput;
+  UserTagWhereInput: UserTagWhereInput;
   UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversTypes['UserTagsConnectionEdge']> }>;
   UserTagsConnectionEdge: ResolverTypeWrapper<Omit<UserTagsConnectionEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
   UserType: UserType;
@@ -3630,12 +3674,19 @@ export type ResolversParentTypes = {
   UserData: Omit<UserData, 'appUserProfile' | 'user'> & { appUserProfile?: Maybe<ResolversParentTypes['AppUserProfile']>, user: ResolversParentTypes['User'] };
   UserFamily: InterfaceUserFamilyModel;
   UserInput: UserInput;
+  UserNameWhereInput: UserNameWhereInput;
   UserNotAuthorizedAdminError: UserNotAuthorizedAdminError;
   UserNotAuthorizedError: UserNotAuthorizedError;
   UserNotFoundError: UserNotFoundError;
   UserPhone: UserPhone;
   UserPhoneInput: UserPhoneInput;
   UserTag: InterfaceOrganizationTagUserModel;
+  UserTagNameWhereInput: UserTagNameWhereInput;
+  UserTagSortedByInput: UserTagSortedByInput;
+  UserTagUsersAssignedToSortedByInput: UserTagUsersAssignedToSortedByInput;
+  UserTagUsersAssignedToWhereInput: UserTagUsersAssignedToWhereInput;
+  UserTagUsersToAssignToWhereInput: UserTagUsersToAssignToWhereInput;
+  UserTagWhereInput: UserTagWhereInput;
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserTagsConnectionEdge']> };
   UserTagsConnectionEdge: Omit<UserTagsConnectionEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
   UserWhereInput: UserWhereInput;

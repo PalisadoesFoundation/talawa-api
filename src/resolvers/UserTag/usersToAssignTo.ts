@@ -10,13 +10,15 @@ import type {
 
 import {
   getCommonGraphQLConnectionSort,
-  parseGraphQLConnectionArguments,
+  parseGraphQLConnectionArgumentsWithWhere,
   transformToDefaultGraphQLConnection,
 } from "../../utilities/graphQLConnection";
 
 import { GraphQLError } from "graphql";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import { Types } from "mongoose";
+import { parseUserTagUserWhere } from "../../utilities/userTagsUtils";
+import { getUserTagUserGraphQLConnectionFilter } from "../../utilities/graphQLConnection/getUserTagUserGraphQLConnectionFilter";
 
 /**
  * Resolver function for the `usersToAssignTo` field of a `UserTag`.
@@ -39,9 +41,12 @@ export const usersToAssignTo: UserTagResolvers["usersToAssignTo"] = async (
   parent,
   args,
 ) => {
+  const parsedWhere = parseUserTagUserWhere(args.where);
+
   const parseGraphQLConnectionArgumentsResult =
-    await parseGraphQLConnectionArguments({
+    await parseGraphQLConnectionArgumentsWithWhere({
       args,
+      parseWhereResult: parsedWhere,
       parseCursor: (args) =>
         parseCursor({
           ...args,
@@ -60,24 +65,26 @@ export const usersToAssignTo: UserTagResolvers["usersToAssignTo"] = async (
 
   const { parsedArgs } = parseGraphQLConnectionArgumentsResult;
 
-  const filter = getGraphQLConnectionFilter({
+  const objectListFilter = getUserTagUserGraphQLConnectionFilter({
     cursor: parsedArgs.cursor,
     direction: parsedArgs.direction,
+    sortById: "DESCENDING",
+    firstNameStartsWith: parsedArgs.where.firstNameStartsWith,
+    lastNameStartsWith: parsedArgs.where.lastNameStartsWith,
   });
+
+  // don't use _id as a filter in while counting the documents
+  // _id is only used for pagination
+  const totalCountFilter = Object.fromEntries(
+    Object.entries(objectListFilter).filter(([key]) => key !== "_id"),
+  );
 
   const sort = getCommonGraphQLConnectionSort({
     direction: parsedArgs.direction,
   });
 
   const commonPipeline = [
-    // Step 1: Match users whose joinedOrgs contains the orgId
-    {
-      $match: {
-        ...filter,
-        joinedOrganizations: parent.organizationId,
-      },
-    },
-    // Step 2: Perform a left join with TagUser collection on userId
+    // Perform a left join with TagUser collection on userId
     {
       $lookup: {
         from: "tagusers", // Name of the collection holding TagUser documents
@@ -86,12 +93,12 @@ export const usersToAssignTo: UserTagResolvers["usersToAssignTo"] = async (
         as: "tagUsers",
       },
     },
-    // Step 3: Filter out users that have a tagUser document with the specified tagId
+    // Filter out users that have a tagUser document with the specified tagId
     {
       $match: {
         tagUsers: {
           $not: {
-            $elemMatch: { tagId: parent._id },
+            $elemMatch: { tagId: new Types.ObjectId(parent._id) },
           },
         },
       },
@@ -99,23 +106,33 @@ export const usersToAssignTo: UserTagResolvers["usersToAssignTo"] = async (
   ];
 
   // Execute the queries using the common pipeline
-  const [objectList, totalCountResult] = await Promise.all([
-    // First aggregation to get the user list
+  const [objectList, totalCount] = await Promise.all([
+    // First aggregation to get the user list matching the filter criteria
     User.aggregate([
+      {
+        $match: {
+          ...objectListFilter,
+          joinedOrganizations: parent.organizationId,
+        },
+      },
       ...commonPipeline,
       {
         $sort: { ...sort },
       },
       { $limit: parsedArgs.limit },
     ]),
-    // Second aggregation to count total users
-    User.aggregate([...commonPipeline, { $count: "totalCount" }]),
+    // Second aggregation to count total users matching the filter criteria
+    User.aggregate([
+      {
+        $match: {
+          ...totalCountFilter,
+          joinedOrganizations: parent.organizationId,
+        },
+      },
+      ...commonPipeline,
+      { $count: "totalCount" },
+    ]).then((res) => res[0]?.totalCount || 0),
   ]);
-
-  const totalCount =
-    totalCountResult.length > 0 ? totalCountResult[0].totalCount : 0;
-
-  // The users and totalCount are now ready for use
 
   return transformToDefaultGraphQLConnection<
     ParsedCursor,

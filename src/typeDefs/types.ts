@@ -423,6 +423,8 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagWhereInput
+      sortedBy: UserTagSortedByInput
     ): UserTagsConnection
     posts(
       after: String
@@ -675,6 +677,8 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagWhereInput
+      sortedBy: UserTagSortedByInput
     ): UserTagsConnection
     """
     A connection field to traverse a list of User this UserTag is assigned
@@ -685,6 +689,8 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagUsersAssignedToWhereInput
+      sortedBy: UserTagUsersAssignedToSortedByInput
     ): UsersConnection
 
     """
@@ -696,6 +702,7 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagUsersToAssignToWhereInput
     ): UsersConnection
   }
 
