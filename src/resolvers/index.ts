@@ -86,8 +86,6 @@ const resolversComposition = {
   "Mutation.blockPluginCreationBySuperadmin": [currentUserExists()],
   "Mutation.createComment": [currentUserExists()],
   "Mutation.createChat": [currentUserExists()],
-  "Mutation.createDirectChat": [currentUserExists()],
-  "Mutation.createGroupChat": [currentUserExists()],
   "Mutation.createOrganization": [currentUserExists()],
   "Mutation.createVenue": [currentUserExists()],
   "Mutation.deleteVenue": [currentUserExists()],
