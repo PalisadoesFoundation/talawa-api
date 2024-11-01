@@ -670,7 +670,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const upcomingEvents = (await eventsByOrganizationConnectionResolver?.(
       {},
       {
-        currentDate: new Date(),
+        upcomingOnly: true,
         where: {
           organization_id: testOrganization?._id,
         },

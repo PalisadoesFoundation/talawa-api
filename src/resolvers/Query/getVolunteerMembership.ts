@@ -42,12 +42,14 @@ const getVolunteerMembershipsByEventId = async (
   eventId: string,
   orderBy: InputMaybe<VolunteerMembershipOrderByInput> | undefined,
   status?: string,
+  group?: string,
 ): Promise<InterfaceVolunteerMembership[]> => {
   const sort = getSort(orderBy);
 
   return await VolunteerMembership.find({
     event: eventId,
     ...(status && { status }),
+    ...(group && { group: group }),
   })
     .sort(sort)
     .populate("event")
@@ -94,7 +96,7 @@ const filterMemberships = (
 
 export const getVolunteerMembership: QueryResolvers["getVolunteerMembership"] =
   async (_parent, args) => {
-    const { status, userId, filter, eventTitle, eventId, userName } =
+    const { status, userId, filter, eventTitle, eventId, userName, groupId } =
       args.where;
 
     let volunteerMemberships: InterfaceVolunteerMembership[] = [];
@@ -110,6 +112,7 @@ export const getVolunteerMembership: QueryResolvers["getVolunteerMembership"] =
         eventId,
         args.orderBy,
         status ?? undefined,
+        groupId ?? undefined,
       );
     }
 

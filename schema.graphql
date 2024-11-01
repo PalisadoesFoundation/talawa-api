@@ -1524,7 +1524,7 @@ type Query {
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   event(id: ID!): Event
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
-  eventsByOrganizationConnection(currentDate: DateTime, first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
+  eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, upcomingOnly: Boolean, where: EventWhereInput): [Event!]!
   fundsByOrganization(orderBy: FundOrderByInput, organizationId: ID!, where: FundWhereInput): [Fund]
   getAgendaItem(id: ID!): AgendaItem
   getAgendaSection(id: ID!): AgendaSection
@@ -2093,6 +2093,7 @@ input VolunteerMembershipWhereInput {
   eventId: ID
   eventTitle: String
   filter: String
+  groupId: ID
   status: String
   userId: ID
   userName: String

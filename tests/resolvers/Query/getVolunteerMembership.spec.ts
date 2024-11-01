@@ -57,6 +57,12 @@ beforeAll(async () => {
       volunteer: testEventVolunteer1._id,
       status: MembershipStatus.REJECTED,
     },
+    {
+      event: testEvent?._id,
+      volunteer: testEventVolunteer1._id,
+      status: MembershipStatus.INVITED,
+      group: testEventVolunteerGroup._id,
+    },
   ]);
 });
 
@@ -124,7 +130,7 @@ describe("resolvers -> Query -> getVolunteerMembership", () => {
     );
   });
 
-  it(`getVolunteerMembership for eventId, filter group, userName`, async () => {
+  it(`getVolunteerMembership for userId`, async () => {
     const volunteerMemberships = (await getVolunteerMembership?.(
       {},
       {
@@ -139,5 +145,26 @@ describe("resolvers -> Query -> getVolunteerMembership", () => {
     expect(volunteerMemberships[0].group).toBeUndefined();
     expect(volunteerMemberships[1].group).toBeUndefined();
     expect(volunteerMemberships[2].group).toBeUndefined();
+  });
+
+  it(`getVolunteerMembership for eventId, groupId`, async () => {
+    const volunteerMemberships = (await getVolunteerMembership?.(
+      {},
+      {
+        where: {
+          eventId: testEvent?._id,
+          groupId: testEventVolunteerGroup?._id,
+          filter: "group",
+          userName: testUser1?.firstName,
+        },
+      },
+      {},
+    )) as unknown as InterfaceVolunteerMembership[];
+    expect(volunteerMemberships[0].volunteer?._id).toEqual(
+      testEventVolunteer1?._id,
+    );
+    expect(volunteerMemberships[0].group?._id).toEqual(
+      testEventVolunteerGroup?._id,
+    );
   });
 });

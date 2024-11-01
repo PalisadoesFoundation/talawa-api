@@ -2419,10 +2419,10 @@ export type QueryEventsByOrganizationArgs = {
 
 
 export type QueryEventsByOrganizationConnectionArgs = {
-  currentDate?: InputMaybe<Scalars['DateTime']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<EventOrderByInput>;
   skip?: InputMaybe<Scalars['Int']['input']>;
+  upcomingOnly?: InputMaybe<Scalars['Boolean']['input']>;
   where?: InputMaybe<EventWhereInput>;
 };
 
@@ -3226,6 +3226,7 @@ export type VolunteerMembershipWhereInput = {
   eventId?: InputMaybe<Scalars['ID']['input']>;
   eventTitle?: InputMaybe<Scalars['String']['input']>;
   filter?: InputMaybe<Scalars['String']['input']>;
+  groupId?: InputMaybe<Scalars['ID']['input']>;
   status?: InputMaybe<Scalars['String']['input']>;
   userId?: InputMaybe<Scalars['ID']['input']>;
   userName?: InputMaybe<Scalars['String']['input']>;

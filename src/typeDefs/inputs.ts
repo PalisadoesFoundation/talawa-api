@@ -188,6 +188,7 @@ export const inputs = gql`
     status: String
     userId: ID
     eventId: ID
+    groupId: ID
     filter: String
   }
 

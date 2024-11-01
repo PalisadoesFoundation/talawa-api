@@ -27,15 +27,16 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
     // get the where and sort
     let where = getWhere<InterfaceEvent>(args.where);
     const sort = getSort(args.orderBy);
+    const currentDate = new Date();
     where = {
       ...where,
       isBaseRecurringEvent: false,
-      ...(args.currentDate && {
+      ...(args.upcomingOnly && {
         $or: [
-          { endDate: { $gt: args.currentDate } }, // Future dates
+          { endDate: { $gt: currentDate } }, // Future dates
           {
-            endDate: { $eq: args.currentDate.toISOString().split("T")[0] }, // Events today
-            endTime: { $gt: args.currentDate }, // But start time is after current time
+            endDate: { $eq: currentDate.toISOString().split("T")[0] }, // Events today
+            endTime: { $gt: currentDate }, // But start time is after current time
           },
         ],
       }),

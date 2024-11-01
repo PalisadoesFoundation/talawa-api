@@ -60,7 +60,7 @@ export const queries = gql`
 
     eventsByOrganizationConnection(
       where: EventWhereInput
-      currentDate: DateTime
+      upcomingOnly: Boolean
       first: Int
       skip: Int
       orderBy: EventOrderByInput
