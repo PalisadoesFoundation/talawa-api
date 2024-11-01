@@ -78,31 +78,33 @@ export const updateVolunteerMembership: MutationResolvers["updateVolunteerMember
       .populate("organization")
       .lean()) as InterfaceEvent;
 
-    // Check if the user is authorized to update the volunteer membership
-    const isAdminOrSuperAdmin = await adminCheck(
-      currentUser._id,
-      event.organization,
-      false,
-    );
-    const isEventAdmin = event.admins.some(
-      (admin) => admin.toString() == currentUser._id.toString(),
-    );
-    let isGroupLeader = false;
-    if (volunteerMembership.group != undefined) {
-      // check if current user is group leader
-      const group = (await EventVolunteerGroup.findById(
-        volunteerMembership.group,
-      ).lean()) as InterfaceEventVolunteerGroup;
-      isGroupLeader = group.leader.toString() == currentUser._id.toString();
-    }
-
-    // If the user is not an admin or super admin, event admin, or group leader, throw an error
-    if (!isAdminOrSuperAdmin && !isEventAdmin && !isGroupLeader) {
-      throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-        USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
+    if (volunteerMembership.status != "invited") {
+      // Check if the user is authorized to update the volunteer membership
+      const isAdminOrSuperAdmin = await adminCheck(
+        currentUser._id,
+        event.organization,
+        false,
       );
+      const isEventAdmin = event.admins.some(
+        (admin) => admin.toString() == currentUser._id.toString(),
+      );
+      let isGroupLeader = false;
+      if (volunteerMembership.group != undefined) {
+        // check if current user is group leader
+        const group = (await EventVolunteerGroup.findById(
+          volunteerMembership.group,
+        ).lean()) as InterfaceEventVolunteerGroup;
+        isGroupLeader = group.leader.toString() == currentUser._id.toString();
+      }
+
+      // If the user is not an admin or super admin, event admin, or group leader, throw an error
+      if (!isAdminOrSuperAdmin && !isEventAdmin && !isGroupLeader) {
+        throw new errors.UnauthorizedError(
+          requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+          USER_NOT_AUTHORIZED_ERROR.CODE,
+          USER_NOT_AUTHORIZED_ERROR.PARAM,
+        );
+      }
     }
 
     const updatedVolunteerMembership =
