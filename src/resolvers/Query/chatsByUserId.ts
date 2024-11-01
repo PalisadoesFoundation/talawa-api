@@ -5,7 +5,7 @@ import { Chat } from "../../models";
  * @param _parent-
  * @param args - An object that contains `id` of the user.
  * @returns An object `chats` that contains all chats of the current user.
- * If the `Chats` object is null then it throws `NotFoundError` error.
+ * If the `Chats` object is null then returns an empty array.
  * @remarks You can learn about GraphQL `Resolvers`
  * {@link https://www.apollographql.com/docs/apollo-server/data/resolvers/ | here}.
  */
@@ -17,5 +17,5 @@ export const chatsByUserId: QueryResolvers["chatsByUserId"] = async (
     users: args.id,
   }).lean();
 
-  return chats;
+  return chats || [];
 };

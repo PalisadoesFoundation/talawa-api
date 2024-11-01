@@ -125,7 +125,7 @@ describe("resolvers -> Mutation -> createChat", () => {
     );
   });
 
-  it(`creates the groupChat and returns it`, async () => {
+  it(`creates the chat and returns it`, async () => {
     const args: MutationCreateChatArgs = {
       data: {
         organizationId: testOrganization?.id,
