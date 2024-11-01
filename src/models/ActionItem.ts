@@ -27,7 +27,7 @@ export interface InterfaceActionItem {
   dueDate: Date;
   completionDate: Date;
   isCompleted: boolean;
-  allotedHours: number | null;
+  allottedHours: number | null;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   event: PopulatedDoc<InterfaceEvent & Document>;
   creator: PopulatedDoc<InterfaceUser & Document>;
@@ -49,7 +49,7 @@ export interface InterfaceActionItem {
  * @param dueDate - Due date for the ActionItem.
  * @param completionDate - Date when the ActionItem was completed.
  * @param isCompleted - Flag indicating if the ActionItem is completed.
- * @param allotedHours - Optional: Number of hours alloted for the ActionItem.
+ * @param allottedHours - Optional: Number of hours allotted for the ActionItem.
  * @param event - Optional: Event to which the ActionItem is related.
  * @param organization - Organization to which the ActionItem belongs.
  * @param creator - User who created the ActionItem.
@@ -111,7 +111,7 @@ const actionItemSchema = new Schema(
       required: true,
       default: false,
     },
-    allotedHours: {
+    allottedHours: {
       type: Number,
     },
     organization: {

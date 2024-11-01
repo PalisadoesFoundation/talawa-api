@@ -79,7 +79,7 @@ export const types = gql`
     actionItemCategory: ActionItemCategory
     preCompletionNotes: String
     postCompletionNotes: String
-    allotedHours: Float
+    allottedHours: Float
     assignmentDate: Date!
     dueDate: Date!
     completionDate: Date!

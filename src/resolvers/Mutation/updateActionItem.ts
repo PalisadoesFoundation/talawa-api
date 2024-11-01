@@ -49,7 +49,7 @@ type UpdateActionItemInputType = {
   preCompletionNotes: string;
   postCompletionNotes: string;
   dueDate: Date;
-  allotedHours: number;
+  allottedHours: number;
   completionDate: Date;
   isCompleted: boolean;
 };
@@ -188,7 +188,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     );
   }
 
-  // checks if the assignee is an event volunteer then add alloted hours to the volunteer else if event volunteer group then add divided equal alloted hours to all volunteers in the group
+  // checks if the assignee is an event volunteer then add allotted hours to the volunteer else if event volunteer group then add divided equal allotted hours to all volunteers in the group
 
   if (assigneeType === "EventVolunteer") {
     const assignee = await EventVolunteer.findById(assigneeId).lean();
@@ -196,15 +196,15 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       if (isCompleted == true) {
         await EventVolunteer.findByIdAndUpdate(assigneeId, {
           $inc: {
-            hoursVolunteered: actionItem.allotedHours
-              ? actionItem.allotedHours
+            hoursVolunteered: actionItem.allottedHours
+              ? actionItem.allottedHours
               : 0,
           },
-          ...(actionItem.allotedHours
+          ...(actionItem.allottedHours
             ? {
                 $push: {
                   hoursHistory: {
-                    hours: actionItem.allotedHours,
+                    hours: actionItem.allottedHours,
                     date: new Date(),
                   },
                 },
@@ -214,15 +214,15 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       } else if (isCompleted == false) {
         await EventVolunteer.findByIdAndUpdate(assigneeId, {
           $inc: {
-            hoursVolunteered: actionItem.allotedHours
-              ? -actionItem.allotedHours
+            hoursVolunteered: actionItem.allottedHours
+              ? -actionItem.allottedHours
               : -0,
           },
-          ...(actionItem.allotedHours
+          ...(actionItem.allottedHours
             ? {
                 $push: {
                   hoursHistory: {
-                    hours: -actionItem.allotedHours,
+                    hours: -actionItem.allottedHours,
                     date: new Date(),
                   },
                 },
@@ -236,7 +236,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       await EventVolunteerGroup.findById(assigneeId).lean();
     if (volunteerGroup) {
       const dividedHours =
-        (actionItem.allotedHours ?? 0) / volunteerGroup.volunteers.length;
+        (actionItem.allottedHours ?? 0) / volunteerGroup.volunteers.length;
       if (isCompleted == true) {
         await EventVolunteer.updateMany(
           { _id: { $in: volunteerGroup.volunteers } },

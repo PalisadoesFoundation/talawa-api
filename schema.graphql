@@ -5,7 +5,7 @@ directive @role(requires: UserType) on FIELD_DEFINITION
 type ActionItem {
   _id: ID!
   actionItemCategory: ActionItemCategory
-  allotedHours: Float
+  allottedHours: Float
   assignee: EventVolunteer
   assigneeGroup: EventVolunteerGroup
   assigneeType: String!
@@ -314,7 +314,7 @@ interface ConnectionPageInfo {
 scalar CountryCode
 
 input CreateActionItemInput {
-  allotedHours: Float
+  allottedHours: Float
   assigneeId: ID!
   assigneeType: String!
   dueDate: Date
@@ -1697,7 +1697,7 @@ input UpdateActionItemCategoryInput {
 }
 
 input UpdateActionItemInput {
-  allotedHours: Float
+  allottedHours: Float
   assigneeId: ID
   assigneeType: String
   completionDate: Date

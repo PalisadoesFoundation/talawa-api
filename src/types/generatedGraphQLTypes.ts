@@ -71,7 +71,7 @@ export type ActionItem = {
   __typename?: 'ActionItem';
   _id: Scalars['ID']['output'];
   actionItemCategory?: Maybe<ActionItemCategory>;
-  allotedHours?: Maybe<Scalars['Float']['output']>;
+  allottedHours?: Maybe<Scalars['Float']['output']>;
   assignee?: Maybe<EventVolunteer>;
   assigneeGroup?: Maybe<EventVolunteerGroup>;
   assigneeType: Scalars['String']['output'];
@@ -389,7 +389,7 @@ export type ConnectionPageInfo = {
 };
 
 export type CreateActionItemInput = {
-  allotedHours?: InputMaybe<Scalars['Float']['input']>;
+  allottedHours?: InputMaybe<Scalars['Float']['input']>;
   assigneeId: Scalars['ID']['input'];
   assigneeType: Scalars['String']['input'];
   dueDate?: InputMaybe<Scalars['Date']['input']>;
@@ -2794,7 +2794,7 @@ export type UpdateActionItemCategoryInput = {
 };
 
 export type UpdateActionItemInput = {
-  allotedHours?: InputMaybe<Scalars['Float']['input']>;
+  allottedHours?: InputMaybe<Scalars['Float']['input']>;
   assigneeId?: InputMaybe<Scalars['ID']['input']>;
   assigneeType?: InputMaybe<Scalars['String']['input']>;
   completionDate?: InputMaybe<Scalars['Date']['input']>;
@@ -3805,7 +3805,7 @@ export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = Role
 export type ActionItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ActionItem'] = ResolversParentTypes['ActionItem']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   actionItemCategory?: Resolver<Maybe<ResolversTypes['ActionItemCategory']>, ParentType, ContextType>;
-  allotedHours?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  allottedHours?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   assignee?: Resolver<Maybe<ResolversTypes['EventVolunteer']>, ParentType, ContextType>;
   assigneeGroup?: Resolver<Maybe<ResolversTypes['EventVolunteerGroup']>, ParentType, ContextType>;
   assigneeType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

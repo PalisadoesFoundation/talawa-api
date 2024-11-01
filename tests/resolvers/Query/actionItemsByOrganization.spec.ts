@@ -36,7 +36,7 @@ beforeAll(async () => {
     actionItemCategory: testActionItem1.actionItemCategory,
     event: null,
     organization: testOrganization?._id,
-    allotedHours: 2,
+    allottedHours: 2,
     assignmentDate: new Date(),
     dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 3000),
     isCompleted: false,

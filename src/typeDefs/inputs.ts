@@ -46,7 +46,7 @@ export const inputs = gql`
     assigneeId: ID!
     assigneeType: String!
     preCompletionNotes: String
-    allotedHours: Float
+    allottedHours: Float
     dueDate: Date
     eventId: ID
   }
@@ -474,7 +474,7 @@ export const inputs = gql`
     postCompletionNotes: String
     dueDate: Date
     completionDate: Date
-    allotedHours: Float
+    allottedHours: Float
     isCompleted: Boolean
   }
 

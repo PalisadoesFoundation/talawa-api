@@ -67,7 +67,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     assigneeId,
     assigneeType,
     preCompletionNotes,
-    allotedHours,
+    allottedHours,
     dueDate,
     eventId,
   } = args.data;
@@ -187,7 +187,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     assigner: context.userId,
     actionItemCategory: args.actionItemCategoryId,
     preCompletionNotes,
-    allotedHours,
+    allottedHours,
     dueDate,
     event: eventId,
     organization: actionItemCategory.organizationId,

@@ -299,7 +299,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       assigner: testUser?._id,
       actionItemCategory: testCategory?._id,
       event: testEvent?._id,
-      allotedHours: 2,
+      allottedHours: 2,
       isCompleted: false,
     });
 
@@ -313,7 +313,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       assigner: testUser?._id,
       actionItemCategory: testCategory?._id,
       event: testEvent?._id,
-      allotedHours: 0,
+      allottedHours: 0,
       isCompleted: false,
     });
 
@@ -354,7 +354,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       assigner: testUser?._id,
       actionItemCategory: testCategory?._id,
       event: testEvent?._id,
-      allotedHours: 2,
+      allottedHours: 2,
       isCompleted: true,
     });
 
@@ -408,7 +408,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       assigner: testUser?._id,
       actionItemCategory: testCategory?._id,
       event: testEvent?._id,
-      allotedHours: 2,
+      allottedHours: 2,
       isCompleted: false,
     });
 
@@ -422,7 +422,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       assigner: testUser?._id,
       actionItemCategory: testCategory?._id,
       event: testEvent?._id,
-      allotedHours: 0,
+      allottedHours: 0,
       isCompleted: false,
     });
 
@@ -463,7 +463,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       assigner: testUser?._id,
       actionItemCategory: testCategory?._id,
       event: testEvent?._id,
-      allotedHours: 2,
+      allottedHours: 2,
       isCompleted: true,
     });
 
