@@ -10,6 +10,7 @@ import { addUserImage } from "./addUserImage";
 import { addUserToUserFamily } from "./addUserToUserFamily";
 import { addPeopleToUserTag } from "./addPeopleToUserTag";
 import { assignUserTag } from "./assignUserTag";
+import { assignToUserTags } from "./assignToUserTags";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
@@ -79,6 +80,7 @@ import { removeUserFamily } from "./removeUserFamily";
 import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
 import { removeUserImage } from "./removeUserImage";
 import { removeUserTag } from "./removeUserTag";
+import { removeFromUserTags } from "./removeFromUserTags";
 import { resetCommunity } from "./resetCommunity";
 import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
 import { saveFcmToken } from "./saveFcmToken";
@@ -129,10 +131,11 @@ export const Mutation: MutationResolvers = {
   addUserImage,
   addUserToUserFamily,
   addPeopleToUserTag,
+  assignUserTag,
+  assignToUserTags,
   removeUserFamily,
   removeUserFromUserFamily,
   createUserFamily,
-  assignUserTag,
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
@@ -200,6 +203,7 @@ export const Mutation: MutationResolvers = {
   removeUserCustomData,
   removeUserImage,
   removeUserTag,
+  removeFromUserTags,
   resetCommunity,
   revokeRefreshTokenForUser,
   saveFcmToken,
