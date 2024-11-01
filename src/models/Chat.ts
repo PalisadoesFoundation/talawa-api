@@ -11,6 +11,7 @@ export interface InterfaceChat {
   _id: Types.ObjectId;
   isGroup: boolean;
   name: string;
+  image: string;
   users: PopulatedDoc<InterfaceUser & Document>[];
   messages: PopulatedDoc<InterfaceChatMessage & Document>[];
   creatorId: PopulatedDoc<InterfaceUser & Document>;
@@ -20,6 +21,7 @@ export interface InterfaceChat {
   createdAt: Date;
   updatedAt: Date;
   lastMessageId: string;
+  unseenMessagesByUsers: JSON;
 }
 
 /**
@@ -98,9 +100,13 @@ const chatSchema = new Schema(
       type: String,
       required: false,
     },
+    unseenMessagesByUsers: {
+      type: JSON,
+      required: true,
+    },
   },
   {
-    timestamps: true,
+    timestamps: false,
   },
 );
 

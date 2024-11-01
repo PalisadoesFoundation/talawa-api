@@ -30,6 +30,11 @@ export const inputs = gql`
     title: String!
   }
 
+  input ChatWhereInput {
+    user: UserWhereInput
+    name_contains: String
+  }
+
   input createUserFamilyInput {
     title: String!
     userIds: [ID!]!
@@ -147,6 +152,7 @@ export const inputs = gql`
     latitude: Latitude
     longitude: Longitude
     organizationId: ID!
+    createChat: Boolean!
   }
 
   input EventVolunteerInput {

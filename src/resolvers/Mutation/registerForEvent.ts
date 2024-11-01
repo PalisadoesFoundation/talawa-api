@@ -10,6 +10,7 @@ import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { deleteUserFromCache } from "../../services/UserCache/deleteUserFromCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { addUserToGroupChat } from "./addUserToGroupChat";
 
 /**
  * Enables a user to register for an event.
@@ -110,6 +111,15 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
         },
       },
     );
+
+    if (event.chat && addUserToGroupChat) {
+      // add user to event chat
+      await addUserToGroupChat(
+        _parent,
+        { chatId: event.chat, userId: context.userId },
+        context,
+      );
+    }
 
     return registeredAttendee.toObject();
   }

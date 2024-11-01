@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import inquirer from "inquirer";
 import { isValidEmail } from "./isValidEmail";
 

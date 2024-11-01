@@ -246,9 +246,12 @@ export const mutations = gql`
 
     sendMessageToChat(
       chatId: ID!
-      messageContent: String!
+      messageContent: String
+      media: String
       replyTo: ID
     ): ChatMessage! @auth
+
+    markChatMessagesAsRead(chatId: ID!, userId: ID!): Chat @auth
 
     signUp(data: UserInput!, file: String): AuthData!
 
@@ -344,5 +347,11 @@ export const mutations = gql`
       userId: ID!
       role: String!
     ): Organization! @auth
+
+    addUserToGroupChat(userId: ID!, chatId: ID!): Chat @auth
+
+    updateChat(input: UpdateChatInput!): Chat! @auth
+
+    updateChatMessage(input: UpdateChatMessageInput!): ChatMessage! @auth
   }
 `;

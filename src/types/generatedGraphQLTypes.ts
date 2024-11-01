@@ -279,6 +279,7 @@ export type Chat = {
   messages?: Maybe<Array<Maybe<ChatMessage>>>;
   name?: Maybe<Scalars['String']['output']>;
   organization?: Maybe<Organization>;
+  unseenMessagesByUsers?: Maybe<Scalars['JSON']['output']>;
   updatedAt: Scalars['DateTime']['output'];
   users: Array<User>;
 };
@@ -289,10 +290,16 @@ export type ChatMessage = {
   chatMessageBelongsTo: Chat;
   createdAt: Scalars['DateTime']['output'];
   deletedBy?: Maybe<Array<Maybe<User>>>;
+  media?: Maybe<Scalars['String']['output']>;
   messageContent: Scalars['String']['output'];
   replyTo?: Maybe<ChatMessage>;
   sender: User;
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type ChatWhereInput = {
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+  user?: InputMaybe<UserWhereInput>;
 };
 
 export type CheckIn = {
@@ -780,6 +787,7 @@ export type EventAttendeeInput = {
 
 export type EventInput = {
   allDay: Scalars['Boolean']['input'];
+  createChat: Scalars['Boolean']['input'];
   description: Scalars['String']['input'];
   endDate: Scalars['Date']['input'];
   endTime?: InputMaybe<Scalars['Time']['input']>;
@@ -1153,6 +1161,7 @@ export type Mutation = {
   addPledgeToFundraisingCampaign: FundraisingCampaignPledge;
   addUserCustomData: UserCustomData;
   addUserImage: User;
+  addUserToGroupChat?: Maybe<Chat>;
   addUserToUserFamily: UserFamily;
   assignToUserTags?: Maybe<UserTag>;
   assignUserTag?: Maybe<User>;
@@ -1200,6 +1209,7 @@ export type Mutation = {
   likePost?: Maybe<Post>;
   login: AuthData;
   logout: Scalars['Boolean']['output'];
+  markChatMessagesAsRead?: Maybe<Chat>;
   otp: OtpData;
   recaptcha: Scalars['Boolean']['output'];
   refreshToken: ExtendSession;
@@ -1247,6 +1257,8 @@ export type Mutation = {
   updateAgendaCategory?: Maybe<AgendaCategory>;
   updateAgendaItem?: Maybe<AgendaItem>;
   updateAgendaSection?: Maybe<AgendaSection>;
+  updateChat: Chat;
+  updateChatMessage: ChatMessage;
   updateCommunity: Scalars['Boolean']['output'];
   updateEvent: Event;
   updateEventVolunteer: EventVolunteer;
@@ -1320,6 +1332,12 @@ export type MutationAddUserCustomDataArgs = {
 
 export type MutationAddUserImageArgs = {
   file: Scalars['String']['input'];
+};
+
+
+export type MutationAddUserToGroupChatArgs = {
+  chatId: Scalars['ID']['input'];
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -1566,6 +1584,12 @@ export type MutationLoginArgs = {
 };
 
 
+export type MutationMarkChatMessagesAsReadArgs = {
+  chatId: Scalars['ID']['input'];
+  userId: Scalars['ID']['input'];
+};
+
+
 export type MutationOtpArgs = {
   data: OtpInput;
 };
@@ -1716,7 +1740,8 @@ export type MutationSendMembershipRequestArgs = {
 
 export type MutationSendMessageToChatArgs = {
   chatId: Scalars['ID']['input'];
-  messageContent: Scalars['String']['input'];
+  media?: InputMaybe<Scalars['String']['input']>;
+  messageContent?: InputMaybe<Scalars['String']['input']>;
   replyTo?: InputMaybe<Scalars['ID']['input']>;
 };
 
@@ -1791,6 +1816,16 @@ export type MutationUpdateAgendaItemArgs = {
 export type MutationUpdateAgendaSectionArgs = {
   id: Scalars['ID']['input'];
   input: UpdateAgendaSectionInput;
+};
+
+
+export type MutationUpdateChatArgs = {
+  input: UpdateChatInput;
+};
+
+
+export type MutationUpdateChatMessageArgs = {
+  input: UpdateChatMessageInput;
 };
 
 
@@ -2255,9 +2290,11 @@ export type Query = {
   getFundById: Fund;
   getFundraisingCampaignPledgeById: FundraisingCampaignPledge;
   getFundraisingCampaigns: Array<Maybe<FundraisingCampaign>>;
+  getGroupChatsByUserId?: Maybe<Array<Maybe<Chat>>>;
   getNoteById: Note;
   getPledgesByUserId?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
+  getUnreadChatsByUserId?: Maybe<Array<Maybe<Chat>>>;
   getUserTag?: Maybe<UserTag>;
   getUserTagAncestors?: Maybe<Array<Maybe<UserTag>>>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
@@ -2342,6 +2379,7 @@ export type QueryChatByIdArgs = {
 
 export type QueryChatsByUserIdArgs = {
   id: Scalars['ID']['input'];
+  where?: InputMaybe<ChatWhereInput>;
 };
 
 
@@ -2759,6 +2797,18 @@ export type UpdateAgendaSectionInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   relatedEvent?: InputMaybe<Scalars['ID']['input']>;
   sequence?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type UpdateChatInput = {
+  _id: Scalars['ID']['input'];
+  image?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateChatMessageInput = {
+  chatId: Scalars['ID']['input'];
+  messageContent: Scalars['String']['input'];
+  messageId: Scalars['ID']['input'];
 };
 
 export type UpdateCommunityInput = {
@@ -3269,6 +3319,7 @@ export type ResolversTypes = {
   CampaignWhereInput: CampaignWhereInput;
   Chat: ResolverTypeWrapper<InterfaceChatModel>;
   ChatMessage: ResolverTypeWrapper<InterfaceChatMessageModel>;
+  ChatWhereInput: ChatWhereInput;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
   CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
@@ -3414,6 +3465,8 @@ export type ResolversTypes = {
   UpdateAgendaCategoryInput: UpdateAgendaCategoryInput;
   UpdateAgendaItemInput: UpdateAgendaItemInput;
   UpdateAgendaSectionInput: UpdateAgendaSectionInput;
+  UpdateChatInput: UpdateChatInput;
+  UpdateChatMessageInput: UpdateChatMessageInput;
   UpdateCommunityInput: UpdateCommunityInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventVolunteerGroupInput: UpdateEventVolunteerGroupInput;
@@ -3481,6 +3534,7 @@ export type ResolversParentTypes = {
   CampaignWhereInput: CampaignWhereInput;
   Chat: InterfaceChatModel;
   ChatMessage: InterfaceChatMessageModel;
+  ChatWhereInput: ChatWhereInput;
   CheckIn: InterfaceCheckInModel;
   CheckInCheckOutInput: CheckInCheckOutInput;
   CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
@@ -3608,6 +3662,8 @@ export type ResolversParentTypes = {
   UpdateAgendaCategoryInput: UpdateAgendaCategoryInput;
   UpdateAgendaItemInput: UpdateAgendaItemInput;
   UpdateAgendaSectionInput: UpdateAgendaSectionInput;
+  UpdateChatInput: UpdateChatInput;
+  UpdateChatMessageInput: UpdateChatMessageInput;
   UpdateCommunityInput: UpdateCommunityInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventVolunteerGroupInput: UpdateEventVolunteerGroupInput;
@@ -3818,6 +3874,7 @@ export type ChatResolvers<ContextType = any, ParentType extends ResolversParentT
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['ChatMessage']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  unseenMessagesByUsers?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -3828,6 +3885,7 @@ export type ChatMessageResolvers<ContextType = any, ParentType extends Resolvers
   chatMessageBelongsTo?: Resolver<ResolversTypes['Chat'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   deletedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  media?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messageContent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   replyTo?: Resolver<Maybe<ResolversTypes['ChatMessage']>, ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -4231,6 +4289,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addPledgeToFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationAddPledgeToFundraisingCampaignArgs, 'campaignId' | 'pledgeId'>>;
   addUserCustomData?: Resolver<ResolversTypes['UserCustomData'], ParentType, ContextType, RequireFields<MutationAddUserCustomDataArgs, 'dataName' | 'dataValue' | 'organizationId'>>;
   addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
+  addUserToGroupChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;
   addUserToUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationAddUserToUserFamilyArgs, 'familyId' | 'userId'>>;
   assignToUserTags?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationAssignToUserTagsArgs, 'input'>>;
   assignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAssignUserTagArgs, 'input'>>;
@@ -4278,6 +4337,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   likePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationLikePostArgs, 'id'>>;
   login?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'data'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  markChatMessagesAsRead?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationMarkChatMessagesAsReadArgs, 'chatId' | 'userId'>>;
   otp?: Resolver<ResolversTypes['OtpData'], ParentType, ContextType, RequireFields<MutationOtpArgs, 'data'>>;
   recaptcha?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRecaptchaArgs, 'data'>>;
   refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
@@ -4311,7 +4371,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   revokeRefreshTokenForUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   saveFcmToken?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationSaveFcmTokenArgs>>;
   sendMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationSendMembershipRequestArgs, 'organizationId'>>;
-  sendMessageToChat?: Resolver<ResolversTypes['ChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToChatArgs, 'chatId' | 'messageContent'>>;
+  sendMessageToChat?: Resolver<ResolversTypes['ChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToChatArgs, 'chatId'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
   togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'id'>>;
   unassignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUnassignUserTagArgs, 'input'>>;
@@ -4325,6 +4385,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateAgendaCategory?: Resolver<Maybe<ResolversTypes['AgendaCategory']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaCategoryArgs, 'id' | 'input'>>;
   updateAgendaItem?: Resolver<Maybe<ResolversTypes['AgendaItem']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaItemArgs, 'id' | 'input'>>;
   updateAgendaSection?: Resolver<Maybe<ResolversTypes['AgendaSection']>, ParentType, ContextType, RequireFields<MutationUpdateAgendaSectionArgs, 'id' | 'input'>>;
+  updateChat?: Resolver<ResolversTypes['Chat'], ParentType, ContextType, RequireFields<MutationUpdateChatArgs, 'input'>>;
+  updateChatMessage?: Resolver<ResolversTypes['ChatMessage'], ParentType, ContextType, RequireFields<MutationUpdateChatMessageArgs, 'input'>>;
   updateCommunity?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateCommunityArgs, 'data'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'data' | 'id'>>;
   updateEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationUpdateEventVolunteerArgs, 'id'>>;
@@ -4524,9 +4586,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getFundById?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<QueryGetFundByIdArgs, 'id'>>;
   getFundraisingCampaignPledgeById?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<QueryGetFundraisingCampaignPledgeByIdArgs, 'id'>>;
   getFundraisingCampaigns?: Resolver<Array<Maybe<ResolversTypes['FundraisingCampaign']>>, ParentType, ContextType, Partial<QueryGetFundraisingCampaignsArgs>>;
+  getGroupChatsByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   getNoteById?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<QueryGetNoteByIdArgs, 'id'>>;
   getPledgesByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType, RequireFields<QueryGetPledgesByUserIdArgs, 'userId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
+  getUnreadChatsByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   getUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<QueryGetUserTagArgs, 'id'>>;
   getUserTagAncestors?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTag']>>>, ParentType, ContextType, RequireFields<QueryGetUserTagAncestorsArgs, 'id'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
