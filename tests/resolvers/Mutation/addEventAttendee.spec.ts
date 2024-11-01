@@ -10,7 +10,12 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
-import { AppUserProfile, EventAttendee, User } from "../../../src/models";
+import {
+  AppUserProfile,
+  Event,
+  EventAttendee,
+  User,
+} from "../../../src/models";
 import type { MutationAddEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
@@ -324,6 +329,61 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
       );
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
+    mockFindByIdAndUpdate.mockRestore();
+  });
+  it("throws UnauthorizedError when user update fails", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    await AppUserProfile.create({
+      userId: testUser?._id,
+      adminFor: [testEvent?.organization._id],
+    });
+
+    await Event.findByIdAndUpdate(
+      testEvent?._id,
+      { $pull: { admins: testUser?._id } },
+      { new: true },
+    );
+
+    await User.findByIdAndUpdate(testUser?._id, {
+      $push: { joinedOrganizations: testEvent?.organization._id },
+    });
+
+    await EventAttendee.deleteOne({
+      userId: testUser?._id,
+      eventId: testEvent?._id,
+    });
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const mockFindByIdAndUpdate = vi
+      .spyOn(User, "findByIdAndUpdate")
+      .mockResolvedValueOnce(null);
+
+    const args: MutationAddEventAttendeeArgs = {
+      data: {
+        userId: testUser?._id,
+        eventId: testEvent?._id.toString(),
+      },
+    };
+
+    const context = { userId: testUser?._id };
+
+    try {
+      const { addEventAttendee: addEventAttendeeResolver } = await import(
+        "../../../src/resolvers/Mutation/addEventAttendee"
+      );
+
+      await addEventAttendeeResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+      );
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    }
+
     mockFindByIdAndUpdate.mockRestore();
   });
 });

@@ -181,12 +181,12 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     },
     { new: true },
   );
-  /*istanbul ignore next*/
-  if (!updatedUser) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
+
+  if (updatedUser === null) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
 
