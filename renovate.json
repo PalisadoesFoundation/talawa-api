@@ -16,5 +16,4 @@
     "branchPrefix": "renovate/",
     "automergeType": "pr",
     "automerge": true
-  }
-  
+}
