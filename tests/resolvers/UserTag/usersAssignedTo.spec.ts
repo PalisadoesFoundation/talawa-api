@@ -45,6 +45,7 @@ beforeAll(async () => {
   await TagUser.create({
     tagId: testTag?._id,
     userId: randomUser?._id,
+    organizationId: testTag?.organizationId,
   });
 });
 
@@ -80,11 +81,13 @@ describe("usersAssignedTo resolver", () => {
     const tagUser1 = await TagUser.findOne({
       tagId: testTag?._id,
       userId: testUser?._id,
+      organizationId: testTag?.organizationId,
     });
 
     const tagUser2 = await TagUser.findOne({
       tagId: testTag?._id,
       userId: randomUser?._id,
+      organizationId: testTag?.organizationId,
     });
 
     const user1 = await User.findOne({

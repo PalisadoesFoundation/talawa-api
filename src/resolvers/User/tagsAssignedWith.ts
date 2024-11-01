@@ -76,6 +76,7 @@ export const tagsAssignedWith: UserResolvers["tagsAssignedWith"] = async (
     TagUser.find({
       ...filter,
       userId: parent._id,
+      organizationId: args.organizationId,
     })
       .sort(sort)
       .limit(parsedArgs.limit)
@@ -85,6 +86,7 @@ export const tagsAssignedWith: UserResolvers["tagsAssignedWith"] = async (
 
     TagUser.find({
       userId: parent._id,
+      organizationId: args.organizationId,
     })
       .countDocuments()
       .exec(),
