@@ -29,6 +29,7 @@
   "invalid.fileType": "अमान्य फ़ाइल प्रकार",
   "invalid.refreshToken": "अमान्य रीफ़्रेश टोकन",
   "invalid.credentials": "अवैध प्रत्यय पत्र",
+  "invalid.timeoutRange": "अमान्य टाइमआउट रेंज",
   "registrant.alreadyExist": "घटना के लिए पहले से पंजीकृत",
   "member.notFound": "सदस्य अनुपस्थित",
   "registrant.alreadyUnregistered": "घटना के लिए पहले से ही अपंजीकृत",

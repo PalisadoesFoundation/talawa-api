@@ -11,12 +11,15 @@ export const queries = gql`
 
     actionItemsByOrganization(
       organizationId: ID!
+      eventId: ID
       where: ActionItemWhereInput
       orderBy: ActionItemsOrderByInput
     ): [ActionItem]
 
     actionItemCategoriesByOrganization(
       organizationId: ID!
+      where: ActionItemCategoryWhereInput
+      orderBy: ActionItemsOrderByInput
     ): [ActionItemCategory]
 
     agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
@@ -41,15 +44,9 @@ export const queries = gql`
 
     customDataByOrganization(organizationId: ID!): [UserCustomData!]!
 
-    directChatsByUserID(id: ID!): [DirectChat]
+    chatById(id: ID!): Chat!
 
-    directChatById(id: ID!): DirectChat
-
-    groupChatById(id: ID!): GroupChat
-
-    groupChatsByUserId(id: ID!): [GroupChat]
-
-    directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
+    chatsByUserId(id: ID!): [Chat]
 
     event(id: ID!): Event
 

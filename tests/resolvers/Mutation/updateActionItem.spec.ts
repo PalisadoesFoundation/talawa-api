@@ -191,8 +191,8 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
 
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
-        assigneeId: assignedTestUser?._id,
-        actionItemCategoryId: testCategory?._id,
+        assignee: assignedTestUser?._id,
+        actionItemCategory: testCategory?._id,
       }),
     );
   });
@@ -229,8 +229,8 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
 
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
-        assigneeId: testUser?._id,
-        actionItemCategoryId: testCategory?._id,
+        assignee: testUser?._id,
+        actionItemCategory: testCategory?._id,
       }),
     );
   });
@@ -241,7 +241,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
         _id: testActionItem?._id,
       },
       {
-        eventId: new Types.ObjectId().toString(),
+        event: new Types.ObjectId().toString(),
       },
       {
         new: true,
@@ -281,7 +281,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
         _id: testActionItem?._id,
       },
       {
-        eventId: testEvent?._id,
+        event: testEvent?._id,
       },
       {
         new: true,
@@ -290,7 +290,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
 
     const args: MutationUpdateActionItemArgs = {
       data: {
-        assigneeId: testUser?._id,
+        isCompleted: true,
       },
       id: updatedTestActionItem?._id.toString() ?? "",
     };
@@ -307,8 +307,8 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
 
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
-        actionItemCategoryId: testCategory?._id,
-        assigneeId: testUser?._id,
+        actionItemCategory: testCategory?._id,
+        isCompleted: true,
       }),
     );
   });
