@@ -29,8 +29,8 @@ export function parseUserTagSortedBy(
     if (sortedBy.id !== "DESCENDING" && sortedBy.id !== "ASCENDING") {
       errors.push({
         message:
-          "Invalid sortedByInput provided. It must be a of type SortedByOrder.",
-        path: ["sortUserTagInput"],
+          "Invalid sortedById provided. It must be a of type SortedByOrder.",
+        path: ["sortedById"],
       });
 
       return {

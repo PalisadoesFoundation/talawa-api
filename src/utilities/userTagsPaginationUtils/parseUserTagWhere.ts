@@ -28,7 +28,7 @@ export function parseUserTagWhere(
     if (typeof where.name.starts_with !== "string") {
       errors.push({
         message: "Invalid name provided. It must be a string.",
-        path: ["whereUserTagNameInput"],
+        path: ["whereName"],
       });
 
       return {

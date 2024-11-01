@@ -30,7 +30,7 @@ export function parseUserTagMemberWhere(
     if (!where.firstName && !where.lastName) {
       errors.push({
         message: `Atleast one of firstName or lastName should be provided`,
-        path: ["whereUserNameInput"],
+        path: ["where"],
       });
 
       return {
@@ -43,7 +43,7 @@ export function parseUserTagMemberWhere(
     ) {
       errors.push({
         message: "Invalid firstName provided. It must be a string.",
-        path: ["whereUserTagUserNameInput"],
+        path: ["whereFirstName"],
       });
 
       return {
@@ -56,7 +56,7 @@ export function parseUserTagMemberWhere(
     ) {
       errors.push({
         message: "Invalid lastName provided. It must be a string.",
-        path: ["whereUserTagUserNameInput"],
+        path: ["whereLastName"],
       });
 
       return {
