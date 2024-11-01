@@ -22,8 +22,8 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
-  it(`returns directChat object for parent.directChatMessageBelongsTo`, async () => {
+describe("resolvers -> ChatMessage -> chatMessageBelongsTo", () => {
+  it(`returns chat object for parent.chatMessageBelongsTo`, async () => {
     const parent = testChatMessage?.toObject();
 
     if (!parent) {
@@ -46,7 +46,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
 
     expect(chatMessageBelongsToPayload).toEqual(chatMessageBelongsTo);
   });
-  it(`throws NotFoundError if no directChat exists`, async () => {
+  it(`throws NotFoundError if no chat exists`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")

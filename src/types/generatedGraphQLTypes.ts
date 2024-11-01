@@ -7,7 +7,6 @@ import type { InterfaceAdvertisement as InterfaceAdvertisementModel } from '../m
 import type { InterfaceAgendaItem as InterfaceAgendaItemModel } from '../models/AgendaItem';
 import type { InterfaceAgendaSection as InterfaceAgendaSectionModel } from '../models/AgendaSection';
 import type { InterfaceCheckIn as InterfaceCheckInModel } from '../models/CheckIn';
-import type { InterfaceMessageChat as InterfaceMessageChatModel } from '../models/MessageChat';
 import type { InterfaceComment as InterfaceCommentModel } from '../models/Comment';
 import type { InterfaceCommunity as InterfaceCommunityModel } from '../models/Community';
 import type { InterfaceChat as InterfaceChatModel } from '../models/Chat';
@@ -446,8 +445,6 @@ export type CreateCommentPayload = {
   comment?: Maybe<Comment>;
   userErrors: Array<CreateCommentError>;
 };
-
-export type CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError;
 
 export type CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError;
 
@@ -1121,11 +1118,6 @@ export type Message = {
   text: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
   videoUrl?: Maybe<Scalars['URL']['output']>;
-};
-
-export type MessageChatInput = {
-  message: Scalars['String']['input'];
-  receiver: Scalars['ID']['input'];
 };
 
 export type MinimumLengthError = FieldError & {
@@ -3152,12 +3144,6 @@ export type ChatInput = {
   userIds: Array<Scalars['ID']['input']>;
 };
 
-export type CreateGroupChatInput = {
-  organizationId: Scalars['ID']['input'];
-  title: Scalars['String']['input'];
-  userIds: Array<Scalars['ID']['input']>;
-};
-
 export type CreateUserFamilyInput = {
   title: Scalars['String']['input'];
   userIds: Array<Scalars['ID']['input']>;
@@ -3231,7 +3217,6 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = {
   ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
   CreateAdminError: ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   CreateCommentError: ( PostNotFoundError );
-  CreateDirectChatError: ( OrganizationNotFoundError ) | ( UserNotFoundError );
   CreateMemberError: ( MemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedAdminError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
 };
 
@@ -3289,7 +3274,6 @@ export type ResolversTypes = {
   CreateAgendaSectionInput: CreateAgendaSectionInput;
   CreateCommentError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateCommentError']>;
   CreateCommentPayload: ResolverTypeWrapper<Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversTypes['Comment']>, userErrors: Array<ResolversTypes['CreateCommentError']> }>;
-  CreateDirectChatError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateDirectChatError']>;
   CreateMemberError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateMemberError']>;
   CreateMemberPayload: ResolverTypeWrapper<Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversTypes['Organization']>, userErrors: Array<ResolversTypes['CreateMemberError']> }>;
   CreateUserTagInput: CreateUserTagInput;
@@ -3354,7 +3338,6 @@ export type ResolversTypes = {
   MembershipRequest: ResolverTypeWrapper<InterfaceMembershipRequestModel>;
   MembershipRequestsWhereInput: MembershipRequestsWhereInput;
   Message: ResolverTypeWrapper<InterfaceMessageModel>;
-  MessageChatInput: MessageChatInput;
   MinimumLengthError: ResolverTypeWrapper<MinimumLengthError>;
   MinimumValueError: ResolverTypeWrapper<MinimumValueError>;
   Mutation: ResolverTypeWrapper<{}>;
@@ -3453,7 +3436,6 @@ export type ResolversTypes = {
   VenueWhereInput: VenueWhereInput;
   WeekDays: WeekDays;
   chatInput: ChatInput;
-  createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
 };
 
@@ -3501,7 +3483,6 @@ export type ResolversParentTypes = {
   CreateAgendaSectionInput: CreateAgendaSectionInput;
   CreateCommentError: ResolversUnionTypes<ResolversParentTypes>['CreateCommentError'];
   CreateCommentPayload: Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversParentTypes['Comment']>, userErrors: Array<ResolversParentTypes['CreateCommentError']> };
-  CreateDirectChatError: ResolversUnionTypes<ResolversParentTypes>['CreateDirectChatError'];
   CreateMemberError: ResolversUnionTypes<ResolversParentTypes>['CreateMemberError'];
   CreateMemberPayload: Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversParentTypes['Organization']>, userErrors: Array<ResolversParentTypes['CreateMemberError']> };
   CreateUserTagInput: CreateUserTagInput;
@@ -3556,7 +3537,6 @@ export type ResolversParentTypes = {
   MembershipRequest: InterfaceMembershipRequestModel;
   MembershipRequestsWhereInput: MembershipRequestsWhereInput;
   Message: InterfaceMessageModel;
-  MessageChatInput: MessageChatInput;
   MinimumLengthError: MinimumLengthError;
   MinimumValueError: MinimumValueError;
   Mutation: {};
@@ -3643,7 +3623,6 @@ export type ResolversParentTypes = {
   VenueInput: VenueInput;
   VenueWhereInput: VenueWhereInput;
   chatInput: ChatInput;
-  createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
 };
 
@@ -3923,10 +3902,6 @@ export type CreateCommentPayloadResolvers<ContextType = any, ParentType extends 
   comment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType>;
   userErrors?: Resolver<Array<ResolversTypes['CreateCommentError']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type CreateDirectChatErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateDirectChatError'] = ResolversParentTypes['CreateDirectChatError']> = {
-  __resolveType: TypeResolveFn<'OrganizationNotFoundError' | 'UserNotFoundError', ParentType, ContextType>;
 };
 
 export type CreateMemberErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateMemberError'] = ResolversParentTypes['CreateMemberError']> = {
@@ -4774,7 +4749,6 @@ export type Resolvers<ContextType = any> = {
   CreateAdvertisementPayload?: CreateAdvertisementPayloadResolvers<ContextType>;
   CreateCommentError?: CreateCommentErrorResolvers<ContextType>;
   CreateCommentPayload?: CreateCommentPayloadResolvers<ContextType>;
-  CreateDirectChatError?: CreateDirectChatErrorResolvers<ContextType>;
   CreateMemberError?: CreateMemberErrorResolvers<ContextType>;
   CreateMemberPayload?: CreateMemberPayloadResolvers<ContextType>;
   Date?: GraphQLScalarType;

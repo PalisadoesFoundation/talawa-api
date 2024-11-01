@@ -99,7 +99,7 @@ describe("resolvers -> Mutation -> createChat", () => {
       expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
-  it(`creates the directChat and returns it`, async () => {
+  it(`creates the chat and returns it`, async () => {
     const args: MutationCreateChatArgs = {
       data: {
         organizationId: testOrganization?.id,
@@ -125,7 +125,7 @@ describe("resolvers -> Mutation -> createChat", () => {
     );
   });
 
-  it(`creates the groupChat and returns it`, async () => {
+  it(`creates the chat and returns it`, async () => {
     const args: MutationCreateChatArgs = {
       data: {
         organizationId: testOrganization?.id,

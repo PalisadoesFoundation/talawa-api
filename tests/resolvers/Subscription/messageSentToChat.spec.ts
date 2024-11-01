@@ -54,7 +54,7 @@ describe("src -> resolvers -> Subscription -> messageSentToChat", () => {
     expect(await filterFunction(payload, variables)).toBe(true);
   });
 
-  it("user is not notified if it is not a part of DirectChat", async () => {
+  it("user is not notified if it is not a part of chat", async () => {
     const { messageSentToChat: messageSentToChatPayload } = await import(
       "../../../src/resolvers/Subscription/messageSentToChat"
     );
