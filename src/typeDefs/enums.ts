@@ -147,8 +147,8 @@ export const enums = gql`
   }
 
   enum EventVolunteerGroupOrderByInput {
-    members_ASC
-    members_DESC
+    volunteers_ASC
+    volunteers_DESC
     assignments_ASC
     assignments_DESC
   }

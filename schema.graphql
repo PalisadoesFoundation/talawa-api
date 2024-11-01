@@ -787,8 +787,8 @@ input EventVolunteerGroupInput {
 enum EventVolunteerGroupOrderByInput {
   assignments_ASC
   assignments_DESC
-  members_ASC
-  members_DESC
+  volunteers_ASC
+  volunteers_DESC
 }
 
 input EventVolunteerGroupWhereInput {

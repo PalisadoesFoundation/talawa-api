@@ -95,12 +95,12 @@ export const getEventVolunteerGroups: QueryResolvers["getEventVolunteerGroups"] 
     }
 
     switch (args.orderBy) {
-      case "members_ASC":
+      case "volunteers_ASC":
         filteredEventVolunteerGroups = filteredEventVolunteerGroups.sort(
           (a, b) => a.volunteers.length - b.volunteers.length,
         );
         break;
-      case "members_DESC":
+      case "volunteers_DESC":
         filteredEventVolunteerGroups = filteredEventVolunteerGroups.sort(
           (a, b) => b.volunteers.length - a.volunteers.length,
         );

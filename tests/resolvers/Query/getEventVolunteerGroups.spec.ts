@@ -63,7 +63,7 @@ describe("resolvers -> Query -> getEventVolunteerGroups", () => {
           name_contains: testVolunteerGroup1.name,
           leaderName: testUser1?.firstName,
         },
-        orderBy: "members_ASC",
+        orderBy: "volunteers_ASC",
       },
       {},
     )) as unknown as InterfaceEventVolunteerGroup[];
@@ -79,7 +79,7 @@ describe("resolvers -> Query -> getEventVolunteerGroups", () => {
           userId: testUser1?._id.toString(),
           orgId: testOrganization?._id,
         },
-        orderBy: "members_DESC",
+        orderBy: "volunteers_DESC",
       },
       {},
     )) as unknown as InterfaceEventVolunteerGroup[];

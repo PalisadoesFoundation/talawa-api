@@ -869,8 +869,8 @@ export type EventVolunteerGroupInput = {
 export type EventVolunteerGroupOrderByInput =
   | 'assignments_ASC'
   | 'assignments_DESC'
-  | 'members_ASC'
-  | 'members_DESC';
+  | 'volunteers_ASC'
+  | 'volunteers_DESC';
 
 export type EventVolunteerGroupWhereInput = {
   eventId?: InputMaybe<Scalars['ID']['input']>;
