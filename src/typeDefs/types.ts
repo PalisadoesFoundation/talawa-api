@@ -742,6 +742,7 @@ export const types = gql`
     admins: [User]
     lastMessageId: String
     image: String
+    unseenMessagesByUsers: JSON
   }
 
   type ChatMessage {

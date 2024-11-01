@@ -20,6 +20,7 @@ export interface InterfaceChat {
   createdAt: Date;
   updatedAt: Date;
   lastMessageId: string;
+  unseenMessagesByUsers: JSON;
 }
 
 /**
@@ -98,9 +99,13 @@ const chatSchema = new Schema(
       type: String,
       required: false,
     },
+    unseenMessagesByUsers: {
+      type: JSON,
+      required: true,
+    },
   },
   {
-    timestamps: true,
+    timestamps: false,
   },
 );
 

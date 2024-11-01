@@ -206,6 +206,7 @@ type Chat {
   messages: [ChatMessage]
   name: String
   organization: Organization
+  unseenMessagesByUsers: JSON
   updatedAt: DateTime!
   users: [User!]!
 }
@@ -1114,6 +1115,7 @@ type Mutation {
   likePost(id: ID!): Post
   login(data: LoginInput!): AuthData!
   logout: Boolean!
+  markChatMessagesAsRead(chatId: ID!, userId: ID!): Chat
   otp(data: OTPInput!): OtpData!
   recaptcha(data: RecaptchaVerification!): Boolean!
   refreshToken(refreshToken: String!): ExtendSession!

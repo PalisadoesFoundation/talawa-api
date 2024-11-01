@@ -85,6 +85,7 @@ import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
 import { saveFcmToken } from "./saveFcmToken";
 import { sendMembershipRequest } from "./sendMembershipRequest";
 import { sendMessageToChat } from "./sendMessageToChat";
+import { markChatMessagesAsRead } from "./markChatMessagesAsRead";
 import { signUp } from "./signUp";
 import { togglePostPin } from "./togglePostPin";
 import { unassignUserTag } from "./unassignUserTag";
@@ -237,4 +238,5 @@ export const Mutation: MutationResolvers = {
   updateFundraisingCampaignPledge,
   createFundraisingCampaignPledge,
   removeFundraisingCampaignPledge,
+  markChatMessagesAsRead,
 };
