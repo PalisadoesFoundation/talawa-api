@@ -1,18 +1,26 @@
 {
     "extends": [
-      "config:base"
+        "config:base"
     ],
-    "baseBranches": ["develop"],
-    "schedule": ["every weekend"],
+    "baseBranches": [
+        "develop"
+    ],
+    "schedule": [
+        "every weekend"
+    ],
     "packageRules": [
-      {
-        "packagePatterns": ["*"],
-        "groupName": "All Minor Updates",
-        "group": true,
-        "commitMessageAction": "Update dependencies(renov): "
-      }
+        {
+            "packagePatterns": [
+                "*"
+            ],
+            "groupName": "All Minor Updates",
+            "group": true,
+            "commitMessageAction": "Update dependencies(renov): "
+        }
     ],
-    "labels": ["dependencies"],
+    "labels": [
+        "dependencies"
+    ],
     "branchPrefix": "renovate/",
     "automergeType": "pr",
     "automerge": true
