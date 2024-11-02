@@ -40,6 +40,7 @@ import { createSampleOrganization } from "./createSampleOrganization";
 import { createUserFamily } from "./createUserFamily";
 import { createUserTag } from "./createUserTag";
 import { createVenue } from "./createVenue";
+import { createVolunteerMembership } from "./createVolunteerMembership";
 import { deleteAdvertisement } from "./deleteAdvertisement";
 import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { deleteDonationById } from "./deleteDonationById";
@@ -114,6 +115,7 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
+import { updateVolunteerMembership } from "./updateVolunteerMembership";
 import { createNote } from "./createNote";
 import { deleteNote } from "./deleteNote";
 import { updateNote } from "./updateNote";
@@ -161,6 +163,7 @@ export const Mutation: MutationResolvers = {
   createActionItemCategory,
   createUserTag,
   createVenue,
+  createVolunteerMembership,
   deleteDonationById,
   deleteAdvertisement,
   deleteVenue,
@@ -231,6 +234,7 @@ export const Mutation: MutationResolvers = {
   updateUserProfile,
   updateUserPassword,
   updateUserTag,
+  updateVolunteerMembership,
   updatePost,
   updateAdvertisement,
   updateFundraisingCampaign,

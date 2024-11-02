@@ -4,6 +4,7 @@ import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 import type { InterfaceEventVolunteer } from "./EventVolunteer";
+import type { InterfaceActionItem } from "./ActionItem";
 
 /**
  * Represents a document for an event volunteer group in the MongoDB database.
@@ -11,42 +12,46 @@ import type { InterfaceEventVolunteer } from "./EventVolunteer";
  */
 export interface InterfaceEventVolunteerGroup {
   _id: Types.ObjectId;
-  createdAt: Date;
-  creatorId: PopulatedDoc<InterfaceUser & Document>;
-  eventId: PopulatedDoc<InterfaceEvent & Document>;
-  leaderId: PopulatedDoc<InterfaceUser & Document>;
+  creator: PopulatedDoc<InterfaceUser & Document>;
+  event: PopulatedDoc<InterfaceEvent & Document>;
+  leader: PopulatedDoc<InterfaceUser & Document>;
   name: string;
-  updatedAt: Date;
+  description?: string;
   volunteers: PopulatedDoc<InterfaceEventVolunteer & Document>[];
   volunteersRequired?: number;
+  assignments: PopulatedDoc<InterfaceActionItem & Document>[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
  * Mongoose schema definition for an event volunteer group document.
  * This schema defines how the data will be stored in the MongoDB database.
  *
- * @param creatorId - Reference to the user who created the event volunteer group entry.
- * @param eventId - Reference to the event for which the volunteer group is created.
- * @param leaderId - Reference to the leader of the volunteer group.
+ * @param creator - Reference to the user who created the event volunteer group entry.
+ * @param event - Reference to the event for which the volunteer group is created.
+ * @param leader - Reference to the leader of the volunteer group.
  * @param name - Name of the volunteer group.
+ * @param description - Description of the volunteer group (optional).
  * @param volunteers - List of volunteers in the group.
  * @param volunteersRequired - Number of volunteers required for the group (optional).
+ * @param assignments - List of action items assigned to the volunteer group.
  * @param createdAt - Timestamp of when the event volunteer group document was created.
  * @param updatedAt - Timestamp of when the event volunteer group document was last updated.
  */
 const eventVolunteerGroupSchema = new Schema(
   {
-    creatorId: {
+    creator: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    eventId: {
+    event: {
       type: Schema.Types.ObjectId,
       ref: "Event",
       required: true,
     },
-    leaderId: {
+    leader: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -54,6 +59,9 @@ const eventVolunteerGroupSchema = new Schema(
     name: {
       type: String,
       required: true,
+    },
+    description: {
+      type: String,
     },
     volunteers: [
       {
@@ -65,6 +73,13 @@ const eventVolunteerGroupSchema = new Schema(
     volunteersRequired: {
       type: Number,
     },
+    assignments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "ActionItem",
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true, // Automatically manage `createdAt` and `updatedAt` fields

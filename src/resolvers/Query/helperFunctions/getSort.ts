@@ -10,6 +10,8 @@ import type {
   CampaignOrderByInput,
   FundOrderByInput,
   ActionItemsOrderByInput,
+  EventVolunteersOrderByInput,
+  VolunteerMembershipOrderByInput,
 } from "../../../types/generatedGraphQLTypes";
 
 export const getSort = (
@@ -24,6 +26,8 @@ export const getSort = (
         | CampaignOrderByInput
         | PledgeOrderByInput
         | ActionItemsOrderByInput
+        | EventVolunteersOrderByInput
+        | VolunteerMembershipOrderByInput
       >
     | undefined,
 ):
@@ -332,6 +336,18 @@ export const getSort = (
     case "dueDate_DESC":
       sortPayload = {
         dueDate: -1,
+      };
+      break;
+
+    case "hoursVolunteered_ASC":
+      sortPayload = {
+        hoursVolunteered: 1,
+      };
+      break;
+
+    case "hoursVolunteered_DESC":
+      sortPayload = {
+        hoursVolunteered: -1,
       };
       break;
 

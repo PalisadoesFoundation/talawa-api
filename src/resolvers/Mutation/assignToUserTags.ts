@@ -153,7 +153,13 @@ export const assignToUserTags: MutationResolvers["assignToUserTags"] = async (
     Array.from(allTagsToAssign).map((tagId) => ({
       updateOne: {
         filter: { userId, tagId: new Types.ObjectId(tagId) },
-        update: { $setOnInsert: { userId, tagId: new Types.ObjectId(tagId) } },
+        update: {
+          $setOnInsert: {
+            userId,
+            tagId: new Types.ObjectId(tagId),
+            organizationId: currentTag.organizationId,
+          },
+        },
         upsert: true,
         setDefaultsOnInsert: true,
       },

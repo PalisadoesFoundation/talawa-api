@@ -40,8 +40,6 @@ const config: CodegenConfig = {
 
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
-          MessageChat: "../models/MessageChat#InterfaceMessageChat",
-
           Comment: "../models/Comment#InterfaceComment",
 
           Community: "../models/Community#InterfaceCommunity",
@@ -100,6 +98,9 @@ const config: CodegenConfig = {
           User: "../models/User#InterfaceUser",
 
           Venue: "../models/Venue#InterfaceVenue",
+
+          VolunteerMembership:
+            "../models/VolunteerMembership#InterfaceVolunteerMembership",
         },
 
         useTypeImports: true,
