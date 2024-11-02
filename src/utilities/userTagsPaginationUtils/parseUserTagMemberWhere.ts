@@ -4,15 +4,17 @@ import type {
   ParseGraphQLConnectionWhereResult,
 } from "../graphQLConnection";
 
-/*
- * function to parse the args.where for UserTag member assignment queries
+/**
+ * type of the where object returned if the parsing is successful
  */
-
 export type ParseUserTagMemberWhereResult = {
   firstNameStartsWith: string;
   lastNameStartsWith: string;
 };
 
+/**
+ * function to parse the args.where for UserTag member assignment queries
+ */
 export function parseUserTagMemberWhere(
   where: UserTagUsersAssignedToWhereInput | null | undefined,
 ): ParseGraphQLConnectionWhereResult<ParseUserTagMemberWhereResult> {

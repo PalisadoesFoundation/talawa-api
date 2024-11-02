@@ -7,14 +7,16 @@ import type {
   ParseGraphQLConnectionSortedByResult,
 } from "../graphQLConnection";
 
-/*
- * function to parse the args.sortedBy for UserTag queries
+/**
+ * type of the sort object returned if the parsing is successful
  */
-
 export type ParseSortedByResult = {
   sortById: SortedByOrder;
 };
 
+/**
+ * function to parse the args.sortedBy for UserTag queries
+ */
 export function parseUserTagSortedBy(
   sortedBy: UserTagSortedByInput | null | undefined,
 ): ParseGraphQLConnectionSortedByResult<ParseSortedByResult> {
