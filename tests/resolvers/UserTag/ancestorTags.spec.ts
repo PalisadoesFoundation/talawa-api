@@ -1,11 +1,8 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type {
-  InterfaceOrganizationTagUser} from "../../../src/models";
-import {
-  OrganizationTagUser,
-} from "../../../src/models";
+import type { InterfaceOrganizationTagUser } from "../../../src/models";
+import { OrganizationTagUser } from "../../../src/models";
 import { ancestorTags as ancestorTagsResolver } from "../../../src/resolvers/UserTag/ancestorTags";
 import { connect, disconnect } from "../../helpers/db";
 import type { TestUserTagType } from "../../helpers/tags";
