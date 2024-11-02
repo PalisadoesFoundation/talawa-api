@@ -34,5 +34,6 @@
   "registrant.alreadyUnregistered": "Déjà non inscrit à l'événement",
   "translation.alreadyPresent": "Traduction déjà présente",
   "translation.notFound": "Traduction introuvable",
-  "parameter.missing": "Paramètre de saut manquant. Réglez-le sur 0 ou sur une autre valeur"
+  "parameter.missing": "Paramètre de saut manquant. Réglez-le sur 0 ou sur une autre valeur",
+  "tag.alreadyExists": "Un tag avec le même nom existe déjà à ce niveau"
 }

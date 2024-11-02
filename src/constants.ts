@@ -471,8 +471,7 @@ export const NO_CHANGE_IN_TAG_NAME = Object.freeze({
 });
 
 export const TAG_ALREADY_EXISTS = Object.freeze({
-  MESSAGE:
-    "A tag with the same name and the same parent tag already exists for this organization.",
+  MESSAGE: "A tag with the same name already exists at this level",
   CODE: "tag.alreadyExists",
   PARAM: "tag.alreadyExists",
 });
@@ -667,6 +666,13 @@ export const EVENT_VOLUNTEER_INVITE_USER_MISTMATCH = Object.freeze({
   CODE: "eventVolunteer.userMismatch",
   MESSAGE: "eventVolunteer.userMismatch",
   PARAM: "eventVolunteers",
+});
+
+export const EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR = Object.freeze({
+  DESC: "Volunteer membership not found",
+  CODE: "volunteerMembership.notFound",
+  MESSAGE: "volunteerMembership.notFound",
+  PARAM: "volunteerMemberships",
 });
 
 export const USER_ALREADY_CHECKED_IN = Object.freeze({

@@ -35,6 +35,14 @@ export const mutations = gql`
 
     addUserToUserFamily(userId: ID!, familyId: ID!): UserFamily! @auth
 
+    addPeopleToUserTag(input: AddPeopleToUserTagInput!): UserTag
+      @auth
+      @role(requires: ADMIN)
+
+    assignToUserTags(input: TagActionsInput!): UserTag
+      @auth
+      @role(requires: ADMIN)
+
     removeUserFromUserFamily(userId: ID!, familyId: ID!): UserFamily! @auth
 
     removeUserFamily(familyId: ID!): UserFamily! @auth
@@ -131,6 +139,10 @@ export const mutations = gql`
 
     createVenue(data: VenueInput!): Venue @auth
 
+    createVolunteerMembership(
+      data: VolunteerMembershipInput!
+    ): VolunteerMembership! @auth
+
     deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
 
     deleteAgendaCategory(id: ID!): ID! @auth
@@ -224,6 +236,10 @@ export const mutations = gql`
 
     removeUserImage: User! @auth
 
+    removeFromUserTags(input: TagActionsInput!): UserTag
+      @auth
+      @role(requires: ADMIN)
+
     resetCommunity: Boolean! @auth @role(requires: SUPERADMIN)
 
     revokeRefreshTokenForUser: Boolean! @auth
@@ -294,8 +310,11 @@ export const mutations = gql`
 
     updateEventVolunteerGroup(
       id: ID!
-      data: UpdateEventVolunteerGroupInput
+      data: UpdateEventVolunteerGroupInput!
     ): EventVolunteerGroup! @auth
+
+    updateVolunteerMembership(id: ID!, status: String!): VolunteerMembership!
+      @auth
 
     updateFundraisingCampaign(
       id: ID!

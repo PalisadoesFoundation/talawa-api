@@ -8,7 +8,9 @@ import { addOrganizationImage } from "./addOrganizationImage";
 import { addUserCustomData } from "./addUserCustomData";
 import { addUserImage } from "./addUserImage";
 import { addUserToUserFamily } from "./addUserToUserFamily";
+import { addPeopleToUserTag } from "./addPeopleToUserTag";
 import { assignUserTag } from "./assignUserTag";
+import { assignToUserTags } from "./assignToUserTags";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
@@ -38,6 +40,7 @@ import { createSampleOrganization } from "./createSampleOrganization";
 import { createUserFamily } from "./createUserFamily";
 import { createUserTag } from "./createUserTag";
 import { createVenue } from "./createVenue";
+import { createVolunteerMembership } from "./createVolunteerMembership";
 import { deleteAdvertisement } from "./deleteAdvertisement";
 import { deleteAgendaCategory } from "./deleteAgendaCategory";
 import { deleteDonationById } from "./deleteDonationById";
@@ -77,6 +80,7 @@ import { removeUserFamily } from "./removeUserFamily";
 import { removeUserFromUserFamily } from "./removeUserFromUserFamily";
 import { removeUserImage } from "./removeUserImage";
 import { removeUserTag } from "./removeUserTag";
+import { removeFromUserTags } from "./removeFromUserTags";
 import { resetCommunity } from "./resetCommunity";
 import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
 import { saveFcmToken } from "./saveFcmToken";
@@ -111,6 +115,7 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { updateUserTag } from "./updateUserTag";
+import { updateVolunteerMembership } from "./updateVolunteerMembership";
 import { createNote } from "./createNote";
 import { deleteNote } from "./deleteNote";
 import { updateNote } from "./updateNote";
@@ -125,10 +130,12 @@ export const Mutation: MutationResolvers = {
   addUserCustomData,
   addUserImage,
   addUserToUserFamily,
+  addPeopleToUserTag,
+  assignUserTag,
+  assignToUserTags,
   removeUserFamily,
   removeUserFromUserFamily,
   createUserFamily,
-  assignUserTag,
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
@@ -156,6 +163,7 @@ export const Mutation: MutationResolvers = {
   createActionItemCategory,
   createUserTag,
   createVenue,
+  createVolunteerMembership,
   deleteDonationById,
   deleteAdvertisement,
   deleteVenue,
@@ -195,6 +203,7 @@ export const Mutation: MutationResolvers = {
   removeUserCustomData,
   removeUserImage,
   removeUserTag,
+  removeFromUserTags,
   resetCommunity,
   revokeRefreshTokenForUser,
   saveFcmToken,
@@ -225,6 +234,7 @@ export const Mutation: MutationResolvers = {
   updateUserProfile,
   updateUserPassword,
   updateUserTag,
+  updateVolunteerMembership,
   updatePost,
   updateAdvertisement,
   updateFundraisingCampaign,

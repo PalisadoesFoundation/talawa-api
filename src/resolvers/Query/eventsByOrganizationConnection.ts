@@ -4,6 +4,7 @@ import { Event } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 import { createRecurringEventInstancesDuringQuery } from "../../helpers/event/createEventHelpers";
+
 /**
  * Retrieves events for a specific organization based on the provided query parameters.
  *
@@ -26,10 +27,19 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
     // get the where and sort
     let where = getWhere<InterfaceEvent>(args.where);
     const sort = getSort(args.orderBy);
-
+    const currentDate = new Date();
     where = {
       ...where,
       isBaseRecurringEvent: false,
+      ...(args.upcomingOnly && {
+        $or: [
+          { endDate: { $gt: currentDate } }, // Future dates
+          {
+            endDate: { $eq: currentDate.toISOString().split("T")[0] }, // Events today
+            endTime: { $gt: currentDate }, // But start time is after current time
+          },
+        ],
+      }),
     };
 
     // find all the events according to the requirements
@@ -39,6 +49,13 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
       .skip(args.skip ?? 0)
       .populate("creatorId", "-password")
       .populate("admins", "-password")
+      .populate("volunteerGroups")
+      .populate({
+        path: "volunteers",
+        populate: {
+          path: "user",
+        },
+      })
       .lean();
 
     return events;

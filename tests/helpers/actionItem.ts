@@ -35,6 +35,7 @@ export const createTestActionItem = async (): Promise<
   const testActionItem = await ActionItem.create({
     creator: testUser?._id,
     assignee: randomUser?._id,
+    assigneeType: "EventVolunteer",
     assigner: testUser?._id,
     actionItemCategory: testCategory?._id,
     organization: testOrganization?._id,
@@ -59,6 +60,7 @@ export const createNewTestActionItem = async ({
   const newTestActionItem = await ActionItem.create({
     creator: currUserId,
     assignee: assignedUserId,
+    assigneeType: "EventVolunteer",
     assigner: currUserId,
     actionItemCategory: actionItemCategoryId,
     organization: organizationId,
@@ -82,6 +84,7 @@ export const createTestActionItems = async (): Promise<
   const testActionItem1 = await ActionItem.create({
     creator: testUser?._id,
     assignee: randomUser?._id,
+    assigneeType: "EventVolunteer",
     assigner: testUser?._id,
     actionItemCategory: testCategory?._id,
     organization: testOrganization?._id,
@@ -91,6 +94,7 @@ export const createTestActionItems = async (): Promise<
   const testActionItem2 = await ActionItem.create({
     creator: testUser?._id,
     assignee: randomUser?._id,
+    assigneeType: "EventVolunteer",
     assigner: testUser?._id,
     actionItemCategory: testCategory?._id,
     organization: testOrganization?._id,
@@ -100,6 +104,7 @@ export const createTestActionItems = async (): Promise<
   await ActionItem.create({
     creator: testUser?._id,
     assignee: randomUser?._id,
+    assigneeType: "EventVolunteer",
     assigner: testUser?._id,
     actionItemCategory: testCategory2?._id,
     organization: testOrganization?._id,
