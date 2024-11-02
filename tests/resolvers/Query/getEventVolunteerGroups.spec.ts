@@ -54,7 +54,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> getEventVolunteerGroups", () => {
-  it(`getEventVolunteerGroups - eventId, name_contains, orderBy is members_ASC`, async () => {
+  it(`getEventVolunteerGroups - eventId, name_contains, orderBy is volunteers_ASC`, async () => {
     const groups = (await getEventVolunteerGroups?.(
       {},
       {
@@ -71,7 +71,7 @@ describe("resolvers -> Query -> getEventVolunteerGroups", () => {
     expect(groups[0].name).toEqual(testVolunteerGroup1.name);
   });
 
-  it(`getEventVolunteerGroups - userId, orgId, orderBy is members_DESC`, async () => {
+  it(`getEventVolunteerGroups - userId, orgId, orderBy is volunteers_DESC`, async () => {
     const groups = (await getEventVolunteerGroups?.(
       {},
       {

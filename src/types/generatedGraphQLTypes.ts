@@ -2316,8 +2316,8 @@ export type Query = {
   getUserTag?: Maybe<UserTag>;
   getUserTagAncestors?: Maybe<Array<Maybe<UserTag>>>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
-  getVolunteerMembership?: Maybe<Array<Maybe<VolunteerMembership>>>;
-  getVolunteerRanks?: Maybe<Array<Maybe<VolunteerRank>>>;
+  getVolunteerMembership: Array<Maybe<VolunteerMembership>>;
+  getVolunteerRanks: Array<Maybe<VolunteerRank>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']['output']>;
   isSampleOrganization: Scalars['Boolean']['output'];
@@ -4693,8 +4693,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<QueryGetUserTagArgs, 'id'>>;
   getUserTagAncestors?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTag']>>>, ParentType, ContextType, RequireFields<QueryGetUserTagAncestorsArgs, 'id'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
-  getVolunteerMembership?: Resolver<Maybe<Array<Maybe<ResolversTypes['VolunteerMembership']>>>, ParentType, ContextType, RequireFields<QueryGetVolunteerMembershipArgs, 'where'>>;
-  getVolunteerRanks?: Resolver<Maybe<Array<Maybe<ResolversTypes['VolunteerRank']>>>, ParentType, ContextType, RequireFields<QueryGetVolunteerRanksArgs, 'orgId' | 'where'>>;
+  getVolunteerMembership?: Resolver<Array<Maybe<ResolversTypes['VolunteerMembership']>>, ParentType, ContextType, RequireFields<QueryGetVolunteerMembershipArgs, 'where'>>;
+  getVolunteerRanks?: Resolver<Array<Maybe<ResolversTypes['VolunteerRank']>>, ParentType, ContextType, RequireFields<QueryGetVolunteerRanksArgs, 'orgId' | 'where'>>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
   isSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<QueryIsSampleOrganizationArgs, 'id'>>;

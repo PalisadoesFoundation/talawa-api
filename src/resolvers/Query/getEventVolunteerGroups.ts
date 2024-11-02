@@ -94,27 +94,31 @@ export const getEventVolunteerGroups: QueryResolvers["getEventVolunteerGroups"] 
       );
     }
 
-    switch (args.orderBy) {
-      case "volunteers_ASC":
-        filteredEventVolunteerGroups = filteredEventVolunteerGroups.sort(
-          (a, b) => a.volunteers.length - b.volunteers.length,
-        );
-        break;
-      case "volunteers_DESC":
-        filteredEventVolunteerGroups = filteredEventVolunteerGroups.sort(
-          (a, b) => b.volunteers.length - a.volunteers.length,
-        );
-        break;
-      case "assignments_ASC":
-        filteredEventVolunteerGroups = filteredEventVolunteerGroups.sort(
-          (a, b) => a.assignments.length - b.assignments.length,
-        );
-        break;
-      case "assignments_DESC":
-        filteredEventVolunteerGroups = filteredEventVolunteerGroups.sort(
-          (a, b) => b.assignments.length - a.assignments.length,
-        );
-        break;
+    const sortConfigs = {
+      /* c8 ignore start */
+      volunteers_ASC: (
+        a: InterfaceEventVolunteerGroup,
+        b: InterfaceEventVolunteerGroup,
+      ): number => a.volunteers.length - b.volunteers.length,
+      /* c8 ignore stop */
+      volunteers_DESC: (
+        a: InterfaceEventVolunteerGroup,
+        b: InterfaceEventVolunteerGroup,
+      ): number => b.volunteers.length - a.volunteers.length,
+      assignments_ASC: (
+        a: InterfaceEventVolunteerGroup,
+        b: InterfaceEventVolunteerGroup,
+      ): number => a.assignments.length - b.assignments.length,
+      assignments_DESC: (
+        a: InterfaceEventVolunteerGroup,
+        b: InterfaceEventVolunteerGroup,
+      ): number => b.assignments.length - a.assignments.length,
+    };
+
+    if (args.orderBy && args.orderBy in sortConfigs) {
+      filteredEventVolunteerGroups.sort(
+        sortConfigs[args.orderBy as keyof typeof sortConfigs],
+      );
     }
 
     return filteredEventVolunteerGroups;
