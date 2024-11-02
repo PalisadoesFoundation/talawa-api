@@ -3072,7 +3072,7 @@ export type UserTagUsersToAssignToWhereInput = {
 };
 
 export type UserTagWhereInput = {
-  name: UserTagNameWhereInput;
+  name?: InputMaybe<UserTagNameWhereInput>;
 };
 
 /** A default connection on the UserTag type. */

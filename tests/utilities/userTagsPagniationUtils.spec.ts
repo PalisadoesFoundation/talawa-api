@@ -7,6 +7,11 @@ import {
 import type { SortedByOrder } from "../../src/types/generatedGraphQLTypes";
 
 describe("parseUserTagWhere function", () => {
+  it("returns the failure state if name isn't provided", async () => {
+    const result = await parseUserTagWhere({});
+    expect(result.isSuccessful).toEqual(false);
+  });
+
   it("returns the failure state if provided name.starts_with isn't a string", async () => {
     const result = await parseUserTagWhere({
       name: {

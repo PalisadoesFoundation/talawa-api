@@ -26,24 +26,36 @@ export function parseUserTagWhere(
         nameStartsWith: "",
       },
     };
-  } else {
-    if (typeof where.name.starts_with !== "string") {
-      errors.push({
-        message: "Invalid name provided. It must be a string.",
-        path: ["where", "name", "starts_with"],
-      });
-
-      return {
-        isSuccessful: false,
-        errors,
-      };
-    } else {
-      return {
-        isSuccessful: true,
-        parsedWhere: {
-          nameStartsWith: where.name.starts_with.trim(),
-        },
-      };
-    }
   }
+
+  if (!where.name) {
+    errors.push({
+      message: "Invalid where input, name should be provided.",
+      path: ["where"],
+    });
+
+    return {
+      isSuccessful: false,
+      errors,
+    };
+  }
+
+  if (typeof where.name.starts_with !== "string") {
+    errors.push({
+      message: "Invalid name provided. It must be a string.",
+      path: ["where", "name"],
+    });
+
+    return {
+      isSuccessful: false,
+      errors,
+    };
+  }
+
+  return {
+    isSuccessful: true,
+    parsedWhere: {
+      nameStartsWith: where.name.starts_with.trim(),
+    },
+  };
 }

@@ -443,7 +443,7 @@ export const inputs = gql`
   }
 
   input UserTagWhereInput {
-    name: UserTagNameWhereInput!
+    name: UserTagNameWhereInput
   }
 
   input UserTagNameWhereInput {

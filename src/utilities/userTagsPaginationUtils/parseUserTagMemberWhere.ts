@@ -5,7 +5,7 @@ import type {
 } from "../graphQLConnection";
 
 /**
- * type of the where object returned if the parsing is successful
+ * Type of the where object returned if the parsing is successful
  */
 export type ParseUserTagMemberWhereResult = {
   firstNameStartsWith: string;
@@ -13,7 +13,7 @@ export type ParseUserTagMemberWhereResult = {
 };
 
 /**
- * function to parse the args.where for UserTag member assignment queries
+ * Function to parse the args.where for UserTag member assignment queries
  */
 export function parseUserTagMemberWhere(
   where: UserTagUsersAssignedToWhereInput | null | undefined,
@@ -28,51 +28,46 @@ export function parseUserTagMemberWhere(
         lastNameStartsWith: "",
       },
     };
-  } else {
-    if (!where.firstName && !where.lastName) {
-      errors.push({
-        message: `At least one of firstName or lastName should be provided`,
-        path: ["where"],
-      });
-
-      return {
-        isSuccessful: false,
-        errors,
-      };
-    } else if (
-      where.firstName &&
-      typeof where.firstName.starts_with !== "string"
-    ) {
-      errors.push({
-        message: "Invalid firstName provided. It must be a string.",
-        path: ["where", "firstName", "starts_with"],
-      });
-
-      return {
-        isSuccessful: false,
-        errors,
-      };
-    } else if (
-      where.lastName &&
-      typeof where.lastName.starts_with !== "string"
-    ) {
-      errors.push({
-        message: "Invalid lastName provided. It must be a string.",
-        path: ["where", "lastName", "starts_with"],
-      });
-
-      return {
-        isSuccessful: false,
-        errors,
-      };
-    } else {
-      return {
-        isSuccessful: true,
-        parsedWhere: {
-          firstNameStartsWith: where.firstName?.starts_with.trim() ?? "",
-          lastNameStartsWith: where.lastName?.starts_with.trim() ?? "",
-        },
-      };
-    }
   }
+
+  if (!where.firstName && !where.lastName) {
+    errors.push({
+      message: `At least one of firstName or lastName should be provided`,
+      path: ["where"],
+    });
+
+    return {
+      isSuccessful: false,
+      errors,
+    };
+  }
+
+  if (where.firstName && typeof where.firstName.starts_with !== "string") {
+    errors.push({
+      message: "Invalid firstName provided. It must be a string.",
+      path: ["where", "firstName", "starts_with"],
+    });
+  }
+
+  if (where.lastName && typeof where.lastName.starts_with !== "string") {
+    errors.push({
+      message: "Invalid lastName provided. It must be a string.",
+      path: ["where", "lastName", "starts_with"],
+    });
+  }
+
+  if (errors.length > 0) {
+    return {
+      isSuccessful: false,
+      errors,
+    };
+  }
+
+  return {
+    isSuccessful: true,
+    parsedWhere: {
+      firstNameStartsWith: where.firstName?.starts_with.trim() ?? "",
+      lastNameStartsWith: where.lastName?.starts_with.trim() ?? "",
+    },
+  };
 }

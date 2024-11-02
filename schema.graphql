@@ -1964,7 +1964,7 @@ input UserTagUsersToAssignToWhereInput {
 }
 
 input UserTagWhereInput {
-  name: UserTagNameWhereInput!
+  name: UserTagNameWhereInput
 }
 
 """A default connection on the UserTag type."""
