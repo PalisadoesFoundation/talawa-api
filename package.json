@@ -5,7 +5,7 @@
   "main": "./build/server.js",
   "scripts": {
     "build": "tsc --pretty --project tsconfig.build.json",
-    "dev": "concurrently  \"tsx --watch ./src/index.ts\" \"graphql-codegen --watch\"",
+    "dev": "concurrently  \"tsx ./src/index.ts\" \"graphql-codegen --watch\"",
     "minio:check": "tsc ./src/minioInstallationCheck.ts --outDir ./build && node ./build/minioInstallationCheck.js",
     "dev:with-minio": "concurrently \"npm run minio:check\" \"tsx --watch ./src/index.ts\" \"graphql-codegen --watch\"",
     "start:with-minio": "concurrently \"npm run minio:check\" \"cross-env pm2-runtime start ./build/server.js\"",

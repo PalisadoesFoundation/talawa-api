@@ -10,7 +10,7 @@ import type {
  */
 type UserTagMemberGraphQLConnectionFilter =
   | {
-      _id: {
+      _id?: {
         $lt: Types.ObjectId;
       };
       firstName: {
@@ -21,7 +21,7 @@ type UserTagMemberGraphQLConnectionFilter =
       };
     }
   | {
-      _id: {
+      _id?: {
         $gt: Types.ObjectId;
       };
       firstName: {

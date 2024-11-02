@@ -9,7 +9,7 @@ import type {
  */
 type UserTagGraphQLConnectionFilter =
   | {
-      _id: {
+      _id?: {
         $lt: string;
       };
       name: {
@@ -17,7 +17,7 @@ type UserTagGraphQLConnectionFilter =
       };
     }
   | {
-      _id: {
+      _id?: {
         $gt: string;
       };
       name: {
