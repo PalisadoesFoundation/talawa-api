@@ -40,24 +40,50 @@ beforeAll(async () => {
   await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
   [testUser, testOrganization] = await createTestUserAndOrganization();
   const testEvent1 = await createEventWithRegistrant(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    testUser!._id.toString(),
+    testUser?._id.toString() ?? "defaultUserId",
     testOrganization?._id,
     true,
   );
   const testEvent2 = await createEventWithRegistrant(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    testUser!._id.toString(),
+    testUser?._id.toString() ?? "defaultUserId",
     testOrganization?._id,
     false,
   );
   const testEvent3 = await createEventWithRegistrant(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    testUser!._id.toString(),
+    testUser?._id.toString() ?? "defaultUserId",
     testOrganization?._id,
     false,
   );
-  testEvents = [testEvent1, testEvent2, testEvent3];
+  const testEvent4 = await createEventWithRegistrant(
+    testUser?._id.toString() ?? "defaultUserId",
+    testOrganization?._id,
+    false,
+  );
+  const testEvent5 = await createEventWithRegistrant(
+    testUser?._id.toString() ?? "defaultUserId",
+    testOrganization?._id,
+    false,
+  );
+
+  if (testEvent4) {
+    const today = new Date();
+    const nextWeek = addDays(today, 7);
+    testEvent4.startDate = nextWeek.toISOString().split("T")[0];
+    testEvent4.endDate = nextWeek.toISOString().split("T")[0];
+    await testEvent4.save();
+  }
+
+  if (testEvent5) {
+    // set endDate to today and set endTime to 1 min from now
+    const today = new Date();
+    testEvent5.endDate = today.toISOString().split("T")[0];
+    testEvent5.endTime = new Date(
+      today.setMinutes(today.getMinutes() + 1),
+    ).toISOString();
+    await testEvent5.save();
+  }
+
+  testEvents = [testEvent1, testEvent2, testEvent3, testEvent4, testEvent5];
 });
 
 afterAll(async () => {
@@ -638,5 +664,20 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     expect(allWeeklyRecurringEventInstances.length).toEqual(150);
 
     vi.useRealTimers();
+  });
+
+  it("fetch upcoming events for the current date", async () => {
+    const upcomingEvents = (await eventsByOrganizationConnectionResolver?.(
+      {},
+      {
+        upcomingOnly: true,
+        where: {
+          organization_id: testOrganization?._id,
+        },
+      },
+      {},
+    )) as unknown as InterfaceEvent[];
+    expect(upcomingEvents[0]?._id).toEqual(testEvents[3]?._id);
+    expect(upcomingEvents[1]?._id).toEqual(testEvents[4]?._id);
   });
 });

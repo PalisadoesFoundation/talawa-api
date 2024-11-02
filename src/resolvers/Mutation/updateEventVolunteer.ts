@@ -1,15 +1,12 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import type { EventVolunteerResponse } from "../../constants";
-import {
-  EVENT_VOLUNTEER_INVITE_USER_MISTMATCH,
-  EVENT_VOLUNTEER_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../constants";
-import type { InterfaceEventVolunteer, InterfaceUser } from "../../models";
-import { User, EventVolunteer } from "../../models";
+import { EVENT_VOLUNTEER_INVITE_USER_MISTMATCH } from "../../constants";
+import type { InterfaceEventVolunteer } from "../../models";
+import { EventVolunteer } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
-import { cacheUsers } from "../../services/UserCache/cacheUser";
+import {
+  checkEventVolunteerExists,
+  checkUserExists,
+} from "../../utilities/checks";
 /**
  * This function enables to update an Event Volunteer
  * @param _parent - parent of current request
@@ -19,43 +16,14 @@ import { cacheUsers } from "../../services/UserCache/cacheUser";
  * 1. Whether the user exists
  * 2. Whether the EventVolunteer exists
  * 3. Whether the current user is the user of EventVolunteer
- * 4. Whether the EventVolunteer is invited
+ * 4. Update the EventVolunteer
  */
 export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
   async (_parent, args, context) => {
-    let currentUser: InterfaceUser | null;
-    const userFoundInCache = await findUserInCache([context.userId]);
-    currentUser = userFoundInCache[0];
-    if (currentUser === null) {
-      currentUser = await User.findOne({
-        _id: context.userId,
-      }).lean();
-      if (currentUser !== null) {
-        await cacheUsers([currentUser]);
-      }
-    }
+    await checkUserExists(context.userId);
+    const volunteer = await checkEventVolunteerExists(args.id);
 
-    if (!currentUser) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
-      );
-    }
-
-    const eventVolunteer = await EventVolunteer.findOne({
-      _id: args.id,
-    }).lean();
-
-    if (!eventVolunteer) {
-      throw new errors.NotFoundError(
-        requestContext.translate(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE),
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.CODE,
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM,
-      );
-    }
-
-    if (eventVolunteer.userId.toString() !== context.userId.toString()) {
+    if (volunteer.user.toString() !== context.userId.toString()) {
       throw new errors.ConflictError(
         requestContext.translate(EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE),
         EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.CODE,
@@ -69,22 +37,18 @@ export const updateEventVolunteer: MutationResolvers["updateEventVolunteer"] =
       },
       {
         $set: {
-          eventId:
-            args.data?.eventId === undefined
-              ? eventVolunteer.eventId
-              : (args?.data.eventId as string),
-          isAssigned:
-            args.data?.isAssigned === undefined
-              ? eventVolunteer.isAssigned
-              : (args.data?.isAssigned as boolean),
-          isInvited:
-            args.data?.isInvited === undefined
-              ? eventVolunteer.isInvited
-              : (args.data?.isInvited as boolean),
-          response:
-            args.data?.response === undefined
-              ? eventVolunteer.response
-              : (args.data?.response as EventVolunteerResponse),
+          assignments:
+            args.data?.assignments === undefined
+              ? volunteer.assignments
+              : (args.data?.assignments as string[]),
+          hasAccepted:
+            args.data?.hasAccepted === undefined
+              ? volunteer.hasAccepted
+              : (args.data?.hasAccepted as boolean),
+          isPublic:
+            args.data?.isPublic === undefined
+              ? volunteer.isPublic
+              : (args.data?.isPublic as boolean),
         },
       },
       {

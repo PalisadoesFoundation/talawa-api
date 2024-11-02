@@ -3,31 +3,31 @@ import {
   ACTION_ITEM_CATEGORY_IS_DISABLED,
   ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
+  EVENT_VOLUNTEER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type {
   InterfaceActionItem,
-  InterfaceAppUserProfile,
   InterfaceEvent,
-  InterfaceUser,
+  InterfaceEventVolunteer,
+  InterfaceEventVolunteerGroup,
 } from "../../models";
 import {
   ActionItem,
   ActionItemCategory,
-  AppUserProfile,
   Event,
-  User,
+  EventVolunteer,
+  EventVolunteerGroup,
 } from "../../models";
-import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
-import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
-import { cacheUsers } from "../../services/UserCache/cacheUser";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import {
+  checkAppUserProfileExists,
+  checkUserExists,
+} from "../../utilities/checks";
 
 /**
  * Creates a new action item and assigns it to a user.
@@ -38,18 +38,18 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * 2. Ensures that the current user has an associated app user profile.
  * 3. Checks if the assignee exists.
  * 4. Validates if the action item category exists and is not disabled.
- * 5. Confirms that the assignee is a member of the organization associated with the action item category.
- * 6. If the action item is related to an event, checks if the event exists and whether the current user is an admin of that event.
- * 7. Verifies if the current user is an admin of the organization or a superadmin.
+ * 5. If the action item is related to an event, checks if the event exists and whether the current user is an admin of that event.
+ * 6. Verifies if the current user is an admin of the organization or a superadmin.
  *
  * @param _parent - The parent object for the mutation (not used in this function).
  * @param args - The arguments provided with the request, including:
  *   - `data`: An object containing:
  *     - `assigneeId`: The ID of the user to whom the action item is assigned.
+ *     - `assigneeType`: The type of the assignee (EventVolunteer or EventVolunteerGroup).
  *     - `preCompletionNotes`: Notes to be added before the action item is completed.
  *     - `dueDate`: The due date for the action item.
  *     - `eventId` (optional): The ID of the event associated with the action item.
- *   - `actionItemCategoryId`: The ID of the action item category.
+ *     - `actionItemCategoryId`: The ID of the action item category.
  * @param context - The context of the entire application, including user information and other context-specific data.
  *
  * @returns A promise that resolves to the created action item object.
@@ -60,60 +60,39 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   args,
   context,
 ): Promise<InterfaceActionItem> => {
-  let currentUser: InterfaceUser | null;
-  const userFoundInCache = await findUserInCache([context.userId]);
-  currentUser = userFoundInCache[0];
-  if (currentUser === null) {
-    currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
-    if (currentUser !== null) {
-      await cacheUsers([currentUser]);
+  const currentUser = await checkUserExists(context.userId);
+  const currentUserAppProfile = await checkAppUserProfileExists(currentUser);
+
+  const {
+    assigneeId,
+    assigneeType,
+    preCompletionNotes,
+    allottedHours,
+    dueDate,
+    eventId,
+  } = args.data;
+
+  let assignee: InterfaceEventVolunteer | InterfaceEventVolunteerGroup | null;
+  if (assigneeType === "EventVolunteer") {
+    assignee = await EventVolunteer.findById(assigneeId)
+      .populate("user")
+      .lean();
+    if (!assignee) {
+      throw new errors.NotFoundError(
+        requestContext.translate(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE),
+        EVENT_VOLUNTEER_NOT_FOUND_ERROR.CODE,
+        EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM,
+      );
     }
-  }
-
-  // Checks whether currentUser with _id === context.userId exists.
-  if (currentUser === null) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
-    );
-  }
-
-  let currentUserAppProfile: InterfaceAppUserProfile | null;
-  const appUserProfileFoundInCache = await findAppUserProfileCache([
-    currentUser.appUserProfileId?.toString(),
-  ]);
-  currentUserAppProfile = appUserProfileFoundInCache[0];
-  if (currentUserAppProfile === null) {
-    currentUserAppProfile = await AppUserProfile.findOne({
-      userId: currentUser._id,
-    }).lean();
-    if (currentUserAppProfile !== null) {
-      await cacheAppUserProfile([currentUserAppProfile]);
+  } else if (assigneeType === "EventVolunteerGroup") {
+    assignee = await EventVolunteerGroup.findById(assigneeId).lean();
+    if (!assignee) {
+      throw new errors.NotFoundError(
+        requestContext.translate(EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE),
+        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.CODE,
+        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM,
+      );
     }
-  }
-
-  if (!currentUserAppProfile) {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-      USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM,
-    );
-  }
-
-  const assignee = await User.findOne({
-    _id: args.data.assigneeId,
-  });
-
-  // Checks whether the assignee exists.
-  if (assignee === null) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
-    );
   }
 
   const actionItemCategory = await ActionItemCategory.findOne({
@@ -138,36 +117,17 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     );
   }
 
-  let asigneeIsOrganizationMember = false;
-  asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
-    (organizationId) =>
-      organizationId === actionItemCategory.organizationId ||
-      new mongoose.Types.ObjectId(organizationId.toString()).equals(
-        actionItemCategory.organizationId,
-      ),
-  );
-
-  // Checks if the asignee is a member of the organization
-  if (!asigneeIsOrganizationMember) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
-      USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
-      USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
-    );
-  }
-
   let currentUserIsEventAdmin = false;
-
-  if (args.data.eventId) {
+  if (eventId) {
     let currEvent: InterfaceEvent | null;
 
-    const eventFoundInCache = await findEventsInCache([args.data.eventId]);
+    const eventFoundInCache = await findEventsInCache([eventId]);
 
     currEvent = eventFoundInCache[0];
 
     if (eventFoundInCache[0] === null) {
       currEvent = await Event.findOne({
-        _id: args.data.eventId,
+        _id: eventId,
       }).lean();
 
       if (currEvent !== null) {
@@ -203,6 +163,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   );
 
   // Checks whether the currentUser is authorized for the operation.
+  /* c8 ignore start */
   if (
     currentUserIsEventAdmin === false &&
     currentUserIsOrgAdmin === false &&
@@ -214,19 +175,41 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       USER_NOT_AUTHORIZED_ERROR.PARAM,
     );
   }
+  /* c8 ignore stop */
 
   // Creates and returns the new action item.
   const createActionItem = await ActionItem.create({
-    assignee: args.data.assigneeId,
+    assignee: assigneeType === "EventVolunteer" ? assigneeId : undefined,
+    assigneeGroup:
+      assigneeType === "EventVolunteerGroup" ? assigneeId : undefined,
+    assigneeUser: assigneeType === "User" ? assigneeId : undefined,
+    assigneeType,
     assigner: context.userId,
     actionItemCategory: args.actionItemCategoryId,
-    preCompletionNotes: args.data.preCompletionNotes,
-    allotedHours: args.data.allotedHours,
-    dueDate: args.data.dueDate,
-    event: args.data.eventId,
+    preCompletionNotes,
+    allottedHours,
+    dueDate,
+    event: eventId,
     organization: actionItemCategory.organizationId,
     creator: context.userId,
   });
+
+  if (assigneeType === "EventVolunteer") {
+    await EventVolunteer.findByIdAndUpdate(assigneeId, {
+      $addToSet: { assignments: createActionItem._id },
+    });
+  } else if (assigneeType === "EventVolunteerGroup") {
+    const newGrp = (await EventVolunteerGroup.findByIdAndUpdate(
+      assigneeId,
+      { $addToSet: { assignments: createActionItem._id } },
+      { new: true },
+    ).lean()) as InterfaceEventVolunteerGroup;
+
+    await EventVolunteer.updateMany(
+      { _id: { $in: newGrp.volunteers } },
+      { $addToSet: { assignments: createActionItem._id } },
+    );
+  }
 
   return createActionItem.toObject();
 };

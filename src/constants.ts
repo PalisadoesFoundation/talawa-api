@@ -668,6 +668,13 @@ export const EVENT_VOLUNTEER_INVITE_USER_MISTMATCH = Object.freeze({
   PARAM: "eventVolunteers",
 });
 
+export const EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR = Object.freeze({
+  DESC: "Volunteer membership not found",
+  CODE: "volunteerMembership.notFound",
+  MESSAGE: "volunteerMembership.notFound",
+  PARAM: "volunteerMemberships",
+});
+
 export const USER_ALREADY_CHECKED_IN = Object.freeze({
   MESSAGE: "The user has already been checked in for this event.",
   CODE: "user.alreadyCheckedIn",

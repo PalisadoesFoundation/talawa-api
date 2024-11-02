@@ -1,29 +1,25 @@
 import {
   EVENT_NOT_FOUND_ERROR,
-  EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceUser } from "../../models";
-import { Event, EventVolunteerGroup, User } from "../../models";
+import { Event, User, VolunteerMembership } from "../../models";
 import { EventVolunteer } from "../../models/EventVolunteer";
-import { cacheUsers } from "../../services/UserCache/cacheUser";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
+import { checkUserExists } from "../../utilities/checks";
 
 /**
  * Creates a new event volunteer entry.
  *
  * This function performs the following actions:
- * 1. Verifies the existence of the current user.
- * 2. Verifies the existence of the volunteer user.
- * 3. Verifies the existence of the event.
- * 4. Verifies the existence of the volunteer group.
- * 5. Ensures that the current user is the leader of the volunteer group.
- * 6. Creates a new event volunteer record.
- * 7. Adds the newly created volunteer to the group's list of volunteers.
+ * 1. Validates the existence of the current user.
+ * 2. Checks if the specified user and event exist.
+ * 3. Verifies that the current user is an admin of the event.
+ * 4. Creates a new volunteer entry for the event.
+ * 5. Creates a volunteer membership record for the new volunteer.
+ * 6. Returns the created event volunteer record.
  *
  * @param _parent - The parent object for the mutation. This parameter is not used in this resolver.
  * @param args - The arguments for the mutation, including:
@@ -38,25 +34,11 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  */
 export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
   async (_parent, args, context) => {
-    let currentUser: InterfaceUser | null;
-    const userFoundInCache = await findUserInCache([context.userId]);
-    currentUser = userFoundInCache[0];
-    if (currentUser === null) {
-      currentUser = await User.findOne({
-        _id: context.userId,
-      }).lean();
-      if (currentUser !== null) {
-        await cacheUsers([currentUser]);
-      }
-    }
-    if (!currentUser) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
-      );
-    }
-    const volunteerUser = await User.findOne({ _id: args.data?.userId }).lean();
+    const { eventId, userId } = args.data;
+    const currentUser = await checkUserExists(context.userId);
+
+    // Check if the volunteer user exists
+    const volunteerUser = await User.findById(userId).lean();
     if (!volunteerUser) {
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE),
@@ -64,7 +46,8 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
         EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM,
       );
     }
-    const event = await Event.findById(args.data.eventId);
+    // Check if the event exists
+    const event = await Event.findById(eventId).populate("organization").lean();
     if (!event) {
       throw new errors.NotFoundError(
         requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
@@ -72,18 +55,18 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
         EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
-    const group = await EventVolunteerGroup.findOne({
-      _id: args.data.groupId,
-    }).lean();
-    if (!group) {
-      throw new errors.NotFoundError(
-        requestContext.translate(EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE),
-        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.CODE,
-        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM,
-      );
-    }
 
-    if (group.leaderId.toString() !== currentUser._id.toString()) {
+    const userIsEventAdmin = event.admins.some(
+      (admin) => admin.toString() === currentUser?._id.toString(),
+    );
+
+    // Checks creator of the event or admin of the organization
+    const isAdmin = await adminCheck(
+      currentUser._id,
+      event.organization,
+      false,
+    );
+    if (!isAdmin && !userIsEventAdmin) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -91,24 +74,21 @@ export const createEventVolunteer: MutationResolvers["createEventVolunteer"] =
       );
     }
 
+    // create the volunteer
     const createdVolunteer = await EventVolunteer.create({
-      userId: args.data.userId,
-      eventId: args.data.eventId,
-      groupId: args.data.groupId,
-      isAssigned: false,
-      isInvited: true,
-      creatorId: context.userId,
+      user: userId,
+      event: eventId,
+      creator: context.userId,
+      groups: [],
     });
 
-    await EventVolunteerGroup.findOneAndUpdate(
-      {
-        _id: args.data.groupId,
-      },
-      {
-        $push: {
-          volunteers: createdVolunteer._id,
-        },
-      },
-    );
+    // create volunteer membership record
+    await VolunteerMembership.create({
+      volunteer: createdVolunteer._id,
+      event: eventId,
+      status: "invited",
+      createdBy: context.userId,
+    });
+
     return createdVolunteer.toObject();
   };
