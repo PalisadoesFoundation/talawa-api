@@ -16,7 +16,7 @@ export interface InterfaceActionItem {
   assignee: PopulatedDoc<InterfaceEventVolunteer & Document>;
   assigneeGroup: PopulatedDoc<InterfaceEventVolunteerGroup & Document>;
   assigneeUser: PopulatedDoc<InterfaceUser & Document>;
-  assigneeType: "EventVolunteer" | "EventVolunteerGroup";
+  assigneeType: "EventVolunteer" | "EventVolunteerGroup" | "User";
   assigner: PopulatedDoc<InterfaceUser & Document>;
   actionItemCategory: PopulatedDoc<
     InterfaceActionItemCategory & Document
