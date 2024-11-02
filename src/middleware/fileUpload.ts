@@ -22,8 +22,8 @@ import { requestContext } from "../libraries";
 export const fileUpload = (fieldName: string): RequestHandler => {
   return (req: Request, res: Response, next: NextFunction): void => {
     // Validate content type is multipart/form-data
-    const contentType = req.get("content-type") || "";
-    if (!contentType.includes("multipart/form-data")) {
+    const contentType = req.get("content-type");
+    if (contentType && !contentType.includes("multipart/form-data")) {
       res.status(400).json({
         error: requestContext.translate(
           CONTENT_TYPE_SHOULD_BE_MULTIPART_FORM_DATA.MESSAGE,

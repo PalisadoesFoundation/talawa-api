@@ -64,6 +64,6 @@ export const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter,
   limits: {
-    fileSize: VIDEO_SIZE_LIMIT,
+    fileSize: VIDEO_SIZE_LIMIT + 2,
   },
 });
