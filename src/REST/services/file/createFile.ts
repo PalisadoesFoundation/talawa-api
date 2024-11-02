@@ -36,7 +36,7 @@ export const createFile = async (
     return existingFile;
   }
 
-  const newFileDoc = new File({
+  const newFileDoc = await File.create({
     fileName: originalname,
     mimeType: mimetype,
     size: size,
@@ -51,6 +51,5 @@ export const createFile = async (
     },
   });
 
-  await newFileDoc.save();
   return newFileDoc;
 };
