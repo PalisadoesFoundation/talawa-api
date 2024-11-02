@@ -7,24 +7,25 @@ import type {
 /**
  * This is typescript type of the object returned from function `getUserTagGraphQLConnectionFilter`.
  */
-type UserTagGraphQLConnectionFilter =
-  | {
-      _id?: {
-        $lt: string;
-      };
-      name: {
-        $regex: RegExp;
-      };
-    }
-  | {
-      _id?: {
-        $gt: string;
-      };
-      name: {
-        $regex: RegExp;
-      };
-    };
+type BaseUserTagGraphQLConnectionFilter = {
+  name: {
+    $regex: RegExp;
+  };
+};
 
+type UserTagGraphQLConnectionFilter = BaseUserTagGraphQLConnectionFilter &
+  (
+    | {
+        _id?: {
+          $lt: string;
+        };
+      }
+    | {
+        _id?: {
+          $gt: string;
+        };
+      }
+  );
 /**
  * This function is used to get an object containing filtering logic.
  */
@@ -48,28 +49,19 @@ export function getUserTagGraphQLConnectionFilter({
   };
 
   if (cursor !== null) {
-    if (sortById === "ASCENDING") {
-      if (direction === "BACKWARD") {
-        filter._id = {
-          $lt: cursor,
-        };
-      } else {
-        filter._id = {
-          $gt: cursor,
-        };
-      }
-    } else {
-      if (direction === "BACKWARD") {
-        filter._id = {
-          $gt: cursor,
-        };
-      } else {
-        filter._id = {
-          $lt: cursor,
-        };
-      }
-    }
+    filter._id = getCursorFilter(cursor, sortById, direction);
   }
 
   return filter;
+}
+
+function getCursorFilter(
+  cursor: string,
+  sortById: "ASCENDING" | "DESCENDING",
+  direction: GraphQLConnectionTraversalDirection,
+): { $lt: string } | { $gt: string } {
+  if (sortById === "ASCENDING") {
+    return direction === "BACKWARD" ? { $lt: cursor } : { $gt: cursor };
+  }
+  return direction === "BACKWARD" ? { $gt: cursor } : { $lt: cursor };
 }

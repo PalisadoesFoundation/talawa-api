@@ -8,29 +8,29 @@ import type {
 /**
  * This is typescript type of the object returned from function `getUserTagMemberGraphQLConnectionFilter`.
  */
+type BaseUserTagMemberGraphQLConnectionFilter = {
+  firstName: {
+    $regex: RegExp;
+  };
+  lastName: {
+    $regex: RegExp;
+  };
+};
+
 type UserTagMemberGraphQLConnectionFilter =
-  | {
-      _id?: {
-        $lt: Types.ObjectId;
-      };
-      firstName: {
-        $regex: RegExp;
-      };
-      lastName: {
-        $regex: RegExp;
-      };
-    }
-  | {
-      _id?: {
-        $gt: Types.ObjectId;
-      };
-      firstName: {
-        $regex: RegExp;
-      };
-      lastName: {
-        $regex: RegExp;
-      };
-    };
+  BaseUserTagMemberGraphQLConnectionFilter &
+    (
+      | {
+          _id?: {
+            $lt: Types.ObjectId;
+          };
+        }
+      | {
+          _id?: {
+            $gt: Types.ObjectId;
+          };
+        }
+    );
 
 /**
  * This function is used to get an object containing filtering logic.
@@ -62,28 +62,20 @@ export function getUserTagMemberGraphQLConnectionFilter({
   };
 
   if (cursor !== null) {
-    if (sortById === "ASCENDING") {
-      if (direction === "BACKWARD") {
-        filter._id = {
-          $lt: new Types.ObjectId(cursor),
-        };
-      } else {
-        filter._id = {
-          $gt: new Types.ObjectId(cursor),
-        };
-      }
-    } else {
-      if (direction === "BACKWARD") {
-        filter._id = {
-          $gt: new Types.ObjectId(cursor),
-        };
-      } else {
-        filter._id = {
-          $lt: new Types.ObjectId(cursor),
-        };
-      }
-    }
+    filter._id = getCursorFilter(cursor, sortById, direction);
   }
 
   return filter;
+}
+
+function getCursorFilter(
+  cursor: string,
+  sortById: "ASCENDING" | "DESCENDING",
+  direction: GraphQLConnectionTraversalDirection,
+): { $lt: Types.ObjectId } | { $gt: Types.ObjectId } {
+  const cursorId = new Types.ObjectId(cursor);
+  if (sortById === "ASCENDING") {
+    return direction === "BACKWARD" ? { $lt: cursorId } : { $gt: cursorId };
+  }
+  return direction === "BACKWARD" ? { $gt: cursorId } : { $lt: cursorId };
 }
