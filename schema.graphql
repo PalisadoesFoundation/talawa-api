@@ -1257,7 +1257,7 @@ type Organization {
   posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostsConnection
   updatedAt: DateTime!
   userRegistrationRequired: Boolean!
-  userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
+  userTags(after: String, before: String, first: PositiveInt, last: PositiveInt, sortedBy: UserTagSortedByInput, where: UserTagWhereInput): UserTagsConnection
   venues: [Venue]
   visibleInSearch: Boolean!
 }
@@ -1541,7 +1541,6 @@ type Query {
   getPledgesByUserId(orderBy: PledgeOrderByInput, userId: ID!, where: PledgeWhereInput): [FundraisingCampaignPledge]
   getPlugins: [Plugin]
   getUserTag(id: ID!): UserTag
-  getUserTagAncestors(id: ID!): [UserTag]
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getVolunteerMembership(orderBy: VolunteerMembershipOrderByInput, where: VolunteerMembershipWhereInput!): [VolunteerMembership]!
   getVolunteerRanks(orgId: ID!, where: VolunteerRankWhereInput!): [VolunteerRank]!
@@ -1906,6 +1905,10 @@ input UserInput {
   selectedOrganization: ID!
 }
 
+input UserNameWhereInput {
+  starts_with: String!
+}
+
 type UserNotAuthorizedAdminError implements Error {
   message: String!
 }
@@ -1947,11 +1950,14 @@ type UserTag {
   """A field to get the mongodb object id identifier for this UserTag."""
   _id: ID!
 
+  """A field to traverse the ancestor tags of this UserTag."""
+  ancestorTags: [UserTag]
+
   """
   A connection field to traverse a list of UserTag this UserTag is a
   parent to.
   """
-  childTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
+  childTags(after: String, before: String, first: PositiveInt, last: PositiveInt, sortedBy: UserTagSortedByInput, where: UserTagWhereInput): UserTagsConnection
 
   """A field to get the name of this UserTag."""
   name: String!
@@ -1966,13 +1972,39 @@ type UserTag {
   A connection field to traverse a list of User this UserTag is assigned
   to.
   """
-  usersAssignedTo(after: String, before: String, first: PositiveInt, last: PositiveInt): UsersConnection
+  usersAssignedTo(after: String, before: String, first: PositiveInt, last: PositiveInt, sortedBy: UserTagUsersAssignedToSortedByInput, where: UserTagUsersAssignedToWhereInput): UsersConnection
 
   """
   A connection field to traverse a list of Users this UserTag is not assigned
   to, to see and select among them and assign this tag.
   """
-  usersToAssignTo(after: String, before: String, first: PositiveInt, last: PositiveInt): UsersConnection
+  usersToAssignTo(after: String, before: String, first: PositiveInt, last: PositiveInt, where: UserTagUsersToAssignToWhereInput): UsersConnection
+}
+
+input UserTagNameWhereInput {
+  starts_with: String!
+}
+
+input UserTagSortedByInput {
+  id: SortedByOrder!
+}
+
+input UserTagUsersAssignedToSortedByInput {
+  id: SortedByOrder!
+}
+
+input UserTagUsersAssignedToWhereInput {
+  firstName: UserNameWhereInput
+  lastName: UserNameWhereInput
+}
+
+input UserTagUsersToAssignToWhereInput {
+  firstName: UserNameWhereInput
+  lastName: UserNameWhereInput
+}
+
+input UserTagWhereInput {
+  name: UserTagNameWhereInput
 }
 
 """A default connection on the UserTag type."""

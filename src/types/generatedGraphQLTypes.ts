@@ -2022,6 +2022,8 @@ export type OrganizationUserTagsArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
   last?: InputMaybe<Scalars['PositiveInt']['input']>;
+  sortedBy?: InputMaybe<UserTagSortedByInput>;
+  where?: InputMaybe<UserTagWhereInput>;
 };
 
 export type OrganizationCustomField = {
@@ -2306,7 +2308,6 @@ export type Query = {
   getPledgesByUserId?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getUserTag?: Maybe<UserTag>;
-  getUserTagAncestors?: Maybe<Array<Maybe<UserTag>>>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
   getVolunteerMembership: Array<Maybe<VolunteerMembership>>;
   getVolunteerRanks: Array<Maybe<VolunteerRank>>;
@@ -2531,11 +2532,6 @@ export type QueryGetPledgesByUserIdArgs = {
 
 
 export type QueryGetUserTagArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryGetUserTagAncestorsArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -3023,6 +3019,10 @@ export type UserInput = {
   selectedOrganization: Scalars['ID']['input'];
 };
 
+export type UserNameWhereInput = {
+  starts_with: Scalars['String']['input'];
+};
+
 export type UserNotAuthorizedAdminError = Error & {
   __typename?: 'UserNotAuthorizedAdminError';
   message: Scalars['String']['output'];
@@ -3067,6 +3067,8 @@ export type UserTag = {
   __typename?: 'UserTag';
   /** A field to get the mongodb object id identifier for this UserTag. */
   _id: Scalars['ID']['output'];
+  /** A field to traverse the ancestor tags of this UserTag. */
+  ancestorTags?: Maybe<Array<Maybe<UserTag>>>;
   /**
    * A connection field to traverse a list of UserTag this UserTag is a
    * parent to.
@@ -3096,6 +3098,8 @@ export type UserTagChildTagsArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
   last?: InputMaybe<Scalars['PositiveInt']['input']>;
+  sortedBy?: InputMaybe<UserTagSortedByInput>;
+  where?: InputMaybe<UserTagWhereInput>;
 };
 
 
@@ -3104,6 +3108,8 @@ export type UserTagUsersAssignedToArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
   last?: InputMaybe<Scalars['PositiveInt']['input']>;
+  sortedBy?: InputMaybe<UserTagUsersAssignedToSortedByInput>;
+  where?: InputMaybe<UserTagUsersAssignedToWhereInput>;
 };
 
 
@@ -3112,6 +3118,33 @@ export type UserTagUsersToAssignToArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
   last?: InputMaybe<Scalars['PositiveInt']['input']>;
+  where?: InputMaybe<UserTagUsersToAssignToWhereInput>;
+};
+
+export type UserTagNameWhereInput = {
+  starts_with: Scalars['String']['input'];
+};
+
+export type UserTagSortedByInput = {
+  id: SortedByOrder;
+};
+
+export type UserTagUsersAssignedToSortedByInput = {
+  id: SortedByOrder;
+};
+
+export type UserTagUsersAssignedToWhereInput = {
+  firstName?: InputMaybe<UserNameWhereInput>;
+  lastName?: InputMaybe<UserNameWhereInput>;
+};
+
+export type UserTagUsersToAssignToWhereInput = {
+  firstName?: InputMaybe<UserNameWhereInput>;
+  lastName?: InputMaybe<UserNameWhereInput>;
+};
+
+export type UserTagWhereInput = {
+  name?: InputMaybe<UserTagNameWhereInput>;
 };
 
 /** A default connection on the UserTag type. */
@@ -3549,6 +3582,7 @@ export type ResolversTypes = {
   UserData: ResolverTypeWrapper<Omit<UserData, 'appUserProfile' | 'user'> & { appUserProfile?: Maybe<ResolversTypes['AppUserProfile']>, user: ResolversTypes['User'] }>;
   UserFamily: ResolverTypeWrapper<InterfaceUserFamilyModel>;
   UserInput: UserInput;
+  UserNameWhereInput: UserNameWhereInput;
   UserNotAuthorizedAdminError: ResolverTypeWrapper<UserNotAuthorizedAdminError>;
   UserNotAuthorizedError: ResolverTypeWrapper<UserNotAuthorizedError>;
   UserNotFoundError: ResolverTypeWrapper<UserNotFoundError>;
@@ -3556,6 +3590,12 @@ export type ResolversTypes = {
   UserPhone: ResolverTypeWrapper<UserPhone>;
   UserPhoneInput: UserPhoneInput;
   UserTag: ResolverTypeWrapper<InterfaceOrganizationTagUserModel>;
+  UserTagNameWhereInput: UserTagNameWhereInput;
+  UserTagSortedByInput: UserTagSortedByInput;
+  UserTagUsersAssignedToSortedByInput: UserTagUsersAssignedToSortedByInput;
+  UserTagUsersAssignedToWhereInput: UserTagUsersAssignedToWhereInput;
+  UserTagUsersToAssignToWhereInput: UserTagUsersToAssignToWhereInput;
+  UserTagWhereInput: UserTagWhereInput;
   UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversTypes['UserTagsConnectionEdge']> }>;
   UserTagsConnectionEdge: ResolverTypeWrapper<Omit<UserTagsConnectionEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
   UserType: UserType;
@@ -3748,12 +3788,19 @@ export type ResolversParentTypes = {
   UserData: Omit<UserData, 'appUserProfile' | 'user'> & { appUserProfile?: Maybe<ResolversParentTypes['AppUserProfile']>, user: ResolversParentTypes['User'] };
   UserFamily: InterfaceUserFamilyModel;
   UserInput: UserInput;
+  UserNameWhereInput: UserNameWhereInput;
   UserNotAuthorizedAdminError: UserNotAuthorizedAdminError;
   UserNotAuthorizedError: UserNotAuthorizedError;
   UserNotFoundError: UserNotFoundError;
   UserPhone: UserPhone;
   UserPhoneInput: UserPhoneInput;
   UserTag: InterfaceOrganizationTagUserModel;
+  UserTagNameWhereInput: UserTagNameWhereInput;
+  UserTagSortedByInput: UserTagSortedByInput;
+  UserTagUsersAssignedToSortedByInput: UserTagUsersAssignedToSortedByInput;
+  UserTagUsersAssignedToWhereInput: UserTagUsersAssignedToWhereInput;
+  UserTagUsersToAssignToWhereInput: UserTagUsersToAssignToWhereInput;
+  UserTagWhereInput: UserTagWhereInput;
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserTagsConnectionEdge']> };
   UserTagsConnectionEdge: Omit<UserTagsConnectionEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
   UserWhereInput: UserWhereInput;
@@ -4666,7 +4713,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getPledgesByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType, RequireFields<QueryGetPledgesByUserIdArgs, 'userId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<QueryGetUserTagArgs, 'id'>>;
-  getUserTagAncestors?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTag']>>>, ParentType, ContextType, RequireFields<QueryGetUserTagAncestorsArgs, 'id'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
   getVolunteerMembership?: Resolver<Array<Maybe<ResolversTypes['VolunteerMembership']>>, ParentType, ContextType, RequireFields<QueryGetVolunteerMembershipArgs, 'where'>>;
   getVolunteerRanks?: Resolver<Array<Maybe<ResolversTypes['VolunteerRank']>>, ParentType, ContextType, RequireFields<QueryGetVolunteerRanksArgs, 'orgId' | 'where'>>;
@@ -4839,6 +4885,7 @@ export type UserPhoneResolvers<ContextType = any, ParentType extends ResolversPa
 
 export type UserTagResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTag'] = ResolversParentTypes['UserTag']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ancestorTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTag']>>>, ParentType, ContextType>;
   childTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagChildTagsArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;

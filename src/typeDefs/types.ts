@@ -456,6 +456,8 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagWhereInput
+      sortedBy: UserTagSortedByInput
     ): UserTagsConnection
     posts(
       after: String
@@ -696,6 +698,10 @@ export const types = gql`
     """
     parentTag: UserTag
     """
+    A field to traverse the ancestor tags of this UserTag.
+    """
+    ancestorTags: [UserTag]
+    """
     A connection field to traverse a list of UserTag this UserTag is a
     parent to.
     """
@@ -704,6 +710,8 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagWhereInput
+      sortedBy: UserTagSortedByInput
     ): UserTagsConnection
     """
     A connection field to traverse a list of User this UserTag is assigned
@@ -714,6 +722,8 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagUsersAssignedToWhereInput
+      sortedBy: UserTagUsersAssignedToSortedByInput
     ): UsersConnection
 
     """
@@ -725,6 +735,7 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagUsersToAssignToWhereInput
     ): UsersConnection
   }
 
