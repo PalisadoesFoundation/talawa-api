@@ -24,12 +24,6 @@ export const inputs = gql`
     image: String
   }
 
-  input createGroupChatInput {
-    userIds: [ID!]!
-    organizationId: ID!
-    title: String!
-  }
-
   input createUserFamilyInput {
     title: String!
     userIds: [ID!]!
@@ -294,11 +288,6 @@ export const inputs = gql`
     creatorId_not_in: [ID!]
   }
 
-  input MessageChatInput {
-    message: String!
-    receiver: ID!
-  }
-
   input NoteInput {
     content: String!
     agendaItemId: ID!
@@ -430,6 +419,16 @@ export const inputs = gql`
   input ToggleUserTagAssignInput {
     userId: ID!
     tagId: ID!
+  }
+
+  input AddPeopleToUserTagInput {
+    userIds: [ID!]!
+    tagId: ID!
+  }
+
+  input TagActionsInput {
+    currentTagId: ID!
+    selectedTagIds: [ID!]!
   }
 
   input UpdateActionItemInput {

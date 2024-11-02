@@ -7,7 +7,6 @@ import type { InterfaceAdvertisement as InterfaceAdvertisementModel } from '../m
 import type { InterfaceAgendaItem as InterfaceAgendaItemModel } from '../models/AgendaItem';
 import type { InterfaceAgendaSection as InterfaceAgendaSectionModel } from '../models/AgendaSection';
 import type { InterfaceCheckIn as InterfaceCheckInModel } from '../models/CheckIn';
-import type { InterfaceMessageChat as InterfaceMessageChatModel } from '../models/MessageChat';
 import type { InterfaceComment as InterfaceCommentModel } from '../models/Comment';
 import type { InterfaceCommunity as InterfaceCommunityModel } from '../models/Community';
 import type { InterfaceChat as InterfaceChatModel } from '../models/Chat';
@@ -114,6 +113,11 @@ export type ActionItemsOrderByInput =
   | 'createdAt_DESC'
   | 'dueDate_ASC'
   | 'dueDate_DESC';
+
+export type AddPeopleToUserTagInput = {
+  tagId: Scalars['ID']['input'];
+  userIds: Array<Scalars['ID']['input']>;
+};
 
 export type Address = {
   __typename?: 'Address';
@@ -441,8 +445,6 @@ export type CreateCommentPayload = {
   comment?: Maybe<Comment>;
   userErrors: Array<CreateCommentError>;
 };
-
-export type CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError;
 
 export type CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError;
 
@@ -1154,11 +1156,6 @@ export type Message = {
   videoUrl?: Maybe<Scalars['URL']['output']>;
 };
 
-export type MessageChatInput = {
-  message: Scalars['String']['input'];
-  receiver: Scalars['ID']['input'];
-};
-
 export type MinimumLengthError = FieldError & {
   __typename?: 'MinimumLengthError';
   limit: Scalars['Int']['output'];
@@ -1180,10 +1177,12 @@ export type Mutation = {
   addLanguageTranslation: Language;
   addOrganizationCustomField: OrganizationCustomField;
   addOrganizationImage: Organization;
+  addPeopleToUserTag?: Maybe<UserTag>;
   addPledgeToFundraisingCampaign: FundraisingCampaignPledge;
   addUserCustomData: UserCustomData;
   addUserImage: User;
   addUserToUserFamily: UserFamily;
+  assignToUserTags?: Maybe<UserTag>;
   assignUserTag?: Maybe<User>;
   blockPluginCreationBySuperadmin: AppUserProfile;
   blockUser: User;
@@ -1245,6 +1244,7 @@ export type Mutation = {
   removeEventAttendee: User;
   removeEventVolunteer: EventVolunteer;
   removeEventVolunteerGroup: EventVolunteerGroup;
+  removeFromUserTags?: Maybe<UserTag>;
   removeFundraisingCampaignPledge: FundraisingCampaignPledge;
   removeMember: Organization;
   removeOrganization: UserData;
@@ -1328,6 +1328,11 @@ export type MutationAddOrganizationImageArgs = {
 };
 
 
+export type MutationAddPeopleToUserTagArgs = {
+  input: AddPeopleToUserTagInput;
+};
+
+
 export type MutationAddPledgeToFundraisingCampaignArgs = {
   campaignId: Scalars['ID']['input'];
   pledgeId: Scalars['ID']['input'];
@@ -1349,6 +1354,11 @@ export type MutationAddUserImageArgs = {
 export type MutationAddUserToUserFamilyArgs = {
   familyId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
+};
+
+
+export type MutationAssignToUserTagsArgs = {
+  input: TagActionsInput;
 };
 
 
@@ -1662,6 +1672,11 @@ export type MutationRemoveEventVolunteerArgs = {
 
 export type MutationRemoveEventVolunteerGroupArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationRemoveFromUserTagsArgs = {
+  input: TagActionsInput;
 };
 
 
@@ -2689,6 +2704,11 @@ export type SubscriptionMessageSentToChatArgs = {
   userId: Scalars['ID']['input'];
 };
 
+export type TagActionsInput = {
+  currentTagId: Scalars['ID']['input'];
+  selectedTagIds: Array<Scalars['ID']['input']>;
+};
+
 export type ToggleUserTagAssignInput = {
   tagId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
@@ -3019,6 +3039,11 @@ export type UserTag = {
    * to.
    */
   usersAssignedTo?: Maybe<UsersConnection>;
+  /**
+   * A connection field to traverse a list of Users this UserTag is not assigned
+   * to, to see and select among them and assign this tag.
+   */
+  usersToAssignTo?: Maybe<UsersConnection>;
 };
 
 
@@ -3031,6 +3056,14 @@ export type UserTagChildTagsArgs = {
 
 
 export type UserTagUsersAssignedToArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['PositiveInt']['input']>;
+  last?: InputMaybe<Scalars['PositiveInt']['input']>;
+};
+
+
+export type UserTagUsersToAssignToArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['PositiveInt']['input']>;
@@ -3147,12 +3180,6 @@ export type ChatInput = {
   userIds: Array<Scalars['ID']['input']>;
 };
 
-export type CreateGroupChatInput = {
-  organizationId: Scalars['ID']['input'];
-  title: Scalars['String']['input'];
-  userIds: Array<Scalars['ID']['input']>;
-};
-
 export type CreateUserFamilyInput = {
   title: Scalars['String']['input'];
   userIds: Array<Scalars['ID']['input']>;
@@ -3226,7 +3253,6 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = {
   ConnectionError: ( InvalidCursor ) | ( MaximumValueError );
   CreateAdminError: ( OrganizationMemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
   CreateCommentError: ( PostNotFoundError );
-  CreateDirectChatError: ( OrganizationNotFoundError ) | ( UserNotFoundError );
   CreateMemberError: ( MemberNotFoundError ) | ( OrganizationNotFoundError ) | ( UserNotAuthorizedAdminError ) | ( UserNotAuthorizedError ) | ( UserNotFoundError );
 };
 
@@ -3244,6 +3270,7 @@ export type ResolversTypes = {
   ActionItemCategoryWhereInput: ActionItemCategoryWhereInput;
   ActionItemWhereInput: ActionItemWhereInput;
   ActionItemsOrderByInput: ActionItemsOrderByInput;
+  AddPeopleToUserTagInput: AddPeopleToUserTagInput;
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
   Advertisement: ResolverTypeWrapper<InterfaceAdvertisementModel>;
@@ -3283,7 +3310,6 @@ export type ResolversTypes = {
   CreateAgendaSectionInput: CreateAgendaSectionInput;
   CreateCommentError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateCommentError']>;
   CreateCommentPayload: ResolverTypeWrapper<Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversTypes['Comment']>, userErrors: Array<ResolversTypes['CreateCommentError']> }>;
-  CreateDirectChatError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateDirectChatError']>;
   CreateMemberError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['CreateMemberError']>;
   CreateMemberPayload: ResolverTypeWrapper<Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversTypes['Organization']>, userErrors: Array<ResolversTypes['CreateMemberError']> }>;
   CreateUserTagInput: CreateUserTagInput;
@@ -3352,7 +3378,6 @@ export type ResolversTypes = {
   MembershipRequest: ResolverTypeWrapper<InterfaceMembershipRequestModel>;
   MembershipRequestsWhereInput: MembershipRequestsWhereInput;
   Message: ResolverTypeWrapper<InterfaceMessageModel>;
-  MessageChatInput: MessageChatInput;
   MinimumLengthError: ResolverTypeWrapper<MinimumLengthError>;
   MinimumValueError: ResolverTypeWrapper<MinimumValueError>;
   Mutation: ResolverTypeWrapper<{}>;
@@ -3397,6 +3422,7 @@ export type ResolversTypes = {
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Subscription: ResolverTypeWrapper<{}>;
+  TagActionsInput: TagActionsInput;
   Time: ResolverTypeWrapper<Scalars['Time']['output']>;
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
   Translation: ResolverTypeWrapper<Translation>;
@@ -3450,7 +3476,6 @@ export type ResolversTypes = {
   VenueWhereInput: VenueWhereInput;
   WeekDays: WeekDays;
   chatInput: ChatInput;
-  createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
 };
 
@@ -3460,6 +3485,7 @@ export type ResolversParentTypes = {
   ActionItemCategory: InterfaceActionItemCategoryModel;
   ActionItemCategoryWhereInput: ActionItemCategoryWhereInput;
   ActionItemWhereInput: ActionItemWhereInput;
+  AddPeopleToUserTagInput: AddPeopleToUserTagInput;
   Address: Address;
   AddressInput: AddressInput;
   Advertisement: InterfaceAdvertisementModel;
@@ -3497,7 +3523,6 @@ export type ResolversParentTypes = {
   CreateAgendaSectionInput: CreateAgendaSectionInput;
   CreateCommentError: ResolversUnionTypes<ResolversParentTypes>['CreateCommentError'];
   CreateCommentPayload: Omit<CreateCommentPayload, 'comment' | 'userErrors'> & { comment?: Maybe<ResolversParentTypes['Comment']>, userErrors: Array<ResolversParentTypes['CreateCommentError']> };
-  CreateDirectChatError: ResolversUnionTypes<ResolversParentTypes>['CreateDirectChatError'];
   CreateMemberError: ResolversUnionTypes<ResolversParentTypes>['CreateMemberError'];
   CreateMemberPayload: Omit<CreateMemberPayload, 'organization' | 'userErrors'> & { organization?: Maybe<ResolversParentTypes['Organization']>, userErrors: Array<ResolversParentTypes['CreateMemberError']> };
   CreateUserTagInput: CreateUserTagInput;
@@ -3555,7 +3580,6 @@ export type ResolversParentTypes = {
   MembershipRequest: InterfaceMembershipRequestModel;
   MembershipRequestsWhereInput: MembershipRequestsWhereInput;
   Message: InterfaceMessageModel;
-  MessageChatInput: MessageChatInput;
   MinimumLengthError: MinimumLengthError;
   MinimumValueError: MinimumValueError;
   Mutation: {};
@@ -3593,6 +3617,7 @@ export type ResolversParentTypes = {
   SocialMediaUrlsInput: SocialMediaUrlsInput;
   String: Scalars['String']['output'];
   Subscription: {};
+  TagActionsInput: TagActionsInput;
   Time: Scalars['Time']['output'];
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
   Translation: Translation;
@@ -3641,7 +3666,6 @@ export type ResolversParentTypes = {
   VenueInput: VenueInput;
   VenueWhereInput: VenueWhereInput;
   chatInput: ChatInput;
-  createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
 };
 
@@ -3921,10 +3945,6 @@ export type CreateCommentPayloadResolvers<ContextType = any, ParentType extends 
   comment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType>;
   userErrors?: Resolver<Array<ResolversTypes['CreateCommentError']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type CreateDirectChatErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateDirectChatError'] = ResolversParentTypes['CreateDirectChatError']> = {
-  __resolveType: TypeResolveFn<'OrganizationNotFoundError' | 'UserNotFoundError', ParentType, ContextType>;
 };
 
 export type CreateMemberErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateMemberError'] = ResolversParentTypes['CreateMemberError']> = {
@@ -4257,10 +4277,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addLanguageTranslation?: Resolver<ResolversTypes['Language'], ParentType, ContextType, RequireFields<MutationAddLanguageTranslationArgs, 'data'>>;
   addOrganizationCustomField?: Resolver<ResolversTypes['OrganizationCustomField'], ParentType, ContextType, RequireFields<MutationAddOrganizationCustomFieldArgs, 'name' | 'organizationId' | 'type'>>;
   addOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationAddOrganizationImageArgs, 'file' | 'organizationId'>>;
+  addPeopleToUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationAddPeopleToUserTagArgs, 'input'>>;
   addPledgeToFundraisingCampaign?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationAddPledgeToFundraisingCampaignArgs, 'campaignId' | 'pledgeId'>>;
   addUserCustomData?: Resolver<ResolversTypes['UserCustomData'], ParentType, ContextType, RequireFields<MutationAddUserCustomDataArgs, 'dataName' | 'dataValue' | 'organizationId'>>;
   addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
   addUserToUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationAddUserToUserFamilyArgs, 'familyId' | 'userId'>>;
+  assignToUserTags?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationAssignToUserTagsArgs, 'input'>>;
   assignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAssignUserTagArgs, 'input'>>;
   blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['AppUserProfile'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'blockUser' | 'userId'>>;
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
@@ -4322,6 +4344,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveEventAttendeeArgs, 'data'>>;
   removeEventVolunteer?: Resolver<ResolversTypes['EventVolunteer'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerArgs, 'id'>>;
   removeEventVolunteerGroup?: Resolver<ResolversTypes['EventVolunteerGroup'], ParentType, ContextType, RequireFields<MutationRemoveEventVolunteerGroupArgs, 'id'>>;
+  removeFromUserTags?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationRemoveFromUserTagsArgs, 'input'>>;
   removeFundraisingCampaignPledge?: Resolver<ResolversTypes['FundraisingCampaignPledge'], ParentType, ContextType, RequireFields<MutationRemoveFundraisingCampaignPledgeArgs, 'id'>>;
   removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'data'>>;
   removeOrganization?: Resolver<ResolversTypes['UserData'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
@@ -4731,6 +4754,7 @@ export type UserTagResolvers<ContextType = any, ParentType extends ResolversPare
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType>;
   usersAssignedTo?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType, Partial<UserTagUsersAssignedToArgs>>;
+  usersToAssignTo?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType, Partial<UserTagUsersToAssignToArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4800,7 +4824,6 @@ export type Resolvers<ContextType = any> = {
   CreateAdvertisementPayload?: CreateAdvertisementPayloadResolvers<ContextType>;
   CreateCommentError?: CreateCommentErrorResolvers<ContextType>;
   CreateCommentPayload?: CreateCommentPayloadResolvers<ContextType>;
-  CreateDirectChatError?: CreateDirectChatErrorResolvers<ContextType>;
   CreateMemberError?: CreateMemberErrorResolvers<ContextType>;
   CreateMemberPayload?: CreateMemberPayloadResolvers<ContextType>;
   Date?: GraphQLScalarType;

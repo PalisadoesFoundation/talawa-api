@@ -50,6 +50,11 @@ enum ActionItemsOrderByInput {
   dueDate_DESC
 }
 
+input AddPeopleToUserTagInput {
+  tagId: ID!
+  userIds: [ID!]!
+}
+
 type Address {
   city: String
   countryCode: String
@@ -364,8 +369,6 @@ type CreateCommentPayload {
   comment: Comment
   userErrors: [CreateCommentError!]!
 }
-
-union CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError
 
 union CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError
 
@@ -1069,11 +1072,6 @@ type Message {
   videoUrl: URL
 }
 
-input MessageChatInput {
-  message: String!
-  receiver: ID!
-}
-
 type MinimumLengthError implements FieldError {
   limit: Int!
   message: String!
@@ -1092,10 +1090,12 @@ type Mutation {
   addLanguageTranslation(data: LanguageInput!): Language!
   addOrganizationCustomField(name: String!, organizationId: ID!, type: String!): OrganizationCustomField!
   addOrganizationImage(file: String!, organizationId: String!): Organization!
+  addPeopleToUserTag(input: AddPeopleToUserTagInput!): UserTag
   addPledgeToFundraisingCampaign(campaignId: ID!, pledgeId: ID!): FundraisingCampaignPledge!
   addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
   addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
+  assignToUserTags(input: TagActionsInput!): UserTag
   assignUserTag(input: ToggleUserTagAssignInput!): User
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): AppUserProfile!
   blockUser(organizationId: ID!, userId: ID!): User!
@@ -1157,6 +1157,7 @@ type Mutation {
   removeEventAttendee(data: EventAttendeeInput!): User!
   removeEventVolunteer(id: ID!): EventVolunteer!
   removeEventVolunteerGroup(id: ID!): EventVolunteerGroup!
+  removeFromUserTags(input: TagActionsInput!): UserTag
   removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): UserData!
@@ -1636,6 +1637,11 @@ type Subscription {
   onPluginUpdate: Plugin
 }
 
+input TagActionsInput {
+  currentTagId: ID!
+  selectedTagIds: [ID!]!
+}
+
 scalar Time
 
 input ToggleUserTagAssignInput {
@@ -1948,6 +1954,12 @@ type UserTag {
   to.
   """
   usersAssignedTo(after: String, before: String, first: PositiveInt, last: PositiveInt): UsersConnection
+
+  """
+  A connection field to traverse a list of Users this UserTag is not assigned
+  to, to see and select among them and assign this tag.
+  """
+  usersToAssignTo(after: String, before: String, first: PositiveInt, last: PositiveInt): UsersConnection
 }
 
 """A default connection on the UserTag type."""
@@ -2055,12 +2067,6 @@ input chatInput {
   isGroup: Boolean!
   name: String
   organizationId: ID
-  userIds: [ID!]!
-}
-
-input createGroupChatInput {
-  organizationId: ID!
-  title: String!
   userIds: [ID!]!
 }
 

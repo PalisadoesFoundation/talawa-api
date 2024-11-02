@@ -711,6 +711,17 @@ export const types = gql`
       first: PositiveInt
       last: PositiveInt
     ): UsersConnection
+
+    """
+    A connection field to traverse a list of Users this UserTag is not assigned
+    to, to see and select among them and assign this tag.
+    """
+    usersToAssignTo(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): UsersConnection
   }
 
   """
