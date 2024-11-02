@@ -32,7 +32,6 @@ import { getPledgesByUserId } from "./getPledgesByUserId";
 import { getPlugins } from "./getPlugins";
 import { getlanguage } from "./getlanguage";
 import { getUserTag } from "./getUserTag";
-import { getUserTagAncestors } from "./getUserTagAncestors";
 import { me } from "./me";
 import { myLanguage } from "./myLanguage";
 import { organizations } from "./organizations";
@@ -81,7 +80,6 @@ export const Query: QueryResolvers = {
   getlanguage,
   getPlugins,
   getUserTag,
-  getUserTagAncestors,
   isSampleOrganization,
   me,
   myLanguage,

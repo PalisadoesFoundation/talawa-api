@@ -431,6 +431,18 @@ export const inputs = gql`
     selectedTagIds: [ID!]!
   }
 
+  input UserTagWhereInput {
+    name: UserTagNameWhereInput
+  }
+
+  input UserTagNameWhereInput {
+    starts_with: String!
+  }
+
+  input UserTagSortedByInput {
+    id: SortedByOrder!
+  }
+
   input UpdateActionItemInput {
     assigneeId: ID
     preCompletionNotes: String
@@ -607,6 +619,25 @@ export const inputs = gql`
 
     event_title_contains: String
   }
+
+  input UserTagUsersAssignedToSortedByInput {
+    id: SortedByOrder!
+  }
+
+  input UserTagUsersAssignedToWhereInput {
+    firstName: UserNameWhereInput
+    lastName: UserNameWhereInput
+  }
+
+  input UserTagUsersToAssignToWhereInput {
+    firstName: UserNameWhereInput
+    lastName: UserNameWhereInput
+  }
+
+  input UserNameWhereInput {
+    starts_with: String!
+  }
+
   input PostUpdateInput {
     text: String
     title: String

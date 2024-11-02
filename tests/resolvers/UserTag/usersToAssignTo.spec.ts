@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "dotenv/config";
 import {
   parseCursor,
-  getGraphQLConnectionFilter,
   usersToAssignTo as usersToAssignToResolver,
 } from "../../../src/resolvers/UserTag/usersToAssignTo";
 import { connect, disconnect } from "../../helpers/db";
@@ -114,46 +112,5 @@ describe("parseCursor function", () => {
     if (result.isSuccessful === true) {
       expect(result.parsedCursor).toEqual(parserCursorValue?._id.toString());
     }
-  });
-});
-
-describe("getGraphQLConnectionFilter function", () => {
-  it(`when argument cursor is non-null and argument direction corresponds to backward`, async () => {
-    const cursor = new Types.ObjectId().toString();
-
-    expect(
-      getGraphQLConnectionFilter({
-        cursor,
-        direction: "BACKWARD",
-      }),
-    ).toEqual({
-      _id: {
-        $gt: new Types.ObjectId(cursor),
-      },
-    });
-  });
-
-  it(`when argument cursor is non-null and argument direction corresponds to forward`, async () => {
-    const cursor = new Types.ObjectId().toString();
-
-    expect(
-      getGraphQLConnectionFilter({
-        cursor,
-        direction: "FORWARD",
-      }),
-    ).toEqual({
-      _id: {
-        $lt: new Types.ObjectId(cursor),
-      },
-    });
-  });
-
-  it(`when argument cursor is null`, async () => {
-    expect(
-      getGraphQLConnectionFilter({
-        cursor: null,
-        direction: "BACKWARD",
-      }),
-    ).toEqual({});
   });
 });

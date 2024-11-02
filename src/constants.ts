@@ -471,8 +471,7 @@ export const NO_CHANGE_IN_TAG_NAME = Object.freeze({
 });
 
 export const TAG_ALREADY_EXISTS = Object.freeze({
-  MESSAGE:
-    "A tag with the same name and the same parent tag already exists for this organization.",
+  MESSAGE: "A tag with the same name already exists at this level",
   CODE: "tag.alreadyExists",
   PARAM: "tag.alreadyExists",
 });
