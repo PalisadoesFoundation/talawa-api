@@ -1,4 +1,4 @@
-import type { GraphQLConnectionTraversalDirection } from ".";
+import type { GraphQLConnectionTraversalDirection } from "../graphQLConnection";
 import type { ParseSortedByResult } from "../userTagsPaginationUtils";
 
 /**

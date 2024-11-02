@@ -2,8 +2,6 @@ import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfaceOrganizationTagUser } from "../../models";
 import { OrganizationTagUser } from "../../models";
 import {
-  getUserTagGraphQLConnectionFilter,
-  getUserTagGraphQLConnectionSort,
   parseGraphQLConnectionArgumentsWithSortedByAndWhere,
   transformToDefaultGraphQLConnection,
   type DefaultGraphQLArgumentError,
@@ -14,6 +12,8 @@ import { GraphQLError } from "graphql";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import type { Types } from "mongoose";
 import {
+  getUserTagGraphQLConnectionFilter,
+  getUserTagGraphQLConnectionSort,
   parseUserTagSortedBy,
   parseUserTagWhere,
 } from "../../utilities/userTagsPaginationUtils";

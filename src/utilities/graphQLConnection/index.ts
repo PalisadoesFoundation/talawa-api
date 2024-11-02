@@ -50,6 +50,3 @@ export * from "./parseGraphQLConnectionArgumentsWithSortedBy";
 export * from "./parseGraphQLConnectionArgumentsWithSortedByAndWhere";
 export * from "./parseGraphQLConnectionArgumentsWithWhere";
 export * from "./transformToDefaultGraphQLConnection";
-export * from "./getUserTagGraphQLConnectionFilter";
-export * from "./getUserTagGraphQLConnectionSort";
-export * from "./getUserTagMemberGraphQLConnectionFilter";

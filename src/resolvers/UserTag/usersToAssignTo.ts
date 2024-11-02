@@ -11,13 +11,15 @@ import {
   getCommonGraphQLConnectionSort,
   parseGraphQLConnectionArgumentsWithWhere,
   transformToDefaultGraphQLConnection,
-  getUserTagMemberGraphQLConnectionFilter,
 } from "../../utilities/graphQLConnection";
 
 import { GraphQLError } from "graphql";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import { Types } from "mongoose";
-import { parseUserTagMemberWhere } from "../../utilities/userTagsPaginationUtils";
+import {
+  getUserTagMemberGraphQLConnectionFilter,
+  parseUserTagMemberWhere,
+} from "../../utilities/userTagsPaginationUtils";
 
 /**
  * Resolver function for the `usersToAssignTo` field of a `UserTag`.

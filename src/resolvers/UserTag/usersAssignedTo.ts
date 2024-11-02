@@ -5,7 +5,6 @@ import {
   type DefaultGraphQLArgumentError,
   type ParseGraphQLConnectionCursorArguments,
   type ParseGraphQLConnectionCursorResult,
-  getUserTagGraphQLConnectionSort,
   parseGraphQLConnectionArgumentsWithSortedByAndWhere,
   transformToDefaultGraphQLConnection,
 } from "../../utilities/graphQLConnection";
@@ -15,8 +14,9 @@ import { Types } from "mongoose";
 import {
   parseUserTagSortedBy,
   parseUserTagMemberWhere,
+  getUserTagMemberGraphQLConnectionFilter,
+  getUserTagGraphQLConnectionSort,
 } from "../../utilities/userTagsPaginationUtils";
-import { getUserTagMemberGraphQLConnectionFilter } from "../../utilities/graphQLConnection";
 
 /**
  * Resolver function for the `usersAssignedTo` field of a `UserTag`.

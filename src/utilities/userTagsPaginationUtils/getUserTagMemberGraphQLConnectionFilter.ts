@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import type { GraphQLConnectionTraversalDirection } from ".";
+import type { GraphQLConnectionTraversalDirection } from "../graphQLConnection";
 import type {
   ParseSortedByResult,
   ParseUserTagMemberWhereResult,
