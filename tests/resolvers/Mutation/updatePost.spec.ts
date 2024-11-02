@@ -35,11 +35,36 @@ import type { InterfaceAuthenticatedRequest } from "../../../src/middleware";
 import { updatePost } from "../../../src/REST/controllers/mutation";
 import * as fileServices from "../../../src/REST/services/file";
 import type { InterfaceUploadedFileResponse } from "../../../src/REST/services/file/uploadFile";
+import { createTestPostWithMedia } from "../../helpers/posts";
 import type { TestPostType } from "../../helpers/posts";
 
 vi.mock("../../../src/libraries/requestContext", () => ({
   translate: (message: string): string => `Translated ${message}`,
 }));
+
+/**
+ * module - PostUpdateControllerTests
+ * description - Tests for the Post Update controller functionality in a social media/blog platform
+ * @packageDocumentation
+ *
+ * @remarks
+ * Test environment uses Vitest with MongoDB for integration testing.
+ * File includes mock implementations for file services and translations.
+ *
+ * Key test scenarios:
+ * - Media attachment management (upload/delete)
+ * - Post content updates (text/title/pinned status)
+ * - Input validation (text: 500 chars, title: 256 chars)
+ * - Error handling (auth, post existence, pinned post rules)
+ *
+ * @see {@link updatePost} - The controller being tested
+ * @see {@link InterfaceAuthenticatedRequest} - Request interface
+ *
+ * @example
+ * ```typescript
+ * npm run test updatePost.test
+ * ```
+ */
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -65,16 +90,7 @@ beforeAll(async () => {
   testOrganization = temp[1];
 
   // Create a test post
-  testPost = await Post.create({
-    text: "Original post text",
-    creatorId: testUser?.id,
-    organization: testOrganization?._id,
-    pinned: false,
-    file: {
-      _id: new Types.ObjectId(),
-      metadata: { objectKey: "test-key" },
-    },
-  });
+  testPost = await createTestPostWithMedia(testUser?.id, testOrganization?._id);
 });
 
 afterAll(async () => {
@@ -84,6 +100,108 @@ afterAll(async () => {
 describe("controllers -> post -> updatePost", () => {
   afterEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("should successfully update post with file", async () => {
+    const mockFileId = new Types.ObjectId();
+    const mockFileUploadResponse: InterfaceUploadedFileResponse = {
+      _id: mockFileId,
+      uri: "test/file/path",
+      visibility: "PUBLIC",
+      objectKey: "new-test-key",
+    };
+
+    vi.spyOn(fileServices, "uploadFile").mockResolvedValueOnce(
+      mockFileUploadResponse,
+    );
+    vi.spyOn(fileServices, "deleteFile").mockResolvedValueOnce({
+      success: true,
+      message: "File deleted successfully.",
+    });
+
+    const req = {
+      userId: testUser?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        text: "Updated text with new file",
+      },
+      file: {
+        filename: "test.jpg",
+        mimetype: "image/jpeg",
+        buffer: Buffer.from("test"),
+        originalname: "test.jpg",
+        size: 1024,
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(fileServices.uploadFile).toHaveBeenCalled();
+    expect(fileServices.deleteFile).toHaveBeenCalledWith(
+      "test-file-object-key",
+      testPost?.file._id.toString(),
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        post: expect.objectContaining({
+          text: "Updated text with new file",
+          file: mockFileId,
+        }),
+      }),
+    );
+  });
+
+  it("should successfully update the title of a pinned post", async () => {
+    const pinnedPost = await createTestPostWithMedia(
+      testUser?.id,
+      testOrganization?.id,
+      true,
+    );
+
+    const req = {
+      userId: testUser?.id,
+      params: { id: pinnedPost?._id.toString() },
+      body: {
+        title: "Updated Title",
+        pinned: true,
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        post: expect.objectContaining({
+          title: "Updated Title",
+        }),
+      }),
+    );
+  });
+
+  it("should successfully update the pinned status of a post", async () => {
+    const req = {
+      userId: testUser?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        pinned: false,
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        post: expect.objectContaining({
+          pinned: false, // or true based on your requirements
+        }),
+      }),
+    );
   });
 
   it("should throw NotFoundError if no user exists with _id === userId", async () => {
@@ -185,17 +303,14 @@ describe("controllers -> post -> updatePost", () => {
 
   it("should throw error if removing title from pinned post", async () => {
     // First create a pinned post with title
-    const pinnedPost = await Post.create({
-      title: "Original title",
-      text: "Original text",
-      creatorId: testUser?.id,
-      organization: testOrganization?._id,
-      pinned: true,
-    });
-
+    const pinnedPost = await createTestPostWithMedia(
+      testUser?.id,
+      testOrganization?.id,
+      true,
+    );
     const req = {
       userId: testUser?.id,
-      params: { id: pinnedPost?._id.toString() },
+      params: { id: pinnedPost?.id.toString() },
       body: {
         title: "",
         pinned: true,
@@ -212,6 +327,11 @@ describe("controllers -> post -> updatePost", () => {
   });
 
   it("should throw error if title exceeds maximum length", async () => {
+    const testPost = await createTestPostWithMedia(
+      testUser?.id,
+      testOrganization?._id,
+      true,
+    );
     const req = {
       userId: testUser?.id,
       params: { id: testPost?._id.toString() },
@@ -265,57 +385,6 @@ describe("controllers -> post -> updatePost", () => {
       expect.objectContaining({
         post: expect.objectContaining({
           text: "Updated post text",
-        }),
-      }),
-    );
-  });
-
-  it("should successfully update post with file", async () => {
-    const mockFileId = new Types.ObjectId();
-    const mockFileUploadResponse: InterfaceUploadedFileResponse = {
-      _id: mockFileId,
-      uri: "test/file/path",
-      visibility: "PUBLIC",
-      objectKey: "new-test-key",
-    };
-
-    vi.spyOn(fileServices, "uploadFile").mockResolvedValueOnce(
-      mockFileUploadResponse,
-    );
-    vi.spyOn(fileServices, "deleteFile").mockResolvedValueOnce({
-      success: true,
-      message: "File deleted successfully.",
-    });
-
-    const req = {
-      userId: testUser?.id,
-      params: { id: testPost?._id.toString() },
-      body: {
-        text: "Updated text with new file",
-      },
-      file: {
-        filename: "test.jpg",
-        mimetype: "image/jpeg",
-        buffer: Buffer.from("test"),
-        originalname: "test.jpg",
-        size: 1024,
-      },
-    } as unknown as InterfaceAuthenticatedRequest;
-
-    const res = mockResponse();
-    await updatePost(req, res);
-
-    expect(fileServices.uploadFile).toHaveBeenCalled();
-    expect(fileServices.deleteFile).toHaveBeenCalledWith(
-      "test-key",
-      testPost?.file._id.toString(),
-    );
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        post: expect.objectContaining({
-          text: "Updated text with new file",
-          file: mockFileId,
         }),
       }),
     );

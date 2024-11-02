@@ -125,7 +125,7 @@ export const updatePost = async (
 
     // Handle file upload and cleanup
     let fileId: string | undefined;
-    const oldFileId = post.file._id?.toString();
+    const oldFileId = post.file?._id?.toString();
     const oldObjectKey = post.file.metadata?.objectKey;
 
     if (req.file) {
