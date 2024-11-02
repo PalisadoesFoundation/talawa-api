@@ -1,4 +1,3 @@
- 
 import "dotenv/config";
 import {
   parseCursor,
@@ -8,7 +7,10 @@ import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserTagType } from "../../helpers/tags";
-import type { TestUserType } from "../../helpers/userAndOrg";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 import { createTagsAndAssignToUser } from "../../helpers/tags";
 import { GraphQLError } from "graphql";
 import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
@@ -20,11 +22,13 @@ import {
 import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testTag: TestUserTagType, testUser: TestUserType;
+let testTag: TestUserTagType,
+  testUser: TestUserType,
+  testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [testUser, , [testTag]] = await createTagsAndAssignToUser();
+  [testUser, testOrganization, [testTag]] = await createTagsAndAssignToUser();
 });
 
 afterAll(async () => {
@@ -52,6 +56,7 @@ describe("tagsAssignedWith resolver", () => {
       parent,
       {
         first: 3,
+        organizationId: testOrganization?._id,
       },
       {},
     );
