@@ -24,12 +24,6 @@ export const inputs = gql`
     image: String
   }
 
-  input createGroupChatInput {
-    userIds: [ID!]!
-    organizationId: ID!
-    title: String!
-  }
-
   input createUserFamilyInput {
     title: String!
     userIds: [ID!]!
@@ -317,11 +311,6 @@ export const inputs = gql`
     creatorId_not: ID
     creatorId_in: [ID!]
     creatorId_not_in: [ID!]
-  }
-
-  input MessageChatInput {
-    message: String!
-    receiver: ID!
   }
 
   input NoteInput {

@@ -375,8 +375,6 @@ type CreateCommentPayload {
   userErrors: [CreateCommentError!]!
 }
 
-union CreateDirectChatError = OrganizationNotFoundError | UserNotFoundError
-
 union CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError
 
 type CreateMemberPayload {
@@ -1079,11 +1077,6 @@ type Message {
   text: String!
   updatedAt: DateTime!
   videoUrl: URL
-}
-
-input MessageChatInput {
-  message: String!
-  receiver: ID!
 }
 
 type MinimumLengthError implements FieldError {
@@ -2134,12 +2127,6 @@ input chatInput {
   isGroup: Boolean!
   name: String
   organizationId: ID
-  userIds: [ID!]!
-}
-
-input createGroupChatInput {
-  organizationId: ID!
-  title: String!
   userIds: [ID!]!
 }
 

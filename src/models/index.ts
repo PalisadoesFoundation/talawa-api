@@ -23,7 +23,6 @@ export * from "./ImageHash";
 export * from "./Language";
 export * from "./MembershipRequest";
 export * from "./Message";
-export * from "./MessageChat";
 export * from "./Organization";
 export * from "./OrganizationCustomField";
 export * from "./OrganizationTagUser";

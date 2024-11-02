@@ -20,7 +20,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> DirectChat -> creator", () => {
+describe("resolvers -> Chat -> creator", () => {
   it(`returns user object for parent.creator`, async () => {
     const parent = testChat?.toObject();
     if (!parent) {
