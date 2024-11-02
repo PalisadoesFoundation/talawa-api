@@ -2,9 +2,9 @@ import type { GraphQLConnectionTraversalDirection } from ".";
 import type { ParseSortedByResult } from "../userTagsPaginationUtils";
 
 /**
- *This is typescript type of the object returned from `getGraphQLConnectionSort` function.
+ *This is typescript type of the object returned from `getUserTagGraphQLConnectionSort` function.
  */
-type GraphQLConnectionSort =
+type UserTagGraphQLConnectionSort =
   | {
       _id: 1;
     }
@@ -20,7 +20,7 @@ export function getUserTagGraphQLConnectionSort({
   sortById,
 }: ParseSortedByResult & {
   direction: GraphQLConnectionTraversalDirection;
-}): GraphQLConnectionSort {
+}): UserTagGraphQLConnectionSort {
   if (sortById === "ASCENDING") {
     if (direction === "BACKWARD") {
       return {

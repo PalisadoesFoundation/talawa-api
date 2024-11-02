@@ -27,25 +27,24 @@ export function parseUserTagSortedBy(
       isSuccessful: true,
       parsedSortedBy: { sortById: "DESCENDING" },
     };
-  } else {
-    if (sortedBy.id !== "DESCENDING" && sortedBy.id !== "ASCENDING") {
-      errors.push({
-        message:
-          "Invalid sortedById provided. It must be a of type SortedByOrder.",
-        path: ["sortedById"],
-      });
+  }
 
-      return {
-        isSuccessful: false,
-        errors,
-      };
-    }
-
+  if (sortedBy.id !== "DESCENDING" && sortedBy.id !== "ASCENDING") {
+    errors.push({
+      message:
+        "Invalid sortedById provided. It must be a of type SortedByOrder.",
+      path: ["sortedBy", "id"],
+    });
     return {
-      isSuccessful: true,
-      parsedSortedBy: {
-        sortById: sortedBy.id,
-      },
+      isSuccessful: false,
+      errors,
     };
   }
+
+  return {
+    isSuccessful: true,
+    parsedSortedBy: {
+      sortById: sortedBy.id,
+    },
+  };
 }

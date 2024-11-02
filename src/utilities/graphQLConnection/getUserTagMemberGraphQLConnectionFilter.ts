@@ -6,9 +6,9 @@ import type {
 } from "../userTagsPaginationUtils";
 
 /**
- * This is typescript type of the object returned from function `getGraphQLConnectionFilter`.
+ * This is typescript type of the object returned from function `getUserTagMemberGraphQLConnectionFilter`.
  */
-type GraphQLConnectionFilter =
+type UserTagMemberGraphQLConnectionFilter =
   | {
       _id: {
         $lt: Types.ObjectId;
@@ -45,14 +45,20 @@ export function getUserTagMemberGraphQLConnectionFilter({
   ParseUserTagMemberWhereResult & {
     cursor: string | null;
     direction: GraphQLConnectionTraversalDirection;
-  }): GraphQLConnectionFilter {
-  const filter = {} as GraphQLConnectionFilter;
+  }): UserTagMemberGraphQLConnectionFilter {
+  const filter = {} as UserTagMemberGraphQLConnectionFilter;
 
   filter.firstName = {
-    $regex: new RegExp(`^${firstNameStartsWith}`, "i"),
+    $regex: new RegExp(
+      `^${firstNameStartsWith.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+      "i",
+    ),
   };
   filter.lastName = {
-    $regex: new RegExp(`^${lastNameStartsWith}`, "i"),
+    $regex: new RegExp(
+      `^${lastNameStartsWith.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+      "i",
+    ),
   };
 
   if (cursor !== null) {

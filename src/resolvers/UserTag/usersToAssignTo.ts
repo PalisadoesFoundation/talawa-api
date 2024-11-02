@@ -112,7 +112,7 @@ export const usersToAssignTo: UserTagResolvers["usersToAssignTo"] = async (
       {
         $match: {
           ...objectListFilter,
-          joinedOrganizations: parent.organizationId,
+          joinedOrganizations: { $in: [parent.organizationId] },
         },
       },
       ...commonPipeline,

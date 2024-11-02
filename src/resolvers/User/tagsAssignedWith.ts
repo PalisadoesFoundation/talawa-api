@@ -119,7 +119,7 @@ type ParsedCursor = string;
  * @param cursorValue - The cursor value to be parsed.
  * @param cursorName - The name of the cursor argument.
  * @param cursorPath - The path of the cursor argument in the GraphQL query.
- * @param tagId - The ID of the user to which the tags are assigned.
+ * @param userId - The ID of the user for which assigned tags are being queried.
  * @returns An object containing the parsed cursor value or an array of errors if the cursor value is invalid.
  *
  * @see TagUser - The TagUser model used to interact with the tag users collection in the database.

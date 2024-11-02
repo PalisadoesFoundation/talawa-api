@@ -32,7 +32,15 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Tag -> ancestorTags", () => {
-  it(`returns the correct ancestorTags array`, async () => {
+  it(`returns an empty ancestorTags array for the root tag`, async () => {
+    const parent = testRootTag as InterfaceOrganizationTagUser;
+
+    const payload = await ancestorTagsResolver?.(parent, {}, {});
+
+    expect(payload).toEqual([]);
+  });
+
+  it(`returns the correct ancestorTags array for a nested tag`, async () => {
     const parent = testSubTagLevel2 as InterfaceOrganizationTagUser;
 
     const payload = await ancestorTagsResolver?.(parent, {}, {});
