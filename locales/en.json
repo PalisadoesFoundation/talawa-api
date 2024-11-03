@@ -36,6 +36,7 @@
   "translation.alreadyPresent": "Translation Already Present",
   "translation.notFound": "Translation not found",
   "parameter.missing": "Missing Skip parameter. Set it to either 0 or some other value not found",
+  "tag.alreadyExists": "A tag with the same name already exists at this level",
   "invalid.contentType": "Invalid content type. Expected multipart/form-data",
   "invalid.fieldFileName": "Invalid file input field name received",
   "file.sizeExceeded": "File size exceeds the allowable limit",

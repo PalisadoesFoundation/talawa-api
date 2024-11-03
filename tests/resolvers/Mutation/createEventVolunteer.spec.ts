@@ -45,10 +45,11 @@ beforeAll(async () => {
   [eventAdminUser, , testEvent] = await createTestEvent();
 
   testGroup = await EventVolunteerGroup.create({
-    creatorId: eventAdminUser?._id,
-    eventId: testEvent?._id,
-    leaderId: eventAdminUser?._id,
+    creator: eventAdminUser?._id,
+    event: testEvent?._id,
+    leader: eventAdminUser?._id,
     name: "Test group",
+    volunteers: [eventAdminUser?._id, testUser2?._id, testUser1?._id],
   });
 });
 
@@ -230,22 +231,15 @@ describe("resolvers -> Mutation -> createEventVolunteer", () => {
       context,
     );
 
-    const updatedGroup = await EventVolunteerGroup.findOne({
-      _id: testGroup?._id,
-    });
-
-    expect(updatedGroup?.volunteers.toString()).toEqual(
-      [createdVolunteer?._id.toString()].toString(),
-    );
-
     expect(createdVolunteer).toEqual(
       expect.objectContaining({
-        eventId: new Types.ObjectId(testEvent?.id),
-        userId: testUser2?._id,
-        groupId: testGroup?._id,
-        creatorId: eventAdminUser?._id,
-        isInvited: true,
-        isAssigned: false,
+        event: new Types.ObjectId(testEvent?.id),
+        user: testUser2?._id,
+        groups: [],
+        creator: eventAdminUser?._id,
+        hasAccepted: false,
+        isPublic: true,
+        hoursVolunteered: 0,
       }),
     );
   });

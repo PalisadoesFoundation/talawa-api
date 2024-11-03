@@ -35,6 +35,7 @@
   "translation.alreadyPresent": "翻译已经存在",
   "translation.notFound": "找不到翻译",
   "parameter.missing": "缺少跳过参数。将其设置为 0 或其他值",
+  "tag.alreadyExists": "此级别已存在相同名称的标签",
   "invalid.contentType": "内容类型无效。预期为 multipart/form-data。",
   "invalid.fieldFileName": "收到无效的文件输入字段名称。",
   "file.sizeExceeded": "文件大小超过允许的限制。",
