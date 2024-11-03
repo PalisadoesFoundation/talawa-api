@@ -142,7 +142,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     },
   ).lean();
   if (updatedUser != null) {
-    await deleteUserFromCache(updatedUser?._id.toString() || "");
+    await deleteUserFromCache(updatedUser?._id.toString());
     await cacheUsers([updatedUser]);
   }
 
