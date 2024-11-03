@@ -18,7 +18,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { AppUserProfile, Post } from "../../../src/models";
+import { AppUserProfile, File, Post } from "../../../src/models";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
@@ -149,27 +149,52 @@ describe("resolvers -> Mutation -> removePost", () => {
     expect(removePostPayload).toEqual(testPost?.toObject());
   });
 
-  it(`deletes the post with image with _id === args.id and returns it`, async () => {
+  it(`deletes the post with file and returns it when referenceCount is 1`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`,
     );
-    const deletePreviousFiile = await import(
-      "../../../src/utilities/encodedImageStorage/deletePreviousFile"
-    );
-    const deleteImageSpy = vi
-      .spyOn(deletePreviousFiile, "deletePreviousFile")
-      .mockImplementation(() => {
-        return Promise.resolve();
-      });
 
+    // Mock Minio deleteFile with proper return type
+    const minioService = await import("../../../src/REST/services/minio");
+    const minioDeleteSpy = vi
+      .spyOn(minioService, "deleteFile")
+      .mockImplementation(() =>
+        Promise.resolve({
+          $metadata: {
+            httpStatusCode: 204,
+            requestId: "mock-request-id",
+            attempts: 1,
+            totalRetryDelay: 0,
+          },
+        }),
+      );
+
+    // Rest of the test remains the same...
     const [newTestUser, , newTestPost] = await createTestPost();
+
+    const testFile = await File.create({
+      _id: new Types.ObjectId(),
+      fileName: "test-file.jpg",
+      mimeType: "image/jpeg",
+      size: 1024,
+      hash: {
+        value: "test-hash-value",
+        algorithm: "SHA-256",
+      },
+      uri: "test-uri",
+      referenceCount: 1,
+      status: "ACTIVE",
+      metadata: {
+        objectKey: "test-object-key",
+      },
+    });
 
     const updatedPost = await Post.findOneAndUpdate(
       { _id: newTestPost?.id },
       {
         $set: {
-          imageUrl: "images/fakeImagePathimage.png",
+          file: testFile._id,
         },
       },
       { new: true },
@@ -189,30 +214,64 @@ describe("resolvers -> Mutation -> removePost", () => {
 
     const removePostPayload = await removePostResolver?.({}, args, context);
     expect(removePostPayload).toEqual(updatedPost);
-    expect(deleteImageSpy).toBeCalledWith("images/fakeImagePathimage.png");
+
+    // Verify minioDeleteSpy was called
+    expect(minioDeleteSpy).toHaveBeenCalledWith(
+      expect.any(String), // BUCKET_NAME
+      testFile.metadata.objectKey,
+    );
+
+    // Verify file was deleted from database
+    const deletedFile = await File.findById(testFile._id);
+    expect(deletedFile).toBeNull();
   });
 
-  it(`deletes the post with video with _id === args.id and returns it`, async () => {
+  it(`decrements file referenceCount when greater than 1`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`,
     );
-    const deletePreviousVideo = await import(
-      "../../../src/utilities/encodedVideoStorage/deletePreviousVideo"
-    );
-    const deleteVideoSpy = vi
-      .spyOn(deletePreviousVideo, "deletePreviousVideo")
-      .mockImplementation(() => {
-        return Promise.resolve();
-      });
 
+    // Mock Minio deleteFile with proper return type
+    const minioService = await import("../../../src/REST/services/minio");
+    const minioDeleteSpy = vi
+      .spyOn(minioService, "deleteFile")
+      .mockImplementation(() =>
+        Promise.resolve({
+          $metadata: {
+            httpStatusCode: 204,
+            requestId: "mock-request-id",
+            attempts: 1,
+            totalRetryDelay: 0,
+          },
+        }),
+      );
+
+    // Rest of the test remains the same...
     const [newTestUser, , newTestPost] = await createTestPost();
+
+    const testFile = await File.create({
+      _id: new Types.ObjectId(),
+      fileName: "test-file.jpg",
+      mimeType: "image/jpeg",
+      size: 1024,
+      hash: {
+        value: "test-hash-value",
+        algorithm: "SHA-256",
+      },
+      uri: "test-uri",
+      referenceCount: 2,
+      status: "ACTIVE",
+      metadata: {
+        objectKey: "test-object-key",
+      },
+    });
 
     const updatedPost = await Post.findOneAndUpdate(
       { _id: newTestPost?.id },
       {
         $set: {
-          videoUrl: "videos/fakeVideoPathvideo.png",
+          file: testFile._id,
         },
       },
       { new: true },
@@ -232,8 +291,15 @@ describe("resolvers -> Mutation -> removePost", () => {
 
     const removePostPayload = await removePostResolver?.({}, args, context);
     expect(removePostPayload).toEqual(updatedPost);
-    expect(deleteVideoSpy).toBeCalledWith("videos/fakeVideoPathvideo.png");
+
+    // Verify minioDeleteSpy was NOT called
+    expect(minioDeleteSpy).not.toHaveBeenCalled();
+
+    // Verify referenceCount was decremented
+    const updatedFile = await File.findById(testFile._id);
+    expect(updatedFile?.referenceCount).toBe(1);
   });
+
   it("throws an error  if the user does not have appUserProfile", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
