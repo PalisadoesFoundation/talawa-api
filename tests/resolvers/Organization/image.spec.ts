@@ -66,7 +66,7 @@ describe("resolvers -> Organization -> image", () => {
       const org = await Organization.findOne({
         _id: parent._id,
       });
-      expect(creatorPayload).toEqual("http://testdomain.com" + org?.image);
+      expect(creatorPayload).toEqual(org?.image);
     }
   });
   it(`returns null if the image is null in the organization`, async () => {

@@ -70,8 +70,8 @@ describe("resolvers -> Organization -> post", () => {
       creatorId: testUser?._id,
     }).countDocuments();
 
-    const formattedPost2 = testPost2;
-    const formattedPost = testPost;
+    const formattedPost2 = testPost2?.toObject();
+    const formattedPost = testPost?.toObject();
 
     expect(connection).toEqual({
       edges: [
@@ -86,6 +86,7 @@ describe("resolvers -> Organization -> post", () => {
           cursor: formattedPost?._id?.toString(),
           node: {
             ...formattedPost,
+            _id: formattedPost?._id?.toString(),
           },
         },
       ],
@@ -132,5 +133,49 @@ describe("parseCursor function", () => {
     if (result.isSuccessful === true) {
       expect(result.parsedCursor).toEqual(testPost?._id.toString());
     }
+  });
+  it("throws GraphQLError when an invalid cursor is provided", async () => {
+    const parent = {
+      _id: testOrganization?._id,
+    } as InterfaceOrganization;
+
+    try {
+      await postResolver?.(
+        parent,
+        {
+          first: 2,
+          after: new Types.ObjectId().toString(), // Invalid cursor
+        },
+        {},
+      );
+      // If we reach here, the test should fail because an error should have been thrown
+      expect(true).toBe(false);
+    } catch (error) {
+      expect(error).toBeInstanceOf(GraphQLError);
+      if (error instanceof GraphQLError) {
+        expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
+        expect(
+          (error.extensions.errors as DefaultGraphQLArgumentError[]).length,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("successfully uses parseCursor with valid cursor", async () => {
+    const parent = {
+      _id: testOrganization?._id,
+    } as InterfaceOrganization;
+
+    const connection = await postResolver?.(
+      parent,
+      {
+        first: 2,
+        after: testPost2?._id.toString(), // Valid cursor
+      },
+      {},
+    );
+
+    expect(connection).toBeDefined();
+    expect(connection?.edges.length).toBe(1);
   });
 });
