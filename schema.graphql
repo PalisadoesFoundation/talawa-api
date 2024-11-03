@@ -1518,6 +1518,8 @@ type Query {
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   event(id: ID!): Event
+  eventVolunteersByEvent(id: ID!): [EventVolunteer]
+  eventsAttendedByUser(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, upcomingOnly: Boolean, where: EventWhereInput): [Event!]!
   fundsByOrganization(orderBy: FundOrderByInput, organizationId: ID!, where: FundWhereInput): [Fund]
@@ -1540,6 +1542,7 @@ type Query {
   getNoteById(id: ID!): Note!
   getPledgesByUserId(orderBy: PledgeOrderByInput, userId: ID!, where: PledgeWhereInput): [FundraisingCampaignPledge]
   getPlugins: [Plugin]
+  getRecurringEvents(baseRecurringEventId: ID!): [Event]
   getUserTag(id: ID!): UserTag
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getVolunteerMembership(orderBy: VolunteerMembershipOrderByInput, where: VolunteerMembershipWhereInput!): [VolunteerMembership]!
@@ -1848,6 +1851,7 @@ type User {
   email: EmailAddress!
   employmentStatus: EmploymentStatus
   eventAdmin: [Event]
+  eventsAttended: [Event]
   firstName: String!
   gender: Gender
   identifier: Int!

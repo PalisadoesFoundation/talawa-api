@@ -172,5 +172,23 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
 
   await EventAttendee.create({ ...args.data });
 
-  return requestUser;
+  const updatedUser = await User.findByIdAndUpdate(
+    args.data.userId,
+    {
+      $push: {
+        eventsAttended: args.data.eventId,
+      },
+    },
+    { new: true },
+  );
+
+  if (updatedUser === null) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM,
+    );
+  }
+
+  return updatedUser;
 };

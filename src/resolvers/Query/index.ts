@@ -51,8 +51,11 @@ import { getEventAttendeesByEventId } from "./getEventAttendeesByEventId";
 import { getVenueByOrgId } from "./getVenueByOrgId";
 import { getAllNotesForAgendaItem } from "./getAllNotesForAgendaItem";
 import { getNoteById } from "./getNoteById";
+import { eventsAttendedByUser } from "./eventsAttendedByUser";
+import { getRecurringEvents } from "./getRecurringEvents";
 import { getVolunteerMembership } from "./getVolunteerMembership";
 import { getVolunteerRanks } from "./getVolunteerRanks";
+
 export const Query: QueryResolvers = {
   actionItemsByEvent,
   actionItemsByUser,
@@ -85,6 +88,7 @@ export const Query: QueryResolvers = {
   getNoteById,
   getlanguage,
   getPlugins,
+  getRecurringEvents,
   getUserTag,
   isSampleOrganization,
   me,
@@ -106,6 +110,7 @@ export const Query: QueryResolvers = {
   getEventAttendee,
   getEventAttendeesByEventId,
   getVenueByOrgId,
+  eventsAttendedByUser,
   getVolunteerMembership,
   getVolunteerRanks,
 };
