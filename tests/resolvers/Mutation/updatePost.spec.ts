@@ -198,7 +198,7 @@ describe("controllers -> post -> updatePost", () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         post: expect.objectContaining({
-          pinned: false, // or true based on your requirements
+          pinned: false,
         }),
       }),
     );
