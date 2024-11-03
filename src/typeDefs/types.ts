@@ -659,6 +659,7 @@ export const types = gql`
     phone: UserPhone
     membershipRequests: [MembershipRequest]
     registeredEvents: [Event]
+    eventsAttended: [Event]
     pluginCreationAllowed: Boolean!
     tagsAssignedWith(
       after: String

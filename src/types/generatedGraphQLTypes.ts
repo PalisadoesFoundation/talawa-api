@@ -2320,6 +2320,7 @@ export type Query = {
   customDataByOrganization: Array<UserCustomData>;
   customFieldsByOrganization?: Maybe<Array<Maybe<OrganizationCustomField>>>;
   event?: Maybe<Event>;
+  eventsAttendedByUser?: Maybe<Array<Maybe<Event>>>;
   eventsByOrganization?: Maybe<Array<Maybe<Event>>>;
   eventsByOrganizationConnection: Array<Event>;
   fundsByOrganization?: Maybe<Array<Maybe<Fund>>>;
@@ -2342,6 +2343,7 @@ export type Query = {
   getNoteById: Note;
   getPledgesByUserId?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
+  getRecurringEvents?: Maybe<Array<Maybe<Event>>>;
   getUserTag?: Maybe<UserTag>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
   getVolunteerMembership: Array<Maybe<VolunteerMembership>>;
@@ -2449,6 +2451,12 @@ export type QueryCustomFieldsByOrganizationArgs = {
 
 export type QueryEventArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryEventsAttendedByUserArgs = {
+  id?: InputMaybe<Scalars['ID']['input']>;
+  orderBy?: InputMaybe<EventOrderByInput>;
 };
 
 
@@ -2563,6 +2571,11 @@ export type QueryGetPledgesByUserIdArgs = {
   orderBy?: InputMaybe<PledgeOrderByInput>;
   userId: Scalars['ID']['input'];
   where?: InputMaybe<PledgeWhereInput>;
+};
+
+
+export type QueryGetRecurringEventsArgs = {
+  baseRecurringEventId: Scalars['ID']['input'];
 };
 
 
@@ -2976,6 +2989,7 @@ export type User = {
   email: Scalars['EmailAddress']['output'];
   employmentStatus?: Maybe<EmploymentStatus>;
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
+  eventsAttended?: Maybe<Array<Maybe<Event>>>;
   file?: Maybe<File>;
   firstName: Scalars['String']['output'];
   gender?: Maybe<Gender>;
@@ -4764,6 +4778,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
   customFieldsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['OrganizationCustomField']>>>, ParentType, ContextType, RequireFields<QueryCustomFieldsByOrganizationArgs, 'id'>>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
+  eventsAttendedByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsAttendedByUserArgs>>;
   eventsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsByOrganizationArgs>>;
   eventsByOrganizationConnection?: Resolver<Array<ResolversTypes['Event']>, ParentType, ContextType, Partial<QueryEventsByOrganizationConnectionArgs>>;
   fundsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Fund']>>>, ParentType, ContextType, RequireFields<QueryFundsByOrganizationArgs, 'organizationId'>>;
@@ -4786,6 +4801,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getNoteById?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<QueryGetNoteByIdArgs, 'id'>>;
   getPledgesByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType, RequireFields<QueryGetPledgesByUserIdArgs, 'userId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
+  getRecurringEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, RequireFields<QueryGetRecurringEventsArgs, 'baseRecurringEventId'>>;
   getUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<QueryGetUserTagArgs, 'id'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
   getVolunteerMembership?: Resolver<Array<Maybe<ResolversTypes['VolunteerMembership']>>, ParentType, ContextType, RequireFields<QueryGetVolunteerMembershipArgs, 'where'>>;
@@ -4887,6 +4903,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   email?: Resolver<ResolversTypes['EmailAddress'], ParentType, ContextType>;
   employmentStatus?: Resolver<Maybe<ResolversTypes['EmploymentStatus']>, ParentType, ContextType>;
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  eventsAttended?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   file?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType>;
   firstName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   gender?: Resolver<Maybe<ResolversTypes['Gender']>, ParentType, ContextType>;

@@ -147,6 +147,8 @@ export const queries = gql`
 
     getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
 
+    getRecurringEvents(baseRecurringEventId: ID!): [Event]
+
     advertisementsConnection(
       after: String
       before: String
@@ -213,5 +215,7 @@ export const queries = gql`
     ): [UserData]! @auth
 
     venue(id: ID!): Venue
+
+    eventsAttendedByUser(id: ID, orderBy: EventOrderByInput): [Event]
   }
 `;
