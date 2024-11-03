@@ -32,6 +32,44 @@ interface InterfaceUpdatePostRequestBody {
   pinned?: boolean;
 }
 
+/**
+ * Controller for updating existing posts within organizations
+ */
+
+/**
+ * Updates an existing post
+ * async
+ * function - updatePost
+ * @param req - Express request object with authenticated user
+ * @param res - Express response object
+ * @throws NotFoundError - When user or post is not found
+ * @throws UnauthorizedError - When user lacks permissions to update the post
+ * @throws InputValidationError - When title/text validation fails or pinned status requirements aren't met
+ * @returns Promise<void> - Responds with updated post or error
+ *
+ * Description
+ * This controller handles post updates with the following features:
+ * - Validates user permissions (creator, organization admin, or super admin)
+ * - Supports file attachment updates with cleanup of old files
+ * - Enforces business rules for pinned posts and titles
+ * - Validates content length restrictions
+ * - Maintains cache consistency
+ *
+ * Request body expects:
+ * ```typescript
+ * {
+ *   title?: string;
+ *   text?: string;
+ *   pinned?: boolean;
+ * }
+ * ```
+ *
+ * Authorization Rules:
+ * - Post creator can edit their own posts
+ * - Organization admins can edit posts in their organizations
+ * - Super admins can edit any post
+ */
+
 export const updatePost = async (
   req: InterfaceAuthenticatedRequest,
   res: Response,
