@@ -34,5 +34,6 @@
   "registrant.alreadyUnregistered": "Ya no está registrado para el evento",
   "translation.alreadyPresent": "Traducción ya presente",
   "translation.notFound": "Traducción no encontrada",
-  "parameter.missing": "Falta el parámetro Omitir. Establézcalo en 0 o en algún otro valor"
+  "parameter.missing": "Falta el parámetro Omitir. Establézcalo en 0 o en algún otro valor",
+  "tag.alreadyExists": "Ya existe una etiqueta con el mismo nombre en este nivel"
 }

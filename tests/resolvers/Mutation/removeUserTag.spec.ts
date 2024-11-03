@@ -49,14 +49,17 @@ beforeAll(async () => {
     {
       userId: testUser?._id,
       tagId: rootTag?._id,
+      organizationId: rootTag?.organizationId,
     },
     {
       userId: testUser?._id,
       tagId: childTag1?._id,
+      organizationId: childTag1?.organizationId,
     },
     {
       userId: testUser?._id,
       tagId: childTag2?._id,
+      organizationId: childTag2?.organizationId,
     },
   ]);
 });

@@ -2,6 +2,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import type {
   InterfaceActionItem,
   InterfaceActionItemCategory,
+  InterfaceEventVolunteer,
   InterfaceUser,
 } from "../../models";
 import { ActionItem } from "../../models";
@@ -24,7 +25,14 @@ export const actionItemsByOrganization: QueryResolvers["actionItemsByOrganizatio
       ...where,
     })
       .populate("creator")
-      .populate("assignee")
+      .populate({
+        path: "assignee",
+        populate: {
+          path: "user",
+        },
+      })
+      .populate("assigneeUser")
+      .populate("assigneeGroup")
       .populate("assigner")
       .populate("actionItemCategory")
       .populate("organization")
@@ -46,10 +54,24 @@ export const actionItemsByOrganization: QueryResolvers["actionItemsByOrganizatio
 
     // Filter the action items based on assignee name
     if (args.where?.assigneeName) {
+      const assigneeName = args.where.assigneeName.toLowerCase();
       filteredActionItems = filteredActionItems.filter((item) => {
-        const tempItem = item as InterfaceActionItem;
-        const assignee = tempItem.assignee as InterfaceUser;
-        return assignee.firstName.includes(args?.where?.assigneeName as string);
+        const assigneeType = item.assigneeType;
+
+        if (assigneeType === "EventVolunteer") {
+          const assignee = item.assignee as InterfaceEventVolunteer;
+          const assigneeUser = assignee.user as InterfaceUser;
+          const name =
+            `${assigneeUser.firstName} ${assigneeUser.lastName}`.toLowerCase();
+
+          return name.includes(assigneeName);
+        } else if (assigneeType === "EventVolunteerGroup") {
+          return item.assigneeGroup.name.toLowerCase().includes(assigneeName);
+        } else if (assigneeType === "User") {
+          const name =
+            `${item.assigneeUser.firstName} ${item.assigneeUser.lastName}`.toLowerCase();
+          return name.includes(assigneeName);
+        }
       });
     }
 

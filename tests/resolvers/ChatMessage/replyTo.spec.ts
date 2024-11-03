@@ -47,8 +47,8 @@ afterAll(async () => {
   }
 });
 
-describe("resolvers -> DirectChatMessage -> replyTo", () => {
-  it(`returns directChat object for parent.replyTo`, async () => {
+describe("resolvers -> ChatMessage -> replyTo", () => {
+  it(`returns chat object for parent.replyTo`, async () => {
     const parent = testChatMessage ? testChatMessage.toObject() : null;
 
     if (!parent) {
@@ -70,7 +70,7 @@ describe("resolvers -> DirectChatMessage -> replyTo", () => {
       throw error;
     }
   });
-  it(`throws NotFoundError if no directChat exists`, async () => {
+  it(`throws NotFoundError if no chat exists`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")

@@ -34,5 +34,6 @@
   "registrant.alreadyUnregistered": "已取消注册该活动",
   "translation.alreadyPresent": "翻译已经存在",
   "translation.notFound": "找不到翻译",
-  "parameter.missing": "缺少跳过参数。将其设置为 0 或其他值"
+  "parameter.missing": "缺少跳过参数。将其设置为 0 或其他值",
+  "tag.alreadyExists": "此级别已存在相同名称的标签"
 }

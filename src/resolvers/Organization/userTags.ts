@@ -2,9 +2,7 @@ import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfaceOrganizationTagUser } from "../../models";
 import { OrganizationTagUser } from "../../models";
 import {
-  getCommonGraphQLConnectionFilter,
-  getCommonGraphQLConnectionSort,
-  parseGraphQLConnectionArguments,
+  parseGraphQLConnectionArgumentsWithSortedByAndWhere,
   transformToDefaultGraphQLConnection,
   type DefaultGraphQLArgumentError,
   type ParseGraphQLConnectionCursorArguments,
@@ -13,6 +11,12 @@ import {
 import { GraphQLError } from "graphql";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import type { Types } from "mongoose";
+import {
+  getUserTagGraphQLConnectionFilter,
+  getUserTagGraphQLConnectionSort,
+  parseUserTagSortedBy,
+  parseUserTagWhere,
+} from "../../utilities/userTagsPaginationUtils";
 
 /**
  * Resolver function for the `userTags` field of an `Organization`.
@@ -37,14 +41,20 @@ export const userTags: OrganizationResolvers["userTags"] = async (
   parent,
   args,
 ) => {
+  const parseWhereResult = parseUserTagWhere(args.where);
+  const parseSortedByResult = parseUserTagSortedBy(args.sortedBy);
+
   const parseGraphQLConnectionArgumentsResult =
-    await parseGraphQLConnectionArguments({
+    await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args,
-      parseCursor: (args) =>
+      parseSortedByResult,
+      parseWhereResult,
+      parseCursor: /* c8 ignore start */ (args) =>
         parseCursor({
           ...args,
           organizationId: parent._id,
         }),
+      /* c8 ignore stop */
       maximumLimit: MAXIMUM_FETCH_LIMIT,
     });
 
@@ -59,26 +69,43 @@ export const userTags: OrganizationResolvers["userTags"] = async (
 
   const { parsedArgs } = parseGraphQLConnectionArgumentsResult;
 
-  const filter = getCommonGraphQLConnectionFilter({
+  const objectListFilter = getUserTagGraphQLConnectionFilter({
     cursor: parsedArgs.cursor,
     direction: parsedArgs.direction,
+    sortById: parsedArgs.sort.sortById,
+    nameStartsWith: parsedArgs.filter.nameStartsWith,
   });
 
-  const sort = getCommonGraphQLConnectionSort({
+  // don't use _id as a filter in while counting the documents
+  // _id is only used for pagination
+  const totalCountFilter = Object.fromEntries(
+    Object.entries(objectListFilter).filter(([key]) => key !== "_id"),
+  );
+
+  const sort = getUserTagGraphQLConnectionSort({
     direction: parsedArgs.direction,
+    sortById: parsedArgs.sort.sortById,
   });
+
+  // if there's no search input, we'll list all the root tag
+  // otherwise we'll also list the subtags matching the filter
+  const parentTagIdFilter = parsedArgs.filter.nameStartsWith
+    ? {}
+    : { parentTagId: null };
 
   const [objectList, totalCount] = await Promise.all([
     OrganizationTagUser.find({
-      ...filter,
+      ...objectListFilter,
+      ...parentTagIdFilter,
       organizationId: parent._id,
-      parentTagId: null,
     })
       .sort(sort)
       .limit(parsedArgs.limit)
       .lean()
       .exec(),
     OrganizationTagUser.find({
+      ...totalCountFilter,
+      ...parentTagIdFilter,
       organizationId: parent._id,
     })
       .countDocuments()
