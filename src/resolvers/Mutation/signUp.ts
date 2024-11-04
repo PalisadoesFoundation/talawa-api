@@ -72,8 +72,13 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     );
   }
 
-  const encryptedEmail = encryptEmail(normalizedEmail);
+ let encryptedEmail;
 
+ try {
+    encryptedEmail = encryptEmail(normalizedEmail);
+   } catch (error) {
+     throw new Error("can't encrypt email");
+   }
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
   // Upload file

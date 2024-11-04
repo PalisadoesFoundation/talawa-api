@@ -55,13 +55,17 @@ export function hashEmail(email: string): string {
  */
 
 export function compareHashedEmails(a: string, b: string): boolean {
-  if (!a || !b || typeof a !== "string" || typeof b !== "string") {
-    return false;
-  }
-
-  if (!/^[0-9a-f]{64}$/i.test(a) || !/^[0-9a-f]{64}$/i.test(b)) {
-    return false;
-  }
+    // Ensure consistent timing regardless of input validity
+    const isValid = 
+     !!a && !!b && 
+      typeof a === "string" && 
+      typeof b === "string" &&
+      /^[0-9a-f]{64}$/i.test(a) && 
+      /^[0-9a-f]{64}$/i.test(b);
+  
+    if (!isValid) {
+      return false;
+    }
 
   try {
     return crypto.timingSafeEqual(Buffer.from(a, "hex"), Buffer.from(b, "hex"));

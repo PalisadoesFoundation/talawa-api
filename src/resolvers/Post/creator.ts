@@ -23,14 +23,17 @@ export const creator: PostResolvers["creator"] = async (parent) => {
     try {
       const decryptionResult = decryptEmail(creator.email);
       if (!decryptionResult?.decrypted) {
-        console.error("Invalid decryption result");
-        throw new Error("Failed to decrypt email");
+        throw new Error("Invalid user data");
       }
-      creator.email = decryptionResult.decrypted;
-    } catch (error) {
-      console.error("Failed to decrypt email:", error);
-      throw new Error("Failed to process creator email");
-    }
+      return {
+        ...creator,
+        email: decryptionResult.decrypted
+        };
+      } catch (error) {
+             // Log the full error internally but don't expose details
+           console.error("[Creator Resolver] Decryption error:", error);      
+               throw new Error("Unable to process user data");
+          }
   }
 
   return creator;

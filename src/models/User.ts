@@ -252,24 +252,23 @@ userSchema.plugin(mongoosePaginate);
 
 userSchema.pre("save", async function (next) {
   if (this.isModified("email")) {
-    if (!process.env.HASH_PEPPER) {
+    if (!process.env.HASH_PEPPER || !process.env.ENCRYPTION_KEY) {
       return next(
-        new Error("HASH_PEPPER environment variable is not configured"),
-      );
+        new Error("Required environment variables are not configured"),
+        );
     }
 
     try {
       const decrypted = decryptEmail(this.email).decrypted;
       if (!validator.isEmail(decrypted)) {
-        return next(new Error("The provided email address is invalid"));
+        return next(new Error("Invalid email format"));
       }
 
       this.hashedEmail = hashEmail(decrypted);
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      return next(new Error(`Email validation failed: ${errorMessage}`));
-    }
+        return next(new Error("Email validation failed"));    }
   }
   next();
 });

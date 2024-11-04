@@ -57,10 +57,10 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
     const { decrypted } = decryptEmail(currentUser.email);
     currentUser.email = decrypted;
   }
-  catch(error)
-  {
-    console.error(`Failed to decrypt email`, error);
-  }
+ catch (error) {
+  console.error(`Failed to decrypt email`, error);
+   throw new Error('Unable to decrypt email');
+ }
 
   return {
     user: currentUser as InterfaceUser,

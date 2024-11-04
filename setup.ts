@@ -422,6 +422,7 @@ export async function setHashPepper(): Promise<void> {
     }
   } catch (err) {
     console.error("An error occurred:", err);
+    abort();
   }
 }
 

@@ -30,9 +30,9 @@ export function encryptEmail(email: string): string {
 
   if (!encryptionKey) {
     throw new Error("Encryption key is not defined.");
-  } else if (encryptionKey.length !== 64) {
+  } else if (encryptionKey.length !== 64 || !isValidHex(encryptionKey)) {
     throw new Error(
-      "Encryption key must be a 256-bit hexadecimal string (64 characters).",
+"Encryption key must be a valid 256-bit hexadecimal string (64 characters).",
     );
   }
 
@@ -65,6 +65,9 @@ export function decryptEmail(encryptedData: string): {
     throw new Error("Invalid encrypted data: input is too short.");
   }
   const [iv, authTagHex, encryptedHex] = encryptedData.split(":");
+  if (!iv || !authTagHex || !encryptedHex) {
+     throw new Error("Invalid encrypted data format. Expected format 'iv:authTag:encryptedData'.");
+    }
   if (!isValidHex(iv)) {
     throw new Error("Invalid IV: not a hex string");
   }

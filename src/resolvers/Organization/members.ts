@@ -1,3 +1,5 @@
+import { GraphQLError } from "graphql";
+import { logger } from "../../libraries";
 import { User } from "../../models";
 import type { InterfaceUser } from "../../models";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
@@ -24,15 +26,22 @@ export const members: OrganizationResolvers["members"] = async (parent) => {
 
   const decryptedUsers = users.map((user: InterfaceUser) => {
     if (!user.email) {
-      console.warn(`User ${user._id} has no email`);
+      logger.warn('User missing email field', { userId: user._id });
       return user;
     }
     try {
       const { decrypted } = decryptEmail(user.email);
+      if (!decrypted) {
+        throw new Error('Decryption resulted in null or empty email');
+        }
       return { ...user, email: decrypted };
     } catch (error) {
-      console.error(`Failed to decrypt email`, error);
-      return user;
+      logger.error('Email decryption failed', {
+        userId: user._id,
+        error: error instanceof Error ? error.message : 'Unknown error'
+         });
+        // Consider throwing an error instead of silently continuing
+        throw new GraphQLError('Failed to process user data');
     }
   });
 

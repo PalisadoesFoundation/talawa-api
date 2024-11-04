@@ -22,7 +22,7 @@ export const createTestUser = async (): Promise<TestUserType> => {
   const email = `${nanoid(8)}${["", ".", "_"][Math.floor(Math.random() * 3)]}${nanoid(8)}@${["gmail.com", "example.com", "test.org"][Math.floor(Math.random() * 3)]}`;
   const hashedEmail = hashEmail(email);
 
-  if (!hashedEmail || hashedEmail.length < 32) {
+  if (!hashedEmail || hashedEmail.length == 64) {
     throw new Error("Invalid hashed email generated");
   }
   const encryptedEmail = encryptEmail(email);

@@ -22,6 +22,12 @@ describe("encryptionModule", () => {
       const iv = generateRandomIV();
       expect(iv).toMatch(/^[0-9a-f]+$/i);
     });
+
+    it("should handle malformed encrypted data gracefully", () => {
+      expect(() => decryptEmail("invalid:format")).toThrow();
+      expect(() => decryptEmail("invalid:format:data")).toThrow();
+      expect(() => decryptEmail("::::")).toThrow();
+    });
   });
 
   describe("encryptEmail and decryptEmail", () => {
