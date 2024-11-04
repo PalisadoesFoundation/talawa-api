@@ -228,6 +228,7 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     // Assign the tag to the user
     await TagUser.create({
       ...args.input,
+      organizationId: testTag?.organizationId,
     });
 
     // Test the unassignUserTag resolver
@@ -266,11 +267,13 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     // Assign the parent and sub tag to the user
     await TagUser.create({
       ...args.input,
+      organizationId: testTag?.organizationId,
     });
 
     await TagUser.create({
       ...args.input,
       tagId: testSubTag1 ? testSubTag1._id.toString() : "",
+      organizationId: testSubTag1?.organizationId,
     });
 
     // Test the unassignUserTag resolver

@@ -9,8 +9,8 @@ import { AppUserProfile, Organization, User } from "../../src/models";
 import { encryptEmail } from "../../src/utilities/encryption";
 import { hashEmail } from "../../src/utilities/hashEmail";
 export type TestOrganizationType =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (InterfaceOrganization & Document<any, any, InterfaceOrganization>) | null;
+  | (InterfaceOrganization & Document<any, any, InterfaceOrganization>)
+  | null;
 
 export type TestUserType =
   | (InterfaceUser & Document<any, any, InterfaceUser>)

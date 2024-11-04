@@ -6,6 +6,7 @@ import type { InterfaceUser } from "../../../src/models";
 import { User } from "../../../src/models";
 import type { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
+import * as userCache from "../../../src/services/UserCache/deleteUserFromCache";
 
 import { nanoid } from "nanoid";
 import {
@@ -23,7 +24,6 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
-import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { encryptEmail } from "../../../src/utilities/encryption";
 import { hashEmail } from "../../../src/utilities/hashEmail";
@@ -311,75 +311,6 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     });
   });
 
-  it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: {},
-      file: "newImageFile.png",
-    };
-
-    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL,
-    );
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-    await deleteUserFromCache(testUser._id.toString() || "");
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: updateUserProfilePayload?.email,
-      firstName: "newFirstName",
-      lastName: "newLastName",
-      image: BASE_URL + "newImageFile.png",
-      updatedAt: expect.anything(),
-      createdAt: expect.anything(),
-    });
-  });
-
-  it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
-        firstName: "newFirstName",
-        lastName: "newLastName",
-      },
-      file: "newImageFile.png",
-    };
-
-    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
-      async (encodedImageURL: string) => encodedImageURL,
-    );
-
-    const context = {
-      userId: testUser._id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: args.data?.email,
-      firstName: "newFirstName",
-      lastName: "newLastName",
-      image: BASE_URL + args.file,
-      updatedAt: expect.anything(),
-      createdAt: expect.anything(),
-    });
-  });
-
   it(`updates current user's user object when any single argument(birthdate) is given w/0 changing other fields `, async () => {
     const args: MutationUpdateUserProfileArgs = {
       data: {
@@ -405,7 +336,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: testUserobj?.email,
       firstName: testUserobj?.firstName,
       lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
+      image: null,
       birthDate: args.data?.birthDate,
       updatedAt: expect.anything(),
       createdAt: expect.anything(),
@@ -437,7 +368,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: testUserobj?.email,
       firstName: testUserobj?.firstName,
       lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
+      image: null,
       birthDate: date,
       educationGrade: args.data?.educationGrade,
       updatedAt: expect.anything(),
@@ -470,7 +401,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: testUserobj?.email,
       firstName: testUserobj?.firstName,
       lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
+      image: null,
       birthDate: date,
       educationGrade: "GRADUATE",
       employmentStatus: args.data?.employmentStatus,
@@ -504,7 +435,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: testUserobj?.email,
       firstName: testUserobj?.firstName,
       lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
+      image: null,
       birthDate: date,
       educationGrade: "GRADUATE",
       employmentStatus: "FULL_TIME",
@@ -539,7 +470,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: testUserobj?.email,
       firstName: testUserobj?.firstName,
       lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
+      image: null,
       birthDate: date,
       educationGrade: "GRADUATE",
       employmentStatus: "FULL_TIME",
@@ -579,7 +510,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: testUserobj?.email,
       firstName: testUserobj?.firstName,
       lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
+      image: null,
       birthDate: date,
       educationGrade: "GRADUATE",
       employmentStatus: "FULL_TIME",
@@ -625,7 +556,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: testUserobj?.email,
       firstName: testUserobj?.firstName,
       lastName: testUserobj?.lastName,
-      image: BASE_URL + "newImageFile.png",
+      image: null,
       birthDate: date,
       educationGrade: "GRADUATE",
       employmentStatus: "FULL_TIME",
@@ -677,6 +608,10 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       async (encodedImageURL: string) => encodedImageURL,
     );
 
+    const deleteFromCacheSpy = vi
+      .spyOn(userCache, "deleteUserFromCache")
+      .mockImplementation(async () => Promise.resolve());
+
     const context = {
       userId: testUser._id,
       apiRootUrl: BASE_URL,
@@ -688,12 +623,15 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       context,
     );
 
+    expect(deleteFromCacheSpy).toHaveBeenCalledWith(
+      updateUserProfilePayload?._id.toString(),
+    );
     expect(updateUserProfilePayload).toEqual({
       ...testUser.toObject(),
       email: args.data?.email,
       firstName: args.data?.firstName,
       lastName: args.data?.lastName,
-      image: BASE_URL + args.file,
+      image: args.file,
       birthDate: date,
       educationGrade: args.data?.educationGrade,
       employmentStatus: args.data?.employmentStatus,

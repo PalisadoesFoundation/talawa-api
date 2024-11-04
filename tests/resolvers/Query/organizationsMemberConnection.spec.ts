@@ -248,6 +248,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -340,6 +341,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
     // console.log(organizationsMemberConnectionPayload, usersWithPassword);
@@ -431,6 +433,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -525,6 +528,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -619,6 +623,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -701,6 +706,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -882,6 +888,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -953,6 +960,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -1053,6 +1061,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 
@@ -1077,7 +1086,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       {},
       {
         $set: {
-          image: `image/image.png`,
+          image: BASE_URL + `image/image.png`,
         },
       },
     );
@@ -1123,7 +1132,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
-        image: `${BASE_URL}${user.image}`,
+        image: user.image,
         joinedOrganizations: user.joinedOrganizations,
         lastName: user.lastName,
         maritalStatus: user.maritalStatus,
@@ -1134,6 +1143,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       };
     });
 

@@ -51,13 +51,8 @@ describe("resolvers -> Query -> post", () => {
 
     const post = await Post.findOne({ _id: testPost?._id })
       .populate("organization")
-      .populate("likedBy")
+      .populate(["likedBy", "file"])
       .lean();
-
-    if (post) {
-      post.imageUrl = `${context.apiRootUrl}${post.imageUrl}`;
-      post.videoUrl = `${context.apiRootUrl}${post.videoUrl}`;
-    }
 
     expect(postPayload).toEqual(post);
   });
@@ -74,13 +69,8 @@ describe("resolvers -> Query -> post", () => {
 
     const post = await Post.findOne({ _id: testPost?._id })
       .populate("organization")
-      .populate("likedBy")
+      .populate(["likedBy", "file"])
       .lean();
-
-    if (post) {
-      post.imageUrl = null;
-      post.videoUrl = null;
-    }
 
     expect(postPayload).toEqual(post);
   });

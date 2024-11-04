@@ -145,7 +145,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     },
   ).lean();
   if (updatedUser != null) {
-    await deleteUserFromCache(updatedUser?._id.toString() || "");
+    await deleteUserFromCache(updatedUser?._id.toString());
     await cacheUsers([updatedUser]);
   }
 
@@ -162,11 +162,6 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     );
   }
 
-  if (updatedUser != null) {
-    updatedUser.image = updatedUser?.image
-      ? `${context.apiRootUrl}${updatedUser?.image}`
-      : null;
-  }
   if (args.data == undefined) updatedUser = null;
 
   return updatedUser ?? ({} as InterfaceUser);

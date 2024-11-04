@@ -168,10 +168,12 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
       TagUser.create({
         userId: randomUser2?._id,
         tagId: testTag2?._id,
+        organizationId: testTag2?.organizationId,
       }),
       TagUser.create({
         userId: randomUser3?._id,
         tagId: testTag2?._id,
+        organizationId: testTag2?.organizationId,
       }),
     ]);
 
@@ -276,10 +278,12 @@ describe("resolvers -> Mutation -> removeFromUserTags", () => {
       TagUser.create({
         userId: randomUser2?._id,
         tagId: newTestTag?._id,
+        organizationId: newTestTag?.organizationId,
       }),
       TagUser.create({
         userId: randomUser3?._id,
         tagId: newTestTag?._id,
+        organizationId: newTestTag?.organizationId,
       }),
     ]);
 

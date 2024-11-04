@@ -1,14 +1,20 @@
 import {
-  EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
+  EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceUser } from "../../models";
-import { Event, EventVolunteer, EventVolunteerGroup, User } from "../../models";
-import { cacheUsers } from "../../services/UserCache/cacheUser";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import {
+  Event,
+  EventVolunteer,
+  EventVolunteerGroup,
+  VolunteerMembership,
+} from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
+import {
+  checkUserExists,
+  checkVolunteerGroupExists,
+} from "../../utilities/checks";
 
 /**
  * This function enables to remove an Event Volunteer Group.
@@ -24,59 +30,57 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const removeEventVolunteerGroup: MutationResolvers["removeEventVolunteerGroup"] =
   async (_parent, args, context) => {
-    let currentUser: InterfaceUser | null;
-    const userFoundInCache = await findUserInCache([context.userId]);
-    currentUser = userFoundInCache[0];
-    if (currentUser === null) {
-      currentUser = await User.findOne({
-        _id: context.userId,
-      }).lean();
-      if (currentUser !== null) {
-        await cacheUsers([currentUser]);
-      }
-    }
+    const currentUser = await checkUserExists(context.userId);
+    const volunteerGroup = await checkVolunteerGroupExists(args.id);
 
-    if (!currentUser) {
+    const event = await Event.findById(volunteerGroup.event)
+      .populate("organization")
+      .lean();
+    if (!event) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
+        EVENT_NOT_FOUND_ERROR.CODE,
+        EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
 
-    const volunteerGroup = await EventVolunteerGroup.findOne({
-      _id: args.id,
-    });
-
-    if (!volunteerGroup) {
-      throw new errors.NotFoundError(
-        requestContext.translate(EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE),
-        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.CODE,
-        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM,
-      );
-    }
-
-    const event = await Event.findById(volunteerGroup.eventId);
-
-    const userIsEventAdmin = event?.admins.some(
-      (admin) => admin._id.toString() === currentUser?._id.toString(),
+    const userIsEventAdmin = event.admins.some(
+      (admin) => admin.toString() === currentUser?._id.toString(),
     );
 
-    if (!userIsEventAdmin) {
-      throw new errors.NotFoundError(
+    const isAdmin = await adminCheck(
+      currentUser._id,
+      event.organization,
+      false,
+    );
+    // Checks if user is Event Admin or Admin of the organization
+    if (!isAdmin && !userIsEventAdmin) {
+      throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
         USER_NOT_AUTHORIZED_ERROR.PARAM,
       );
     }
 
-    await EventVolunteerGroup.deleteOne({
-      _id: args.id,
-    });
+    await Promise.all([
+      // Remove the volunteer group
+      EventVolunteerGroup.deleteOne({ _id: args.id }),
 
-    await EventVolunteer.deleteMany({
-      groupId: args.id,
-    });
+      // Remove the group from volunteers
+      EventVolunteer.updateMany(
+        { groups: { $in: args.id } },
+        { $pull: { groups: args.id } },
+      ),
+
+      // Delete all associated volunteer group memberships
+      VolunteerMembership.deleteMany({ group: args.id }),
+
+      // Remove the group from the event
+      Event.updateOne(
+        { _id: volunteerGroup.event },
+        { $pull: { volunteerGroups: args.id } },
+      ),
+    ]);
 
     return volunteerGroup;
   };
