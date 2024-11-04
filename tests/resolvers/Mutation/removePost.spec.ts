@@ -151,6 +151,8 @@ describe("resolvers -> Mutation -> removePost", () => {
 
   it(`deletes the post with file and returns it when referenceCount is 1`, async () => {
     const { requestContext } = await import("../../../src/libraries");
+    const { BUCKET_NAME } = await import("../../../src/config/minio");
+
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`,
     );
@@ -170,7 +172,6 @@ describe("resolvers -> Mutation -> removePost", () => {
         }),
       );
 
-    // Rest of the test remains the same...
     const [newTestUser, , newTestPost] = await createTestPost();
 
     const testFile = await File.create({
@@ -215,9 +216,8 @@ describe("resolvers -> Mutation -> removePost", () => {
     const removePostPayload = await removePostResolver?.({}, args, context);
     expect(removePostPayload).toEqual(updatedPost);
 
-    // Verify minioDeleteSpy was called
     expect(minioDeleteSpy).toHaveBeenCalledWith(
-      expect.any(String), // BUCKET_NAME
+      BUCKET_NAME,
       testFile.metadata.objectKey,
     );
 
@@ -247,7 +247,6 @@ describe("resolvers -> Mutation -> removePost", () => {
         }),
       );
 
-    // Rest of the test remains the same...
     const [newTestUser, , newTestPost] = await createTestPost();
 
     const testFile = await File.create({
@@ -300,7 +299,7 @@ describe("resolvers -> Mutation -> removePost", () => {
     expect(updatedFile?.referenceCount).toBe(1);
   });
 
-  it("throws an error  if the user does not have appUserProfile", async () => {
+  it("throws an error if the user does not have appUserProfile", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`,
