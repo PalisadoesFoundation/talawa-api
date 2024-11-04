@@ -86,9 +86,14 @@ export function decryptEmail(encryptedData: string): {
     throw new Error("Encryption key is not defined.");
   } else if (encryptionKey.length !== 64) {
     throw new Error(
-      "Encryption key must be a 256-bit hexadecimal string (64 characters).",
-    );
+"Encryption key must be a valid 256-bit hexadecimal string (64 characters).",    );
   }
+
+  else if (!isValidHex(encryptionKey)) {
+      throw new Error(
+        "Encryption key must be a valid 256-bit hexadecimal string (64 characters).",
+     );
+    }
 
   const authTag = Buffer.from(authTagHex, "hex");
   const encryptedBuffer = Buffer.from(encryptedHex, "hex");
