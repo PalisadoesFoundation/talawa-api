@@ -109,7 +109,6 @@ import { updateFundraisingCampaign } from "./updateFundraisingCampaign";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
 import { updatePluginStatus } from "./updatePluginStatus";
-import { updatePost } from "./updatePost";
 import { updateSessionTimeout } from "./updateSessionTimeout";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserProfile } from "./updateUserProfile";
@@ -235,7 +234,6 @@ export const Mutation: MutationResolvers = {
   updateUserPassword,
   updateUserTag,
   updateVolunteerMembership,
-  updatePost,
   updateAdvertisement,
   updateFundraisingCampaign,
   updateFundraisingCampaignPledge,

@@ -874,6 +874,35 @@ interface FieldError {
   path: [String!]!
 }
 
+type File {
+  _id: ID!
+  archived: Boolean!
+  archivedAt: DateTime
+  backupStatus: String!
+  createdAt: DateTime!
+  encryption: Boolean!
+  fileName: String!
+  hash: Hash!
+  metadata: FileMetadata!
+  mimeType: String!
+  referenceCount: Int!
+  size: Int!
+  status: Status!
+  updatedAt: DateTime!
+  uri: String!
+  visibility: FileVisibility!
+}
+
+type FileMetadata {
+  bucketName: String!
+  objectKey: String!
+}
+
+enum FileVisibility {
+  PRIVATE
+  PUBLIC
+}
+
 input ForgotPasswordData {
   newPassword: String!
   otpToken: String!
@@ -976,6 +1005,11 @@ type Group {
   organization: Organization!
   title: String!
   updatedAt: DateTime!
+}
+
+type Hash {
+  algorithm: String!
+  value: String!
 }
 
 type HoursHistory {
@@ -1418,7 +1452,7 @@ type Post {
   comments: [Comment]
   createdAt: DateTime!
   creator: User
-  imageUrl: URL
+  file: File
   likeCount: Int
   likedBy: [User]
   organization: Organization!
@@ -1426,7 +1460,6 @@ type Post {
   text: String!
   title: String
   updatedAt: DateTime!
-  videoUrl: URL
 }
 
 type PostEdge {
@@ -1518,7 +1551,6 @@ type Query {
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   event(id: ID!): Event
-  eventVolunteersByEvent(id: ID!): [EventVolunteer]
   eventsAttendedByUser(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, upcomingOnly: Boolean, where: EventWhereInput): [Event!]!
@@ -1852,6 +1884,7 @@ type User {
   employmentStatus: EmploymentStatus
   eventAdmin: [Event]
   eventsAttended: [Event]
+  file: File
   firstName: String!
   gender: Gender
   identifier: Int!

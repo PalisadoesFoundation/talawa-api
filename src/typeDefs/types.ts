@@ -335,6 +335,30 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
+  type File {
+    _id: ID!
+    fileName: String!
+    mimeType: String!
+    size: Int!
+    hash: Hash!
+    uri: String!
+    referenceCount: Int!
+    metadata: FileMetadata!
+    encryption: Boolean!
+    archived: Boolean!
+    visibility: FileVisibility!
+    backupStatus: String!
+    status: Status!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    archivedAt: DateTime
+  }
+
+  type FileMetadata {
+    objectKey: String!
+    bucketName: String!
+  }
+
   type Fund {
     _id: ID!
     organizationId: ID!
@@ -379,6 +403,11 @@ export const types = gql`
     updatedAt: DateTime!
     organization: Organization!
     admins: [User!]!
+  }
+
+  type Hash {
+    value: String!
+    algorithm: String!
   }
 
   type Language {
@@ -544,8 +573,7 @@ export const types = gql`
     createdAt: DateTime!
     creator: User
     updatedAt: DateTime!
-    imageUrl: URL
-    videoUrl: URL
+    file: File
     organization: Organization!
     likedBy: [User]
     comments: [Comment]
@@ -623,6 +651,7 @@ export const types = gql`
     firstName: String!
     gender: Gender
     image: String
+    file: File
     joinedOrganizations: [Organization]
     lastName: String!
     maritalStatus: MaritalStatus
