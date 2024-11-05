@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-restricted-imports
 import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -31,7 +30,6 @@ import { askForSuperAdminEmail } from "./src/setup/superAdmin";
 import { updateEnvVariable } from "./src/setup/updateEnvVariable";
 import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
 import { loadDefaultOrganiation } from "./src/utilities/loadDefaultOrg";
-/* eslint-enable */
 
 dotenv.config();
 
@@ -170,8 +168,7 @@ function transactionLogPath(logPath: string | null): void {
 
 async function askForTransactionLogPath(): Promise<string> {
   let logPath: string | null;
-  // Keep asking for path, until user gives a valid path
-  // eslint-disable-next-line
+  // Keep asking for path, until user gives a valid path 
   while (true) {
     const response = await inquirer.prompt([
       {
