@@ -28,6 +28,11 @@ export function encryptEmail(email: string): string {
     throw new Error("Empty or invalid email input.");
   }
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(email)) {
+  throw new Error("Invalid email format.");
+}
+
   if (!encryptionKey) {
     throw new Error("Encryption key is not defined.");
   } else if (encryptionKey.length !== 64 || !isValidHex(encryptionKey)) {
