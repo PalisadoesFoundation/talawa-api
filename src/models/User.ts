@@ -265,7 +265,7 @@ userSchema.pre("save", async function (next) {
       }
 
       this.hashedEmail = hashEmail(decrypted);
-    } catch (error: unknown) {
+    } catch {
       return next(new Error("Email validation failed"));
     }
   }
