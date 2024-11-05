@@ -29,15 +29,15 @@ export function encryptEmail(email: string): string {
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-if (!emailRegex.test(email)) {
-  throw new Error("Invalid email format.");
-}
+  if (!emailRegex.test(email)) {
+    throw new Error("Invalid email format.");
+  }
 
   if (!encryptionKey) {
     throw new Error("Encryption key is not defined.");
   } else if (encryptionKey.length !== 64 || !isValidHex(encryptionKey)) {
     throw new Error(
-"Encryption key must be a valid 256-bit hexadecimal string (64 characters).",
+      "Encryption key must be a valid 256-bit hexadecimal string (64 characters).",
     );
   }
 
@@ -71,8 +71,10 @@ export function decryptEmail(encryptedData: string): {
   }
   const [iv, authTagHex, encryptedHex] = encryptedData.split(":");
   if (!iv || !authTagHex || !encryptedHex) {
-     throw new Error("Invalid encrypted data format. Expected format 'iv:authTag:encryptedData'.");
-    }
+    throw new Error(
+      "Invalid encrypted data format. Expected format 'iv:authTag:encryptedData'.",
+    );
+  }
   if (!isValidHex(iv)) {
     throw new Error("Invalid IV: not a hex string");
   }
@@ -91,14 +93,13 @@ export function decryptEmail(encryptedData: string): {
     throw new Error("Encryption key is not defined.");
   } else if (encryptionKey.length !== 64) {
     throw new Error(
-"Encryption key must be a valid 256-bit hexadecimal string (64 characters).",    );
+      "Encryption key must be a valid 256-bit hexadecimal string (64 characters).",
+    );
+  } else if (!isValidHex(encryptionKey)) {
+    throw new Error(
+      "Encryption key must be a valid 256-bit hexadecimal string (64 characters).",
+    );
   }
-
-  else if (!isValidHex(encryptionKey)) {
-      throw new Error(
-        "Encryption key must be a valid 256-bit hexadecimal string (64 characters).",
-     );
-    }
 
   const authTag = Buffer.from(authTagHex, "hex");
   const encryptedBuffer = Buffer.from(encryptedHex, "hex");

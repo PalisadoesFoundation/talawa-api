@@ -49,7 +49,6 @@ describe("resolvers -> Query -> checkAuth", () => {
     expect(user).toEqual({ ...testUser?.toObject(), image: null });
   });
 
-
   it("throws error if user does not have appUserProfile", async () => {
     try {
       const testUser = await createTestUser();

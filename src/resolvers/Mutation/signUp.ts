@@ -72,14 +72,14 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     );
   }
 
- let encryptedEmail;
+  let encryptedEmail;
 
- try {
+  try {
     encryptedEmail = encryptEmail(normalizedEmail);
-   } catch (error) {
-    console.error('Email encryption failed:', error);
-     throw new Error('Email encryption failed');
-   }
+  } catch (error) {
+    console.error("Email encryption failed:", error);
+    throw new Error("Email encryption failed");
+  }
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
   // Upload file

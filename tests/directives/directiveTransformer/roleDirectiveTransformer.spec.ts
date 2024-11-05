@@ -18,11 +18,11 @@ import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { encryptEmail } from "../../../src/utilities/encryption";
 import { hashEmail } from "../../../src/utilities/hashEmail";
-import en from "../../../locales/en.json"; 
-import hi from "../../../locales/hi.json"; 
-import zh from "../../../locales/zh.json"; 
-import sp from "../../../locales/sp.json"; 
-import fr from "../../../locales/fr.json"; 
+import en from "../../../locales/en.json";
+import hi from "../../../locales/hi.json";
+import zh from "../../../locales/zh.json";
+import sp from "../../../locales/sp.json";
+import fr from "../../../locales/fr.json";
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 const app = express();

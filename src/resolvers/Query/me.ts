@@ -7,7 +7,7 @@ import {
   AppUserProfile,
   User,
   type InterfaceAppUserProfile,
-  type InterfaceUser
+  type InterfaceUser,
 } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { decryptEmail } from "../../utilities/encryption";
@@ -56,11 +56,10 @@ export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
   try {
     const { decrypted } = decryptEmail(currentUser.email);
     currentUser.email = decrypted;
+  } catch (error) {
+    console.error(`Failed to decrypt email`, error);
+    throw new Error("Unable to decrypt email");
   }
- catch (error) {
-  console.error(`Failed to decrypt email`, error);
-   throw new Error('Unable to decrypt email');
- }
 
   return {
     user: currentUser as InterfaceUser,

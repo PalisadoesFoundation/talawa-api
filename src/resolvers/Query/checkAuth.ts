@@ -48,5 +48,4 @@ export const checkAuth: QueryResolvers["checkAuth"] = async (
       : null,
     organizationsBlockedBy: [],
   };
-
 };

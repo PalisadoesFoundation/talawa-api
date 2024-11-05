@@ -27,13 +27,13 @@ export const creator: PostResolvers["creator"] = async (parent) => {
       }
       return {
         ...creator,
-        email: decryptionResult.decrypted
-        };
-      } catch (error) {
-             // Log the full error internally but don't expose details
-           console.error("[Creator Resolver] Decryption error:", error);      
-               throw new Error("Unable to process user data");
-          }
+        email: decryptionResult.decrypted,
+      };
+    } catch (error) {
+      // Log the full error internally but don't expose details
+      console.error("[Creator Resolver] Decryption error:", error);
+      throw new Error("Unable to process user data");
+    }
   }
 
   return creator;

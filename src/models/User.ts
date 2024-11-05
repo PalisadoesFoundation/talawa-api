@@ -255,7 +255,7 @@ userSchema.pre("save", async function (next) {
     if (!process.env.HASH_PEPPER || !process.env.ENCRYPTION_KEY) {
       return next(
         new Error("Required environment variables are not configured"),
-        );
+      );
     }
 
     try {
@@ -266,9 +266,8 @@ userSchema.pre("save", async function (next) {
 
       this.hashedEmail = hashEmail(decrypted);
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-        return next(new Error("Email validation failed"));    }
+      return next(new Error("Email validation failed"));
+    }
   }
   next();
 });
