@@ -79,6 +79,7 @@ export const createAndAssignUsersToTag = async (
     await TagUser.create({
       userId: user?._id,
       tagId: tag?._id,
+      organizationId: tag?.organizationId,
     });
     testUsers.push(user);
   }
@@ -93,6 +94,7 @@ export const createTagsAndAssignToUser = async (
   await TagUser.create({
     userId: testUser?._id,
     tagId: testTag?._id,
+    organizationId: testTag?.organizationId,
   });
 
   const tags: TestUserTagType[] = [testTag];
@@ -108,6 +110,7 @@ export const createTagsAndAssignToUser = async (
     await TagUser.create({
       tagId: newTag?._id,
       userId: testUser?._id,
+      organizationId: newTag.organizationId,
     });
   }
 

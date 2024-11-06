@@ -48,6 +48,7 @@ export interface InterfaceUser {
     mobile: string;
     work: string;
   };
+  eventsAttended: PopulatedDoc<InterfaceEvent & Document>[];
 
   registeredEvents: PopulatedDoc<InterfaceEvent & Document>[];
   status: string;
@@ -77,6 +78,7 @@ export interface InterfaceUser {
  * @param phone - User's contact numbers (home, mobile, work).
  * @param registeredEvents - Events the user has registered for.
  * @param status - User's status (ACTIVE, BLOCKED, DELETED).
+ * @param eventsAttended - Events the user has attended.
  * @param updatedAt - Timestamp of when the user was last updated.
  */
 const userSchema = new Schema(
@@ -215,6 +217,12 @@ const userSchema = new Schema(
     },
 
     registeredEvents: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Event",
+      },
+    ],
+    eventsAttended: [
       {
         type: Schema.Types.ObjectId,
         ref: "Event",

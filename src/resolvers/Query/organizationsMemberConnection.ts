@@ -17,7 +17,7 @@ import { getWhere } from "./helperFunctions/getWhere";
  * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
  */
 export const organizationsMemberConnection: QueryResolvers["organizationsMemberConnection"] =
-  async (_parent, args, context) => {
+  async (_parent, args) => {
     const where = getWhere<InterfaceUser>(args.where);
     const sort = getSort(args.orderBy);
 
@@ -130,7 +130,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
-        image: user.image ? `${context.apiRootUrl}${user.image}` : null,
+        image: user.image ?? null,
         joinedOrganizations: user.joinedOrganizations,
         lastName: user.lastName,
         maritalStatus: user.maritalStatus,
@@ -141,6 +141,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       }));
     } else {
       users = usersModel.docs.map((user) => ({
@@ -164,7 +165,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
-        image: user.image ? `${context.apiRootUrl}${user.image}` : null,
+        image: user.image ?? null,
         joinedOrganizations: user.joinedOrganizations,
         lastName: user.lastName,
         maritalStatus: user.maritalStatus,
@@ -175,6 +176,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
         registeredEvents: user.registeredEvents,
         status: user.status,
         updatedAt: user.updatedAt,
+        eventsAttended: user.eventsAttended,
       }));
     }
 

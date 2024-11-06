@@ -37,7 +37,7 @@ jobs:
       - name: Count number of lines
         run: |
           chmod +x ./.github/workflows/countline.py
-          ./.github/workflows/countline.py --lines 600 --exclude_files src/types/generatedGraphQLTypes.ts tests src/typeDefs/types.ts src/constants.ts
+          ./.github/workflows/countline.py --lines 600 --exclude_files src/types/generatedGraphQLTypes.ts tests src/typeDefs/types.ts src/constants.ts src/typeDefs/inputs.ts
 
       - name: Check for TSDoc comments
         run: npm run check-tsdoc # Run the TSDoc check script

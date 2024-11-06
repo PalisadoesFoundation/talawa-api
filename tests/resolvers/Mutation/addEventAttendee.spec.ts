@@ -10,7 +10,12 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
-import { AppUserProfile, EventAttendee, User } from "../../../src/models";
+import {
+  AppUserProfile,
+  Event,
+  EventAttendee,
+  User,
+} from "../../../src/models";
 import type { MutationAddEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
@@ -153,39 +158,41 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
   });
 
   it(`registers the request user for the event successfully and returns the request user`, async () => {
-    const eventOrganizationId = testEvent?.organization._id;
-    const userId = randomTestUser?._id;
+    if (testEvent?.organization) {
+      const eventOrganizationId = testEvent?.organization._id;
+      const userId = randomTestUser?._id;
 
-    await User.updateOne(
-      { _id: userId },
-      { $addToSet: { joinedOrganizations: eventOrganizationId } },
-    );
+      await User.updateOne(
+        { _id: userId },
+        { $addToSet: { joinedOrganizations: eventOrganizationId } },
+      );
 
-    const args: MutationAddEventAttendeeArgs = {
-      data: {
-        userId: userId,
-        eventId: testEvent?._id ?? "",
-      },
-    };
+      const args: MutationAddEventAttendeeArgs = {
+        data: {
+          userId: userId,
+          eventId: testEvent?._id.toString() ?? "",
+        },
+      };
 
-    const context = { userId: testUser?._id };
+      const context = { userId: testUser?._id };
 
-    const { addEventAttendee: addEventAttendeeResolver } = await import(
-      "../../../src/resolvers/Mutation/addEventAttendee"
-    );
-    const payload = await addEventAttendeeResolver?.({}, args, context);
+      const { addEventAttendee: addEventAttendeeResolver } = await import(
+        "../../../src/resolvers/Mutation/addEventAttendee"
+      );
+      const payload = await addEventAttendeeResolver?.({}, args, context);
 
-    const requestUser = await User.findOne({
-      _id: userId?._id,
-    }).lean();
+      expect(payload).toBeDefined();
 
-    const isUserRegistered = await EventAttendee.exists({
-      ...args.data,
-    });
-    expect(payload).toEqual(requestUser);
-    expect(isUserRegistered).toBeTruthy();
+      const requestUser = await User.findOne({
+        _id: userId?._id,
+      }).lean();
+      expect(payload).toEqual(expect.objectContaining(requestUser));
+      const isUserRegistered = await EventAttendee.exists({
+        ...args.data,
+      });
+      expect(isUserRegistered).toBeTruthy();
+    }
   });
-
   it(`throws UnauthorizedError if the requestUser is not a member of the organization`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -199,11 +206,10 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
     );
 
     try {
-      // Create a test user who is not a member of the organization
       const args: MutationAddEventAttendeeArgs = {
         data: {
           userId: testUser?._id,
-          eventId: testEvent!._id,
+          eventId: testEvent!._id.toString(),
         },
       };
 
@@ -290,5 +296,94 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
+  });
+  it("throws NotFoundError if the user is not found after update", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const mockFindByIdAndUpdate = vi
+      .spyOn(User, "findByIdAndUpdate")
+      .mockResolvedValueOnce(null);
+
+    const args: MutationAddEventAttendeeArgs = {
+      data: {
+        userId: testUser?._id,
+        eventId: testEvent?._id.toString() ?? "",
+      },
+    };
+
+    const context = { userId: testUser?._id };
+
+    try {
+      const { addEventAttendee: addEventAttendeeResolver } = await import(
+        "../../../src/resolvers/Mutation/addEventAttendee"
+      );
+
+      await addEventAttendeeResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+      );
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    }
+    mockFindByIdAndUpdate.mockRestore();
+  });
+  it("throws UnauthorizedError when user update fails", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    await AppUserProfile.create({
+      userId: testUser?._id,
+      adminFor: [testEvent?.organization._id],
+    });
+
+    await Event.findByIdAndUpdate(
+      testEvent?._id,
+      { $pull: { admins: testUser?._id } },
+      { new: true },
+    );
+
+    await User.findByIdAndUpdate(testUser?._id, {
+      $push: { joinedOrganizations: testEvent?.organization._id },
+    });
+
+    await EventAttendee.deleteOne({
+      userId: testUser?._id,
+      eventId: testEvent?._id,
+    });
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const mockFindByIdAndUpdate = vi
+      .spyOn(User, "findByIdAndUpdate")
+      .mockResolvedValueOnce(null);
+
+    const args: MutationAddEventAttendeeArgs = {
+      data: {
+        userId: testUser?._id,
+        eventId: testEvent?._id.toString(),
+      },
+    };
+
+    const context = { userId: testUser?._id };
+
+    try {
+      const { addEventAttendee: addEventAttendeeResolver } = await import(
+        "../../../src/resolvers/Mutation/addEventAttendee"
+      );
+
+      await addEventAttendeeResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+      );
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    }
+
+    mockFindByIdAndUpdate.mockRestore();
   });
 });

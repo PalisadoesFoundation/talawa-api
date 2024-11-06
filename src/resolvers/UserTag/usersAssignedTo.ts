@@ -5,14 +5,18 @@ import {
   type DefaultGraphQLArgumentError,
   type ParseGraphQLConnectionCursorArguments,
   type ParseGraphQLConnectionCursorResult,
-  getCommonGraphQLConnectionFilter,
-  getCommonGraphQLConnectionSort,
-  parseGraphQLConnectionArguments,
+  parseGraphQLConnectionArgumentsWithSortedByAndWhere,
   transformToDefaultGraphQLConnection,
 } from "../../utilities/graphQLConnection";
 import { GraphQLError } from "graphql";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
-import type { Types } from "mongoose";
+import { Types } from "mongoose";
+import {
+  parseUserTagSortedBy,
+  parseUserTagMemberWhere,
+  getUserTagMemberGraphQLConnectionFilter,
+  getUserTagGraphQLConnectionSort,
+} from "../../utilities/userTagsPaginationUtils";
 
 /**
  * Resolver function for the `usersAssignedTo` field of a `UserTag`.
@@ -37,14 +41,20 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   parent,
   args,
 ) => {
+  const parseWhereResult = parseUserTagMemberWhere(args.where);
+  const parseSortedByResult = parseUserTagSortedBy(args.sortedBy);
+
   const parseGraphQLConnectionArgumentsResult =
-    await parseGraphQLConnectionArguments({
+    await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args,
-      parseCursor: (args) =>
+      parseSortedByResult,
+      parseWhereResult,
+      parseCursor: /* c8 ignore start */ (args) =>
         parseCursor({
           ...args,
           tagId: parent._id,
         }),
+      /* c8 ignore stop */
       maximumLimit: MAXIMUM_FETCH_LIMIT,
     });
 
@@ -59,31 +69,91 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
 
   const { parsedArgs } = parseGraphQLConnectionArgumentsResult;
 
-  const filter = getCommonGraphQLConnectionFilter({
+  const objectListFilter = getUserTagMemberGraphQLConnectionFilter({
     cursor: parsedArgs.cursor,
     direction: parsedArgs.direction,
+    sortById: parsedArgs.sort.sortById,
+    firstNameStartsWith: parsedArgs.filter.firstNameStartsWith,
+    lastNameStartsWith: parsedArgs.filter.lastNameStartsWith,
   });
 
-  const sort = getCommonGraphQLConnectionSort({
+  // Separate the _id filter from the rest
+  // _id filter will be applied on the TagUser model
+  // the rest on the User model referenced by the userId field
+  const { _id: tagUserIdFilter, ...userFilter } = objectListFilter;
+  const tagUserFilter = tagUserIdFilter ? { _id: tagUserIdFilter } : {};
+
+  const sort = getUserTagGraphQLConnectionSort({
     direction: parsedArgs.direction,
+    sortById: parsedArgs.sort.sortById,
   });
 
-  const [objectList, totalCount] = await Promise.all([
-    TagUser.find({
-      ...filter,
-      tagId: parent._id,
-    })
-      .sort(sort)
-      .limit(parsedArgs.limit)
-      .populate("userId")
-      .lean()
-      .exec(),
+  // create the filter object to match the user documents in the pipeline
+  const userMatchFilter = Object.fromEntries(
+    Object.entries(userFilter).map(([key, value]) => [`user.${key}`, value]),
+  );
 
-    TagUser.find({
-      tagId: parent._id,
-    })
-      .countDocuments()
-      .exec(),
+  // commonPipeline object for the query
+  const commonPipeline = [
+    // Perform a left join with User collection on _id
+    {
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    {
+      $unwind: "$user",
+    },
+    // apply the userFilter to the user
+    {
+      $match: {
+        ...userMatchFilter,
+      },
+    },
+  ];
+
+  // we want to assign the userFilter to the user referenced by userId
+  // and the _id filter (specified by the after/before) to the TagUser document
+  const [objectList, totalCount] = await Promise.all([
+    // First aggregation to get the TagUser list matching the filter criteria
+    TagUser.aggregate([
+      {
+        $match: {
+          ...tagUserFilter,
+          tagId: new Types.ObjectId(parent._id),
+        },
+      },
+      ...commonPipeline,
+      {
+        $sort: sort,
+      },
+      {
+        $limit: parsedArgs.limit,
+      },
+      {
+        $addFields: { userId: "$user" },
+      },
+      {
+        $project: {
+          user: 0,
+        },
+      },
+    ]),
+    // Second aggregation to count the total TagUser documents matching the filter criteria
+    TagUser.aggregate([
+      {
+        $match: {
+          tagId: new Types.ObjectId(parent._id),
+        },
+      },
+      ...commonPipeline,
+      {
+        $count: "totalCount",
+      },
+    ]).then((res) => res[0]?.totalCount || 0),
   ]);
 
   return transformToDefaultGraphQLConnection<

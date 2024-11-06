@@ -8,10 +8,10 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
  * @param args - An object that contains `id` of the Post.
  * @returns An object `post`. If the `appLanguageCode` field not found then it throws a `NotFoundError` error.
  */
-export const post: QueryResolvers["post"] = async (_parent, args, context) => {
+export const post: QueryResolvers["post"] = async (_parent, args) => {
   const post = await Post.findOne({ _id: args.id })
     .populate("organization")
-    .populate("likedBy")
+    .populate(["likedBy", "file"])
     .lean();
 
   if (!post) {
@@ -21,12 +21,6 @@ export const post: QueryResolvers["post"] = async (_parent, args, context) => {
       POST_NOT_FOUND_ERROR.PARAM,
     );
   }
-  post.imageUrl = post.imageUrl
-    ? `${context.apiRootUrl}${post.imageUrl}`
-    : null;
-  post.videoUrl = post.videoUrl
-    ? `${context.apiRootUrl}${post.videoUrl}`
-    : null;
 
   return post;
 };
