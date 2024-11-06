@@ -1,342 +1,444 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { AppUserProfile, Post } from "../../../src/models";
-import type { MutationUpdatePostArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
-import { updatePost as updatePostResolver } from "../../../src/resolvers/Mutation/updatePost";
+import type { Response } from "express";
+import { connect, disconnect } from "../../helpers/db";
+
 import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+import {
+  INTERNAL_SERVER_ERROR,
   LENGTH_VALIDATION_ERROR,
+  PLEASE_PROVIDE_TITLE,
+  POST_NEEDS_TO_BE_PINNED,
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
-import {
-  createTestOrganizationWithAdmin,
-  createTestUser,
-  type TestOrganizationType,
-  type TestUserType,
+import { AppUserProfile, Post } from "../../../src/models";
+import type {
+  TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
-
+import {
+  createTestUser,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
+import type { InterfaceAuthenticatedRequest } from "../../../src/middleware";
+import { updatePost } from "../../../src/REST/controllers/mutation";
+import * as fileServices from "../../../src/REST/services/file";
+import type { InterfaceUploadedFileResponse } from "../../../src/REST/services/file/uploadFile";
+import { createTestPostWithMedia } from "../../helpers/posts";
 import type { TestPostType } from "../../helpers/posts";
-import { createTestPost, createTestSinglePost } from "../../helpers/posts";
+
+vi.mock("../../../src/libraries/requestContext", () => ({
+  translate: (message: string): string => `Translated ${message}`,
+}));
+
+/**
+ * module - PostUpdateControllerTests
+ * description - Tests for the Post Update controller functionality in a social media/blog platform
+ * @packageDocumentation
+ *
+ * @remarks
+ * Test environment uses Vitest with MongoDB for integration testing.
+ * File includes mock implementations for file services and translations.
+ *
+ * Key test scenarios:
+ * - Media attachment management (upload/delete)
+ * - Post content updates (text/title/pinned status)
+ * - Input validation (text: 500 chars, title: 256 chars)
+ * - Error handling (auth, post existence, pinned post rules)
+ *
+ * @see {@link updatePost} - The controller being tested
+ * @see {@link InterfaceAuthenticatedRequest} - Request interface
+ *
+ * @example
+ * ```typescript
+ * npm run test updatePost.test
+ * ```
+ */
 
 let testUser: TestUserType;
-let testPost: TestPostType;
 let testOrganization: TestOrganizationType;
-let testPost2: TestPostType;
+let testPost: TestPostType;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
-beforeEach(async () => {
-  await connect();
-  const temp = await createTestPost(true);
+interface InterfaceMockResponse extends Omit<Response, "status" | "json"> {
+  status(code: number): InterfaceMockResponse;
+  json(data: unknown): InterfaceMockResponse;
+}
+
+const mockResponse = (): InterfaceMockResponse => {
+  const res = {} as InterfaceMockResponse;
+  res.status = vi.fn().mockReturnValue(res);
+  res.json = vi.fn().mockReturnValue(res);
+  return res;
+};
+
+beforeAll(async () => {
+  MONGOOSE_INSTANCE = await connect();
+  const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   testOrganization = temp[1];
-  testPost = temp[2];
-  testPost2 = await createTestSinglePost(testUser?.id, testOrganization?.id);
 
-  const { requestContext } = await import("../../../src/libraries");
-  vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message,
-  );
-});
-afterEach(async () => {
-  await disconnect();
+  // Create a test post
+  testPost = await createTestPostWithMedia(testUser?.id, testOrganization?._id);
 });
 
-describe("resolvers -> Mutation -> updatePost", () => {
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: testPost?._id.toString() || "",
-        data: {
-          title: "newTitle",
-        },
-      };
+afterAll(async () => {
+  await disconnect(MONGOOSE_INSTANCE);
+});
 
-      const context = {
-        userId: new Types.ObjectId().toString(),
-      };
-
-      await updatePostResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
+describe("controllers -> post -> updatePost", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
-  it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: new Types.ObjectId().toString(),
-      };
+  it("should successfully update post with file", async () => {
+    const mockFileId = new Types.ObjectId();
+    const mockFileUploadResponse: InterfaceUploadedFileResponse = {
+      _id: mockFileId,
+      uri: "test/file/path",
+      visibility: "PUBLIC",
+      objectKey: "new-test-key",
+    };
 
-      const context = {
-        userId: testUser?._id,
-      };
-
-      await updatePostResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
-  it(`throws UnauthorizedError as current user with _id === context.userId is
-  not an creator of post with _id === args.id`, async () => {
-    const testUser1 = await createTestUser();
-    const testOrg1 = await createTestOrganizationWithAdmin(
-      testUser1?._id,
-      false,
-      false,
+    vi.spyOn(fileServices, "uploadFile").mockResolvedValueOnce(
+      mockFileUploadResponse,
     );
-    const testPost1 = await createTestSinglePost(testUser1?._id, testOrg1?._id);
+    vi.spyOn(fileServices, "deleteFile").mockResolvedValueOnce({
+      success: true,
+      message: "File deleted successfully.",
+    });
 
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: testPost1?._id.toString() ?? "",
-        data: {
-          title: "newTitle",
-        },
-      };
-
-      const context = {
-        userId: testUser1?._id,
-      };
-
-      await Post.updateOne(
-        { _id: testPost1?._id },
-        { $set: { creatorId: new Types.ObjectId().toString() } },
-      );
-
-      await updatePostResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
-      );
-    }
-  });
-
-  it(`updates the post with _id === args.id and returns the updated post`, async () => {
-    const args: MutationUpdatePostArgs = {
-      id: testPost?._id.toString() || "",
-      data: {
-        title: "newTitle",
-        text: "nextText",
+    const req = {
+      userId: testUser?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        text: "Updated text with new file",
       },
-    };
-
-    const context = {
-      userId: testUser?._id,
-    };
-
-    const updatePostPayload = await updatePostResolver?.({}, args, context);
-
-    const testUpdatePostPayload = await Post.findOne({
-      _id: testPost?._id,
-    }).lean();
-
-    expect(updatePostPayload).toEqual(testUpdatePostPayload);
-  });
-  it(`updates the post with imageUrl and returns the updated post`, async () => {
-    const args: MutationUpdatePostArgs = {
-      id: testPost?._id.toString() || "",
-      data: {
-        title: "newTitle",
-        text: "nextText",
-        imageUrl:
-          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZSURBVBhXYzxz5sx/BiBgefLkCQMbGxsDAEdkBicg9wbaAAAAAElFTkSuQmCC",
+      file: {
+        filename: "test.jpg",
+        mimetype: "image/jpeg",
+        buffer: Buffer.from("test"),
+        originalname: "test.jpg",
+        size: 1024,
       },
-    };
+    } as unknown as InterfaceAuthenticatedRequest;
 
-    const context = {
-      userId: testUser?._id,
-    };
+    const res = mockResponse();
+    await updatePost(req, res);
 
-    const updatePostPayload = await updatePostResolver?.({}, args, context);
-
-    const testUpdatePostPayload = await Post.findOne({
-      _id: testPost?._id,
-    }).lean();
-
-    expect(updatePostPayload).toEqual(testUpdatePostPayload);
+    expect(fileServices.uploadFile).toHaveBeenCalled();
+    expect(fileServices.deleteFile).toHaveBeenCalledWith(
+      "test-file-object-key",
+      testPost?.file._id.toString(),
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        post: expect.objectContaining({
+          text: "Updated text with new file",
+          file: mockFileId,
+        }),
+      }),
+    );
   });
-  it(`updates the post with videoUrl and returns the updated post`, async () => {
-    const args: MutationUpdatePostArgs = {
-      id: testPost?._id.toString() || "",
-      data: {
-        title: "newTitle",
-        text: "nextText",
-        videoUrl: "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE",
+
+  it("should successfully update the title of a pinned post", async () => {
+    const pinnedPost = await createTestPostWithMedia(
+      testUser?.id,
+      testOrganization?.id,
+      true,
+    );
+
+    const req = {
+      userId: testUser?.id,
+      params: { id: pinnedPost?._id.toString() },
+      body: {
+        title: "Updated Title",
+        pinned: true,
       },
-    };
+    } as unknown as InterfaceAuthenticatedRequest;
 
-    const context = {
-      userId: testUser?._id,
-    };
+    const res = mockResponse();
+    await updatePost(req, res);
 
-    const updatePostPayload = await updatePostResolver?.({}, args, context);
-
-    const testUpdatePostPayload = await Post.findOne({
-      _id: testPost?._id,
-    }).lean();
-
-    expect(updatePostPayload).toEqual(testUpdatePostPayload);
-  });
-  it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        post: expect.objectContaining({
+          title: "Updated Title",
+        }),
+      }),
     );
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: testPost?._id.toString() || "",
-        data: {
-          text: "random",
-          videoUrl: "",
-          title:
-            "AfGtN9o7IJXH9Xr5P4CcKTWMVWKOOHTldleLrWfZcThgoX5scPE5o0jARvtVA8VhneyxXquyhWb5nluW2jtP0Ry1zIOUFYfJ6BUXvpo4vCw4GVleGBnoKwkFLp5oW9L8OsEIrjVtYBwaOtXZrkTEBySZ1prr0vFcmrSoCqrCTaChNOxL3tDoHK6h44ChFvgmoVYMSq3IzJohKtbBn68D9NfEVMEtoimkGarUnVBAOsGkKv0mIBJaCl2pnR8Xwq1cG1",
-          imageUrl: null,
-        },
-      };
-
-      const context = {
-        userId: testUser?.id,
-      };
-
-      const { updatePost: updatePostResolver } = await import(
-        "../../../src/resolvers/Mutation/updatePost"
-      );
-
-      await updatePostResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
-      );
-    }
   });
-  it(`throws String Length Validation error if text is greater than 500 characters`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
+
+  it("should successfully update the pinned status of a post", async () => {
+    const req = {
+      userId: testUser?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        pinned: false,
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        post: expect.objectContaining({
+          pinned: false,
+        }),
+      }),
     );
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: testPost?._id.toString() || "",
-        data: {
-          text: "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
-          videoUrl: "",
-          title: "random",
-          imageUrl: null,
-        },
-      };
-
-      const context = {
-        userId: testUser?.id,
-      };
-
-      const { updatePost: updatePostResolver } = await import(
-        "../../../src/resolvers/Mutation/updatePost"
-      );
-
-      await updatePostResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
-      );
-    }
   });
 
-  it("throws error if title is provided and post is not pinned", async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
-    );
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: testPost2?._id.toString() || "",
-        data: {
-          title: "Test title",
-          text: "Test text",
-        },
-      };
+  it("should throw NotFoundError if no user exists with _id === userId", async () => {
+    const req = {
+      userId: new Types.ObjectId().toString(),
+      params: { id: testPost?._id.toString() },
+      body: {
+        text: "Updated text",
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
 
-      const context = {
-        userId: testUser?.id,
-      };
+    const res = mockResponse();
+    await updatePost(req, res);
 
-      const { updatePost: updatePostResolver } = await import(
-        "../../../src/resolvers/Mutation/updatePost"
-      );
-
-      await updatePostResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Post needs to be pinned inorder to add a title`,
-      );
-    }
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+    });
   });
 
-  it(`throws error if title is not provided and post is pinned`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message,
-    );
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: testPost?._id.toString() || "",
-        data: {
-          text: "Testing text",
-        },
-      };
+  it("should throw NotFoundError if post does not exist", async () => {
+    const req = {
+      userId: testUser?.id,
+      params: { id: new Types.ObjectId().toString() },
+      body: {
+        text: "Updated text",
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
 
-      const context = {
-        userId: testUser?.id,
-      };
+    const res = mockResponse();
+    await updatePost(req, res);
 
-      const { updatePost: updatePostResolver } = await import(
-        "../../../src/resolvers/Mutation/updatePost"
-      );
-
-      await updatePostResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect((error as Error).message).toEqual(
-        `Please provide a title to pin post`,
-      );
-    }
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: `Translated ${POST_NOT_FOUND_ERROR.MESSAGE}`,
+    });
   });
 
-  it("throws error if AppUserProfile is not found", async () => {
+  it("should throw UnauthorizedError if AppUserProfile is not found", async () => {
     const userWithoutProfileId = await createTestUser();
     await AppUserProfile.findByIdAndDelete(
       userWithoutProfileId?.appUserProfileId,
     );
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: testPost?._id.toString() || "",
-        data: {
-          title: "newTitle",
-        },
-      };
 
-      const context = {
-        userId: userWithoutProfileId?._id,
-      };
+    const req = {
+      userId: userWithoutProfileId?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        text: "Updated text",
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
 
-      await updatePostResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
-      );
-    }
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+    });
+  });
+
+  it("should throw UnauthorizedError if user is not authorized to update post", async () => {
+    const [unauthorizedUser] = await createTestUserAndOrganization();
+
+    const req = {
+      userId: unauthorizedUser?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        text: "Unauthorized update",
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+    });
+  });
+
+  it("should throw error if trying to add title to unpinned post", async () => {
+    const req = {
+      userId: testUser?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        title: "New Title",
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: `Translated ${POST_NEEDS_TO_BE_PINNED.MESSAGE}`,
+    });
+  });
+
+  it("should throw error if removing title from pinned post", async () => {
+    // First create a pinned post with title
+    const pinnedPost = await createTestPostWithMedia(
+      testUser?.id,
+      testOrganization?.id,
+      true,
+    );
+    const req = {
+      userId: testUser?.id,
+      params: { id: pinnedPost?.id.toString() },
+      body: {
+        title: "",
+        pinned: true,
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: `Translated ${PLEASE_PROVIDE_TITLE.MESSAGE}`,
+    });
+  });
+
+  it("should throw error if title exceeds maximum length", async () => {
+    const testPost = await createTestPostWithMedia(
+      testUser?.id,
+      testOrganization?._id,
+      true,
+    );
+    const req = {
+      userId: testUser?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        title: "a".repeat(257),
+        pinned: true,
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: `Translated ${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`,
+    });
+  });
+
+  it("should throw error if text exceeds maximum length", async () => {
+    const req = {
+      userId: testUser?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        text: "a".repeat(501),
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: `Translated ${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`,
+    });
+  });
+
+  it("should successfully update post text", async () => {
+    const req = {
+      userId: testUser?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        text: "Updated post text",
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        post: expect.objectContaining({
+          text: "Updated post text",
+        }),
+      }),
+    );
+  });
+
+  it("should handle file upload error gracefully", async () => {
+    vi.spyOn(fileServices, "uploadFile").mockRejectedValueOnce(
+      new Error("Upload failed"),
+    );
+
+    const req = {
+      userId: testUser?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        text: "Updated text with file",
+      },
+      file: {
+        filename: "test.jpg",
+        mimetype: "image/jpeg",
+        buffer: Buffer.from("test"),
+        originalname: "test.jpg",
+        size: 1024,
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(fileServices.uploadFile).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: "Upload failed",
+    });
+  });
+
+  it("should handle non-Error type errors with internal server error message", async () => {
+    vi.spyOn(Post, "findOneAndUpdate").mockImplementationOnce(() => {
+      throw "Some unknown error";
+    });
+
+    const req = {
+      userId: testUser?.id,
+      params: { id: testPost?._id.toString() },
+      body: {
+        text: "Updated text",
+      },
+    } as unknown as InterfaceAuthenticatedRequest;
+
+    const res = mockResponse();
+    await updatePost(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: `Translated ${INTERNAL_SERVER_ERROR.MESSAGE}`,
+    });
   });
 });

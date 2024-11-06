@@ -1,14 +1,13 @@
 import {
-  EVENT_VOLUNTEER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../constants";
-import { errors, requestContext } from "../../libraries";
-import type { InterfaceUser } from "../../models";
-import { EventVolunteer, EventVolunteerGroup, User } from "../../models";
-import { cacheUsers } from "../../services/UserCache/cacheUser";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
+  EventVolunteer,
+  EventVolunteerGroup,
+  VolunteerMembership,
+} from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import {
+  checkEventVolunteerExists,
+  checkUserExists,
+} from "../../utilities/checks";
 
 /**
  * This function enables to remove an Event Volunteer.
@@ -16,73 +15,33 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
- * 1. If the current user exists
- * 2. If the Event volunteer to be removed exists.
- * 3. If the current user is leader of the corresponding event volunteer group.
+ * 1. If the user exists.
+ * 2. If the Event Volunteer exists.
+ * 3. Remove the Event Volunteer from their groups and delete the volunteer.
+ * 4. Delete the volunteer and their memberships in a single operation.
  * @returns Event Volunteer.
  */
 
 export const removeEventVolunteer: MutationResolvers["removeEventVolunteer"] =
   async (_parent, args, context) => {
-    let currentUser: InterfaceUser | null;
-    const userFoundInCache = await findUserInCache([context.userId]);
-    currentUser = userFoundInCache[0];
-    if (currentUser === null) {
-      currentUser = await User.findOne({
-        _id: context.userId,
-      }).lean();
-      if (currentUser !== null) {
-        await cacheUsers([currentUser]);
-      }
-    }
+    await checkUserExists(context.userId);
+    const volunteer = await checkEventVolunteerExists(args.id);
 
-    if (!currentUser) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+    // Remove volunteer from their groups and delete the volunteer
+    const groupIds = volunteer.groups;
+
+    if (groupIds.length > 0) {
+      await EventVolunteerGroup.updateMany(
+        { _id: { $in: groupIds } },
+        { $pull: { volunteers: volunteer._id } },
       );
     }
 
-    const volunteer = await EventVolunteer.findOne({
-      _id: args.id,
-    });
-
-    if (!volunteer) {
-      throw new errors.NotFoundError(
-        requestContext.translate(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE),
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.CODE,
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM,
-      );
-    }
-
-    const group = await EventVolunteerGroup.findById(volunteer.groupId);
-
-    const userIsLeader =
-      group?.leaderId.toString() === currentUser._id.toString();
-
-    if (!userIsLeader) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-        USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM,
-      );
-    }
-
-    await EventVolunteer.deleteOne({
-      _id: args.id,
-    });
-
-    await EventVolunteerGroup.updateOne(
-      {
-        _id: volunteer.groupId,
-      },
-      {
-        $pull: {
-          volunteers: volunteer._id,
-        },
-      },
-    );
+    // Delete the volunteer and their memberships in a single operation
+    await Promise.all([
+      EventVolunteer.deleteOne({ _id: volunteer._id }),
+      VolunteerMembership.deleteMany({ volunteer: volunteer._id }),
+    ]);
 
     return volunteer;
   };

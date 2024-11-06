@@ -70,54 +70,23 @@ describe("resolvers -> Organization -> post", () => {
       creatorId: testUser?._id,
     }).countDocuments();
 
-    const context = { apiRootUrl: "http://example.com" };
-
-    const formattedPost2 = {
-      ...testPost2?.toObject(),
-      imageUrl: testPost2?.imageUrl
-        ? new URL(testPost2.imageUrl, context.apiRootUrl).toString()
-        : null,
-      videoUrl: testPost2?.videoUrl
-        ? new URL(testPost2.videoUrl, context.apiRootUrl).toString()
-        : null,
-    };
-
-    const formattedPost = {
-      ...testPost?.toObject(),
-      imageUrl: testPost?.imageUrl
-        ? new URL(testPost.imageUrl, context.apiRootUrl).toString()
-        : null,
-      videoUrl: testPost?.videoUrl
-        ? new URL(testPost.videoUrl, context.apiRootUrl).toString()
-        : null,
-    };
+    const formattedPost2 = testPost2?.toObject();
+    const formattedPost = testPost?.toObject();
 
     expect(connection).toEqual({
       edges: [
         {
-          cursor: formattedPost2._id?.toString(),
+          cursor: formattedPost2?._id?.toString(),
           node: {
             ...formattedPost2,
-            _id: formattedPost2._id?.toString(),
-            imageUrl: testPost?.imageUrl
-              ? new URL(testPost.imageUrl, context.apiRootUrl).toString()
-              : null,
-            videoUrl: formattedPost2?.videoUrl
-              ? new URL(formattedPost2.videoUrl, context.apiRootUrl).toString()
-              : null,
+            _id: formattedPost2?._id?.toString(),
           },
         },
         {
-          cursor: formattedPost._id?.toString(),
+          cursor: formattedPost?._id?.toString(),
           node: {
             ...formattedPost,
             _id: formattedPost?._id?.toString(),
-            imageUrl: formattedPost?.imageUrl
-              ? new URL(formattedPost.imageUrl, context.apiRootUrl).toString()
-              : null,
-            videoUrl: formattedPost?.videoUrl
-              ? new URL(formattedPost.videoUrl, context.apiRootUrl).toString()
-              : null,
           },
         },
       ],
@@ -164,5 +133,49 @@ describe("parseCursor function", () => {
     if (result.isSuccessful === true) {
       expect(result.parsedCursor).toEqual(testPost?._id.toString());
     }
+  });
+  it("throws GraphQLError when an invalid cursor is provided", async () => {
+    const parent = {
+      _id: testOrganization?._id,
+    } as InterfaceOrganization;
+
+    try {
+      await postResolver?.(
+        parent,
+        {
+          first: 2,
+          after: new Types.ObjectId().toString(), // Invalid cursor
+        },
+        {},
+      );
+      // If we reach here, the test should fail because an error should have been thrown
+      expect(true).toBe(false);
+    } catch (error) {
+      expect(error).toBeInstanceOf(GraphQLError);
+      if (error instanceof GraphQLError) {
+        expect(error.extensions.code).toEqual("INVALID_ARGUMENTS");
+        expect(
+          (error.extensions.errors as DefaultGraphQLArgumentError[]).length,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("successfully uses parseCursor with valid cursor", async () => {
+    const parent = {
+      _id: testOrganization?._id,
+    } as InterfaceOrganization;
+
+    const connection = await postResolver?.(
+      parent,
+      {
+        first: 2,
+        after: testPost2?._id.toString(), // Valid cursor
+      },
+      {},
+    );
+
+    expect(connection).toBeDefined();
+    expect(connection?.edges.length).toBe(1);
   });
 });

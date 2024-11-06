@@ -22,7 +22,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> DirectChatMessage -> sender", () => {
+describe("resolvers -> ChatMessage -> sender", () => {
   it(`returns user object for parent.sender`, async () => {
     const parent = testChatMessage?.toObject();
     if (!parent) {

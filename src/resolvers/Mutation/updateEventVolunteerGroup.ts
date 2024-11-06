@@ -1,14 +1,14 @@
 import {
+  EVENT_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceEventVolunteerGroup, InterfaceUser } from "../../models";
-import { EventVolunteerGroup, User } from "../../models";
-import { cacheUsers } from "../../services/UserCache/cacheUser";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
+import type { InterfaceEventVolunteerGroup } from "../../models";
+import { Event, EventVolunteerGroup } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { adminCheck } from "../../utilities";
+import { checkUserExists } from "../../utilities/checks";
 /**
  * This function enables to update the Event Volunteer Group
  * @param _parent - parent of current request
@@ -21,25 +21,27 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  */
 export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerGroup"] =
   async (_parent, args, context) => {
-    let currentUser: InterfaceUser | null;
-    const userFoundInCache = await findUserInCache([context.userId]);
-    currentUser = userFoundInCache[0];
-    if (currentUser === null) {
-      currentUser = await User.findOne({
-        _id: context.userId,
-      }).lean();
-      if (currentUser !== null) {
-        await cacheUsers([currentUser]);
-      }
-    }
-
-    if (!currentUser) {
+    const { eventId, description, name, volunteersRequired } = args.data;
+    const currentUser = await checkUserExists(context.userId);
+    const event = await Event.findById(eventId).populate("organization").lean();
+    if (!event) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM,
+        requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
+        EVENT_NOT_FOUND_ERROR.CODE,
+        EVENT_NOT_FOUND_ERROR.PARAM,
       );
     }
+
+    const userIsEventAdmin = event.admins.some(
+      (admin: { toString: () => string }) =>
+        admin.toString() === currentUser?._id.toString(),
+    );
+
+    const isAdmin = await adminCheck(
+      currentUser._id,
+      event.organization,
+      false,
+    );
 
     const group = await EventVolunteerGroup.findOne({
       _id: args.id,
@@ -53,7 +55,12 @@ export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerG
       );
     }
 
-    if (group.leaderId.toString() !== context.userId.toString()) {
+    // Checks if user is Event Admin or Admin of the organization or Leader of the group
+    if (
+      !isAdmin &&
+      !userIsEventAdmin &&
+      group.leader.toString() !== currentUser._id.toString()
+    ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -67,20 +74,13 @@ export const updateEventVolunteerGroup: MutationResolvers["updateEventVolunteerG
       },
       {
         $set: {
-          eventId:
-            args.data?.eventId === undefined
-              ? group.eventId
-              : args?.data.eventId,
-          name: args.data?.name === undefined ? group.name : args?.data.name,
-          volunteersRequired:
-            args.data?.volunteersRequired === undefined
-              ? group.volunteersRequired
-              : args?.data.volunteersRequired,
+          description,
+          name,
+          volunteersRequired,
         },
       },
       {
         new: true,
-        runValidators: true,
       },
     ).lean();
 

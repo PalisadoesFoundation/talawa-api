@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { BASE_URL, USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
 import { user as userResolver } from "../../../src/resolvers/Query/user";
 import { connect, disconnect } from "../../helpers/db";
@@ -62,39 +62,6 @@ describe("resolvers -> Query -> user", () => {
       ...user,
       organizationsBlockedBy: [],
       image: null,
-    });
-  });
-  it(`returns user object with image`, async () => {
-    await User.findOneAndUpdate(
-      {
-        _id: testUser?.id,
-      },
-      {
-        $set: {
-          image: `images/newImage.png`,
-        },
-      },
-    );
-
-    const args: QueryUserArgs = {
-      id: testUser?.id,
-    };
-
-    const context = {
-      userId: testUser?.id,
-      apiRootUrl: BASE_URL,
-    };
-
-    const userPayload = await userResolver?.({}, args, context);
-
-    const user = await User.findOne({
-      _id: testUser?._id,
-    }).lean();
-
-    expect(userPayload?.user).toEqual({
-      ...user,
-      organizationsBlockedBy: [],
-      image: user?.image ? `${BASE_URL}${user.image}` : null,
     });
   });
 });

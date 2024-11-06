@@ -2,45 +2,54 @@ import mongoose from "mongoose";
 import {
   ACTION_ITEM_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
+  EVENT_VOLUNTEER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
-  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type {
-  InterfaceAppUserProfile,
   InterfaceEvent,
+  InterfaceEventVolunteer,
+  InterfaceEventVolunteerGroup,
   InterfaceUser,
 } from "../../models";
-import { ActionItem, AppUserProfile, Event, User } from "../../models";
-import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
-import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
+import {
+  ActionItem,
+  Event,
+  EventVolunteer,
+  EventVolunteerGroup,
+  User,
+} from "../../models";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
-import { cacheUsers } from "../../services/UserCache/cacheUser";
-import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import {
+  checkAppUserProfileExists,
+  checkUserExists,
+} from "../../utilities/checks";
 /**
  * This function enables to update an action item.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
- * 1. If the user exists.
- * 2. If the new asignee exists.
- * 2. If the action item exists.
- * 4. If the new asignee is a member of the organization.
- * 5. If the user is authorized.
- * 6. If the user has appUserProfile.
+ * 1. Whether the user exists
+ * 2. Whether the user has an associated app user profile
+ * 3. Whether the action item exists
+ * 4. Whether the user is authorized to update the action item
+ * 5. Whether the user is an admin of the organization or a superadmin
+ *
  * @returns Updated action item.
  */
 
 type UpdateActionItemInputType = {
   assigneeId: string;
+  assigneeType: string;
   preCompletionNotes: string;
   postCompletionNotes: string;
   dueDate: Date;
-  allotedHours: number;
+  allottedHours: number;
   completionDate: Date;
   isCompleted: boolean;
 };
@@ -50,46 +59,9 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
   args,
   context,
 ) => {
-  let currentUser: InterfaceUser | null;
-  const userFoundInCache = await findUserInCache([context.userId]);
-  currentUser = userFoundInCache[0];
-  if (currentUser === null) {
-    currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
-    if (currentUser !== null) {
-      await cacheUsers([currentUser]);
-    }
-  }
-
-  // Checks if the user exists
-  if (currentUser === null) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM,
-    );
-  }
-  let currentUserAppProfile: InterfaceAppUserProfile | null;
-  const appUserProfileFoundInCache = await findAppUserProfileCache([
-    currentUser.appUserProfileId?.toString(),
-  ]);
-  currentUserAppProfile = appUserProfileFoundInCache[0];
-  if (currentUserAppProfile === null) {
-    currentUserAppProfile = await AppUserProfile.findOne({
-      userId: currentUser._id,
-    }).lean();
-    if (currentUserAppProfile !== null) {
-      await cacheAppUserProfile([currentUserAppProfile]);
-    }
-  }
-  if (!currentUserAppProfile) {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-      USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM,
-    );
-  }
+  const currentUser = await checkUserExists(context.userId);
+  const currentUserAppProfile = await checkAppUserProfileExists(currentUser);
+  const { assigneeId, assigneeType, isCompleted } = args.data;
 
   const actionItem = await ActionItem.findOne({
     _id: args.id,
@@ -106,44 +78,54 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     );
   }
 
-  let sameAssignedUser = false;
+  let sameAssignee = false;
 
-  if (args.data.assigneeId) {
-    sameAssignedUser = new mongoose.Types.ObjectId(
-      actionItem.assignee.toString(),
-    ).equals(args.data.assigneeId);
+  if (assigneeId) {
+    sameAssignee = new mongoose.Types.ObjectId(
+      assigneeType === "EventVolunteer"
+        ? actionItem.assignee.toString()
+        : assigneeType === "EventVolunteerGroup"
+          ? actionItem.assigneeGroup.toString()
+          : actionItem.assigneeUser.toString(),
+    ).equals(assigneeId);
 
-    if (!sameAssignedUser) {
-      const newAssignedUser = await User.findOne({
-        _id: args.data.assigneeId,
-      });
-
-      // Checks if the new asignee exists
-      if (newAssignedUser === null) {
-        throw new errors.NotFoundError(
-          requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-          USER_NOT_FOUND_ERROR.CODE,
-          USER_NOT_FOUND_ERROR.PARAM,
-        );
-      }
-
-      let userIsOrganizationMember = false;
-      const currorganizationId = actionItem.actionItemCategory.organizationId;
-      userIsOrganizationMember = newAssignedUser.joinedOrganizations.some(
-        (organizationId) =>
-          organizationId === currorganizationId ||
-          new mongoose.Types.ObjectId(organizationId.toString()).equals(
-            currorganizationId,
-          ),
-      );
-
-      // Checks if the new asignee is a member of the organization
-      if (!userIsOrganizationMember) {
-        throw new errors.NotFoundError(
-          requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
-          USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
-          USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM,
-        );
+    if (!sameAssignee) {
+      let assignee:
+        | InterfaceEventVolunteer
+        | InterfaceEventVolunteerGroup
+        | InterfaceUser
+        | null;
+      if (assigneeType === "EventVolunteer") {
+        assignee = await EventVolunteer.findById(assigneeId)
+          .populate("user")
+          .lean();
+        if (!assignee) {
+          throw new errors.NotFoundError(
+            requestContext.translate(EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE),
+            EVENT_VOLUNTEER_NOT_FOUND_ERROR.CODE,
+            EVENT_VOLUNTEER_NOT_FOUND_ERROR.PARAM,
+          );
+        }
+      } else if (assigneeType === "EventVolunteerGroup") {
+        assignee = await EventVolunteerGroup.findById(assigneeId).lean();
+        if (!assignee) {
+          throw new errors.NotFoundError(
+            requestContext.translate(
+              EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE,
+            ),
+            EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.CODE,
+            EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.PARAM,
+          );
+        }
+      } else if (assigneeType === "User") {
+        assignee = await User.findById(assigneeId).lean();
+        if (!assignee) {
+          throw new errors.NotFoundError(
+            requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+            USER_NOT_FOUND_ERROR.CODE,
+            USER_NOT_FOUND_ERROR.PARAM,
+          );
+        }
       }
     }
   }
@@ -192,8 +174,9 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     );
   }
 
-  // Checks if the user is authorized for the operation.
+  // Checks if the user is authorized for the operation. (Exception: when user updates the action item to complete or incomplete)
   if (
+    isCompleted === undefined &&
     currentUserIsEventAdmin === false &&
     currentUserIsOrgAdmin === false &&
     currentUserAppProfile.isSuperAdmin === false
@@ -205,13 +188,102 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     );
   }
 
-  const updatedAssignmentDate = sameAssignedUser
+  // checks if the assignee is an event volunteer then add allotted hours to the volunteer else if event volunteer group then add divided equal allotted hours to all volunteers in the group
+
+  if (assigneeType === "EventVolunteer") {
+    const assignee = await EventVolunteer.findById(assigneeId).lean();
+    if (assignee) {
+      if (isCompleted == true) {
+        await EventVolunteer.findByIdAndUpdate(assigneeId, {
+          $inc: {
+            hoursVolunteered: actionItem.allottedHours
+              ? actionItem.allottedHours
+              : 0,
+          },
+          ...(actionItem.allottedHours
+            ? {
+                $push: {
+                  hoursHistory: {
+                    hours: actionItem.allottedHours,
+                    date: new Date(),
+                  },
+                },
+              }
+            : {}),
+        });
+      } else if (isCompleted == false) {
+        await EventVolunteer.findByIdAndUpdate(assigneeId, {
+          $inc: {
+            hoursVolunteered: actionItem.allottedHours
+              ? -actionItem.allottedHours
+              : -0,
+          },
+          ...(actionItem.allottedHours
+            ? {
+                $push: {
+                  hoursHistory: {
+                    hours: -actionItem.allottedHours,
+                    date: new Date(),
+                  },
+                },
+              }
+            : {}),
+        });
+      }
+    }
+  } else if (assigneeType === "EventVolunteerGroup") {
+    const volunteerGroup =
+      await EventVolunteerGroup.findById(assigneeId).lean();
+    if (volunteerGroup) {
+      const dividedHours =
+        (actionItem.allottedHours ?? 0) / volunteerGroup.volunteers.length;
+      if (isCompleted == true) {
+        await EventVolunteer.updateMany(
+          { _id: { $in: volunteerGroup.volunteers } },
+          {
+            $inc: {
+              hoursVolunteered: dividedHours,
+            },
+            ...(dividedHours
+              ? {
+                  $push: {
+                    hoursHistory: {
+                      hours: dividedHours,
+                      date: new Date(),
+                    },
+                  },
+                }
+              : {}),
+          },
+        );
+      } else if (isCompleted == false) {
+        await EventVolunteer.updateMany(
+          { _id: { $in: volunteerGroup.volunteers } },
+          {
+            $inc: {
+              hoursVolunteered: -dividedHours,
+            },
+            ...(dividedHours
+              ? {
+                  $push: {
+                    hoursHistory: {
+                      hours: dividedHours,
+                      date: new Date(),
+                    },
+                  },
+                }
+              : {}),
+          },
+        );
+      }
+    }
+  }
+
+  const updatedAssignmentDate = sameAssignee
     ? actionItem.assignmentDate
     : new Date();
 
-  const updatedAssigner = sameAssignedUser
-    ? actionItem.assigner
-    : context.userId;
+  const updatedAssigner = sameAssignee ? actionItem.assigner : context.userId;
 
   const updatedActionItem = await ActionItem.findOneAndUpdate(
     {
@@ -219,7 +291,25 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     },
     {
       ...(args.data as UpdateActionItemInputType),
-      assignee: args.data.assigneeId || actionItem.assignee,
+      assigneeType: assigneeType || actionItem.assigneeType,
+      assignee:
+        !sameAssignee && assigneeType === "EventVolunteer"
+          ? assigneeId || actionItem.assignee
+          : isCompleted === undefined
+            ? null
+            : actionItem.assignee,
+      assigneeGroup:
+        !sameAssignee && assigneeType === "EventVolunteerGroup"
+          ? assigneeId || actionItem.assigneeGroup
+          : isCompleted === undefined
+            ? null
+            : actionItem.assigneeGroup,
+      assigneeUser:
+        !sameAssignee && assigneeType === "User"
+          ? assigneeId || actionItem.assigneeUser
+          : isCompleted === undefined
+            ? null
+            : actionItem.assigneeUser,
       assignmentDate: updatedAssignmentDate,
       assigner: updatedAssigner,
     },

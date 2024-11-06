@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "dotenv/config";
 import {
   parseCursor,
@@ -8,7 +7,11 @@ import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserTagType } from "../../helpers/tags";
-import type { TestUserType } from "../../helpers/userAndOrg";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 import { createTagsAndAssignToUser } from "../../helpers/tags";
 import { GraphQLError } from "graphql";
 import type { DefaultGraphQLArgumentError } from "../../../src/utilities/graphQLConnection";
@@ -20,11 +23,30 @@ import {
 import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testTag: TestUserTagType, testUser: TestUserType;
+let testTag: TestUserTagType,
+  testUser: TestUserType,
+  testOrganization: TestOrganizationType,
+  randomUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [testUser, , [testTag]] = await createTagsAndAssignToUser();
+  [testUser, testOrganization, [testTag]] = await createTagsAndAssignToUser();
+  randomUser = await createTestUser();
+
+  await User.updateOne(
+    {
+      _id: randomUser?._id,
+    },
+    {
+      joinedOrganizations: testOrganization?._id,
+    },
+  );
+
+  await TagUser.create({
+    tagId: testTag?._id,
+    userId: randomUser?._id,
+    organizationId: testTag?.organizationId,
+  });
 });
 
 afterAll(async () => {
@@ -56,13 +78,24 @@ describe("usersAssignedTo resolver", () => {
       {},
     );
 
-    const tagUser = await TagUser.findOne({
+    const tagUser1 = await TagUser.findOne({
       tagId: testTag?._id,
       userId: testUser?._id,
+      organizationId: testTag?.organizationId,
     });
 
-    const user = await User.findOne({
+    const tagUser2 = await TagUser.findOne({
+      tagId: testTag?._id,
+      userId: randomUser?._id,
+      organizationId: testTag?.organizationId,
+    });
+
+    const user1 = await User.findOne({
       _id: testUser?._id,
+    });
+
+    const user2 = await User.findOne({
+      _id: randomUser?._id,
     });
 
     const totalCount = await TagUser.find({
@@ -72,15 +105,66 @@ describe("usersAssignedTo resolver", () => {
     expect(connection).toEqual({
       edges: [
         {
-          cursor: tagUser?._id.toString(),
-          node: user?.toObject(),
+          cursor: tagUser2?._id.toString(),
+          node: user2?.toObject(),
+        },
+        {
+          cursor: tagUser1?._id.toString(),
+          node: user1?.toObject(),
         },
       ],
       pageInfo: {
-        endCursor: tagUser?._id.toString(),
+        endCursor: tagUser1?._id.toString(),
         hasNextPage: false,
         hasPreviousPage: false,
-        startCursor: tagUser?._id.toString(),
+        startCursor: tagUser2?._id.toString(),
+      },
+      totalCount,
+    });
+  });
+
+  it(`returns the expected connection object, after a specified cursor`, async () => {
+    const tagUser1 = await TagUser.findOne({
+      tagId: testTag?._id,
+      userId: testUser?._id,
+    }).lean();
+
+    const parent = testTag as InterfaceOrganizationTagUser;
+    const connection = await usersAssignedToResolver?.(
+      parent,
+      {
+        first: 1,
+        after: tagUser1?._id.toString(),
+        sortedBy: { id: "ASCENDING" },
+      },
+      {},
+    );
+
+    const tagUser2 = await TagUser.findOne({
+      tagId: testTag?._id,
+      userId: randomUser?._id,
+    });
+
+    const user2 = await User.findOne({
+      _id: randomUser?._id,
+    });
+
+    const totalCount = await TagUser.find({
+      tagId: testTag?._id,
+    }).countDocuments();
+
+    expect(connection).toEqual({
+      edges: [
+        {
+          cursor: tagUser2?._id.toString(),
+          node: user2?.toObject(),
+        },
+      ],
+      pageInfo: {
+        endCursor: tagUser2?._id.toString(),
+        hasNextPage: false,
+        hasPreviousPage: true,
+        startCursor: tagUser2?._id.toString(),
       },
       totalCount,
     });

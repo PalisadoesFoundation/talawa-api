@@ -34,5 +34,11 @@
   "registrant.alreadyUnregistered": "Ya no está registrado para el evento",
   "translation.alreadyPresent": "Traducción ya presente",
   "translation.notFound": "Traducción no encontrada",
-  "parameter.missing": "Falta el parámetro Omitir. Establézcalo en 0 o en algún otro valor"
+  "parameter.missing": "Falta el parámetro Omitir. Establézcalo en 0 o en algún otro valor",
+  "tag.alreadyExists": "Ya existe una etiqueta con el mismo nombre en este nivel",
+  "invalid.contentType": "Tipo de contenido no válido. Se esperaba multipart/form-data.",
+  "invalid.fieldFileName": "Se recibió un nombre de campo de archivo no válido.",
+  "file.sizeExceeded": "El tamaño del archivo supera el límite permitido.",
+  "file.notFound": "Archivo no encontrado.",
+  "invalid.argument": "Se recibió un argumento no válido."
 }

@@ -1,6 +1,5 @@
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
-import { EventVolunteerResponse } from "../../src/constants";
 import type {
   InterfaceEvent,
   InterfaceEventVolunteer,
@@ -132,12 +131,11 @@ export const createTestEventAndVolunteer = async (): Promise<
   const [creatorUser, , testEvent] = await createTestEvent();
   const volunteerUser = await createTestUser();
   const testEventVolunteer = await EventVolunteer.create({
-    userId: volunteerUser?._id,
-    eventId: testEvent?._id,
-    isInvited: true,
-    isAssigned: false,
-    creatorId: creatorUser?._id,
-    response: EventVolunteerResponse.NO,
+    user: volunteerUser?._id,
+    event: testEvent?._id,
+    creator: creatorUser?._id,
+    hasAccepted: false,
+    isPublic: false,
   });
 
   return [volunteerUser, creatorUser, testEvent, testEventVolunteer];
@@ -157,9 +155,9 @@ export const createTestEventVolunteerGroup = async (): Promise<
   const testEventVolunteerGroup = await EventVolunteerGroup.create({
     name: "testEventVolunteerGroup",
     volunteersRequired: 1,
-    eventId: testEvent?._id,
-    creatorId: creatorUser?._id,
-    leaderId: creatorUser?._id,
+    event: testEvent?._id,
+    creator: creatorUser?._id,
+    leader: creatorUser?._id,
     volunteers: [testEventVolunteer?._id],
   });
 

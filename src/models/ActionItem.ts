@@ -5,13 +5,18 @@ import type { InterfaceEvent } from "./Event";
 import type { InterfaceActionItemCategory } from "./ActionItemCategory";
 import { MILLISECONDS_IN_A_WEEK } from "../constants";
 import type { InterfaceOrganization } from "./Organization";
+import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
+import type { InterfaceEventVolunteer } from "./EventVolunteer";
 
 /**
  * Interface representing a database document for ActionItem in MongoDB.
  */
 export interface InterfaceActionItem {
   _id: Types.ObjectId;
-  assignee: PopulatedDoc<InterfaceUser & Document>;
+  assignee: PopulatedDoc<InterfaceEventVolunteer & Document>;
+  assigneeGroup: PopulatedDoc<InterfaceEventVolunteerGroup & Document>;
+  assigneeUser: PopulatedDoc<InterfaceUser & Document>;
+  assigneeType: "EventVolunteer" | "EventVolunteerGroup" | "User";
   assigner: PopulatedDoc<InterfaceUser & Document>;
   actionItemCategory: PopulatedDoc<
     InterfaceActionItemCategory & Document
@@ -22,7 +27,7 @@ export interface InterfaceActionItem {
   dueDate: Date;
   completionDate: Date;
   isCompleted: boolean;
-  allotedHours: number | null;
+  allottedHours: number | null;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   event: PopulatedDoc<InterfaceEvent & Document>;
   creator: PopulatedDoc<InterfaceUser & Document>;
@@ -33,6 +38,9 @@ export interface InterfaceActionItem {
 /**
  * Defines the schema for the ActionItem document.
  * @param assignee - User to whom the ActionItem is assigned.
+ * @param assigneeGroup - Group to whom the ActionItem is assigned.
+ * @param assigneeUser - Organization User to whom the ActionItem is assigned.
+ * @param assigneeType - Type of assignee (User or Group).
  * @param assigner - User who assigned the ActionItem.
  * @param actionItemCategory - ActionItemCategory to which the ActionItem belongs.
  * @param preCompletionNotes - Notes recorded before completion.
@@ -41,7 +49,7 @@ export interface InterfaceActionItem {
  * @param dueDate - Due date for the ActionItem.
  * @param completionDate - Date when the ActionItem was completed.
  * @param isCompleted - Flag indicating if the ActionItem is completed.
- * @param allotedHours - Optional: Number of hours alloted for the ActionItem.
+ * @param allottedHours - Optional: Number of hours allotted for the ActionItem.
  * @param event - Optional: Event to which the ActionItem is related.
  * @param organization - Organization to which the ActionItem belongs.
  * @param creator - User who created the ActionItem.
@@ -52,8 +60,20 @@ const actionItemSchema = new Schema(
   {
     assignee: {
       type: Schema.Types.ObjectId,
+      ref: "EventVolunteer",
+    },
+    assigneeGroup: {
+      type: Schema.Types.ObjectId,
+      ref: "EventVolunteerGroup",
+    },
+    assigneeUser: {
+      type: Schema.Types.ObjectId,
       ref: "User",
+    },
+    assigneeType: {
+      type: String,
       required: true,
+      enum: ["EventVolunteer", "EventVolunteerGroup", "User"],
     },
     assigner: {
       type: Schema.Types.ObjectId,
@@ -91,7 +111,7 @@ const actionItemSchema = new Schema(
       required: true,
       default: false,
     },
-    allotedHours: {
+    allottedHours: {
       type: Number,
     },
     organization: {
