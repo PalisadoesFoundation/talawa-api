@@ -6,30 +6,30 @@ import path from "path";
 import type { ExecException } from "child_process";
 import { exec } from "child_process";
 import { MongoClient } from "mongodb";
-import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "@constants";
 import {
   askForMongoDBUrl,
   checkConnection,
   checkExistingMongoDB,
-} from "./src/setup/MongoDB";
+} from "@setup/MongoDB";
 import crypto from "crypto";
-import { askToKeepValues } from "./src/setup/askToKeepValues";
-import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
-import { isValidEmail } from "./src/setup/isValidEmail";
-import { validateRecaptcha } from "./src/setup/reCaptcha";
+import { askToKeepValues } from "@setup/askToKeepValues";
+import { getNodeEnvironment } from "@setup/getNodeEnvironment";
+import { isValidEmail } from "@setup/isValidEmail";
+import { validateRecaptcha } from "@setup/reCaptcha";
 import {
   askForRedisUrl,
   checkExistingRedis,
   checkRedisConnection,
-} from "./src/setup/redisConfiguration";
+} from "@setup/redisConfiguration";
 import {
   setImageUploadSize,
   validateImageFileSize,
-} from "./src/setup/setImageUploadSize";
-import { askForSuperAdminEmail } from "./src/setup/superAdmin";
-import { updateEnvVariable } from "./src/setup/updateEnvVariable";
-import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
-import { loadDefaultOrganiation } from "./src/utilities/loadDefaultOrg";
+} from "@setup/setImageUploadSize";
+import { askForSuperAdminEmail } from "@setup/superAdmin";
+import { updateEnvVariable } from "@setup/updateEnvVariable";
+import { verifySmtpConnection } from "@setup/verifySmtpConnection";
+import { loadDefaultOrganiation } from "@utilities/loadDefaultOrg";
 
 dotenv.config();
 
