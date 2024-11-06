@@ -21,10 +21,12 @@ beforeAll(async () => {
     adminUser = await createTestUser();
     superAdminUser = await createTestUser();
 
-    // Set up admin and super admin roles
     await Organization.create({
+      creatorId: adminUser?.id,
       members: [anotherTestUser?.id],
       admins: [adminUser?.id],
+      name: "Test Organization",
+      description: "A test organization for user query testing",
     });
 
     await AppUserProfile.create({
