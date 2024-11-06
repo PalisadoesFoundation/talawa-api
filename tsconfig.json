@@ -7,7 +7,7 @@
     "strict": true /* Enable all strict type-checking options. */,
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "resolveJsonModule": true /* Allow to import JSON files */,
-    "baseUrl": ".", 
+    "baseUrl": ".",
     "paths": {
       "@constants": ["./src/constants"],
       "@setup/*": ["./src/setup/*"],
