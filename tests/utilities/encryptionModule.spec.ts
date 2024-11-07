@@ -49,7 +49,7 @@ describe("encryptionModule", () => {
       const originalKey = process.env.ENCRYPTION_KEY;
       process.env.ENCRYPTION_KEY = "invalid_key";
       expect(() => encryptEmail("test@example.com")).toThrow(
-        "Encryption key must be a 256-bit hexadecimal string (64 characters).",
+        "Encryption key must be a valid 256-bit hexadecimal string (64 characters).",
       );
       process.env.ENCRYPTION_KEY = originalKey;
     });
