@@ -18,14 +18,14 @@ import { askToKeepValues } from "./src/setup/askToKeepValues";
 import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
 import { isValidEmail } from "./src/setup/isValidEmail";
 import { validateRecaptcha } from "./src/setup/reCaptcha";
-import { 
-  askForRedisUrl, 
-  checkExistingRedis, 
-  checkRedisConnection 
+import {
+  askForRedisUrl,
+  checkExistingRedis,
+  checkRedisConnection,
 } from "./src/setup/redisConfiguration";
-import { 
-  setImageUploadSize, 
-  validateImageFileSize 
+import {
+  setImageUploadSize,
+  validateImageFileSize,
 } from "./src/setup/setImageUploadSize";
 import { askForSuperAdminEmail } from "./src/setup/superAdmin";
 import { updateEnvVariable } from "./src/setup/updateEnvVariable";
