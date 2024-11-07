@@ -1,10 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Request } from "express";
-import { isAuth } from "../../src/middleware/isAuth";
+import type { NextFunction, Request, Response } from "express";
+import type { InterfaceAuthenticatedRequest } from "../../src/middleware/isAuth";
+import { isAuth, isAuthMiddleware } from "../../src/middleware/isAuth";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import jwt from "jsonwebtoken";
 import { logger } from "../../src/libraries/logger";
-import { ACCESS_TOKEN_SECRET } from "../../src/constants";
+import {
+  ACCESS_TOKEN_SECRET,
+  UNAUTHENTICATED_ERROR,
+} from "../../src/constants";
+
+vi.mock("../../src/libraries/requestContext", () => ({
+  translate: (message: string): string => message,
+}));
 
 interface TestInterfaceAuthData {
   isAuth: boolean;
@@ -195,5 +203,71 @@ describe("middleware -> isAuth", () => {
       expect.anything(),
     );
     expect(authData).toEqual(testAuthData);
+  });
+});
+
+describe("isAuthMiddleware", () => {
+  let mockRequest: Partial<InterfaceAuthenticatedRequest>;
+  let mockResponse: Partial<Response>;
+  let nextFunction: NextFunction;
+
+  beforeEach(() => {
+    mockRequest = {
+      headers: {},
+    };
+    mockResponse = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+    } as unknown as Response;
+    nextFunction = vi.fn();
+
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("should call next() when user is authenticated", () => {
+    // Mock successful token verification
+    vi.spyOn(jwt, "verify").mockImplementationOnce((...args: any) => {
+      const decoded = {
+        userId: "ValidUserId",
+      };
+      const callBackFn = args[2];
+      return callBackFn(null, decoded);
+    });
+
+    mockRequest.headers = {
+      authorization: "Bearer validToken",
+    };
+
+    isAuthMiddleware(
+      mockRequest as Request,
+      mockResponse as Response,
+      nextFunction,
+    );
+
+    expect(nextFunction).toHaveBeenCalled();
+    expect(mockRequest.isAuth).toBe(true);
+    expect(mockRequest.userId).toBe("ValidUserId");
+    expect(mockRequest.tokenExpired).toBeUndefined();
+    expect(mockResponse.status).not.toHaveBeenCalled();
+    expect(mockResponse.json).not.toHaveBeenCalled();
+  });
+
+  it("should return 401 when token is not present", () => {
+    isAuthMiddleware(
+      mockRequest as Request,
+      mockResponse as Response,
+      nextFunction,
+    );
+
+    expect(nextFunction).not.toHaveBeenCalled();
+    expect(mockResponse.status).toHaveBeenCalledWith(401);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      message: UNAUTHENTICATED_ERROR.MESSAGE,
+      expired: undefined,
+    });
   });
 });

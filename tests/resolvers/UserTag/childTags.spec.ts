@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "dotenv/config";
 import { GraphQLError } from "graphql";
 import type mongoose from "mongoose";

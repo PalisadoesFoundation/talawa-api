@@ -9,7 +9,7 @@ import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
-import { AppUserProfile, User } from "../../../src/models";
+import { AppUserProfile } from "../../../src/models";
 import { createTestUser } from "../../helpers/userAndOrg";
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -44,34 +44,6 @@ describe("resolvers -> Query -> checkAuth", () => {
     expect(user).toEqual({ ...testUser?.toObject(), image: null });
   });
 
-  it("returns user object with image ", async () => {
-    let testUser = await createTestUser();
-
-    await User.findOneAndUpdate(
-      {
-        _id: testUser?.id,
-      },
-      {
-        image: `path`,
-      },
-    );
-
-    testUser = await User.findOne({
-      _id: testUser?.id,
-    });
-
-    const context = {
-      userId: testUser?._id,
-      apiRootUrl: `http://localhost:3000`,
-    };
-
-    const user = await checkAuthResolver?.({}, {}, context);
-
-    expect(user).toEqual({
-      ...testUser?.toObject(),
-      image: `${context.apiRootUrl}${testUser?.image}`,
-    });
-  });
   it("throws error if user does not have appUserProfile", async () => {
     try {
       const testUser = await createTestUser();

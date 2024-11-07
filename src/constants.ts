@@ -731,6 +731,36 @@ export const PRELOGIN_IMAGERY_FIELD_EMPTY = Object.freeze({
   PARAM: "preLoginImagery.empty",
 });
 
+export const CONTENT_TYPE_SHOULD_BE_MULTIPART_FORM_DATA = Object.freeze({
+  DESC: "Invalid content type. Expected multipart/form-data",
+  MESSAGE: "invalid.contentType",
+  CODE: "invalid.contentType",
+});
+
+export const INVALID_FILE_FIELD_NAME = Object.freeze({
+  DESC: "Invalid file input field name received.",
+  MESSAGE: "invalid.fieldFileName",
+  CODE: "invalid.fieldFileName",
+});
+
+export const FILE_SIZE_EXCEEDED = Object.freeze({
+  DESC: "File size exceeds the allowable limit",
+  MESSAGE: "file.sizeExceeded",
+  CODE: "file.sizeExceeded",
+});
+
+export const FILE_NOT_FOUND = Object.freeze({
+  DESC: "File not found.",
+  MESSAGE: "file.notFound",
+  CODE: "file.notFound",
+});
+
+export const INVALID_ARGUMENT_RECEIVED = Object.freeze({
+  DESC: "Invalid argument received.",
+  MESSAGE: "invalid.argument",
+  CODE: "invalid.argument",
+});
+
 export const MINIMUM_TIMEOUT_MINUTES = 15;
 export const MAXIMUM_TIMEOUT_MINUTES = 60;
 
@@ -829,3 +859,14 @@ export const DEFAULT_COMMUNITY = {
   name: "Palisadoes Foundation",
   description: "An open source application by Palisadoes Foundation volunteers",
 };
+
+export const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
+export const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/mpeg"];
+
+export const VIDEO_SIZE_LIMIT = 50 * 1024 * 1024;
+export const IMAGE_SIZE_LIMIT = 5 * 1024 * 1024;

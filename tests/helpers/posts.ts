@@ -1,7 +1,7 @@
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 import type { InterfaceComment, InterfacePost } from "../../src/models";
-import { Comment, Organization, Post } from "../../src/models";
+import { Comment, Organization, Post, File } from "../../src/models";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUserAndOrganization } from "./userAndOrg";
 
@@ -119,19 +119,33 @@ export const createSinglePostwithComment = async (
   return [testPost, testComment];
 };
 
-export const createTestSinglePost = async (
+export const createTestPostWithMedia = async (
   userId: string,
   organizationId: string,
   pinned = false,
 ): Promise<TestPostType> => {
+  const testFile = await File.create({
+    fileName: `test-file-${nanoid()}.jpg`,
+    mimeType: "image/jpeg",
+    size: 1024,
+    hash: {
+      value: "66465102d50336a0610af4ae66d531cc",
+      algorithm: "sha256",
+    },
+    uri: "https://example.com/test-file.jpg",
+    metadata: {
+      description: "Test file for post",
+      objectKey: "test-file-object-key",
+    },
+  });
+
   const testPost = await Post.create({
     text: `text${nanoid().toLowerCase()}`,
     title: `title${nanoid()}`,
-    imageUrl: `imageUrl${nanoid()}`,
-    videoUrl: `videoUrl${nanoid()}`,
     creatorId: userId,
     organization: organizationId,
     pinned,
+    file: testFile,
   });
   return testPost;
 };

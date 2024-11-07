@@ -954,6 +954,36 @@ export type FieldError = {
   path: Array<Scalars['String']['output']>;
 };
 
+export type File = {
+  __typename?: 'File';
+  _id: Scalars['ID']['output'];
+  archived: Scalars['Boolean']['output'];
+  archivedAt?: Maybe<Scalars['DateTime']['output']>;
+  backupStatus: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  encryption: Scalars['Boolean']['output'];
+  fileName: Scalars['String']['output'];
+  hash: Hash;
+  metadata: FileMetadata;
+  mimeType: Scalars['String']['output'];
+  referenceCount: Scalars['Int']['output'];
+  size: Scalars['Int']['output'];
+  status: Status;
+  updatedAt: Scalars['DateTime']['output'];
+  uri: Scalars['String']['output'];
+  visibility: FileVisibility;
+};
+
+export type FileMetadata = {
+  __typename?: 'FileMetadata';
+  bucketName: Scalars['String']['output'];
+  objectKey: Scalars['String']['output'];
+};
+
+export type FileVisibility =
+  | 'PRIVATE'
+  | 'PUBLIC';
+
 export type ForgotPasswordData = {
   newPassword: Scalars['String']['input'];
   otpToken: Scalars['String']['input'];
@@ -1057,6 +1087,12 @@ export type Group = {
   organization: Organization;
   title: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type Hash = {
+  __typename?: 'Hash';
+  algorithm: Scalars['String']['output'];
+  value: Scalars['String']['output'];
 };
 
 export type HoursHistory = {
@@ -2182,7 +2218,7 @@ export type Post = {
   comments?: Maybe<Array<Maybe<Comment>>>;
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
-  imageUrl?: Maybe<Scalars['URL']['output']>;
+  file?: Maybe<File>;
   likeCount?: Maybe<Scalars['Int']['output']>;
   likedBy?: Maybe<Array<Maybe<User>>>;
   organization: Organization;
@@ -2190,7 +2226,6 @@ export type Post = {
   text: Scalars['String']['output'];
   title?: Maybe<Scalars['String']['output']>;
   updatedAt: Scalars['DateTime']['output'];
-  videoUrl?: Maybe<Scalars['URL']['output']>;
 };
 
 export type PostEdge = {
@@ -2285,6 +2320,7 @@ export type Query = {
   customDataByOrganization: Array<UserCustomData>;
   customFieldsByOrganization?: Maybe<Array<Maybe<OrganizationCustomField>>>;
   event?: Maybe<Event>;
+  eventsAttendedByUser?: Maybe<Array<Maybe<Event>>>;
   eventsByOrganization?: Maybe<Array<Maybe<Event>>>;
   eventsByOrganizationConnection: Array<Event>;
   fundsByOrganization?: Maybe<Array<Maybe<Fund>>>;
@@ -2307,6 +2343,7 @@ export type Query = {
   getNoteById: Note;
   getPledgesByUserId?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
+  getRecurringEvents?: Maybe<Array<Maybe<Event>>>;
   getUserTag?: Maybe<UserTag>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
   getVolunteerMembership: Array<Maybe<VolunteerMembership>>;
@@ -2414,6 +2451,12 @@ export type QueryCustomFieldsByOrganizationArgs = {
 
 export type QueryEventArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryEventsAttendedByUserArgs = {
+  id?: InputMaybe<Scalars['ID']['input']>;
+  orderBy?: InputMaybe<EventOrderByInput>;
 };
 
 
@@ -2528,6 +2571,11 @@ export type QueryGetPledgesByUserIdArgs = {
   orderBy?: InputMaybe<PledgeOrderByInput>;
   userId: Scalars['ID']['input'];
   where?: InputMaybe<PledgeWhereInput>;
+};
+
+
+export type QueryGetRecurringEventsArgs = {
+  baseRecurringEventId: Scalars['ID']['input'];
 };
 
 
@@ -2941,6 +2989,8 @@ export type User = {
   email: Scalars['EmailAddress']['output'];
   employmentStatus?: Maybe<EmploymentStatus>;
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
+  eventsAttended?: Maybe<Array<Maybe<Event>>>;
+  file?: Maybe<File>;
   firstName: Scalars['String']['output'];
   gender?: Maybe<Gender>;
   identifier: Scalars['Int']['output'];
@@ -3471,6 +3521,9 @@ export type ResolversTypes = {
   Feedback: ResolverTypeWrapper<InterfaceFeedbackModel>;
   FeedbackInput: FeedbackInput;
   FieldError: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['FieldError']>;
+  File: ResolverTypeWrapper<File>;
+  FileMetadata: ResolverTypeWrapper<FileMetadata>;
+  FileVisibility: FileVisibility;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ForgotPasswordData: ForgotPasswordData;
   Frequency: Frequency;
@@ -3484,6 +3537,7 @@ export type ResolversTypes = {
   FundraisingCampaignPledge: ResolverTypeWrapper<InterfaceFundraisingCampaignPledgesModel>;
   Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
+  Hash: ResolverTypeWrapper<Hash>;
   HoursHistory: ResolverTypeWrapper<HoursHistory>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
@@ -3690,6 +3744,8 @@ export type ResolversParentTypes = {
   Feedback: InterfaceFeedbackModel;
   FeedbackInput: FeedbackInput;
   FieldError: ResolversInterfaceTypes<ResolversParentTypes>['FieldError'];
+  File: File;
+  FileMetadata: FileMetadata;
   Float: Scalars['Float']['output'];
   ForgotPasswordData: ForgotPasswordData;
   Fund: InterfaceFundModel;
@@ -3700,6 +3756,7 @@ export type ResolversParentTypes = {
   FundraisingCampaign: InterfaceFundraisingCampaignModel;
   FundraisingCampaignPledge: InterfaceFundraisingCampaignPledgesModel;
   Group: InterfaceGroupModel;
+  Hash: Hash;
   HoursHistory: HoursHistory;
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
@@ -4260,6 +4317,32 @@ export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversP
   path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
 };
 
+export type FileResolvers<ContextType = any, ParentType extends ResolversParentTypes['File'] = ResolversParentTypes['File']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  archived?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  archivedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  backupStatus?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  encryption?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  fileName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  hash?: Resolver<ResolversTypes['Hash'], ParentType, ContextType>;
+  metadata?: Resolver<ResolversTypes['FileMetadata'], ParentType, ContextType>;
+  mimeType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  referenceCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  size?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  visibility?: Resolver<ResolversTypes['FileVisibility'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type FileMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['FileMetadata'] = ResolversParentTypes['FileMetadata']> = {
+  bucketName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objectKey?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type FundResolvers<ContextType = any, ParentType extends ResolversParentTypes['Fund'] = ResolversParentTypes['Fund']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   campaigns?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaign']>>>, ParentType, ContextType>;
@@ -4309,6 +4392,12 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type HashResolvers<ContextType = any, ParentType extends ResolversParentTypes['Hash'] = ResolversParentTypes['Hash']> = {
+  algorithm?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4643,7 +4732,7 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
   comments?: Resolver<Maybe<Array<Maybe<ResolversTypes['Comment']>>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
+  file?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType>;
   likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   likedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
@@ -4651,7 +4740,6 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  videoUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4690,6 +4778,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
   customFieldsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['OrganizationCustomField']>>>, ParentType, ContextType, RequireFields<QueryCustomFieldsByOrganizationArgs, 'id'>>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
+  eventsAttendedByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsAttendedByUserArgs>>;
   eventsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsByOrganizationArgs>>;
   eventsByOrganizationConnection?: Resolver<Array<ResolversTypes['Event']>, ParentType, ContextType, Partial<QueryEventsByOrganizationConnectionArgs>>;
   fundsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Fund']>>>, ParentType, ContextType, RequireFields<QueryFundsByOrganizationArgs, 'organizationId'>>;
@@ -4712,6 +4801,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getNoteById?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<QueryGetNoteByIdArgs, 'id'>>;
   getPledgesByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType, RequireFields<QueryGetPledgesByUserIdArgs, 'userId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
+  getRecurringEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, RequireFields<QueryGetRecurringEventsArgs, 'baseRecurringEventId'>>;
   getUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<QueryGetUserTagArgs, 'id'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
   getVolunteerMembership?: Resolver<Array<Maybe<ResolversTypes['VolunteerMembership']>>, ParentType, ContextType, RequireFields<QueryGetVolunteerMembershipArgs, 'where'>>;
@@ -4813,6 +4903,8 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   email?: Resolver<ResolversTypes['EmailAddress'], ParentType, ContextType>;
   employmentStatus?: Resolver<Maybe<ResolversTypes['EmploymentStatus']>, ParentType, ContextType>;
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  eventsAttended?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  file?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType>;
   firstName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   gender?: Resolver<Maybe<ResolversTypes['Gender']>, ParentType, ContextType>;
   identifier?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -4998,10 +5090,13 @@ export type Resolvers<ContextType = any> = {
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Feedback?: FeedbackResolvers<ContextType>;
   FieldError?: FieldErrorResolvers<ContextType>;
+  File?: FileResolvers<ContextType>;
+  FileMetadata?: FileMetadataResolvers<ContextType>;
   Fund?: FundResolvers<ContextType>;
   FundraisingCampaign?: FundraisingCampaignResolvers<ContextType>;
   FundraisingCampaignPledge?: FundraisingCampaignPledgeResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
+  Hash?: HashResolvers<ContextType>;
   HoursHistory?: HoursHistoryResolvers<ContextType>;
   InvalidCursor?: InvalidCursorResolvers<ContextType>;
   JSON?: GraphQLScalarType;

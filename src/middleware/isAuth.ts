@@ -1,7 +1,7 @@
-import type { Request } from "express";
+import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { ACCESS_TOKEN_SECRET } from "../constants";
-import { logger } from "../libraries";
+import { ACCESS_TOKEN_SECRET, UNAUTHENTICATED_ERROR } from "../constants";
+import { logger, requestContext } from "../libraries";
 
 // This interface represents the type of data object returned by isAuth function.
 export interface InterfaceAuthData {
@@ -58,7 +58,8 @@ export const isAuth = (request: Request): InterfaceAuthData => {
       authData.expired = true;
       return authData;
     }
-  } catch (e) {
+  } catch (err) {
+    logger.error(err);
     authData.expired = true;
     return authData;
   }
@@ -75,4 +76,54 @@ export const isAuth = (request: Request): InterfaceAuthData => {
 
   // Return the finalized authData object
   return authData;
+};
+
+// Extend the Express Request interface locally
+export interface InterfaceAuthenticatedRequest extends Request {
+  isAuth?: boolean;
+  userId?: string;
+  tokenExpired?: boolean;
+}
+
+/**
+ * Middleware for REST APIs to authenticate users based on the JWT token in the Authorization header.
+ *
+ * This middleware checks if the incoming request has a valid JWT token. It sets the authentication
+ * status, user ID, and token expiration status on the `req` object for downstream middleware and
+ * route handlers to use.
+ *
+ * @param req - The incoming request object. The JWT token is expected in the `Authorization` header.
+ * @param res - The response object. If authentication fails, an HTTP 401 response will be sent.
+ * @param next - The next middleware function in the stack. It is called if the user is authenticated.
+ *
+ * @returns Returns a 401 Unauthorized response if the user is not authenticated or the token has expired.
+ *
+ * @example
+ * ```typescript
+ * app.use("/api/protected-route", isAuthMiddleware, (req, res) => {
+ *   if (req.isAuth) {
+ *     res.json({ message: "This is a protected route" });
+ *   }
+ * });
+ * ```
+ */
+export const isAuthMiddleware = (
+  req: InterfaceAuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): void => {
+  const authData: InterfaceAuthData = isAuth(req);
+  req.isAuth = authData.isAuth;
+  req.userId = authData.userId;
+  req.tokenExpired = authData.expired;
+
+  if (!authData.isAuth) {
+    res.status(401).json({
+      message: requestContext.translate(UNAUTHENTICATED_ERROR.MESSAGE),
+      expired: authData.expired,
+    });
+    return;
+  }
+
+  next();
 };
