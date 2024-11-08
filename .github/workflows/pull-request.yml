@@ -218,6 +218,9 @@ jobs:
       LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
       COLORIZE_LOGS: "true"
       LOG_LEVEL: "info"
+      ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}}
+      HASH_PEPPER: ${{secrets.HASH_PEPPER}}
+
       # ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
       # REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
