@@ -27,6 +27,7 @@ import type {
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import _ from "lodash";
 import { hashEmail } from "../../../src/utilities/hashEmail";
+import { decryptEmail } from "../../../src/utilities/encryption";
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -99,7 +100,7 @@ describe("resolvers -> Mutation -> signUp", () => {
       .populate("adminFor")
       .lean();
 
-    expect(_.isEqual(signUpPayload?.user, createdUser)).toBe(true);
+    expect(_.isEqual(signUpPayload?.user, createdUser?.toObject())).toBe(true);
     expect(
       _.isEqual(signUpPayload?.appUserProfile, createdUserAppProfile),
     ).toBe(true);
@@ -206,6 +207,10 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
 
   it(`throws ConflictError  message if a user already with email === args.data.email already exists`, async () => {
+    let email = "";
+    if (testUser?.email) {
+      email = decryptEmail(testUser.email).decrypted;
+    }
     const EMAIL_MESSAGE = "email.alreadyExists";
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
@@ -214,7 +219,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     try {
       const args: MutationSignUpArgs = {
         data: {
-          email: testUser?.email,
+          email: email,
           firstName: "firstName",
           lastName: "lastName",
           password: "password",

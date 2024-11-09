@@ -38,7 +38,7 @@ export const checkAuth: QueryResolvers["checkAuth"] = async (
     );
   }
 
-  const { decrypted } = decryptEmail(currentUser.email);
+  const decrypted = decryptEmail(currentUser.email).decrypted.toLowerCase();
 
   return {
     ...currentUser,

@@ -15,6 +15,7 @@ import type { MutationForgotPasswordArgs } from "../../../src/types/generatedGra
 import { connect, disconnect } from "../../helpers/db";
 import { createTestUserFunc } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
+import { decryptEmail } from "../../../src/utilities/encryption";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -164,9 +165,15 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     const hashedOtp = await bcrypt.hash(otp, 1);
 
+    let email = "";
+
+    if (testUser?.email) {
+      email = decryptEmail(testUser.email).decrypted;
+    }
+
     const otpToken = jwt.sign(
       {
-        email: testUser?.email ?? "",
+        email,
         otp: hashedOtp,
       },
       ACCESS_TOKEN_SECRET as string,

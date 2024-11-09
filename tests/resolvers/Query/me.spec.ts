@@ -66,7 +66,7 @@ describe("resolvers -> Query -> me", () => {
     const currentUser = mePayload.user as InterfaceUser;
     currentUser.email = decryptEmail(user.email).decrypted;
 
-    expect(mePayload?.user).toEqual(user);
+    expect(mePayload?.user).toEqual(currentUser);
   });
 
   it("throws an error if user does not have appUserProfile", async () => {

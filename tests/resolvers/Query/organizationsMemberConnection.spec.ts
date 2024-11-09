@@ -12,6 +12,7 @@ import { nanoid } from "nanoid";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { BASE_URL } from "../../../src/constants";
 import { decryptEmail, encryptEmail } from "../../../src/utilities/encryption";
+import { hashEmail } from "../../../src/utilities/hashEmail";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: (InterfaceUser & Document<unknown, unknown, InterfaceUser>)[];
@@ -20,10 +21,14 @@ let testOrganization: InterfaceOrganization &
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  const email1 = `email${nanoid().toLowerCase()}@gmail.com`;
+  const email2 = `email${nanoid().toLowerCase()}@gmail.com`;
+  const email3 = `email${nanoid().toLowerCase()}@gmail.com`;
 
   testUsers = await User.insertMany([
     {
-      email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
+      email: encryptEmail(email1),
+      hashedEmail: hashEmail(email1),
       password: "password",
       firstName: `1firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
@@ -39,7 +44,8 @@ beforeAll(async () => {
       },
     },
     {
-      email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
+      email: encryptEmail(email2),
+      hashedEmail: hashEmail(email2),
       password: "password",
       firstName: `2firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
@@ -55,7 +61,8 @@ beforeAll(async () => {
       },
     },
     {
-      email: encryptEmail(`email${nanoid().toLowerCase()}@gmail.com`),
+      email: encryptEmail(email3),
+      hashedEmail: hashEmail(email3),
       password: "password",
       firstName: `3firstName${nanoid()}`,
       lastName: `lastName${nanoid()}`,
@@ -234,6 +241,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
         email: decryptEmail(user.email).decrypted,
+        hashedEmail: user.hashedEmail,
+        identifier: user.identifier,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -327,6 +336,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
         email: decryptEmail(user.email).decrypted,
+        hashedEmail: user.hashedEmail,
+        identifier: user.identifier,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -419,6 +430,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
         email: decryptEmail(user.email).decrypted,
+        hashedEmail: user.hashedEmail,
+        identifier: user.identifier,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -514,6 +527,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
         email: decryptEmail(user.email).decrypted,
+        hashedEmail: user.hashedEmail,
+        identifier: user.identifier,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -609,6 +624,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
         email: decryptEmail(user.email).decrypted,
+        hashedEmail: user.hashedEmail,
+        identifier: user.identifier,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -692,6 +709,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
         email: decryptEmail(user.email).decrypted,
+        hashedEmail: user.hashedEmail,
+        identifier: user.identifier,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -874,6 +893,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
         email: decryptEmail(user.email).decrypted,
+        hashedEmail: user.hashedEmail,
+        identifier: user.identifier,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -946,6 +967,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
         email: decryptEmail(user.email).decrypted,
+        hashedEmail: user.hashedEmail,
+        identifier: user.identifier,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -1047,6 +1070,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
         email: decryptEmail(user.email).decrypted,
+        hashedEmail: user.hashedEmail,
+        identifier: user.identifier,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,
@@ -1129,6 +1154,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         createdAt: user.createdAt,
         educationGrade: user.educationGrade,
         email: decryptEmail(user.email).decrypted,
+        hashedEmail: user.hashedEmail,
+        identifier: user.identifier,
         employmentStatus: user.employmentStatus,
         firstName: user.firstName,
         gender: user.gender,

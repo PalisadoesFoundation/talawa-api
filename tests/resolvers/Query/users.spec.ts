@@ -19,6 +19,7 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  import("../../../src/models/FundraisingCampaignPledge");
 });
 
 afterAll(async () => {

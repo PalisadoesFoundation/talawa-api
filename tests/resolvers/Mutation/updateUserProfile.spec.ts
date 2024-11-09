@@ -25,7 +25,7 @@ import {
 } from "../../../src/constants";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { encryptEmail } from "../../../src/utilities/encryption";
+import { decryptEmail, encryptEmail } from "../../../src/utilities/encryption";
 import { hashEmail } from "../../../src/utilities/hashEmail";
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -44,7 +44,6 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
   const firstEmail = `email${nanoid().toLowerCase()}@gmail.com`;
-
   const hashedFirstEmail = hashEmail(firstEmail);
 
   testUser = (await User.create({
@@ -170,10 +169,12 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
+    const email = decryptEmail(testUser2.email).decrypted;
+
     try {
       const args: MutationUpdateUserProfileArgs = {
         data: {
-          email: testUser2.email,
+          email: email,
         },
       };
 
@@ -201,7 +202,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
   it(`updates if email not changed by user`, async () => {
     const args: MutationUpdateUserProfileArgs = {
       data: {
-        email: testUser.email,
+        email: decryptEmail(testUser.email).decrypted,
       },
     };
 
@@ -252,6 +253,8 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
   });
 
   it(`updates current user's user object when any single argument(firstName) is given w/0 changing other fields `, async () => {
+    const testUserobj = await User.findById({ _id: testUser.id });
+
     const args: MutationUpdateUserProfileArgs = {
       data: {
         firstName: "newFirstName",
@@ -267,8 +270,6 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       args,
       context,
     );
-
-    const testUserobj = await User.findById({ _id: testUser.id });
 
     expect(updateUserProfilePayload).toEqual({
       ...testUser.toObject(),

@@ -9,6 +9,7 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { mailer } from "../../../src/utilities";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { nanoid } from "nanoid";
+import { decryptEmail } from "../../../src/utilities/encryption";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -37,9 +38,13 @@ describe("resolvers -> Mutation -> otp", () => {
     }
   });
   it("should generate and send OTP to the user", async () => {
+    let email = "";
+    if (testUser?.email) {
+      email = decryptEmail(testUser.email).decrypted;
+    }
     const args: MutationOtpArgs = {
       data: {
-        email: testUser?.email,
+        email: email,
       },
     };
     vi.mock("../../../src/utilities", () => ({

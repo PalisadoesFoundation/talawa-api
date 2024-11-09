@@ -111,7 +111,7 @@ describe("resolvers -> Mutation -> login", () => {
       // Prepare the arguments for the login resolver
       const args: MutationLoginArgs = {
         data: {
-          email: newUser.email,
+          email: email,
           password: "password",
         },
       };
@@ -161,7 +161,7 @@ describe("resolvers -> Mutation -> login", () => {
 
     const args: MutationLoginArgs = {
       data: {
-        email: newUser?.email,
+        email: email,
         password: "password",
       },
     };
@@ -239,7 +239,7 @@ describe("resolvers -> Mutation -> login", () => {
     );
     const args: MutationLoginArgs = {
       data: {
-        email: newUser?.email,
+        email: email,
         password: "password",
       },
     };

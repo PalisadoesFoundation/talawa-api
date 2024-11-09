@@ -23,6 +23,8 @@ import {
 import { createTestUserFunc, type TestUserType } from "../../helpers/user";
 import { AppUserProfile, User } from "../../../src/models";
 import { nanoid } from "nanoid";
+import { hashEmail } from "../../../src/utilities/hashEmail";
+import { encryptEmail } from "../../../src/utilities/encryption";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser1: TestUserType;
@@ -102,9 +104,13 @@ describe("resolvers -> Mutation -> updateCommunity", () => {
       .spyOn(requestContext, "translate")
       .mockImplementation((message) => `Translated ${message}`);
 
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const hashedEmail = hashEmail(email);
+
     try {
       const newUser = await User.create({
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
+        email: encryptEmail(email),
+        hashedEmail: hashedEmail,
         password: `pass${nanoid().toLowerCase()}`,
         firstName: `firstName${nanoid().toLowerCase()}`,
         lastName: `lastName${nanoid().toLowerCase()}`,

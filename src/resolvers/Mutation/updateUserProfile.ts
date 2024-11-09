@@ -10,6 +10,7 @@ import { deleteUserFromCache } from "../../services/UserCache/deleteUserFromCach
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { decryptEmail } from "../../utilities/encryption";
 import { hashEmail } from "../../utilities/hashEmail";
 /**
  * This function enables to update user profile.
@@ -45,7 +46,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     );
   }
 
-  const hashedEmail = hashEmail(args.data?.email);
+  const decryptedEmail = decryptEmail(currentUser.email).decrypted;
+
+  const hashedEmail = hashEmail(decryptedEmail);
 
   if (args.data?.email && args.data?.email !== currentUser?.email) {
     const userWithEmailExists = await User.findOne({

@@ -22,18 +22,14 @@ export const user: MembershipRequestResolvers["user"] = async (parent) => {
   }).lean();
 
   if (!result) {
-    throw new errors.NotFoundError("User not found");
-  }
-  const { decrypted } = decryptEmail(result.email);
-  result.email = decrypted;
-
-  if (result) {
-    return result;
-  } else {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM,
     );
   }
+  const { decrypted } = decryptEmail(result.email);
+  result.email = decrypted;
+
+  return result;
 };
