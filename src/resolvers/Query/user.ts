@@ -15,9 +15,9 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
  */
 export const user: QueryResolvers["user"] = async (_parent, args, context) => {
   // Check if the current user exists in the system
-  const currentUserExists = !!(await User.exists({
+  const currentUserExists = await User.exists({
     _id: context.userId,
-  }));
+  });
 
   if (!currentUserExists) {
     throw new errors.NotFoundError(

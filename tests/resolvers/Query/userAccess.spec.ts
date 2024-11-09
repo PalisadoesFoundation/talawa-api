@@ -37,8 +37,8 @@ beforeAll(async () => {
 
     const org = await Organization.create({
       creatorId: adminUser?.id,
-      members: [anotherTestUser?.id],
-      admins: [adminUser?.id],
+      members: [anotherTestUser?._id],
+      admins: [adminUser?._id],
       name: "Test Organization",
       description: "A test organization for user query testing",
     });
