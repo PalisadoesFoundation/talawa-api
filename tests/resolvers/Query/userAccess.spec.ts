@@ -1,11 +1,14 @@
 import { USER_NOT_FOUND_ERROR, BASE_URL } from "../../../src/constants";
-import type mongoose from "mongoose";
 import { user as userResolver } from "../../../src/resolvers/Query/user";
 import { User, Organization, AppUserProfile } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import { FundraisingCampaignPledge } from "../../../src/models/FundraisingCampaignPledge";
+import { deleteUserFromCache } from "../../../src/services/UserCache/deleteUserFromCache";
 
 let testUser: TestUserType;
 let anotherTestUser: TestUserType;
@@ -15,24 +18,37 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await deleteUserFromCache(testUser?.id);
+  const pledges = await FundraisingCampaignPledge.find({
+    _id: new Types.ObjectId(),
+  }).lean();
+  console.log(pledges);
   try {
     testUser = await createTestUser();
+    if (!testUser?.id) throw new Error("Failed to create test user");
     anotherTestUser = await createTestUser();
+    if (!anotherTestUser?.id)
+      throw new Error("Failed to create another test user");
     adminUser = await createTestUser();
+    if (!adminUser?.id) throw new Error("Failed to create admin user");
     superAdminUser = await createTestUser();
+    if (!superAdminUser?.id)
+      throw new Error("Failed to create super admin user");
 
-    await Organization.create({
+    const org = await Organization.create({
       creatorId: adminUser?.id,
       members: [anotherTestUser?.id],
       admins: [adminUser?.id],
       name: "Test Organization",
       description: "A test organization for user query testing",
     });
+    if (!org) throw new Error("Failed to create organization");
 
-    await AppUserProfile.create({
+    const profile = await AppUserProfile.create({
       userId: superAdminUser?.id,
       isSuperAdmin: true,
     });
+    if (!profile) throw new Error("Failed to create super admin profile");
   } catch (error) {
     console.error("Failed to set up test data:", error);
     throw error;
@@ -60,9 +76,9 @@ afterAll(async () => {
 describe("user Query", () => {
   // Test case 1: Invalid user ID scenario
   it("throws error if user doesn't exist", async () => {
-    expect.assertions(1);
+    expect.assertions(2);
     const args = {
-      id: "invalidUserId",
+      id: new Types.ObjectId().toString(),
     };
 
     const context = {
@@ -72,10 +88,11 @@ describe("user Query", () => {
     try {
       await userResolver?.({}, args, context);
     } catch (error) {
+      if (!(error instanceof Error)) {
+        throw new Error("Unexpected error type");
+      }
       expect(error).toBeInstanceOf(Error);
-      expect(error instanceof Error && error.message).toEqual(
-        USER_NOT_FOUND_ERROR.DESC,
-      );
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -94,13 +111,14 @@ describe("user Query", () => {
       await userResolver?.({}, args, context);
     } catch (error: unknown) {
       expect((error as Error).message).toEqual(
-        "Access denied. You can only view your own profile.",
+        "Access denied. Only the user themselves, organization admins, or super admins can view this profile.",
       );
     }
   });
 
   // Test case 3: Admin access scenario
   it("allows an admin to access another user's data within the same organization", async () => {
+    expect.assertions(2);
     const args = {
       id: anotherTestUser?.id,
     };
@@ -110,8 +128,8 @@ describe("user Query", () => {
       apiRootURL: BASE_URL,
     };
 
-    const org = await Organization.findOne({ admins: adminUser?.id });
-    expect(org?.members).toContain(anotherTestUser?.id);
+    const org = await Organization.findOne({ admins: adminUser?._id });
+    expect(org?.members).toContain(anotherTestUser?._id);
 
     const result = await userResolver?.({}, args, context);
 
@@ -126,6 +144,7 @@ describe("user Query", () => {
 
   // Test case 4: SuperAdmin access scenario
   it("allows a super admin to access any user's data", async () => {
+    expect.assertions(1);
     const args = {
       id: anotherTestUser?.id,
     };
@@ -148,6 +167,7 @@ describe("user Query", () => {
 
   // Test case 5: Successful access to own profile
   it("successfully returns user data when accessing own profile", async () => {
+    expect.assertions(1);
     const args = {
       id: testUser?.id,
     };
