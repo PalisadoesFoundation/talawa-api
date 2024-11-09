@@ -37,9 +37,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: talawa-api-dev
-    ports:
-      - "4000:4000"
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -51,12 +48,25 @@ services:
       - MONGO_DB_URL=mongodb://mongodb:27017/talawa-api
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
-    networks:
-      - talawa-network
+
+  caddy:
+    image: caddy/caddy:2.2.1-alpine
+    container_name: caddy-service
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - $PWD/Caddyfile:/etc/caddy/Caddyfile
+      - $PWD/site:/srv
+      - caddy_data:/data
+      - caddy_config:/config
 
 volumes:
   mongodb-data:
   redis-data:
+  caddy_data:
+  caddy_config:
   minio-data:
 
 networks:
