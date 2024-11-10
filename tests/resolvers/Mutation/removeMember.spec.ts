@@ -140,7 +140,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
         await import("../../../src/resolvers/Mutation/removeMember");
 
       await removeMemberResolverOrgNotFoundError?.({}, args, context);
-    } catch (error: unknown) {
+    } catch {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });

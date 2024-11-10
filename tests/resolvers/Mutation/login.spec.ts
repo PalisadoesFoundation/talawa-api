@@ -88,14 +88,9 @@ describe("resolvers -> Mutation -> login", () => {
   });
 
   it("throws ValidationError if email is not found in args.data", async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
     // Spy on the translate function to capture error messages
 
     try {
-      const email = `nonexistentuser${nanoid().toLowerCase()}@gmail.com`;
-      const hashedEmail = hashEmail(email);
-
       const args: MutationLoginArgs = {
         data: {
           email: null,
