@@ -8,6 +8,9 @@
 [![GitHub stars](https://img.shields.io/github/stars/PalisadoesFoundation/talawa-api.svg?style=social&label=Star&maxAge=2592000)](https://github.com/PalisadoesFoundation/talawa-api)
 [![GitHub forks](https://img.shields.io/github/forks/PalisadoesFoundation/talawa-api.svg?style=social&label=Fork&maxAge=2592000)](https://github.com/PalisadoesFoundation/talawa-api)
 [![codecov](https://codecov.io/gh/PalisadoesFoundation/talawa-api/branch/develop/graph/badge.svg?token=CECBQTAOKM)](https://codecov.io/gh/PalisadoesFoundation/talawa-api)
+[![Formatted with Biome](https://img.shields.io/badge/Formatted_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev/)
+[![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev)
+[![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev)
 
 Talawa is a modular open source project to manage group activities of both non-profit organizations and businesses.
 
@@ -21,7 +24,7 @@ Core features include:
 
 `talawa` is based on the original `quito` code created by the [Palisadoes Foundation](http://www.palisadoes.org) as part of its annual Calico Challenge program. Calico provides paid summer internships for Jamaican university students to work on selected open source projects. They are mentored by software professionals and receive stipends based on the completion of predefined milestones. Calico was started in 2015. Visit [The Palisadoes Foundation's website](http://www.palisadoes.org/) for more details on its origin and activities.
 
-## Table of Contents
+##  Table of Contents
 
 <!-- toc -->
 
