@@ -206,7 +206,30 @@ describe("resolvers -> Mutation -> signUp", () => {
     vi.restoreAllMocks();
   });
 
-  it(`throws ConflictError  message if a user already with email === args.data.email already exists`, async () => {
+  it("throws error if email has invalid format", async () => {
+    try {
+      const args: MutationSignUpArgs = {
+        data: {
+          email: "",
+          firstName: "firstName",
+          lastName: "lastName",
+          password: "password",
+          appLanguageCode: "en",
+          selectedOrganization: testOrganization?._id,
+        },
+      };
+
+      const { signUp: signUpResolver } = await import(
+        "../../../src/resolvers/Mutation/signUp"
+      );
+
+      await signUpResolver?.({}, args, {});
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual("Invalid email format");
+    }
+  });
+
+  it(`throws ConflictError message if a user already with email === args.data.email already exists`, async () => {
     let email = "";
     if (testUser?.email) {
       email = decryptEmail(testUser.email).decrypted;

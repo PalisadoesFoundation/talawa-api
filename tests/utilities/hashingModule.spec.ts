@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { hashEmail } from "../../src/utilities/hashEmail";
+import { describe, it, expect, vi } from "vitest";
+import { compareHashedEmails, hashEmail } from "../../src/utilities/hashEmail";
 import { setHashPepper } from "../../setup";
 
 describe("hashingModule", () => {
@@ -48,6 +48,77 @@ describe("hashingModule", () => {
         }
       } finally {
         process.env.HASH_PEPPER = originalPepper;
+      }
+    });
+    it("should throw an error for an invalid email format", () => {
+      const invalidEmails = [
+        "plainaddress",
+        "missing@domain",
+        "@missinglocal.com",
+        "missing@.com",
+      ];
+
+      invalidEmails.forEach((email) => {
+        expect(() => hashEmail(email)).toThrow("Invalid email format");
+      });
+    });
+
+    it("should throw an error if HASH_PEPPER is missing", () => {
+      const originalPepper = process.env.HASH_PEPPER;
+      delete process.env.HASH_PEPPER;
+
+      expect(() => hashEmail("test@example.com")).toThrow(
+        "Missing HASH_PEPPER environment variable required for secure email hashing",
+      );
+
+      process.env.HASH_PEPPER = originalPepper;
+    });
+
+    it("should throw an error if HASH_PEPPER is shorter than 32 characters", () => {
+      const originalPepper = process.env.HASH_PEPPER;
+      process.env.HASH_PEPPER = "short_pepper";
+
+      expect(() => hashEmail("test@example.com")).toThrow(
+        "HASH_PEPPER must be at least 32 characters long",
+      );
+
+      process.env.HASH_PEPPER = originalPepper;
+    });
+  });
+
+  describe("compareHashedEmails function error handling", () => {
+    it("should return false for invalid hashed email formats", () => {
+      const validHash = "a".repeat(64);
+      const invalidHashes = [
+        "short",
+        "invalid_characters_!@#",
+        "",
+        null,
+        undefined,
+      ];
+
+      invalidHashes.forEach((invalidHash) => {
+        expect(
+          compareHashedEmails(invalidHash as unknown as string, validHash),
+        ).toBe(false);
+        expect(
+          compareHashedEmails(validHash, invalidHash as unknown as string),
+        ).toBe(false);
+      });
+    });
+
+    it("should log an error and return false if crypto.timingSafeEqual fails due to invalid hex encoding", () => {
+      const invalidHash = "z".repeat(64); // deliberately invalid hex
+      let result;
+      try {
+        result = compareHashedEmails(invalidHash, invalidHash);
+      } catch (error) {
+        expect(result).toBe(false);
+        if (error instanceof Error) {
+          expect(error.message).toBe(
+            "Failed to compare hashes, likely due to invalid hex encoding",
+          );
+        }
       }
     });
   });

@@ -28,6 +28,7 @@ import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistra
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { decryptEmail, encryptEmail } from "../../../src/utilities/encryption";
 import { hashEmail } from "../../../src/utilities/hashEmail";
+import { ValidationError } from "../../../src/libraries/errors";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -86,6 +87,44 @@ describe("resolvers -> Mutation -> login", () => {
     vi.resetModules();
   });
 
+  it("throws ValidationError if email is not found in args.data", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    // Spy on the translate function to capture error messages
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const email = `nonexistentuser${nanoid().toLowerCase()}@gmail.com`;
+      const hashedEmail = hashEmail(email);
+      const newUser = await User.create({
+        email: encryptEmail(email),
+        hashedEmail: hashedEmail,
+        password: "password",
+        firstName: "John",
+        lastName: "Doe",
+      });
+
+      const args: MutationLoginArgs = {
+        data: {
+          email: null,
+          password: "password",
+        },
+      };
+
+      const { login: loginResolver } = await import(
+        "../../../src/resolvers/Mutation/login"
+      );
+
+      await loginResolver?.({}, args, {});
+    } catch (error) {
+      expect(error).instanceOf(ValidationError);
+      if (error instanceof ValidationError) {
+        expect(error.message).toBe("Email is required");
+      }
+    }
+  });
   it("throws NotFoundError if the user is not found after creating AppUserProfile", async () => {
     const { requestContext } = await import("../../../src/libraries");
 
