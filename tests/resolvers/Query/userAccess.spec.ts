@@ -37,8 +37,8 @@ beforeAll(async () => {
 
     const org = await Organization.create({
       creatorId: adminUser?.id,
-      members: [anotherTestUser?._id],
-      admins: [adminUser?._id],
+      members: [anotherTestUser?.id],
+      admins: [adminUser?.id],
       name: "Test Organization",
       description: "A test organization for user query testing",
     });
@@ -87,12 +87,9 @@ describe("user Query", () => {
 
     try {
       await userResolver?.({}, args, context);
-    } catch (error) {
-      if (!(error instanceof Error)) {
-        throw new Error("Unexpected error type");
-      }
+    } catch (error: unknown) {
       expect(error).toBeInstanceOf(Error);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -128,8 +125,8 @@ describe("user Query", () => {
       apiRootURL: BASE_URL,
     };
 
-    const org = await Organization.findOne({ admins: adminUser?._id });
-    expect(org?.members).toContain(anotherTestUser?._id);
+    const org = await Organization.findOne({ admins: adminUser?.id });
+    expect(org?.members).toContain(anotherTestUser?.id);
 
     const result = await userResolver?.({}, args, context);
 
