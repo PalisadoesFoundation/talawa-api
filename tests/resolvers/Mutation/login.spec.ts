@@ -91,20 +91,10 @@ describe("resolvers -> Mutation -> login", () => {
     const { requestContext } = await import("../../../src/libraries");
 
     // Spy on the translate function to capture error messages
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
       const email = `nonexistentuser${nanoid().toLowerCase()}@gmail.com`;
       const hashedEmail = hashEmail(email);
-      const newUser = await User.create({
-        email: encryptEmail(email),
-        hashedEmail: hashedEmail,
-        password: "password",
-        firstName: "John",
-        lastName: "Doe",
-      });
 
       const args: MutationLoginArgs = {
         data: {
