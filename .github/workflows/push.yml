@@ -90,7 +90,12 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
           fail_ci_if_error: false
-          name: '${{env.CODECOV_UNIQUE_NAME}}'  
+          name: '${{env.CODECOV_UNIQUE_NAME}}'
+
+      - name: Check whether the application can run on Docker
+        run: | 
+            bash /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.prod.yaml up --build 
+            npm run test  
             
             
 # You can find the deployment instructions in the scripts/cloud-api-demo/README.md file

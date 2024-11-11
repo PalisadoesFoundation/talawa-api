@@ -286,7 +286,76 @@ jobs:
         with:
           path: './coverage/lcov.info'
           min_coverage: 95.0
-          
+
+  Test-Application-on-Docker:
+    name: Testing Application on Docker
+    runs-on: ubuntu-latest
+    needs: [Code-Quality-Checks, Test-Application]
+    strategy:
+      matrix:
+        node-version: [22.x]
+    services:
+      mongo:
+        image: mongo:4.4
+        options: >-
+          --health-cmd mongo
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:6.0
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 6379:6379
+      caddy:
+        image: caddy/caddy:2.2.1-alpine
+        ports: 
+          - 443:443
+          - 80:80
+      minio: 
+        image: talawa-api-minio-1
+        ports: 
+          - 9000:9000
+          - 9001:9001
+      talawa-api-prod-container:
+        image: talawa-api-talawa-api-dev:latest
+        ports:
+          - 4000:4000
+
+    env:
+      MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      RECAPTCHA_SITE_KEY: ${{secrets.RECAPTCHA_SITE_KEY}}
+      RECAPTCHA_SECRET_KEY: ${{secrets.RECAPTCHA_SECRET_KEY}}
+      MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
+      MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD}}
+      IS_SMTP: ""
+      SMTP_HOST: ""
+      SMTP_PASSWORD: ""
+      SMTP_USERNAME: ""
+      LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
+      COLORIZE_LOGS: "true"
+      LOG_LEVEL: "info"
+      MINIO_ENDPOINT: http://minio:9000
+      # MINIO_ROOT_USER: ${{secrets.MINIO_ROOT_USER}}
+      # MINIO_ROOT_PASSWORD: ${{secrets.MINIO_ROOT_PASSWORD}}
+      MINIO_BUCKET: bucketg
+      MINIO_DATA_DIR: ./data
+      # ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+      # REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+    steps: 
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Running on Docker
+        run: npm run test
+
   JSDocs:
     name: 'JSDocs comments and pipeline'
     runs-on: ubuntu-latest
