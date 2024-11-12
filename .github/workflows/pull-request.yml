@@ -255,6 +255,14 @@ jobs:
   
       - name: Run the tests
         run: npm run test
+
+      - name: Checks Talawa API app starts in Docker
+        run: |
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
+          bash sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build
+          elif [[ "${{ runner.os }}" == "Windows" ]]; then
+          docker-compose -f docker-compose.dev.yaml up --build
+          fi
       
       - name: Start the development server 
         run: |
