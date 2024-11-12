@@ -306,14 +306,13 @@ jobs:
          docker-compose -f docker-compose.dev.yaml down -v || true
 
          # Start containers
-          docker-compose -f docker-compose.dev.yaml up -d --build
-          if [ $? -ne 0 ]; then
+         if ! docker-compose -f docker-compose.dev.yaml up -d --build; then
             echo "Failed to start containers"
             exit 1
-          fi
+         fi
 
           timeout=60
-          until curl -f "${HEALTH_CHECK_URL:-http://localhost:4000}/health" || [ $timeout -eq 0 ]; do
+          until curl -sf "${HEALTH_CHECK_URL:-http://localhost:4000}/health" 2>/dev/null || [ $timeout -eq 0 ]; do
             echo "Waiting for API to start... ($timeout seconds remaining)"
             sleep 1
             ((timeout--))
@@ -329,8 +328,7 @@ jobs:
           echo "API started successfully"
 
           # Cleanup
-          docker-compose -f docker-compose.dev.yaml down -v
-          if [ $? -ne 0 ]; then
+          if ! docker-compose -f docker-compose.dev.yaml down -v; then
           echo "Failed to cleanup containers"
           exit 1
           fi
