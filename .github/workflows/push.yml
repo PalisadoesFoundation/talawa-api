@@ -160,7 +160,7 @@ jobs:
           - 443:443
           - 80:80
       minio: 
-        image: talawa-api-minio-1
+        image: minio/minio:latest
         ports: 
           - 9000:9000
           - 9001:9001
