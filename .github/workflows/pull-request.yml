@@ -298,28 +298,45 @@ jobs:
   
   Docker-Check:
     needs: Test-Application
+    runs-on: ubuntu-latest
     steps: 
       - name: Check if Talawa API starts in Docker
         run: |
+         # Ensure no containers are running
+         docker-compose -f docker-compose.dev.yaml down -v || true
+
+         # Start containers
           docker-compose -f docker-compose.dev.yaml up -d --build
-      
+          if [ $? -ne 0 ]; then
+            echo "Failed to start containers"
+            exit 1
+          fi
+
           timeout=60
-          until curl -f http://localhost:4000/health || [ $timeout -eq 0 ]; do
+          until curl -f "${HEALTH_CHECK_URL:-http://localhost:4000}/health" || [ $timeout -eq 0 ]; do
             echo "Waiting for API to start... ($timeout seconds remaining)"
             sleep 1
             ((timeout--))
-          done
-          
+          done      
+
           if [ $timeout -eq 0 ]; then
             echo "Error: API failed to start within timeout"
             docker-compose -f docker-compose.dev.yaml logs
+            docker-compose -f docker-compose.dev.yaml down -v
             exit 1
           fi
-          
+
           echo "API started successfully"
-          
+
           # Cleanup
           docker-compose -f docker-compose.dev.yaml down -v
+          if [ $? -ne 0 ]; then
+          echo "Failed to cleanup containers"
+          exit 1
+          fi
+    env:
+      HEALTH_CHECK_URL: http://localhost:4000
+      COMPOSE_PROJECT_NAME: pr-${{ github.event.pull_request.number }}      
 
 
   JSDocs:
