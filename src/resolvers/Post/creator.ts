@@ -29,7 +29,7 @@ export const creator: PostResolvers["creator"] = async (parent) => {
         ...creator,
         email: decryptionResult.decrypted,
       };
-    } catch (error) {
+    } catch {
       throw new Error("Unable to process user data");
     }
   }
