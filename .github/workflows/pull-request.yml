@@ -255,14 +255,6 @@ jobs:
   
       - name: Run the tests
         run: npm run test
-
-      - name: Checks Talawa API app starts in Docker
-        run: |
-          if [[ "${{ runner.os }}" == "Linux" ]]; then
-          bash sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build
-          elif [[ "${{ runner.os }}" == "Windows" ]]; then
-          docker-compose -f docker-compose.dev.yaml up --build
-          fi
       
       - name: Start the development server 
         run: |
@@ -303,7 +295,33 @@ jobs:
         with:
           path: './coverage/lcov.info'
           min_coverage: 95.0
+  
+  Docker-Check:
+    needs: Test-Application
+    steps: 
+      - name: Check if Talawa API starts in Docker
+        run: |
+          docker-compose -f docker-compose.dev.yaml up -d --build
+      
+          timeout=60
+          until curl -f http://localhost:4000/health || [ $timeout -eq 0 ]; do
+            echo "Waiting for API to start... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
           
+          if [ $timeout -eq 0 ]; then
+            echo "Error: API failed to start within timeout"
+            docker-compose -f docker-compose.dev.yaml logs
+            exit 1
+          fi
+          
+          echo "API started successfully"
+          
+          # Cleanup
+          docker-compose -f docker-compose.dev.yaml down -v
+
+
   JSDocs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: 'JSDocs comments and pipeline'
