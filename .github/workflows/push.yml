@@ -131,7 +131,6 @@ jobs:
   Test-Application-on-Docker:
     name: Testing Application on Docker
     runs-on: ubuntu-latest
-    needs: Deploy-Workflow
     strategy:
       matrix:
         node-version: [22.x]
