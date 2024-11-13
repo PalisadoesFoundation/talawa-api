@@ -189,7 +189,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
       - name: Build docker images
-        run: docker build -t local < .devcontainer/Dockerfile
+        run: docker build -t local < ./Dockerfile.dev
       - name: Running on Docker
         run: npm run test
 
