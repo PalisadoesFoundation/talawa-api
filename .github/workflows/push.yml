@@ -131,7 +131,7 @@ jobs:
   Test-Application-on-Docker:
     name: Testing Application on Docker
     runs-on: ubuntu-latest
-    needs: [Deploy-Workflow,]
+    needs: Deploy-Workflow
     strategy:
       matrix:
         node-version: [22.x]
@@ -196,6 +196,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Running on Docker
         run: npm run test
+
+        
   Check-Schema: 
     name: Check Schema
     runs-on: ubuntu-latest
