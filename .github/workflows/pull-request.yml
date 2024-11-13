@@ -324,9 +324,14 @@ jobs:
           - 9000:9000
           - 9001:9001
       talawa-api-prod-container:
-        image: talawa-api-talawa-api-dev:latest
-        ports:
+        image: "./Dockerfile.dev"
+        volumes:
+          - .:/usr/src/app
+          - /usr/src/app/node_modules
+        ports: 
           - 4000:4000
+
+        
 
     env:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
