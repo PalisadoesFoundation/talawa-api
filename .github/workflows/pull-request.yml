@@ -323,16 +323,6 @@ jobs:
         ports: 
           - 9000:9000
           - 9001:9001
-      talawa-api-prod-container:
-        image: "./Dockerfile.dev"
-        volumes:
-          - .:/usr/src/app
-          - /usr/src/app/node_modules
-        ports: 
-          - 4000:4000
-
-        
-
     env:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
       REDIS_HOST: localhost
@@ -358,6 +348,8 @@ jobs:
     steps: 
       - name: Check out the repo
         uses: actions/checkout@v4
+      - name: Build docker images
+        run: docker build -t local < ./Dockerfile.dev
       - name: Running on Docker
         run: npm run test
 
