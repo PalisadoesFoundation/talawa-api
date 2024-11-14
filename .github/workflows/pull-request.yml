@@ -12,13 +12,13 @@ jobs:
   check_base_branch:
     # only run the job if the pull request actor is not dependabot
     if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Check base branch of the pull request to be dev-postgres
+    name: Check base branch of the pull request to be develop-postgres
     runs-on: ubuntu-latest
     steps:
-      - if: github.event.pull_request.base.ref != 'dev-postgres'
+      - if: github.event.pull_request.base.ref != 'develop-postgres'
         name: Check base branch
         run: |
-          echo "Pull requests are only allowed against the 'dev-postgres' branch. Please refer to the pull request guidelines."
+          echo "Pull requests are only allowed against the 'develop-postgres' branch. Please refer to the pull request guidelines."
           exit 1 
   check_code_quality:
     name: Checking code quality
