@@ -30,6 +30,11 @@ const tagUserSchema = new Schema({
     ref: "OrganizationTagUser",
     required: true,
   },
+  organizationId: {
+    type: Schema.Types.ObjectId,
+    ref: "Organization",
+    required: true,
+  },
   tagColor: {
     type: String,
     required: false,

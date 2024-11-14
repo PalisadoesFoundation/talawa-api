@@ -40,16 +40,13 @@ const config: CodegenConfig = {
 
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 
-          MessageChat: "../models/MessageChat#InterfaceMessageChat",
-
           Comment: "../models/Comment#InterfaceComment",
 
           Community: "../models/Community#InterfaceCommunity",
 
-          DirectChat: "../models/DirectChat#InterfaceDirectChat",
+          Chat: "../models/Chat#InterfaceChat",
 
-          DirectChatMessage:
-            "../models/DirectChatMessage#InterfaceDirectChatMessage",
+          ChatMessage: "../models/ChatMessage#InterfaceChatMessage",
 
           Donation: "../models/Donation#InterfaceDonation",
 
@@ -74,11 +71,6 @@ const config: CodegenConfig = {
           // File: '../models/File#InterfaceFile',
 
           Group: "../models/Group#InterfaceGroup",
-
-          GroupChat: "../models/GroupChat#InterfaceGroupChat",
-
-          GroupChatMessage:
-            "../models/GroupChatMessage#InterfaceGroupChatMessage",
 
           // ImageHash: '../models/ImageHash#InterfaceImageHash',
 
@@ -106,6 +98,9 @@ const config: CodegenConfig = {
           User: "../models/User#InterfaceUser",
 
           Venue: "../models/Venue#InterfaceVenue",
+
+          VolunteerMembership:
+            "../models/VolunteerMembership#InterfaceVolunteerMembership",
         },
 
         useTypeImports: true,

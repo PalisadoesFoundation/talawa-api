@@ -2,6 +2,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { isSampleOrganization } from "../Query/organizationIsSample";
 import { actionItemCategoriesByOrganization } from "./actionItemCategoriesByOrganization";
 import { actionItemsByEvent } from "./actionItemsByEvent";
+import { actionItemsByUser } from "./actionItemsByUser";
 import { actionItemsByOrganization } from "./actionItemsByOrganization";
 import { advertisementsConnection } from "./advertisementsConnection";
 import { agendaCategory } from "./agendaCategory";
@@ -13,14 +14,12 @@ import { getAgendaSection } from "./getAgendaSection";
 import { checkAuth } from "./checkAuth";
 import { customDataByOrganization } from "./customDataByOrganization";
 import { customFieldsByOrganization } from "./customFieldsByOrganization";
-import { directChatsByUserID } from "./directChatsByUserID";
-import { directChatsMessagesByChatID } from "./directChatsMessagesByChatID";
-import { directChatById } from "./directChatById";
-import { groupChatById } from "./groupChatById";
-import { groupChatsByUserId } from "./groupChatsByUserId";
+import { chatById } from "./chatById";
+import { chatsByUserId } from "./chatsByUserId";
 import { event } from "./event";
 import { eventsByOrganization } from "./eventsByOrganization";
 import { eventsByOrganizationConnection } from "./eventsByOrganizationConnection";
+import { getEventVolunteers } from "./getEventVolunteers";
 import { getEventVolunteerGroups } from "./getEventVolunteerGroups";
 import { fundsByOrganization } from "./fundsByOrganization";
 import { getAllAgendaItems } from "./getAllAgendaItems";
@@ -35,7 +34,6 @@ import { getPledgesByUserId } from "./getPledgesByUserId";
 import { getPlugins } from "./getPlugins";
 import { getlanguage } from "./getlanguage";
 import { getUserTag } from "./getUserTag";
-import { getUserTagAncestors } from "./getUserTagAncestors";
 import { me } from "./me";
 import { myLanguage } from "./myLanguage";
 import { organizations } from "./organizations";
@@ -53,8 +51,14 @@ import { getEventAttendeesByEventId } from "./getEventAttendeesByEventId";
 import { getVenueByOrgId } from "./getVenueByOrgId";
 import { getAllNotesForAgendaItem } from "./getAllNotesForAgendaItem";
 import { getNoteById } from "./getNoteById";
+import { eventsAttendedByUser } from "./eventsAttendedByUser";
+import { getRecurringEvents } from "./getRecurringEvents";
+import { getVolunteerMembership } from "./getVolunteerMembership";
+import { getVolunteerRanks } from "./getVolunteerRanks";
+
 export const Query: QueryResolvers = {
   actionItemsByEvent,
+  actionItemsByUser,
   agendaCategory,
   getAgendaItem,
   getAgendaSection,
@@ -68,11 +72,8 @@ export const Query: QueryResolvers = {
   getCommunityData,
   customFieldsByOrganization,
   customDataByOrganization,
-  directChatsByUserID,
-  directChatsMessagesByChatID,
-  directChatById,
-  groupChatById,
-  groupChatsByUserId,
+  chatById,
+  chatsByUserId,
   event,
   eventsByOrganization,
   eventsByOrganizationConnection,
@@ -81,13 +82,14 @@ export const Query: QueryResolvers = {
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getEventInvitesByUserId,
+  getEventVolunteers,
   getEventVolunteerGroups,
   getAllNotesForAgendaItem,
   getNoteById,
   getlanguage,
   getPlugins,
+  getRecurringEvents,
   getUserTag,
-  getUserTagAncestors,
   isSampleOrganization,
   me,
   myLanguage,
@@ -108,4 +110,7 @@ export const Query: QueryResolvers = {
   getEventAttendee,
   getEventAttendeesByEventId,
   getVenueByOrgId,
+  eventsAttendedByUser,
+  getVolunteerMembership,
+  getVolunteerRanks,
 };

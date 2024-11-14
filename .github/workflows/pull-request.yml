@@ -37,7 +37,7 @@ jobs:
       - name: Count number of lines
         run: |
           chmod +x ./.github/workflows/countline.py
-          ./.github/workflows/countline.py --lines 600 --exclude_files src/types/generatedGraphQLTypes.ts tests src/typeDefs/types.ts src/constants.ts
+          ./.github/workflows/countline.py --lines 600 --exclude_files src/types/generatedGraphQLTypes.ts tests src/typeDefs/types.ts src/constants.ts src/typeDefs/inputs.ts
 
       - name: Check for TSDoc comments
         run: npm run check-tsdoc # Run the TSDoc check script
@@ -90,8 +90,9 @@ jobs:
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
           exit 1
 
-  Check-Unauthorized-Changes:
-    name: Checks if no unauthorized files are changed
+  Check-Sensitive-Files:
+    if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.pull_request.labels.*.name, 'ignore-sensitive-files-pr') }}
+    name: Checks if sensitive files have been changed without authorization
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -126,6 +127,13 @@ jobs:
             setup.ts
             schema.graphql
             .coderabbit.yaml
+            CODE_OF_CONDUCT.md
+            CONTRIBUTING.md
+            DOCUMENTATION.md
+            INSTALLATION.md
+            ISSUE_GUIDELINES.md
+            PR_GUIDELINES.md
+            README.md
 
       - name: List all changed unauthorized files
         if: steps.changed-unauth-files.outputs.any_changed == 'true' || steps.changed-unauth-files.outputs.any_deleted == 'true'
@@ -138,6 +146,7 @@ jobs:
           exit 1
 
   File-count-check:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Checks if number of files changed is acceptable
     runs-on: ubuntu-latest
     steps:
@@ -288,6 +297,7 @@ jobs:
           min_coverage: 95.0
           
   JSDocs:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: 'JSDocs comments and pipeline'
     runs-on: ubuntu-latest
     needs: Test-Application
@@ -303,6 +313,7 @@ jobs:
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
   
   Branch-check:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: "Base branch check"
     runs-on: ubuntu-latest
     steps:

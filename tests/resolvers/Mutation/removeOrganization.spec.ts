@@ -146,6 +146,7 @@ beforeAll(async () => {
     creator: testUsers[0]?._id,
     assignee: testUsers[1]?._id,
     assigner: testUsers[0]?._id,
+    assigneeType: "EventVolunteer",
     actionItemCategory: testCategory?._id,
     organization: testOrganization?._id,
   });

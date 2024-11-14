@@ -16,6 +16,12 @@ export const queries = gql`
       orderBy: ActionItemsOrderByInput
     ): [ActionItem]
 
+    actionItemsByUser(
+      userId: ID!
+      where: ActionItemWhereInput
+      orderBy: ActionItemsOrderByInput
+    ): [ActionItem]
+
     actionItemCategoriesByOrganization(
       organizationId: ID!
       where: ActionItemCategoryWhereInput
@@ -44,15 +50,9 @@ export const queries = gql`
 
     customDataByOrganization(organizationId: ID!): [UserCustomData!]!
 
-    directChatsByUserID(id: ID!): [DirectChat]
+    chatById(id: ID!): Chat!
 
-    directChatById(id: ID!): DirectChat
-
-    groupChatById(id: ID!): GroupChat
-
-    groupChatsByUserId(id: ID!): [GroupChat]
-
-    directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
+    chatsByUserId(id: ID!): [Chat]
 
     event(id: ID!): Event
 
@@ -60,16 +60,31 @@ export const queries = gql`
 
     eventsByOrganizationConnection(
       where: EventWhereInput
+      upcomingOnly: Boolean
       first: Int
       skip: Int
       orderBy: EventOrderByInput
     ): [Event!]!
 
-    eventVolunteersByEvent(id: ID!): [EventVolunteer]
+    getEventVolunteers(
+      where: EventVolunteerWhereInput!
+      orderBy: EventVolunteersOrderByInput
+    ): [EventVolunteer]!
 
     getEventVolunteerGroups(
-      where: EventVolunteerGroupWhereInput
+      where: EventVolunteerGroupWhereInput!
+      orderBy: EventVolunteerGroupOrderByInput
     ): [EventVolunteerGroup]!
+
+    getVolunteerMembership(
+      where: VolunteerMembershipWhereInput!
+      orderBy: VolunteerMembershipOrderByInput
+    ): [VolunteerMembership]!
+
+    getVolunteerRanks(
+      orgId: ID!
+      where: VolunteerRankWhereInput!
+    ): [VolunteerRank]!
 
     fundsByOrganization(
       organizationId: ID!
@@ -130,9 +145,9 @@ export const queries = gql`
 
     getUserTag(id: ID!): UserTag
 
-    getUserTagAncestors(id: ID!): [UserTag]
-
     getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
+
+    getRecurringEvents(baseRecurringEventId: ID!): [Event]
 
     advertisementsConnection(
       after: String
@@ -200,5 +215,7 @@ export const queries = gql`
     ): [UserData]! @auth
 
     venue(id: ID!): Venue
+
+    eventsAttendedByUser(id: ID, orderBy: EventOrderByInput): [Event]
   }
 `;

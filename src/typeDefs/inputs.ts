@@ -16,15 +16,12 @@ export const inputs = gql`
     userId: ID!
   }
 
-  input createChatInput {
-    userIds: [ID!]!
+  input chatInput {
+    isGroup: Boolean!
     organizationId: ID
-  }
-
-  input createGroupChatInput {
     userIds: [ID!]!
-    organizationId: ID!
-    title: String!
+    name: String
+    image: String
   }
 
   input createUserFamilyInput {
@@ -41,8 +38,9 @@ export const inputs = gql`
 
   input CreateActionItemInput {
     assigneeId: ID!
+    assigneeType: String!
     preCompletionNotes: String
-    allotedHours: Float
+    allottedHours: Float
     dueDate: Date
     eventId: ID
   }
@@ -73,6 +71,7 @@ export const inputs = gql`
   }
 
   input ActionItemWhereInput {
+    orgId: ID
     actionItemCategory_id: ID
     event_id: ID
     categoryName: String
@@ -149,31 +148,54 @@ export const inputs = gql`
   input EventVolunteerInput {
     userId: ID!
     eventId: ID!
-    groupId: ID!
+    groupId: ID
+  }
+
+  input EventVolunteerWhereInput {
+    id: ID
+    eventId: ID
+    groupId: ID
+    hasAccepted: Boolean
+    name_contains: String
   }
 
   input EventVolunteerGroupInput {
-    name: String
+    name: String!
+    description: String
     eventId: ID!
+    leaderId: ID!
     volunteersRequired: Int
+    volunteerUserIds: [ID!]!
   }
 
   input EventVolunteerGroupWhereInput {
     eventId: ID
-    volunteerId: ID
+    userId: ID
+    orgId: ID
+    leaderName: String
     name_contains: String
   }
 
-  input UpdateEventVolunteerInput {
+  input VolunteerMembershipWhereInput {
+    eventTitle: String
+    userName: String
+    status: String
+    userId: ID
     eventId: ID
-    isAssigned: Boolean
-    isInvited: Boolean
-    response: EventVolunteerResponse
+    groupId: ID
+    filter: String
+  }
+
+  input UpdateEventVolunteerInput {
+    assignments: [ID]
+    hasAccepted: Boolean
+    isPublic: Boolean
   }
 
   input UpdateEventVolunteerGroupInput {
-    eventId: ID
+    eventId: ID!
     name: String
+    description: String
     volunteersRequired: Int
   }
 
@@ -284,11 +306,11 @@ export const inputs = gql`
     id_starts_with: ID
 
     user: UserWhereInput
-  }
 
-  input MessageChatInput {
-    message: String!
-    receiver: ID!
+    creatorId: ID
+    creatorId_not: ID
+    creatorId_in: [ID!]
+    creatorId_not_in: [ID!]
   }
 
   input NoteInput {
@@ -424,13 +446,36 @@ export const inputs = gql`
     tagId: ID!
   }
 
+  input AddPeopleToUserTagInput {
+    userIds: [ID!]!
+    tagId: ID!
+  }
+
+  input TagActionsInput {
+    currentTagId: ID!
+    selectedTagIds: [ID!]!
+  }
+
+  input UserTagWhereInput {
+    name: UserTagNameWhereInput
+  }
+
+  input UserTagNameWhereInput {
+    starts_with: String!
+  }
+
+  input UserTagSortedByInput {
+    id: SortedByOrder!
+  }
+
   input UpdateActionItemInput {
     assigneeId: ID
+    assigneeType: String
     preCompletionNotes: String
     postCompletionNotes: String
     dueDate: Date
     completionDate: Date
-    allotedHours: Float
+    allottedHours: Float
     isCompleted: Boolean
   }
 
@@ -600,6 +645,25 @@ export const inputs = gql`
 
     event_title_contains: String
   }
+
+  input UserTagUsersAssignedToSortedByInput {
+    id: SortedByOrder!
+  }
+
+  input UserTagUsersAssignedToWhereInput {
+    firstName: UserNameWhereInput
+    lastName: UserNameWhereInput
+  }
+
+  input UserTagUsersToAssignToWhereInput {
+    firstName: UserNameWhereInput
+    lastName: UserNameWhereInput
+  }
+
+  input UserNameWhereInput {
+    starts_with: String!
+  }
+
   input PostUpdateInput {
     text: String
     title: String
@@ -622,6 +686,20 @@ export const inputs = gql`
     capacity: Int!
     description: String
     file: String
+  }
+
+  input VolunteerMembershipInput {
+    event: ID!
+    group: ID
+    status: String!
+    userId: ID!
+  }
+
+  input VolunteerRankWhereInput {
+    nameContains: String
+    orderBy: String!
+    timeFrame: String!
+    limit: Int
   }
 
   input VenueWhereInput {
