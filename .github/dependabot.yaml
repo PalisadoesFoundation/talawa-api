@@ -6,6 +6,6 @@ updates:
       prefix: "[pnpm]"
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     target-branch: develop-postgres
 version: 2
