@@ -18,8 +18,8 @@ importers:
         specifier: ^9.0.1
         version: 9.0.1
       '@fastify/rate-limit':
-        specifier: ^10.1.1
-        version: 10.1.1
+        specifier: ^10.2.0
+        version: 10.2.0
       '@fastify/type-provider-typebox':
         specifier: ^5.0.0
         version: 5.0.0(@sinclair/typebox@0.33.16)
@@ -783,8 +783,8 @@ packages:
   '@fastify/merge-json-schemas@0.1.1':
     resolution: {integrity: sha512-fERDVz7topgNjtXsJTTW1JKLy0rhuLRcquYqNR9rF7OcVpCa2OVW49ZPDIhaRRCaUuvVxI+N416xUoF76HNSXA==}
 
-  '@fastify/rate-limit@10.1.1':
-    resolution: {integrity: sha512-v6ZrDhWVjmDHWYdW2vbALyTCPz9W6Jqvf0QXbl9/atMXlZeFQw4XJkHUm5GGbJReCxaj5dHKbD+P32kkI3xzCA==}
+  '@fastify/rate-limit@10.2.0':
+    resolution: {integrity: sha512-o012oXtc1kOozyk8ogwNzIRbWaNgAhYGJcbiW84+SPafTD8NEU43D/iTYkJgDNamfk4z4AYyQZJbfT2bpzRh5A==}
 
   '@fastify/send@3.1.1':
     resolution: {integrity: sha512-LdiV2mle/2tH8vh6GwGl0ubfUAgvY+9yF9oGI1iiwVyNUVOQamvw5n+OFu6iCNNoyuCY80FFURBn4TZCbTe8LA==}
@@ -2964,7 +2964,7 @@ snapshots:
     dependencies:
       fast-deep-equal: 3.1.3
 
-  '@fastify/rate-limit@10.1.1':
+  '@fastify/rate-limit@10.2.0':
     dependencies:
       '@lukeed/ms': 2.0.2
       fastify-plugin: 5.0.1
