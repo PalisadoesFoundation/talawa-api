@@ -7,5 +7,5 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    target-branch: dev-postgres
+    target-branch: develop-postgres
 version: 2
