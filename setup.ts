@@ -942,6 +942,8 @@ async function main(): Promise<void> {
     process.env.MINIO_ENDPOINT = MINIO_ENDPOINT;
 
     updateEnvVariable(config);
+
+    /* Initialising a bash script */
     console.log(`Your MongoDB URL is:\n${process.env.MONGO_DB_URL}`);
     console.log(`Your Redis host is:\n${process.env.REDIS_HOST}`);
     console.log(`Your Redis port is:\n${process.env.REDIS_PORT}`);
@@ -1181,6 +1183,36 @@ async function main(): Promise<void> {
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉",
   );
+
+  /* Performing the sample data import for docker */
+
+  if (isDockerInstallation) {
+    console.log("Starting the sample data import for docker now...");
+
+    const entryPointScript = `
+    #!/bin/bash 
+    
+    npm run import:sample-data
+    `;
+
+    fs.writeFileSync("entrypoint.sh", entryPointScript, { mode: 0o755 });
+
+    exec("./entrypoint.sh", (error, stdout, stderr) => {
+      if (error) {
+        console.log(`Error importing the sample data: ${error.message}`);
+        // console.error(stdout);  // Logs the standard output of the script
+        // console.error(stderr);   // Logs the error output of the script
+        return;
+      }
+
+      if (stderr) {
+        console.error(`stderr: ${stderr}`);
+      }
+
+      console.log(`stdout: ${stdout}`);
+      console.log("Sample data import complete.");
+    });
+  }
 }
 
 main();
