@@ -37,7 +37,7 @@ beforeAll(async () => {
 
     const org = await Organization.create({
       creatorId: adminUser?.id,
-      members: [anotherTestUser?.id],
+      members: [anotherTestUser?._id],
       admins: [adminUser?.id],
       name: "Test Organization",
       description: "A test organization for user query testing",
@@ -82,7 +82,7 @@ describe("user Query", () => {
     };
 
     const context = {
-      userId: testUser?.id,
+      userId: new Types.ObjectId().toString(),
     };
 
     try {
@@ -126,7 +126,7 @@ describe("user Query", () => {
     };
 
     const org = await Organization.findOne({ admins: adminUser?.id });
-    expect(org?.members).toContain(anotherTestUser?.id);
+    expect(org?.members).toContain(anotherTestUser?._id);
 
     const result = await userResolver?.({}, args, context);
 
