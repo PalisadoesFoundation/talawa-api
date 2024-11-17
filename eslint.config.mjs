@@ -14,8 +14,8 @@ import * as graphqlEslint from "@graphql-eslint/eslint-plugin";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
+    baseDirectory: __dirname,
+    recommendedConfig: js.configs.recommended
 });
 
 export default [
@@ -44,7 +44,9 @@ export default [
 
     languageOptions: {
       parser: tsParser,
-      globals: globals.node,
+      globals: {
+        ...globals.node,
+      },
     },
     rules: {
       "no-restricted-imports": [
@@ -142,7 +144,7 @@ export default [
     },
 
     languageOptions: {
-      parser: parser,
+      parser: graphqlEslint.parser,
     },
   },
   {
