@@ -37,7 +37,7 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell \
 WORKDIR /home/talawa/api
 
 # This build stage sets up and switches to the `talawa` non root user, sets up pnpm configuration and checks out into the `/home/talawa/api` directory as the working directory.
-FROM node:22.9.0-bookworm-slim AS base
+FROM node:22.11.0-bookworm-slim AS base
 # Used to configure the group id for the group assigned to the non-root "talawa" user within the image.
 ARG API_GID
 # Used to configure the user id for the non-root "talawa" user within the image.
