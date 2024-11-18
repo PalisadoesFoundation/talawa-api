@@ -3,7 +3,7 @@ This section can be deleted after reading.
 
 We employ the following branching strategy to simplify the development process and to ensure that only stable code is pushed to the `master` branch:
 
-- `develop-postgres`: For PostgreSQL-specific features or fixes.
+- `develop-postgres`: For unstable code: New features and bug fixes.
 - `master`: Where the stable production ready code lies. Only security related bugs.
 
 NOTE!!!
@@ -24,10 +24,6 @@ Thanks for submitting a pull request! Please provide enough information so that 
 
 Fixes #<!--Add related issue number here.-->
 
-**Did you add tests for your changes?**
-
-<!--Yes or No. Note: Add unit tests or automation tests for your code.-->
-
 **Snapshots/Videos:**
 
 <!--Add snapshots or videos wherever possible.-->
@@ -45,17 +41,18 @@ Fixes #<!--Add related issue number here.-->
 
 <!-- If this PR introduces a breaking change, please describe the impact and a migration path for existing applications. -->
 
-
 ## Checklist
 
 ### CodeRabbit AI Review
-- [ ] I have reviewed and addressed all CodeRabbit AI suggestions
-- [ ] I have explained any cases where CodeRabbit AI suggestions were not implemented
+- [ ] I have reviewed and addressed all critical issues flagged by CodeRabbit AI
+- [ ] I have implemented or provided justification for each non-critical suggestion
+- [ ] I have documented my reasoning in the PR comments where CodeRabbit AI suggestions were not implemented
 
 ### Test Coverage
 - [ ] I have written tests for all new changes/features
-- [ ] I have verified that test coverage meets or exceeds 90-95%
+- [ ] I have verified that test coverage meets or exceeds 95%
 - [ ] I have run the test suite locally and all tests pass
+
 
 **Other information**
 
