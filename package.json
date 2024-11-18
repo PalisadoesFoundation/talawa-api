@@ -29,6 +29,7 @@
 	"description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
+		"@faker-js/faker": "^9.2.0",
 		"@swc/cli": "0.5.0",
 		"@swc/core": "^1.9.2",
 		"@types/node": "^22.9.0",
