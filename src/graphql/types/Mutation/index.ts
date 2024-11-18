@@ -4,3 +4,4 @@ import "./deleteCurrentUser";
 import "./deleteUser";
 import "./signUp";
 import "./updateCurrentUser";
+import "./updateUser";
