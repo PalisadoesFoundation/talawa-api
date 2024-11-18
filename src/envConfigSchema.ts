@@ -81,6 +81,16 @@ export const envConfigSchema = Type.Composite([
 		 */
 		API_IS_PINO_PRETTY: Type.Boolean(),
 		/**
+		 * Used for providing the number of milli-seconds for setting the expiry time of authentication json web tokens created by talawa api.
+		 */
+		API_JWT_EXPIRES_IN: Type.Number(),
+		/**
+		 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
+		 */
+		API_JWT_SECRET: Type.String({
+			minLength: 64,
+		}),
+		/**
 		 * Used for providing the log level for the logger used in talawa api.
 		 *
 		 * @privateRemarks
@@ -100,12 +110,6 @@ export const envConfigSchema = Type.Composite([
 		API_PORT: Type.Number({
 			maximum: 65535,
 			minimum: 0,
-		}),
-		/**
-		 * Used for providing the secret for signing and verifying json web tokens by talawa api.
-		 */
-		API_JWT_SECRET: Type.String({
-			minLength: 1,
 		}),
 	}),
 ]);
