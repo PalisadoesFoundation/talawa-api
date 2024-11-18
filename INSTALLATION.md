@@ -2,22 +2,19 @@
 ### Make sure you have [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git), [node.js and npm](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-20-04) installed locally. Make sure you are using [latest version](https://www.freecodecamp.org/news/how-to-update-node-and-npm-to-the-latest-version/) of node and npm.
 
 ### Clone and install dependencies
-    ```
+
     git clone https://github.com/PalisadoesFoundation/talawa-api
     cd talawa-api
-    npm install
-    ```
-    and move to `develop-postgres` branch with
-
-    ```bash
     git checkout develop-postgres
-    ```
+    npm install
 
 ### Install PostgreSQL
 
-1. go to the [official dowload page](https://www.postgresql.org/download) and choose the steps based on your os.
+Go to the [official dowload page](https://www.postgresql.org/download) and choose the steps based on your os.
 
-    #### For Ubuntu (Linux)
+#### For Ubuntu (Linux)
+
+1. Download with the follwing command;
     ```bash
     sudo apt install curl ca-certificates
     sudo install -d /usr/share/postgresql-common/pgdg
@@ -69,7 +66,7 @@
     ```bash
     createdb talawa
     ```
-    if it already exists, delete and try after running
+    if it **already exists**, delete and try after running
     ```bash
     dropdb talawa
     ```
@@ -90,28 +87,26 @@
     ```bash
     \password
     ```
-    check your password using after `\q` from `talawa`. **Default** port is **5432**
+    
+    check your password after exiting with `\q` from `talawa`. **Default** port is **5432**
     ```bash
     psql "postgresql://postgres:YOUR_PASSWORD@localhost:5432/talawa"
     ```
     if you are able to enter `talawa`, your password is set correctly.
-7. Set `ssl` to `false` using any text editor (using vim)
-at first check with `SHOW ssl;`, if it shows 
-```bash
- ssl 
------
- off
-(1 row)
-```
-
-then you can skip to next step. Else follow the below in `postgres` user after exiting with `/q`
+    8. Set `ssl` to `false` 
+    at first check with `SHOW ssl;` inside `talawa`, if it shows 
+    ```bash
+     ssl 
+    -----
+     off
+    (1 row)
+    ```
+    then you can **skip to next step**. Else follow the below in `postgres` user after exiting `talawa` with `/q`
     ```bash
     sudo vim /etc/postgresql/<version>/main/postgresql.conf
     ```
     find `ssl = on` and set it to `ssl = off`
-    
-    Restart and swtich to `postgres` user and connect `talawa` db again using
-    
+    Restart `postgres` (from default user) and connect `talawa` db again using
     ```bash
     sudo systemctl restart postgresql
     sudo -i -u postgres
@@ -128,7 +123,7 @@ then you can skip to next step. Else follow the below in `postgres` user after e
     off
     (1 row)
     ```
-9.  Both host and test host are `localhost`
+7.  Both host and test host are `localhost`
 
 ### Configure Database (.env)
  Move to your default user with `exit` command. Go to `envFiles` and copy `.env.development` file at the `root` and `rename` it to `.env` with
@@ -159,20 +154,28 @@ API_POSTGRES_USER=postgres
     npm run apply_drizzle_migrations
     ```
 3. Verify initialization:
-```bash
-sudo -u postgres psql talawa
-```
-and then
-enter `\dt` in your `talawa` database and you will get to see multiple rows with `Schema`, `Name`, `Type` and `Owner`
-and exit with `\q`
+    ```bash
+    sudo -u postgres psql talawa
+    ```
+    and then
+    enter `\dt` in your `talawa` database and you will get to see multiple rows with `Schema`, `Name`, `Type` and `Owner`
+    and exit with `\q`
 
 ### Import Sample Data
 Run this to switch to postgres user and import sample data
-```bash
-sudo -u postgres npm run db:seed
-```
+    ```bash
+    sudo -u postgres npm run db:seed
+    ```
 ### Generate GraphQL schema
 Run this to generate graphql schema
 ```bash
 npm run generate_graphql_sdl_file
+```
+### Run the application using
+```bash
+npm run start_development_server
+```
+The `graphiql` endpoint can at accessed at
+```bash
+localhost:8080/graphiql
 ```
