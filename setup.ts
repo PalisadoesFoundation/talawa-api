@@ -1194,10 +1194,13 @@ npm run import:sample-data
     const scriptPath = path.join(os.tmpdir(), `entrypoint-${Date.now()}.sh`);
 ```
 
-Note: For this change to work, the `os` module would need to be imported at the top of the file if it's not already imported:
-```typescript
+import * as cryptolib from "crypto";
+import dotenv from "dotenv";
+import fs from "fs";
+import inquirer from "inquirer";
+import path from "path";
 import * as os from 'os';
-    
+import type { ExecException } from "child_process";
     try {
       // Create script with proper permissions
       fs.writeFileSync(scriptPath, entryPointScript, { mode: 0o755 });
