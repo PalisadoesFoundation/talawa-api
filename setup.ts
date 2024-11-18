@@ -1191,27 +1191,38 @@ async function main(): Promise<void> {
 npm run import:sample-data
 `;
 
-    const scriptPath = path.join(process.cwd(), "entrypoint.sh");
+    const scriptPath = path.join(os.tmpdir(), `entrypoint-${Date.now()}.sh`);
+```
+
+Note: For this change to work, the `os` module would need to be imported at the top of the file if it's not already imported:
+```typescript
+import * as os from 'os';
     
     try {
       // Create script with proper permissions
       fs.writeFileSync(scriptPath, entryPointScript, { mode: 0o755 });
       
       // Execute script
-      exec(scriptPath, (error, stdout, stderr) => {
+      exec(scriptPath, { timeout: 60000 }, (error, stdout, stderr) => {
         // Clean up script file
         fs.unlinkSync(scriptPath);
         
         if (error) {
-          console.error("Error importing sample data:", error.message);
+          console.error("Error importing sample data:");
+          console.error(`Exit code: ${error.code}`);
+          console.error(`Error message: ${error.message}`);
           return;
         }
         
         if (stderr) {
-          console.error("Import warnings:", stderr);
+          console.warn("Sample data import warnings:");
+          console.warn(stderr.trim());
         }
         
-        console.log("Sample data import output:", stdout);
+        if (stdout) {
+          console.log("Sample data import output:");
+          console.log(stdout.trim());
+        }
         console.log("Sample data import complete.");
       });
     } catch (err) {
