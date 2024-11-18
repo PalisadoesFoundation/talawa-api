@@ -67,6 +67,18 @@ export const envConfigSchema = Type.Composite([
 	drizzleEnvConfigSchema,
 	Type.Object({
 		/**
+		 * Email address of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
+		 */
+		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: Type.String({
+			format: "email",
+		}),
+		/**
+		 * Password of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
+		 */
+		API_ADMINISTRATOR_USER_PASSWORD: Type.String({
+			minLength: 1,
+		}),
+		/**
 		 * Used for providing the host of the domain on which talawa api will run.
 		 */
 		API_HOST: Type.String({
