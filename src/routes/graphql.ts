@@ -2,6 +2,7 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type { FastifyBaseLogger, FastifyReply, FastifyRequest } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { mercurius } from "mercurius";
+import type { WebSocket } from "ws";
 import type * as drizzleSchema from "~/src/drizzle/schema";
 import type { ExplicitGraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema/index";

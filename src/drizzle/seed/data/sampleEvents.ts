@@ -1,0 +1,51 @@
+import type { InferInsertModel } from "drizzle-orm";
+import type { eventsTable } from "../../schema";
+
+type EventType = InferInsertModel<typeof eventsTable>;
+
+export const sampleEvents: EventType[] = [
+	{
+		baseRecurringEventId: null,
+		createdAt: new Date("2024-11-01T08:00:00Z"),
+		creatorId: "550e8400-e29b-41d4-a716-446655440008",
+		deletedAt: null,
+		description: "A community meetup to discuss open-source contributions.",
+		endDate: new Date("2024-11-01"),
+		endTime: "18:00:00",
+		id: "550e8400-e29b-41d4-a716-446655440003",
+		isAllDay: false,
+		isBaseRecurringEvent: false,
+		isPrivate: false,
+		isRecurring: false,
+		isRecurringException: false,
+		isRegisterable: true,
+		name: "Open Source Meetup",
+		organizationId: "550e8400-e29b-41d4-a716-446655440013",
+		startDate: new Date("2024-11-01"),
+		startTime: "09:00:00",
+		updatedAt: new Date("2024-11-01T12:00:00Z"),
+		updaterId: "550e8400-e29b-41d4-a716-446655440008",
+	},
+	{
+		baseRecurringEventId: null,
+		createdAt: new Date("2024-12-10T10:00:00Z"),
+		creatorId: "550e8400-e29b-41d4-a716-446655440007",
+		deletedAt: null,
+		description: "Annual fundraiser to support local charities.",
+		endDate: new Date("2024-12-10"),
+		endTime: "21:00:00",
+		id: "550e8400-e29b-41d4-a716-446655440002",
+		isAllDay: false,
+		isBaseRecurringEvent: true,
+		isPrivate: true,
+		isRecurring: true,
+		isRecurringException: false,
+		isRegisterable: true,
+		name: "Charity Gala 2024",
+		organizationId: "550e8400-e29b-41d4-a716-446655440014",
+		startDate: new Date("2024-12-10"),
+		startTime: "17:00:00",
+		updatedAt: new Date("2024-12-09T15:00:00Z"),
+		updaterId: "550e8400-e29b-41d4-a716-446655440008",
+	},
+];

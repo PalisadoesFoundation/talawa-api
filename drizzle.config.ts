@@ -6,7 +6,7 @@ import { defineConfig } from "drizzle-kit";
 import { envSchema } from "env-schema";
 import { drizzleEnvConfigSchema, envSchemaAjv } from "./src/envConfigSchema";
 
-const envConfig = envSchema<Static<typeof drizzleEnvConfigSchema>>({
+export const envConfig = envSchema<Static<typeof drizzleEnvConfigSchema>>({
 	ajv: envSchemaAjv,
 	dotenv: true,
 	schema: drizzleEnvConfigSchema,
