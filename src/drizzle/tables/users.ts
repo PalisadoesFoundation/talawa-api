@@ -9,6 +9,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import { userEducationGradeEnum } from "~/src/drizzle/enums/userEducationGrade";
@@ -441,3 +442,16 @@ export const usersTableRelations = relations(usersTable, ({ many }) => ({
 		relationName: "users.id:volunteer_group_assignments.updater_id",
 	}),
 }));
+
+/**
+ * Zod schema for parsing the inserts to the users table.
+ */
+export const usersTableInsertSchema = createInsertSchema(usersTable, {
+	address: (schema) => schema.address.min(1).max(1024),
+	avatarURI: (schema) => schema.avatarURI.min(1).max(2048),
+	city: (schema) => schema.city.min(1).max(64),
+	description: (schema) => schema.description.min(1).max(2048),
+	name: (schema) => schema.name.min(1).max(256),
+	postalCode: (schema) => schema.postalCode.min(1).max(32),
+	state: (schema) => schema.state.min(1).max(64),
+});
