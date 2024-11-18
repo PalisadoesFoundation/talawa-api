@@ -19,7 +19,7 @@ Here's an example depicting these rules:
 ```typescript
 // DateTime.ts
 import { DateResolver } from "graphql-scalars";
-import { builder } from "~/src/graphql/schema/builder";
+import { builder } from "~/src/graphql/builder";
 
 /**
  * More information at this link: {@link https://the-guild.dev/graphql/scalars/docs/scalars/date}

@@ -18,7 +18,7 @@ Here's an example depicting these rules:
 
 ```typescript
 // ~/src/graphql/interfaces/Message.ts
-import { builder } from "~/src/graphql/schema/builder";
+import { builder } from "~/src/graphql/builder";
 
 type Message = {
 	body: string;

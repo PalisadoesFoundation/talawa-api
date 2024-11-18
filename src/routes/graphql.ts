@@ -4,7 +4,7 @@ import fastifyPlugin from "fastify-plugin";
 import { mercurius } from "mercurius";
 import type * as drizzleSchema from "~/src/drizzle/schema";
 import type { ExplicitGraphQLContext } from "~/src/graphql/context";
-import { schema } from "~/src/graphql/schema/index";
+import { schema } from "~/src/graphql/schema";
 
 /**
  * Type of the initial context argument provided to the createContext function by the graphql server.

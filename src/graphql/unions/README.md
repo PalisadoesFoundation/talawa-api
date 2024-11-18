@@ -16,7 +16,7 @@ Here's an example depicting these rules:
 
 ```typescript
 // ~/src/graphql/unions/CreatePostResult.ts
-import { builder } from "~/src/graphql/schema/builder";
+import { builder } from "~/src/graphql/builder";
 
 const UserRef = builder.objectRef<{ age: number; }>("User");
 const ErrorRef = buidler.objectRef<{ message: string; }>("Error");

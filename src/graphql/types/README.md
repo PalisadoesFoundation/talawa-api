@@ -20,7 +20,7 @@ Here's an example depicting these rules:
 
 ```typescript
 // ~/src/graphql/types/User/User.ts
-import { builder } from "~/src/graphql/schema/builder";
+import { builder } from "~/src/graphql/builder";
 
 type User = {
 	age: number;
@@ -42,7 +42,7 @@ import "./User";
 ```
 ```typescript
 // ~/src/graphql/types/Post/Post.ts
-import { builder } from "~/src/graphql/schema/builder";
+import { builder } from "~/src/graphql/builder";
 
 type Post = {
 	body: string;
@@ -61,7 +61,7 @@ PostRef.implement({
 ```
 ```typescript
 // ~/src/graphql/types/Post/poster.ts
-import { builder } from "~/src/graphql/schema/builder";
+import { builder } from "~/src/graphql/builder";
 import { UserRef } from "~/src/graphql/types/User/User";
 import { PostRef } from "./Post";
 
