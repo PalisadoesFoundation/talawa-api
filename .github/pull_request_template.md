@@ -49,7 +49,7 @@ Fixes #<!--Add related issue number here.-->
 
 ### Test Coverage
 - [ ] I have written tests for all new changes/features
-- [ ] I have verified that test coverage meets or exceeds 90-95%
+- [ ] I have verified that test coverage meets or exceeds 95%
 - [ ] I have run the test suite locally and all tests pass
 
 
