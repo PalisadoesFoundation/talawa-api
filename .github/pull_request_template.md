@@ -44,8 +44,9 @@ Fixes #<!--Add related issue number here.-->
 ## Checklist
 
 ### CodeRabbit AI Review
-- [ ] I have reviewed and addressed all CodeRabbit AI suggestions
-- [ ] I have explained any cases where CodeRabbit AI suggestions were not implemented
+- [ ] I have reviewed and addressed all critical issues flagged by CodeRabbit AI
+- [ ] I have implemented or provided justification for each non-critical suggestion
+- [ ] I have documented my reasoning in the PR comments where CodeRabbit AI suggestions were not implemented
 
 ### Test Coverage
 - [ ] I have written tests for all new changes/features
