@@ -24,10 +24,6 @@ Thanks for submitting a pull request! Please provide enough information so that 
 
 Fixes #<!--Add related issue number here.-->
 
-**Did you add tests for your changes?**
-
-<!--Yes or No. Note: Add unit tests or automation tests for your code.-->
-
 **Snapshots/Videos:**
 
 <!--Add snapshots or videos wherever possible.-->
