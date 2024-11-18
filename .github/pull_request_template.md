@@ -3,12 +3,12 @@ This section can be deleted after reading.
 
 We employ the following branching strategy to simplify the development process and to ensure that only stable code is pushed to the `master` branch:
 
-- `develop`: For unstable code: New features and bug fixes.
+- `develop-postgres`: For PostgreSQL-specific features or fixes.
 - `master`: Where the stable production ready code lies. Only security related bugs.
 
 NOTE!!!
 
-ONLY SUBMIT PRS AGAINST OUR `DEVELOP` BRANCH. THE DEFAULT IS `MAIN`, SO YOU WILL HAVE TO MODIFY THIS BEFORE SUBMITTING YOUR PR FOR REVIEW. PRS MADE AGAINST `MAIN` WILL BE CLOSED.
+ONLY SUBMIT PRS AGAINST OUR `DEVELOP-POSTGRES` BRANCH. THE DEFAULT IS `MAIN`, SO YOU WILL HAVE TO MODIFY THIS BEFORE SUBMITTING YOUR PR FOR REVIEW. PRS MADE AGAINST `MAIN` WILL BE CLOSED.
 
 -->
 
@@ -44,6 +44,18 @@ Fixes #<!--Add related issue number here.-->
 **Does this PR introduce a breaking change?**
 
 <!-- If this PR introduces a breaking change, please describe the impact and a migration path for existing applications. -->
+
+
+## Checklist
+
+### CodeRabbit AI Review
+- [ ] I have reviewed and addressed all CodeRabbit AI suggestions
+- [ ] I have explained any cases where CodeRabbit AI suggestions were not implemented
+
+### Test Coverage
+- [ ] I have written tests for all new changes/features
+- [ ] I have verified that test coverage meets or exceeds 90-95%
+- [ ] I have run the test suite locally and all tests pass
 
 **Other information**
 
