@@ -1187,29 +1187,39 @@ async function main(): Promise<void> {
   if (isDockerInstallation) {
     console.log("Starting the sample data import for docker now...");
 
-    const entryPointScript = `
-    #!/bin/bash 
+    const entryPointScript = `#!/bin/bash
+npm run import:sample-data
+`;
+
+    const scriptPath = path.join(process.cwd(), "entrypoint.sh");
     
-    npm run import:sample-data
-    `;
-
-    fs.writeFileSync("entrypoint.sh", entryPointScript, { mode: 0o755 });
-
-    exec("./entrypoint.sh", (error, stdout, stderr) => {
-      if (error) {
-        console.log(`Error importing the sample data: ${error.message}`);
-        // console.error(stdout);  // Logs the standard output of the script
-        // console.error(stderr);   // Logs the error output of the script
-        return;
+    try {
+      // Create script with proper permissions
+      fs.writeFileSync(scriptPath, entryPointScript, { mode: 0o755 });
+      
+      // Execute script
+      exec(scriptPath, (error, stdout, stderr) => {
+        // Clean up script file
+        fs.unlinkSync(scriptPath);
+        
+        if (error) {
+          console.error("Error importing sample data:", error.message);
+          return;
+        }
+        
+        if (stderr) {
+          console.error("Import warnings:", stderr);
+        }
+        
+        console.log("Sample data import output:", stdout);
+        console.log("Sample data import complete.");
+      });
+    } catch (err) {
+      console.error("Failed to setup sample data import:", err);
+      if (fs.existsSync(scriptPath)) {
+        fs.unlinkSync(scriptPath);
       }
-
-      if (stderr) {
-        console.error(`stderr: ${stderr}`);
-      }
-
-      console.log(`stdout: ${stdout}`);
-      console.log("Sample data import complete.");
-    });
+    }
   }
 }
 
