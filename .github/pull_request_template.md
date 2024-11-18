@@ -45,6 +45,18 @@ Fixes #<!--Add related issue number here.-->
 
 <!-- If this PR introduces a breaking change, please describe the impact and a migration path for existing applications. -->
 
+**Checklist**
+
+**CodeRabbit AI Review**
+- [ ] I have reviewed and addressed all CodeRabbit AI suggestions
+- [ ] I have explained any cases where CodeRabbit AI suggestions were not implemented
+
+**Test Coverage**
+- [ ] I have written tests for all new changes/features
+- [ ] I have verified that test coverage meets or exceeds 90-95%
+- [ ] I have run the test suite locally and all tests pass
+
+
 **Other information**
 
 <!--Add extra information about this PR here-->
