@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	boolean,
 	index,
@@ -7,6 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { uuidv7 } from "uuidv7";
 import { actionCategoriesTable } from "./actionCategories";
 import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
@@ -17,9 +18,9 @@ export const actionsTable = pgTable(
 	{
 		assignedAt: timestamp("assigned_at", {
 			mode: "date",
-		})
-			.notNull()
-			.defaultNow(),
+			precision: 3,
+			withTimezone: true,
+		}).notNull(),
 
 		assigneeId: uuid("actor_id").references(() => usersTable.id),
 
@@ -27,25 +28,27 @@ export const actionsTable = pgTable(
 
 		completionAt: timestamp("completion_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}).notNull(),
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		eventId: uuid("event_id").references(() => eventsTable.id),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
-		isCompleted: boolean("is_completed").notNull().default(false),
+		isCompleted: boolean("is_completed").notNull(),
 
 		organizationId: uuid("organization_id")
 			.notNull()
@@ -57,24 +60,22 @@ export const actionsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		index0: index().on(self.assignedAt),
-		index1: index().on(self.assigneeId),
-		index2: index().on(self.categoryId),
-		index3: index().on(self.completionAt),
-		index4: index().on(self.createdAt),
-		index5: index().on(self.creatorId),
-		index6: index().on(self.eventId),
-		index7: index().on(self.isCompleted),
-		index8: index().on(self.organizationId),
-	}),
+	(self) => [
+		index().on(self.assignedAt),
+		index().on(self.assigneeId),
+		index().on(self.categoryId),
+		index().on(self.completionAt),
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.organizationId),
+	],
 );
-
-export type ActionPgType = InferSelectModel<typeof actionsTable>;
 
 export const actionsTableRelations = relations(actionsTable, ({ one }) => ({
 	assignee: one(usersTable, {

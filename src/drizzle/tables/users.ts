@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
 	boolean,
@@ -9,13 +9,13 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import {
-	iso3166Alpha2CountryCodeEnum,
-	userEducationGradeEnum,
-	userEmploymentStatusEnum,
-	userMaritalStatusEnum,
-	userNatalSexEnum,
-} from "~/src/drizzle/enums";
+import { uuidv7 } from "uuidv7";
+import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
+import { userEducationGradeEnum } from "~/src/drizzle/enums/userEducationGrade";
+import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStatus";
+import { userMaritalStatusEnum } from "~/src/drizzle/enums/userMaritalStatus";
+import { userNatalSexEnum } from "~/src/drizzle/enums/userNatalSex";
+import { userRoleEnum } from "~/src/drizzle/enums/userRole";
 import { actionCategoriesTable } from "./actionCategories";
 import { actionsTable } from "./actions";
 import { advertisementAttachmentsTable } from "./advertisementAttachments";
@@ -44,90 +44,133 @@ import { venuesTable } from "./venues";
 import { volunteerGroupAssignmentsTable } from "./volunteerGroupAssignments";
 import { volunteerGroupsTable } from "./volunteerGroups";
 
+/**
+ * Drizzle orm postgres table definition for users.
+ */
 export const usersTable = pgTable(
-	"user",
+	"users",
 	{
-		addressLine1: text("address_line_1"),
-
-		addressLine2: text("address_line_2"),
-
+		/**
+		 * Address of the user.
+		 */
+		address: text("address"),
+		/**
+		 * URI to the avatar of the user.
+		 */
 		avatarURI: text("avatar_uri"),
-
+		/**
+		 * Date of birth of the user.
+		 */
 		birthDate: date("birth_date", {
 			mode: "date",
 		}),
-
+		/**
+		 * Name of the city where user resides in.
+		 */
 		city: text("city"),
-
-		countryCode: text("country_code", {
-			enum: iso3166Alpha2CountryCodeEnum.options,
-		}),
-
+		/**
+		 * Country code of the country the user is a citizen of.
+		 */
+		countryCode: iso3166Alpha2CountryCodeEnum("country_code"),
+		/**
+		 * Datetime at the time the user was created.
+		 */
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
-
-		creatorId: uuid("creator_id").references((): AnyPgColumn => usersTable.id),
-
+		/**
+		 * Foreign key reference to the id of the user who first created the user.
+		 */
+		creatorId: uuid("creator_id")
+			.references((): AnyPgColumn => usersTable.id)
+			.notNull(),
+		/**
+		 * Custom information about the user.
+		 */
 		description: text("description"),
-
-		educationGrade: text("education_grade", {
-			enum: userEducationGradeEnum.options,
-		}),
-
-		state: text("state"),
-
-		email: text("email").notNull().unique(),
-
-		employmentStatus: text("employment_status", {
-			enum: userEmploymentStatusEnum.options,
-		}),
-
-		firstName: text("first_name"),
-
+		/**
+		 * Primary education grade of the user.
+		 */
+		educationGrade: userEducationGradeEnum("education_grade"),
+		/**
+		 * Email address of the user.
+		 */
+		emailAddress: text("email_address").notNull().unique(),
+		/**
+		 * Employment status of the user.
+		 */
+		employmentStatus: userEmploymentStatusEnum("employment_status"),
+		/**
+		 * The phone number to use to communicate with the user at their home.
+		 */
 		homePhoneNumber: text("home_phone_number"),
-
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
-
-		isAdminstrator: boolean("is_administrator").notNull().default(false),
-
-		isEmailVerified: boolean("is_email_verified").notNull().default(false),
-
-		lastName: text("last_name"),
-
-		maritalStatus: text("marital_status", {
-			enum: userMaritalStatusEnum.options,
-		}),
-
+		/**
+		 * Primary unique identifier of the user.
+		 */
+		id: uuid("id").primaryKey().$default(uuidv7),
+		/**
+		 * Boolean field to tell whether the user has verified their email or not.
+		 */
+		isEmailAddressVerified: boolean("is_email_address_verified").notNull(),
+		/**
+		 * Marital status of the user.
+		 */
+		maritalStatus: userMaritalStatusEnum("marital_status"),
+		/**
+		 * The phone number to use to communicate with the user on their mobile phone.
+		 */
 		mobilePhoneNumber: text("mobile_phone_number"),
-
-		name: text("name").unique(),
-
-		natalSex: text("natal_sex", {
-			enum: userNatalSexEnum.options,
-		}),
-
-		passwordHash: text("password_hash"),
-
+		/**
+		 * Name of the user.
+		 */
+		name: text("name").notNull(),
+		/**
+		 * The sex assigned to the user at their birth.
+		 */
+		natalSex: userNatalSexEnum("natal_sex"),
+		/**
+		 * Cryptographic hash of the password of the user to sign in to the application.
+		 */
+		passwordHash: text("password_hash").notNull(),
+		/**
+		 * Postal code of the user.
+		 */
 		postalCode: text("postal_code"),
-
+		/**
+		 * Role assigned to the user.
+		 */
+		role: userRoleEnum("role").notNull(),
+		/**
+		 * Name of the state the user resides in within their country.
+		 */
+		state: text("state"),
+		/**
+		 * Datetime at the time the user was last updated.
+		 */
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
-		}),
-
+			precision: 3,
+			withTimezone: true,
+		}).$onUpdate(() => new Date()),
+		/**
+		 * Foreign key reference to the id of the user who last updated the user.
+		 */
 		updaterId: uuid("updater_id").references((): AnyPgColumn => usersTable.id),
-
+		/**
+		 * The phone number to use to communicate with the user while they're at work.
+		 */
 		workPhoneNumber: text("work_phone_number"),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.name),
-	}),
+	(self) => [
+		index().on(self.creatorId),
+		index().on(self.name),
+		index().on(self.updaterId),
+	],
 );
-
-export type UserPgType = InferSelectModel<typeof usersTable>;
 
 export const usersTableRelations = relations(usersTable, ({ many }) => ({
 	actionsWhereAssignee: many(actionsTable, {

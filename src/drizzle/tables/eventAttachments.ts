@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	integer,
@@ -8,7 +8,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { eventAttachmentTypeEnum } from "~/src/drizzle/enums";
+import { eventAttachmentTypeEnum } from "~/src/drizzle/enums/eventAttachmentType";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
 
@@ -17,15 +17,15 @@ export const eventAttachmentsTable = pgTable(
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		eventId: uuid("event_id")
 			.notNull()
@@ -35,27 +35,23 @@ export const eventAttachmentsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
 		uri: text("uri", {}).notNull(),
 
-		type: text("type", {
-			enum: eventAttachmentTypeEnum.options,
-		}).notNull(),
+		type: eventAttachmentTypeEnum("type").notNull(),
 	},
-	(self) => ({
-		index0: index().on(self.eventId),
-		index1: index().on(self.createdAt),
-		index2: index().on(self.creatorId),
-		uniqueIndex0: uniqueIndex().on(self.eventId, self.position),
-	}),
+	(self) => [
+		index().on(self.eventId),
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		uniqueIndex().on(self.eventId, self.position),
+	],
 );
-
-export type EventAttachmentPgType = InferSelectModel<
-	typeof eventAttachmentsTable
->;
 
 export const eventAttachmentsTableRelations = relations(
 	eventAttachmentsTable,

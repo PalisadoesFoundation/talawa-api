@@ -1,13 +1,12 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	pgTable,
 	primaryKey,
-	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { volunteerGroupAssignmentInviteStatusEnum } from "~/src/drizzle/enums";
+import { volunteerGroupAssignmentInviteStatusEnum } from "~/src/drizzle/enums/volunteerGroupAssignmentInviteStatus";
 import { usersTable } from "./users";
 import { volunteerGroupsTable } from "./volunteerGroups";
 
@@ -20,43 +19,40 @@ export const volunteerGroupAssignmentsTable = pgTable(
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		groupId: uuid("group_id")
 			.notNull()
 			.references(() => volunteerGroupsTable.id, {}),
 
-		inviteStatus: text("invite_status", {
-			enum: volunteerGroupAssignmentInviteStatusEnum.options,
-		}).notNull(),
+		inviteStatus:
+			volunteerGroupAssignmentInviteStatusEnum("invite_status").notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
-	(self) => ({
-		compositePrimaryKey: primaryKey({
+	(self) => [
+		primaryKey({
 			columns: [self.assigneeId, self.groupId],
 		}),
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.groupId),
-	}),
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.groupId),
+	],
 );
-
-export type VolunteerGroupAssignmentPgType = InferSelectModel<
-	typeof volunteerGroupAssignmentsTable
->;
 
 export const volunteerGroupAssignmentsTableRelations = relations(
 	volunteerGroupAssignmentsTable,

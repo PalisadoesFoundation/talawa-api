@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	integer,
@@ -8,7 +8,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { advertisementAttachmentTypeEnum } from "~/src/drizzle/enums";
+import { advertisementAttachmentTypeEnum } from "~/src/drizzle/enums/advertisementAttachmentType";
 import { advertisementsTable } from "./advertisements";
 import { usersTable } from "./users";
 
@@ -21,41 +21,37 @@ export const advertisementAttachmentsTable = pgTable(
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		position: integer("position").notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
 		uri: text("uri", {}).notNull(),
 
-		type: text("type", {
-			enum: advertisementAttachmentTypeEnum.options,
-		}).notNull(),
+		type: advertisementAttachmentTypeEnum("type").notNull(),
 	},
-	(self) => ({
-		index0: index().on(self.advertisementId),
-		index1: index().on(self.createdAt),
-		index2: index().on(self.creatorId),
-		uniqueIndex0: uniqueIndex().on(self.advertisementId, self.position),
-	}),
+	(self) => [
+		index().on(self.advertisementId),
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		uniqueIndex().on(self.advertisementId, self.position),
+	],
 );
-
-export type AdvertisementAttachmentPgType = InferSelectModel<
-	typeof advertisementAttachmentsTable
->;
 
 export const advertisementAttachmentsTableRelations = relations(
 	advertisementAttachmentsTable,

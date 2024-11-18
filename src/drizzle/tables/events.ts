@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
 	boolean,
@@ -10,6 +10,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { uuidv7 } from "uuidv7";
 import { actionsTable } from "./actions";
 import { agendaSectionsTable } from "./agendaSections";
 import { eventAttachmentsTable } from "./eventAttachments";
@@ -28,15 +29,15 @@ export const eventsTable = pgTable(
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		description: text("description"),
 
@@ -46,23 +47,19 @@ export const eventsTable = pgTable(
 
 		endTime: time("end_time"),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
-		isAllDay: boolean("is_all_day").notNull().default(false),
+		isAllDay: boolean("is_all_day").notNull(),
 
-		isBaseRecurringEvent: boolean("is_base_recurring_event")
-			.notNull()
-			.default(false),
+		isBaseRecurringEvent: boolean("is_base_recurring_event").notNull(),
 
-		isPrivate: boolean("is_private").notNull().default(false),
+		isPrivate: boolean("is_private").notNull(),
 
-		isRecurring: boolean("is_recurring").notNull().default(false),
+		isRecurring: boolean("is_recurring").notNull(),
 
-		isRecurringException: boolean("is_recurring_exception")
-			.notNull()
-			.default(false),
+		isRecurringException: boolean("is_recurring_exception").notNull(),
 
-		isRegisterable: boolean("is_registerable").notNull().default(true),
+		isRegisterable: boolean("is_registerable").notNull(),
 
 		name: text("name", {}).notNull(),
 
@@ -78,19 +75,19 @@ export const eventsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.name),
-		index3: index().on(self.organizationId),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.name),
+		index().on(self.organizationId),
+	],
 );
-
-export type EventPgType = InferSelectModel<typeof eventsTable>;
 
 export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 	actionsWhereEvent: many(actionsTable, {

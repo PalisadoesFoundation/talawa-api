@@ -1,97 +1,110 @@
+CREATE TYPE "public"."advertisement_attachment_type" AS ENUM('image', 'video');--> statement-breakpoint
+CREATE TYPE "public"."advertisement_type" AS ENUM('banner', 'menu', 'pop_up');--> statement-breakpoint
+CREATE TYPE "public"."agenda_item_type" AS ENUM('general', 'note', 'scripture', 'song');--> statement-breakpoint
+CREATE TYPE "public"."comment_vote_type" AS ENUM('down_vote', 'up_vote');--> statement-breakpoint
+CREATE TYPE "public"."event_attachment_type" AS ENUM('image', 'video');--> statement-breakpoint
+CREATE TYPE "public"."event_attendee_registration_invite_status" AS ENUM('accepted', 'declined', 'no_response');--> statement-breakpoint
+CREATE TYPE "public"."family_membership_role" AS ENUM('adult', 'child', 'head_of_household', 'spouse');--> statement-breakpoint
+CREATE TYPE "public"."iso_3166_alpha_2_country_code" AS ENUM('ad', 'ae', 'af', 'ag', 'ai', 'al', 'am', 'ao', 'aq', 'ar', 'as', 'at', 'au', 'aw', 'ax', 'az', 'ba', 'bb', 'bd', 'be', 'bf', 'bg', 'bh', 'bi', 'bj', 'bl', 'bm', 'bn', 'bo', 'bq', 'br', 'bs', 'bt', 'bv', 'bw', 'by', 'bz', 'ca', 'cc', 'cd', 'cf', 'cg', 'ch', 'ci', 'ck', 'cl', 'cm', 'cn', 'co', 'cr', 'cu', 'cv', 'cw', 'cx', 'cy', 'cz', 'de', 'dj', 'dk', 'dm', 'do', 'dz', 'ec', 'ee', 'eg', 'eh', 'er', 'es', 'et', 'fi', 'fj', 'fk', 'fm', 'fo', 'fr', 'ga', 'gb', 'gd', 'ge', 'gf', 'gg', 'gh', 'gi', 'gl', 'gm', 'gn', 'gp', 'gq', 'gr', 'gs', 'gt', 'gu', 'gw', 'gy', 'hk', 'hm', 'hn', 'hr', 'ht', 'hu', 'id', 'ie', 'il', 'im', 'in', 'io', 'iq', 'ir', 'is', 'it', 'je', 'jm', 'jo', 'jp', 'ke', 'kg', 'kh', 'ki', 'km', 'kn', 'kp', 'kr', 'kw', 'ky', 'kz', 'la', 'lb', 'lc', 'li', 'lk', 'lr', 'ls', 'lt', 'lu', 'lv', 'ly', 'ma', 'mc', 'md', 'me', 'mf', 'mg', 'mh', 'mk', 'ml', 'mm', 'mn', 'mo', 'mp', 'mq', 'mr', 'ms', 'mt', 'mu', 'mv', 'mw', 'mx', 'my', 'mz', 'na', 'nc', 'ne', 'nf', 'ng', 'ni', 'nl', 'no', 'np', 'nr', 'nu', 'nz', 'om', 'pa', 'pe', 'pf', 'pg', 'ph', 'pk', 'pl', 'pm', 'pn', 'pr', 'ps', 'pt', 'pw', 'py', 'qa', 're', 'ro', 'rs', 'ru', 'rw', 'sa', 'sb', 'sc', 'sd', 'se', 'sg', 'sh', 'si', 'sj', 'sk', 'sl', 'sm', 'sn', 'so', 'sr', 'ss', 'st', 'sv', 'sx', 'sy', 'sz', 'tc', 'td', 'tf', 'tg', 'th', 'tj', 'tk', 'tl', 'tm', 'tn', 'to', 'tr', 'tt', 'tv', 'tw', 'tz', 'ua', 'ug', 'um', 'us', 'uy', 'uz', 'va', 'vc', 've', 'vg', 'vi', 'vn', 'vu', 'wf', 'ws', 'ye', 'yt', 'za', 'zm', 'zw');--> statement-breakpoint
+CREATE TYPE "public"."organization_membership_role" AS ENUM('administrator', 'base');--> statement-breakpoint
+CREATE TYPE "public"."post_attachment_type" AS ENUM('image', 'video');--> statement-breakpoint
+CREATE TYPE "public"."post_vote_type" AS ENUM('down_vote', 'up_vote');--> statement-breakpoint
+CREATE TYPE "public"."recurrence_type" AS ENUM('daily', 'monthly', 'weekly', 'yearly');--> statement-breakpoint
+CREATE TYPE "public"."user_education_grade" AS ENUM('grade_1', 'grade_2', 'grade_3', 'grade_4', 'grade_5', 'grade_6', 'grade_7', 'grade_8', 'grade_9', 'grade_10', 'grade_11', 'grade_12', 'graduate', 'kg', 'no_grade', 'pre_kg');--> statement-breakpoint
+CREATE TYPE "public"."user_employment_status" AS ENUM('full_time', 'part_time', 'unemployed');--> statement-breakpoint
+CREATE TYPE "public"."user_marital_status" AS ENUM('divorced', 'engaged', 'married', 'seperated', 'single', 'widowed');--> statement-breakpoint
+CREATE TYPE "public"."user_natal_sex" AS ENUM('female', 'intersex', 'male');--> statement-breakpoint
+CREATE TYPE "public"."user_role" AS ENUM('administrator', 'base');--> statement-breakpoint
+CREATE TYPE "public"."venue_attachment_type" AS ENUM('image', 'video');--> statement-breakpoint
+CREATE TYPE "public"."volunteer_group_assignment_invite_status" AS ENUM('accepted', 'declined', 'no_response');--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "action_categories" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"description" text,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"is_disabled" boolean DEFAULT false NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"is_disabled" boolean NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "actions" (
-	"assigned_at" timestamp DEFAULT now() NOT NULL,
+	"assigned_at" timestamp (3) with time zone NOT NULL,
 	"actor_id" uuid,
 	"category_id" uuid,
-	"completion_at" timestamp NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"completion_at" timestamp (3) with time zone NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"event_id" uuid,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"is_completed" boolean DEFAULT false NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"is_completed" boolean NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"post_completion_notes" text,
 	"pre_completion_notes" text,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "advertisement_attachments" (
 	"advertisement_id" uuid NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"position" integer NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	"uri" text NOT NULL,
-	"type" text NOT NULL
+	"type" "advertisement_attachment_type" NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "advertisements" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"description" text,
-	"end_at" timestamp NOT NULL,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"end_at" timestamp (3) with time zone NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
-	"start_at" timestamp NOT NULL,
-	"updated_at" timestamp,
+	"start_at" timestamp (3) with time zone NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
-	"type" text NOT NULL
+	"type" "advertisement_type" NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "agenda_items" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"description" text,
 	"duration" text,
 	"event_id" uuid NOT NULL,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"key" text,
 	"name" text,
 	"position" integer NOT NULL,
 	"section_id" uuid NOT NULL,
-	"type" text NOT NULL,
-	"updated_at" timestamp,
+	"type" "agenda_item_type" NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "agenda_sections" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"event_id" uuid NOT NULL,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"parent_section_id" uuid,
 	"position" integer NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "comment_votes" (
 	"comment_id" uuid NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"type" text NOT NULL,
-	"updated_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
+	"type" "comment_vote_type" NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updated_id" uuid,
 	"voter_id" uuid,
 	CONSTRAINT "comment_votes_comment_id_voter_id_pk" PRIMARY KEY("comment_id","voter_id")
@@ -100,310 +113,285 @@ CREATE TABLE IF NOT EXISTS "comment_votes" (
 CREATE TABLE IF NOT EXISTS "comments" (
 	"body" text NOT NULL,
 	"commenter_id" uuid,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"parent_comment_id" uuid,
-	"pinned_at" timestamp,
+	"pinned_at" timestamp (3) with time zone,
 	"pinner_id" uuid,
 	"post_id" uuid NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "event_attachments" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"event_id" uuid NOT NULL,
 	"position" integer NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	"uri" text NOT NULL,
-	"type" text NOT NULL
+	"type" "event_attachment_type" NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "event_attendances" (
 	"attendee_id" uuid,
-	"check_in_at" timestamp,
-	"check_out_at" timestamp,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"check_in_at" timestamp (3) with time zone,
+	"check_out_at" timestamp (3) with time zone,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"event_id" uuid NOT NULL,
-	"invite_status" text NOT NULL,
-	"updated_at" timestamp,
+	"invite_status" "event_attendee_registration_invite_status" NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "events" (
 	"base_recurring_event_id" uuid,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"description" text,
 	"end_date" date,
 	"end_time" time,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"is_all_day" boolean DEFAULT false NOT NULL,
-	"is_base_recurring_event" boolean DEFAULT false NOT NULL,
-	"is_private" boolean DEFAULT false NOT NULL,
-	"is_recurring" boolean DEFAULT false NOT NULL,
-	"is_recurring_exception" boolean DEFAULT false NOT NULL,
-	"is_registerable" boolean DEFAULT true NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"is_all_day" boolean NOT NULL,
+	"is_base_recurring_event" boolean NOT NULL,
+	"is_private" boolean NOT NULL,
+	"is_recurring" boolean NOT NULL,
+	"is_recurring_exception" boolean NOT NULL,
+	"is_registerable" boolean NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"start_date" date NOT NULL,
 	"start_time" time,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "families" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "family_memberships" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"family_id" uuid NOT NULL,
 	"member_id" uuid,
-	"role" text NOT NULL,
-	"updated_at" timestamp,
+	"role" "family_membership_role" NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	CONSTRAINT "family_memberships_family_id_member_id_pk" PRIMARY KEY("family_id","member_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "fundraising_campaigns" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
-	"end_at" timestamp NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
+	"end_at" timestamp (3) with time zone NOT NULL,
 	"fund_id" uuid NOT NULL,
 	"goal_amount" integer NOT NULL,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
-	"start_at" timestamp NOT NULL,
-	"updated_at" timestamp,
+	"start_at" timestamp (3) with time zone NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	CONSTRAINT "fundraising_campaigns_fund_id_name_unique" UNIQUE("fund_id","name")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "funds" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"is_archived" boolean DEFAULT false NOT NULL,
-	"is_default" boolean DEFAULT false NOT NULL,
-	"is_tax_deductibe" boolean DEFAULT false NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"is_archived" boolean NOT NULL,
+	"is_default" boolean NOT NULL,
+	"is_tax_deductibe" boolean NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	CONSTRAINT "funds_name_organization_id_unique" UNIQUE("name","organization_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "organization_memberships" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"is_administrator" boolean DEFAULT false NOT NULL,
-	"is_approved" boolean DEFAULT false NOT NULL,
-	"is_blocked" boolean DEFAULT false NOT NULL,
-	"reason_for_block" text,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
+	"is_approved" boolean NOT NULL,
 	"member_id" uuid NOT NULL,
 	"organization_id" uuid NOT NULL,
-	"updated_at" timestamp,
+	"role" "organization_membership_role" NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	CONSTRAINT "organization_memberships_member_id_organization_id_pk" PRIMARY KEY("member_id","organization_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "organizations" (
-	"address_line_1" text,
-	"address_line_2" text,
+	"address" text,
 	"avatar_uri" text,
 	"city" text,
-	"country_code" text,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
+	"country_code" "iso_3166_alpha_2_country_code",
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"description" text,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"is_private" boolean DEFAULT false NOT NULL,
-	"is_visible" boolean DEFAULT true NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"is_private" boolean NOT NULL,
 	"name" text NOT NULL,
 	"postal_code" text,
 	"state" text,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	CONSTRAINT "organizations_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "pledges" (
 	"amount" integer NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
-	"end_at" timestamp NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
+	"end_at" timestamp (3) with time zone NOT NULL,
 	"fundraising_campaign_id" uuid NOT NULL,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"is_include_family" boolean DEFAULT false NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"is_include_family" boolean NOT NULL,
 	"notes" text,
 	"pledger_id" uuid,
-	"start_at" timestamp NOT NULL,
-	"updated_at" timestamp,
+	"start_at" timestamp (3) with time zone NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "post_attachments" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"position" integer NOT NULL,
 	"post_id" uuid NOT NULL,
-	"type" text NOT NULL,
-	"updated_at" timestamp,
+	"type" "post_attachment_type" NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	"uri" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "post_votes" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"post_id" uuid NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updated_id" uuid,
-	"type" text NOT NULL,
+	"type" "post_vote_type" NOT NULL,
 	"voter_id" uuid,
 	CONSTRAINT "post_votes_post_id_voter_id_pk" PRIMARY KEY("post_id","voter_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "posts" (
 	"caption" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"organization_id" uuid NOT NULL,
-	"pinned_at" timestamp,
+	"pinned_at" timestamp (3) with time zone,
 	"pinner_id" uuid,
 	"poster_id" uuid,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "recurrences" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"day_of_month" integer,
 	"day_of_week" integer,
-	"deleted_at" timestamp,
 	"event_id" uuid NOT NULL,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"max_count" integer,
 	"month_of_year" integer,
 	"rrule_string" text NOT NULL,
 	"seperation_count" integer,
-	"type" text,
-	"updated_at" timestamp,
+	"type" "recurrence_type" NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	"week_of_month" integer
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tag_assignments" (
 	"assignee_id" uuid NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"tag_id" uuid,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	CONSTRAINT "tag_assignments_assignee_id_tag_id_pk" PRIMARY KEY("assignee_id","tag_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tag_folders" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"parent_folder_id" uuid,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tags" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"folder_id" uuid,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "user" (
-	"address_line_1" text,
-	"address_line_2" text,
+CREATE TABLE IF NOT EXISTS "users" (
+	"address" text,
 	"avatar_uri" text,
 	"birth_date" date,
 	"city" text,
-	"country_code" text,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
+	"country_code" "iso_3166_alpha_2_country_code",
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"description" text,
-	"education_grade" text,
-	"state" text,
-	"email" text NOT NULL,
-	"employment_status" text,
-	"first_name" text,
+	"education_grade" "user_education_grade",
+	"email_address" text NOT NULL,
+	"employment_status" "user_employment_status",
 	"home_phone_number" text,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"is_administrator" boolean DEFAULT false NOT NULL,
-	"is_email_verified" boolean DEFAULT false NOT NULL,
-	"last_name" text,
-	"marital_status" text,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"is_email_address_verified" boolean NOT NULL,
+	"marital_status" "user_marital_status",
 	"mobile_phone_number" text,
-	"name" text,
-	"natal_sex" text,
-	"password_hash" text,
+	"name" text NOT NULL,
+	"natal_sex" "user_natal_sex",
+	"password_hash" text NOT NULL,
 	"postal_code" text,
-	"updated_at" timestamp,
+	"role" "user_role" NOT NULL,
+	"state" text,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	"work_phone_number" text,
-	CONSTRAINT "user_email_unique" UNIQUE("email"),
-	CONSTRAINT "user_name_unique" UNIQUE("name")
+	CONSTRAINT "users_email_address_unique" UNIQUE("email_address")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "venue_attachments" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"position" integer NOT NULL,
-	"type" text NOT NULL,
-	"updated_at" timestamp,
+	"type" "venue_attachment_type" NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	"uri" text NOT NULL,
 	"venue_id" uuid NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "venue_bookings" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"event_id" uuid NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	"venue_id" uuid NOT NULL,
 	CONSTRAINT "venue_bookings_event_id_venue_id_pk" PRIMARY KEY("event_id","venue_id")
@@ -411,44 +399,41 @@ CREATE TABLE IF NOT EXISTS "venue_bookings" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "venues" (
 	"capacity" integer NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"description" text,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "volunteer_group_assignments" (
 	"assignee_id" uuid NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"group_id" uuid NOT NULL,
-	"invite_status" text NOT NULL,
-	"updated_at" timestamp,
+	"invite_status" "volunteer_group_assignment_invite_status" NOT NULL,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	CONSTRAINT "volunteer_group_assignments_assignee_id_group_id_pk" PRIMARY KEY("assignee_id","group_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "volunteer_groups" (
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"creator_id" uuid,
-	"deleted_at" timestamp,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid NOT NULL,
 	"event_id" uuid NOT NULL,
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"leader_id" uuid,
 	"max_volunteer_count" integer NOT NULL,
 	"name" text NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "action_categories" ADD CONSTRAINT "action_categories_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "action_categories" ADD CONSTRAINT "action_categories_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -460,13 +445,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "action_categories" ADD CONSTRAINT "action_categories_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "action_categories" ADD CONSTRAINT "action_categories_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "actions" ADD CONSTRAINT "actions_actor_id_user_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "actions" ADD CONSTRAINT "actions_actor_id_users_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -478,7 +463,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "actions" ADD CONSTRAINT "actions_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "actions" ADD CONSTRAINT "actions_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -496,7 +481,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "actions" ADD CONSTRAINT "actions_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "actions" ADD CONSTRAINT "actions_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -508,19 +493,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "advertisement_attachments" ADD CONSTRAINT "advertisement_attachments_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "advertisement_attachments" ADD CONSTRAINT "advertisement_attachments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "advertisement_attachments" ADD CONSTRAINT "advertisement_attachments_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "advertisement_attachments" ADD CONSTRAINT "advertisement_attachments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "advertisements" ADD CONSTRAINT "advertisements_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "advertisements" ADD CONSTRAINT "advertisements_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -532,13 +517,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "advertisements" ADD CONSTRAINT "advertisements_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "advertisements" ADD CONSTRAINT "advertisements_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -556,13 +541,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "agenda_sections" ADD CONSTRAINT "agenda_sections_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "agenda_sections" ADD CONSTRAINT "agenda_sections_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -580,7 +565,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "agenda_sections" ADD CONSTRAINT "agenda_sections_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "agenda_sections" ADD CONSTRAINT "agenda_sections_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -592,31 +577,31 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_updated_id_user_id_fk" FOREIGN KEY ("updated_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_updated_id_users_id_fk" FOREIGN KEY ("updated_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_voter_id_user_id_fk" FOREIGN KEY ("voter_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_voter_id_users_id_fk" FOREIGN KEY ("voter_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "comments" ADD CONSTRAINT "comments_commenter_id_user_id_fk" FOREIGN KEY ("commenter_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "comments" ADD CONSTRAINT "comments_commenter_id_users_id_fk" FOREIGN KEY ("commenter_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "comments" ADD CONSTRAINT "comments_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "comments" ADD CONSTRAINT "comments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -628,7 +613,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "comments" ADD CONSTRAINT "comments_pinner_id_user_id_fk" FOREIGN KEY ("pinner_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "comments" ADD CONSTRAINT "comments_pinner_id_users_id_fk" FOREIGN KEY ("pinner_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -640,13 +625,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "comments" ADD CONSTRAINT "comments_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "comments" ADD CONSTRAINT "comments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "event_attachments" ADD CONSTRAINT "event_attachments_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "event_attachments" ADD CONSTRAINT "event_attachments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -658,19 +643,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "event_attachments" ADD CONSTRAINT "event_attachments_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "event_attachments" ADD CONSTRAINT "event_attachments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "event_attendances" ADD CONSTRAINT "event_attendances_attendee_id_user_id_fk" FOREIGN KEY ("attendee_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "event_attendances" ADD CONSTRAINT "event_attendances_attendee_id_users_id_fk" FOREIGN KEY ("attendee_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "event_attendances" ADD CONSTRAINT "event_attendances_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "event_attendances" ADD CONSTRAINT "event_attendances_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -682,7 +667,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "event_attendances" ADD CONSTRAINT "event_attendances_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "event_attendances" ADD CONSTRAINT "event_attendances_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -694,7 +679,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "events" ADD CONSTRAINT "events_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "events" ADD CONSTRAINT "events_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -706,13 +691,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "events" ADD CONSTRAINT "events_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "events" ADD CONSTRAINT "events_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "families" ADD CONSTRAINT "families_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "families" ADD CONSTRAINT "families_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -724,13 +709,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "families" ADD CONSTRAINT "families_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "families" ADD CONSTRAINT "families_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "family_memberships" ADD CONSTRAINT "family_memberships_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "family_memberships" ADD CONSTRAINT "family_memberships_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -742,19 +727,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "family_memberships" ADD CONSTRAINT "family_memberships_member_id_user_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "family_memberships" ADD CONSTRAINT "family_memberships_member_id_users_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "family_memberships" ADD CONSTRAINT "family_memberships_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "family_memberships" ADD CONSTRAINT "family_memberships_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "fundraising_campaigns" ADD CONSTRAINT "fundraising_campaigns_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "fundraising_campaigns" ADD CONSTRAINT "fundraising_campaigns_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -766,13 +751,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "fundraising_campaigns" ADD CONSTRAINT "fundraising_campaigns_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "fundraising_campaigns" ADD CONSTRAINT "fundraising_campaigns_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "funds" ADD CONSTRAINT "funds_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "funds" ADD CONSTRAINT "funds_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -784,19 +769,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "funds" ADD CONSTRAINT "funds_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "funds" ADD CONSTRAINT "funds_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_member_id_user_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_member_id_users_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -808,25 +793,25 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "organizations" ADD CONSTRAINT "organizations_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "organizations" ADD CONSTRAINT "organizations_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "organizations" ADD CONSTRAINT "organizations_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "organizations" ADD CONSTRAINT "organizations_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "pledges" ADD CONSTRAINT "pledges_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "pledges" ADD CONSTRAINT "pledges_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -838,19 +823,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "pledges" ADD CONSTRAINT "pledges_pledger_id_user_id_fk" FOREIGN KEY ("pledger_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "pledges" ADD CONSTRAINT "pledges_pledger_id_users_id_fk" FOREIGN KEY ("pledger_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "pledges" ADD CONSTRAINT "pledges_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "pledges" ADD CONSTRAINT "pledges_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "post_attachments" ADD CONSTRAINT "post_attachments_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "post_attachments" ADD CONSTRAINT "post_attachments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -862,13 +847,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "post_attachments" ADD CONSTRAINT "post_attachments_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "post_attachments" ADD CONSTRAINT "post_attachments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "post_votes" ADD CONSTRAINT "post_votes_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "post_votes" ADD CONSTRAINT "post_votes_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -880,19 +865,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "post_votes" ADD CONSTRAINT "post_votes_updated_id_user_id_fk" FOREIGN KEY ("updated_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "post_votes" ADD CONSTRAINT "post_votes_updated_id_users_id_fk" FOREIGN KEY ("updated_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "post_votes" ADD CONSTRAINT "post_votes_voter_id_user_id_fk" FOREIGN KEY ("voter_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "post_votes" ADD CONSTRAINT "post_votes_voter_id_users_id_fk" FOREIGN KEY ("voter_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "posts" ADD CONSTRAINT "posts_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "posts" ADD CONSTRAINT "posts_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -904,25 +889,25 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "posts" ADD CONSTRAINT "posts_pinner_id_user_id_fk" FOREIGN KEY ("pinner_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "posts" ADD CONSTRAINT "posts_pinner_id_users_id_fk" FOREIGN KEY ("pinner_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "posts" ADD CONSTRAINT "posts_poster_id_user_id_fk" FOREIGN KEY ("poster_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "posts" ADD CONSTRAINT "posts_poster_id_users_id_fk" FOREIGN KEY ("poster_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "posts" ADD CONSTRAINT "posts_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "posts" ADD CONSTRAINT "posts_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "recurrences" ADD CONSTRAINT "recurrences_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "recurrences" ADD CONSTRAINT "recurrences_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -934,19 +919,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "recurrences" ADD CONSTRAINT "recurrences_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "recurrences" ADD CONSTRAINT "recurrences_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tag_assignments" ADD CONSTRAINT "tag_assignments_assignee_id_user_id_fk" FOREIGN KEY ("assignee_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "tag_assignments" ADD CONSTRAINT "tag_assignments_assignee_id_users_id_fk" FOREIGN KEY ("assignee_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tag_assignments" ADD CONSTRAINT "tag_assignments_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "tag_assignments" ADD CONSTRAINT "tag_assignments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -958,13 +943,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tag_assignments" ADD CONSTRAINT "tag_assignments_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "tag_assignments" ADD CONSTRAINT "tag_assignments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tag_folders" ADD CONSTRAINT "tag_folders_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "tag_folders" ADD CONSTRAINT "tag_folders_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -982,13 +967,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tag_folders" ADD CONSTRAINT "tag_folders_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "tag_folders" ADD CONSTRAINT "tag_folders_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tags" ADD CONSTRAINT "tags_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "tags" ADD CONSTRAINT "tags_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -1006,31 +991,31 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tags" ADD CONSTRAINT "tags_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "tags" ADD CONSTRAINT "tags_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "user" ADD CONSTRAINT "user_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "users" ADD CONSTRAINT "users_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "user" ADD CONSTRAINT "user_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "users" ADD CONSTRAINT "users_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "venue_attachments" ADD CONSTRAINT "venue_attachments_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "venue_attachments" ADD CONSTRAINT "venue_attachments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "venue_attachments" ADD CONSTRAINT "venue_attachments_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "venue_attachments" ADD CONSTRAINT "venue_attachments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -1042,7 +1027,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "venue_bookings" ADD CONSTRAINT "venue_bookings_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "venue_bookings" ADD CONSTRAINT "venue_bookings_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -1054,7 +1039,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "venue_bookings" ADD CONSTRAINT "venue_bookings_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "venue_bookings" ADD CONSTRAINT "venue_bookings_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -1066,7 +1051,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "venues" ADD CONSTRAINT "venues_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "venues" ADD CONSTRAINT "venues_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -1078,19 +1063,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "venues" ADD CONSTRAINT "venues_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "venues" ADD CONSTRAINT "venues_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "volunteer_group_assignments" ADD CONSTRAINT "volunteer_group_assignments_assignee_id_user_id_fk" FOREIGN KEY ("assignee_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "volunteer_group_assignments" ADD CONSTRAINT "volunteer_group_assignments_assignee_id_users_id_fk" FOREIGN KEY ("assignee_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "volunteer_group_assignments" ADD CONSTRAINT "volunteer_group_assignments_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "volunteer_group_assignments" ADD CONSTRAINT "volunteer_group_assignments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -1102,13 +1087,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "volunteer_group_assignments" ADD CONSTRAINT "volunteer_group_assignments_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "volunteer_group_assignments" ADD CONSTRAINT "volunteer_group_assignments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "volunteer_groups" ADD CONSTRAINT "volunteer_groups_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "volunteer_groups" ADD CONSTRAINT "volunteer_groups_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -1120,13 +1105,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "volunteer_groups" ADD CONSTRAINT "volunteer_groups_leader_id_user_id_fk" FOREIGN KEY ("leader_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "volunteer_groups" ADD CONSTRAINT "volunteer_groups_leader_id_users_id_fk" FOREIGN KEY ("leader_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "volunteer_groups" ADD CONSTRAINT "volunteer_groups_updater_id_user_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "volunteer_groups" ADD CONSTRAINT "volunteer_groups_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -1141,8 +1126,6 @@ CREATE INDEX IF NOT EXISTS "actions_category_id_index" ON "actions" USING btree 
 CREATE INDEX IF NOT EXISTS "actions_completion_at_index" ON "actions" USING btree ("completion_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "actions_created_at_index" ON "actions" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "actions_creator_id_index" ON "actions" USING btree ("creator_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "actions_event_id_index" ON "actions" USING btree ("event_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "actions_is_completed_index" ON "actions" USING btree ("is_completed");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "actions_organization_id_index" ON "actions" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "advertisement_attachments_advertisement_id_index" ON "advertisement_attachments" USING btree ("advertisement_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "advertisement_attachments_created_at_index" ON "advertisement_attachments" USING btree ("created_at");--> statement-breakpoint
@@ -1157,7 +1140,6 @@ CREATE INDEX IF NOT EXISTS "advertisements_start_at_index" ON "advertisements" U
 CREATE UNIQUE INDEX IF NOT EXISTS "advertisements_name_organization_id_index" ON "advertisements" USING btree ("name","organization_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "agenda_items_created_at_index" ON "agenda_items" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "agenda_items_creator_id_index" ON "agenda_items" USING btree ("creator_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "agenda_items_deleted_at_index" ON "agenda_items" USING btree ("deleted_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "agenda_items_name_index" ON "agenda_items" USING btree ("name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "agenda_items_position_index" ON "agenda_items" USING btree ("position");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "agenda_items_section_id_index" ON "agenda_items" USING btree ("section_id");--> statement-breakpoint
@@ -1218,14 +1200,12 @@ CREATE INDEX IF NOT EXISTS "funds_name_index" ON "funds" USING btree ("name");--
 CREATE INDEX IF NOT EXISTS "funds_organization_id_index" ON "funds" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organization_memberships_created_at_index" ON "organization_memberships" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organization_memberships_creator_id_index" ON "organization_memberships" USING btree ("creator_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "organization_memberships_is_administrator_index" ON "organization_memberships" USING btree ("is_administrator");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organization_memberships_is_approved_index" ON "organization_memberships" USING btree ("is_approved");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "organization_memberships_is_blocked_index" ON "organization_memberships" USING btree ("is_blocked");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organization_memberships_member_id_index" ON "organization_memberships" USING btree ("member_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organization_memberships_organization_id_index" ON "organization_memberships" USING btree ("organization_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "organizations_created_at_index" ON "organizations" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organizations_creator_id_index" ON "organizations" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organizations_name_index" ON "organizations" USING btree ("name");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "organizations_updater_id_index" ON "organizations" USING btree ("updater_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "pledges_created_at_index" ON "pledges" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "pledges_creator_id_index" ON "pledges" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "pledges_end_at_index" ON "pledges" USING btree ("end_at");--> statement-breakpoint
@@ -1264,8 +1244,9 @@ CREATE INDEX IF NOT EXISTS "tags_folder_id_index" ON "tags" USING btree ("folder
 CREATE INDEX IF NOT EXISTS "tags_name_index" ON "tags" USING btree ("name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "tags_organization_id_index" ON "tags" USING btree ("organization_id");--> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS "tags_name_organization_id_index" ON "tags" USING btree ("name","organization_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "user_created_at_index" ON "user" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "user_name_index" ON "user" USING btree ("name");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "users_creator_id_index" ON "users" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "users_name_index" ON "users" USING btree ("name");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "users_updater_id_index" ON "users" USING btree ("updater_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "venue_attachments_created_at_index" ON "venue_attachments" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "venue_attachments_creator_id_index" ON "venue_attachments" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "venue_attachments_venue_id_index" ON "venue_attachments" USING btree ("venue_id");--> statement-breakpoint

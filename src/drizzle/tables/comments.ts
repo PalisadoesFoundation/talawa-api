@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	type AnyPgColumn,
 	index,
@@ -7,6 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { uuidv7 } from "uuidv7";
 import { commentVotesTable } from "./commentVotes";
 import { postsTable } from "./posts";
 import { usersTable } from "./users";
@@ -20,17 +21,17 @@ export const commentsTable = pgTable(
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
-
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		parentCommentId: uuid("parent_comment_id").references(
 			(): AnyPgColumn => commentsTable.id,
@@ -39,6 +40,8 @@ export const commentsTable = pgTable(
 
 		pinnedAt: timestamp("pinned_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		pinnerId: uuid("pinner_id").references(() => usersTable.id, {}),
@@ -49,21 +52,21 @@ export const commentsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
-	(self) => ({
-		index0: index().on(self.commenterId),
-		index1: index().on(self.createdAt),
-		index2: index().on(self.creatorId),
-		index3: index().on(self.parentCommentId),
-		index4: index().on(self.pinnedAt),
-		index5: index().on(self.postId),
-	}),
+	(self) => [
+		index().on(self.commenterId),
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.parentCommentId),
+		index().on(self.pinnedAt),
+		index().on(self.postId),
+	],
 );
-
-export type CommentPgType = InferSelectModel<typeof commentsTable>;
 
 export const commentsTableRelations = relations(
 	commentsTable,

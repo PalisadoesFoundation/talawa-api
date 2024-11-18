@@ -1,5 +1,5 @@
 {
-  "id": "1176e1b8-b8e2-4634-859c-80e17f58cd41",
+  "id": "63b64a5c-c24d-4630-ab56-0f6ee417f398",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -10,7 +10,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -19,13 +19,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "description": {
           "name": "description",
@@ -37,15 +31,13 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "is_disabled": {
           "name": "is_disabled",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -61,7 +53,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -141,10 +133,10 @@
         }
       },
       "foreignKeys": {
-        "action_categories_creator_id_user_id_fk": {
-          "name": "action_categories_creator_id_user_id_fk",
+        "action_categories_creator_id_users_id_fk": {
+          "name": "action_categories_creator_id_users_id_fk",
           "tableFrom": "action_categories",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -167,10 +159,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "action_categories_updater_id_user_id_fk": {
-          "name": "action_categories_updater_id_user_id_fk",
+        "action_categories_updater_id_users_id_fk": {
+          "name": "action_categories_updater_id_users_id_fk",
           "tableFrom": "action_categories",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -182,7 +174,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.actions": {
       "name": "actions",
@@ -190,10 +185,9 @@
       "columns": {
         "assigned_at": {
           "name": "assigned_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": true
         },
         "actor_id": {
           "name": "actor_id",
@@ -209,13 +203,13 @@
         },
         "completion_at": {
           "name": "completion_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -224,13 +218,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "event_id": {
           "name": "event_id",
@@ -242,15 +230,13 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "is_completed": {
           "name": "is_completed",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "organization_id": {
           "name": "organization_id",
@@ -272,7 +258,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -374,36 +360,6 @@
           "method": "btree",
           "with": {}
         },
-        "actions_event_id_index": {
-          "name": "actions_event_id_index",
-          "columns": [
-            {
-              "expression": "event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "actions_is_completed_index": {
-          "name": "actions_is_completed_index",
-          "columns": [
-            {
-              "expression": "is_completed",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "actions_organization_id_index": {
           "name": "actions_organization_id_index",
           "columns": [
@@ -421,10 +377,10 @@
         }
       },
       "foreignKeys": {
-        "actions_actor_id_user_id_fk": {
-          "name": "actions_actor_id_user_id_fk",
+        "actions_actor_id_users_id_fk": {
+          "name": "actions_actor_id_users_id_fk",
           "tableFrom": "actions",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "actor_id"
           ],
@@ -447,10 +403,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "actions_creator_id_user_id_fk": {
-          "name": "actions_creator_id_user_id_fk",
+        "actions_creator_id_users_id_fk": {
+          "name": "actions_creator_id_users_id_fk",
           "tableFrom": "actions",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -486,10 +442,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "actions_updater_id_user_id_fk": {
-          "name": "actions_updater_id_user_id_fk",
+        "actions_updater_id_users_id_fk": {
+          "name": "actions_updater_id_users_id_fk",
           "tableFrom": "actions",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -501,7 +457,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.advertisement_attachments": {
       "name": "advertisement_attachments",
@@ -515,7 +474,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -524,13 +483,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "position": {
           "name": "position",
@@ -540,7 +493,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -558,7 +511,8 @@
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "advertisement_attachment_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         }
@@ -645,10 +599,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "advertisement_attachments_creator_id_user_id_fk": {
-          "name": "advertisement_attachments_creator_id_user_id_fk",
+        "advertisement_attachments_creator_id_users_id_fk": {
+          "name": "advertisement_attachments_creator_id_users_id_fk",
           "tableFrom": "advertisement_attachments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -658,10 +612,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "advertisement_attachments_updater_id_user_id_fk": {
-          "name": "advertisement_attachments_updater_id_user_id_fk",
+        "advertisement_attachments_updater_id_users_id_fk": {
+          "name": "advertisement_attachments_updater_id_users_id_fk",
           "tableFrom": "advertisement_attachments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -673,7 +627,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.advertisements": {
       "name": "advertisements",
@@ -681,7 +638,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -690,13 +647,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "description": {
           "name": "description",
@@ -706,7 +657,7 @@
         },
         "end_at": {
           "name": "end_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true
         },
@@ -714,8 +665,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -731,13 +681,13 @@
         },
         "start_at": {
           "name": "start_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -749,7 +699,8 @@
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "advertisement_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         }
@@ -868,10 +819,10 @@
         }
       },
       "foreignKeys": {
-        "advertisements_creator_id_user_id_fk": {
-          "name": "advertisements_creator_id_user_id_fk",
+        "advertisements_creator_id_users_id_fk": {
+          "name": "advertisements_creator_id_users_id_fk",
           "tableFrom": "advertisements",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -894,10 +845,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "advertisements_updater_id_user_id_fk": {
-          "name": "advertisements_updater_id_user_id_fk",
+        "advertisements_updater_id_users_id_fk": {
+          "name": "advertisements_updater_id_users_id_fk",
           "tableFrom": "advertisements",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -909,7 +860,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.agenda_items": {
       "name": "agenda_items",
@@ -917,7 +871,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -926,13 +880,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "description": {
           "name": "description",
@@ -956,8 +904,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "key": {
           "name": "key",
@@ -985,13 +932,14 @@
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "agenda_item_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -1023,21 +971,6 @@
           "columns": [
             {
               "expression": "creator_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agenda_items_deleted_at_index": {
-          "name": "agenda_items_deleted_at_index",
-          "columns": [
-            {
-              "expression": "deleted_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1154,10 +1087,10 @@
         }
       },
       "foreignKeys": {
-        "agenda_items_creator_id_user_id_fk": {
-          "name": "agenda_items_creator_id_user_id_fk",
+        "agenda_items_creator_id_users_id_fk": {
+          "name": "agenda_items_creator_id_users_id_fk",
           "tableFrom": "agenda_items",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -1193,10 +1126,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "agenda_items_updater_id_user_id_fk": {
-          "name": "agenda_items_updater_id_user_id_fk",
+        "agenda_items_updater_id_users_id_fk": {
+          "name": "agenda_items_updater_id_users_id_fk",
           "tableFrom": "agenda_items",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -1208,7 +1141,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.agenda_sections": {
       "name": "agenda_sections",
@@ -1216,7 +1152,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -1225,13 +1161,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "event_id": {
           "name": "event_id",
@@ -1243,8 +1173,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -1266,7 +1195,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -1397,10 +1326,10 @@
         }
       },
       "foreignKeys": {
-        "agenda_sections_creator_id_user_id_fk": {
-          "name": "agenda_sections_creator_id_user_id_fk",
+        "agenda_sections_creator_id_users_id_fk": {
+          "name": "agenda_sections_creator_id_users_id_fk",
           "tableFrom": "agenda_sections",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -1436,10 +1365,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "agenda_sections_updater_id_user_id_fk": {
-          "name": "agenda_sections_updater_id_user_id_fk",
+        "agenda_sections_updater_id_users_id_fk": {
+          "name": "agenda_sections_updater_id_users_id_fk",
           "tableFrom": "agenda_sections",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -1451,7 +1380,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.comment_votes": {
       "name": "comment_votes",
@@ -1465,7 +1397,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -1474,17 +1406,18 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "comment_vote_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -1592,10 +1525,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "comment_votes_creator_id_user_id_fk": {
-          "name": "comment_votes_creator_id_user_id_fk",
+        "comment_votes_creator_id_users_id_fk": {
+          "name": "comment_votes_creator_id_users_id_fk",
           "tableFrom": "comment_votes",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -1605,10 +1538,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "comment_votes_updated_id_user_id_fk": {
-          "name": "comment_votes_updated_id_user_id_fk",
+        "comment_votes_updated_id_users_id_fk": {
+          "name": "comment_votes_updated_id_users_id_fk",
           "tableFrom": "comment_votes",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updated_id"
           ],
@@ -1618,10 +1551,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "comment_votes_voter_id_user_id_fk": {
-          "name": "comment_votes_voter_id_user_id_fk",
+        "comment_votes_voter_id_users_id_fk": {
+          "name": "comment_votes_voter_id_users_id_fk",
           "tableFrom": "comment_votes",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "voter_id"
           ],
@@ -1641,7 +1574,10 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.comments": {
       "name": "comments",
@@ -1661,7 +1597,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -1670,20 +1606,13 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "parent_comment_id": {
           "name": "parent_comment_id",
@@ -1693,7 +1622,7 @@
         },
         "pinned_at": {
           "name": "pinned_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -1711,7 +1640,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -1815,10 +1744,10 @@
         }
       },
       "foreignKeys": {
-        "comments_commenter_id_user_id_fk": {
-          "name": "comments_commenter_id_user_id_fk",
+        "comments_commenter_id_users_id_fk": {
+          "name": "comments_commenter_id_users_id_fk",
           "tableFrom": "comments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "commenter_id"
           ],
@@ -1828,10 +1757,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "comments_creator_id_user_id_fk": {
-          "name": "comments_creator_id_user_id_fk",
+        "comments_creator_id_users_id_fk": {
+          "name": "comments_creator_id_users_id_fk",
           "tableFrom": "comments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -1854,10 +1783,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "comments_pinner_id_user_id_fk": {
-          "name": "comments_pinner_id_user_id_fk",
+        "comments_pinner_id_users_id_fk": {
+          "name": "comments_pinner_id_users_id_fk",
           "tableFrom": "comments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "pinner_id"
           ],
@@ -1880,10 +1809,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "comments_updater_id_user_id_fk": {
-          "name": "comments_updater_id_user_id_fk",
+        "comments_updater_id_users_id_fk": {
+          "name": "comments_updater_id_users_id_fk",
           "tableFrom": "comments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -1895,7 +1824,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.event_attachments": {
       "name": "event_attachments",
@@ -1903,7 +1835,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -1912,13 +1844,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "event_id": {
           "name": "event_id",
@@ -1934,7 +1860,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -1952,7 +1878,8 @@
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "event_attachment_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         }
@@ -2026,10 +1953,10 @@
         }
       },
       "foreignKeys": {
-        "event_attachments_creator_id_user_id_fk": {
-          "name": "event_attachments_creator_id_user_id_fk",
+        "event_attachments_creator_id_users_id_fk": {
+          "name": "event_attachments_creator_id_users_id_fk",
           "tableFrom": "event_attachments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -2052,10 +1979,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "event_attachments_updater_id_user_id_fk": {
-          "name": "event_attachments_updater_id_user_id_fk",
+        "event_attachments_updater_id_users_id_fk": {
+          "name": "event_attachments_updater_id_users_id_fk",
           "tableFrom": "event_attachments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -2067,7 +1994,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.event_attendances": {
       "name": "event_attendances",
@@ -2081,19 +2011,19 @@
         },
         "check_in_at": {
           "name": "check_in_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
         "check_out_at": {
           "name": "check_out_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -2102,13 +2032,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "event_id": {
           "name": "event_id",
@@ -2118,13 +2042,14 @@
         },
         "invite_status": {
           "name": "invite_status",
-          "type": "text",
+          "type": "event_attendee_registration_invite_status",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -2243,10 +2168,10 @@
         }
       },
       "foreignKeys": {
-        "event_attendances_attendee_id_user_id_fk": {
-          "name": "event_attendances_attendee_id_user_id_fk",
+        "event_attendances_attendee_id_users_id_fk": {
+          "name": "event_attendances_attendee_id_users_id_fk",
           "tableFrom": "event_attendances",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "attendee_id"
           ],
@@ -2256,10 +2181,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "event_attendances_creator_id_user_id_fk": {
-          "name": "event_attendances_creator_id_user_id_fk",
+        "event_attendances_creator_id_users_id_fk": {
+          "name": "event_attendances_creator_id_users_id_fk",
           "tableFrom": "event_attendances",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -2282,10 +2207,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "event_attendances_updater_id_user_id_fk": {
-          "name": "event_attendances_updater_id_user_id_fk",
+        "event_attendances_updater_id_users_id_fk": {
+          "name": "event_attendances_updater_id_users_id_fk",
           "tableFrom": "event_attendances",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -2297,7 +2222,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.events": {
       "name": "events",
@@ -2311,7 +2239,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -2320,13 +2248,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "description": {
           "name": "description",
@@ -2350,50 +2272,43 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "is_all_day": {
           "name": "is_all_day",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "is_base_recurring_event": {
           "name": "is_base_recurring_event",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "is_private": {
           "name": "is_private",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "is_recurring": {
           "name": "is_recurring",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "is_recurring_exception": {
           "name": "is_recurring_exception",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "is_registerable": {
           "name": "is_registerable",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": true
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -2421,7 +2336,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -2508,10 +2423,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "events_creator_id_user_id_fk": {
-          "name": "events_creator_id_user_id_fk",
+        "events_creator_id_users_id_fk": {
+          "name": "events_creator_id_users_id_fk",
           "tableFrom": "events",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -2534,10 +2449,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "events_updater_id_user_id_fk": {
-          "name": "events_updater_id_user_id_fk",
+        "events_updater_id_users_id_fk": {
+          "name": "events_updater_id_users_id_fk",
           "tableFrom": "events",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -2549,7 +2464,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.families": {
       "name": "families",
@@ -2557,7 +2475,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -2566,20 +2484,13 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -2595,7 +2506,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -2690,10 +2601,10 @@
         }
       },
       "foreignKeys": {
-        "families_creator_id_user_id_fk": {
-          "name": "families_creator_id_user_id_fk",
+        "families_creator_id_users_id_fk": {
+          "name": "families_creator_id_users_id_fk",
           "tableFrom": "families",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -2716,10 +2627,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "families_updater_id_user_id_fk": {
-          "name": "families_updater_id_user_id_fk",
+        "families_updater_id_users_id_fk": {
+          "name": "families_updater_id_users_id_fk",
           "tableFrom": "families",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -2731,7 +2642,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.family_memberships": {
       "name": "family_memberships",
@@ -2739,7 +2653,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -2748,13 +2662,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "family_id": {
           "name": "family_id",
@@ -2770,13 +2678,14 @@
         },
         "role": {
           "name": "role",
-          "type": "text",
+          "type": "family_membership_role",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -2850,10 +2759,10 @@
         }
       },
       "foreignKeys": {
-        "family_memberships_creator_id_user_id_fk": {
-          "name": "family_memberships_creator_id_user_id_fk",
+        "family_memberships_creator_id_users_id_fk": {
+          "name": "family_memberships_creator_id_users_id_fk",
           "tableFrom": "family_memberships",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -2876,10 +2785,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "family_memberships_member_id_user_id_fk": {
-          "name": "family_memberships_member_id_user_id_fk",
+        "family_memberships_member_id_users_id_fk": {
+          "name": "family_memberships_member_id_users_id_fk",
           "tableFrom": "family_memberships",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "member_id"
           ],
@@ -2889,10 +2798,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "family_memberships_updater_id_user_id_fk": {
-          "name": "family_memberships_updater_id_user_id_fk",
+        "family_memberships_updater_id_users_id_fk": {
+          "name": "family_memberships_updater_id_users_id_fk",
           "tableFrom": "family_memberships",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -2912,7 +2821,10 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.fundraising_campaigns": {
       "name": "fundraising_campaigns",
@@ -2920,7 +2832,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -2929,17 +2841,11 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "end_at": {
           "name": "end_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true
         },
@@ -2959,8 +2865,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -2970,13 +2875,13 @@
         },
         "start_at": {
           "name": "start_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -3080,10 +2985,10 @@
         }
       },
       "foreignKeys": {
-        "fundraising_campaigns_creator_id_user_id_fk": {
-          "name": "fundraising_campaigns_creator_id_user_id_fk",
+        "fundraising_campaigns_creator_id_users_id_fk": {
+          "name": "fundraising_campaigns_creator_id_users_id_fk",
           "tableFrom": "fundraising_campaigns",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -3106,10 +3011,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "fundraising_campaigns_updater_id_user_id_fk": {
-          "name": "fundraising_campaigns_updater_id_user_id_fk",
+        "fundraising_campaigns_updater_id_users_id_fk": {
+          "name": "fundraising_campaigns_updater_id_users_id_fk",
           "tableFrom": "fundraising_campaigns",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -3130,7 +3035,10 @@
             "name"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.funds": {
       "name": "funds",
@@ -3138,7 +3046,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -3147,41 +3055,31 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "is_archived": {
           "name": "is_archived",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "is_default": {
           "name": "is_default",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "is_tax_deductibe": {
           "name": "is_tax_deductibe",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -3197,7 +3095,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -3271,10 +3169,10 @@
         }
       },
       "foreignKeys": {
-        "funds_creator_id_user_id_fk": {
-          "name": "funds_creator_id_user_id_fk",
+        "funds_creator_id_users_id_fk": {
+          "name": "funds_creator_id_users_id_fk",
           "tableFrom": "funds",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -3297,10 +3195,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "funds_updater_id_user_id_fk": {
-          "name": "funds_updater_id_user_id_fk",
+        "funds_updater_id_users_id_fk": {
+          "name": "funds_updater_id_users_id_fk",
           "tableFrom": "funds",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -3321,7 +3219,10 @@
             "organization_id"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.organization_memberships": {
       "name": "organization_memberships",
@@ -3329,7 +3230,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -3338,34 +3239,13 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "is_administrator": {
-          "name": "is_administrator",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "is_approved": {
           "name": "is_approved",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "is_blocked": {
-          "name": "is_blocked",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "reason_for_block": {
-          "name": "reason_for_block",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "member_id": {
           "name": "member_id",
@@ -3379,9 +3259,16 @@
           "primaryKey": false,
           "notNull": true
         },
+        "role": {
+          "name": "role",
+          "type": "organization_membership_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -3423,41 +3310,11 @@
           "method": "btree",
           "with": {}
         },
-        "organization_memberships_is_administrator_index": {
-          "name": "organization_memberships_is_administrator_index",
-          "columns": [
-            {
-              "expression": "is_administrator",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "organization_memberships_is_approved_index": {
           "name": "organization_memberships_is_approved_index",
           "columns": [
             {
               "expression": "is_approved",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "organization_memberships_is_blocked_index": {
-          "name": "organization_memberships_is_blocked_index",
-          "columns": [
-            {
-              "expression": "is_blocked",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3500,10 +3357,10 @@
         }
       },
       "foreignKeys": {
-        "organization_memberships_creator_id_user_id_fk": {
-          "name": "organization_memberships_creator_id_user_id_fk",
+        "organization_memberships_creator_id_users_id_fk": {
+          "name": "organization_memberships_creator_id_users_id_fk",
           "tableFrom": "organization_memberships",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -3513,10 +3370,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "organization_memberships_member_id_user_id_fk": {
-          "name": "organization_memberships_member_id_user_id_fk",
+        "organization_memberships_member_id_users_id_fk": {
+          "name": "organization_memberships_member_id_users_id_fk",
           "tableFrom": "organization_memberships",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "member_id"
           ],
@@ -3539,10 +3396,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "organization_memberships_updater_id_user_id_fk": {
-          "name": "organization_memberships_updater_id_user_id_fk",
+        "organization_memberships_updater_id_users_id_fk": {
+          "name": "organization_memberships_updater_id_users_id_fk",
           "tableFrom": "organization_memberships",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -3562,20 +3419,17 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.organizations": {
       "name": "organizations",
       "schema": "",
       "columns": {
-        "address_line_1": {
-          "name": "address_line_1",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "address_line_2": {
-          "name": "address_line_2",
+        "address": {
+          "name": "address",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -3594,13 +3448,14 @@
         },
         "country_code": {
           "name": "country_code",
-          "type": "text",
+          "type": "iso_3166_alpha_2_country_code",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -3609,7 +3464,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "description": {
           "name": "description",
@@ -3621,22 +3476,13 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "is_private": {
           "name": "is_private",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "is_visible": {
-          "name": "is_visible",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -3658,7 +3504,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -3670,21 +3516,6 @@
         }
       },
       "indexes": {
-        "organizations_created_at_index": {
-          "name": "organizations_created_at_index",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "organizations_creator_id_index": {
           "name": "organizations_creator_id_index",
           "columns": [
@@ -3714,13 +3545,28 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "organizations_updater_id_index": {
+          "name": "organizations_updater_id_index",
+          "columns": [
+            {
+              "expression": "updater_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
-        "organizations_creator_id_user_id_fk": {
-          "name": "organizations_creator_id_user_id_fk",
+        "organizations_creator_id_users_id_fk": {
+          "name": "organizations_creator_id_users_id_fk",
           "tableFrom": "organizations",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -3730,10 +3576,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "organizations_updater_id_user_id_fk": {
-          "name": "organizations_updater_id_user_id_fk",
+        "organizations_updater_id_users_id_fk": {
+          "name": "organizations_updater_id_users_id_fk",
           "tableFrom": "organizations",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -3753,7 +3599,10 @@
             "name"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.pledges": {
       "name": "pledges",
@@ -3767,7 +3616,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -3776,17 +3625,11 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "end_at": {
           "name": "end_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true
         },
@@ -3800,15 +3643,13 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "is_include_family": {
           "name": "is_include_family",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "notes": {
           "name": "notes",
@@ -3824,13 +3665,13 @@
         },
         "start_at": {
           "name": "start_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -3934,10 +3775,10 @@
         }
       },
       "foreignKeys": {
-        "pledges_creator_id_user_id_fk": {
-          "name": "pledges_creator_id_user_id_fk",
+        "pledges_creator_id_users_id_fk": {
+          "name": "pledges_creator_id_users_id_fk",
           "tableFrom": "pledges",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -3960,10 +3801,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "pledges_pledger_id_user_id_fk": {
-          "name": "pledges_pledger_id_user_id_fk",
+        "pledges_pledger_id_users_id_fk": {
+          "name": "pledges_pledger_id_users_id_fk",
           "tableFrom": "pledges",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "pledger_id"
           ],
@@ -3973,10 +3814,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "pledges_updater_id_user_id_fk": {
-          "name": "pledges_updater_id_user_id_fk",
+        "pledges_updater_id_users_id_fk": {
+          "name": "pledges_updater_id_users_id_fk",
           "tableFrom": "pledges",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -3988,7 +3829,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.post_attachments": {
       "name": "post_attachments",
@@ -3996,7 +3840,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -4005,13 +3849,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "position": {
           "name": "position",
@@ -4027,13 +3865,14 @@
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "post_attachment_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -4119,10 +3958,10 @@
         }
       },
       "foreignKeys": {
-        "post_attachments_creator_id_user_id_fk": {
-          "name": "post_attachments_creator_id_user_id_fk",
+        "post_attachments_creator_id_users_id_fk": {
+          "name": "post_attachments_creator_id_users_id_fk",
           "tableFrom": "post_attachments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -4145,10 +3984,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "post_attachments_updater_id_user_id_fk": {
-          "name": "post_attachments_updater_id_user_id_fk",
+        "post_attachments_updater_id_users_id_fk": {
+          "name": "post_attachments_updater_id_users_id_fk",
           "tableFrom": "post_attachments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -4160,7 +3999,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.post_votes": {
       "name": "post_votes",
@@ -4168,7 +4010,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -4177,7 +4019,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "post_id": {
           "name": "post_id",
@@ -4187,7 +4029,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -4199,7 +4041,8 @@
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "post_vote_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -4288,10 +4131,10 @@
         }
       },
       "foreignKeys": {
-        "post_votes_creator_id_user_id_fk": {
-          "name": "post_votes_creator_id_user_id_fk",
+        "post_votes_creator_id_users_id_fk": {
+          "name": "post_votes_creator_id_users_id_fk",
           "tableFrom": "post_votes",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -4314,10 +4157,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "post_votes_updated_id_user_id_fk": {
-          "name": "post_votes_updated_id_user_id_fk",
+        "post_votes_updated_id_users_id_fk": {
+          "name": "post_votes_updated_id_users_id_fk",
           "tableFrom": "post_votes",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updated_id"
           ],
@@ -4327,10 +4170,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "post_votes_voter_id_user_id_fk": {
-          "name": "post_votes_voter_id_user_id_fk",
+        "post_votes_voter_id_users_id_fk": {
+          "name": "post_votes_voter_id_users_id_fk",
           "tableFrom": "post_votes",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "voter_id"
           ],
@@ -4350,7 +4193,10 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.posts": {
       "name": "posts",
@@ -4364,7 +4210,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -4373,20 +4219,13 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "organization_id": {
           "name": "organization_id",
@@ -4396,7 +4235,7 @@
         },
         "pinned_at": {
           "name": "pinned_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -4414,7 +4253,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -4503,10 +4342,10 @@
         }
       },
       "foreignKeys": {
-        "posts_creator_id_user_id_fk": {
-          "name": "posts_creator_id_user_id_fk",
+        "posts_creator_id_users_id_fk": {
+          "name": "posts_creator_id_users_id_fk",
           "tableFrom": "posts",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -4529,10 +4368,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "posts_pinner_id_user_id_fk": {
-          "name": "posts_pinner_id_user_id_fk",
+        "posts_pinner_id_users_id_fk": {
+          "name": "posts_pinner_id_users_id_fk",
           "tableFrom": "posts",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "pinner_id"
           ],
@@ -4542,10 +4381,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "posts_poster_id_user_id_fk": {
-          "name": "posts_poster_id_user_id_fk",
+        "posts_poster_id_users_id_fk": {
+          "name": "posts_poster_id_users_id_fk",
           "tableFrom": "posts",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "poster_id"
           ],
@@ -4555,10 +4394,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "posts_updater_id_user_id_fk": {
-          "name": "posts_updater_id_user_id_fk",
+        "posts_updater_id_users_id_fk": {
+          "name": "posts_updater_id_users_id_fk",
           "tableFrom": "posts",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -4570,7 +4409,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.recurrences": {
       "name": "recurrences",
@@ -4578,7 +4420,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -4587,7 +4429,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "day_of_month": {
           "name": "day_of_month",
@@ -4601,12 +4443,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
         "event_id": {
           "name": "event_id",
           "type": "uuid",
@@ -4617,8 +4453,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "max_count": {
           "name": "max_count",
@@ -4646,13 +4481,14 @@
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "recurrence_type",
+          "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -4717,10 +4553,10 @@
         }
       },
       "foreignKeys": {
-        "recurrences_creator_id_user_id_fk": {
-          "name": "recurrences_creator_id_user_id_fk",
+        "recurrences_creator_id_users_id_fk": {
+          "name": "recurrences_creator_id_users_id_fk",
           "tableFrom": "recurrences",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -4743,10 +4579,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "recurrences_updater_id_user_id_fk": {
-          "name": "recurrences_updater_id_user_id_fk",
+        "recurrences_updater_id_users_id_fk": {
+          "name": "recurrences_updater_id_users_id_fk",
           "tableFrom": "recurrences",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -4758,7 +4594,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.tag_assignments": {
       "name": "tag_assignments",
@@ -4772,7 +4611,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -4781,13 +4620,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "tag_id": {
           "name": "tag_id",
@@ -4797,7 +4630,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -4871,10 +4704,10 @@
         }
       },
       "foreignKeys": {
-        "tag_assignments_assignee_id_user_id_fk": {
-          "name": "tag_assignments_assignee_id_user_id_fk",
+        "tag_assignments_assignee_id_users_id_fk": {
+          "name": "tag_assignments_assignee_id_users_id_fk",
           "tableFrom": "tag_assignments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "assignee_id"
           ],
@@ -4884,10 +4717,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "tag_assignments_creator_id_user_id_fk": {
-          "name": "tag_assignments_creator_id_user_id_fk",
+        "tag_assignments_creator_id_users_id_fk": {
+          "name": "tag_assignments_creator_id_users_id_fk",
           "tableFrom": "tag_assignments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -4910,10 +4743,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "tag_assignments_updater_id_user_id_fk": {
-          "name": "tag_assignments_updater_id_user_id_fk",
+        "tag_assignments_updater_id_users_id_fk": {
+          "name": "tag_assignments_updater_id_users_id_fk",
           "tableFrom": "tag_assignments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -4933,7 +4766,10 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.tag_folders": {
       "name": "tag_folders",
@@ -4941,7 +4777,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -4950,20 +4786,13 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -4985,7 +4814,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -5080,10 +4909,10 @@
         }
       },
       "foreignKeys": {
-        "tag_folders_creator_id_user_id_fk": {
-          "name": "tag_folders_creator_id_user_id_fk",
+        "tag_folders_creator_id_users_id_fk": {
+          "name": "tag_folders_creator_id_users_id_fk",
           "tableFrom": "tag_folders",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -5119,10 +4948,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "tag_folders_updater_id_user_id_fk": {
-          "name": "tag_folders_updater_id_user_id_fk",
+        "tag_folders_updater_id_users_id_fk": {
+          "name": "tag_folders_updater_id_users_id_fk",
           "tableFrom": "tag_folders",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -5134,7 +4963,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.tags": {
       "name": "tags",
@@ -5142,7 +4974,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -5151,13 +4983,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "folder_id": {
           "name": "folder_id",
@@ -5169,8 +4995,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -5186,7 +5011,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -5296,10 +5121,10 @@
         }
       },
       "foreignKeys": {
-        "tags_creator_id_user_id_fk": {
-          "name": "tags_creator_id_user_id_fk",
+        "tags_creator_id_users_id_fk": {
+          "name": "tags_creator_id_users_id_fk",
           "tableFrom": "tags",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -5335,10 +5160,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "tags_updater_id_user_id_fk": {
-          "name": "tags_updater_id_user_id_fk",
+        "tags_updater_id_users_id_fk": {
+          "name": "tags_updater_id_users_id_fk",
           "tableFrom": "tags",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -5350,20 +5175,17 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "public.user": {
-      "name": "user",
+    "public.users": {
+      "name": "users",
       "schema": "",
       "columns": {
-        "address_line_1": {
-          "name": "address_line_1",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "address_line_2": {
-          "name": "address_line_2",
+        "address": {
+          "name": "address",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -5388,13 +5210,14 @@
         },
         "country_code": {
           "name": "country_code",
-          "type": "text",
+          "type": "iso_3166_alpha_2_country_code",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -5403,7 +5226,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "description": {
           "name": "description",
@@ -5413,31 +5236,21 @@
         },
         "education_grade": {
           "name": "education_grade",
-          "type": "text",
+          "type": "user_education_grade",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "email": {
-          "name": "email",
+        "email_address": {
+          "name": "email_address",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
         "employment_status": {
           "name": "employment_status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "first_name": {
-          "name": "first_name",
-          "type": "text",
+          "type": "user_employment_status",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
@@ -5451,32 +5264,18 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
-        "is_administrator": {
-          "name": "is_administrator",
+        "is_email_address_verified": {
+          "name": "is_email_address_verified",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "is_email_verified": {
-          "name": "is_email_verified",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "last_name": {
-          "name": "last_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "marital_status": {
           "name": "marital_status",
-          "type": "text",
+          "type": "user_marital_status",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
@@ -5490,11 +5289,12 @@
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "natal_sex": {
           "name": "natal_sex",
-          "type": "text",
+          "type": "user_natal_sex",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
@@ -5502,7 +5302,7 @@
           "name": "password_hash",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "postal_code": {
           "name": "postal_code",
@@ -5510,9 +5310,22 @@
           "primaryKey": false,
           "notNull": false
         },
+        "role": {
+          "name": "role",
+          "type": "user_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -5530,11 +5343,11 @@
         }
       },
       "indexes": {
-        "user_created_at_index": {
-          "name": "user_created_at_index",
+        "users_creator_id_index": {
+          "name": "users_creator_id_index",
           "columns": [
             {
-              "expression": "created_at",
+              "expression": "creator_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -5545,8 +5358,8 @@
           "method": "btree",
           "with": {}
         },
-        "user_name_index": {
-          "name": "user_name_index",
+        "users_name_index": {
+          "name": "users_name_index",
           "columns": [
             {
               "expression": "name",
@@ -5559,13 +5372,28 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "users_updater_id_index": {
+          "name": "users_updater_id_index",
+          "columns": [
+            {
+              "expression": "updater_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
-        "user_creator_id_user_id_fk": {
-          "name": "user_creator_id_user_id_fk",
-          "tableFrom": "user",
-          "tableTo": "user",
+        "users_creator_id_users_id_fk": {
+          "name": "users_creator_id_users_id_fk",
+          "tableFrom": "users",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -5575,10 +5403,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "user_updater_id_user_id_fk": {
-          "name": "user_updater_id_user_id_fk",
-          "tableFrom": "user",
-          "tableTo": "user",
+        "users_updater_id_users_id_fk": {
+          "name": "users_updater_id_users_id_fk",
+          "tableFrom": "users",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -5591,21 +5419,17 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "user_email_unique": {
-          "name": "user_email_unique",
+        "users_email_address_unique": {
+          "name": "users_email_address_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "email"
-          ]
-        },
-        "user_name_unique": {
-          "name": "user_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name"
+            "email_address"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.venue_attachments": {
       "name": "venue_attachments",
@@ -5613,7 +5437,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -5622,13 +5446,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "position": {
           "name": "position",
@@ -5638,13 +5456,14 @@
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "venue_attachment_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -5736,10 +5555,10 @@
         }
       },
       "foreignKeys": {
-        "venue_attachments_creator_id_user_id_fk": {
-          "name": "venue_attachments_creator_id_user_id_fk",
+        "venue_attachments_creator_id_users_id_fk": {
+          "name": "venue_attachments_creator_id_users_id_fk",
           "tableFrom": "venue_attachments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -5749,10 +5568,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "venue_attachments_updater_id_user_id_fk": {
-          "name": "venue_attachments_updater_id_user_id_fk",
+        "venue_attachments_updater_id_users_id_fk": {
+          "name": "venue_attachments_updater_id_users_id_fk",
           "tableFrom": "venue_attachments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -5777,7 +5596,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.venue_bookings": {
       "name": "venue_bookings",
@@ -5785,7 +5607,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -5794,13 +5616,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "event_id": {
           "name": "event_id",
@@ -5810,7 +5626,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -5890,10 +5706,10 @@
         }
       },
       "foreignKeys": {
-        "venue_bookings_creator_id_user_id_fk": {
-          "name": "venue_bookings_creator_id_user_id_fk",
+        "venue_bookings_creator_id_users_id_fk": {
+          "name": "venue_bookings_creator_id_users_id_fk",
           "tableFrom": "venue_bookings",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -5916,10 +5732,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "venue_bookings_updater_id_user_id_fk": {
-          "name": "venue_bookings_updater_id_user_id_fk",
+        "venue_bookings_updater_id_users_id_fk": {
+          "name": "venue_bookings_updater_id_users_id_fk",
           "tableFrom": "venue_bookings",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -5952,7 +5768,10 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.venues": {
       "name": "venues",
@@ -5966,7 +5785,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -5975,13 +5794,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "description": {
           "name": "description",
@@ -5993,8 +5806,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -6010,7 +5822,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -6105,10 +5917,10 @@
         }
       },
       "foreignKeys": {
-        "venues_creator_id_user_id_fk": {
-          "name": "venues_creator_id_user_id_fk",
+        "venues_creator_id_users_id_fk": {
+          "name": "venues_creator_id_users_id_fk",
           "tableFrom": "venues",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -6131,10 +5943,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "venues_updater_id_user_id_fk": {
-          "name": "venues_updater_id_user_id_fk",
+        "venues_updater_id_users_id_fk": {
+          "name": "venues_updater_id_users_id_fk",
           "tableFrom": "venues",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -6146,7 +5958,10 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.volunteer_group_assignments": {
       "name": "volunteer_group_assignments",
@@ -6160,7 +5975,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -6169,13 +5984,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "group_id": {
           "name": "group_id",
@@ -6185,13 +5994,14 @@
         },
         "invite_status": {
           "name": "invite_status",
-          "type": "text",
+          "type": "volunteer_group_assignment_invite_status",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -6250,10 +6060,10 @@
         }
       },
       "foreignKeys": {
-        "volunteer_group_assignments_assignee_id_user_id_fk": {
-          "name": "volunteer_group_assignments_assignee_id_user_id_fk",
+        "volunteer_group_assignments_assignee_id_users_id_fk": {
+          "name": "volunteer_group_assignments_assignee_id_users_id_fk",
           "tableFrom": "volunteer_group_assignments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "assignee_id"
           ],
@@ -6263,10 +6073,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "volunteer_group_assignments_creator_id_user_id_fk": {
-          "name": "volunteer_group_assignments_creator_id_user_id_fk",
+        "volunteer_group_assignments_creator_id_users_id_fk": {
+          "name": "volunteer_group_assignments_creator_id_users_id_fk",
           "tableFrom": "volunteer_group_assignments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -6289,10 +6099,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "volunteer_group_assignments_updater_id_user_id_fk": {
-          "name": "volunteer_group_assignments_updater_id_user_id_fk",
+        "volunteer_group_assignments_updater_id_users_id_fk": {
+          "name": "volunteer_group_assignments_updater_id_users_id_fk",
           "tableFrom": "volunteer_group_assignments",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -6312,7 +6122,10 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.volunteer_groups": {
       "name": "volunteer_groups",
@@ -6320,7 +6133,7 @@
       "columns": {
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -6329,13 +6142,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "event_id": {
           "name": "event_id",
@@ -6347,8 +6154,7 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "leader_id": {
           "name": "leader_id",
@@ -6370,7 +6176,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -6480,10 +6286,10 @@
         }
       },
       "foreignKeys": {
-        "volunteer_groups_creator_id_user_id_fk": {
-          "name": "volunteer_groups_creator_id_user_id_fk",
+        "volunteer_groups_creator_id_users_id_fk": {
+          "name": "volunteer_groups_creator_id_users_id_fk",
           "tableFrom": "volunteer_groups",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "creator_id"
           ],
@@ -6506,10 +6312,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "volunteer_groups_leader_id_user_id_fk": {
-          "name": "volunteer_groups_leader_id_user_id_fk",
+        "volunteer_groups_leader_id_users_id_fk": {
+          "name": "volunteer_groups_leader_id_users_id_fk",
           "tableFrom": "volunteer_groups",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "leader_id"
           ],
@@ -6519,10 +6325,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "volunteer_groups_updater_id_user_id_fk": {
-          "name": "volunteer_groups_updater_id_user_id_fk",
+        "volunteer_groups_updater_id_users_id_fk": {
+          "name": "volunteer_groups_updater_id_users_id_fk",
           "tableFrom": "volunteer_groups",
-          "tableTo": "user",
+          "tableTo": "users",
           "columnsFrom": [
             "updater_id"
           ],
@@ -6534,12 +6340,447 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.advertisement_attachment_type": {
+      "name": "advertisement_attachment_type",
+      "schema": "public",
+      "values": [
+        "image",
+        "video"
+      ]
+    },
+    "public.advertisement_type": {
+      "name": "advertisement_type",
+      "schema": "public",
+      "values": [
+        "banner",
+        "menu",
+        "pop_up"
+      ]
+    },
+    "public.agenda_item_type": {
+      "name": "agenda_item_type",
+      "schema": "public",
+      "values": [
+        "general",
+        "note",
+        "scripture",
+        "song"
+      ]
+    },
+    "public.comment_vote_type": {
+      "name": "comment_vote_type",
+      "schema": "public",
+      "values": [
+        "down_vote",
+        "up_vote"
+      ]
+    },
+    "public.event_attachment_type": {
+      "name": "event_attachment_type",
+      "schema": "public",
+      "values": [
+        "image",
+        "video"
+      ]
+    },
+    "public.event_attendee_registration_invite_status": {
+      "name": "event_attendee_registration_invite_status",
+      "schema": "public",
+      "values": [
+        "accepted",
+        "declined",
+        "no_response"
+      ]
+    },
+    "public.family_membership_role": {
+      "name": "family_membership_role",
+      "schema": "public",
+      "values": [
+        "adult",
+        "child",
+        "head_of_household",
+        "spouse"
+      ]
+    },
+    "public.iso_3166_alpha_2_country_code": {
+      "name": "iso_3166_alpha_2_country_code",
+      "schema": "public",
+      "values": [
+        "ad",
+        "ae",
+        "af",
+        "ag",
+        "ai",
+        "al",
+        "am",
+        "ao",
+        "aq",
+        "ar",
+        "as",
+        "at",
+        "au",
+        "aw",
+        "ax",
+        "az",
+        "ba",
+        "bb",
+        "bd",
+        "be",
+        "bf",
+        "bg",
+        "bh",
+        "bi",
+        "bj",
+        "bl",
+        "bm",
+        "bn",
+        "bo",
+        "bq",
+        "br",
+        "bs",
+        "bt",
+        "bv",
+        "bw",
+        "by",
+        "bz",
+        "ca",
+        "cc",
+        "cd",
+        "cf",
+        "cg",
+        "ch",
+        "ci",
+        "ck",
+        "cl",
+        "cm",
+        "cn",
+        "co",
+        "cr",
+        "cu",
+        "cv",
+        "cw",
+        "cx",
+        "cy",
+        "cz",
+        "de",
+        "dj",
+        "dk",
+        "dm",
+        "do",
+        "dz",
+        "ec",
+        "ee",
+        "eg",
+        "eh",
+        "er",
+        "es",
+        "et",
+        "fi",
+        "fj",
+        "fk",
+        "fm",
+        "fo",
+        "fr",
+        "ga",
+        "gb",
+        "gd",
+        "ge",
+        "gf",
+        "gg",
+        "gh",
+        "gi",
+        "gl",
+        "gm",
+        "gn",
+        "gp",
+        "gq",
+        "gr",
+        "gs",
+        "gt",
+        "gu",
+        "gw",
+        "gy",
+        "hk",
+        "hm",
+        "hn",
+        "hr",
+        "ht",
+        "hu",
+        "id",
+        "ie",
+        "il",
+        "im",
+        "in",
+        "io",
+        "iq",
+        "ir",
+        "is",
+        "it",
+        "je",
+        "jm",
+        "jo",
+        "jp",
+        "ke",
+        "kg",
+        "kh",
+        "ki",
+        "km",
+        "kn",
+        "kp",
+        "kr",
+        "kw",
+        "ky",
+        "kz",
+        "la",
+        "lb",
+        "lc",
+        "li",
+        "lk",
+        "lr",
+        "ls",
+        "lt",
+        "lu",
+        "lv",
+        "ly",
+        "ma",
+        "mc",
+        "md",
+        "me",
+        "mf",
+        "mg",
+        "mh",
+        "mk",
+        "ml",
+        "mm",
+        "mn",
+        "mo",
+        "mp",
+        "mq",
+        "mr",
+        "ms",
+        "mt",
+        "mu",
+        "mv",
+        "mw",
+        "mx",
+        "my",
+        "mz",
+        "na",
+        "nc",
+        "ne",
+        "nf",
+        "ng",
+        "ni",
+        "nl",
+        "no",
+        "np",
+        "nr",
+        "nu",
+        "nz",
+        "om",
+        "pa",
+        "pe",
+        "pf",
+        "pg",
+        "ph",
+        "pk",
+        "pl",
+        "pm",
+        "pn",
+        "pr",
+        "ps",
+        "pt",
+        "pw",
+        "py",
+        "qa",
+        "re",
+        "ro",
+        "rs",
+        "ru",
+        "rw",
+        "sa",
+        "sb",
+        "sc",
+        "sd",
+        "se",
+        "sg",
+        "sh",
+        "si",
+        "sj",
+        "sk",
+        "sl",
+        "sm",
+        "sn",
+        "so",
+        "sr",
+        "ss",
+        "st",
+        "sv",
+        "sx",
+        "sy",
+        "sz",
+        "tc",
+        "td",
+        "tf",
+        "tg",
+        "th",
+        "tj",
+        "tk",
+        "tl",
+        "tm",
+        "tn",
+        "to",
+        "tr",
+        "tt",
+        "tv",
+        "tw",
+        "tz",
+        "ua",
+        "ug",
+        "um",
+        "us",
+        "uy",
+        "uz",
+        "va",
+        "vc",
+        "ve",
+        "vg",
+        "vi",
+        "vn",
+        "vu",
+        "wf",
+        "ws",
+        "ye",
+        "yt",
+        "za",
+        "zm",
+        "zw"
+      ]
+    },
+    "public.organization_membership_role": {
+      "name": "organization_membership_role",
+      "schema": "public",
+      "values": [
+        "administrator",
+        "base"
+      ]
+    },
+    "public.post_attachment_type": {
+      "name": "post_attachment_type",
+      "schema": "public",
+      "values": [
+        "image",
+        "video"
+      ]
+    },
+    "public.post_vote_type": {
+      "name": "post_vote_type",
+      "schema": "public",
+      "values": [
+        "down_vote",
+        "up_vote"
+      ]
+    },
+    "public.recurrence_type": {
+      "name": "recurrence_type",
+      "schema": "public",
+      "values": [
+        "daily",
+        "monthly",
+        "weekly",
+        "yearly"
+      ]
+    },
+    "public.user_education_grade": {
+      "name": "user_education_grade",
+      "schema": "public",
+      "values": [
+        "grade_1",
+        "grade_2",
+        "grade_3",
+        "grade_4",
+        "grade_5",
+        "grade_6",
+        "grade_7",
+        "grade_8",
+        "grade_9",
+        "grade_10",
+        "grade_11",
+        "grade_12",
+        "graduate",
+        "kg",
+        "no_grade",
+        "pre_kg"
+      ]
+    },
+    "public.user_employment_status": {
+      "name": "user_employment_status",
+      "schema": "public",
+      "values": [
+        "full_time",
+        "part_time",
+        "unemployed"
+      ]
+    },
+    "public.user_marital_status": {
+      "name": "user_marital_status",
+      "schema": "public",
+      "values": [
+        "divorced",
+        "engaged",
+        "married",
+        "seperated",
+        "single",
+        "widowed"
+      ]
+    },
+    "public.user_natal_sex": {
+      "name": "user_natal_sex",
+      "schema": "public",
+      "values": [
+        "female",
+        "intersex",
+        "male"
+      ]
+    },
+    "public.user_role": {
+      "name": "user_role",
+      "schema": "public",
+      "values": [
+        "administrator",
+        "base"
+      ]
+    },
+    "public.venue_attachment_type": {
+      "name": "venue_attachment_type",
+      "schema": "public",
+      "values": [
+        "image",
+        "video"
+      ]
+    },
+    "public.volunteer_group_assignment_invite_status": {
+      "name": "volunteer_group_assignment_invite_status",
+      "schema": "public",
+      "values": [
+        "accepted",
+        "declined",
+        "no_response"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},
