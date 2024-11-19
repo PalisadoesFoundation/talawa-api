@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
+import * as os from "os";
 import type { ExecException } from "child_process";
 import { exec } from "child_process";
 import { MongoClient } from "mongodb";
@@ -1192,36 +1193,28 @@ npm run import:sample-data
 `;
 
     const scriptPath = path.join(os.tmpdir(), `entrypoint-${Date.now()}.sh`);
-```
 
-import * as cryptolib from "crypto";
-import dotenv from "dotenv";
-import fs from "fs";
-import inquirer from "inquirer";
-import path from "path";
-import * as os from 'os';
-import type { ExecException } from "child_process";
     try {
       // Create script with proper permissions
       fs.writeFileSync(scriptPath, entryPointScript, { mode: 0o755 });
-      
+
       // Execute script
       exec(scriptPath, { timeout: 60000 }, (error, stdout, stderr) => {
         // Clean up script file
         fs.unlinkSync(scriptPath);
-        
+
         if (error) {
           console.error("Error importing sample data:");
           console.error(`Exit code: ${error.code}`);
           console.error(`Error message: ${error.message}`);
           return;
         }
-        
+
         if (stderr) {
           console.warn("Sample data import warnings:");
           console.warn(stderr.trim());
         }
-        
+
         if (stdout) {
           console.log("Sample data import output:");
           console.log(stdout.trim());
