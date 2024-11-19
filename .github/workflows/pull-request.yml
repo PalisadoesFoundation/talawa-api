@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
       - name: Build talawa api non production environment docker image
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check type errors
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
       - name: Build talawa api non production environment docker image
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check gql tada
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
       - name: Build talawa api non production environment docker image
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check drizzle migrations
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
       - name: Build talawa api non production environment docker image
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check type errors
@@ -66,10 +66,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout this repository
-      uses: actions/checkout@v4.2.2
+      uses: actions/checkout@v4
     - id: changed_files
       name: Get changed files
-      uses: tj-actions/changed-files@v45.0.4
+      uses: tj-actions/changed-files@v45
       with:
         files: |
           .coderabbit.yaml
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
       - name: Create .env file for talawa api testing environment
         run: cp ./envFiles/.env.ci ./.env
       - name: Build talawa api compose testing environment
