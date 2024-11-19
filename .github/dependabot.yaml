@@ -12,7 +12,7 @@ updates:
     labels:
       - "dependencies"
     # Specify the target branch for PRs
-    target-branch: "develop"
+    target-branch: "develop-postgres"
     # Customize commit message prefix
     commit-message:
       prefix: "chore(deps):"
