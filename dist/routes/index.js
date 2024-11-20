@@ -1,0 +1,1 @@
+import fastifyPlugin from"fastify-plugin";import graphql from"./graphql.js";export const routes=fastifyPlugin(async fastify=>{fastify.register(graphql)});export default routes;
