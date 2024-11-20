@@ -1,1 +1,0 @@
-import{builder}from"./builder.js";import"./enums/index.js";import"./inputs/index.js";import"./interfaces/index.js";import"./scalars/index.js";import"./types/index.js";import"./unions/index.js";export const schema=builder.toSchema({sortSchema:true});
