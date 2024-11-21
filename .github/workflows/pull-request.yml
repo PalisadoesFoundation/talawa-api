@@ -364,11 +364,14 @@ jobs:
 
           echo "API started successfully"
 
-          # Cleanup
-          if ! docker-compose -f docker-compose.dev.yaml down -v; then
-          echo "Failed to cleanup containers"
-          exit 1
-          fi
+          # Ensure cleanup runs even if the script fails
+           cleanup() {
+            echo "Cleaning up containers..."
+            if ! docker-compose -f docker-compose.dev.yaml down -v; then
+              echo "Warning: Failed to cleanup containers"
+            fi
+           }
+           trap cleanup EXIT
     env:
       HEALTH_CHECK_URL: http://localhost:4000
       COMPOSE_PROJECT_NAME: pr-${{ github.event.pull_request.number }}
