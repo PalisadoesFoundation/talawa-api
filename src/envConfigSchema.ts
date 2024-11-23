@@ -67,6 +67,18 @@ export const envConfigSchema = Type.Composite([
 	drizzleEnvConfigSchema,
 	Type.Object({
 		/**
+		 * Email address of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
+		 */
+		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: Type.String({
+			format: "email",
+		}),
+		/**
+		 * Password of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
+		 */
+		API_ADMINISTRATOR_USER_PASSWORD: Type.String({
+			minLength: 1,
+		}),
+		/**
 		 * Used for providing the host of the domain on which talawa api will run.
 		 */
 		API_HOST: Type.String({
@@ -80,6 +92,16 @@ export const envConfigSchema = Type.Composite([
 		 * Used for providing the decision for whether to enable pretty logging with pino.js logger. It is useful to enable prettier logging in development environments for easier developer log comprehension.
 		 */
 		API_IS_PINO_PRETTY: Type.Boolean(),
+		/**
+		 * Used for providing the number of milli-seconds for setting the expiry time of authentication json web tokens created by talawa api.
+		 */
+		API_JWT_EXPIRES_IN: Type.Number(),
+		/**
+		 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
+		 */
+		API_JWT_SECRET: Type.String({
+			minLength: 64,
+		}),
 		/**
 		 * Used for providing the log level for the logger used in talawa api.
 		 *
@@ -100,12 +122,6 @@ export const envConfigSchema = Type.Composite([
 		API_PORT: Type.Number({
 			maximum: 65535,
 			minimum: 0,
-		}),
-		/**
-		 * Used for providing the secret for signing and verifying json web tokens by talawa api.
-		 */
-		API_JWT_SECRET: Type.String({
-			minLength: 1,
 		}),
 	}),
 ]);

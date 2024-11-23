@@ -1,13 +1,12 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	pgTable,
 	primaryKey,
-	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { familyMembershipRoleEnum } from "~/src/drizzle/enums";
+import { familyMembershipRoleEnum } from "~/src/drizzle/enums/familyMembershipRole";
 import { familiesTable } from "./families";
 import { usersTable } from "./users";
 
@@ -16,15 +15,15 @@ export const familyMembershipsTable = pgTable(
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		familyId: uuid("family_id")
 			.notNull()
@@ -32,30 +31,26 @@ export const familyMembershipsTable = pgTable(
 
 		memberId: uuid("member_id").references(() => usersTable.id),
 
-		role: text("role", {
-			enum: familyMembershipRoleEnum.options,
-		}).notNull(),
+		role: familyMembershipRoleEnum("role").notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		compositePrimaryKey: primaryKey({
+	(self) => [
+		primaryKey({
 			columns: [self.familyId, self.memberId],
 		}),
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.familyId),
-		index3: index().on(self.memberId),
-	}),
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.familyId),
+		index().on(self.memberId),
+	],
 );
-
-export type FamilyMembershipPgType = InferSelectModel<
-	typeof familyMembershipsTable
->;
 
 export const familyMembershipsTableRelations = relations(
 	familyMembershipsTable,

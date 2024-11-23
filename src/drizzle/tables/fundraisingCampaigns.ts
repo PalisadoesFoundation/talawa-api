@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	integer,
@@ -8,6 +8,7 @@ import {
 	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { uuidv7 } from "uuidv7";
 import { fundsTable } from "./funds";
 import { pledgesTable } from "./pledges";
 import { usersTable } from "./users";
@@ -17,18 +18,20 @@ export const fundraisingCampaignsTable = pgTable(
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		endAt: timestamp("end_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}).notNull(),
 
 		fundId: uuid("fund_id")
@@ -37,34 +40,34 @@ export const fundraisingCampaignsTable = pgTable(
 
 		goalAmount: integer("goal_amount").notNull(),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		name: text("name", {}).notNull(),
 
 		startAt: timestamp("start_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.endAt),
-		index3: index().on(self.fundId),
-		index4: index().on(self.name),
-		index5: index().on(self.startAt),
-		unique0: unique().on(self.fundId, self.name),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.endAt),
+		index().on(self.fundId),
+		index().on(self.name),
+		index().on(self.startAt),
+		unique().on(self.fundId, self.name),
+	],
 );
-
-export type FundraisingCampaignPgType = InferSelectModel<
-	typeof fundraisingCampaignsTable
->;
 
 export const fundraisingCampaignsTableRelations = relations(
 	fundraisingCampaignsTable,

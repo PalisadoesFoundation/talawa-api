@@ -32,7 +32,7 @@
 		// https://biomejs.dev/reference/configuration/#vcsclientkind
 		"clientKind": "git",
 		// https://biomejs.dev/reference/configuration/#vcsdefaultbranch
-		"defaultBranch": "dev-postgres",
+		"defaultBranch": "develop-postgres",
 		// https://biomejs.dev/reference/configuration/#vcsenabled
 		"enabled": true,
 		// https://biomejs.dev/reference/configuration/#vcsuseignorefile

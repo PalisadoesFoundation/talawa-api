@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	integer,
@@ -7,7 +7,8 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { recurrenceTypeEnum } from "~/src/drizzle/enums";
+import { uuidv7 } from "uuidv7";
+import { recurrenceTypeEnum } from "~/src/drizzle/enums/recurrenceType";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
 
@@ -16,25 +17,25 @@ export const recurrencesTable = pgTable(
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		dayOfMonth: integer("day_of_month"),
 
 		dayOfWeek: integer("day_of_week"),
 
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
-
 		eventId: uuid("event_id")
 			.notNull()
 			.references(() => eventsTable.id),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		maxCount: integer("max_count"),
 
@@ -44,26 +45,24 @@ export const recurrencesTable = pgTable(
 
 		seperationCount: integer("seperation_count"),
 
-		type: text("type", {
-			enum: recurrenceTypeEnum.options,
-		}),
+		type: recurrenceTypeEnum("type").notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
 		weekOfMonth: integer("week_of_month"),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index3: index().on(self.eventId),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.eventId),
+	],
 );
-
-export type RecurrencePgType = InferSelectModel<typeof recurrencesTable>;
 
 export const recurrencesTableRelations = relations(
 	recurrencesTable,

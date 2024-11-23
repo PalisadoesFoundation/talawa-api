@@ -4,7 +4,7 @@
 
 import { writeFile } from "node:fs/promises";
 import { lexicographicSortSchema, printSchema } from "graphql";
-import { schema } from "~/src/graphql/schema/index";
+import { schema } from "~/src/graphql/schema";
 
 try {
 	console.log("Generating the talawa api graphql schema.");

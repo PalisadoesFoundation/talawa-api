@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	boolean,
 	index,
@@ -8,6 +8,7 @@ import {
 	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { uuidv7 } from "uuidv7";
 import { fundraisingCampaignsTable } from "./fundraisingCampaigns";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
@@ -17,23 +18,23 @@ export const fundsTable = pgTable(
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		isArchived: boolean("is_archived").notNull(),
 
-		isArchived: boolean("is_archived").notNull().default(false),
+		isDefault: boolean("is_default").notNull(),
 
-		isDefault: boolean("is_default").notNull().default(false),
-
-		isTaxDeductible: boolean("is_tax_deductibe").notNull().default(false),
+		isTaxDeductible: boolean("is_tax_deductibe").notNull(),
 
 		name: text("name", {}).notNull(),
 
@@ -43,20 +44,20 @@ export const fundsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.name),
-		index3: index().on(self.organizationId),
-		unique0: unique().on(self.name, self.organizationId),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.name),
+		index().on(self.organizationId),
+		unique().on(self.name, self.organizationId),
+	],
 );
-
-export type FundPgType = InferSelectModel<typeof fundsTable>;
 
 export const fundsTableRelations = relations(fundsTable, ({ one, many }) => ({
 	creator: one(usersTable, {

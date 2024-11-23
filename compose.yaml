@@ -27,10 +27,13 @@ services:
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment
     environment:
+      - API_ADMINISTRATOR_USER_EMAIL_ADDRESS=${API_ADMINISTRATOR_USER_EMAIL_ADDRESS:?error}
+      - API_ADMINISTRATOR_USER_PASSWORD=${API_ADMINISTRATOR_USER_PASSWORD:?error}
       - API_HOST=${API_HOST:?error}
       - API_IS_APPLY_DRIZZLE_MIGRATIONS=${API_IS_APPLY_DRIZZLE_MIGRATIONS:?error}
       - API_IS_GRAPHIQL=${API_IS_GRAPHIQL:?error}
       - API_IS_PINO_PRETTY=${API_IS_PINO_PRETTY:?error}
+      - API_JWT_EXPIRES_IN=${API_JWT_EXPIRES_IN:?error}
       - API_JWT_SECRET=${API_JWT_SECRET:?error}
       - API_LOG_LEVEL=${API_LOG_LEVEL:?error}
       - API_PORT=${API_PORT:?error}

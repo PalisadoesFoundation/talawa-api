@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	pgTable,
@@ -7,6 +7,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { uuidv7 } from "uuidv7";
 import { organizationsTable } from "./organizations";
 import { tagAssignmentsTable } from "./tagAssignments";
 import { tagFoldersTable } from "./tagFolders";
@@ -17,19 +18,19 @@ export const tagsTable = pgTable(
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		folderId: uuid("folder_id").references(() => tagFoldersTable.id),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		name: text("name").notNull(),
 
@@ -39,21 +40,21 @@ export const tagsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.folderId),
-		index3: index().on(self.name),
-		index4: index().on(self.organizationId),
-		uniqueIndex0: uniqueIndex().on(self.name, self.organizationId),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.folderId),
+		index().on(self.name),
+		index().on(self.organizationId),
+		uniqueIndex().on(self.name, self.organizationId),
+	],
 );
-
-export type TagPgType = InferSelectModel<typeof tagsTable>;
 
 export const tagsTableRelations = relations(tagsTable, ({ many, one }) => ({
 	creator: one(usersTable, {

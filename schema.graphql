@@ -1,3 +1,751 @@
+""""""
+type AuthenticationPayload {
+  """
+  This is the authentication token using which a user can sign in to talawa.
+  """
+  authenticationToken: String
+
+  """"""
+  user: User
+}
+
+"""
+A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar Date
+
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
+"""
+A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
+"""
+scalar EmailAddress
+
+""""""
+enum Iso3166Alpha2CountryCode {
+  ad
+  ae
+  af
+  ag
+  ai
+  al
+  am
+  ao
+  aq
+  ar
+  as
+  at
+  au
+  aw
+  ax
+  az
+  ba
+  bb
+  bd
+  be
+  bf
+  bg
+  bh
+  bi
+  bj
+  bl
+  bm
+  bn
+  bo
+  bq
+  br
+  bs
+  bt
+  bv
+  bw
+  by
+  bz
+  ca
+  cc
+  cd
+  cf
+  cg
+  ch
+  ci
+  ck
+  cl
+  cm
+  cn
+  co
+  cr
+  cu
+  cv
+  cw
+  cx
+  cy
+  cz
+  de
+  dj
+  dk
+  dm
+  do
+  dz
+  ec
+  ee
+  eg
+  eh
+  er
+  es
+  et
+  fi
+  fj
+  fk
+  fm
+  fo
+  fr
+  ga
+  gb
+  gd
+  ge
+  gf
+  gg
+  gh
+  gi
+  gl
+  gm
+  gn
+  gp
+  gq
+  gr
+  gs
+  gt
+  gu
+  gw
+  gy
+  hk
+  hm
+  hn
+  hr
+  ht
+  hu
+  id
+  ie
+  il
+  im
+  in
+  io
+  iq
+  ir
+  is
+  it
+  je
+  jm
+  jo
+  jp
+  ke
+  kg
+  kh
+  ki
+  km
+  kn
+  kp
+  kr
+  kw
+  ky
+  kz
+  la
+  lb
+  lc
+  li
+  lk
+  lr
+  ls
+  lt
+  lu
+  lv
+  ly
+  ma
+  mc
+  md
+  me
+  mf
+  mg
+  mh
+  mk
+  ml
+  mm
+  mn
+  mo
+  mp
+  mq
+  mr
+  ms
+  mt
+  mu
+  mv
+  mw
+  mx
+  my
+  mz
+  na
+  nc
+  ne
+  nf
+  ng
+  ni
+  nl
+  no
+  np
+  nr
+  nu
+  nz
+  om
+  pa
+  pe
+  pf
+  pg
+  ph
+  pk
+  pl
+  pm
+  pn
+  pr
+  ps
+  pt
+  pw
+  py
+  qa
+  re
+  ro
+  rs
+  ru
+  rw
+  sa
+  sb
+  sc
+  sd
+  se
+  sg
+  sh
+  si
+  sj
+  sk
+  sl
+  sm
+  sn
+  so
+  sr
+  ss
+  st
+  sv
+  sx
+  sy
+  sz
+  tc
+  td
+  tf
+  tg
+  th
+  tj
+  tk
+  tl
+  tm
+  tn
+  to
+  tr
+  tt
+  tv
+  tw
+  tz
+  ua
+  ug
+  um
+  us
+  uy
+  uz
+  va
+  vc
+  ve
+  vg
+  vi
+  vn
+  vu
+  wf
+  ws
+  ye
+  yt
+  za
+  zm
+  zw
+}
+
+type Mutation {
+  """Mutation field to create a user."""
+  createUser(
+    """Input required to create a user."""
+    input: MutationCreateUserInput!
+  ): AuthenticationPayload
+
+  """Mutation field to delete the current user."""
+  deleteCurrentUser: User
+
+  """Mutation field to delete a user."""
+  deleteUser(
+    """Input required to delete a user."""
+    input: MutationDeleteUserInput!
+  ): User
+
+  """Mutation field to sign up to talawa."""
+  signUp(
+    """Input required to sign up to talawa."""
+    input: MutationSignUpInput!
+  ): AuthenticationPayload
+
+  """Mutation field to update the current user."""
+  updateCurrentUser(
+    """Input required to update the current user."""
+    input: MutationUpdateCurrentUserInput!
+  ): User
+
+  """Mutation field to update a user."""
+  updateUser(
+    """Input required to update a user."""
+    input: MutationUpdateUserInput!
+  ): User
+}
+
+""""""
+input MutationCreateUserInput {
+  """Address of the user."""
+  address: String
+
+  """URI to the avatar of the user."""
+  avatarURI: String
+
+  """Date of birth of the user."""
+  birthDate: Date
+
+  """Name of the city where the user resides in."""
+  city: String
+
+  """Country code of the country the user is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the user."""
+  description: String
+
+  """Primary education grade of the user."""
+  educationGrade: UserEducationGrade
+
+  """Email address of the user."""
+  emailAddress: EmailAddress!
+
+  """Employment status of the user."""
+  employmentStatus: UserEmploymentStatus
+
+  """The phone number to use to communicate with the user at their home."""
+  homePhoneNumber: PhoneNumber
+
+  """Boolean to tell whether the user has verified their email address."""
+  isEmailAddressVerified: Boolean!
+
+  """Marital status of the user."""
+  maritalStatus: UserMaritalStatus
+
+  """
+  The phone number to use to communicate with the user on their mobile phone.
+  """
+  mobilePhoneNumber: PhoneNumber
+
+  """Name of the user."""
+  name: String!
+
+  """The sex assigned to the user at their birth."""
+  natalSex: UserNatalSex
+
+  """Password of the user to sign in to the application."""
+  password: String!
+
+  """Postal code of the user."""
+  postalCode: String
+
+  """Role assigned to the user in the application."""
+  role: UserRole!
+
+  """Name of the state the user resides in."""
+  state: String
+
+  """
+  The phone number to use to communicate with the user while they're at work.
+  """
+  workPhoneNumber: PhoneNumber
+}
+
+""""""
+input MutationDeleteUserInput {
+  """Global identifier of the user."""
+  id: ID!
+}
+
+""""""
+input MutationSignUpInput {
+  """Address of the user."""
+  address: String
+
+  """URI to the avatar of the user."""
+  avatarURI: String
+
+  """Date of birth of the user."""
+  birthDate: Date
+
+  """Name of the city where the user resides in."""
+  city: String
+
+  """Confirmed password of the user to sign in to the application."""
+  confirmedPassword: String!
+
+  """Country code of the country the user is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the user."""
+  description: String
+
+  """Primary education grade of the user."""
+  educationGrade: UserEducationGrade
+
+  """Email address of the user."""
+  emailAddress: EmailAddress!
+
+  """Employment status of the user."""
+  employmentStatus: UserEmploymentStatus
+
+  """The phone number to use to communicate with the user at their home."""
+  homePhoneNumber: PhoneNumber
+
+  """Marital status of the user."""
+  maritalStatus: UserMaritalStatus
+
+  """
+  The phone number to use to communicate with the user on their mobile phone.
+  """
+  mobilePhoneNumber: PhoneNumber
+
+  """Name of the user."""
+  name: String!
+
+  """The sex assigned to the user at their birth."""
+  natalSex: UserNatalSex
+
+  """Password of the user to sign in to the application."""
+  password: String!
+
+  """Postal code of the user."""
+  postalCode: String
+
+  """Name of the state the user resides in."""
+  state: String
+
+  """
+  The phone number to use to communicate with the user while they're at work.
+  """
+  workPhoneNumber: PhoneNumber
+}
+
+""""""
+input MutationUpdateCurrentUserInput {
+  """Address of the user."""
+  address: String
+
+  """URI to the avatar of the user."""
+  avatarURI: String
+
+  """Date of birth of the user."""
+  birthDate: Date
+
+  """Name of the city where the user resides in."""
+  city: String
+
+  """Country code of the country the user is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the user."""
+  description: String
+
+  """Primary education grade of the user."""
+  educationGrade: UserEducationGrade
+
+  """Email address of the user."""
+  emailAddress: EmailAddress
+
+  """Employment status of the user."""
+  employmentStatus: UserEmploymentStatus
+
+  """The phone number to use to communicate with the user at their home."""
+  homePhoneNumber: PhoneNumber
+
+  """Marital status of the user."""
+  maritalStatus: UserMaritalStatus
+
+  """
+  The phone number to use to communicate with the user on their mobile phone.
+  """
+  mobilePhoneNumber: PhoneNumber
+
+  """Name of the user."""
+  name: String
+
+  """The sex assigned to the user at their birth."""
+  natalSex: UserNatalSex
+
+  """Password of the user to sign in to the application."""
+  password: String
+
+  """Postal code of the user."""
+  postalCode: String
+
+  """Name of the state the user resides in."""
+  state: String
+
+  """
+  The phone number to use to communicate with the user while they're at work.
+  """
+  workPhoneNumber: PhoneNumber
+}
+
+""""""
+input MutationUpdateUserInput {
+  """Address of the user."""
+  address: String
+
+  """URI to the avatar of the user."""
+  avatarURI: String
+
+  """Date of birth of the user."""
+  birthDate: Date
+
+  """Name of the city where the user resides in."""
+  city: String
+
+  """Country code of the country the user is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the user."""
+  description: String
+
+  """Primary education grade of the user."""
+  educationGrade: UserEducationGrade
+
+  """Email address of the user."""
+  emailAddress: EmailAddress
+
+  """Employment status of the user."""
+  employmentStatus: UserEmploymentStatus
+
+  """The phone number to use to communicate with the user at their home."""
+  homePhoneNumber: PhoneNumber
+
+  """Global identifier of the user."""
+  id: ID!
+
+  """Boolean to tell whether the user has verified their email address."""
+  isEmailAddressVerified: Boolean
+
+  """Marital status of the user."""
+  maritalStatus: UserMaritalStatus
+
+  """
+  The phone number to use to communicate with the user on their mobile phone.
+  """
+  mobilePhoneNumber: PhoneNumber
+
+  """Name of the user."""
+  name: String
+
+  """The sex assigned to the user at their birth."""
+  natalSex: UserNatalSex
+
+  """Password of the user to sign in to the application."""
+  password: String
+
+  """Postal code of the user."""
+  postalCode: String
+
+  """Role assigned to the user in the application."""
+  role: UserRole
+
+  """Name of the state the user resides in."""
+  state: String
+
+  """
+  The phone number to use to communicate with the user while they're at work.
+  """
+  workPhoneNumber: PhoneNumber
+}
+
+"""
+A field whose value conforms to the standard E.164 format as specified in: https://en.wikipedia.org/wiki/E.164. Basically this is +17895551234.
+"""
+scalar PhoneNumber
+
 type Query {
-  hello(name: String!): String
+  """Query field to read a user."""
+  currentUser: User
+
+  """
+  Query field to renew the authentication token of an authenticated client for signing in to talawa.
+  """
+  renewAuthenticationToken: String
+
+  """Query field for a client to sign in to talawa."""
+  signIn(
+    """Input required to sign in to talawa."""
+    input: QuerySignInInput!
+  ): AuthenticationPayload
+
+  """Query field to read a user."""
+  user(
+    """Input required to read a user."""
+    input: QueryUserInput
+  ): User
+}
+
+""""""
+input QuerySignInInput {
+  """Email address of the user."""
+  emailAddress: EmailAddress!
+
+  """Password of the user to sign in to talawa."""
+  password: String!
+}
+
+""""""
+input QueryUserInput {
+  """Global id of the user."""
+  id: String!
+}
+
+type User {
+  """Address of the user."""
+  address: String
+
+  """URI to the avatar of the user."""
+  avatarURI: String
+
+  """Date of birth of the user."""
+  birthDate: Date
+
+  """Name of the city where the user resides in."""
+  city: String
+
+  """Country code of the country the user is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Datetime at the time the user was created."""
+  createdAt: DateTime
+
+  """User field to read the user who created the user."""
+  creator: User
+
+  """Custom information about the user."""
+  description: String
+
+  """Primary education grade of the user."""
+  educationGrade: UserEducationGrade
+
+  """Email address of the user."""
+  emailAddress: EmailAddress
+
+  """Employment status of the user."""
+  employmentStatus: UserEmploymentStatus
+
+  """The phone number to use to communicate with the user at their home."""
+  homePhoneNumber: PhoneNumber
+
+  """Global identifier of the user."""
+  id: ID!
+
+  """Boolean to tell whether the user has verified their email address."""
+  isEmailAddressVerified: Boolean
+
+  """Marital status of the user."""
+  maritalStatus: UserMaritalStatus
+
+  """
+  The phone number to use to communicate with the user on their mobile phone.
+  """
+  mobilePhoneNumber: PhoneNumber
+
+  """Name of the user."""
+  name: String
+
+  """The sex assigned to the user at their birth."""
+  natalSex: UserNatalSex
+
+  """Postal code of the user."""
+  postalCode: String
+
+  """Role assigned to the user in the application."""
+  role: UserRole
+
+  """Name of the state the user resides in."""
+  state: String
+
+  """Datetime at the time the user was last updated."""
+  updatedAt: DateTime
+
+  """User field to read the user who last updated the user."""
+  updater: User
+
+  """
+  The phone number to use to communicate with the user while they're at work.
+  """
+  workPhoneNumber: PhoneNumber
+}
+
+""""""
+enum UserEducationGrade {
+  grade_1
+  grade_2
+  grade_3
+  grade_4
+  grade_5
+  grade_6
+  grade_7
+  grade_8
+  grade_9
+  grade_10
+  grade_11
+  grade_12
+  graduate
+  kg
+  no_grade
+  pre_kg
+}
+
+""""""
+enum UserEmploymentStatus {
+  full_time
+  part_time
+  unemployed
+}
+
+""""""
+enum UserMaritalStatus {
+  divorced
+  engaged
+  married
+  seperated
+  single
+  widowed
+}
+
+""""""
+enum UserNatalSex {
+  female
+  intersex
+  male
+}
+
+""""""
+enum UserRole {
+  administrator
+  base
 }

@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	pgTable,
@@ -18,36 +18,36 @@ export const tagAssignmentsTable = pgTable(
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		tagId: uuid("tag_id").references(() => tagsTable.id),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
-	(self) => ({
-		compositePrimaryKey: primaryKey({
+	(self) => [
+		primaryKey({
 			columns: [self.assigneeId, self.tagId],
 		}),
-		index0: index().on(self.assigneeId),
-		index1: index().on(self.createdAt),
-		index2: index().on(self.creatorId),
-		index3: index().on(self.tagId),
-	}),
+		index().on(self.assigneeId),
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.tagId),
+	],
 );
-
-export type TagAssignmentPgType = InferSelectModel<typeof tagAssignmentsTable>;
 
 export const tagAssignmentsTableRelations = relations(
 	tagAssignmentsTable,

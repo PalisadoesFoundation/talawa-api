@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations, sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
 	index,
 	integer,
@@ -8,7 +8,8 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { agendaItemTypeEnum } from "~/src/drizzle/enums";
+import { uuidv7 } from "uuidv7";
+import { agendaItemTypeEnum } from "~/src/drizzle/enums/agendaItemType";
 import { agendaSectionsTable } from "./agendaSections";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
@@ -18,15 +19,15 @@ export const agendaItemsTable = pgTable(
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		description: text("description"),
 
@@ -36,7 +37,7 @@ export const agendaItemsTable = pgTable(
 			.notNull()
 			.references(() => eventsTable.id),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		key: text("key"),
 
@@ -48,34 +49,31 @@ export const agendaItemsTable = pgTable(
 			.notNull()
 			.references(() => agendaSectionsTable.id),
 
-		type: text("type", {
-			enum: agendaItemTypeEnum.options,
-		}).notNull(),
+		type: agendaItemTypeEnum("type").notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.deletedAt),
-		index3: index().on(self.name),
-		index4: index().on(self.position),
-		index5: index().on(self.sectionId),
-		index6: index().on(self.type),
-		uniqueIndex0: uniqueIndex()
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.name),
+		index().on(self.position),
+		index().on(self.sectionId),
+		index().on(self.type),
+		uniqueIndex()
 			.on(self.eventId, self.position)
 			.where(sql`${self.sectionId} is null`),
-		uniqueIndex1: uniqueIndex()
+		uniqueIndex()
 			.on(self.position, self.sectionId)
 			.where(sql`${self.sectionId} is not null`),
-	}),
+	],
 );
-
-export type AgendaItemPgType = InferSelectModel<typeof agendaItemsTable>;
 
 export const agendaItemsTableRelations = relations(
 	agendaItemsTable,

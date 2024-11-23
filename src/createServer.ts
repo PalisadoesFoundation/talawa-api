@@ -24,7 +24,7 @@ declare module "fastify" {
 }
 
 /**
- * This function is used to create an instance of the talawa api server.
+ * This function is used to set up the fastify server.
  */
 export const createServer = async (options?: {
 	/**
@@ -79,6 +79,9 @@ export const createServer = async (options?: {
 	// More information at this link: https://github.com/fastify/fastify-jwt
 	fastify.register(fastifyJwt, {
 		secret: fastify.envConfig.API_JWT_SECRET,
+		sign: {
+			expiresIn: fastify.envConfig.API_JWT_EXPIRES_IN,
+		},
 	});
 
 	fastify.register(plugins, {});

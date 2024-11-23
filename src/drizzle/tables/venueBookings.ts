@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	pgTable,
@@ -15,15 +15,15 @@ export const venueBookingsTable = pgTable(
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		eventId: uuid("event_id")
 			.notNull()
@@ -31,6 +31,8 @@ export const venueBookingsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
@@ -39,18 +41,16 @@ export const venueBookingsTable = pgTable(
 			.notNull()
 			.references(() => venuesTable.id),
 	},
-	(self) => ({
-		compositePrimaryKey: primaryKey({
+	(self) => [
+		primaryKey({
 			columns: [self.eventId, self.venueId],
 		}),
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.eventId),
-		index3: index().on(self.venueId),
-	}),
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.eventId),
+		index().on(self.venueId),
+	],
 );
-
-export type VenueBookingPgType = InferSelectModel<typeof venueBookingsTable>;
 
 export const venueBookingsTableRelations = relations(
 	venueBookingsTable,

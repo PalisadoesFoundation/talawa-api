@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	integer,
@@ -8,7 +8,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { postAttachmentTypeEnum } from "~/src/drizzle/enums";
+import { postAttachmentTypeEnum } from "~/src/drizzle/enums/postAttachmentType";
 import { postsTable } from "./posts";
 import { usersTable } from "./users";
 
@@ -17,15 +17,15 @@ export const postAttachmentsTable = pgTable(
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-		}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		position: integer("position").notNull(),
 
@@ -33,29 +33,25 @@ export const postAttachmentsTable = pgTable(
 			.notNull()
 			.references(() => postsTable.id),
 
-		type: text("type", {
-			enum: postAttachmentTypeEnum.options,
-		}).notNull(),
+		type: postAttachmentTypeEnum("type").notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
 		uri: text("uri", {}).notNull(),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.postId),
-		uniqueIndex0: uniqueIndex().on(self.position, self.postId),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.postId),
+		uniqueIndex().on(self.position, self.postId),
+	],
 );
-
-export type PostAttachmentPgType = InferSelectModel<
-	typeof postAttachmentsTable
->;
 
 export const postAttachmentsTableRelations = relations(
 	postAttachmentsTable,
