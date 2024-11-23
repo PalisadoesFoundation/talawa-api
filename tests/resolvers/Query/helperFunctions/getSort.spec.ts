@@ -9,6 +9,9 @@ import type {
   VenueOrderByInput,
   FundOrderByInput,
   CampaignOrderByInput,
+  ActionItemsOrderByInput,
+  EventVolunteersOrderByInput,
+  VolunteerMembershipOrderByInput,
 } from "../../../../src/types/generatedGraphQLTypes";
 
 describe("getSort function", () => {
@@ -59,6 +62,10 @@ describe("getSort function", () => {
     ["commentCount_DESC", { commentCount: -1 }],
     ["fundingGoal_ASC", { fundingGoal: 1 }],
     ["fundingGoal_DESC", { fundingGoal: -1 }],
+    ["dueDate_ASC", { dueDate: 1 }],
+    ["dueDate_DESC", { dueDate: -1 }],
+    ["hoursVolunteered_ASC", { hoursVolunteered: 1 }],
+    ["hoursVolunteered_DESC", { hoursVolunteered: -1 }],
   ];
 
   it.each(testCases)(
@@ -73,7 +80,10 @@ describe("getSort function", () => {
           | VenueOrderByInput
           | PledgeOrderByInput
           | FundOrderByInput
-          | CampaignOrderByInput,
+          | CampaignOrderByInput
+          | ActionItemsOrderByInput
+          | EventVolunteersOrderByInput
+          | VolunteerMembershipOrderByInput,
       );
       expect(result).toEqual(expected);
     },

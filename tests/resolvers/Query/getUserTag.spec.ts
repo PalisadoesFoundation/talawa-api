@@ -22,7 +22,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Query -> getUserTagAncestors", () => {
+describe("resolvers -> Query -> getUserTag", () => {
   it(`throws NotFoundError if no userTag exists with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -49,8 +49,8 @@ describe("resolvers -> Query -> getUserTagAncestors", () => {
       id: testTag?._id.toString() ?? "",
     };
 
-    const getUserTagAncestorsPayload = await getUserTagResolver?.({}, args, {});
+    const getUserTagPayload = await getUserTagResolver?.({}, args, {});
 
-    expect(getUserTagAncestorsPayload).toEqual(testTag);
+    expect(getUserTagPayload).toEqual(testTag);
   });
 });

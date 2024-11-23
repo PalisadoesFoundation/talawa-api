@@ -7,12 +7,14 @@ import type { InterfaceAppUserProfile } from "./AppUserProfile";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
+import { identifier_count } from "./IdentifierCount";
 
 /**
  * Represents a MongoDB document for User in the database.
  */
 export interface InterfaceUser {
   _id: Types.ObjectId;
+  identifier: number;
   appUserProfileId: PopulatedDoc<InterfaceAppUserProfile & Document>;
   address: {
     city: string;
@@ -46,6 +48,7 @@ export interface InterfaceUser {
     mobile: string;
     work: string;
   };
+  eventsAttended: PopulatedDoc<InterfaceEvent & Document>[];
 
   registeredEvents: PopulatedDoc<InterfaceEvent & Document>[];
   status: string;
@@ -56,6 +59,7 @@ export interface InterfaceUser {
 /**
  * Mongoose schema definition for User documents.
  * @param appUserProfileId - Reference to the user's app profile.
+ * @param identifier - unique numeric identifier for each User
  * @param address - User's address details.
  * @param birthDate - User's date of birth.
  * @param createdAt - Timestamp of when the user was created.
@@ -74,10 +78,17 @@ export interface InterfaceUser {
  * @param phone - User's contact numbers (home, mobile, work).
  * @param registeredEvents - Events the user has registered for.
  * @param status - User's status (ACTIVE, BLOCKED, DELETED).
+ * @param eventsAttended - Events the user has attended.
  * @param updatedAt - Timestamp of when the user was last updated.
  */
 const userSchema = new Schema(
   {
+    identifier: {
+      type: Number,
+      unique: true,
+      required: true,
+      immutable: true,
+    },
     appUserProfileId: {
       type: Schema.Types.ObjectId,
       ref: "AppUserProfile",
@@ -211,6 +222,12 @@ const userSchema = new Schema(
         ref: "Event",
       },
     ],
+    eventsAttended: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Event",
+      },
+    ],
     status: {
       type: String,
       required: true,
@@ -224,6 +241,19 @@ const userSchema = new Schema(
 );
 
 userSchema.plugin(mongoosePaginate);
+
+userSchema.pre<InterfaceUser>("validate", async function (next) {
+  if (!this.identifier) {
+    const counter = await identifier_count.findOneAndUpdate(
+      { _id: "userCounter" },
+      { $inc: { sequence_value: 1 } },
+      { new: true, upsert: true },
+    );
+
+    this.identifier = counter.sequence_value;
+  }
+  return next();
+});
 
 // Create and export the User model
 const userModel = (): PaginateModel<InterfaceUser> =>

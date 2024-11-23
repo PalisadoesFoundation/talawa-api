@@ -28,10 +28,17 @@
   "invalid.fileType": "Type de fichier non valide",
   "invalid.refreshToken": "Jeton d'actualisation non valide",
   "invalid.credentials": "Informations d'identification non valides",
+  "invalid.timeoutRange": "Plage de temps d'attente non valide",
   "registrant.alreadyExist": "Déjà inscrit à l'événement",
   "member.notFound": "Membre introuvable",
   "registrant.alreadyUnregistered": "Déjà non inscrit à l'événement",
   "translation.alreadyPresent": "Traduction déjà présente",
   "translation.notFound": "Traduction introuvable",
-  "parameter.missing": "Paramètre de saut manquant. Réglez-le sur 0 ou sur une autre valeur"
+  "parameter.missing": "Paramètre de saut manquant. Réglez-le sur 0 ou sur une autre valeur",
+  "tag.alreadyExists": "Un tag avec le même nom existe déjà à ce niveau",
+  "invalid.contentType": "Type de contenu invalide. multipart/form-data attendu.",
+  "invalid.fieldFileName": "Nom de champ de fichier non valide reçu.",
+  "file.sizeExceeded": "La taille du fichier dépasse la limite autorisée.",
+  "file.notFound": "Fichier non trouvé.",
+  "invalid.argument": "Argument non valide reçu."
 }

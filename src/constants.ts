@@ -43,6 +43,13 @@ export const AGENDA_CATEGORY_NOT_FOUND_ERROR = Object.freeze({
   PARAM: "agendaCategory",
 });
 
+export const APP_USER_PROFILE_NOT_FOUND_ERROR = Object.freeze({
+  DESC: "appUserProfile not found",
+  CODE: "appUserProfile.notFound",
+  MESSAGE: "appUserProfile.notFound",
+  PARAM: "appUserProfile",
+});
+
 export const BASE_RECURRING_EVENT_NOT_FOUND = Object.freeze({
   DESC: "Base Recurring Event not found",
   CODE: "baseRecurringEvent.notFound",
@@ -55,6 +62,20 @@ export const CHAT_NOT_FOUND_ERROR = Object.freeze({
   CODE: "chat.notFound",
   MESSAGE: "chat.notFound",
   PARAM: "chat",
+});
+
+export const MESSAGE_NOT_FOUND_ERROR = Object.freeze({
+  DESC: "Message not found",
+  CODE: "message.notFound",
+  MESSAGE: "message.notFound",
+  PARAM: "message",
+});
+
+export const COMMUNITY_NOT_FOUND_ERROR = Object.freeze({
+  DESC: "Community not found",
+  CODE: "community.notFound",
+  MESSAGE: "community.notFound",
+  PARAM: "community",
 });
 
 export const VENUE_ALREADY_EXISTS_ERROR = Object.freeze({
@@ -144,6 +165,14 @@ export const FUND_NOT_FOUND_ERROR = Object.freeze({
 export const INVALID_OTP = "Invalid OTP";
 
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";
+
+export const INVALID_TIMEOUT_RANGE = Object.freeze({
+  DESC: "Timeout should be in the range of 15 to 60 minutes.",
+  CODE: "invalid.timeoutRange",
+  MESSAGE: "invalid.timeoutRange",
+  PARAM: "timeout",
+});
+
 export const MEMBER_NOT_FOUND_ERROR = Object.freeze({
   DESC: "Member not found",
   CODE: "member.notFound",
@@ -442,8 +471,7 @@ export const NO_CHANGE_IN_TAG_NAME = Object.freeze({
 });
 
 export const TAG_ALREADY_EXISTS = Object.freeze({
-  MESSAGE:
-    "A tag with the same name and the same parent tag already exists for this organization.",
+  MESSAGE: "A tag with the same name already exists at this level",
   CODE: "tag.alreadyExists",
   PARAM: "tag.alreadyExists",
 });
@@ -640,6 +668,13 @@ export const EVENT_VOLUNTEER_INVITE_USER_MISTMATCH = Object.freeze({
   PARAM: "eventVolunteers",
 });
 
+export const EVENT_VOLUNTEER_MEMBERSHIP_NOT_FOUND_ERROR = Object.freeze({
+  DESC: "Volunteer membership not found",
+  CODE: "volunteerMembership.notFound",
+  MESSAGE: "volunteerMembership.notFound",
+  PARAM: "volunteerMemberships",
+});
+
 export const USER_ALREADY_CHECKED_IN = Object.freeze({
   MESSAGE: "The user has already been checked in for this event.",
   CODE: "user.alreadyCheckedIn",
@@ -695,6 +730,39 @@ export const PRELOGIN_IMAGERY_FIELD_EMPTY = Object.freeze({
   CODE: "preLoginImagery.empty",
   PARAM: "preLoginImagery.empty",
 });
+
+export const CONTENT_TYPE_SHOULD_BE_MULTIPART_FORM_DATA = Object.freeze({
+  DESC: "Invalid content type. Expected multipart/form-data",
+  MESSAGE: "invalid.contentType",
+  CODE: "invalid.contentType",
+});
+
+export const INVALID_FILE_FIELD_NAME = Object.freeze({
+  DESC: "Invalid file input field name received.",
+  MESSAGE: "invalid.fieldFileName",
+  CODE: "invalid.fieldFileName",
+});
+
+export const FILE_SIZE_EXCEEDED = Object.freeze({
+  DESC: "File size exceeds the allowable limit",
+  MESSAGE: "file.sizeExceeded",
+  CODE: "file.sizeExceeded",
+});
+
+export const FILE_NOT_FOUND = Object.freeze({
+  DESC: "File not found.",
+  MESSAGE: "file.notFound",
+  CODE: "file.notFound",
+});
+
+export const INVALID_ARGUMENT_RECEIVED = Object.freeze({
+  DESC: "Invalid argument received.",
+  MESSAGE: "invalid.argument",
+  CODE: "invalid.argument",
+});
+
+export const MINIMUM_TIMEOUT_MINUTES = 15;
+export const MAXIMUM_TIMEOUT_MINUTES = 60;
 
 export const MAXIMUM_FETCH_LIMIT = 100;
 
@@ -791,3 +859,14 @@ export const DEFAULT_COMMUNITY = {
   name: "Palisadoes Foundation",
   description: "An open source application by Palisadoes Foundation volunteers",
 };
+
+export const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
+export const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/mpeg"];
+
+export const VIDEO_SIZE_LIMIT = 50 * 1024 * 1024;
+export const IMAGE_SIZE_LIMIT = 5 * 1024 * 1024;

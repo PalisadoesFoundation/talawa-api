@@ -12,6 +12,8 @@ import type {
   CampaignWhereInput,
   EventVolunteerGroupWhereInput,
   PledgeWhereInput,
+  ActionItemCategoryWhereInput,
+  EventVolunteerWhereInput,
 } from "../../../../src/types/generatedGraphQLTypes";
 
 describe("getWhere function", () => {
@@ -25,10 +27,12 @@ describe("getWhere function", () => {
         UserWhereInput &
         DonationWhereInput &
         ActionItemWhereInput &
+        ActionItemCategoryWhereInput &
         FundWhereInput &
         CampaignWhereInput &
         VenueWhereInput &
-        PledgeWhereInput
+        PledgeWhereInput &
+        EventVolunteerWhereInput
     >,
     Record<string, unknown>,
   ][] = [
@@ -106,8 +110,8 @@ describe("getWhere function", () => {
       { actionItemCategory_id: "6f43d" },
       { actionItemCategoryId: "6f43d" },
     ],
-    ["is_active", { is_active: true }, { isCompleted: false }],
     ["is_completed", { is_completed: true }, { isCompleted: true }],
+    ["is_completed", { is_completed: false }, { isCompleted: false }],
     ["event_id", { event_id: "6f43d" }, { eventId: "6f43d" }],
     ["eventId", { eventId: "6f43d" }, { eventId: "6f43d" }],
     ["location", { location: "test location" }, { location: "test location" }],
@@ -333,15 +337,10 @@ describe("getWhere function", () => {
       { organizationId: "6f6cd" },
     ],
     ["campaignId", { campaignId: "6f6c" }, { _id: "6f6c" }],
-    [
-      "volunteerId",
-      { volunteerId: "6f43d" },
-      {
-        volunteers: {
-          $in: ["6f43d"],
-        },
-      },
-    ],
+    ["is_disabled", { is_disabled: true }, { isDisabled: true }],
+    ["is_disabled", { is_disabled: false }, { isDisabled: false }],
+    ["hasAccepted", { hasAccepted: true }, { hasAccepted: true }],
+    ["hasAccepted", { hasAccepted: false }, { hasAccepted: false }],
   ];
 
   it.each(testCases)(

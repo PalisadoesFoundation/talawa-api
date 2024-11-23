@@ -18,8 +18,7 @@ import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cacheUsers } from "../../services/UserCache/cacheUser";
 import { findUserInCache } from "../../services/UserCache/findUserInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { deletePreviousImage as deleteImage } from "../../utilities/encodedImageStorage/deletePreviousImage";
-import { deletePreviousVideo as deleteVideo } from "../../utilities/encodedVideoStorage/deletePreviousVideo";
+import { deletePreviousFile as deleteFile } from "../../utilities/encodedImageStorage/deletePreviousFile";
 import { findAppUserProfileCache } from "../../services/AppUserProfileCache/findAppUserProfileCache";
 import { cacheAppUserProfile } from "../../services/AppUserProfileCache/cacheAppUserProfile";
 /**
@@ -125,18 +124,18 @@ export const removePost: MutationResolvers["removePost"] = async (
   // Deletes the post.
   const deletedPost = await Post.findOneAndDelete({
     _id: args.id,
-  });
+  })
+    .populate({ path: "file", select: "_id metadata.objectKey" })
+    .lean();
 
   await deletePostFromCache(args.id);
 
-  //deletes the image in post
-  if (deletedPost?.imageUrl) {
-    await deleteImage(deletedPost?.imageUrl);
-  }
-
-  //deletes the video in post
-  if (deletedPost?.videoUrl) {
-    await deleteVideo(deletedPost?.videoUrl);
+  // Deletes the media in the post
+  if (deletedPost?.file) {
+    await deleteFile(
+      deletedPost.file._id.toString(),
+      deletedPost.file.metadata.objectKey,
+    );
   }
 
   // Removes the post from the organization, doesn't fail if the post wasn't pinned

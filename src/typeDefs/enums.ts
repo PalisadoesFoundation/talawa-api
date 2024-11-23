@@ -5,6 +5,8 @@ export const enums = gql`
   enum ActionItemsOrderByInput {
     createdAt_ASC
     createdAt_DESC
+    dueDate_ASC
+    dueDate_DESC
   }
 
   enum EventOrderByInput {
@@ -139,6 +141,22 @@ export const enums = gql`
     endDate_DESC
   }
 
+  enum EventVolunteersOrderByInput {
+    hoursVolunteered_ASC
+    hoursVolunteered_DESC
+  }
+
+  enum EventVolunteerGroupOrderByInput {
+    volunteers_ASC
+    volunteers_DESC
+    assignments_ASC
+    assignments_DESC
+  }
+  enum VolunteerMembershipOrderByInput {
+    createdAt_ASC
+    createdAt_DESC
+  }
+
   enum WeekDays {
     MONDAY
     TUESDAY
@@ -198,6 +216,11 @@ export const enums = gql`
     BANNER
     POPUP
     MENU
+  }
+
+  enum FileVisibility {
+    PRIVATE
+    PUBLIC
   }
 
   enum ItemType {

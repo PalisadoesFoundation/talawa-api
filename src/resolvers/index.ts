@@ -12,21 +12,17 @@ import {
 } from "graphql-scalars";
 import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
 import type { Resolvers } from "../types/generatedGraphQLTypes";
-import { ActionItem } from "./ActionItem";
 import { ActionItemCategory } from "./ActionItemCategory";
 import { AgendaItem } from "./AgendaItem";
 import { AgendaSection } from "./AgendaSection";
 import { AgendaCategory } from "./AgendaCategory";
 import { CheckIn } from "./CheckIn";
 import { Comment } from "./Comment";
-import { DirectChat } from "./DirectChat";
-import { DirectChatMessage } from "./DirectChatMessage";
+import { Chat } from "./Chat";
+import { ChatMessage } from "./ChatMessage";
 import { Event } from "./Event";
-import { EventVolunteer } from "./EventVolunteer";
 import { Feedback } from "./Feedback";
 import { Fund } from "./Fund";
-import { GroupChat } from "./GroupChat";
-import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
 import { Mutation } from "./Mutation";
 import { Organization } from "./Organization";
@@ -44,7 +40,6 @@ import { Advertisement } from "./Advertisement";
 import { currentUserExists } from "./middleware/currentUserExists";
 
 const resolvers: Resolvers = {
-  ActionItem,
   ActionItemCategory,
   AgendaItem,
   AgendaSection,
@@ -52,15 +47,12 @@ const resolvers: Resolvers = {
   Advertisement,
   CheckIn,
   Comment,
-  DirectChat,
-  DirectChatMessage,
+  Chat,
+  ChatMessage,
   Event,
-  EventVolunteer,
   Feedback,
   Fund,
-  GroupChat,
   UserFamily,
-  GroupChatMessage,
   MembershipRequest,
   Mutation,
   Organization,
@@ -91,8 +83,7 @@ const resolversComposition = {
   "Mutation.addOrganizationImage": [currentUserExists()],
   "Mutation.blockPluginCreationBySuperadmin": [currentUserExists()],
   "Mutation.createComment": [currentUserExists()],
-  "Mutation.createDirectChat": [currentUserExists()],
-  "Mutation.createGroupChat": [currentUserExists()],
+  "Mutation.createChat": [currentUserExists()],
   "Mutation.createOrganization": [currentUserExists()],
   "Mutation.createVenue": [currentUserExists()],
   "Mutation.deleteVenue": [currentUserExists()],

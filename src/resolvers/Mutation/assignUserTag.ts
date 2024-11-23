@@ -171,7 +171,13 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
   const tagUserDocs = allAncestorTags.map((tagId) => ({
     updateOne: {
       filter: { userId: assigneeId, tagId },
-      update: { $setOnInsert: { userId: assigneeId, tagId } },
+      update: {
+        $setOnInsert: {
+          userId: assigneeId,
+          tagId,
+          organizationId: tag.organizationId,
+        },
+      },
       upsert: true,
       setDefaultsOnInsert: true,
     },

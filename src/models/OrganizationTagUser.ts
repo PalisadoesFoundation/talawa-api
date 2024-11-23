@@ -45,10 +45,22 @@ const organizationTagUserSchema = new Schema({
   },
 });
 
-// Index to ensure unique combination of organizationId, parentOrganizationTagUserId, and name
+// Define partial indexes to enforce the unique constraints
+// two tags at the same level can't have the same name
 organizationTagUserSchema.index(
-  { organizationId: 1, parentOrganizationTagUserId: 1, name: 1 },
-  { unique: true },
+  { organizationId: 1, name: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { parentTagId: { $eq: null } },
+  },
+);
+
+organizationTagUserSchema.index(
+  { organizationId: 1, parentTagId: 1, name: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { parentTagId: { $ne: null } },
+  },
 );
 
 // Add logging middleware for organizationTagUserSchema
