@@ -34,7 +34,7 @@ jobs:
         node-version: [22.x]
     services:
       redis:
-        image: redis:6.0
+        image: redis:6.2
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -112,7 +112,7 @@ jobs:
           echo "::add-mask::$secret"
 
       - name: Execute remote ssh commands 
-        uses: appleboy/ssh-action@v1.0.3 
+        uses: appleboy/ssh-action@v1.2.0 
         env:
           INPUT_RECAPTCHA_SECRET_KEY: ${{ secrets.API_DEMO_RECAPTCHA_SECRET_KEY }}
           INPUT_MAIL_USERNAME: ${{ secrets.API_DEMO_MAIL_USERNAME }}
