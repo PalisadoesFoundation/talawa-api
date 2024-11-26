@@ -5,8 +5,7 @@ import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
 import type { ExecException } from "child_process";
-import { exec } from "child_process";
-import { spawn } from "child_process"
+import { exec, spawn } from "child_process";
 import { MongoClient } from "mongodb";
 import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import {
@@ -469,22 +468,21 @@ export async function mongoDB(): Promise<void> {
 
 async function runDockerComposeWithLogs(): Promise<void> {
   return new Promise((resolve, reject) => {
-    
     const dockerCompose = spawn(
       "docker-compose",
-      ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"], 
-      { stdio: "inherit" } 
+      ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"],
+      { stdio: "inherit" },
     );
 
     dockerCompose.on("error", (error) => {
       console.error("Error running docker-compose:", error);
-      reject(error); 
+      reject(error);
     });
 
     dockerCompose.on("close", (code) => {
       if (code === 0) {
         console.log("Docker Compose completed successfully.");
-        resolve(); 
+        resolve();
       } else {
         reject(new Error(`Docker Compose exited with code ${code}`));
       }
@@ -1222,62 +1220,53 @@ async function main(): Promise<void> {
   const { shouldImportSampleDataforDocker } = await inquirer.prompt({
     type: "confirm",
     name: "shouldImportSampleDataforDocker",
-    message: "Do you want to import Talawa sample data for testing and evaluation purposes?",
+    message:
+      "Do you want to import Talawa sample data for testing and evaluation purposes?",
     default: true,
-  }) 
+  });
 
-  if(isDockerInstallation)
-  {
-    if(shouldStartDockerContainers)
-    {
+  if (isDockerInstallation) {
+    if (shouldStartDockerContainers) {
       console.log("Starting docker container...");
-      try 
-      {
+      try {
         await runDockerComposeWithLogs();
         console.log("Docker containers have been built successfully!");
-      }
-      catch(err)
-      {
-        console.log( "Some error occurred: " + err);
+      } catch (err) {
+        console.log("Some error occurred: " + err);
       }
     }
   }
 
-  if(isDockerInstallation)
-  {
-    if(shouldImportSampleDataforDocker)
-      {
-        console.log("Importing the sample data for docker...");
-        try 
-        {
-          const importProcess = spawn('bash', ['-c', 'npm run import:sample-data']);
+  if (isDockerInstallation) {
+    if (shouldImportSampleDataforDocker) {
+      console.log("Importing the sample data for docker...");
+      try {
+        const importProcess = spawn("bash", [
+          "-c",
+          "npm run import:sample-data",
+        ]);
 
-          importProcess.stdout.on('data',(data) => 
-          {
-            console.log(`${data}`);
-          });
+        importProcess.stdout.on("data", (data) => {
+          console.log(`${data}`);
+        });
 
-          importProcess.stderr.on('data',(data) => 
-          {
-            console.log(`${data}`);
-          });
+        importProcess.stderr.on("data", (data) => {
+          console.log(`${data}`);
+        });
 
-          // Handle process exit
-          importProcess.on('close', (code) => {
-            if (code === 0) {
-              console.log("Sample data has been imported successfully!");
-            } else {
-              console.log(`Import process failed with exit code: ${code}`);
-            }
-          });
-        }
-        catch(err)
-        {
-          console.log("Some error occurred: "+ err);
-        }
+        // Handle process exit
+        importProcess.on("close", (code) => {
+          if (code === 0) {
+            console.log("Sample data has been imported successfully!");
+          } else {
+            console.log(`Import process failed with exit code: ${code}`);
+          }
+        });
+      } catch (err) {
+        console.log("Some error occurred: " + err);
       }
+    }
   }
-
 }
 
 main();
