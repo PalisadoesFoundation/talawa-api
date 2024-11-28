@@ -1,4 +1,5 @@
 import SchemaBuilder from "@pothos/core";
+import relayPlugin from "@pothos/plugin-relay";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { CustomScalars } from "./scalars/index";
 
@@ -8,4 +9,7 @@ import type { CustomScalars } from "./scalars/index";
 export const builder = new SchemaBuilder<{
 	Context: GraphQLContext;
 	Scalars: CustomScalars;
-}>({});
+}>({
+	plugins: [relayPlugin],
+	relay: {},
+});
