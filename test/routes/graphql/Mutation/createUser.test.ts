@@ -31,7 +31,7 @@ suite("Mutation field createUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -81,7 +81,7 @@ suite("Mutation field createUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -111,7 +111,7 @@ suite("Mutation field createUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -178,7 +178,7 @@ suite("Mutation field createUser", () => {
 								name: "",
 								password: "",
 								postalCode: "",
-								role: "base",
+								role: "regular",
 								state: "",
 							},
 						},
@@ -236,7 +236,6 @@ suite("Mutation field createUser", () => {
 			});
 
 			test(`length of the value of the argument "input.address" is more than 1025.
-				length of the value of the argument "input.avatarURI" is more than 2048.
 				length of the value of the argument "input.city" is more than 64.
 				length of the value of the argument "input.description" is more than 2048.
 				length of the value of the argument "input.name" is more than 256.
@@ -269,7 +268,6 @@ suite("Mutation field createUser", () => {
 						variables: {
 							input: {
 								address: `address${faker.string.alpha(1025)}`,
-								avatarURI: `avatarURI${faker.string.alpha(2049)}`,
 								city: `city${faker.string.alpha(65)}`,
 								description: `description${faker.string.alpha(2049)}`,
 								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
@@ -277,7 +275,7 @@ suite("Mutation field createUser", () => {
 								name: `name${faker.string.alpha(257)}`,
 								password: `password${faker.string.alpha(65)}`,
 								postalCode: `postalCode${faker.string.alpha(33)}`,
-								role: "base",
+								role: "regular",
 								state: `state${faker.string.alpha(65)}`,
 							},
 						},
@@ -295,10 +293,6 @@ suite("Mutation field createUser", () => {
 								>([
 									{
 										argumentPath: ["input", "address"],
-										message: expect.any(String),
-									},
-									{
-										argumentPath: ["input", "avatarURI"],
 										message: expect.any(String),
 									},
 									{
@@ -369,7 +363,7 @@ suite("Mutation field createUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -391,7 +385,7 @@ suite("Mutation field createUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -449,7 +443,7 @@ suite("Mutation field createUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -522,7 +516,7 @@ suite("Mutation field createUser", () => {
 						mobilePhoneNumber: "+11111111",
 						name: "name",
 						password: "password",
-						role: "base",
+						role: "regular",
 						natalSex: "female",
 						postalCode: "postalCode",
 						state: "state",
@@ -615,7 +609,7 @@ suite("Mutation field createUser", () => {
 						mobilePhoneNumber: null,
 						name: "name",
 						password: "password",
-						role: "base",
+						role: "regular",
 						natalSex: null,
 						postalCode: null,
 						state: null,
@@ -690,7 +684,7 @@ suite("Mutation field createUser", () => {
 						isEmailAddressVerified: false,
 						name: "name",
 						password: "password",
-						role: "base",
+						role: "regular",
 					},
 				};
 

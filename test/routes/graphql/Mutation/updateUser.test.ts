@@ -52,7 +52,7 @@ suite("Mutation field updateUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -115,7 +115,7 @@ suite("Mutation field updateUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -202,7 +202,7 @@ suite("Mutation field updateUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -285,7 +285,7 @@ suite("Mutation field updateUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -366,7 +366,6 @@ suite("Mutation field updateUser", () => {
 			});
 
 			test(`length of the value of the argument "input.address" is more than 1025.
-	    		length of the value of the argument "input.avatarURI" is more than 2048.
 	    		length of the value of the argument "input.city" is more than 64.
 	    		length of the value of the argument "input.description" is more than 2048.
 	    		length of the value of the argument "input.name" is more than 256.
@@ -402,7 +401,7 @@ suite("Mutation field updateUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -419,7 +418,6 @@ suite("Mutation field updateUser", () => {
 						variables: {
 							input: {
 								address: `address${faker.string.alpha(1025)}`,
-								avatarURI: `avatarURI${faker.string.alpha(2049)}`,
 								city: `city${faker.string.alpha(65)}`,
 								description: `description${faker.string.alpha(2049)}`,
 								id: createUserResult.data.createUser.user.id,
@@ -443,10 +441,6 @@ suite("Mutation field updateUser", () => {
 								>([
 									{
 										argumentPath: ["input", "address"],
-										message: expect.any(String),
-									},
-									{
-										argumentPath: ["input", "avatarURI"],
 										message: expect.any(String),
 									},
 									{
@@ -516,7 +510,7 @@ suite("Mutation field updateUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -616,7 +610,7 @@ suite("Mutation field updateUser", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -768,7 +762,7 @@ suite("Mutation field updateUser", () => {
 						natalSex: "male",
 						password: "password",
 						postalCode: "postal code",
-						role: "base",
+						role: "regular",
 						state: "state",
 						workPhoneNumber: "+11111111",
 					},

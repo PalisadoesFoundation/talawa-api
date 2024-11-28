@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
 	boolean,
@@ -74,7 +74,7 @@ export const usersTable = pgTable(
 		 */
 		countryCode: iso3166Alpha2CountryCodeEnum("country_code"),
 		/**
-		 * Datetime at the time the user was created.
+		 * Date time at the time the user was created.
 		 */
 		createdAt: timestamp("created_at", {
 			mode: "date",
@@ -86,9 +86,10 @@ export const usersTable = pgTable(
 		/**
 		 * Foreign key reference to the id of the user who first created the user.
 		 */
-		creatorId: uuid("creator_id")
-			.references((): AnyPgColumn => usersTable.id)
-			.notNull(),
+		creatorId: uuid("creator_id").references((): AnyPgColumn => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 		/**
 		 * Custom information about the user.
 		 */
@@ -150,17 +151,22 @@ export const usersTable = pgTable(
 		 */
 		state: text("state"),
 		/**
-		 * Datetime at the time the user was last updated.
+		 * Date time at the time the user was last updated.
 		 */
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).$onUpdate(() => new Date()),
+		})
+			.$defaultFn(() => sql`${null}`)
+			.$onUpdate(() => new Date()),
 		/**
 		 * Foreign key reference to the id of the user who last updated the user.
 		 */
-		updaterId: uuid("updater_id").references((): AnyPgColumn => usersTable.id),
+		updaterId: uuid("updater_id").references((): AnyPgColumn => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 		/**
 		 * The phone number to use to communicate with the user while they're at work.
 		 */
@@ -173,282 +179,418 @@ export const usersTable = pgTable(
 	],
 );
 
-export const usersTableRelations = relations(usersTable, ({ many }) => ({
+export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
+	/**
+	 * One to many relationship from `users` table to `actions` table.
+	 */
 	actionsWhereAssignee: many(actionsTable, {
 		relationName: "actions.assignee_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `actions` table.
+	 */
 	actionsWhereCreator: many(actionsTable, {
 		relationName: "actions.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `actions` table.
+	 */
 	actionsWhereUpdater: many(actionsTable, {
 		relationName: "actions.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `action_categories` table.
+	 */
 	actionCategoriesWhereCreator: many(actionCategoriesTable, {
 		relationName: "action_categories.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `action_categories` table.
+	 */
 	actionCategoriesWhereUpdater: many(actionCategoriesTable, {
 		relationName: "action_categories.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `advertisement_attachments` table.
+	 */
 	advertisementAttachmentsWhereCreator: many(advertisementAttachmentsTable, {
 		relationName: "advertisement_attachments.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `advertisement_attachments` table.
+	 */
 	advertisementAttachmentsWhereUpdater: many(advertisementAttachmentsTable, {
 		relationName: "advertisement_attachments.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `advertisements` table.
+	 */
 	advertisementsWhereCreator: many(advertisementsTable, {
 		relationName: "advertisements.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `advertisements` table.
+	 */
 	advertisementsWhereUpdater: many(advertisementsTable, {
 		relationName: "advertisements.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `agenda_sections` table.
+	 */
 	agendaSectionsWhereCreator: many(agendaSectionsTable, {
 		relationName: "agenda_sections.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `agenda_sections` table.
+	 */
 	agendaSectionsWhereUpdater: many(agendaSectionsTable, {
 		relationName: "agenda_sections.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `comments` table.
+	 */
 	commentsWhereCommenter: many(commentsTable, {
 		relationName: "comments.commenter_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `comments` table.
+	 */
 	commentsWhereCreator: many(commentsTable, {
 		relationName: "comments.creator_id:users.id",
 	}),
-
-	commentsWherePinner: many(commentsTable, {
-		relationName: "comments.pinner_id:users.id",
-	}),
-
+	/**
+	 * One to many relationship from `users` table to `comments` table.
+	 */
 	commentsWhereUpdater: many(commentsTable, {
 		relationName: "comments.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `comment_votes` table.
+	 */
 	commentVotesWhereCreator: many(commentVotesTable, {
 		relationName: "comment_votes.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `comment_votes` table.
+	 */
 	commentVotesWhereUpdater: many(commentVotesTable, {
 		relationName: "comment_votes.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `comment_votes` table.
+	 */
 	commentVotesWhereVoter: many(commentVotesTable, {
 		relationName: "comment_votes.voter_id:users.id",
 	}),
-
+	/**
+	 * Many to one relationship from `users` table to `users` table.
+	 */
+	creator: one(usersTable, {
+		fields: [usersTable.creatorId],
+		references: [usersTable.id],
+		relationName: "users.creator_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `events` table.
+	 */
 	eventsWhereCreator: many(eventsTable, {
 		relationName: "events.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `events` table.
+	 */
 	eventsWhereUpdater: many(eventsTable, {
 		relationName: "events.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `event_attachments` table.
+	 */
 	eventAttachmentsWhereCreator: many(eventAttachmentsTable, {
 		relationName: "event_attachments.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `event_attachments` table.
+	 */
 	eventAttachmentsWhereUpdater: many(eventAttachmentsTable, {
 		relationName: "event_attachments.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `families` table.
+	 */
 	familiesWhereCreator: many(familiesTable, {
 		relationName: "families.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `families` table.
+	 */
 	familiesWhereUpdater: many(familiesTable, {
 		relationName: "families.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `family_memberships` table.
+	 */
 	familyMembershipsWhereCreator: many(familyMembershipsTable, {
 		relationName: "family_memberships.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `family_memberships` table.
+	 */
 	familyMembershipsWhereMember: many(familyMembershipsTable, {
 		relationName: "family_memberships.member_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `family_memberships` table.
+	 */
 	familyMembershipsWhereUpdater: many(familyMembershipsTable, {
 		relationName: "family_memberships.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `fundraising_campaigns` table.
+	 */
 	fundraisingCampaignsWhereCreator: many(fundraisingCampaignsTable, {
 		relationName: "fundraising_campaigns.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `fundraising_campaigns` table.
+	 */
 	fundraisingCampaignsWhereUpdater: many(fundraisingCampaignsTable, {
 		relationName: "fundraising_campaigns.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `funds` table.
+	 */
 	fundsWhereCreator: many(fundsTable, {
 		relationName: "funds.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `funds` table.
+	 */
 	fundsWhereUpdater: many(fundsTable, {
 		relationName: "funds.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `organizations` table.
+	 */
 	organizationsWhereCreator: many(organizationsTable, {
 		relationName: "organizations.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `organizations` table.
+	 */
 	organizationsWhereUpdater: many(organizationsTable, {
 		relationName: "organizations.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `organization_memberships` table.
+	 */
 	organizationMembershipsWhereCreator: many(organizationMembershipsTable, {
 		relationName: "organization_memberships.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `organization_memberships` table.
+	 */
 	organizationMembershipsWhereMember: many(organizationMembershipsTable, {
 		relationName: "organization_memberships.member_id:users.id",
 	}),
-
-	organizationMembershipsWhereUpdator: many(organizationMembershipsTable, {
+	/**
+	 * One to many relationship from `users` table to `organization_memberships` table.
+	 */
+	organizationMembershipsWhereUpdater: many(organizationMembershipsTable, {
 		relationName: "organization_memberships.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `pledges` table.
+	 */
 	pledgesWhereCreator: many(pledgesTable, {
 		relationName: "pledges.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `pledges` table.
+	 */
 	pledgesWherePledger: many(pledgesTable, {
 		relationName: "pledges.pledger_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `pledges` table.
+	 */
 	pledgesWhereUpdater: many(pledgesTable, {
 		relationName: "pledges.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `posts` table.
+	 */
 	postsWhereCreator: many(postsTable, {
 		relationName: "posts.creator_id:users.id",
 	}),
-
-	postsWherePinner: many(postsTable, {
-		relationName: "posts.pinner_id:users.id",
-	}),
-
+	/**
+	 * One to many relationship from `users` table to `posts` table.
+	 */
 	postsWherePoster: many(postsTable, {
 		relationName: "posts.poster_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `posts` table.
+	 */
 	postsWhereUpdater: many(postsTable, {
 		relationName: "posts.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `post_attachments` table.
+	 */
 	postAttachmentsWhereCreator: many(postAttachmentsTable, {
 		relationName: "post_attachments.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `post_attachments` table.
+	 */
 	postAttachmentsWhereUpdater: many(postAttachmentsTable, {
 		relationName: "post_attachments.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `post_votes` table.
+	 */
 	postVotesWhereCreator: many(postVotesTable, {
 		relationName: "post_votes.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `post_votes` table.
+	 */
 	postVotesWhereUpdater: many(postVotesTable, {
 		relationName: "post_votes.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `post_votes` table.
+	 */
 	postVotesWhereVoter: many(postVotesTable, {
 		relationName: "post_votes.voter_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `tags` table.
+	 */
 	tagsWhereCreator: many(tagsTable, {
 		relationName: "tags.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `tags` table.
+	 */
 	tagsWhereUpdater: many(tagsTable, {
 		relationName: "tags.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `tag_assignments` table.
+	 */
 	tagAssignmentsWhereAssignee: many(tagAssignmentsTable, {
 		relationName: "tag_assignments.assignee_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `tag_assignments` table.
+	 */
 	tagAssignmentsWhereCreator: many(tagAssignmentsTable, {
 		relationName: "tag_assignments.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `tag_assignments` table.
+	 */
 	tagAssignmentsWhereUpdater: many(tagAssignmentsTable, {
 		relationName: "tag_assignments.updater_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `tag_folders` table.
+	 */
 	tagFoldersWhereCreator: many(tagFoldersTable, {
 		relationName: "tag_folders.creator_id:users.id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `tag_folders` table.
+	 */
 	tagFoldersWhereUpdater: many(tagFoldersTable, {
 		relationName: "tag_folders.updater_id:users.id",
 	}),
-
+	/**
+	 * Many to one relationship from `users` table to `users` table.
+	 */
+	updater: one(usersTable, {
+		fields: [usersTable.updaterId],
+		references: [usersTable.id],
+		relationName: "users.id:users.updater_id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `venues` table.
+	 */
 	venuesWhereCreator: many(venuesTable, {
 		relationName: "users.id:venues.creator_id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `venues` table.
+	 */
 	venuesWhereUpdater: many(venuesTable, {
 		relationName: "users.id:venues.updater_id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `venue_attachments` table.
+	 */
 	venueAttachmentsWhereCreator: many(venueAttachmentsTable, {
 		relationName: "users.id:venue_attachments.creator_id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `venue_attachments` table.
+	 */
 	venueAttachmentsWhereUpdater: many(venueAttachmentsTable, {
 		relationName: "users.id:venue_attachments.updater_id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `venue_bookings` table.
+	 */
 	venueBookingsWhereCreator: many(venueBookingsTable, {
 		relationName: "users.id:venue_bookings.creator_id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `venue_bookings` table.
+	 */
 	venueBookingsWhereUpdater: many(venueBookingsTable, {
 		relationName: "users.id:venue_bookings.updater_id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `volunteer_groups` table.
+	 */
 	volunteerGroupsWhereCreator: many(volunteerGroupsTable, {
 		relationName: "users.id:volunteer_groups.creator_id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `volunteer_groups` table.
+	 */
 	volunteerGroupsWhereLeader: many(volunteerGroupsTable, {
 		relationName: "users.id:volunteer_groups.leader_id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `volunteer_groups` table.
+	 */
 	volunteerGroupsWhereUpdater: many(volunteerGroupsTable, {
 		relationName: "users.id:volunteer_groups.updater_id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `volunteer_group_assignments` table.
+	 */
 	volunteerGroupAssignmentsWhereAssignee: many(volunteerGroupAssignmentsTable, {
 		relationName: "users.id:volunteer_group_assignments.assignee_id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `volunteer_group_assignments` table.
+	 */
 	volunteerGroupAssignmentsWhereCreator: many(volunteerGroupAssignmentsTable, {
 		relationName: "users.id:volunteer_group_assignments.creator_id",
 	}),
-
+	/**
+	 * One to many relationship from `users` table to `volunteer_group_assignments` table.
+	 */
 	volunteerGroupAssignmentsWhereUpdater: many(volunteerGroupAssignmentsTable, {
 		relationName: "users.id:volunteer_group_assignments.updater_id",
 	}),
 }));
 
-/**
- * Zod schema for parsing the inserts to the users table.
- */
 export const usersTableInsertSchema = createInsertSchema(usersTable, {
 	address: (schema) => schema.address.min(1).max(1024),
-	avatarURI: (schema) => schema.avatarURI.min(1).max(2048),
+	avatarURI: (schema) => schema.avatarURI.min(1),
 	city: (schema) => schema.city.min(1).max(64),
 	description: (schema) => schema.description.min(1).max(2048),
 	name: (schema) => schema.name.min(1).max(256),

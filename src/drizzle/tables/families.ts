@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
 	index,
 	pgTable,
@@ -39,7 +39,9 @@ export const familiesTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		})
+			.$defaultFn(() => sql`${null}`)
+			.$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},

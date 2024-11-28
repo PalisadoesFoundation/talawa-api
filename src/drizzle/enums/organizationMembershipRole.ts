@@ -5,5 +5,5 @@ import { pgEnum } from "drizzle-orm/pg-core";
  */
 export const organizationMembershipRoleEnum = pgEnum(
 	"organization_membership_role",
-	["administrator", "base"],
+	["administrator", "regular"],
 );

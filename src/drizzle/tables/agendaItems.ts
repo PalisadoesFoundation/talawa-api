@@ -42,7 +42,9 @@ export const agendaItemsTable = pgTable(
 		key: text("key"),
 
 		name: text("name", {}),
-
+		/**
+		 * Position of the agenda item relative to other agenda item associated to the same agenda section the agenda item is associated to.
+		 */
 		position: integer("position").notNull(),
 
 		sectionId: uuid("section_id")
@@ -55,7 +57,9 @@ export const agendaItemsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		})
+			.$defaultFn(() => sql`${null}`)
+			.$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},

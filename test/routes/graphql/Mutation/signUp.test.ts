@@ -148,7 +148,6 @@ suite("Mutation field signUp", () => {
 			});
 
 			test(`length of the value of the argument "input.address" is more than 1025.
-				length of the value of the argument "input.avatarURI" is more than 2048.
 				length of the value of the argument "input.city" is more than 64.
 				length of the value of the argument "input.confirmedPassword" is more than 64.
 				length of the value of the argument "input.description" is more than 2048.
@@ -160,7 +159,6 @@ suite("Mutation field signUp", () => {
 					variables: {
 						input: {
 							address: `address${faker.string.alpha(1025)}`,
-							avatarURI: `avatarURI${faker.string.alpha(2049)}`,
 							city: `city${faker.string.alpha(65)}`,
 							confirmedPassword: `confirmedPassword${faker.string.alpha(65)}`,
 							description: `description${faker.string.alpha(2049)}`,
@@ -184,10 +182,6 @@ suite("Mutation field signUp", () => {
 								>([
 									{
 										argumentPath: ["input", "address"],
-										message: expect.any(String),
-									},
-									{
-										argumentPath: ["input", "avatarURI"],
 										message: expect.any(String),
 									},
 									{
@@ -372,7 +366,7 @@ suite("Mutation field signUp", () => {
 							name: variables.input.name,
 							natalSex: variables.input.natalSex,
 							postalCode: variables.input.postalCode,
-							role: "base",
+							role: "regular",
 							state: variables.input.state,
 							workPhoneNumber: variables.input.workPhoneNumber,
 							updatedAt: expect.any(String),
