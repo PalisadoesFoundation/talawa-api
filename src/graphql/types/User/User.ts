@@ -7,7 +7,7 @@ import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 import { UserRole } from "~/src/graphql/enums/UserRole";
 
-export type User = Omit<typeof usersTable.$inferSelect, "passwordHash">;
+export type User = typeof usersTable.$inferSelect;
 
 export const User = builder.objectRef<User>("User");
 
@@ -32,7 +32,7 @@ User.implement({
 			type: Iso3166Alpha2CountryCode,
 		}),
 		createdAt: t.expose("createdAt", {
-			description: "Datetime at the time the user was created.",
+			description: "Date time at the time the user was created.",
 			type: "DateTime",
 		}),
 		description: t.exposeString("description", {
@@ -88,10 +88,6 @@ User.implement({
 		}),
 		state: t.exposeString("state", {
 			description: "Name of the state the user resides in.",
-		}),
-		updatedAt: t.expose("updatedAt", {
-			description: "Datetime at the time the user was last updated.",
-			type: "DateTime",
 		}),
 		workPhoneNumber: t.expose("workPhoneNumber", {
 			description:
