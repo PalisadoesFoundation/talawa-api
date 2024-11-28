@@ -25,7 +25,7 @@ export type introspection_types = {
     'UserEmploymentStatus': { name: 'UserEmploymentStatus'; enumValues: 'full_time' | 'part_time' | 'unemployed'; };
     'UserMaritalStatus': { name: 'UserMaritalStatus'; enumValues: 'divorced' | 'engaged' | 'married' | 'seperated' | 'single' | 'widowed'; };
     'UserNatalSex': { name: 'UserNatalSex'; enumValues: 'female' | 'intersex' | 'male'; };
-    'UserRole': { name: 'UserRole'; enumValues: 'administrator' | 'regular'; };
+    'UserRole': { name: 'UserRole'; enumValues: 'administrator' | 'base'; };
 };
 
 /** An IntrospectionQuery representation of your schema.

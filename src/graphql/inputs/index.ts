@@ -1,7 +1,11 @@
+import "./MutationCreateOrganizationInput";
 import "./MutationCreateUserInput";
+import "./MutationDeleteOrganizationInput";
 import "./MutationDeleteUserInput";
 import "./MutationSignUpInput";
 import "./MutationUpdateCurrentUserInput";
+import "./MutationUpdateOrganizationInput";
 import "./MutationUpdateUserInput";
+import "./QueryOrganizationInput";
 import "./QuerySignInInput";
 import "./QueryUserInput";
