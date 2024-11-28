@@ -568,7 +568,6 @@ suite("Mutation field createUser", () => {
 							role: variables.input.role,
 							state: variables.input.state,
 							workPhoneNumber: variables.input.workPhoneNumber,
-							updatedAt: expect.any(String),
 						}),
 					}),
 				);

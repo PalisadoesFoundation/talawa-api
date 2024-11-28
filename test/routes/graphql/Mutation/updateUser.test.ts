@@ -846,7 +846,6 @@ suite("Mutation field updateUser", () => {
 						role: updateUserVariables.input.role,
 						state: updateUserVariables.input.state,
 						workPhoneNumber: updateUserVariables.input.workPhoneNumber,
-						updatedAt: expect.any(String),
 					}),
 				);
 			});

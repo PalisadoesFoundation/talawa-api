@@ -369,7 +369,6 @@ suite("Mutation field signUp", () => {
 							role: "regular",
 							state: variables.input.state,
 							workPhoneNumber: variables.input.workPhoneNumber,
-							updatedAt: expect.any(String),
 						}),
 					}),
 				);

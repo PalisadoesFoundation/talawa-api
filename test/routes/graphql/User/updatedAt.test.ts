@@ -11,13 +11,14 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createUser,
 	Mutation_deleteUser,
+	Mutation_updateUser,
 	Query_signIn,
-	Query_user_creator,
+	Query_user_updatedAt,
 } from "../documentNodes";
 
-suite("User field creator", () => {
+suite("User field updatedAt", () => {
 	suite(
-		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.user.creator" field if`,
+		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.user.updatedAt" field if`,
 		() => {
 			test("client triggering the graphql operation is not authenticated.", async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
@@ -37,8 +38,8 @@ suite("User field creator", () => {
 					administratorUserSignInResult.data.signIn?.user?.id,
 				);
 
-				const userCreatorResult = await mercuriusClient.query(
-					Query_user_creator,
+				const userUpdatedAtResult = await mercuriusClient.query(
+					Query_user_updatedAt,
 					{
 						variables: {
 							input: {
@@ -48,15 +49,15 @@ suite("User field creator", () => {
 					},
 				);
 
-				expect(userCreatorResult.data.user?.creator).toEqual(null);
-				expect(userCreatorResult.errors).toEqual(
+				expect(userUpdatedAtResult.data.user?.updatedAt).toEqual(null);
+				expect(userUpdatedAtResult.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<UnauthenticatedExtensions>({
 								code: "unauthenticated",
 							}),
 							message: expect.any(String),
-							path: ["user", "creator"],
+							path: ["user", "updatedAt"],
 						}),
 					]),
 				);
@@ -118,8 +119,8 @@ suite("User field creator", () => {
 					administratorUserSignInResult.data.signIn.user?.id,
 				);
 
-				const userCreatorResult = await mercuriusClient.query(
-					Query_user_creator,
+				const userUpdatedAtResult = await mercuriusClient.query(
+					Query_user_updatedAt,
 					{
 						headers: {
 							authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
@@ -132,15 +133,15 @@ suite("User field creator", () => {
 					},
 				);
 
-				expect(userCreatorResult.data.user?.creator).toEqual(null);
-				expect(userCreatorResult.errors).toEqual(
+				expect(userUpdatedAtResult.data.user?.updatedAt).toEqual(null);
+				expect(userUpdatedAtResult.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<UnauthenticatedExtensions>({
 								code: "unauthenticated",
 							}),
 							message: expect.any(String),
-							path: ["user", "creator"],
+							path: ["user", "updatedAt"],
 						}),
 					]),
 				);
@@ -149,10 +150,10 @@ suite("User field creator", () => {
 	);
 
 	suite(
-		`results in a graphql error with "unauthorized_action" extensions code in the "errors" field and "null" as the value of "data.user.creator" field if`,
+		`results in a graphql error with "unauthorized_action" extensions code in the "errors" field and "null" as the value of "data.user.updatedAt" field if`,
 		() => {
 			test(`client triggering the graphql operation is not associated to an administrator user.
-	            argument "input.id" is not equal to the id of the existing user associated to the client triggering the graphql operation.`, async () => {
+                user associated to the argument "input.id" is not associated to the authentication context of the client triggering the graphql operation`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
 					{
@@ -170,59 +171,52 @@ suite("User field creator", () => {
 					administratorUserSignInResult.data.signIn?.authenticationToken,
 				);
 
-				const [createUserResult0, createUserResult1] = await Promise.all([
-					mercuriusClient.mutate(Mutation_createUser, {
-						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
-								isEmailAddressVerified: false,
-								name: "name",
-								password: "password",
-								role: "regular",
-							},
-						},
-					}),
-					mercuriusClient.mutate(Mutation_createUser, {
-						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
-								isEmailAddressVerified: false,
-								name: "name",
-								password: "password",
-								role: "regular",
-							},
-						},
-					}),
-				]);
-
-				assertToBeNonNullish(
-					createUserResult1.data.createUser?.authenticationToken,
-				);
-
-				assertToBeNonNullish(createUserResult0.data.createUser?.user?.id);
-
-				const userCreatorResult = await mercuriusClient.query(
-					Query_user_creator,
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
 					{
 						headers: {
-							authorization: `bearer ${createUserResult1.data.createUser.authenticationToken}`,
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
 						},
 						variables: {
 							input: {
-								id: createUserResult0.data.createUser.user.id,
+								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "name",
+								password: "password",
+								role: "regular",
 							},
 						},
 					},
 				);
 
-				expect(userCreatorResult.data.user?.creator).toEqual(null);
-				expect(userCreatorResult.errors).toEqual(
+				assertToBeNonNullish(
+					createUserResult.data.createUser?.authenticationToken,
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn.user?.id,
+				);
+
+				const userUpdatedAtResult = await mercuriusClient.query(
+					Query_user_updatedAt,
+					{
+						headers: {
+							authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								id: administratorUserSignInResult.data.signIn.user.id,
+							},
+						},
+					},
+				);
+
+				console.log("====================");
+				console.log(userUpdatedAtResult.errors);
+				console.log("====================");
+
+				expect(userUpdatedAtResult.data.user?.updatedAt).toEqual(null);
+				expect(userUpdatedAtResult.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<UnauthorizedActionExtensions>(
@@ -231,7 +225,7 @@ suite("User field creator", () => {
 								},
 							),
 							message: expect.any(String),
-							path: ["user", "creator"],
+							path: ["user", "updatedAt"],
 						}),
 					]),
 				);
@@ -240,108 +234,9 @@ suite("User field creator", () => {
 	);
 
 	suite(
-		`results in an empty "errors" field and the expected value for the "data.user.creator" field where`,
+		`results in an empty "errors" field and the expected value for the "data.user.updatedAt" field where`,
 		() => {
-			test(`"data.user.updater" is "null" when the creator of the user no longer exists.`, async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
-
-				const administratorUser0CreateUserResult = await mercuriusClient.mutate(
-					Mutation_createUser,
-					{
-						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
-								isEmailAddressVerified: false,
-								name: "name",
-								password: "password",
-								role: "administrator",
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUser0CreateUserResult.data.createUser
-						?.authenticationToken,
-				);
-
-				const regularUser0CreateUserResult = await mercuriusClient.mutate(
-					Mutation_createUser,
-					{
-						headers: {
-							authorization: `bearer ${
-								administratorUser0CreateUserResult.data.createUser
-									.authenticationToken
-							}`,
-						},
-						variables: {
-							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
-								isEmailAddressVerified: false,
-								name: "name",
-								password: "password",
-								role: "regular",
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUser0CreateUserResult.data.createUser.user?.id,
-				);
-
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-					},
-					variables: {
-						input: {
-							id: administratorUser0CreateUserResult.data.createUser.user.id,
-						},
-					},
-				});
-
-				assertToBeNonNullish(
-					regularUser0CreateUserResult.data.createUser?.user?.id,
-				);
-
-				const userCreatorResult = await mercuriusClient.query(
-					Query_user_creator,
-					{
-						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								id: regularUser0CreateUserResult.data.createUser.user.id,
-							},
-						},
-					},
-				);
-
-				expect(userCreatorResult.errors).toBeUndefined();
-				expect(userCreatorResult.data.user?.creator).toEqual(null);
-			});
-
-			test(`"data.user.updater" is non-null when the creator of the user still exists.`, async () => {
+			test(`"data.user.updatedAt" is "null" when the user has not been updated at least once after its creation.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
 					{
@@ -362,8 +257,8 @@ suite("User field creator", () => {
 					administratorUserSignInResult.data.signIn.user?.id,
 				);
 
-				const userCreatorResult = await mercuriusClient.query(
-					Query_user_creator,
+				const userUpdatedAtResult = await mercuriusClient.mutate(
+					Query_user_updatedAt,
 					{
 						headers: {
 							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
@@ -376,10 +271,81 @@ suite("User field creator", () => {
 					},
 				);
 
-				expect(userCreatorResult.errors).toBeUndefined();
-				expect(userCreatorResult.data.user?.creator).toEqual(
-					administratorUserSignInResult.data.signIn.user,
+				expect(userUpdatedAtResult.errors).toBeUndefined();
+				expect(userUpdatedAtResult.data.user?.updatedAt).toEqual(null);
+			});
+
+			test(`"data.user.updatedAt" is non-null when the user has been updated at least once after its creation.`, async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
 				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "name",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+
+				const updateUserResult = await mercuriusClient.mutate(
+					Mutation_updateUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								address: null,
+								id: createUserResult.data.createUser.user.id,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(updateUserResult.data.updateUser?.id);
+
+				const userUpdatedAtResult = await mercuriusClient.query(
+					Query_user_updatedAt,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								id: updateUserResult.data.updateUser.id,
+							},
+						},
+					},
+				);
+
+				expect(userUpdatedAtResult.errors).toBeUndefined();
+				expect(userUpdatedAtResult.data.user?.updatedAt).toBeTypeOf("string");
 			});
 		},
 	);
