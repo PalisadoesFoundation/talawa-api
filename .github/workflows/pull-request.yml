@@ -298,8 +298,7 @@ jobs:
   
   Docker-Check:
     needs: Test-Application
-    runs-on: ubuntu-latest
-         
+    runs-on: ubuntu-latest         
     steps: 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -324,9 +323,16 @@ jobs:
          # Ensure no containers are running
          docker-compose -f docker-compose.dev.yaml down -v || true
 
+         # Verify docker-compose file exists
+          if [ ! -f "docker-compose.dev.yaml" ]; then
+            echo "Error: docker-compose.dev.yaml not found"
+            exit 1
+         fi
+
          # Start containers
          if ! docker-compose -f docker-compose.dev.yaml up -d --build; then
             echo "Failed to start containers"
+            docker-compose -f docker-compose.dev.yaml logs
             exit 1
          fi
 
