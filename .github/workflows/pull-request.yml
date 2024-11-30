@@ -308,6 +308,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.x'
+      
+     - name: Cache Node.js dependencies
+       uses: actions/cache@v4
+        with:
+         path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-docker-check-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+              ${{ runner.os }}-docker-check-    
 
       - name: Check if Talawa API starts in Docker
         run: |
@@ -382,7 +392,11 @@ jobs:
       REFRESH_TOKEN_SECRET: ${{ github.event.repository.name }}_refresh_${{ github.sha }}
       LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
       COLORIZE_LOGS: "true"
-      LOG_LEVEL: "info"      
+      LOG_LEVEL: "info"
+      RECAPTCHA_SITE_KEY: ${{secrets.RECAPTCHA_SITE_KEY}}
+      RECAPTCHA_SECRET_KEY: ${{secrets.RECAPTCHA_SECRET_KEY}}
+      MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
+      MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD}} 
 
 
   JSDocs:
