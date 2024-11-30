@@ -308,15 +308,15 @@ jobs:
         with:
           node-version: '22.x'
       
-     - name: Cache Node.js dependencies
-       uses: actions/cache@v4
-       with:
-        path: |
-          ~/.npm
-          node_modules
-        key: ${{ runner.os }}-docker-check-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-docker-check-    
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v4
+        with:
+         path: |
+           ~/.npm
+           node_modules
+         key: ${{ runner.os }}-docker-check-${{ hashFiles('**/package-lock.json') }}
+         restore-keys: |
+           ${{ runner.os }}-docker-check-    
 
       - name: Check if Talawa API starts in Docker
         run: |
@@ -352,20 +352,20 @@ jobs:
 
          echo "Waiting for Redis..."
           timeout=30
-          until docker-compose -f docker-compose.dev.yaml exec -T redis redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+          until docker-compose -f docker-compose.dev.yaml exec -T redis-stack-server redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
          sleep 1
          ((timeout--))
          done
          if [ $timeout -eq 0 ]; then
             echo "Error: Redis failed to start within timeout"
-            docker-compose -f docker-compose.dev.yaml logs redis
+           docker-compose -f docker-compose.dev.yaml logs redis-stack-server
             docker-compose -f docker-compose.dev.yaml down -v
             exit 1
           fi
           
           # Wait for TALAWA API to be healthy
           timeout=60
-         until docker-compose -f docker-compose.dev.yaml exec -T api curl -sf "http://talawa-api-dev:4000/health" 2>/dev/null || [ $timeout -eq 0 ]; do
+         until docker-compose -f docker-compose.dev.yaml exec -T talawa-api-dev curl -sf "http://talawa-api-dev:4000/health" 2>/dev/null || [ $timeout -eq 0 ]; do
             echo "Waiting for API to start... ($timeout seconds remaining)"
             sleep 1
             ((timeout--))
