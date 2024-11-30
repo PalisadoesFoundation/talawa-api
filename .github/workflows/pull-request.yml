@@ -310,13 +310,13 @@ jobs:
       
      - name: Cache Node.js dependencies
        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.npm
-            node_modules
-          key: ${{ runner.os }}-docker-check-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-docker-check-    
+       with:
+        path: |
+          ~/.npm
+          node_modules
+        key: ${{ runner.os }}-docker-check-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-docker-check-    
 
       - name: Check if Talawa API starts in Docker
         run: |
@@ -363,9 +363,9 @@ jobs:
             exit 1
           fi
           
-          # Wait for API to be healthy
+          # Wait for TALAWA API to be healthy
           timeout=60
-         until docker-compose -f docker-compose.dev.yaml exec -T api curl -sf "http://api:4000/health" 2>/dev/null || [ $timeout -eq 0 ]; do
+         until docker-compose -f docker-compose.dev.yaml exec -T api curl -sf "http://talawa-api-dev:4000/health" 2>/dev/null || [ $timeout -eq 0 ]; do
             echo "Waiting for API to start... ($timeout seconds remaining)"
             sleep 1
             ((timeout--))
@@ -392,7 +392,7 @@ jobs:
       HEALTH_CHECK_URL: http://localhost:4000
       COMPOSE_PROJECT_NAME: pr-${{ github.event.pull_request.number }}
       MONGO_DB_URL: mongodb://mongodb:27017/talawa-test-db
-      REDIS_HOST: redis
+      REDIS_HOST: redis-stack-server
       REDIS_PORT: 6379
       ACCESS_TOKEN_SECRET: ${{ github.event.repository.name }}_access_${{ github.sha }}
       REFRESH_TOKEN_SECRET: ${{ github.event.repository.name }}_refresh_${{ github.sha }}
