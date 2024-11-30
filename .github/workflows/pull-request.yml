@@ -312,12 +312,12 @@ jobs:
      - name: Cache Node.js dependencies
        uses: actions/cache@v4
         with:
-         path: |
+          path: |
             ~/.npm
             node_modules
           key: ${{ runner.os }}-docker-check-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-              ${{ runner.os }}-docker-check-    
+            ${{ runner.os }}-docker-check-    
 
       - name: Check if Talawa API starts in Docker
         run: |
