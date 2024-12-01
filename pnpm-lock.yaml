@@ -39,11 +39,11 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       drizzle-orm:
-        specifier: ^0.36.3
-        version: 0.36.3(@libsql/client-wasm@0.14.0)(postgres@3.4.5)
+        specifier: ^0.36.4
+        version: 0.36.4(@libsql/client-wasm@0.14.0)(postgres@3.4.5)
       drizzle-zod:
         specifier: ^0.5.1
-        version: 0.5.1(drizzle-orm@0.36.3(@libsql/client-wasm@0.14.0)(postgres@3.4.5))(zod@3.23.8)
+        version: 0.5.1(drizzle-orm@0.36.4(@libsql/client-wasm@0.14.0)(postgres@3.4.5))(zod@3.23.8)
       env-schema:
         specifier: ^6.0.0
         version: 6.0.0
@@ -1547,15 +1547,15 @@ packages:
     resolution: {integrity: sha512-JimOV+ystXTWMgZkLHYHf2w3oS28hxiH1FR0dkmJLc7GHzdGJoJAQtQS5DRppnabsRZwE2U1F6CuezVBgmsBBQ==}
     hasBin: true
 
-  drizzle-orm@0.36.3:
-    resolution: {integrity: sha512-ffQB7CcyCTvQBK6xtRLMl/Jsd5xFTBs+UTHrgs1hbk68i5TPkbsoCPbKEwiEsQZfq2I7VH632XJpV1g7LS2H9Q==}
+  drizzle-orm@0.36.4:
+    resolution: {integrity: sha512-1OZY3PXD7BR00Gl61UUOFihslDldfH4NFRH2MbP54Yxi0G/PKn4HfO65JYZ7c16DeP3SpM3Aw+VXVG9j6CRSXA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=3'
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
-      '@neondatabase/serverless': '>=0.1'
+      '@neondatabase/serverless': '>=0.10.0'
       '@op-engineering/op-sqlite': '>=2'
       '@opentelemetry/api': ^1.4.1
       '@planetscale/database': '>=1'
@@ -3800,14 +3800,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.36.3(@libsql/client-wasm@0.14.0)(postgres@3.4.5):
+  drizzle-orm@0.36.4(@libsql/client-wasm@0.14.0)(postgres@3.4.5):
     optionalDependencies:
       '@libsql/client-wasm': 0.14.0
       postgres: 3.4.5
 
-  drizzle-zod@0.5.1(drizzle-orm@0.36.3(@libsql/client-wasm@0.14.0)(postgres@3.4.5))(zod@3.23.8):
+  drizzle-zod@0.5.1(drizzle-orm@0.36.4(@libsql/client-wasm@0.14.0)(postgres@3.4.5))(zod@3.23.8):
     dependencies:
-      drizzle-orm: 0.36.3(@libsql/client-wasm@0.14.0)(postgres@3.4.5)
+      drizzle-orm: 0.36.4(@libsql/client-wasm@0.14.0)(postgres@3.4.5)
       zod: 3.23.8
 
   duplexify@4.1.3:
