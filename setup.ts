@@ -479,7 +479,7 @@ async function runDockerComposeWithLogs(): Promise<void> {
       dockerCheck.on('close', code => code === 0 ? resolve(null) : reject(new Error('Docker daemon not running')));
     });
   } catch (error) {
-    throw new Error('Docker daemon is not running. Please start Docker and try again.');
+    throw new Error('Docker daemon is not running. Please start Docker and try again.'+ error);
   }
 
   return new Promise((resolve, reject) => {
@@ -1258,6 +1258,7 @@ async function main(): Promise<void> {
                   client.close();
                   isConnected = true;
                 } catch (err) {
+                  console.log("Error: " + err); 
                   await new Promise(resolve => setTimeout(resolve, 1000));
                 }
               }
