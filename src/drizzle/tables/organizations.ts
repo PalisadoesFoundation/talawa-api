@@ -10,7 +10,6 @@ import { familiesTable } from "./families";
 import { fundsTable } from "./funds";
 import { organizationMembershipsTable } from "./organizationMemberships";
 import { postsTable } from "./posts";
-import { tagFoldersTable } from "./tagFolders";
 import { tagsTable } from "./tags";
 import { usersTable } from "./users";
 import { venuesTable } from "./venues";
@@ -155,12 +154,6 @@ export const organizationsTableRelations = relations(
 		 */
 		postsWhereOrganization: many(postsTable, {
 			relationName: "organizations.id:posts.organization_id",
-		}),
-		/**
-		 * One to many relationship from `organizations` table to `tag_folders` table.
-		 */
-		tagFoldersWhereOrganization: many(tagFoldersTable, {
-			relationName: "organizations.id:tag_folders.organization_id",
 		}),
 		/**
 		 * One to many relationship from `organizations` table to `tags` table.

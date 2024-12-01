@@ -21,7 +21,10 @@ export const tagAssignmentsTable = pgTable(
 		 */
 		assigneeId: uuid("assignee_id")
 			.notNull()
-			.references(() => usersTable.id, {}),
+			.references(() => usersTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 		/**
 		 * Date time at the time the tag assignment was created.
 		 */
