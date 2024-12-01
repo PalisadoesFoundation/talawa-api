@@ -30,7 +30,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
 		"@faker-js/faker": "^9.2.0",
-		"@swc/cli": "0.5.0",
+		"@swc/cli": "0.5.1",
 		"@swc/core": "^1.9.2",
 		"@types/node": "^22.9.0",
 		"@vitest/coverage-v8": "^2.1.5",
