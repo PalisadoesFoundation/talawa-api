@@ -22,7 +22,7 @@ importers:
         version: 10.2.1
       '@fastify/type-provider-typebox':
         specifier: ^5.0.1
-        version: 5.0.1(@sinclair/typebox@0.34.3)
+        version: 5.0.1(@sinclair/typebox@0.34.9)
       '@node-rs/argon2':
         specifier: ^2.0.0
         version: 2.0.0
@@ -30,8 +30,8 @@ importers:
         specifier: ^4.3.0
         version: 4.3.0(graphql@16.9.0)
       '@sinclair/typebox':
-        specifier: ^0.34.3
-        version: 0.34.3
+        specifier: ^0.34.9
+        version: 0.34.9
       ajv-formats:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
@@ -1196,8 +1196,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@sinclair/typebox@0.34.3':
-    resolution: {integrity: sha512-fEgncmnqn6WGibPn34deH5PwmMTuNCZ2clwlwevgFn8rP0l38zzWRg3KVYhoOZwkZ2Ew3yhZ/STdGDuMig66oQ==}
+  '@sinclair/typebox@0.34.9':
+    resolution: {integrity: sha512-KTuEZ4UHIp8rNgbLrsQwmGo4cCVj/AHPG3DsI1VvfzudG8dzpZNCV4qm4NWfYY02ReB5INVyuq6xGrl3Ks8vAQ==}
 
   '@sindresorhus/is@4.6.0':
     resolution: {integrity: sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw==}
@@ -3170,9 +3170,9 @@ snapshots:
       fastq: 1.17.1
       glob: 11.0.0
 
-  '@fastify/type-provider-typebox@5.0.1(@sinclair/typebox@0.34.3)':
+  '@fastify/type-provider-typebox@5.0.1(@sinclair/typebox@0.34.9)':
     dependencies:
-      '@sinclair/typebox': 0.34.3
+      '@sinclair/typebox': 0.34.9
 
   '@fastify/websocket@11.0.1':
     dependencies:
@@ -3461,7 +3461,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.27.2':
     optional: true
 
-  '@sinclair/typebox@0.34.3': {}
+  '@sinclair/typebox@0.34.9': {}
 
   '@sindresorhus/is@4.6.0': {}
 

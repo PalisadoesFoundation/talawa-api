@@ -11,7 +11,7 @@
 		"@fastify/type-provider-typebox": "^5.0.1",
 		"@node-rs/argon2": "^2.0.0",
 		"@pothos/core": "^4.3.0",
-		"@sinclair/typebox": "^0.34.3",
+		"@sinclair/typebox": "^0.34.9",
 		"ajv-formats": "^3.0.1",
 		"close-with-grace": "^2.1.0",
 		"drizzle-orm": "^0.36.3",
