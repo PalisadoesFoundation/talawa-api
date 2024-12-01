@@ -467,38 +467,44 @@ export async function mongoDB(): Promise<void> {
 */
 
 async function runDockerComposeWithLogs(): Promise<void> {
-    // Check if Docker daemon is running
+  // Check if Docker daemon is running
   try {
     await new Promise((resolve, reject) => {
       const dockerCheck = spawn(
-        process.platform === 'win32' ? 'docker.exe' : 'docker',
-        ['info'],
-        { stdio: 'ignore' }
+        process.platform === "win32" ? "docker.exe" : "docker",
+        ["info"],
+        { stdio: "ignore" },
       );
-      dockerCheck.on('error', reject);
-      dockerCheck.on('close', code => code === 0 ? resolve(null) : reject(new Error('Docker daemon not running')));
+      dockerCheck.on("error", reject);
+      dockerCheck.on("close", (code) =>
+        code === 0
+          ? resolve(null)
+          : reject(new Error("Docker daemon not running")),
+      );
     });
   } catch (error) {
-    throw new Error('Docker daemon is not running. Please start Docker and try again.'+ error);
+    throw new Error(
+      "Docker daemon is not running. Please start Docker and try again." +
+        error,
+    );
   }
 
   return new Promise((resolve, reject) => {
-
-  const dockerCompose = spawn(
-    process.platform === 'win32' ? 'docker-compose.exe' : 'docker-compose',
-      ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"], 
-      { stdio: "inherit" } 
+    const dockerCompose = spawn(
+      process.platform === "win32" ? "docker-compose.exe" : "docker-compose",
+      ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"],
+      { stdio: "inherit" },
     );
 
     dockerCompose.on("error", (error) => {
       console.error("Error running docker-compose:", error);
-      reject(error); 
+      reject(error);
     });
 
     dockerCompose.on("close", (code) => {
       if (code === 0) {
         console.log("Docker Compose completed successfully.");
-        resolve(); 
+        resolve();
       } else {
         reject(new Error(`Docker Compose exited with code ${code}`));
       }
@@ -1250,29 +1256,29 @@ async function main(): Promise<void> {
         // Wait for mongoDB to be ready
         console.log("Waiting for mongoDB to be ready...");
         let isConnected = false;
-              while (!isConnected) {
-                try {
-                  const client = new MongoClient(process.env.MONGO_DB_URL as string);
-                await client.connect();
-                  await client.db().command({ ping: 1 });
-                  client.close();
-                  isConnected = true;
-                } catch (err) {
-                  console.log("Error: " + err); 
-                  await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-              }
-              
-              if (shouldImportSampleData) {
-                await importData();
-              }
+        while (!isConnected) {
+          try {
+            const client = new MongoClient(process.env.MONGO_DB_URL as string);
+            await client.connect();
+            await client.db().command({ ping: 1 });
+            client.close();
+            isConnected = true;
+          } catch (err) {
+            console.log("Error: " + err);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        }
+
+        if (shouldImportSampleData) {
+          await importData();
+        }
       } catch (err) {
         console.log("Some error occurred: " + err);
       }
     }
   }
 
-  if(isDockerInstallation && shouldImportSampleData) {
+  if (isDockerInstallation && shouldImportSampleData) {
     try {
       await importData();
     } catch (err) {
