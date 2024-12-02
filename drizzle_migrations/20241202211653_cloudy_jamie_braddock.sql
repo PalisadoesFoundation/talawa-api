@@ -318,24 +318,14 @@ CREATE TABLE IF NOT EXISTS "tag_assignments" (
 	CONSTRAINT "tag_assignments_assignee_id_tag_id_pk" PRIMARY KEY("assignee_id","tag_id")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "tag_folders" (
-	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	"creator_id" uuid NOT NULL,
-	"id" uuid PRIMARY KEY NOT NULL,
-	"name" text NOT NULL,
-	"organization_id" uuid NOT NULL,
-	"parent_folder_id" uuid,
-	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid
-);
---> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tags" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
-	"folder_id" uuid,
 	"id" uuid PRIMARY KEY NOT NULL,
+	"is_folder" boolean NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
+	"parent_tag_id" uuid,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
@@ -899,7 +889,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tag_assignments" ADD CONSTRAINT "tag_assignments_assignee_id_users_id_fk" FOREIGN KEY ("assignee_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "tag_assignments" ADD CONSTRAINT "tag_assignments_assignee_id_users_id_fk" FOREIGN KEY ("assignee_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -923,43 +913,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tag_folders" ADD CONSTRAINT "tag_folders_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "tag_folders" ADD CONSTRAINT "tag_folders_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "tag_folders" ADD CONSTRAINT "tag_folders_parent_folder_id_tag_folders_id_fk" FOREIGN KEY ("parent_folder_id") REFERENCES "public"."tag_folders"("id") ON DELETE cascade ON UPDATE cascade;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "tag_folders" ADD CONSTRAINT "tag_folders_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
  ALTER TABLE "tags" ADD CONSTRAINT "tags_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tags" ADD CONSTRAINT "tags_folder_id_tag_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."tag_folders"("id") ON DELETE cascade ON UPDATE cascade;
+ ALTER TABLE "tags" ADD CONSTRAINT "tags_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "tags" ADD CONSTRAINT "tags_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;
+ ALTER TABLE "tags" ADD CONSTRAINT "tags_parent_tag_id_tags_id_fk" FOREIGN KEY ("parent_tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -1199,16 +1165,12 @@ CREATE INDEX IF NOT EXISTS "tag_assignments_assignee_id_index" ON "tag_assignmen
 CREATE INDEX IF NOT EXISTS "tag_assignments_created_at_index" ON "tag_assignments" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "tag_assignments_creator_id_index" ON "tag_assignments" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "tag_assignments_tag_id_index" ON "tag_assignments" USING btree ("tag_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "tag_folders_created_at_index" ON "tag_folders" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "tag_folders_creator_id_index" ON "tag_folders" USING btree ("creator_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "tag_folders_name_index" ON "tag_folders" USING btree ("name");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "tag_folders_organization_id_index" ON "tag_folders" USING btree ("organization_id");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "tag_folders_name_organization_id_index" ON "tag_folders" USING btree ("name","organization_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "tags_creator_id_index" ON "tags" USING btree ("creator_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "tags_folder_id_index" ON "tags" USING btree ("folder_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "tags_is_folder_index" ON "tags" USING btree ("is_folder");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "tags_name_index" ON "tags" USING btree ("name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "tags_organization_id_index" ON "tags" USING btree ("organization_id");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "tags_name_organization_id_index" ON "tags" USING btree ("name","organization_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "tags_parent_tag_id_index" ON "tags" USING btree ("parent_tag_id");--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "tags_is_folder_name_organization_id_index" ON "tags" USING btree ("is_folder","name","organization_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "users_creator_id_index" ON "users" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "users_name_index" ON "users" USING btree ("name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "users_updater_id_index" ON "users" USING btree ("updater_id");--> statement-breakpoint

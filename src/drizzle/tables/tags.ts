@@ -43,7 +43,7 @@ export const tagsTable = pgTable(
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
 		/**
-		 * Boolean to tell if the tag is used as a tag folder.
+		 * Boolean to tell if the tag is to be used as a tag folder.
 		 */
 		isFolder: boolean("is_folder").notNull(),
 		/**
@@ -60,9 +60,9 @@ export const tagsTable = pgTable(
 				onUpdate: "cascade",
 			}),
 		/**
-		 * Foreign key reference to the id of the parent tag folder.
+		 * Foreign key reference to the id of the parent tag.
 		 */
-		parentTagFolderId: uuid("parent_tag_folder_id").references(
+		parentTagId: uuid("parent_tag_id").references(
 			(): AnyPgColumn => tagsTable.id,
 			{
 				onDelete: "cascade",
@@ -92,7 +92,7 @@ export const tagsTable = pgTable(
 		index().on(self.isFolder),
 		index().on(self.name),
 		index().on(self.organizationId),
-		index().on(self.parentTagFolderId),
+		index().on(self.parentTagId),
 		uniqueIndex().on(self.isFolder, self.name, self.organizationId),
 	],
 );
@@ -117,10 +117,10 @@ export const tagsTableRelations = relations(tagsTable, ({ many, one }) => ({
 	/**
 	 * Many to one relationship from `tags` table to `tags` table.
 	 */
-	parentTagFolder: one(tagsTable, {
-		fields: [tagsTable.parentTagFolderId],
+	parentTag: one(tagsTable, {
+		fields: [tagsTable.parentTagId],
 		references: [tagsTable.id],
-		relationName: "tags.id:tags.parent_tag_folder_id",
+		relationName: "tags.id:tags.parent_tag_id",
 	}),
 	/**
 	 * One to many relationship from `tags` table to `tag_assignments` table.
@@ -132,7 +132,7 @@ export const tagsTableRelations = relations(tagsTable, ({ many, one }) => ({
 	 * One to many relationship from `tags` table to `tags` table.
 	 */
 	tagsWhereParentTag: many(tagsTable, {
-		relationName: "tags.id:tags.parent_tag_folder_id",
+		relationName: "tags.id:tags.parent_tag_id",
 	}),
 	/**
 	 * Many to one relationship from `tags` table to `users` table.

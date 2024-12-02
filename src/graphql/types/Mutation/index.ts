@@ -1,13 +1,16 @@
 import "./Mutation";
 import "./createOrganization";
 import "./createOrganizationMembership";
+import "./createTag";
 import "./createUser";
 import "./deleteCurrentUser";
 import "./deleteOrganization";
 import "./deleteOrganizationMembership";
+import "./deleteTag";
 import "./deleteUser";
 import "./signUp";
 import "./updateCurrentUser";
 import "./updateOrganization";
 import "./updateOrganizationMembership";
+import "./updateTag";
 import "./updateUser";

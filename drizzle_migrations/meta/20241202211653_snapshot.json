@@ -1,5 +1,5 @@
 {
-  "id": "02e55cae-dc67-4948-9901-d719bde9f0a5",
+  "id": "e748830e-fdfc-4605-adf8-d06458c5dc23",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -4497,8 +4497,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "tag_assignments_creator_id_users_id_fk": {
           "name": "tag_assignments_creator_id_users_id_fk",
@@ -4554,203 +4554,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.tag_folders": {
-      "name": "tag_folders",
-      "schema": "",
-      "columns": {
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "creator_id": {
-          "name": "creator_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "parent_folder_id": {
-          "name": "parent_folder_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updater_id": {
-          "name": "updater_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "tag_folders_created_at_index": {
-          "name": "tag_folders_created_at_index",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "tag_folders_creator_id_index": {
-          "name": "tag_folders_creator_id_index",
-          "columns": [
-            {
-              "expression": "creator_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "tag_folders_name_index": {
-          "name": "tag_folders_name_index",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "tag_folders_organization_id_index": {
-          "name": "tag_folders_organization_id_index",
-          "columns": [
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "tag_folders_name_organization_id_index": {
-          "name": "tag_folders_name_organization_id_index",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "tag_folders_creator_id_users_id_fk": {
-          "name": "tag_folders_creator_id_users_id_fk",
-          "tableFrom": "tag_folders",
-          "tableTo": "users",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "tag_folders_organization_id_organizations_id_fk": {
-          "name": "tag_folders_organization_id_organizations_id_fk",
-          "tableFrom": "tag_folders",
-          "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "tag_folders_parent_folder_id_tag_folders_id_fk": {
-          "name": "tag_folders_parent_folder_id_tag_folders_id_fk",
-          "tableFrom": "tag_folders",
-          "tableTo": "tag_folders",
-          "columnsFrom": [
-            "parent_folder_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "tag_folders_updater_id_users_id_fk": {
-          "name": "tag_folders_updater_id_users_id_fk",
-          "tableFrom": "tag_folders",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updater_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.tags": {
       "name": "tags",
       "schema": "",
@@ -4768,16 +4571,16 @@
           "primaryKey": false,
           "notNull": false
         },
-        "folder_id": {
-          "name": "folder_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
+          "notNull": true
+        },
+        "is_folder": {
+          "name": "is_folder",
+          "type": "boolean",
+          "primaryKey": false,
           "notNull": true
         },
         "name": {
@@ -4791,6 +4594,12 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "parent_tag_id": {
+          "name": "parent_tag_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         },
         "updated_at": {
           "name": "updated_at",
@@ -4821,11 +4630,11 @@
           "method": "btree",
           "with": {}
         },
-        "tags_folder_id_index": {
-          "name": "tags_folder_id_index",
+        "tags_is_folder_index": {
+          "name": "tags_is_folder_index",
           "columns": [
             {
-              "expression": "folder_id",
+              "expression": "is_folder",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -4866,9 +4675,30 @@
           "method": "btree",
           "with": {}
         },
-        "tags_name_organization_id_index": {
-          "name": "tags_name_organization_id_index",
+        "tags_parent_tag_id_index": {
+          "name": "tags_parent_tag_id_index",
           "columns": [
+            {
+              "expression": "parent_tag_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tags_is_folder_name_organization_id_index": {
+          "name": "tags_is_folder_name_organization_id_index",
+          "columns": [
+            {
+              "expression": "is_folder",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
             {
               "expression": "name",
               "isExpression": false,
@@ -4902,12 +4732,12 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
-        "tags_folder_id_tag_folders_id_fk": {
-          "name": "tags_folder_id_tag_folders_id_fk",
+        "tags_organization_id_organizations_id_fk": {
+          "name": "tags_organization_id_organizations_id_fk",
           "tableFrom": "tags",
-          "tableTo": "tag_folders",
+          "tableTo": "organizations",
           "columnsFrom": [
-            "folder_id"
+            "organization_id"
           ],
           "columnsTo": [
             "id"
@@ -4915,12 +4745,12 @@
           "onDelete": "cascade",
           "onUpdate": "cascade"
         },
-        "tags_organization_id_organizations_id_fk": {
-          "name": "tags_organization_id_organizations_id_fk",
+        "tags_parent_tag_id_tags_id_fk": {
+          "name": "tags_parent_tag_id_tags_id_fk",
           "tableFrom": "tags",
-          "tableTo": "organizations",
+          "tableTo": "tags",
           "columnsFrom": [
-            "organization_id"
+            "parent_tag_id"
           ],
           "columnsTo": [
             "id"
