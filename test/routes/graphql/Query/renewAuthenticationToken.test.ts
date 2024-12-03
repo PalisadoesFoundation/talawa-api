@@ -70,7 +70,7 @@ suite("Query field renewAuthenticationToken", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},

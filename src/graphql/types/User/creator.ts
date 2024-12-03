@@ -4,7 +4,7 @@ import { User } from "./User";
 User.implement({
 	fields: (t) => ({
 		creator: t.field({
-			description: "User field to read the user who created the user.",
+			description: "User who created the user.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -16,6 +16,7 @@ User.implement({
 				}
 
 				const currentUserId = ctx.currentClient.user.id;
+
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				});
@@ -41,19 +42,26 @@ User.implement({
 					});
 				}
 
+				if (parent.creatorId === null) {
+					return null;
+				}
+
 				if (parent.creatorId === currentUserId) {
 					return currentUser;
 				}
 
-				const creatorUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.id, parent.creatorId),
-				});
+				const creatorId = parent.creatorId;
 
-				// Creator user id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
-				if (creatorUser === undefined) {
+				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst(
+					{
+						where: (fields, operators) => operators.eq(fields.id, creatorId),
+					},
+				);
+
+				// Creator id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				if (existingUser === undefined) {
 					ctx.log.error(
-						"Postgres select operation returned an empty array for a user's creator user id that isn't null.",
+						"Postgres select operation returned an empty array for a user's creator id that isn't null.",
 					);
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -63,7 +71,7 @@ User.implement({
 					});
 				}
 
-				return creatorUser;
+				return existingUser;
 			},
 			type: User,
 		}),
