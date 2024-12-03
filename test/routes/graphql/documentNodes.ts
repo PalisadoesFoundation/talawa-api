@@ -34,7 +34,6 @@ export const Mutation_createUser =
             postalCode
             role
             state
-            updatedAt
             workPhoneNumber
         }
     }
@@ -63,7 +62,6 @@ export const Mutation_deleteCurrentUser =
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber    
     }
 }`);
@@ -91,7 +89,6 @@ export const Mutation_deleteUser =
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber    
     }
 }`);
@@ -121,7 +118,6 @@ export const Mutation_signUp =
             postalCode
             role
             state
-            updatedAt
             workPhoneNumber
         }
     }
@@ -150,7 +146,6 @@ export const Mutation_updateCurrentUser =
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber    
     }
 }`);
@@ -178,7 +173,6 @@ export const Mutation_updateUser =
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber    
     }
 }`);
@@ -205,7 +199,6 @@ export const Query_currentUser = gql(`query Query_currentUser {
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber
     }
 }`);
@@ -239,7 +232,6 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
             postalCode
             role
             state
-            updatedAt
             workPhoneNumber
         }
     }
@@ -267,7 +259,6 @@ export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber
     }
 }`);
@@ -296,9 +287,15 @@ export const Query_user_creator =
             postalCode
             role
             state
-            updatedAt
             workPhoneNumber 
         }
+    }
+}`);
+
+export const Query_user_updatedAt =
+	gql(`query Query_user_updatedAt($input: QueryUserInput!) {
+    user(input: $input) {
+        updatedAt
     }
 }`);
 
@@ -326,7 +323,6 @@ export const Query_user_updater =
             postalCode
             role
             state
-            updatedAt
             workPhoneNumber 
         }
     }

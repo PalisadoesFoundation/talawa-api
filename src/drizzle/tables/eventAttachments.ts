@@ -1,13 +1,5 @@
-import { relations } from "drizzle-orm";
-import {
-	index,
-	integer,
-	pgTable,
-	text,
-	timestamp,
-	uniqueIndex,
-	uuid,
-} from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
+import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { eventAttachmentTypeEnum } from "~/src/drizzle/enums/eventAttachmentType";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
@@ -31,13 +23,13 @@ export const eventAttachmentsTable = pgTable(
 			.notNull()
 			.references(() => eventsTable.id),
 
-		position: integer("position").notNull(),
-
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		})
+			.$defaultFn(() => sql`${null}`)
+			.$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
@@ -49,7 +41,6 @@ export const eventAttachmentsTable = pgTable(
 		index().on(self.eventId),
 		index().on(self.createdAt),
 		index().on(self.creatorId),
-		uniqueIndex().on(self.eventId, self.position),
 	],
 );
 

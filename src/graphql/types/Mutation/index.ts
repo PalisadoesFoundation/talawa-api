@@ -1,7 +1,10 @@
 import "./Mutation";
+import "./createOrganization";
 import "./createUser";
 import "./deleteCurrentUser";
+import "./deleteOrganization";
 import "./deleteUser";
 import "./signUp";
 import "./updateCurrentUser";
+import "./updateOrganization";
 import "./updateUser";
