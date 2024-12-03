@@ -198,7 +198,7 @@ In this section we'll explain how to set up all the prerequisite software packag
 
 The easiest way to get the latest copies of our code is to install the `git` package on your computer.
 
-Follow the setup guide for `git` on official [git docs](https://git-scm.com/downloads). Basic `git` knowledge is required for open source contribution so make sure you're comfortable with it. [Here's](https://youtu.be/apGV9Kg7ics) a good tutorial to get started with `git` and `github`.
+Follow the setup guide for `git` on official [git docs](https://git-scm.com/downloads). Basic `git` knowledge is required for open source contribution so make sure you're comfortable with it. [Here\'s](https://youtu.be/apGV9Kg7ics) a good tutorial to get started with `git` and `github`.
 
 ## Setting up this repository
 
@@ -330,6 +330,7 @@ The setup steps differ depending on whether you are working in a development or 
 
 Follow these steps for setting up a software development environment.
 
+`Note`: Make sure `PWD=.` is there in `.env` file.
 1. Building and Starting Development Containers:
 
    1. Using Windows:
@@ -338,15 +339,20 @@ Follow these steps for setting up a software development environment.
       docker-compose -f docker-compose.dev.yaml up --build
       ```
 
-   2. Using Ubuntu: 1. Running synchronously. Using CTRL-C will stop it.
-      `bash
-         sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build
-         ` 2. Running asynchronously in a subshell. You will have to use the `docker-compose down` command below to stop it.
-      `bash
-sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build &
-`
-      This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
+   2. Using Ubuntu: 1. `Running synchronously. Using CTRL-C will stop it.`
+      ```bash
+      sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build
+      ```
+         `2. Running asynchronously in a subshell.`
+           You will have to use the `docker-compose down` command below to stop it.
 
+         ```bash
+         sudo /usr/libexec/docker/cli-plugins/docker-compose -f docker-compose.dev.yaml up --build &
+         ```
+      This command starts the development environment, where you can make changes to the code, and the server will automatically restart.
+   3. If the above commands don't work, try `docker-compose -f docker-compose.dev.yaml up --build`
+   or `docker compose -f docker-compose.dev.yaml up --build` depending on your docker compose version.
+   4. If you face the error regarding `Port already in use`, make sure the ports mentioned in the error are free `(eg. Ports- 80, 0, 4000)`. Refer `sudo lsof -i : {PORT}`. To kill the process running on the port use `kill {PID}`.
 2. Accessing the Development Application: Open your web browser and navigate to:
 
    ```
