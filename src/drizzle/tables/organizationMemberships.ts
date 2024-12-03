@@ -1,12 +1,12 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
-	boolean,
 	index,
 	pgTable,
 	primaryKey,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
@@ -15,7 +15,7 @@ export const organizationMembershipsTable = pgTable(
 	"organization_memberships",
 	{
 		/**
-		 * Datetime at the time the organization membership was created.
+		 * Date time at the time the organization membership was created.
 		 */
 		createdAt: timestamp("created_at", {
 			mode: "date",
@@ -27,51 +27,59 @@ export const organizationMembershipsTable = pgTable(
 		/**
 		 * Foreign key reference to the id of the user who first created the organization membership.
 		 */
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
-		/**
-		 * Boolean to tell whether the membership has been approved.
-		 */
-		isApproved: boolean("is_approved").notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 		/**
 		 * Foreign key reference to the id of the user the membership is associated to.
 		 */
 		memberId: uuid("member_id")
 			.notNull()
-			.references(() => usersTable.id, {}),
+			.references(() => usersTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 		/**
 		 * Foreign key reference to the id of the organization the membership is associated to.
 		 */
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsTable.id, {}),
+			.references(() => organizationsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 		/**
 		 * Role assigned to the user within the organization.
 		 */
 		role: organizationMembershipRoleEnum("role").notNull(),
 		/**
-		 * Datetime at the time the organization membership was last updated.
+		 * Date time at the time the organization membership was last updated.
 		 */
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		})
+			.$defaultFn(() => sql`${null}`)
+			.$onUpdate(() => new Date()),
 		/**
 		 * Foreign key reference to the id of the user who last updated the organization membership.
 		 */
-		updaterId: uuid("updater_id").references(() => usersTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 	},
 	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.memberId),
+		index().on(self.organizationId),
+		index().on(self.role),
 		primaryKey({
 			columns: [self.memberId, self.organizationId],
 		}),
-		index().on(self.createdAt),
-		index().on(self.creatorId),
-		index().on(self.isApproved),
-		index().on(self.memberId),
-		index().on(self.organizationId),
 	],
 );
 
@@ -102,4 +110,8 @@ export const organizationMembershipsTableRelations = relations(
 			relationName: "organization_memberships.updater_id:users.id",
 		}),
 	}),
+);
+
+export const organizationMembershipsTableInsertSchema = createInsertSchema(
+	organizationMembershipsTable,
 );

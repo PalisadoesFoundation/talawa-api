@@ -89,7 +89,6 @@ export {
 	tagAssignmentsTable,
 	tagAssignmentsTableRelations,
 } from "./tables/tagAssignments";
-export { tagFoldersTable, tagFoldersTableRelations } from "./tables/tagFolders";
 export { tagsTable, tagsTableRelations } from "./tables/tags";
 export { usersTable, usersTableRelations } from "./tables/users";
 export {
