@@ -1,4 +1,5 @@
 import "./Query";
+import "./advertisement";
 import "./currentUser";
 import "./organization";
 import "./renewAuthenticationToken";
