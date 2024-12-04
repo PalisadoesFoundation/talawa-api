@@ -482,7 +482,14 @@ async function runDockerComposeWithLogs(): Promise<void> {
           : reject(new Error("Docker daemon not running")),
       );
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(
+        `Docker daemon is not running. Please start Docker and try again. Details: ${error.message}`
+      );
+    }
+    throw new Error('Docker daemon is not running. Please start Docker and try again.');
+  }
     throw new Error(
       `Docker daemon is not running. Please start Docker and try again. Details: ${error.message}`,
     );
