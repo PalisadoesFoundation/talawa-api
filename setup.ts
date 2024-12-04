@@ -482,11 +482,8 @@ async function runDockerComposeWithLogs(): Promise<void> {
           : reject(new Error("Docker daemon not running")),
       );
     });
-  } catch (error) {
-    throw new Error(
-      "Docker daemon is not running. Please start Docker and try again." +
-        error,
-    );
+  } catch (error:any) {
+    throw new Error(`Docker daemon is not running. Please start Docker and try again. Details: ${error.message}`);
   }
 
   return new Promise((resolve, reject) => {
@@ -1263,8 +1260,9 @@ async function main(): Promise<void> {
             await client.db().command({ ping: 1 });
             client.close();
             isConnected = true;
+            console.log("MongoDB is ready!");
           } catch (err) {
-            console.log("Error: " + err);
+            console.log("Waiting for MongoDB to be ready... Retrying in 1 second");
             await new Promise((resolve) => setTimeout(resolve, 1000));
           }
         }
