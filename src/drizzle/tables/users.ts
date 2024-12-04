@@ -248,12 +248,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	/**
 	 * One to many relationship from `users` table to `comments` table.
 	 */
-	commentsWhereCommenter: many(commentsTable, {
-		relationName: "comments.commenter_id:users.id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `comments` table.
-	 */
 	commentsWhereCreator: many(commentsTable, {
 		relationName: "comments.creator_id:users.id",
 	}),
@@ -274,12 +268,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	 */
 	commentVotesWhereUpdater: many(commentVotesTable, {
 		relationName: "comment_votes.updater_id:users.id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `comment_votes` table.
-	 */
-	commentVotesWhereVoter: many(commentVotesTable, {
-		relationName: "comment_votes.voter_id:users.id",
 	}),
 	/**
 	 * Many to one relationship from `users` table to `users` table.
@@ -424,12 +412,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	/**
 	 * One to many relationship from `users` table to `posts` table.
 	 */
-	postsWherePoster: many(postsTable, {
-		relationName: "posts.poster_id:users.id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `posts` table.
-	 */
 	postsWhereUpdater: many(postsTable, {
 		relationName: "posts.updater_id:users.id",
 	}),
@@ -456,12 +438,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	 */
 	postVotesWhereUpdater: many(postVotesTable, {
 		relationName: "post_votes.updater_id:users.id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `post_votes` table.
-	 */
-	postVotesWhereVoter: many(postVotesTable, {
-		relationName: "post_votes.voter_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `tags` table.

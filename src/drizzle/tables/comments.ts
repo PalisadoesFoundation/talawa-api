@@ -1,12 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import {
-	boolean,
-	index,
-	pgTable,
-	text,
-	timestamp,
-	uuid,
-} from "drizzle-orm/pg-core";
+import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { commentVotesTable } from "./commentVotes";
@@ -19,13 +12,7 @@ export const commentsTable = pgTable(
 		/**
 		 * Body of the comment.
 		 */
-		body: text("body").notNull() /**
-		 * Foreign key reference to the id of the user who made the comment.
-		 */,
-		commenterId: uuid("commenter_id").references(() => usersTable.id, {
-			onDelete: "set null",
-			onUpdate: "cascade",
-		}),
+		body: text("body").notNull(),
 		/**
 		 * Date time at the time the comment was created.
 		 */
@@ -47,10 +34,6 @@ export const commentsTable = pgTable(
 		 * Primary unique identifier of the comment.
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
-		/**
-		 * Boolean field to tell if the comment is pinned.
-		 */
-		isPinned: boolean("is_pinned").notNull(),
 		/**
 		 * Date time at the time the comment was pinned.
 		 */
@@ -87,7 +70,6 @@ export const commentsTable = pgTable(
 		}),
 	},
 	(self) => [
-		index().on(self.commenterId),
 		index().on(self.createdAt),
 		index().on(self.creatorId),
 		index().on(self.postId),
@@ -97,14 +79,6 @@ export const commentsTable = pgTable(
 export const commentsTableRelations = relations(
 	commentsTable,
 	({ many, one }) => ({
-		/**
-		 * Many to one relationship from `comments` table to `users` table.
-		 */
-		commenter: one(usersTable, {
-			fields: [commentsTable.commenterId],
-			references: [usersTable.id],
-			relationName: "comments.commenter_id:users.id",
-		}),
 		/**
 		 * One to many relationship from `comments` table to `comment_votes` table.
 		 */

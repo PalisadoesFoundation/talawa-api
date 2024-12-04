@@ -1,12 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import {
-	boolean,
-	index,
-	pgTable,
-	text,
-	timestamp,
-	uuid,
-} from "drizzle-orm/pg-core";
+import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { commentsTable } from "./comments";
@@ -36,22 +29,24 @@ export const postsTable = pgTable(
 		 * Foreign key reference to the id of the user who first created the post.
 		 */
 		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+			.notNull()
+			.references(() => usersTable.id, {
+				onDelete: "set null",
+				onUpdate: "cascade",
+			}),
 		/**
 		 * Primary unique identifier of the post.
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
 		/**
-		 * Boolean field to tell if the post is pinned.
-		 */
-		isPinned: boolean("is_pinned").notNull(),
-		/**
 		 * Foreign key reference to the id of the organization in which the post is made.
 		 */
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsTable.id, {}),
+			.references(() => organizationsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 		/**
 		 * Date time at the time the post was pinned.
 		 */
@@ -60,10 +55,6 @@ export const postsTable = pgTable(
 			precision: 3,
 			withTimezone: true,
 		}),
-		/**
-		 * Foreign key reference to the id of the user who made the post.
-		 */
-		posterId: uuid("poster_id").references(() => usersTable.id, {}),
 		/**
 		 * Date time at the time the post was last updated.
 		 */
@@ -77,13 +68,16 @@ export const postsTable = pgTable(
 		/**
 		 * Foreign key reference to the id of the user who last updated the post.
 		 */
-		updaterId: uuid("updater_id").references(() => usersTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 	},
 	(self) => [
 		index().on(self.createdAt),
 		index().on(self.creatorId),
+		index().on(self.pinnedAt),
 		index().on(self.organizationId),
-		index().on(self.posterId),
 	],
 );
 
@@ -109,14 +103,6 @@ export const postsTableRelations = relations(postsTable, ({ many, one }) => ({
 		fields: [postsTable.organizationId],
 		references: [organizationsTable.id],
 		relationName: "organizations.id:posts.organization_id",
-	}),
-	/**
-	 * Many to one relationship from `posts` table to `users` table.
-	 */
-	poster: one(usersTable, {
-		fields: [postsTable.posterId],
-		references: [usersTable.id],
-		relationName: "posts.poster_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `posts` table to `post_attachments` table.

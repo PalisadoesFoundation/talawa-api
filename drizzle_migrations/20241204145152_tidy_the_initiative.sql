@@ -104,17 +104,14 @@ CREATE TABLE IF NOT EXISTS "comment_votes" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"type" "comment_vote_type" NOT NULL,
 	"updated_at" timestamp (3) with time zone,
-	"updated_id" uuid,
-	"voter_id" uuid
+	"updated_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "comments" (
 	"body" text NOT NULL,
-	"commenter_id" uuid,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
 	"id" uuid PRIMARY KEY NOT NULL,
-	"is_pinned" boolean NOT NULL,
 	"pinned_at" timestamp (3) with time zone,
 	"post_id" uuid NOT NULL,
 	"updated_at" timestamp (3) with time zone,
@@ -274,8 +271,7 @@ CREATE TABLE IF NOT EXISTS "post_votes" (
 	"post_id" uuid NOT NULL,
 	"type" "post_vote_type" NOT NULL,
 	"updated_at" timestamp (3) with time zone,
-	"updated_id" uuid,
-	"voter_id" uuid
+	"updated_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "posts" (
@@ -283,10 +279,8 @@ CREATE TABLE IF NOT EXISTS "posts" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid NOT NULL,
 	"id" uuid PRIMARY KEY NOT NULL,
-	"is_pinned" boolean NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"pinned_at" timestamp (3) with time zone,
-	"poster_id" uuid,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
@@ -571,18 +565,6 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_voter_id_users_id_fk" FOREIGN KEY ("voter_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "comments" ADD CONSTRAINT "comments_commenter_id_users_id_fk" FOREIGN KEY ("commenter_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
  ALTER TABLE "comments" ADD CONSTRAINT "comments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
@@ -841,31 +823,19 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "post_votes" ADD CONSTRAINT "post_votes_voter_id_users_id_fk" FOREIGN KEY ("voter_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
+ ALTER TABLE "posts" ADD CONSTRAINT "posts_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "posts" ADD CONSTRAINT "posts_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "posts" ADD CONSTRAINT "posts_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "posts" ADD CONSTRAINT "posts_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "posts" ADD CONSTRAINT "posts_poster_id_users_id_fk" FOREIGN KEY ("poster_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "posts" ADD CONSTRAINT "posts_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "posts" ADD CONSTRAINT "posts_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -1093,9 +1063,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS "agenda_sections_event_id_name_index" ON "agen
 CREATE INDEX IF NOT EXISTS "comment_votes_comment_id_index" ON "comment_votes" USING btree ("comment_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "comment_votes_creator_id_index" ON "comment_votes" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "comment_votes_type_index" ON "comment_votes" USING btree ("type");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "comment_votes_voter_id_index" ON "comment_votes" USING btree ("voter_id");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "comment_votes_comment_id_voter_id_index" ON "comment_votes" USING btree ("comment_id","voter_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "comments_commenter_id_index" ON "comments" USING btree ("commenter_id");--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "comment_votes_comment_id_creator_id_index" ON "comment_votes" USING btree ("comment_id","creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "comments_created_at_index" ON "comments" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "comments_creator_id_index" ON "comments" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "comments_post_id_index" ON "comments" USING btree ("post_id");--> statement-breakpoint
@@ -1152,12 +1120,11 @@ CREATE INDEX IF NOT EXISTS "post_attachments_post_id_index" ON "post_attachments
 CREATE INDEX IF NOT EXISTS "post_votes_creator_id_index" ON "post_votes" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "post_votes_post_id_index" ON "post_votes" USING btree ("post_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "post_votes_type_index" ON "post_votes" USING btree ("type");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "post_votes_voter_id_index" ON "post_votes" USING btree ("voter_id");--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS "post_votes_post_id_voter_id_index" ON "post_votes" USING btree ("post_id","voter_id");--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "post_votes_creator_id_post_id_index" ON "post_votes" USING btree ("creator_id","post_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "posts_created_at_index" ON "posts" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "posts_creator_id_index" ON "posts" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "posts_pinned_at_index" ON "posts" USING btree ("pinned_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "posts_organization_id_index" ON "posts" USING btree ("organization_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "posts_poster_id_index" ON "posts" USING btree ("poster_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "recurrences_created_at_index" ON "recurrences" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "recurrences_creator_id_index" ON "recurrences" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "recurrences_event_id_index" ON "recurrences" USING btree ("event_id");--> statement-breakpoint

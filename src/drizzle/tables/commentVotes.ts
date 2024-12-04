@@ -65,20 +65,13 @@ export const commentVotesTable = pgTable(
 		updaterId: uuid("updated_id").references(() => usersTable.id, {
 			onDelete: "set null",
 			onUpdate: "cascade",
-		}) /**
-		 * Foreign key reference to the id of the user who voted.
-		 */,
-		voterId: uuid("voter_id").references(() => usersTable.id, {
-			onDelete: "set null",
-			onUpdate: "cascade",
 		}),
 	},
 	(self) => [
 		index().on(self.commentId),
 		index().on(self.creatorId),
 		index().on(self.type),
-		index().on(self.voterId),
-		uniqueIndex().on(self.commentId, self.voterId),
+		uniqueIndex().on(self.commentId, self.creatorId),
 	],
 );
 
@@ -108,14 +101,6 @@ export const commentVotesTableRelations = relations(
 			fields: [commentVotesTable.updaterId],
 			references: [usersTable.id],
 			relationName: "comment_votes.updater_id:users.id",
-		}),
-		/**
-		 * Many to one relationship from `comment_votes` table to `users` table.
-		 */
-		voter: one(usersTable, {
-			fields: [commentVotesTable.voterId],
-			references: [usersTable.id],
-			relationName: "comment_votes.voter_id:users.id",
 		}),
 	}),
 );

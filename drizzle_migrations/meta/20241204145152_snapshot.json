@@ -1,5 +1,5 @@
 {
-  "id": "e748830e-fdfc-4605-adf8-d06458c5dc23",
+  "id": "f24ab6f5-18ef-44cc-97ea-99b1e4a9cd49",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1363,12 +1363,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "voter_id": {
-          "name": "voter_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -1417,23 +1411,8 @@
           "method": "btree",
           "with": {}
         },
-        "comment_votes_voter_id_index": {
-          "name": "comment_votes_voter_id_index",
-          "columns": [
-            {
-              "expression": "voter_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "comment_votes_comment_id_voter_id_index": {
-          "name": "comment_votes_comment_id_voter_id_index",
+        "comment_votes_comment_id_creator_id_index": {
+          "name": "comment_votes_comment_id_creator_id_index",
           "columns": [
             {
               "expression": "comment_id",
@@ -1442,7 +1421,7 @@
               "nulls": "last"
             },
             {
-              "expression": "voter_id",
+              "expression": "creator_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1493,19 +1472,6 @@
           ],
           "onDelete": "set null",
           "onUpdate": "cascade"
-        },
-        "comment_votes_voter_id_users_id_fk": {
-          "name": "comment_votes_voter_id_users_id_fk",
-          "tableFrom": "comment_votes",
-          "tableTo": "users",
-          "columnsFrom": [
-            "voter_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1524,12 +1490,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "commenter_id": {
-          "name": "commenter_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3) with time zone",
@@ -1547,12 +1507,6 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true
-        },
-        "is_pinned": {
-          "name": "is_pinned",
-          "type": "boolean",
-          "primaryKey": false,
           "notNull": true
         },
         "pinned_at": {
@@ -1581,21 +1535,6 @@
         }
       },
       "indexes": {
-        "comments_commenter_id_index": {
-          "name": "comments_commenter_id_index",
-          "columns": [
-            {
-              "expression": "commenter_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "comments_created_at_index": {
           "name": "comments_created_at_index",
           "columns": [
@@ -1643,19 +1582,6 @@
         }
       },
       "foreignKeys": {
-        "comments_commenter_id_users_id_fk": {
-          "name": "comments_commenter_id_users_id_fk",
-          "tableFrom": "comments",
-          "tableTo": "users",
-          "columnsFrom": [
-            "commenter_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
         "comments_creator_id_users_id_fk": {
           "name": "comments_creator_id_users_id_fk",
           "tableFrom": "comments",
@@ -3858,12 +3784,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "voter_id": {
-          "name": "voter_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -3912,32 +3832,17 @@
           "method": "btree",
           "with": {}
         },
-        "post_votes_voter_id_index": {
-          "name": "post_votes_voter_id_index",
+        "post_votes_creator_id_post_id_index": {
+          "name": "post_votes_creator_id_post_id_index",
           "columns": [
             {
-              "expression": "voter_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "post_votes_post_id_voter_id_index": {
-          "name": "post_votes_post_id_voter_id_index",
-          "columns": [
-            {
-              "expression": "post_id",
+              "expression": "creator_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             },
             {
-              "expression": "voter_id",
+              "expression": "post_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3988,19 +3893,6 @@
           ],
           "onDelete": "set null",
           "onUpdate": "cascade"
-        },
-        "post_votes_voter_id_users_id_fk": {
-          "name": "post_votes_voter_id_users_id_fk",
-          "tableFrom": "post_votes",
-          "tableTo": "users",
-          "columnsFrom": [
-            "voter_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -4038,12 +3930,6 @@
           "primaryKey": true,
           "notNull": true
         },
-        "is_pinned": {
-          "name": "is_pinned",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
         "organization_id": {
           "name": "organization_id",
           "type": "uuid",
@@ -4053,12 +3939,6 @@
         "pinned_at": {
           "name": "pinned_at",
           "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "poster_id": {
-          "name": "poster_id",
-          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -4106,11 +3986,11 @@
           "method": "btree",
           "with": {}
         },
-        "posts_organization_id_index": {
-          "name": "posts_organization_id_index",
+        "posts_pinned_at_index": {
+          "name": "posts_pinned_at_index",
           "columns": [
             {
-              "expression": "organization_id",
+              "expression": "pinned_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -4121,11 +4001,11 @@
           "method": "btree",
           "with": {}
         },
-        "posts_poster_id_index": {
-          "name": "posts_poster_id_index",
+        "posts_organization_id_index": {
+          "name": "posts_organization_id_index",
           "columns": [
             {
-              "expression": "poster_id",
+              "expression": "organization_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -4148,8 +4028,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "posts_organization_id_organizations_id_fk": {
           "name": "posts_organization_id_organizations_id_fk",
@@ -4161,21 +4041,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "posts_poster_id_users_id_fk": {
-          "name": "posts_poster_id_users_id_fk",
-          "tableFrom": "posts",
-          "tableTo": "users",
-          "columnsFrom": [
-            "poster_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "posts_updater_id_users_id_fk": {
           "name": "posts_updater_id_users_id_fk",
@@ -4187,8 +4054,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
