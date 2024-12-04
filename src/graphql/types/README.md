@@ -46,7 +46,7 @@ import { builder } from "~/src/graphql/builder";
 
 type Post = {
 	body: string;
-    posterId: string;
+    creatorId: string;
     title: string;
 };
 
@@ -60,18 +60,18 @@ PostRef.implement({
 });
 ```
 ```typescript
-// ~/src/graphql/types/Post/poster.ts
+// ~/src/graphql/types/Post/creator.ts
 import { builder } from "~/src/graphql/builder";
 import { UserRef } from "~/src/graphql/types/User/User";
 import { PostRef } from "./Post";
 
 PostRef.implement({
 	fields: (t) => ({
-		poster: t.expose({
+		creator: t.expose({
             resolve: (parent, args, ctx) => {
                 return await ctx.drizzleClient.query.user.findFirst({
                     where: (fields, operators) => {
-                        return operators.eq(fields.id, parent.posterId);
+                        return operators.eq(fields.id, parent.creatorId);
                     }
                 })
             },
@@ -83,7 +83,7 @@ PostRef.implement({
 ```typescript
 // ~/src/graphql/types/Post/index.ts
 import "./Post";
-import "./poster";
+import "./creator";
 ```
 ```typescript
 // ~/src/graphql/types/index.ts

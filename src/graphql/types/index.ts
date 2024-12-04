@@ -3,6 +3,8 @@ import "./AdvertisementAttachment/index";
 import "./AuthenticationPayload";
 import "./Mutation/index";
 import "./Organization/index";
+import "./Post/index";
+import "./PostAttachment/index";
 import "./Query/index";
 import "./Subscription/index";
 import "./Tag/index";

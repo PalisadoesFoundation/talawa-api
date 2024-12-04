@@ -2,6 +2,7 @@ import "./AdvertisementAttachmentType";
 import "./AdvertisementType";
 import "./Iso3166Alpha2CountryCode";
 import "./OrganizationMembershipRole";
+import "./PostAttachmentType";
 import "./UserEducationGrade";
 import "./UserEmploymentStatus";
 import "./UserMaritalStatus";
