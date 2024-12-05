@@ -1,5 +1,6 @@
 import "./AdvertisementAttachmentType";
 import "./AdvertisementType";
+import "./CommentVoteType";
 import "./Iso3166Alpha2CountryCode";
 import "./OrganizationMembershipRole";
 import "./PostAttachmentType";
