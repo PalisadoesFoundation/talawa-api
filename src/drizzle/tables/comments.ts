@@ -35,14 +35,6 @@ export const commentsTable = pgTable(
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
 		/**
-		 * Date time at the time the comment was pinned.
-		 */
-		pinnedAt: timestamp("pinned_at", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		}),
-		/**
 		 * Foreign key reference to the id of the post on which the comment is made.
 		 */
 		postId: uuid("post_id")

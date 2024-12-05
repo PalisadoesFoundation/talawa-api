@@ -1,5 +1,5 @@
 {
-  "id": "f24ab6f5-18ef-44cc-97ea-99b1e4a9cd49",
+  "id": "2740ad03-f2e6-4c20-a0f3-4b7ec7dc5cdf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1508,12 +1508,6 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
-        },
-        "pinned_at": {
-          "name": "pinned_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
         },
         "post_id": {
           "name": "post_id",

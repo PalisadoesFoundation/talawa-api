@@ -112,7 +112,6 @@ CREATE TABLE IF NOT EXISTS "comments" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
 	"id" uuid PRIMARY KEY NOT NULL,
-	"pinned_at" timestamp (3) with time zone,
 	"post_id" uuid NOT NULL,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
