@@ -1,4 +1,6 @@
 import "./Post";
+import "./comments";
+import "./commentsCount";
 import "./creator";
 import "./downVoters";
 import "./downVotesCount";

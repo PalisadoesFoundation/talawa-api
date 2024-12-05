@@ -1,5 +1,6 @@
 import "./Query";
 import "./advertisement";
+import "./comment";
 import "./currentUser";
 import "./organization";
 import "./post";
