@@ -482,9 +482,9 @@ async function runDockerComposeWithLogs(): Promise<void> {
           : reject(new Error("Docker daemon not running")),
       );
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw new Error(
-      `Docker daemon is not running. Please start Docker and try again. Details: ${error.message}`,
+      `Docker daemon is not running. Please start Docker and try again. Details: ${error}`,
     );
   }
 
@@ -1278,15 +1278,6 @@ async function main(): Promise<void> {
       } catch (err) {
         console.log("Some error occurred: " + err);
       }
-    }
-  }
-
-  if (isDockerInstallation && shouldImportSampleData) {
-    try {
-      await importData();
-    } catch (err) {
-      console.error("Failed to import sample data:", err);
-      throw err;
     }
   }
 }
