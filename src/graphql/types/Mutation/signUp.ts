@@ -85,7 +85,7 @@ builder.mutationField("signUp", (t) =>
 					id: userId,
 					isEmailAddressVerified: false,
 					passwordHash: await hash(parsedArgs.input.password),
-					role: "base",
+					role: "regular",
 				})
 				.returning();
 

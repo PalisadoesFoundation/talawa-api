@@ -1,7 +1,7 @@
 import { hash } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { usersTable } from "~/src/drizzle/schema";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationUpdateCurrentUserInput,

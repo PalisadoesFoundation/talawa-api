@@ -92,7 +92,7 @@ suite("User field creator", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
@@ -152,7 +152,7 @@ suite("User field creator", () => {
 		`results in a graphql error with "unauthorized_action" extensions code in the "errors" field and "null" as the value of "data.user.creator" field if`,
 		() => {
 			test(`client triggering the graphql operation is not associated to an administrator user.
-                argument "input.id" is not equal to the id of the existing user associated to the client triggering the graphql operation.`, async () => {
+	            argument "input.id" is not equal to the id of the existing user associated to the client triggering the graphql operation.`, async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
 					{
@@ -181,7 +181,7 @@ suite("User field creator", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					}),
@@ -195,7 +195,7 @@ suite("User field creator", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					}),
@@ -239,38 +239,148 @@ suite("User field creator", () => {
 		},
 	);
 
-	test(`results in an empty "errors" field and the expected value for the "data.user.creator" field.`, async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+	suite(
+		`results in an empty "errors" field and the expected value for the "data.user.creator" field where`,
+		() => {
+			test(`"data.user.updater" is "null" when the creator of the user no longer exists.`, async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
 					},
-				},
-			},
-		);
+				);
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data.signIn?.authenticationToken,
-		);
-		assertToBeNonNullish(administratorUserSignInResult.data.signIn.user?.id);
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
 
-		const userCreatorResult = await mercuriusClient.query(Query_user_creator, {
-			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-			},
-			variables: {
-				input: {
-					id: administratorUserSignInResult.data.signIn.user.id,
-				},
-			},
-		});
+				const administratorUser0CreateUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "name",
+								password: "password",
+								role: "administrator",
+							},
+						},
+					},
+				);
 
-		expect(userCreatorResult.errors).toBeUndefined();
-		expect(userCreatorResult.data.user?.creator).toEqual(
-			administratorUserSignInResult.data.signIn.user,
-		);
-	});
+				assertToBeNonNullish(
+					administratorUser0CreateUserResult.data.createUser
+						?.authenticationToken,
+				);
+
+				const regularUser0CreateUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${
+								administratorUser0CreateUserResult.data.createUser
+									.authenticationToken
+							}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "name",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUser0CreateUserResult.data.createUser.user?.id,
+				);
+
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: administratorUser0CreateUserResult.data.createUser.user.id,
+						},
+					},
+				});
+
+				assertToBeNonNullish(
+					regularUser0CreateUserResult.data.createUser?.user?.id,
+				);
+
+				const userCreatorResult = await mercuriusClient.query(
+					Query_user_creator,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								id: regularUser0CreateUserResult.data.createUser.user.id,
+							},
+						},
+					},
+				);
+
+				expect(userCreatorResult.errors).toBeUndefined();
+				expect(userCreatorResult.data.user?.creator).toEqual(null);
+			});
+
+			test(`"data.user.updater" is non-null when the creator of the user still exists.`, async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn.user?.id,
+				);
+
+				const userCreatorResult = await mercuriusClient.query(
+					Query_user_creator,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								id: administratorUserSignInResult.data.signIn.user.id,
+							},
+						},
+					},
+				);
+
+				expect(userCreatorResult.errors).toBeUndefined();
+				expect(userCreatorResult.data.user?.creator).toEqual(
+					administratorUserSignInResult.data.signIn.user,
+				);
+			});
+		},
+	);
 });

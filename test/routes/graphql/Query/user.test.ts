@@ -85,7 +85,7 @@ suite("Query field user", () => {
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
-								role: "base",
+								role: "regular",
 							},
 						},
 					},
