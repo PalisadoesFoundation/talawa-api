@@ -68,7 +68,7 @@
     "cross-env": "^7.0.3",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.1",
-    "express": "^4.19.2",
+    "express": "^4.21.2",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^7.4.1",
     "graphql": "^16.9.0",
