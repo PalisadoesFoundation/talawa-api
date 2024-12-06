@@ -140,7 +140,7 @@
     "eslint": "^9.10.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-tsdoc": "^0.3.0",
+    "eslint-plugin-tsdoc": "^0.4.0",
     "get-graphql-schema": "^2.1.2",
     "globals": "^15.12.0",
     "graphql-markdown": "^7.3.0",
