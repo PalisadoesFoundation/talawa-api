@@ -28,11 +28,11 @@ import { eventAttachmentsTable } from "./eventAttachments";
 import { eventsTable } from "./events";
 import { familiesTable } from "./families";
 import { familyMembershipsTable } from "./familyMemberships";
-import { fundraisingCampaignsTable } from "./fundraisingCampaigns";
+import { fundCampaignPledgesTable } from "./fundCampaignPledges";
+import { fundCampaignsTable } from "./fundCampaigns";
 import { fundsTable } from "./funds";
 import { organizationMembershipsTable } from "./organizationMemberships";
 import { organizationsTable } from "./organizations";
-import { pledgesTable } from "./pledges";
 import { postAttachmentsTable } from "./postAttachments";
 import { postVotesTable } from "./postVotes";
 import { postsTable } from "./posts";
@@ -332,16 +332,16 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 		relationName: "family_memberships.updater_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `fundraising_campaigns` table.
+	 * One to many relationship from `users` table to `fund_campaigns` table.
 	 */
-	fundraisingCampaignsWhereCreator: many(fundraisingCampaignsTable, {
-		relationName: "fundraising_campaigns.creator_id:users.id",
+	fundCampaignsWhereCreator: many(fundCampaignsTable, {
+		relationName: "fund_campaigns.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `fundraising_campaigns` table.
+	 * One to many relationship from `users` table to `fund_campaigns` table.
 	 */
-	fundraisingCampaignsWhereUpdater: many(fundraisingCampaignsTable, {
-		relationName: "fundraising_campaigns.updater_id:users.id",
+	fundCampaignsWhereUpdater: many(fundCampaignsTable, {
+		relationName: "fund_campaigns.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `funds` table.
@@ -386,22 +386,22 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 		relationName: "organization_memberships.updater_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `pledges` table.
+	 * One to many relationship from `users` table to `fund_campaign_pledges` table.
 	 */
-	pledgesWhereCreator: many(pledgesTable, {
-		relationName: "pledges.creator_id:users.id",
+	fundCampaignPledgesWhereCreator: many(fundCampaignPledgesTable, {
+		relationName: "fund_campaign_pledges.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `pledges` table.
+	 * One to many relationship from `users` table to `fund_campaign_pledges` table.
 	 */
-	pledgesWherePledger: many(pledgesTable, {
-		relationName: "pledges.pledger_id:users.id",
+	fundCampaignPledgesWherePledger: many(fundCampaignPledgesTable, {
+		relationName: "fund_campaign_pledges.pledger_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `pledges` table.
+	 * One to many relationship from `users` table to `fund_campaign_pledges` table.
 	 */
-	pledgesWhereUpdater: many(pledgesTable, {
-		relationName: "pledges.updater_id:users.id",
+	fundCampaignPledgesWhereUpdater: many(fundCampaignPledgesTable, {
+		relationName: "fund_campaign_pledges.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `posts` table.

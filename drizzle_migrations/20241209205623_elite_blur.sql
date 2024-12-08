@@ -6,6 +6,7 @@ CREATE TYPE "public"."event_attachment_type" AS ENUM('image', 'video');--> state
 CREATE TYPE "public"."event_attendee_registration_invite_status" AS ENUM('accepted', 'declined', 'no_response');--> statement-breakpoint
 CREATE TYPE "public"."family_membership_role" AS ENUM('adult', 'child', 'head_of_household', 'spouse');--> statement-breakpoint
 CREATE TYPE "public"."iso_3166_alpha_2_country_code" AS ENUM('ad', 'ae', 'af', 'ag', 'ai', 'al', 'am', 'ao', 'aq', 'ar', 'as', 'at', 'au', 'aw', 'ax', 'az', 'ba', 'bb', 'bd', 'be', 'bf', 'bg', 'bh', 'bi', 'bj', 'bl', 'bm', 'bn', 'bo', 'bq', 'br', 'bs', 'bt', 'bv', 'bw', 'by', 'bz', 'ca', 'cc', 'cd', 'cf', 'cg', 'ch', 'ci', 'ck', 'cl', 'cm', 'cn', 'co', 'cr', 'cu', 'cv', 'cw', 'cx', 'cy', 'cz', 'de', 'dj', 'dk', 'dm', 'do', 'dz', 'ec', 'ee', 'eg', 'eh', 'er', 'es', 'et', 'fi', 'fj', 'fk', 'fm', 'fo', 'fr', 'ga', 'gb', 'gd', 'ge', 'gf', 'gg', 'gh', 'gi', 'gl', 'gm', 'gn', 'gp', 'gq', 'gr', 'gs', 'gt', 'gu', 'gw', 'gy', 'hk', 'hm', 'hn', 'hr', 'ht', 'hu', 'id', 'ie', 'il', 'im', 'in', 'io', 'iq', 'ir', 'is', 'it', 'je', 'jm', 'jo', 'jp', 'ke', 'kg', 'kh', 'ki', 'km', 'kn', 'kp', 'kr', 'kw', 'ky', 'kz', 'la', 'lb', 'lc', 'li', 'lk', 'lr', 'ls', 'lt', 'lu', 'lv', 'ly', 'ma', 'mc', 'md', 'me', 'mf', 'mg', 'mh', 'mk', 'ml', 'mm', 'mn', 'mo', 'mp', 'mq', 'mr', 'ms', 'mt', 'mu', 'mv', 'mw', 'mx', 'my', 'mz', 'na', 'nc', 'ne', 'nf', 'ng', 'ni', 'nl', 'no', 'np', 'nr', 'nu', 'nz', 'om', 'pa', 'pe', 'pf', 'pg', 'ph', 'pk', 'pl', 'pm', 'pn', 'pr', 'ps', 'pt', 'pw', 'py', 'qa', 're', 'ro', 'rs', 'ru', 'rw', 'sa', 'sb', 'sc', 'sd', 'se', 'sg', 'sh', 'si', 'sj', 'sk', 'sl', 'sm', 'sn', 'so', 'sr', 'ss', 'st', 'sv', 'sx', 'sy', 'sz', 'tc', 'td', 'tf', 'tg', 'th', 'tj', 'tk', 'tl', 'tm', 'tn', 'to', 'tr', 'tt', 'tv', 'tw', 'tz', 'ua', 'ug', 'um', 'us', 'uy', 'uz', 'va', 'vc', 've', 'vg', 'vi', 'vn', 'vu', 'wf', 'ws', 'ye', 'yt', 'za', 'zm', 'zw');--> statement-breakpoint
+CREATE TYPE "public"."iso_4217_currency_code" AS ENUM('AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BOV', 'BRL', 'BSD', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHE', 'CHF', 'CHW', 'CLF', 'CLP', 'CNY', 'COP', 'COU', 'CRC', 'CUP', 'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP', 'GBP', 'GEL', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL', 'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'IQD', 'IRR', 'ISK', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MXN', 'MXV', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SLE', 'SOS', 'SRD', 'SSP', 'STN', 'SVC', 'SYP', 'SZL', 'THB', 'TJS', 'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'USN', 'UYI', 'UYU', 'UYW', 'UZS', 'VED', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XAG', 'XAU', 'XBA', 'XBB', 'XBC', 'XBD', 'XCD', 'XDR', 'XOF', 'XPD', 'XPF', 'XPT', 'XSU', 'XTS', 'XUA', 'XXX', 'YER', 'ZAR', 'ZMW', 'ZWG');--> statement-breakpoint
 CREATE TYPE "public"."organization_membership_role" AS ENUM('administrator', 'regular');--> statement-breakpoint
 CREATE TYPE "public"."post_attachment_type" AS ENUM('image', 'video');--> statement-breakpoint
 CREATE TYPE "public"."post_vote_type" AS ENUM('down_vote', 'up_vote');--> statement-breakpoint
@@ -182,9 +183,23 @@ CREATE TABLE IF NOT EXISTS "family_memberships" (
 	CONSTRAINT "family_memberships_family_id_member_id_pk" PRIMARY KEY("family_id","member_id")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "fundraising_campaigns" (
+CREATE TABLE IF NOT EXISTS "fund_campaign_pledges" (
+	"amount" integer NOT NULL,
+	"campaign_id" uuid NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	"creator_id" uuid NOT NULL,
+	"creator_id" uuid,
+	"currency_code" "iso_4217_currency_code" NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"note" text,
+	"pledger_id" uuid NOT NULL,
+	"updated_at" timestamp (3) with time zone,
+	"updater_id" uuid
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "fund_campaigns" (
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid,
+	"currency_code" "iso_4217_currency_code" NOT NULL,
 	"end_at" timestamp (3) with time zone NOT NULL,
 	"fund_id" uuid NOT NULL,
 	"goal_amount" integer NOT NULL,
@@ -192,22 +207,18 @@ CREATE TABLE IF NOT EXISTS "fundraising_campaigns" (
 	"name" text NOT NULL,
 	"start_at" timestamp (3) with time zone NOT NULL,
 	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid,
-	CONSTRAINT "fundraising_campaigns_fund_id_name_unique" UNIQUE("fund_id","name")
+	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "funds" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	"creator_id" uuid NOT NULL,
+	"creator_id" uuid,
 	"id" uuid PRIMARY KEY NOT NULL,
-	"is_archived" boolean NOT NULL,
-	"is_default" boolean NOT NULL,
-	"is_tax_deductibe" boolean NOT NULL,
+	"is_tax_deductible" boolean NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid,
-	CONSTRAINT "funds_name_organization_id_unique" UNIQUE("name","organization_id")
+	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "organization_memberships" (
@@ -236,21 +247,6 @@ CREATE TABLE IF NOT EXISTS "organizations" (
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
 	CONSTRAINT "organizations_name_unique" UNIQUE("name")
-);
---> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "pledges" (
-	"amount" integer NOT NULL,
-	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	"creator_id" uuid NOT NULL,
-	"end_at" timestamp (3) with time zone NOT NULL,
-	"fundraising_campaign_id" uuid NOT NULL,
-	"id" uuid PRIMARY KEY NOT NULL,
-	"is_include_family" boolean NOT NULL,
-	"notes" text,
-	"pledger_id" uuid,
-	"start_at" timestamp (3) with time zone NOT NULL,
-	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "post_attachments" (
@@ -690,37 +686,61 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "fundraising_campaigns" ADD CONSTRAINT "fundraising_campaigns_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "fund_campaign_pledges" ADD CONSTRAINT "fund_campaign_pledges_campaign_id_fund_campaigns_id_fk" FOREIGN KEY ("campaign_id") REFERENCES "public"."fund_campaigns"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "fundraising_campaigns" ADD CONSTRAINT "fundraising_campaigns_fund_id_funds_id_fk" FOREIGN KEY ("fund_id") REFERENCES "public"."funds"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "fund_campaign_pledges" ADD CONSTRAINT "fund_campaign_pledges_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "fundraising_campaigns" ADD CONSTRAINT "fundraising_campaigns_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "fund_campaign_pledges" ADD CONSTRAINT "fund_campaign_pledges_pledger_id_users_id_fk" FOREIGN KEY ("pledger_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "funds" ADD CONSTRAINT "funds_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "fund_campaign_pledges" ADD CONSTRAINT "fund_campaign_pledges_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "funds" ADD CONSTRAINT "funds_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "fund_campaigns" ADD CONSTRAINT "fund_campaigns_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "funds" ADD CONSTRAINT "funds_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "fund_campaigns" ADD CONSTRAINT "fund_campaigns_fund_id_funds_id_fk" FOREIGN KEY ("fund_id") REFERENCES "public"."funds"("id") ON DELETE cascade ON UPDATE cascade;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "fund_campaigns" ADD CONSTRAINT "fund_campaigns_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "funds" ADD CONSTRAINT "funds_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "funds" ADD CONSTRAINT "funds_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "funds" ADD CONSTRAINT "funds_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -757,30 +777,6 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "organizations" ADD CONSTRAINT "organizations_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "pledges" ADD CONSTRAINT "pledges_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "pledges" ADD CONSTRAINT "pledges_fundraising_campaign_id_fundraising_campaigns_id_fk" FOREIGN KEY ("fundraising_campaign_id") REFERENCES "public"."fundraising_campaigns"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "pledges" ADD CONSTRAINT "pledges_pledger_id_users_id_fk" FOREIGN KEY ("pledger_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "pledges" ADD CONSTRAINT "pledges_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -1089,16 +1085,22 @@ CREATE INDEX IF NOT EXISTS "family_memberships_created_at_index" ON "family_memb
 CREATE INDEX IF NOT EXISTS "family_memberships_creator_id_index" ON "family_memberships" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "family_memberships_family_id_index" ON "family_memberships" USING btree ("family_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "family_memberships_member_id_index" ON "family_memberships" USING btree ("member_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "fundraising_campaigns_created_at_index" ON "fundraising_campaigns" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "fundraising_campaigns_creator_id_index" ON "fundraising_campaigns" USING btree ("creator_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "fundraising_campaigns_end_at_index" ON "fundraising_campaigns" USING btree ("end_at");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "fundraising_campaigns_fund_id_index" ON "fundraising_campaigns" USING btree ("fund_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "fundraising_campaigns_name_index" ON "fundraising_campaigns" USING btree ("name");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "fundraising_campaigns_start_at_index" ON "fundraising_campaigns" USING btree ("start_at");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "fund_campaign_pledges_campaign_id_index" ON "fund_campaign_pledges" USING btree ("campaign_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "fund_campaign_pledges_created_at_index" ON "fund_campaign_pledges" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "fund_campaign_pledges_creator_id_index" ON "fund_campaign_pledges" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "fund_campaign_pledges_pledger_id_index" ON "fund_campaign_pledges" USING btree ("pledger_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "fund_campaigns_created_at_index" ON "fund_campaigns" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "fund_campaigns_creator_id_index" ON "fund_campaigns" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "fund_campaigns_end_at_index" ON "fund_campaigns" USING btree ("end_at");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "fund_campaigns_fund_id_index" ON "fund_campaigns" USING btree ("fund_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "fund_campaigns_name_index" ON "fund_campaigns" USING btree ("name");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "fund_campaigns_start_at_index" ON "fund_campaigns" USING btree ("start_at");--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "fund_campaigns_fund_id_name_index" ON "fund_campaigns" USING btree ("fund_id","name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "funds_created_at_index" ON "funds" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "funds_creator_id_index" ON "funds" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "funds_name_index" ON "funds" USING btree ("name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "funds_organization_id_index" ON "funds" USING btree ("organization_id");--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "funds_name_organization_id_index" ON "funds" USING btree ("name","organization_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organization_memberships_created_at_index" ON "organization_memberships" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organization_memberships_creator_id_index" ON "organization_memberships" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organization_memberships_member_id_index" ON "organization_memberships" USING btree ("member_id");--> statement-breakpoint
@@ -1107,12 +1109,6 @@ CREATE INDEX IF NOT EXISTS "organization_memberships_role_index" ON "organizatio
 CREATE INDEX IF NOT EXISTS "organizations_creator_id_index" ON "organizations" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organizations_name_index" ON "organizations" USING btree ("name");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "organizations_updater_id_index" ON "organizations" USING btree ("updater_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "pledges_created_at_index" ON "pledges" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "pledges_creator_id_index" ON "pledges" USING btree ("creator_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "pledges_end_at_index" ON "pledges" USING btree ("end_at");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "pledges_fundraising_campaign_id_index" ON "pledges" USING btree ("fundraising_campaign_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "pledges_pledger_id_index" ON "pledges" USING btree ("pledger_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "pledges_start_at_index" ON "pledges" USING btree ("start_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "post_attachments_created_at_index" ON "post_attachments" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "post_attachments_creator_id_index" ON "post_attachments" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "post_attachments_post_id_index" ON "post_attachments" USING btree ("post_id");--> statement-breakpoint

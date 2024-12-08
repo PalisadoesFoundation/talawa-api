@@ -1,3 +1,72 @@
+type Advertisement {
+  """Array of attachments."""
+  attachments: [AdvertisementAttachment!]
+
+  """Date time at the time the advertisement was created."""
+  createdAt: DateTime
+
+  """User who created the advertisement."""
+  creator: User
+
+  """Custom information about the advertisement."""
+  description: String
+
+  """Date time at the time the advertised event ends at."""
+  endAt: DateTime
+
+  """Global identifier of the advertisement."""
+  id: ID!
+
+  """Name of the advertisement."""
+  name: String
+
+  """Organization which the advertisement belongs to."""
+  organization: Organization
+
+  """Date time at the time the advertised event starts at."""
+  startAt: DateTime
+
+  """Type of the attachment."""
+  type: AdvertisementType
+
+  """Date time at the time the advertisement was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the advertisement."""
+  updater: User
+}
+
+""""""
+type AdvertisementAttachment {
+  """Type of the attachment."""
+  type: AdvertisementAttachmentType
+
+  """URI to the attachment."""
+  uri: String
+}
+
+""""""
+input AdvertisementAttachmentInput {
+  """Type of the attachment."""
+  type: AdvertisementAttachmentType!
+
+  """URI to the attachment."""
+  uri: String!
+}
+
+""""""
+enum AdvertisementAttachmentType {
+  image
+  video
+}
+
+""""""
+enum AdvertisementType {
+  banner
+  menu
+  pop_up
+}
+
 """"""
 type AuthenticationPayload {
   """
@@ -7,6 +76,75 @@ type AuthenticationPayload {
 
   """"""
   user: User
+}
+
+type Comment {
+  """Body of the comment."""
+  body: String
+
+  """Date time at the time the comment was created."""
+  createdAt: DateTime
+
+  """User who created the comment."""
+  creator: User
+
+  """
+  GraphQL connection to traverse through the voters that down voted the comment.
+  """
+  downVoters(after: String, before: String, first: Int, last: Int): CommentDownVotersConnection
+
+  """Total number of down votes on the comment."""
+  downVotesCount: Int
+
+  """Global identifier of the comment."""
+  id: ID!
+
+  """Post which the post belongs to."""
+  post: Post
+
+  """
+  GraphQL connection to traverse through the voters that up voted the comment.
+  """
+  upVoters(after: String, before: String, first: Int, last: Int): CommentUpVotersConnection
+
+  """Total number of up votes on the comment."""
+  upVotesCount: Int
+
+  """Date time at the time the comment was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the comment."""
+  updater: User
+}
+
+""""""
+type CommentDownVotersConnection {
+  edges: [CommentDownVotersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type CommentDownVotersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+""""""
+type CommentUpVotersConnection {
+  edges: [CommentUpVotersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type CommentUpVotersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+""""""
+enum CommentVoteType {
+  down_vote
+  up_vote
 }
 
 """
@@ -278,8 +416,26 @@ enum Iso3166Alpha2CountryCode {
 }
 
 type Mutation {
+  """Mutation field to create a comment."""
+  createComment(input: MutationCreateCommentInput!): Comment
+
+  """Mutation field to create a comment vote."""
+  createCommentVote(input: MutationCreateCommentVoteInput!): Comment
+
   """Mutation field to create an organization."""
   createOrganization(input: MutationCreateOrganizationInput!): Organization
+
+  """Mutation field to create an organization membership."""
+  createOrganizationMembership(input: MutationCreateOrganizationMembershipInput!): Organization
+
+  """Mutation field to create a post."""
+  createPost(input: MutationCreatePostInput!): Post
+
+  """Mutation field to create a post vote."""
+  createPostVote(input: MutationCreatePostVoteInput!): Post
+
+  """Mutation field to create a tag."""
+  createTag(input: MutationCreateTagInput!): Tag
 
   """Mutation field to create a user."""
   createUser(
@@ -287,11 +443,29 @@ type Mutation {
     input: MutationCreateUserInput!
   ): AuthenticationPayload
 
+  """Mutation field to delete a comment."""
+  deleteComment(input: MutationDeleteCommentInput!): Comment
+
+  """Mutation field to delete a comment vote."""
+  deleteCommentVote(input: MutationDeleteCommentVoteInput!): Comment
+
   """Mutation field to delete the current user."""
   deleteCurrentUser: User
 
   """Mutation field to delete an organization."""
   deleteOrganization(input: MutationDeleteOrganizationInput!): Organization
+
+  """Mutation field to delete an organization membership."""
+  deleteOrganizationMembership(input: MutationDeleteOrganizationMembershipInput!): Organization
+
+  """Mutation field to delete a post."""
+  deletePost(input: MutationDeletePostInput!): Post
+
+  """Mutation field to delete a post vote."""
+  deletePostVote(input: MutationDeletePostVoteInput!): Post
+
+  """Mutation field to delete a tag."""
+  deleteTag(input: MutationDeleteTagInput!): Tag
 
   """Mutation field to delete a user."""
   deleteUser(
@@ -305,6 +479,12 @@ type Mutation {
     input: MutationSignUpInput!
   ): AuthenticationPayload
 
+  """Mutation field to update a comment."""
+  updateComment(input: MutationUpdateCommentInput!): Comment
+
+  """Mutation field to update a comment vote."""
+  updateCommentVote(input: MutationUpdateCommentVoteInput!): Comment
+
   """Mutation field to update the current user."""
   updateCurrentUser(
     """Input required to update the current user."""
@@ -314,11 +494,65 @@ type Mutation {
   """Mutation field to update a organization."""
   updateOrganization(input: MutationUpdateOrganizationInput!): Organization
 
+  """Mutation field to update an organization membership."""
+  updateOrganizationMembership(input: MutationUpdateOrganizationMembershipInput!): Organization
+
+  """Mutation field to update a post."""
+  updatePost(input: MutationUpdatePostInput!): Post
+
+  """Mutation field to update a post vote."""
+  updatePostVote(input: MutationUpdatePostVoteInput!): Post
+
+  """Mutation field to update a tag."""
+  updateTag(input: MutationUpdateTagInput!): Tag
+
   """Mutation field to update a user."""
   updateUser(
     """Input required to update a user."""
     input: MutationUpdateUserInput!
   ): User
+}
+
+""""""
+input MutationCreateAdvertisementInput {
+  """Attachments of the advertisement."""
+  attachments: [AdvertisementAttachmentInput!]
+
+  """Custom information about the advertisement."""
+  description: String
+
+  """Date time at which the advertised event ends."""
+  endAt: DateTime!
+
+  """Name of the advertisement."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+
+  """Date time at which the advertised event starts."""
+  startAt: DateTime!
+
+  """Type of the advertisement."""
+  type: AdvertisementType!
+}
+
+""""""
+input MutationCreateCommentInput {
+  """Body of the comment."""
+  body: String!
+
+  """Global identifier of the post on which the comment is made."""
+  postId: ID!
+}
+
+""""""
+input MutationCreateCommentVoteInput {
+  """Global identifier of the comment that is voted."""
+  commentId: ID!
+
+  """Type of the vote."""
+  type: CommentVoteType!
 }
 
 """"""
@@ -346,6 +580,59 @@ input MutationCreateOrganizationInput {
 
   """Name of the state the organization resides in."""
   state: String
+}
+
+""""""
+input MutationCreateOrganizationMembershipInput {
+  """Global identifier of the associated user."""
+  memberId: ID!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+
+  """Role assigned to the user within the organization."""
+  role: OrganizationMembershipRole
+}
+
+""""""
+input MutationCreatePostInput {
+  """Attachments of the post."""
+  attachments: [PostAttachmentInput!]
+
+  """Caption about the post."""
+  caption: String!
+
+  """Boolean to tell if the post is pinned"""
+  isPinned: Boolean
+
+  """
+  Global identifier of the associated organization in which the post is posted.
+  """
+  organizationId: ID!
+}
+
+""""""
+input MutationCreatePostVoteInput {
+  """Global identifier of the post that is voted."""
+  postId: ID!
+
+  """Type of the vote."""
+  type: PostVoteType!
+}
+
+""""""
+input MutationCreateTagInput {
+  """Boolean to tell if the tag is to be used as a tag folder."""
+  isFolder: Boolean!
+
+  """Name of the tag."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+
+  """Global identifier of the parent tag."""
+  parentTagId: ID
 }
 
 """"""
@@ -416,8 +703,59 @@ input MutationCreateUserInput {
 }
 
 """"""
+input MutationDeleteAdvertisementInput {
+  """Global identifier of the advertisement."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteCommentInput {
+  """Global identifier of the comment."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteCommentVoteInput {
+  """Global identifier of the comment that is voted."""
+  commentId: ID!
+
+  """Global identifier of the user who voted."""
+  creatorId: ID!
+}
+
+""""""
 input MutationDeleteOrganizationInput {
   """Global identifier of the organization."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteOrganizationMembershipInput {
+  """Global identifier of the associated user."""
+  memberId: ID!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+}
+
+""""""
+input MutationDeletePostInput {
+  """Global identifier of the post."""
+  id: ID!
+}
+
+""""""
+input MutationDeletePostVoteInput {
+  """Global identifier of the user who voted."""
+  creatorId: ID!
+
+  """Global identifier of the post that is voted."""
+  postId: ID!
+}
+
+""""""
+input MutationDeleteTagInput {
+  """Global identifier of the tag."""
   id: ID!
 }
 
@@ -489,6 +827,45 @@ input MutationSignUpInput {
   The phone number to use to communicate with the user while they're at work.
   """
   workPhoneNumber: PhoneNumber
+}
+
+""""""
+input MutationUpdateAdvertisementInput {
+  """Custom information about the advertisement."""
+  description: String
+
+  """Date time at which the advertised event ends."""
+  endAt: DateTime
+
+  """Global identifier of the associated organization."""
+  id: ID!
+
+  """Name of the advertisement."""
+  name: String
+
+  """Date time at which the advertised event starts."""
+  startAt: DateTime
+
+  """Type of the advertisement."""
+  type: AdvertisementType
+}
+
+""""""
+input MutationUpdateCommentInput {
+  """Body of the comment."""
+  body: String
+
+  """Global identifier of the comment."""
+  id: ID!
+}
+
+""""""
+input MutationUpdateCommentVoteInput {
+  """Global identifier of the comment that is voted."""
+  commentId: ID!
+
+  """Type of the vote."""
+  type: CommentVoteType!
 }
 
 """"""
@@ -583,6 +960,51 @@ input MutationUpdateOrganizationInput {
 }
 
 """"""
+input MutationUpdateOrganizationMembershipInput {
+  """Global identifier of the associated user."""
+  memberId: ID!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+
+  """Role assigned to the user within the organization."""
+  role: OrganizationMembershipRole
+}
+
+""""""
+input MutationUpdatePostInput {
+  """Caption about the post."""
+  caption: String
+
+  """Global identifier of the post."""
+  id: ID!
+
+  """Boolean to tell if the post is pinned"""
+  isPinned: Boolean
+}
+
+""""""
+input MutationUpdatePostVoteInput {
+  """Global identifier of the voted post."""
+  postId: ID!
+
+  """Type of the vote."""
+  type: PostVoteType!
+}
+
+""""""
+input MutationUpdateTagInput {
+  """Global identifier of the tag."""
+  id: ID!
+
+  """Name of the tag."""
+  name: String
+
+  """Global identifier of associated parent tag."""
+  parentTagId: ID
+}
+
+""""""
 input MutationUpdateUserInput {
   """Address of the user."""
   address: String
@@ -656,6 +1078,11 @@ type Organization {
   """Address of the organization."""
   address: String
 
+  """
+  GraphQL connection to traverse through the advertisements associated to the organization.
+  """
+  advertisements(after: String, before: String, first: Int, last: Int): OrganizationAdvertisementsConnection
+
   """URI to the avatar of the organization."""
   avatarURI: String
 
@@ -677,14 +1104,40 @@ type Organization {
   """Global identifier of the organization."""
   id: ID!
 
+  """
+  Organization field to read the members of the organization by traversing through them using a graphql connection.
+  """
+  members(after: String, before: String, first: Int, last: Int): OrganizationMembersConnection
+
   """Name of the organization."""
   name: String
+
+  """
+  GraphQL connection to traverse through the pinned posts associated to the organization.
+  """
+  pinnedPosts(after: String, before: String, first: Int, last: Int): OrganizationPinnedPostsConnection
+
+  """Total number of pinned posts in the organization."""
+  pinnedPostsCount: Int
 
   """Postal code of the organization."""
   postalCode: String
 
+  """
+  GraphQL connection to traverse through the posts associated to the organization.
+  """
+  posts(after: String, before: String, first: Int, last: Int): OrganizationPostsConnection
+
+  """Total number of posts in the organization."""
+  postsCount: Int
+
   """Name of the state the organization exists in."""
   state: String
+
+  """
+  GraphQL connection to traverse through the tags associated to the organization.
+  """
+  tags(after: String, before: String, first: Int, last: Int): OrganizationTagsConnection
 
   """Date time at the time the organization was last updated."""
   updatedAt: DateTime
@@ -693,12 +1146,210 @@ type Organization {
   updater: User
 }
 
+""""""
+type OrganizationAdvertisementsConnection {
+  edges: [OrganizationAdvertisementsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationAdvertisementsConnectionEdge {
+  cursor: String!
+  node: Advertisement
+}
+
+""""""
+type OrganizationMembersConnection {
+  edges: [OrganizationMembersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationMembersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+""""""
+enum OrganizationMembershipRole {
+  administrator
+  regular
+}
+
+""""""
+type OrganizationPinnedPostsConnection {
+  edges: [OrganizationPinnedPostsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationPinnedPostsConnectionEdge {
+  cursor: String!
+  node: Post
+}
+
+""""""
+type OrganizationPostsConnection {
+  edges: [OrganizationPostsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationPostsConnectionEdge {
+  cursor: String!
+  node: Post
+}
+
+""""""
+type OrganizationTagsConnection {
+  edges: [OrganizationTagsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationTagsConnectionEdge {
+  cursor: String!
+  node: Tag
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
 """
 A field whose value conforms to the standard E.164 format as specified in: https://en.wikipedia.org/wiki/E.164. Basically this is +17895551234.
 """
 scalar PhoneNumber
 
+type Post {
+  """Array of attachments."""
+  attachments: [PostAttachment!]
+
+  """Caption for the post."""
+  caption: String
+
+  """
+  GraphQL connection to traverse through the comments associated to the post.
+  """
+  comments(after: String, before: String, first: Int, last: Int): PostCommentsConnection
+
+  """Total number of comments on the post."""
+  commentsCount: Int
+
+  """Date time at the time the post was created."""
+  createdAt: DateTime
+
+  """User who created the post."""
+  creator: User
+
+  """
+  GraphQL connection to traverse through the voters that down voted the post.
+  """
+  downVoters(after: String, before: String, first: Int, last: Int): PostDownVotersConnection
+
+  """Total number of down votes on the post."""
+  downVotesCount: Int
+
+  """Global identifier of the post."""
+  id: ID!
+
+  """Organization which the post belongs to."""
+  organization: Organization
+
+  """Date time at the time the post was pinned."""
+  pinnedAt: DateTime
+
+  """
+  GraphQL connection to traverse through the voters that up voted the post.
+  """
+  upVoters(after: String, before: String, first: Int, last: Int): PostUpVotersConnection
+
+  """Total number of up votes on the post."""
+  upVotesCount: Int
+
+  """Date time at the time the post was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the post."""
+  updater: User
+}
+
+""""""
+type PostAttachment {
+  """Type of the attachment."""
+  type: PostAttachmentType
+
+  """URI to the attachment."""
+  uri: String
+}
+
+""""""
+input PostAttachmentInput {
+  """Type of the attachment."""
+  type: PostAttachmentType!
+
+  """URI to the attachment."""
+  uri: String!
+}
+
+""""""
+enum PostAttachmentType {
+  image
+  video
+}
+
+""""""
+type PostCommentsConnection {
+  edges: [PostCommentsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type PostCommentsConnectionEdge {
+  cursor: String!
+  node: Comment
+}
+
+""""""
+type PostDownVotersConnection {
+  edges: [PostDownVotersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type PostDownVotersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+""""""
+type PostUpVotersConnection {
+  edges: [PostUpVotersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type PostUpVotersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+""""""
+enum PostVoteType {
+  down_vote
+  up_vote
+}
+
 type Query {
+  """Query field to read an advertisement."""
+  advertisement(input: QueryAdvertisementInput!): Advertisement
+
+  """Query field to read a comment."""
+  comment(input: QueryCommentInput!): Comment
+
   """Query field to read a user."""
   currentUser: User
 
@@ -707,6 +1358,9 @@ type Query {
     """Input required to read an organization."""
     input: QueryOrganizationInput!
   ): Organization
+
+  """Query field to read a post."""
+  post(input: QueryPostInput!): Post
 
   """
   Query field to renew the authentication token of an authenticated client for signing in to talawa.
@@ -719,6 +1373,9 @@ type Query {
     input: QuerySignInInput!
   ): AuthenticationPayload
 
+  """Query field to read a tag."""
+  tag(input: QueryTagInput!): Tag
+
   """Query field to read a user."""
   user(
     """Input required to read a user."""
@@ -727,8 +1384,26 @@ type Query {
 }
 
 """"""
+input QueryAdvertisementInput {
+  """Global id of the advertisement."""
+  id: String!
+}
+
+""""""
+input QueryCommentInput {
+  """Global id of the comment."""
+  id: String!
+}
+
+""""""
 input QueryOrganizationInput {
   """Global id of the organization."""
+  id: String!
+}
+
+""""""
+input QueryPostInput {
+  """Global id of the post."""
   id: String!
 }
 
@@ -742,9 +1417,61 @@ input QuerySignInInput {
 }
 
 """"""
+input QueryTagInput {
+  """Global id of the tag."""
+  id: String!
+}
+
+""""""
 input QueryUserInput {
   """Global id of the user."""
   id: String!
+}
+
+type Tag {
+  """Date time at the time the tag was created."""
+  createdAt: DateTime
+
+  """User who created the tag."""
+  creator: User
+
+  """Global identifier of the tag."""
+  id: ID!
+
+  """Boolean to tell if the tag is to be used as a tag folder."""
+  isFolder: Boolean
+
+  """Name of the tag."""
+  name: String
+
+  """Organization which the tag belongs to."""
+  organization: Organization
+
+  """Parent tag of the tag."""
+  parentTagFolder: Tag
+
+  """
+  GraphQL connection to traverse through the tags that have the tag as their parent tag
+  """
+  tagsWhereParentTag(after: String, before: String, first: Int, last: Int): TagTagsWhereParentTagConnection
+
+  """Date time at the time the tag was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the tag."""
+  updater: User
+}
+
+""""""
+type TagTagsWhereParentTagConnection {
+  edges: [TagTagsWhereParentTagConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type TagTagsWhereParentTagConnectionEdge {
+  cursor: String!
+  node: Tag
 }
 
 type User {
@@ -803,6 +1530,11 @@ type User {
 
   """The sex assigned to the user at their birth."""
   natalSex: UserNatalSex
+
+  """
+  User field to read the organizations the user is a member of by traversing through them using a graphql connection.
+  """
+  organizationsMemberOf(after: String, before: String, first: Int, last: Int): UserOrganizationsMemberOfConnection
 
   """Postal code of the user."""
   postalCode: String
@@ -867,6 +1599,18 @@ enum UserNatalSex {
   female
   intersex
   male
+}
+
+""""""
+type UserOrganizationsMemberOfConnection {
+  edges: [UserOrganizationsMemberOfConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type UserOrganizationsMemberOfConnectionEdge {
+  cursor: String!
+  node: Organization
 }
 
 """"""
