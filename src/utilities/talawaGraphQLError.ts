@@ -164,6 +164,30 @@ export type UnauthorizedActionOnArgumentsAssociatedResourcesExtensions = {
 };
 
 /**
+ * When the client is not authorized to perform an action with certain arguments.
+ *
+ * @example
+ * throw new TalawaGraphQLError({
+ *  extensions: {
+ *      code: "unauthorized_arguments",
+ *      issues: [
+ *          {
+ *              argumentPath: ["input", "role"],
+ *              message: "You are not authorzied to change your user role.",
+ *          },
+ *      ],
+ *  },
+ *  message: "You are not authorized to perform this action with the provided arguments."
+ * })
+ */
+export type UnauthorizedArgumentsExtensions = {
+	issues: {
+		argumentPath: (string | number)[];
+	}[];
+	code: "unauthorized_arguments";
+};
+
+/**
  * When an error that doesn't fit one of the error types listed above occurs. One example would be a database request failure.
  *
  * @example
@@ -186,6 +210,7 @@ export type TalawaGraphQLErrorExtensions =
 	| InvalidArgumentsExtensions
 	| UnauthorizedActionExtensions
 	| UnauthorizedActionOnArgumentsAssociatedResourcesExtensions
+	| UnauthorizedArgumentsExtensions
 	| UnexpectedExtensions;
 
 /**
@@ -210,7 +235,7 @@ export type TalawaGraphQLErrorExtensions =
  * 					},
  * 				],
  *			},
- * 			message: "Not associated resources found for the provided arguments.",
+ * 			message: "No associated resources found for the provided arguments.",
  *      })
  *	}
  *

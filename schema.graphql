@@ -278,6 +278,9 @@ enum Iso3166Alpha2CountryCode {
 }
 
 type Mutation {
+  """Mutation field to create an organization."""
+  createOrganization(input: MutationCreateOrganizationInput!): Organization
+
   """Mutation field to create a user."""
   createUser(
     """Input required to create a user."""
@@ -286,6 +289,9 @@ type Mutation {
 
   """Mutation field to delete the current user."""
   deleteCurrentUser: User
+
+  """Mutation field to delete an organization."""
+  deleteOrganization(input: MutationDeleteOrganizationInput!): Organization
 
   """Mutation field to delete a user."""
   deleteUser(
@@ -305,11 +311,41 @@ type Mutation {
     input: MutationUpdateCurrentUserInput!
   ): User
 
+  """Mutation field to update a organization."""
+  updateOrganization(input: MutationUpdateOrganizationInput!): Organization
+
   """Mutation field to update a user."""
   updateUser(
     """Input required to update a user."""
     input: MutationUpdateUserInput!
   ): User
+}
+
+""""""
+input MutationCreateOrganizationInput {
+  """Address of the organization."""
+  address: String
+
+  """URI to the avatar of the organization."""
+  avatarURI: String
+
+  """Name of the city where the organization resides in."""
+  city: String
+
+  """Country code of the country the organization is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the organization."""
+  description: String
+
+  """Name of the organization."""
+  name: String!
+
+  """Postal code of the organization."""
+  postalCode: String
+
+  """Name of the state the organization resides in."""
+  state: String
 }
 
 """"""
@@ -377,6 +413,12 @@ input MutationCreateUserInput {
   The phone number to use to communicate with the user while they're at work.
   """
   workPhoneNumber: PhoneNumber
+}
+
+""""""
+input MutationDeleteOrganizationInput {
+  """Global identifier of the organization."""
+  id: ID!
 }
 
 """"""
@@ -511,6 +553,36 @@ input MutationUpdateCurrentUserInput {
 }
 
 """"""
+input MutationUpdateOrganizationInput {
+  """Address of the organization."""
+  address: String
+
+  """URI to the avatar of the organization."""
+  avatarURI: String
+
+  """Name of the city where the organization resides in."""
+  city: String
+
+  """Country code of the country the organization is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the organization."""
+  description: String
+
+  """Global identifier of the organization."""
+  id: ID!
+
+  """Name of the organization."""
+  name: String
+
+  """Postal code of the organization."""
+  postalCode: String
+
+  """Name of the state the organization resides in."""
+  state: String
+}
+
+""""""
 input MutationUpdateUserInput {
   """Address of the user."""
   address: String
@@ -580,6 +652,47 @@ input MutationUpdateUserInput {
   workPhoneNumber: PhoneNumber
 }
 
+type Organization {
+  """Address of the organization."""
+  address: String
+
+  """URI to the avatar of the organization."""
+  avatarURI: String
+
+  """Name of the city where the organization exists in."""
+  city: String
+
+  """Country code of the country the organization is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Date time at the time the organization was created."""
+  createdAt: DateTime
+
+  """User who created the organization."""
+  creator: User
+
+  """Custom information about the organization."""
+  description: String
+
+  """Global identifier of the organization."""
+  id: ID!
+
+  """Name of the organization."""
+  name: String
+
+  """Postal code of the organization."""
+  postalCode: String
+
+  """Name of the state the organization exists in."""
+  state: String
+
+  """Date time at the time the organization was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the organization."""
+  updater: User
+}
+
 """
 A field whose value conforms to the standard E.164 format as specified in: https://en.wikipedia.org/wiki/E.164. Basically this is +17895551234.
 """
@@ -588,6 +701,12 @@ scalar PhoneNumber
 type Query {
   """Query field to read a user."""
   currentUser: User
+
+  """Query field to read an organization."""
+  organization(
+    """Input required to read an organization."""
+    input: QueryOrganizationInput!
+  ): Organization
 
   """
   Query field to renew the authentication token of an authenticated client for signing in to talawa.
@@ -605,6 +724,12 @@ type Query {
     """Input required to read a user."""
     input: QueryUserInput
   ): User
+}
+
+""""""
+input QueryOrganizationInput {
+  """Global id of the organization."""
+  id: String!
 }
 
 """"""
@@ -638,10 +763,10 @@ type User {
   """Country code of the country the user is a citizen of."""
   countryCode: Iso3166Alpha2CountryCode
 
-  """Datetime at the time the user was created."""
+  """Date time at the time the user was created."""
   createdAt: DateTime
 
-  """User field to read the user who created the user."""
+  """User who created the user."""
   creator: User
 
   """Custom information about the user."""
@@ -688,10 +813,10 @@ type User {
   """Name of the state the user resides in."""
   state: String
 
-  """Datetime at the time the user was last updated."""
+  """Date time at the time the user was last updated."""
   updatedAt: DateTime
 
-  """User field to read the user who last updated the user."""
+  """User who last updated the user."""
   updater: User
 
   """
@@ -747,5 +872,5 @@ enum UserNatalSex {
 """"""
 enum UserRole {
   administrator
-  base
+  regular
 }
