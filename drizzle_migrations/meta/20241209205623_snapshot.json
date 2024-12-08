@@ -1,5 +1,5 @@
 {
-  "id": "2740ad03-f2e6-4c20-a0f3-4b7ec7dc5cdf",
+  "id": "3b608cae-259c-436a-8669-8d53c9bd4f90",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2592,8 +2592,197 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.fundraising_campaigns": {
-      "name": "fundraising_campaigns",
+    "public.fund_campaign_pledges": {
+      "name": "fund_campaign_pledges",
+      "schema": "",
+      "columns": {
+        "amount": {
+          "name": "amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "campaign_id": {
+          "name": "campaign_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "currency_code": {
+          "name": "currency_code",
+          "type": "iso_4217_currency_code",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pledger_id": {
+          "name": "pledger_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updater_id": {
+          "name": "updater_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "fund_campaign_pledges_campaign_id_index": {
+          "name": "fund_campaign_pledges_campaign_id_index",
+          "columns": [
+            {
+              "expression": "campaign_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "fund_campaign_pledges_created_at_index": {
+          "name": "fund_campaign_pledges_created_at_index",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "fund_campaign_pledges_creator_id_index": {
+          "name": "fund_campaign_pledges_creator_id_index",
+          "columns": [
+            {
+              "expression": "creator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "fund_campaign_pledges_pledger_id_index": {
+          "name": "fund_campaign_pledges_pledger_id_index",
+          "columns": [
+            {
+              "expression": "pledger_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fund_campaign_pledges_campaign_id_fund_campaigns_id_fk": {
+          "name": "fund_campaign_pledges_campaign_id_fund_campaigns_id_fk",
+          "tableFrom": "fund_campaign_pledges",
+          "tableTo": "fund_campaigns",
+          "columnsFrom": [
+            "campaign_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "fund_campaign_pledges_creator_id_users_id_fk": {
+          "name": "fund_campaign_pledges_creator_id_users_id_fk",
+          "tableFrom": "fund_campaign_pledges",
+          "tableTo": "users",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "fund_campaign_pledges_pledger_id_users_id_fk": {
+          "name": "fund_campaign_pledges_pledger_id_users_id_fk",
+          "tableFrom": "fund_campaign_pledges",
+          "tableTo": "users",
+          "columnsFrom": [
+            "pledger_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "fund_campaign_pledges_updater_id_users_id_fk": {
+          "name": "fund_campaign_pledges_updater_id_users_id_fk",
+          "tableFrom": "fund_campaign_pledges",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updater_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.fund_campaigns": {
+      "name": "fund_campaigns",
       "schema": "",
       "columns": {
         "created_at": {
@@ -2606,6 +2795,13 @@
         "creator_id": {
           "name": "creator_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "currency_code": {
+          "name": "currency_code",
+          "type": "iso_4217_currency_code",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -2659,8 +2855,8 @@
         }
       },
       "indexes": {
-        "fundraising_campaigns_created_at_index": {
-          "name": "fundraising_campaigns_created_at_index",
+        "fund_campaigns_created_at_index": {
+          "name": "fund_campaigns_created_at_index",
           "columns": [
             {
               "expression": "created_at",
@@ -2674,8 +2870,8 @@
           "method": "btree",
           "with": {}
         },
-        "fundraising_campaigns_creator_id_index": {
-          "name": "fundraising_campaigns_creator_id_index",
+        "fund_campaigns_creator_id_index": {
+          "name": "fund_campaigns_creator_id_index",
           "columns": [
             {
               "expression": "creator_id",
@@ -2689,8 +2885,8 @@
           "method": "btree",
           "with": {}
         },
-        "fundraising_campaigns_end_at_index": {
-          "name": "fundraising_campaigns_end_at_index",
+        "fund_campaigns_end_at_index": {
+          "name": "fund_campaigns_end_at_index",
           "columns": [
             {
               "expression": "end_at",
@@ -2704,8 +2900,8 @@
           "method": "btree",
           "with": {}
         },
-        "fundraising_campaigns_fund_id_index": {
-          "name": "fundraising_campaigns_fund_id_index",
+        "fund_campaigns_fund_id_index": {
+          "name": "fund_campaigns_fund_id_index",
           "columns": [
             {
               "expression": "fund_id",
@@ -2719,8 +2915,8 @@
           "method": "btree",
           "with": {}
         },
-        "fundraising_campaigns_name_index": {
-          "name": "fundraising_campaigns_name_index",
+        "fund_campaigns_name_index": {
+          "name": "fund_campaigns_name_index",
           "columns": [
             {
               "expression": "name",
@@ -2734,8 +2930,8 @@
           "method": "btree",
           "with": {}
         },
-        "fundraising_campaigns_start_at_index": {
-          "name": "fundraising_campaigns_start_at_index",
+        "fund_campaigns_start_at_index": {
+          "name": "fund_campaigns_start_at_index",
           "columns": [
             {
               "expression": "start_at",
@@ -2748,12 +2944,33 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "fund_campaigns_fund_id_name_index": {
+          "name": "fund_campaigns_fund_id_name_index",
+          "columns": [
+            {
+              "expression": "fund_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
-        "fundraising_campaigns_creator_id_users_id_fk": {
-          "name": "fundraising_campaigns_creator_id_users_id_fk",
-          "tableFrom": "fundraising_campaigns",
+        "fund_campaigns_creator_id_users_id_fk": {
+          "name": "fund_campaigns_creator_id_users_id_fk",
+          "tableFrom": "fund_campaigns",
           "tableTo": "users",
           "columnsFrom": [
             "creator_id"
@@ -2761,12 +2978,12 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
-        "fundraising_campaigns_fund_id_funds_id_fk": {
-          "name": "fundraising_campaigns_fund_id_funds_id_fk",
-          "tableFrom": "fundraising_campaigns",
+        "fund_campaigns_fund_id_funds_id_fk": {
+          "name": "fund_campaigns_fund_id_funds_id_fk",
+          "tableFrom": "fund_campaigns",
           "tableTo": "funds",
           "columnsFrom": [
             "fund_id"
@@ -2774,12 +2991,12 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
-        "fundraising_campaigns_updater_id_users_id_fk": {
-          "name": "fundraising_campaigns_updater_id_users_id_fk",
-          "tableFrom": "fundraising_campaigns",
+        "fund_campaigns_updater_id_users_id_fk": {
+          "name": "fund_campaigns_updater_id_users_id_fk",
+          "tableFrom": "fund_campaigns",
           "tableTo": "users",
           "columnsFrom": [
             "updater_id"
@@ -2787,21 +3004,12 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "fundraising_campaigns_fund_id_name_unique": {
-          "name": "fundraising_campaigns_fund_id_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "fund_id",
-            "name"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -2821,7 +3029,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "id": {
           "name": "id",
@@ -2829,20 +3037,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "is_archived": {
-          "name": "is_archived",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_default": {
-          "name": "is_default",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_tax_deductibe": {
-          "name": "is_tax_deductibe",
+        "is_tax_deductible": {
+          "name": "is_tax_deductible",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true
@@ -2932,6 +3128,27 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "funds_name_organization_id_index": {
+          "name": "funds_name_organization_id_index",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -2945,8 +3162,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "funds_organization_id_organizations_id_fk": {
           "name": "funds_organization_id_organizations_id_fk",
@@ -2958,8 +3175,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "funds_updater_id_users_id_fk": {
           "name": "funds_updater_id_users_id_fk",
@@ -2971,21 +3188,12 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "funds_name_organization_id_unique": {
-          "name": "funds_name_organization_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name",
-            "organization_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -3354,236 +3562,6 @@
           ]
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.pledges": {
-      "name": "pledges",
-      "schema": "",
-      "columns": {
-        "amount": {
-          "name": "amount",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "creator_id": {
-          "name": "creator_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "end_at": {
-          "name": "end_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "fundraising_campaign_id": {
-          "name": "fundraising_campaign_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "is_include_family": {
-          "name": "is_include_family",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "pledger_id": {
-          "name": "pledger_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "start_at": {
-          "name": "start_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updater_id": {
-          "name": "updater_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "pledges_created_at_index": {
-          "name": "pledges_created_at_index",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "pledges_creator_id_index": {
-          "name": "pledges_creator_id_index",
-          "columns": [
-            {
-              "expression": "creator_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "pledges_end_at_index": {
-          "name": "pledges_end_at_index",
-          "columns": [
-            {
-              "expression": "end_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "pledges_fundraising_campaign_id_index": {
-          "name": "pledges_fundraising_campaign_id_index",
-          "columns": [
-            {
-              "expression": "fundraising_campaign_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "pledges_pledger_id_index": {
-          "name": "pledges_pledger_id_index",
-          "columns": [
-            {
-              "expression": "pledger_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "pledges_start_at_index": {
-          "name": "pledges_start_at_index",
-          "columns": [
-            {
-              "expression": "start_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "pledges_creator_id_users_id_fk": {
-          "name": "pledges_creator_id_users_id_fk",
-          "tableFrom": "pledges",
-          "tableTo": "users",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "pledges_fundraising_campaign_id_fundraising_campaigns_id_fk": {
-          "name": "pledges_fundraising_campaign_id_fundraising_campaigns_id_fk",
-          "tableFrom": "pledges",
-          "tableTo": "fundraising_campaigns",
-          "columnsFrom": [
-            "fundraising_campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "pledges_pledger_id_users_id_fk": {
-          "name": "pledges_pledger_id_users_id_fk",
-          "tableFrom": "pledges",
-          "tableTo": "users",
-          "columnsFrom": [
-            "pledger_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "pledges_updater_id_users_id_fk": {
-          "name": "pledges_updater_id_users_id_fk",
-          "tableFrom": "pledges",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updater_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -6094,6 +6072,190 @@
         "za",
         "zm",
         "zw"
+      ]
+    },
+    "public.iso_4217_currency_code": {
+      "name": "iso_4217_currency_code",
+      "schema": "public",
+      "values": [
+        "AED",
+        "AFN",
+        "ALL",
+        "AMD",
+        "ANG",
+        "AOA",
+        "ARS",
+        "AUD",
+        "AWG",
+        "AZN",
+        "BAM",
+        "BBD",
+        "BDT",
+        "BGN",
+        "BHD",
+        "BIF",
+        "BMD",
+        "BND",
+        "BOB",
+        "BOV",
+        "BRL",
+        "BSD",
+        "BTN",
+        "BWP",
+        "BYN",
+        "BZD",
+        "CAD",
+        "CDF",
+        "CHE",
+        "CHF",
+        "CHW",
+        "CLF",
+        "CLP",
+        "CNY",
+        "COP",
+        "COU",
+        "CRC",
+        "CUP",
+        "CVE",
+        "CZK",
+        "DJF",
+        "DKK",
+        "DOP",
+        "DZD",
+        "EGP",
+        "ERN",
+        "ETB",
+        "EUR",
+        "FJD",
+        "FKP",
+        "GBP",
+        "GEL",
+        "GHS",
+        "GIP",
+        "GMD",
+        "GNF",
+        "GTQ",
+        "GYD",
+        "HKD",
+        "HNL",
+        "HTG",
+        "HUF",
+        "IDR",
+        "ILS",
+        "INR",
+        "IQD",
+        "IRR",
+        "ISK",
+        "JMD",
+        "JOD",
+        "JPY",
+        "KES",
+        "KGS",
+        "KHR",
+        "KMF",
+        "KPW",
+        "KRW",
+        "KWD",
+        "KYD",
+        "KZT",
+        "LAK",
+        "LBP",
+        "LKR",
+        "LRD",
+        "LSL",
+        "LYD",
+        "MAD",
+        "MDL",
+        "MGA",
+        "MKD",
+        "MMK",
+        "MNT",
+        "MOP",
+        "MRU",
+        "MUR",
+        "MVR",
+        "MWK",
+        "MXN",
+        "MXV",
+        "MYR",
+        "MZN",
+        "NAD",
+        "NGN",
+        "NIO",
+        "NOK",
+        "NPR",
+        "NZD",
+        "OMR",
+        "PAB",
+        "PEN",
+        "PGK",
+        "PHP",
+        "PKR",
+        "PLN",
+        "PYG",
+        "QAR",
+        "RON",
+        "RSD",
+        "RUB",
+        "RWF",
+        "SAR",
+        "SBD",
+        "SCR",
+        "SDG",
+        "SEK",
+        "SGD",
+        "SHP",
+        "SLE",
+        "SOS",
+        "SRD",
+        "SSP",
+        "STN",
+        "SVC",
+        "SYP",
+        "SZL",
+        "THB",
+        "TJS",
+        "TMT",
+        "TND",
+        "TOP",
+        "TRY",
+        "TTD",
+        "TWD",
+        "TZS",
+        "UAH",
+        "UGX",
+        "USD",
+        "USN",
+        "UYI",
+        "UYU",
+        "UYW",
+        "UZS",
+        "VED",
+        "VES",
+        "VND",
+        "VUV",
+        "WST",
+        "XAF",
+        "XAG",
+        "XAU",
+        "XBA",
+        "XBB",
+        "XBC",
+        "XBD",
+        "XCD",
+        "XDR",
+        "XOF",
+        "XPD",
+        "XPF",
+        "XPT",
+        "XSU",
+        "XTS",
+        "XUA",
+        "XXX",
+        "YER",
+        "ZAR",
+        "ZMW",
+        "ZWG"
       ]
     },
     "public.organization_membership_role": {
