@@ -40,6 +40,8 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
     depends_on:
       - mongodb
       - redis-stack-server
@@ -48,6 +50,8 @@ services:
       - MONGO_DB_URL=mongodb://mongodb:27017
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
+    networks:
+      - talawa-network
 
   caddy:
     image: caddy/caddy:2.2.1-alpine
