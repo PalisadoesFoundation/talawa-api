@@ -2,6 +2,7 @@ import "./Query";
 import "./advertisement";
 import "./comment";
 import "./currentUser";
+import "./fund";
 import "./organization";
 import "./post";
 import "./renewAuthenticationToken";

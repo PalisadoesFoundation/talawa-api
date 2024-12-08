@@ -2,6 +2,7 @@ import "./Advertisement/index";
 import "./AdvertisementAttachment/index";
 import "./AuthenticationPayload";
 import "./Comment/index";
+import "./Fund/index";
 import "./Mutation/index";
 import "./Organization/index";
 import "./Post/index";
