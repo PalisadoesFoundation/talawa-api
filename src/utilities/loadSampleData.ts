@@ -11,6 +11,7 @@ import {
   Organization,
   Post,
   User,
+  Venue,
 } from "../models";
 import { RecurrenceRule } from "../models/RecurrenceRule";
 
@@ -128,6 +129,9 @@ async function insertCollections(collections: string[]): Promise<void> {
         case "events":
           await Event.insertMany(docs);
           break;
+        case "venue":
+          await Venue.insertMany(docs);
+          break;
         case "recurrenceRules":
           await RecurrenceRule.insertMany(docs);
           break;
@@ -172,6 +176,7 @@ async function checkCountAfterImport(): Promise<void> {
       { name: "events", model: Event },
       { name: "recurrenceRules", model: RecurrenceRule },
       { name: "posts", model: Post },
+      { name: "venue", model: Venue },
       { name: "appUserProfiles", model: AppUserProfile },
     ];
 
@@ -201,6 +206,7 @@ const collections = [
   "organizations",
   "posts",
   "events",
+  "venue",
   "recurrenceRules",
   "appUserProfiles",
   "actionItemCategories",
