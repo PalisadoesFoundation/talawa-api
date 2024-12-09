@@ -1,0 +1,16 @@
+[Unit]
+Description=Talawa API Service
+After=network.target
+
+[Service]
+User=talawa
+Group=talawa
+WorkingDirectory=/opt/talawa-api
+ExecStart=/usr/bin/python3 /opt/talawa-api/main.py
+Restart=always
+RestartSec=5
+Environment="PATH=/usr/bin:/usr/local/bin"
+Environment="APP_ENV=production"
+
+ [Install]
+WantedBy=multi-user.target
