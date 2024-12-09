@@ -1,7 +1,6 @@
-import "./Fund";
-import "./campaigns";
+import "./FundCampaign";
 import "./createdAt";
 import "./creator";
-import "./organization";
+import "./fund";
 import "./updatedAt";
 import "./updater";

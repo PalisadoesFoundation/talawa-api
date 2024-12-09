@@ -3,6 +3,7 @@ import "./AdvertisementAttachment/index";
 import "./AuthenticationPayload";
 import "./Comment/index";
 import "./Fund/index";
+import "./FundCampaign/index";
 import "./Mutation/index";
 import "./Organization/index";
 import "./Post/index";
