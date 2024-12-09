@@ -489,6 +489,11 @@ async function runDockerComposeWithLogs(): Promise<void> {
   }
 
   return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      dockerCompose.kill();
+      reject(new Error('Docker compose operation timed out after 5 minutes'));
+    }, 300000);
+
     const dockerCompose = spawn(
       process.platform === "win32" ? "docker-compose.exe" : "docker-compose",
       ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"],
@@ -496,11 +501,13 @@ async function runDockerComposeWithLogs(): Promise<void> {
     );
 
     dockerCompose.on("error", (error) => {
+      clearTimeout(timeout);
       console.error("Error running docker-compose:", error);
       reject(error);
     });
 
     dockerCompose.on("close", (code) => {
+      clearTimeout(timeout);
       if (code === 0) {
         console.log("Docker Compose completed successfully.");
         resolve();
@@ -1255,7 +1262,12 @@ async function main(): Promise<void> {
         // Wait for mongoDB to be ready
         console.log("Waiting for mongoDB to be ready...");
         let isConnected = false;
+        const maxRetries = 30; // 30 seconds timeout
+        let retryCount = 0;
         while (!isConnected) {
+          if (retryCount >= maxRetries) {
+            throw new Error('Timed out waiting for MongoDB to be ready after 30 seconds');
+          }
           try {
             const client = new MongoClient(process.env.MONGO_DB_URL as string);
             await client.connect();
@@ -1264,11 +1276,12 @@ async function main(): Promise<void> {
             isConnected = true;
             console.log("MongoDB is ready!");
           } catch (err) {
+            const error = err instanceof Error ? err.message : String(err);
             console.log(
-              "Waiting for MongoDB to be ready... Retrying in 1 second, Details:" +
-                err,
+              `Waiting for MongoDB to be ready... Retry ${retryCount + 1}/${maxRetries}. Details: ${error}`,
             );
             await new Promise((resolve) => setTimeout(resolve, 1000));
+            retryCount++;
           }
         }
 
