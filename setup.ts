@@ -483,8 +483,9 @@ async function runDockerComposeWithLogs(): Promise<void> {
       );
     });
   } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
-      `Docker daemon is not running. Please start Docker and try again. Details: ${error}`,
+      `Docker daemon is not running. Please start Docker and try again. Details: ${errorMessage}`,
     );
   }
 
