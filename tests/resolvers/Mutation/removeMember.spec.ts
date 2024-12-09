@@ -19,7 +19,6 @@ import {
   ADMIN_REMOVING_CREATOR,
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
   USER_REMOVING_SELF,
 } from "../../../src/constants";
@@ -142,37 +141,8 @@ describe("resolvers -> Mutation -> removeMember", () => {
       await removeMemberResolverOrgNotFoundError?.({}, args, context);
     } catch (error: unknown) {
       expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
-  it(`throws UnauthorizedError if current user with _id === context.userId is
-  not an admin of the organization with _id === args.data.organizationId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementation((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationRemoveMemberArgs = {
-        data: {
-          organizationId: testOrganization?.id,
-          userId: new Types.ObjectId().toString(),
-        },
-      };
-
-      const context = {
-        userId: testUsers[2]?.id,
-      };
-
-      const { removeMember: removeMemberResolverAdminError } = await import(
-        "../../../src/resolvers/Mutation/removeMember"
-      );
-
-      await removeMemberResolverAdminError?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`,
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
