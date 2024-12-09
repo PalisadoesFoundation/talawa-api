@@ -1,26 +1,26 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import {
-	QueryFundInput,
-	queryFundInputSchema,
-} from "~/src/graphql/inputs/QueryFundInput";
-import { Fund } from "~/src/graphql/types/Fund/Fund";
+	QueryFundCampaignInput,
+	queryFundCampaignInputSchema,
+} from "~/src/graphql/inputs/QueryFundCampaignInput";
+import { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
-const queryFundArgumentsSchema = z.object({
-	input: queryFundInputSchema,
+const queryFundCampaignArgumentsSchema = z.object({
+	input: queryFundCampaignInputSchema,
 });
 
-builder.queryField("fund", (t) =>
+builder.queryField("fundCampaign", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
 				description: "",
 				required: true,
-				type: QueryFundInput,
+				type: QueryFundCampaignInput,
 			}),
 		},
-		description: "Query field to read a fund.",
+		description: "Query field to read a fund campaign.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -35,7 +35,7 @@ builder.queryField("fund", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = queryFundArgumentsSchema.safeParse(args);
+			} = queryFundCampaignArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -68,24 +68,29 @@ builder.queryField("fund", (t) =>
 				});
 			}
 
-			const existingFund = await ctx.drizzleClient.query.fundsTable.findFirst({
-				with: {
-					organization: {
-						columns: {},
-						with: {
-							organizationMembershipsWhereOrganization: {
-								columns: {},
-								where: (fields, operators) =>
-									operators.eq(fields.memberId, currentUserId),
+			const existingFundCampaign =
+				await ctx.drizzleClient.query.fundCampaignsTable.findFirst({
+					with: {
+						fund: {
+							with: {
+								organization: {
+									columns: {},
+									with: {
+										organizationMembershipsWhereOrganization: {
+											columns: {},
+											where: (fields, operators) =>
+												operators.eq(fields.memberId, currentUserId),
+										},
+									},
+								},
 							},
 						},
 					},
-				},
-				where: (fields, operators) =>
-					operators.eq(fields.id, parsedArgs.input.id),
-			});
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.id),
+				});
 
-			if (existingFund === undefined) {
+			if (existingFundCampaign === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -100,7 +105,8 @@ builder.queryField("fund", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingFund.organization.organizationMembershipsWhereOrganization[0];
+				existingFundCampaign.fund.organization
+					.organizationMembershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -120,8 +126,8 @@ builder.queryField("fund", (t) =>
 				});
 			}
 
-			return existingFund;
+			return existingFundCampaign;
 		},
-		type: Fund,
+		type: FundCampaign,
 	}),
 );

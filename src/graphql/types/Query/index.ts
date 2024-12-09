@@ -3,6 +3,7 @@ import "./advertisement";
 import "./comment";
 import "./currentUser";
 import "./fund";
+import "./fundCampaign";
 import "./organization";
 import "./post";
 import "./renewAuthenticationToken";
