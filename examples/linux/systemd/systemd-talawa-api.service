@@ -22,28 +22,44 @@
 Description=Talawa API Service
 After=network.target
 
+Documentation=https://github.com/talawa-api/
+After=postgresql.service redis.service
+Requires=postgresql.service
+Wants=redis.service
+
 [Service]
 User=talawa
 Group=talawa
+
 Environment=CODEROOT=/home/talawa/talawa-api
 Environment=TALAWA_API_CONFIGDIR=/etc/talawa
 Environment=VIRTUAL_ENV=$CODEROOT/venv/bin
 Environment=PATH=$VIRTUAL_ENV:$PATH
 Environment=START=--start "STOP=--stop --force" "RESTART=--restart --force"
+EnvironmentFile=/etc/examples/linux/systemd/talawa-api.env
 
-# Command to start Talawa API
-ExecStart=/bin/bash -c '${VIRTUAL_ENV}/python3 ${CODEROOT}/main.py $START'
-
-# Command to stop Talawa API
-ExecStop=/bin/bash -c '${VIRTUAL_ENV}/python3 ${CODEROOT}/main.py $STOP'
-
-# Command to restart Talawa API
-ExecReload=/bin/bash -c '${VIRTUAL_ENV}/python3 ${CODEROOT}/main.py $RESTART'
+ExecStart=${VIRTUAL_ENV}/python3 ${CODEROOT}/main.py ${START}
+ExecStop=${VIRTUAL_ENV}/python3 ${CODEROOT}/main.py ${STOP}
+ExecReload=${VIRTUAL_ENV}/python3 ${CODEROOT}/main.py ${RESTART}
 
 RemainAfterExit=yes
 GuessMainPID=yes
 Type=forking
 RuntimeDirectory=talawa
+
+# Restart policy
+Restart=always
+RestartSec=3
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=read-only
+
+# Resource limits
+LimitNOFILE=65535
+LimitNPROC=4096
 
 [Install]
 WantedBy=multi-user.target
