@@ -1,0 +1,49 @@
+
+# READ ALL STEPS BEFORE PROCEEDING
+#
+# 0) Change the daemon_directory setting in your configuration file to 
+#    /var/run/talawa-api
+# 1) Copy this file to one of these directories depending on your Linux version
+#        i.  RedHat variants: /usr/lib/systemd/system/
+#        ii. Debian/Ubuntu variants: /lib/systemd/system/
+# 2) Edit the CODEROOT path to be the full path of the Talawa API's root directory
+# 3) Edit the TALAWA_API_CONFIGDIR path to be the full path of the Talawa API's configuration directory
+#    This defaults to /etc/ directory of the Talawa API codebase
+# 4) Edit the User and Group to match the POSIX user you want the daemon
+#    to run as.
+# 5) Run the command "sudo systemctl daemon-reload". This needs to be run only once
+# 6) Run the command "sudo systemctl start talawa-api.service" to start
+# 7) Run the command "sudo systemctl stop talawa-api.service" to stop
+# 8) Run the command "sudo systemctl restart talawa-api.service" to restart
+# 9) Run the command "sudo systemctl enable talawa-api.service" to make
+#    talawa-api start automatically on boot
+
+[Unit]
+Description=Talawa API Service
+After=network.target
+
+[Service]
+User=talawa
+Group=talawa
+Environment=CODEROOT=/home/talawa/talawa-api
+Environment=TALAWA_API_CONFIGDIR=/etc/talawa
+Environment=VIRTUAL_ENV=$CODEROOT/venv/bin
+Environment=PATH=$VIRTUAL_ENV:$PATH
+Environment=START=--start "STOP=--stop --force" "RESTART=--restart --force"
+
+# Command to start Talawa API
+ExecStart=/bin/bash -c '${VIRTUAL_ENV}/python3 ${CODEROOT}/main.py $START'
+
+# Command to stop Talawa API
+ExecStop=/bin/bash -c '${VIRTUAL_ENV}/python3 ${CODEROOT}/main.py $STOP'
+
+# Command to restart Talawa API
+ExecReload=/bin/bash -c '${VIRTUAL_ENV}/python3 ${CODEROOT}/main.py $RESTART'
+
+RemainAfterExit=yes
+GuessMainPID=yes
+Type=forking
+RuntimeDirectory=talawa
+
+[Install]
+WantedBy=multi-user.target
