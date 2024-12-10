@@ -11,6 +11,12 @@
 #    This defaults to /etc/ directory of the Talawa API codebase
 # 4) Edit the User and Group to match the POSIX user you want the daemon
 #    to run as.
+# 4a) Set appropriate permissions:
+#     sudo chown -R talawa:talawa /etc/talawa
+#     sudo chmod 750 /etc/talawa
+# 4b) If using SELinux, set the correct context:
+#     sudo semanage fcontext -a -t bin_t "/home/talawa/talawa-api/main.py"
+#     sudo restorecon -v /home/talawa/talawa-api/main.py
 # 5) Run the command "sudo systemctl daemon-reload". This needs to be run only once
 # 6) Run the command "sudo systemctl start talawa-api.service" to start
 # 7) Run the command "sudo systemctl stop talawa-api.service" to stop
@@ -44,7 +50,7 @@ ExecReload=${VIRTUAL_ENV}/python3 ${CODEROOT}/main.py ${RESTART}
 
 RemainAfterExit=yes
 GuessMainPID=yes
-Type=forking
+Type=simple
 RuntimeDirectory=talawa
 
 # Restart policy
