@@ -1,0 +1,34 @@
+[
+  {
+    "_id": "6437904485008f171cf29925",
+    "name": "Unity Foundation",
+    "description": "A large hall for community events in the Bronx.",
+    "capacity": 500,
+    "imageUrl": "https://example.com/bronx-hall.jpg",
+    "organization": "6437904485008f171cf29924"
+  },
+  {
+    "_id": "6537904485008f171cf29925",
+    "name": "Unity Conference Room - Queens",
+    "description": "A small conference room for meetings in Queens.",
+    "capacity": 50,
+    "imageUrl": "https://example.com/queens-conference-room.jpg",
+    "organization": "6537904485008f171cf29924"
+  },
+  {
+    "_id": "6637904485008f171cf29925",
+    "name": "Unity Arena - Staten Island",
+    "description": "A large outdoor arena for public events in Staten Island.",
+    "capacity": 2000,
+    "imageUrl": "https://example.com/staten-island-arena.jpg",
+    "organization": "6637904485008f171cf29924"
+  },
+  {
+    "_id": "6737904485008f171cf29925",
+    "name": "Unity Hall - Brooklyn",
+    "description": "A community hall in Brooklyn for social events.",
+    "capacity": 300,
+    "imageUrl": "https://example.com/brooklyn-hall.jpg",
+    "organization": "6737904485008f171cf29924"
+  }
+]

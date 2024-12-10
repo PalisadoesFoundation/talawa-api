@@ -4,6 +4,7 @@ import {
   Organization,
   Plugin,
   Post,
+  Venue,
   SampleData,
   User,
 } from "../models";
@@ -27,6 +28,7 @@ export async function removeSampleOrganization(): Promise<void> {
       Post,
       Event,
       User,
+      Venue,
       Plugin,
       AppUserProfile,
     };
