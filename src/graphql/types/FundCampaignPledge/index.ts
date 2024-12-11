@@ -1,9 +1,7 @@
 import "./FundCampaign";
+import "./campaign";
 import "./createdAt";
 import "./creator";
-import "./fund";
-import "./pledgedAmount";
-import "./pledges";
-import "./pledgesCount";
+import "./pledger";
 import "./updatedAt";
 import "./updater";
