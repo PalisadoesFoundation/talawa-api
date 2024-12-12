@@ -78,6 +78,11 @@ type AuthenticationPayload {
   user: User
 }
 
+"""
+The `BigInt` scalar type represents non-fractional signed whole numeric values.
+"""
+scalar BigInt
+
 type Comment {
   """Body of the comment."""
   body: String
@@ -161,6 +166,133 @@ scalar DateTime
 A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
 """
 scalar EmailAddress
+
+type Fund {
+  """
+  GraphQL connection to traverse through the fund campaigns that are associated to the fund.
+  """
+  campaigns(after: String, before: String, first: Int, last: Int): FundCampaignsConnection
+
+  """Date time at the time the fund was created."""
+  createdAt: DateTime
+
+  """User who created the fund."""
+  creator: User
+
+  """Global identifier of the fund."""
+  id: ID!
+
+  """Boolean to tell if the fund is tax deductible."""
+  isTaxDeductible: Boolean
+
+  """Name of the fund."""
+  name: String
+
+  """Organization which the fund belongs to."""
+  organization: Organization
+
+  """Date time at the time the fund was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the fund."""
+  updater: User
+}
+
+type FundCampaign {
+  """Date time at the time the fund campaign was created."""
+  createdAt: DateTime
+
+  """User who created the fund campaign."""
+  creator: User
+
+  """Currency code of the fund campaign."""
+  currencyCode: Iso4217CurrencyCode
+
+  """Date time at the time the fund campaign ends at."""
+  endAt: DateTime
+
+  """Fund which the campaign is associated to."""
+  fund: Fund
+
+  """Minimum amount of money that is set as the goal for the fund campaign."""
+  goalAmount: Int
+
+  """Global identifier of the fund campaign."""
+  id: ID!
+
+  """Name of the fund campaign."""
+  name: String
+
+  """Total amount of money pledged under the fund campaign."""
+  pledgedAmount: BigInt
+
+  """
+  GraphQL connection to traverse through the pledges associated to the fund campaign.
+  """
+  pledges(after: String, before: String, first: Int, last: Int): FundCampaignPledgesConnection
+
+  """Date time at the time the fund campaign starts at."""
+  startAt: DateTime
+
+  """Date time at the time the fund campaign was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the fund campaign."""
+  updater: User
+}
+
+type FundCampaignPledge {
+  """The amount of pledged money."""
+  amount: Int
+
+  """Fund campaign which the fund campaign pledge is associated to."""
+  campaign: FundCampaign
+
+  """Date time at the time the fund campaign pledge was created."""
+  createdAt: DateTime
+
+  """User who created the fund campaign pledge."""
+  creator: User
+
+  """Global identifier of the fund campaign pledge."""
+  id: ID!
+
+  """Custom information about the fund campaign pledge."""
+  note: String
+
+  """User on whose behalf the fund campaign pledge is created."""
+  pledger: User
+
+  """Date time at the time the fund campaign pledge was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the fund campaign pledge."""
+  updater: User
+}
+
+""""""
+type FundCampaignPledgesConnection {
+  edges: [FundCampaignPledgesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type FundCampaignPledgesConnectionEdge {
+  cursor: String!
+  node: FundCampaignPledge
+}
+
+""""""
+type FundCampaignsConnection {
+  edges: [FundCampaignsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type FundCampaignsConnectionEdge {
+  cursor: String!
+  node: FundCampaign
+}
 
 """"""
 enum Iso3166Alpha2CountryCode {
@@ -415,12 +547,206 @@ enum Iso3166Alpha2CountryCode {
   zw
 }
 
+""""""
+enum Iso4217CurrencyCode {
+  AED
+  AFN
+  ALL
+  AMD
+  ANG
+  AOA
+  ARS
+  AUD
+  AWG
+  AZN
+  BAM
+  BBD
+  BDT
+  BGN
+  BHD
+  BIF
+  BMD
+  BND
+  BOB
+  BOV
+  BRL
+  BSD
+  BTN
+  BWP
+  BYN
+  BZD
+  CAD
+  CDF
+  CHE
+  CHF
+  CHW
+  CLF
+  CLP
+  CNY
+  COP
+  COU
+  CRC
+  CUP
+  CVE
+  CZK
+  DJF
+  DKK
+  DOP
+  DZD
+  EGP
+  ERN
+  ETB
+  EUR
+  FJD
+  FKP
+  GBP
+  GEL
+  GHS
+  GIP
+  GMD
+  GNF
+  GTQ
+  GYD
+  HKD
+  HNL
+  HTG
+  HUF
+  IDR
+  ILS
+  INR
+  IQD
+  IRR
+  ISK
+  JMD
+  JOD
+  JPY
+  KES
+  KGS
+  KHR
+  KMF
+  KPW
+  KRW
+  KWD
+  KYD
+  KZT
+  LAK
+  LBP
+  LKR
+  LRD
+  LSL
+  LYD
+  MAD
+  MDL
+  MGA
+  MKD
+  MMK
+  MNT
+  MOP
+  MRU
+  MUR
+  MVR
+  MWK
+  MXN
+  MXV
+  MYR
+  MZN
+  NAD
+  NGN
+  NIO
+  NOK
+  NPR
+  NZD
+  OMR
+  PAB
+  PEN
+  PGK
+  PHP
+  PKR
+  PLN
+  PYG
+  QAR
+  RON
+  RSD
+  RUB
+  RWF
+  SAR
+  SBD
+  SCR
+  SDG
+  SEK
+  SGD
+  SHP
+  SLE
+  SOS
+  SRD
+  SSP
+  STN
+  SVC
+  SYP
+  SZL
+  THB
+  TJS
+  TMT
+  TND
+  TOP
+  TRY
+  TTD
+  TWD
+  TZS
+  UAH
+  UGX
+  USD
+  USN
+  UYI
+  UYU
+  UYW
+  UZS
+  VED
+  VES
+  VND
+  VUV
+  WST
+  XAF
+  XAG
+  XAU
+  XBA
+  XBB
+  XBC
+  XBD
+  XCD
+  XDR
+  XOF
+  XPD
+  XPF
+  XPT
+  XSU
+  XTS
+  XUA
+  XXX
+  YER
+  ZAR
+  ZMW
+  ZWG
+}
+
 type Mutation {
+  """Mutation field to create an advertisement."""
+  createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
+
   """Mutation field to create a comment."""
   createComment(input: MutationCreateCommentInput!): Comment
 
   """Mutation field to create a comment vote."""
   createCommentVote(input: MutationCreateCommentVoteInput!): Comment
+
+  """Mutation field to create a fund."""
+  createFund(input: MutationCreateFundInput!): Fund
+
+  """Mutation field to create a fund campaign."""
+  createFundCampaign(input: MutationCreateFundCampaignInput!): FundCampaign
+
+  """Mutation field to create a fund campaign pledge."""
+  createFundCampaignPledge(input: MutationCreateFundCampaignPledgeInput!): FundCampaignPledge
 
   """Mutation field to create an organization."""
   createOrganization(input: MutationCreateOrganizationInput!): Organization
@@ -443,6 +769,9 @@ type Mutation {
     input: MutationCreateUserInput!
   ): AuthenticationPayload
 
+  """Mutation field to delete an advertisement."""
+  deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
+
   """Mutation field to delete a comment."""
   deleteComment(input: MutationDeleteCommentInput!): Comment
 
@@ -451,6 +780,15 @@ type Mutation {
 
   """Mutation field to delete the current user."""
   deleteCurrentUser: User
+
+  """Mutation field to delete a fund."""
+  deleteFund(input: MutationDeleteFundInput!): Fund
+
+  """Mutation field to delete a fund campaign."""
+  deleteFundCampaign(input: MutationDeleteFundCampaignInput!): FundCampaign
+
+  """Mutation field to delete a fund campaign pledge."""
+  deleteFundCampaignPledge(input: MutationDeleteFundCampaignPledgeInput!): FundCampaignPledge
 
   """Mutation field to delete an organization."""
   deleteOrganization(input: MutationDeleteOrganizationInput!): Organization
@@ -479,6 +817,9 @@ type Mutation {
     input: MutationSignUpInput!
   ): AuthenticationPayload
 
+  """Mutation field to update an advertisement."""
+  updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
+
   """Mutation field to update a comment."""
   updateComment(input: MutationUpdateCommentInput!): Comment
 
@@ -490,6 +831,15 @@ type Mutation {
     """Input required to update the current user."""
     input: MutationUpdateCurrentUserInput!
   ): User
+
+  """Mutation field to update a fund."""
+  updateFund(input: MutationUpdateFundInput!): Fund
+
+  """Mutation field to update a fund campaign."""
+  updateFundCampaign(input: MutationUpdateFundCampaignInput!): FundCampaign
+
+  """Mutation field to update a fund campaign pledge."""
+  updateFundCampaignPledge(input: MutationUpdateFundCampaignPledgeInput!): FundCampaignPledge
 
   """Mutation field to update a organization."""
   updateOrganization(input: MutationUpdateOrganizationInput!): Organization
@@ -553,6 +903,54 @@ input MutationCreateCommentVoteInput {
 
   """Type of the vote."""
   type: CommentVoteType!
+}
+
+""""""
+input MutationCreateFundCampaignInput {
+  """Currency code of the fund campaign."""
+  currencyCode: Iso4217CurrencyCode!
+
+  """Date time at the time the fund campaign ends at."""
+  endAt: DateTime!
+
+  """Global identifier of the associated fund."""
+  fundId: ID!
+
+  """Minimum amount of money that is set as the goal for the fund campaign."""
+  goalAmount: Int!
+
+  """Name of the fund campaign."""
+  name: String!
+
+  """Date time at the time the fund campaign starts at."""
+  startAt: DateTime!
+}
+
+""""""
+input MutationCreateFundCampaignPledgeInput {
+  """The amount of pledged money."""
+  amount: Int!
+
+  """Global identifier of the fund campaign."""
+  campaignId: ID!
+
+  """Custom information about the fund campaign pledge."""
+  note: String
+
+  """Global identifier of the user who pledged."""
+  pledgerId: ID!
+}
+
+""""""
+input MutationCreateFundInput {
+  """Boolean to tell if the fund is tax deductible."""
+  isTaxDeductible: Boolean!
+
+  """Name of the fund."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
 }
 
 """"""
@@ -721,6 +1119,24 @@ input MutationDeleteCommentVoteInput {
 
   """Global identifier of the user who voted."""
   creatorId: ID!
+}
+
+""""""
+input MutationDeleteFundCampaignInput {
+  """Global identifier of the fund campaign."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteFundCampaignPledgeInput {
+  """Global identifier of the fund campaign pledge."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteFundInput {
+  """Global identifier of the fund."""
+  id: ID!
 }
 
 """"""
@@ -930,6 +1346,48 @@ input MutationUpdateCurrentUserInput {
 }
 
 """"""
+input MutationUpdateFundCampaignInput {
+  """Date time at the time the fund campaign ends at."""
+  endAt: DateTime
+
+  """Minimum amount of money that is set as the goal for the fund campaign."""
+  goalAmount: Int
+
+  """Global identifier of the associated fund campaign."""
+  id: ID!
+
+  """Name of the fundCampaign."""
+  name: String
+
+  """Date time at the time the fund campaign starts at."""
+  startAt: DateTime
+}
+
+""""""
+input MutationUpdateFundCampaignPledgeInput {
+  """The amount of pledged money."""
+  amount: Int
+
+  """Global identifier of the associated fund campaign pledge."""
+  id: ID!
+
+  """Custom information about the fund campaign pledge."""
+  note: String
+}
+
+""""""
+input MutationUpdateFundInput {
+  """Global identifier of the associated organization."""
+  id: ID!
+
+  """Boolean to tell if the fund is tax deductible."""
+  isTaxDeductible: Boolean
+
+  """Name of the fund."""
+  name: String
+}
+
+""""""
 input MutationUpdateOrganizationInput {
   """Address of the organization."""
   address: String
@@ -1101,11 +1559,16 @@ type Organization {
   """Custom information about the organization."""
   description: String
 
+  """
+  GraphQL connection to traverse through the funds that are associated to the organization.
+  """
+  funds(after: String, before: String, first: Int, last: Int): OrganizationFundsConnection
+
   """Global identifier of the organization."""
   id: ID!
 
   """
-  Organization field to read the members of the organization by traversing through them using a graphql connection.
+  GraphQL connection to traverse through the users that are members of the organization.
   """
   members(after: String, before: String, first: Int, last: Int): OrganizationMembersConnection
 
@@ -1156,6 +1619,18 @@ type OrganizationAdvertisementsConnection {
 type OrganizationAdvertisementsConnectionEdge {
   cursor: String!
   node: Advertisement
+}
+
+""""""
+type OrganizationFundsConnection {
+  edges: [OrganizationFundsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationFundsConnectionEdge {
+  cursor: String!
+  node: Fund
 }
 
 """"""
@@ -1353,6 +1828,15 @@ type Query {
   """Query field to read a user."""
   currentUser: User
 
+  """Query field to read a fund."""
+  fund(input: QueryFundInput!): Fund
+
+  """Query field to read a fund campaign."""
+  fundCampaign(input: QueryFundCampaignInput!): FundCampaign
+
+  """Query field to read a fund campaign pledge."""
+  fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
+
   """Query field to read an organization."""
   organization(
     """Input required to read an organization."""
@@ -1396,6 +1880,24 @@ input QueryCommentInput {
 }
 
 """"""
+input QueryFundCampaignInput {
+  """Global id of the fund campaign."""
+  id: String!
+}
+
+""""""
+input QueryFundCampaignPledgeInput {
+  """Global id of the fund campaign pledge."""
+  id: String!
+}
+
+""""""
+input QueryFundInput {
+  """Global id of the fund."""
+  id: String!
+}
+
+""""""
 input QueryOrganizationInput {
   """Global id of the organization."""
   id: String!
@@ -1429,6 +1931,11 @@ input QueryUserInput {
 }
 
 type Tag {
+  """
+  GraphQL connection to traverse through the tags that have the tag as their parent tag.
+  """
+  childTags(after: String, before: String, first: Int, last: Int): TagChildTagsConnection
+
   """Date time at the time the tag was created."""
   createdAt: DateTime
 
@@ -1450,11 +1957,6 @@ type Tag {
   """Parent tag of the tag."""
   parentTagFolder: Tag
 
-  """
-  GraphQL connection to traverse through the tags that have the tag as their parent tag
-  """
-  tagsWhereParentTag(after: String, before: String, first: Int, last: Int): TagTagsWhereParentTagConnection
-
   """Date time at the time the tag was last updated."""
   updatedAt: DateTime
 
@@ -1463,13 +1965,13 @@ type Tag {
 }
 
 """"""
-type TagTagsWhereParentTagConnection {
-  edges: [TagTagsWhereParentTagConnectionEdge]
+type TagChildTagsConnection {
+  edges: [TagChildTagsConnectionEdge]
   pageInfo: PageInfo!
 }
 
 """"""
-type TagTagsWhereParentTagConnectionEdge {
+type TagChildTagsConnectionEdge {
   cursor: String!
   node: Tag
 }
@@ -1532,9 +2034,9 @@ type User {
   natalSex: UserNatalSex
 
   """
-  User field to read the organizations the user is a member of by traversing through them using a graphql connection.
+  GraphQL connection to traverse through the organizations the user is a member of.
   """
-  organizationsMemberOf(after: String, before: String, first: Int, last: Int): UserOrganizationsMemberOfConnection
+  organizationsWhereMember(after: String, before: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
 
   """Postal code of the user."""
   postalCode: String
@@ -1602,13 +2104,13 @@ enum UserNatalSex {
 }
 
 """"""
-type UserOrganizationsMemberOfConnection {
-  edges: [UserOrganizationsMemberOfConnectionEdge]
+type UserOrganizationsWhereMemberConnection {
+  edges: [UserOrganizationsWhereMemberConnectionEdge]
   pageInfo: PageInfo!
 }
 
 """"""
-type UserOrganizationsMemberOfConnectionEdge {
+type UserOrganizationsWhereMemberConnectionEdge {
   cursor: String!
   node: Organization
 }

@@ -9,32 +9,31 @@ import {
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Tag } from "./Tag";
 
-const tagsWhereParentTagArgumentsSchema =
-	defaultGraphQLConnectionArgumentsSchema
-		.transform(transformDefaultGraphQLConnectionArguments)
-		.transform((arg, ctx) => {
-			let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+const childTagsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
+	.transform(transformDefaultGraphQLConnectionArguments)
+	.transform((arg, ctx) => {
+		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
 
-			try {
-				if (arg.cursor !== undefined) {
-					cursor = cursorSchema.parse(
-						JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
-					);
-				}
-			} catch (error) {
-				ctx.addIssue({
-					code: "custom",
-					message: "Not a valid cursor.",
-					path: [arg.isInversed ? "before" : "after"],
-				});
+		try {
+			if (arg.cursor !== undefined) {
+				cursor = cursorSchema.parse(
+					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
+				);
 			}
+		} catch (error) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Not a valid cursor.",
+				path: [arg.isInversed ? "before" : "after"],
+			});
+		}
 
-			return {
-				cursor,
-				isInversed: arg.isInversed,
-				limit: arg.limit,
-			};
-		});
+		return {
+			cursor,
+			isInversed: arg.isInversed,
+			limit: arg.limit,
+		};
+	});
 
 const cursorSchema = tagsTableInsertSchema.pick({
 	isFolder: true,
@@ -43,10 +42,10 @@ const cursorSchema = tagsTableInsertSchema.pick({
 
 Tag.implement({
 	fields: (t) => ({
-		tagsWhereParentTag: t.connection(
+		childTags: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the tags that have the tag as their parent tag",
+					"GraphQL connection to traverse through the tags that have the tag as their parent tag.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
@@ -61,7 +60,7 @@ Tag.implement({
 						data: parsedArgs,
 						error,
 						success,
-					} = tagsWhereParentTagArgumentsSchema.safeParse(args);
+					} = childTagsArgumentsSchema.safeParse(args);
 
 					if (!success) {
 						throw new TalawaGraphQLError({
@@ -125,6 +124,7 @@ Tag.implement({
 						: [desc(tagsTable.isFolder), desc(tagsTable.name)];
 
 					let where: SQL | undefined;
+
 					if (isInversed) {
 						if (cursor !== undefined) {
 							where = and(

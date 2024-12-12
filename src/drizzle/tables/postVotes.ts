@@ -12,6 +12,9 @@ import { postVoteTypeEnum } from "~/src/drizzle/enums/postVoteType";
 import { postsTable } from "./posts";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for post votes.
+ */
 export const postVotesTable = pgTable(
 	"post_votes",
 	{

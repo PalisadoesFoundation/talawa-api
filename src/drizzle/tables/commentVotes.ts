@@ -12,6 +12,9 @@ import { commmentVoteTypeEnum } from "~/src/drizzle/enums/commentVoteType";
 import { commentsTable } from "./comments";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for comment votes.
+ */
 export const commentVotesTable = pgTable(
 	"comment_votes",
 	{

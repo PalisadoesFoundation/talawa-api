@@ -1,4 +1,4 @@
-import "./FundCampaign";
+import "./FundCampaignPledge";
 import "./campaign";
 import "./createdAt";
 import "./creator";

@@ -1,11 +1,9 @@
 import type { z } from "zod";
 import { fundCampaignPledgesTableInsertSchema } from "~/src/drizzle/tables/fundCampaignPledges";
 import { builder } from "~/src/graphql/builder";
-import { Iso4217CurrencyCode } from "~/src/graphql/enums/Iso4217CurrencyCode";
 
 export const mutationCreateFundCampaignPledgeInputSchema =
 	fundCampaignPledgesTableInsertSchema.pick({
-		currencyCode: true,
 		amount: true,
 		campaignId: true,
 		note: true,
@@ -26,11 +24,6 @@ export const MutationCreateFundCampaignPledgeInput = builder
 			campaignId: t.id({
 				description: "Global identifier of the fund campaign.",
 				required: true,
-			}),
-			currencyCode: t.field({
-				description: "Currency code of the fund campaign pledge.",
-				required: true,
-				type: Iso4217CurrencyCode,
 			}),
 			note: t.string({
 				description: "Custom information about the fund campaign pledge.",

@@ -1,5 +1,5 @@
 {
-  "id": "3b608cae-259c-436a-8669-8d53c9bd4f90",
+  "id": "5183f537-4027-4bdb-a06e-69741f6bab5b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -19,7 +19,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "description": {
           "name": "description",
@@ -143,8 +143,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "action_categories_organization_id_organizations_id_fk": {
           "name": "action_categories_organization_id_organizations_id_fk",
@@ -156,8 +156,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "action_categories_updater_id_users_id_fk": {
           "name": "action_categories_updater_id_users_id_fk",
@@ -169,8 +169,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -218,7 +218,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -387,8 +387,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "actions_category_id_action_categories_id_fk": {
           "name": "actions_category_id_action_categories_id_fk",
@@ -400,8 +400,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "actions_creator_id_users_id_fk": {
           "name": "actions_creator_id_users_id_fk",
@@ -413,8 +413,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "actions_event_id_events_id_fk": {
           "name": "actions_event_id_events_id_fk",
@@ -426,8 +426,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "actions_organization_id_organizations_id_fk": {
           "name": "actions_organization_id_organizations_id_fk",
@@ -439,8 +439,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "actions_updater_id_users_id_fk": {
           "name": "actions_updater_id_users_id_fk",
@@ -452,8 +452,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -483,12 +483,11 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "type": {
           "name": "type",
-          "type": "advertisement_attachment_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -569,8 +568,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "advertisement_attachments_creator_id_users_id_fk": {
           "name": "advertisement_attachments_creator_id_users_id_fk",
@@ -582,8 +581,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "advertisement_attachments_updater_id_users_id_fk": {
           "name": "advertisement_attachments_updater_id_users_id_fk",
@@ -595,8 +594,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -672,8 +671,7 @@
         },
         "type": {
           "name": "type",
-          "type": "advertisement_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         }
@@ -838,7 +836,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "description": {
           "name": "description",
@@ -890,8 +888,7 @@
         },
         "type": {
           "name": "type",
-          "type": "agenda_item_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -1055,8 +1052,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "agenda_items_event_id_events_id_fk": {
           "name": "agenda_items_event_id_events_id_fk",
@@ -1068,8 +1065,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "agenda_items_section_id_agenda_sections_id_fk": {
           "name": "agenda_items_section_id_agenda_sections_id_fk",
@@ -1081,8 +1078,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "agenda_items_updater_id_users_id_fk": {
           "name": "agenda_items_updater_id_users_id_fk",
@@ -1094,8 +1091,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1119,7 +1116,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -1267,8 +1264,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "agenda_sections_event_id_events_id_fk": {
           "name": "agenda_sections_event_id_events_id_fk",
@@ -1280,8 +1277,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "agenda_sections_parent_section_id_agenda_sections_id_fk": {
           "name": "agenda_sections_parent_section_id_agenda_sections_id_fk",
@@ -1306,8 +1303,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1347,8 +1344,7 @@
         },
         "type": {
           "name": "type",
-          "type": "comment_vote_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -1637,7 +1633,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -1665,8 +1661,7 @@
         },
         "type": {
           "name": "type",
-          "type": "event_attachment_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         }
@@ -1729,8 +1724,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "event_attachments_event_id_events_id_fk": {
           "name": "event_attachments_event_id_events_id_fk",
@@ -1742,8 +1737,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "event_attachments_updater_id_users_id_fk": {
           "name": "event_attachments_updater_id_users_id_fk",
@@ -1755,8 +1750,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1773,7 +1768,7 @@
           "name": "attendee_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "check_in_at": {
           "name": "check_in_at",
@@ -1798,7 +1793,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -1808,8 +1803,7 @@
         },
         "invite_status": {
           "name": "invite_status",
-          "type": "event_attendee_registration_invite_status",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -1944,8 +1938,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "event_attendances_creator_id_users_id_fk": {
           "name": "event_attendances_creator_id_users_id_fk",
@@ -1957,8 +1951,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "event_attendances_event_id_events_id_fk": {
           "name": "event_attendances_event_id_events_id_fk",
@@ -1970,8 +1964,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "event_attendances_updater_id_users_id_fk": {
           "name": "event_attendances_updater_id_users_id_fk",
@@ -1983,8 +1977,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2014,7 +2008,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "description": {
           "name": "description",
@@ -2199,8 +2193,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "events_organization_id_organizations_id_fk": {
           "name": "events_organization_id_organizations_id_fk",
@@ -2212,8 +2206,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "events_updater_id_users_id_fk": {
           "name": "events_updater_id_users_id_fk",
@@ -2225,8 +2219,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2250,7 +2244,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "id": {
           "name": "id",
@@ -2377,8 +2371,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "families_organization_id_organizations_id_fk": {
           "name": "families_organization_id_organizations_id_fk",
@@ -2390,8 +2384,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "families_updater_id_users_id_fk": {
           "name": "families_updater_id_users_id_fk",
@@ -2403,8 +2397,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2428,7 +2422,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "family_id": {
           "name": "family_id",
@@ -2440,12 +2434,11 @@
           "name": "member_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "role": {
           "name": "role",
-          "type": "family_membership_role",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -2535,8 +2528,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "family_memberships_family_id_families_id_fk": {
           "name": "family_memberships_family_id_families_id_fk",
@@ -2548,8 +2541,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "family_memberships_member_id_users_id_fk": {
           "name": "family_memberships_member_id_users_id_fk",
@@ -2561,8 +2554,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "family_memberships_updater_id_users_id_fk": {
           "name": "family_memberships_updater_id_users_id_fk",
@@ -2574,8 +2567,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -2620,13 +2613,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "currency_code": {
-          "name": "currency_code",
-          "type": "iso_4217_currency_code",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
         },
         "id": {
           "name": "id",
@@ -2719,6 +2705,27 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "fund_campaign_pledges_campaign_id_pledger_id_index": {
+          "name": "fund_campaign_pledges_campaign_id_pledger_id_index",
+          "columns": [
+            {
+              "expression": "campaign_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "pledger_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -2800,8 +2807,7 @@
         },
         "currency_code": {
           "name": "currency_code",
-          "type": "iso_4217_currency_code",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -3229,8 +3235,7 @@
         },
         "role": {
           "name": "role",
-          "type": "organization_membership_role",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -3416,8 +3421,7 @@
         },
         "country_code": {
           "name": "country_code",
-          "type": "iso_3166_alpha_2_country_code",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -3581,7 +3585,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "post_id": {
           "name": "post_id",
@@ -3591,8 +3595,7 @@
         },
         "type": {
           "name": "type",
-          "type": "post_attachment_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -3673,8 +3676,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "post_attachments_post_id_posts_id_fk": {
           "name": "post_attachments_post_id_posts_id_fk",
@@ -3686,8 +3689,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "post_attachments_updater_id_users_id_fk": {
           "name": "post_attachments_updater_id_users_id_fk",
@@ -3699,8 +3702,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -3740,8 +3743,7 @@
         },
         "type": {
           "name": "type",
-          "type": "post_vote_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -4051,7 +4053,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "day_of_month": {
           "name": "day_of_month",
@@ -4103,8 +4105,7 @@
         },
         "type": {
           "name": "type",
-          "type": "recurrence_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -4185,8 +4186,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "recurrences_event_id_events_id_fk": {
           "name": "recurrences_event_id_events_id_fk",
@@ -4198,8 +4199,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "recurrences_updater_id_users_id_fk": {
           "name": "recurrences_updater_id_users_id_fk",
@@ -4211,8 +4212,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -4594,8 +4595,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "tags_updater_id_users_id_fk": {
           "name": "tags_updater_id_users_id_fk",
@@ -4647,8 +4648,7 @@
         },
         "country_code": {
           "name": "country_code",
-          "type": "iso_3166_alpha_2_country_code",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -4673,8 +4673,7 @@
         },
         "education_grade": {
           "name": "education_grade",
-          "type": "user_education_grade",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -4686,8 +4685,7 @@
         },
         "employment_status": {
           "name": "employment_status",
-          "type": "user_employment_status",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -4711,8 +4709,7 @@
         },
         "marital_status": {
           "name": "marital_status",
-          "type": "user_marital_status",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -4730,8 +4727,7 @@
         },
         "natal_sex": {
           "name": "natal_sex",
-          "type": "user_natal_sex",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -4749,8 +4745,7 @@
         },
         "role": {
           "name": "role",
-          "type": "user_role",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -4883,12 +4878,11 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "type": {
           "name": "type",
-          "type": "venue_attachment_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -4975,8 +4969,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "venue_attachments_updater_id_users_id_fk": {
           "name": "venue_attachments_updater_id_users_id_fk",
@@ -4988,8 +4982,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "venue_attachments_venue_id_venues_id_fk": {
           "name": "venue_attachments_venue_id_venues_id_fk",
@@ -5001,8 +4995,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -5026,7 +5020,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -5126,8 +5120,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "venue_bookings_event_id_events_id_fk": {
           "name": "venue_bookings_event_id_events_id_fk",
@@ -5139,8 +5133,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "venue_bookings_updater_id_users_id_fk": {
           "name": "venue_bookings_updater_id_users_id_fk",
@@ -5152,8 +5146,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "venue_bookings_venue_id_venues_id_fk": {
           "name": "venue_bookings_venue_id_venues_id_fk",
@@ -5165,8 +5159,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -5204,7 +5198,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "description": {
           "name": "description",
@@ -5337,8 +5331,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "venues_organization_id_organizations_id_fk": {
           "name": "venues_organization_id_organizations_id_fk",
@@ -5350,8 +5344,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "venues_updater_id_users_id_fk": {
           "name": "venues_updater_id_users_id_fk",
@@ -5363,8 +5357,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -5394,7 +5388,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "group_id": {
           "name": "group_id",
@@ -5404,8 +5398,7 @@
         },
         "invite_status": {
           "name": "invite_status",
-          "type": "volunteer_group_assignment_invite_status",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -5480,8 +5473,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "volunteer_group_assignments_creator_id_users_id_fk": {
           "name": "volunteer_group_assignments_creator_id_users_id_fk",
@@ -5493,8 +5486,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "volunteer_group_assignments_group_id_volunteer_groups_id_fk": {
           "name": "volunteer_group_assignments_group_id_volunteer_groups_id_fk",
@@ -5506,8 +5499,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "volunteer_group_assignments_updater_id_users_id_fk": {
           "name": "volunteer_group_assignments_updater_id_users_id_fk",
@@ -5519,8 +5512,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -5552,7 +5545,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -5706,8 +5699,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "volunteer_groups_event_id_events_id_fk": {
           "name": "volunteer_groups_event_id_events_id_fk",
@@ -5719,8 +5712,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "volunteer_groups_leader_id_users_id_fk": {
           "name": "volunteer_groups_leader_id_users_id_fk",
@@ -5732,8 +5725,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "volunteer_groups_updater_id_users_id_fk": {
           "name": "volunteer_groups_updater_id_users_id_fk",
@@ -5745,8 +5738,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -5756,620 +5749,7 @@
       "isRLSEnabled": false
     }
   },
-  "enums": {
-    "public.advertisement_attachment_type": {
-      "name": "advertisement_attachment_type",
-      "schema": "public",
-      "values": [
-        "image",
-        "video"
-      ]
-    },
-    "public.advertisement_type": {
-      "name": "advertisement_type",
-      "schema": "public",
-      "values": [
-        "banner",
-        "menu",
-        "pop_up"
-      ]
-    },
-    "public.agenda_item_type": {
-      "name": "agenda_item_type",
-      "schema": "public",
-      "values": [
-        "general",
-        "note",
-        "scripture",
-        "song"
-      ]
-    },
-    "public.comment_vote_type": {
-      "name": "comment_vote_type",
-      "schema": "public",
-      "values": [
-        "down_vote",
-        "up_vote"
-      ]
-    },
-    "public.event_attachment_type": {
-      "name": "event_attachment_type",
-      "schema": "public",
-      "values": [
-        "image",
-        "video"
-      ]
-    },
-    "public.event_attendee_registration_invite_status": {
-      "name": "event_attendee_registration_invite_status",
-      "schema": "public",
-      "values": [
-        "accepted",
-        "declined",
-        "no_response"
-      ]
-    },
-    "public.family_membership_role": {
-      "name": "family_membership_role",
-      "schema": "public",
-      "values": [
-        "adult",
-        "child",
-        "head_of_household",
-        "spouse"
-      ]
-    },
-    "public.iso_3166_alpha_2_country_code": {
-      "name": "iso_3166_alpha_2_country_code",
-      "schema": "public",
-      "values": [
-        "ad",
-        "ae",
-        "af",
-        "ag",
-        "ai",
-        "al",
-        "am",
-        "ao",
-        "aq",
-        "ar",
-        "as",
-        "at",
-        "au",
-        "aw",
-        "ax",
-        "az",
-        "ba",
-        "bb",
-        "bd",
-        "be",
-        "bf",
-        "bg",
-        "bh",
-        "bi",
-        "bj",
-        "bl",
-        "bm",
-        "bn",
-        "bo",
-        "bq",
-        "br",
-        "bs",
-        "bt",
-        "bv",
-        "bw",
-        "by",
-        "bz",
-        "ca",
-        "cc",
-        "cd",
-        "cf",
-        "cg",
-        "ch",
-        "ci",
-        "ck",
-        "cl",
-        "cm",
-        "cn",
-        "co",
-        "cr",
-        "cu",
-        "cv",
-        "cw",
-        "cx",
-        "cy",
-        "cz",
-        "de",
-        "dj",
-        "dk",
-        "dm",
-        "do",
-        "dz",
-        "ec",
-        "ee",
-        "eg",
-        "eh",
-        "er",
-        "es",
-        "et",
-        "fi",
-        "fj",
-        "fk",
-        "fm",
-        "fo",
-        "fr",
-        "ga",
-        "gb",
-        "gd",
-        "ge",
-        "gf",
-        "gg",
-        "gh",
-        "gi",
-        "gl",
-        "gm",
-        "gn",
-        "gp",
-        "gq",
-        "gr",
-        "gs",
-        "gt",
-        "gu",
-        "gw",
-        "gy",
-        "hk",
-        "hm",
-        "hn",
-        "hr",
-        "ht",
-        "hu",
-        "id",
-        "ie",
-        "il",
-        "im",
-        "in",
-        "io",
-        "iq",
-        "ir",
-        "is",
-        "it",
-        "je",
-        "jm",
-        "jo",
-        "jp",
-        "ke",
-        "kg",
-        "kh",
-        "ki",
-        "km",
-        "kn",
-        "kp",
-        "kr",
-        "kw",
-        "ky",
-        "kz",
-        "la",
-        "lb",
-        "lc",
-        "li",
-        "lk",
-        "lr",
-        "ls",
-        "lt",
-        "lu",
-        "lv",
-        "ly",
-        "ma",
-        "mc",
-        "md",
-        "me",
-        "mf",
-        "mg",
-        "mh",
-        "mk",
-        "ml",
-        "mm",
-        "mn",
-        "mo",
-        "mp",
-        "mq",
-        "mr",
-        "ms",
-        "mt",
-        "mu",
-        "mv",
-        "mw",
-        "mx",
-        "my",
-        "mz",
-        "na",
-        "nc",
-        "ne",
-        "nf",
-        "ng",
-        "ni",
-        "nl",
-        "no",
-        "np",
-        "nr",
-        "nu",
-        "nz",
-        "om",
-        "pa",
-        "pe",
-        "pf",
-        "pg",
-        "ph",
-        "pk",
-        "pl",
-        "pm",
-        "pn",
-        "pr",
-        "ps",
-        "pt",
-        "pw",
-        "py",
-        "qa",
-        "re",
-        "ro",
-        "rs",
-        "ru",
-        "rw",
-        "sa",
-        "sb",
-        "sc",
-        "sd",
-        "se",
-        "sg",
-        "sh",
-        "si",
-        "sj",
-        "sk",
-        "sl",
-        "sm",
-        "sn",
-        "so",
-        "sr",
-        "ss",
-        "st",
-        "sv",
-        "sx",
-        "sy",
-        "sz",
-        "tc",
-        "td",
-        "tf",
-        "tg",
-        "th",
-        "tj",
-        "tk",
-        "tl",
-        "tm",
-        "tn",
-        "to",
-        "tr",
-        "tt",
-        "tv",
-        "tw",
-        "tz",
-        "ua",
-        "ug",
-        "um",
-        "us",
-        "uy",
-        "uz",
-        "va",
-        "vc",
-        "ve",
-        "vg",
-        "vi",
-        "vn",
-        "vu",
-        "wf",
-        "ws",
-        "ye",
-        "yt",
-        "za",
-        "zm",
-        "zw"
-      ]
-    },
-    "public.iso_4217_currency_code": {
-      "name": "iso_4217_currency_code",
-      "schema": "public",
-      "values": [
-        "AED",
-        "AFN",
-        "ALL",
-        "AMD",
-        "ANG",
-        "AOA",
-        "ARS",
-        "AUD",
-        "AWG",
-        "AZN",
-        "BAM",
-        "BBD",
-        "BDT",
-        "BGN",
-        "BHD",
-        "BIF",
-        "BMD",
-        "BND",
-        "BOB",
-        "BOV",
-        "BRL",
-        "BSD",
-        "BTN",
-        "BWP",
-        "BYN",
-        "BZD",
-        "CAD",
-        "CDF",
-        "CHE",
-        "CHF",
-        "CHW",
-        "CLF",
-        "CLP",
-        "CNY",
-        "COP",
-        "COU",
-        "CRC",
-        "CUP",
-        "CVE",
-        "CZK",
-        "DJF",
-        "DKK",
-        "DOP",
-        "DZD",
-        "EGP",
-        "ERN",
-        "ETB",
-        "EUR",
-        "FJD",
-        "FKP",
-        "GBP",
-        "GEL",
-        "GHS",
-        "GIP",
-        "GMD",
-        "GNF",
-        "GTQ",
-        "GYD",
-        "HKD",
-        "HNL",
-        "HTG",
-        "HUF",
-        "IDR",
-        "ILS",
-        "INR",
-        "IQD",
-        "IRR",
-        "ISK",
-        "JMD",
-        "JOD",
-        "JPY",
-        "KES",
-        "KGS",
-        "KHR",
-        "KMF",
-        "KPW",
-        "KRW",
-        "KWD",
-        "KYD",
-        "KZT",
-        "LAK",
-        "LBP",
-        "LKR",
-        "LRD",
-        "LSL",
-        "LYD",
-        "MAD",
-        "MDL",
-        "MGA",
-        "MKD",
-        "MMK",
-        "MNT",
-        "MOP",
-        "MRU",
-        "MUR",
-        "MVR",
-        "MWK",
-        "MXN",
-        "MXV",
-        "MYR",
-        "MZN",
-        "NAD",
-        "NGN",
-        "NIO",
-        "NOK",
-        "NPR",
-        "NZD",
-        "OMR",
-        "PAB",
-        "PEN",
-        "PGK",
-        "PHP",
-        "PKR",
-        "PLN",
-        "PYG",
-        "QAR",
-        "RON",
-        "RSD",
-        "RUB",
-        "RWF",
-        "SAR",
-        "SBD",
-        "SCR",
-        "SDG",
-        "SEK",
-        "SGD",
-        "SHP",
-        "SLE",
-        "SOS",
-        "SRD",
-        "SSP",
-        "STN",
-        "SVC",
-        "SYP",
-        "SZL",
-        "THB",
-        "TJS",
-        "TMT",
-        "TND",
-        "TOP",
-        "TRY",
-        "TTD",
-        "TWD",
-        "TZS",
-        "UAH",
-        "UGX",
-        "USD",
-        "USN",
-        "UYI",
-        "UYU",
-        "UYW",
-        "UZS",
-        "VED",
-        "VES",
-        "VND",
-        "VUV",
-        "WST",
-        "XAF",
-        "XAG",
-        "XAU",
-        "XBA",
-        "XBB",
-        "XBC",
-        "XBD",
-        "XCD",
-        "XDR",
-        "XOF",
-        "XPD",
-        "XPF",
-        "XPT",
-        "XSU",
-        "XTS",
-        "XUA",
-        "XXX",
-        "YER",
-        "ZAR",
-        "ZMW",
-        "ZWG"
-      ]
-    },
-    "public.organization_membership_role": {
-      "name": "organization_membership_role",
-      "schema": "public",
-      "values": [
-        "administrator",
-        "regular"
-      ]
-    },
-    "public.post_attachment_type": {
-      "name": "post_attachment_type",
-      "schema": "public",
-      "values": [
-        "image",
-        "video"
-      ]
-    },
-    "public.post_vote_type": {
-      "name": "post_vote_type",
-      "schema": "public",
-      "values": [
-        "down_vote",
-        "up_vote"
-      ]
-    },
-    "public.recurrence_type": {
-      "name": "recurrence_type",
-      "schema": "public",
-      "values": [
-        "daily",
-        "monthly",
-        "weekly",
-        "yearly"
-      ]
-    },
-    "public.user_education_grade": {
-      "name": "user_education_grade",
-      "schema": "public",
-      "values": [
-        "grade_1",
-        "grade_2",
-        "grade_3",
-        "grade_4",
-        "grade_5",
-        "grade_6",
-        "grade_7",
-        "grade_8",
-        "grade_9",
-        "grade_10",
-        "grade_11",
-        "grade_12",
-        "graduate",
-        "kg",
-        "no_grade",
-        "pre_kg"
-      ]
-    },
-    "public.user_employment_status": {
-      "name": "user_employment_status",
-      "schema": "public",
-      "values": [
-        "full_time",
-        "part_time",
-        "unemployed"
-      ]
-    },
-    "public.user_marital_status": {
-      "name": "user_marital_status",
-      "schema": "public",
-      "values": [
-        "divorced",
-        "engaged",
-        "married",
-        "seperated",
-        "single",
-        "widowed"
-      ]
-    },
-    "public.user_natal_sex": {
-      "name": "user_natal_sex",
-      "schema": "public",
-      "values": [
-        "female",
-        "intersex",
-        "male"
-      ]
-    },
-    "public.user_role": {
-      "name": "user_role",
-      "schema": "public",
-      "values": [
-        "administrator",
-        "regular"
-      ]
-    },
-    "public.venue_attachment_type": {
-      "name": "venue_attachment_type",
-      "schema": "public",
-      "values": [
-        "image",
-        "video"
-      ]
-    },
-    "public.volunteer_group_assignment_invite_status": {
-      "name": "volunteer_group_assignment_invite_status",
-      "schema": "public",
-      "values": [
-        "accepted",
-        "declined",
-        "no_response"
-      ]
-    }
-  },
+  "enums": {},
   "schemas": {},
   "sequences": {},
   "roles": {},

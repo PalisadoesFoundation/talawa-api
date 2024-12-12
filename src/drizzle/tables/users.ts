@@ -114,7 +114,7 @@ export const usersTable = pgTable(
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
 		/**
-		 * Boolean field to tell whether the user has verified their email or not.
+		 * Boolean to tell whether the user has verified their email or not.
 		 */
 		isEmailAddressVerified: boolean("is_email_address_verified").notNull(),
 		/**

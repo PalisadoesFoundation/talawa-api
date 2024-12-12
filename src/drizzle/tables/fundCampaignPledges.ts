@@ -10,7 +10,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { iso4217CurrencyCodeEnum } from "~/src/drizzle/enums/iso4217CurrencyCode";
 import { fundCampaignsTable } from "./fundCampaigns";
 import { usersTable } from "./users";
 
@@ -50,10 +49,6 @@ export const fundCampaignPledgesTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
-		/**
-		 * Currency code of the pledged amount.
-		 */
-		currencyCode: iso4217CurrencyCodeEnum("currency_code").notNull(),
 		/**
 		 * Primary unique identifier of the fund campaign pledge.
 		 */

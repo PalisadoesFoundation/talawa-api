@@ -6,6 +6,9 @@ import { commentVotesTable } from "./commentVotes";
 import { postsTable } from "./posts";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for comments.
+ */
 export const commentsTable = pgTable(
 	"comments",
 	{

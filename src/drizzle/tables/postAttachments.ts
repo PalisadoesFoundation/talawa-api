@@ -5,6 +5,9 @@ import { postAttachmentTypeEnum } from "~/src/drizzle/enums/postAttachmentType";
 import { postsTable } from "./posts";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for post attachments.
+ */
 export const postAttachmentsTable = pgTable(
 	"post_attachments",
 	{
@@ -21,15 +24,19 @@ export const postAttachmentsTable = pgTable(
 		/**
 		 * Foreign key reference to the id of the user who first created the attachment.
 		 */
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 		/**
 		 * Foreign key reference to the id of the post that the attachment is associated to.
 		 */
 		postId: uuid("post_id")
 			.notNull()
-			.references(() => postsTable.id),
+			.references(() => postsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 		/**
 		 * Type of the attachment.
 		 */
@@ -47,7 +54,10 @@ export const postAttachmentsTable = pgTable(
 		/**
 		 * Foreign key reference to the id of the user who last updated the attachment.
 		 */
-		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 		/**
 		 * URI to the attachment.
 		 */

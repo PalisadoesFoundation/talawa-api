@@ -22,9 +22,15 @@ export const actionsTable = pgTable(
 			withTimezone: true,
 		}).notNull(),
 
-		assigneeId: uuid("actor_id").references(() => usersTable.id),
+		assigneeId: uuid("actor_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
-		categoryId: uuid("category_id").references(() => actionCategoriesTable.id),
+		categoryId: uuid("category_id").references(() => actionCategoriesTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		completionAt: timestamp("completion_at", {
 			mode: "date",
@@ -40,11 +46,15 @@ export const actionsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
-		eventId: uuid("event_id").references(() => eventsTable.id),
+		eventId: uuid("event_id").references(() => eventsTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		id: uuid("id").primaryKey().$default(uuidv7),
 
@@ -52,7 +62,10 @@ export const actionsTable = pgTable(
 
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsTable.id),
+			.references(() => organizationsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		postCompletionNotes: text("post_completion_notes"),
 
@@ -66,7 +79,10 @@ export const actionsTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 
-		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 	},
 	(self) => [
 		index().on(self.assignedAt),

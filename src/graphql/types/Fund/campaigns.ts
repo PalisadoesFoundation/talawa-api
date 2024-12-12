@@ -48,7 +48,7 @@ Fund.implement({
 		campaigns: t.connection(
 			{
 				description:
-					"Fund field to read the associated campaigns fund by traversing through them using a graphql connection.",
+					"GraphQL connection to traverse through the fund campaigns that are associated to the fund.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,

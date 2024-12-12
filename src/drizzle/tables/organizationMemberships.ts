@@ -11,6 +11,9 @@ import { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organization
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for organization memberships.
+ */
 export const organizationMembershipsTable = pgTable(
 	"organization_memberships",
 	{

@@ -208,7 +208,6 @@ builder.mutationField("updateFundCampaign", (t) =>
 			const [updatedFundCampaign] = await ctx.drizzleClient
 				.update(fundCampaignsTable)
 				.set({
-					currencyCode: parsedArgs.input.currencyCode,
 					endAt: parsedArgs.input.endAt,
 					goalAmount: parsedArgs.input.goalAmount,
 					name: parsedArgs.input.name,
@@ -217,7 +216,7 @@ builder.mutationField("updateFundCampaign", (t) =>
 				.where(eq(fundCampaignsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Updated fund campaign not being returned means that either it was updated or its `id` column was changed by external entities before this update operation could take place.
+			// Updated fund campaign not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
 			if (updatedFundCampaign === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

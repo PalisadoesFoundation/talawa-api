@@ -15,7 +15,10 @@ export const volunteerGroupAssignmentsTable = pgTable(
 	{
 		assigneeId: uuid("assignee_id")
 			.notNull()
-			.references(() => usersTable.id, {}),
+			.references(() => usersTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
@@ -25,13 +28,17 @@ export const volunteerGroupAssignmentsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		groupId: uuid("group_id")
 			.notNull()
-			.references(() => volunteerGroupsTable.id, {}),
+			.references(() => volunteerGroupsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		inviteStatus:
 			volunteerGroupAssignmentInviteStatusEnum("invite_status").notNull(),
@@ -44,7 +51,10 @@ export const volunteerGroupAssignmentsTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 
-		updaterId: uuid("updater_id").references(() => usersTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 	},
 	(self) => [
 		primaryKey({

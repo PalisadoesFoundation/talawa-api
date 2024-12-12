@@ -8,6 +8,9 @@ import { postAttachmentsTable } from "./postAttachments";
 import { postVotesTable } from "./postVotes";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for posts.
+ */
 export const postsTable = pgTable(
 	"posts",
 	{

@@ -14,6 +14,9 @@ import { advertisementAttachmentsTable } from "./advertisementAttachments";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for advertisements.
+ */
 export const advertisementsTable = pgTable(
 	"advertisements",
 	{

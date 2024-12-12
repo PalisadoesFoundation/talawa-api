@@ -15,9 +15,10 @@ export const venueAttachmentsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		type: venueAttachmentTypeEnum("type").notNull(),
 
@@ -29,13 +30,19 @@ export const venueAttachmentsTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 
-		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		uri: text("uri", {}).notNull(),
 
 		venueId: uuid("venue_id")
 			.notNull()
-			.references(() => venuesTable.id),
+			.references(() => venuesTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 	},
 	(self) => [
 		index().on(self.createdAt),
