@@ -63,6 +63,7 @@ FundCampaignPledge.implement({
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a fund campaign pledge's campaign id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",

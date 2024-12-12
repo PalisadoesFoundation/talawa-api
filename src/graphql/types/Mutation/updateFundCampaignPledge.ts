@@ -145,7 +145,6 @@ builder.mutationField("updateFundCampaignPledge", (t) =>
 				.update(fundCampaignPledgesTable)
 				.set({
 					amount: parsedArgs.input.amount,
-					currencyCode: parsedArgs.input.currencyCode,
 					note: parsedArgs.input.note,
 					updaterId: currentUserId,
 				})

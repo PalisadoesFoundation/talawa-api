@@ -1,7 +1,6 @@
 import type { z } from "zod";
 import { fundCampaignPledgesTableInsertSchema } from "~/src/drizzle/tables/fundCampaignPledges";
 import { builder } from "~/src/graphql/builder";
-import { Iso4217CurrencyCode } from "~/src/graphql/enums/Iso4217CurrencyCode";
 
 export const mutationUpdateFundCampaignPledgeInputSchema =
 	fundCampaignPledgesTableInsertSchema
@@ -10,8 +9,6 @@ export const mutationUpdateFundCampaignPledgeInputSchema =
 		})
 		.extend({
 			amount: fundCampaignPledgesTableInsertSchema.shape.amount.optional(),
-			currencyCode:
-				fundCampaignPledgesTableInsertSchema.shape.currencyCode.optional(),
 			id: fundCampaignPledgesTableInsertSchema.shape.id.unwrap(),
 		})
 		.refine(
@@ -31,10 +28,6 @@ export const MutationUpdateFundCampaignPledgeInput = builder
 		fields: (t) => ({
 			amount: t.int({
 				description: "The amount of pledged money.",
-			}),
-			currencyCode: t.field({
-				description: "Currency code of the fund campaign pledge.",
-				type: Iso4217CurrencyCode,
 			}),
 			id: t.id({
 				description:

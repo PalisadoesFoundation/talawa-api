@@ -299,7 +299,6 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 					amount: parsedArgs.input.amount,
 					campaignId: parsedArgs.input.campaignId,
 					creatorId: currentUserId,
-					currencyCode: parsedArgs.input.currencyCode,
 					id: uuidv7(),
 					note: parsedArgs.input.note,
 					pledgerId: parsedArgs.input.pledgerId,

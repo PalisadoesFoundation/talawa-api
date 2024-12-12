@@ -172,7 +172,7 @@ builder.mutationField("updateFund", (t) =>
 				.where(eq(fundsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Updated fund not being returned means that either it was updated or its `id` column was changed by external entities before this update operation could take place.
+			// Updated fund not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
 			if (updatedFund === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

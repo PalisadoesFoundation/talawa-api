@@ -4,6 +4,5 @@ import "./creator";
 import "./fund";
 import "./pledgedAmount";
 import "./pledges";
-import "./pledgesCount";
 import "./updatedAt";
 import "./updater";

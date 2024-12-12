@@ -64,10 +64,7 @@ export const tagsTable = pgTable(
 		 */
 		parentTagId: uuid("parent_tag_id").references(
 			(): AnyPgColumn => tagsTable.id,
-			{
-				onDelete: "cascade",
-				onUpdate: "cascade",
-			},
+			{},
 		),
 		/**
 		 * Date time at the time the tag was last updated.

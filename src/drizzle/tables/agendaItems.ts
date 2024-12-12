@@ -25,9 +25,10 @@ export const agendaItemsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		description: text("description"),
 
@@ -35,7 +36,10 @@ export const agendaItemsTable = pgTable(
 
 		eventId: uuid("event_id")
 			.notNull()
-			.references(() => eventsTable.id),
+			.references(() => eventsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		id: uuid("id").primaryKey().$default(uuidv7),
 
@@ -49,7 +53,10 @@ export const agendaItemsTable = pgTable(
 
 		sectionId: uuid("section_id")
 			.notNull()
-			.references(() => agendaSectionsTable.id),
+			.references(() => agendaSectionsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		type: agendaItemTypeEnum("type").notNull(),
 
@@ -61,7 +68,10 @@ export const agendaItemsTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 
-		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 	},
 	(self) => [
 		index().on(self.createdAt),

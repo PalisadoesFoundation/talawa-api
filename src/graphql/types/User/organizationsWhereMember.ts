@@ -13,7 +13,7 @@ import {
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { User } from "./User";
 
-const organizationsMemberOfArgumentsSchema =
+const organizationsWhereMemberArgumentsSchema =
 	defaultGraphQLConnectionArgumentsSchema
 		.transform(transformDefaultGraphQLConnectionArguments)
 		.transform((arg, ctx) => {
@@ -54,16 +54,16 @@ const cursorSchema = organizationMembershipsTableInsertSchema
 
 User.implement({
 	fields: (t) => ({
-		organizationsMemberOf: t.connection(
+		organizationsWhereMember: t.connection(
 			{
 				description:
-					"User field to read the organizations the user is a member of by traversing through them using a graphql connection.",
+					"GraphQL connection to traverse through the organizations the user is a member of.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,
 						error,
 						success,
-					} = organizationsMemberOfArgumentsSchema.safeParse(args);
+					} = organizationsWhereMemberArgumentsSchema.safeParse(args);
 
 					if (!success) {
 						throw new TalawaGraphQLError({
@@ -93,6 +93,7 @@ User.implement({
 							];
 
 					let where: SQL | undefined;
+
 					if (isInversed) {
 						if (cursor !== undefined) {
 							where = and(
@@ -197,15 +198,14 @@ User.implement({
 					}
 
 					return transformToDefaultGraphQLConnection({
-						createCursor: (organizationMembership) =>
+						createCursor: (membership) =>
 							Buffer.from(
 								JSON.stringify({
-									createdAt: organizationMembership.createdAt,
-									organizationId: organizationMembership.organizationId,
+									createdAt: membership.createdAt,
+									organizationId: membership.organizationId,
 								}),
 							).toString("base64url"),
-						createNode: (organizationMembership) =>
-							organizationMembership.organization,
+						createNode: (membership) => membership.organization,
 						parsedArgs,
 						rawNodes: organizationMemberships,
 					});

@@ -1,11 +1,9 @@
 import { z } from "zod";
 import { fundCampaignsTableInsertSchema } from "~/src/drizzle/tables/fundCampaigns";
 import { builder } from "~/src/graphql/builder";
-import { Iso4217CurrencyCode } from "~/src/graphql/enums/Iso4217CurrencyCode";
 
 export const mutationUpdateFundCampaignInputSchema = z
 	.object({
-		currencyCode: fundCampaignsTableInsertSchema.shape.currencyCode.optional(),
 		endAt: fundCampaignsTableInsertSchema.shape.endAt.optional(),
 		goalAmount: fundCampaignsTableInsertSchema.shape.goalAmount.optional(),
 		id: fundCampaignsTableInsertSchema.shape.id.unwrap(),
@@ -40,10 +38,6 @@ export const MutationUpdateFundCampaignInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
-			currencyCode: t.field({
-				description: "Currency code of the fund campaign.",
-				type: Iso4217CurrencyCode,
-			}),
 			endAt: t.field({
 				description: "Date time at the time the fund campaign ends at.",
 				type: "DateTime",

@@ -217,7 +217,7 @@ builder.mutationField("updateAdvertisement", (t) =>
 				.where(eq(advertisementsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Updated advertisement not being returned means that either it was updated or its `id` column was changed by external entities before this update operation.
+			// Updated advertisement not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
 			if (updatedAdvertisement === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
