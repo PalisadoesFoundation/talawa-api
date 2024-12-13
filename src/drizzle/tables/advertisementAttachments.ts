@@ -31,7 +31,7 @@ export const advertisementAttachmentsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the attachment.
+		 * Foreign key reference to the id of the user who created the attachment.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
@@ -40,7 +40,9 @@ export const advertisementAttachmentsTable = pgTable(
 		/**
 		 * Type of the attachment.
 		 */
-		type: advertisementAttachmentTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: advertisementAttachmentTypeEnum.options,
+		}).notNull(),
 		/**
 		 * Date time at the time the attachment was last updated.
 		 */

@@ -1,9 +1,6 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
- * Possible variants of the type of attachements of an event.
+ * Possible variants of the type of an attachement of an event.
  */
-export const eventAttachmentTypeEnum = pgEnum("event_attachment_type", [
-	"image",
-	"video",
-]);
+export const eventAttachmentTypeEnum = z.enum(["image", "video"]);

@@ -27,7 +27,7 @@ export const commentsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the comment.
+		 * Foreign key reference to the id of the user who created the comment.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",

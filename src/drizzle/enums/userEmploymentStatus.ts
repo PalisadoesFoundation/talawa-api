@@ -1,9 +1,9 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
  * Possible variants of the employment status(if applicable) of a user.
  */
-export const userEmploymentStatusEnum = pgEnum("user_employment_status", [
+export const userEmploymentStatusEnum = z.enum([
 	"full_time",
 	"part_time",
 	"unemployed",

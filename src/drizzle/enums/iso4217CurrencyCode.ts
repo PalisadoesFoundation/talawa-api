@@ -1,9 +1,9 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
- * Possible variants of the currency code defined in ISO 4217 standard published by the International Organization for Standardization (ISO) which defines alpha codes and numeric codes for the representation of currencies and provides information about the relationships between individual currencies and their minor units. More information at this link: {@link https://en.wikipedia.org/wiki/ISO_4217#Active_codes_(list_one)}
+ * Possible variants of the currency code defined in ISO 4217 standard published by the International Organization for Standardization (ISO) which defines alpha codes and numeric codes for the representation of currencies and provides information about the relationships between individual currencies and their minor units. More information at this link: {@link https://en.wikipedia.org/wiki/ISO_4217#Active_codes_(list_one)}.
  */
-export const iso4217CurrencyCodeEnum = pgEnum("iso_4217_currency_code", [
+export const iso4217CurrencyCodeEnum = z.enum([
 	"AED",
 	"AFN",
 	"ALL",

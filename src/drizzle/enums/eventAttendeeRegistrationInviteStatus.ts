@@ -1,9 +1,10 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
- * Possible variants for status of a user's registration as an attendee to an event.
+ * Possible variants of the status of a user's registration as an attendee to an event.
  */
-export const eventAttendeeRegistrationInviteStatusEnum = pgEnum(
-	"event_attendee_registration_invite_status",
-	["accepted", "declined", "no_response"],
-);
+export const eventAttendeeRegistrationInviteStatusEnum = z.enum([
+	"accepted",
+	"declined",
+	"no_response",
+]);

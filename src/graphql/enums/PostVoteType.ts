@@ -3,5 +3,5 @@ import { builder } from "~/src/graphql/builder";
 
 export const PostVoteType = builder.enumType("PostVoteType", {
 	description: "",
-	values: postVoteTypeEnum.enumValues,
+	values: postVoteTypeEnum.options,
 });

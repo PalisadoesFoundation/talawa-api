@@ -5,6 +5,6 @@ export const OrganizationMembershipRole = builder.enumType(
 	"OrganizationMembershipRole",
 	{
 		description: "",
-		values: organizationMembershipRoleEnum.enumValues,
+		values: organizationMembershipRoleEnum.options,
 	},
 );

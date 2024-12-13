@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import {
 	index,
 	pgTable,
+	text,
 	timestamp,
 	uniqueIndex,
 	uuid,
@@ -29,7 +30,7 @@ export const postVotesTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the vote.
+		 * Foreign key reference to the id of the user who created the vote.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
@@ -51,7 +52,9 @@ export const postVotesTable = pgTable(
 		/**
 		 * Type of the vote.
 		 */
-		type: postVoteTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: postVoteTypeEnum.options,
+		}).notNull(),
 		/**
 		 * Date time at the time the vote was last updated.
 		 */

@@ -35,7 +35,9 @@ export const organizationsTable = pgTable(
 		/**
 		 * Country code of the country the organization exists in.
 		 */
-		countryCode: iso3166Alpha2CountryCodeEnum("country_code"),
+		countryCode: text("country_code", {
+			enum: iso3166Alpha2CountryCodeEnum.options,
+		}),
 		/**
 		 * Date time at the time the organization was created.
 		 */
@@ -47,7 +49,7 @@ export const organizationsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the user.
+		 * Foreign key reference to the id of the user who created the user.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",

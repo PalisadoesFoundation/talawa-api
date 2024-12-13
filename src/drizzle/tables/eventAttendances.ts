@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { eventAttendeeRegistrationInviteStatusEnum } from "~/src/drizzle/enums/eventAttendeeRegistrationInviteStatus";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
@@ -46,8 +46,9 @@ export const eventAttendancesTable = pgTable(
 				onUpdate: "cascade",
 			}),
 
-		inviteStatus:
-			eventAttendeeRegistrationInviteStatusEnum("invite_status").notNull(),
+		inviteStatus: text("invite_status", {
+			enum: eventAttendeeRegistrationInviteStatusEnum.options,
+		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",

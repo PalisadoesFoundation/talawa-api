@@ -3,6 +3,7 @@ import {
 	index,
 	pgTable,
 	primaryKey,
+	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
@@ -40,8 +41,9 @@ export const volunteerGroupAssignmentsTable = pgTable(
 				onUpdate: "cascade",
 			}),
 
-		inviteStatus:
-			volunteerGroupAssignmentInviteStatusEnum("invite_status").notNull(),
+		inviteStatus: text("invite_status", {
+			enum: volunteerGroupAssignmentInviteStatusEnum.options,
+		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",

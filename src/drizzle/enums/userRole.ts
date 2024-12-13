@@ -1,6 +1,6 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
  * Possible variants of the role assigned to a user.
  */
-export const userRoleEnum = pgEnum("user_role", ["administrator", "regular"]);
+export const userRoleEnum = z.enum(["administrator", "regular"]);

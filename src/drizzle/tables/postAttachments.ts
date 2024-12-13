@@ -22,7 +22,7 @@ export const postAttachmentsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the attachment.
+		 * Foreign key reference to the id of the user who created the attachment.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
@@ -40,7 +40,9 @@ export const postAttachmentsTable = pgTable(
 		/**
 		 * Type of the attachment.
 		 */
-		type: postAttachmentTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: postAttachmentTypeEnum.options,
+		}).notNull(),
 		/**
 		 * Foreign key reference to the id of the user who last updated the attachment.
 		 */

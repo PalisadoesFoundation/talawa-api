@@ -43,7 +43,7 @@ export const fundCampaignPledgesTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the fund campaign pledge.
+		 * Foreign key reference to the id of the user who created the fund campaign pledge.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",

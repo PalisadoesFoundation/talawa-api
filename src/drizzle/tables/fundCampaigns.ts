@@ -32,7 +32,7 @@ export const fundCampaignsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the fund campaign.
+		 * Foreign key reference to the id of the user who created the fund campaign.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
@@ -41,7 +41,9 @@ export const fundCampaignsTable = pgTable(
 		/**
 		 * Currency code of the fund campaign.
 		 */
-		currencyCode: iso4217CurrencyCodeEnum("currency_code").notNull(),
+		currencyCode: text("currency_code", {
+			enum: iso4217CurrencyCodeEnum.options,
+		}).notNull(),
 		/**
 		 * Date time at the time the fund campaign ends at.
 		 */

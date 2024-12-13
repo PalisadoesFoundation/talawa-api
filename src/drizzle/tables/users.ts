@@ -71,7 +71,9 @@ export const usersTable = pgTable(
 		/**
 		 * Country code of the country the user is a citizen of.
 		 */
-		countryCode: iso3166Alpha2CountryCodeEnum("country_code"),
+		countryCode: text("country_code", {
+			enum: iso3166Alpha2CountryCodeEnum.options,
+		}),
 		/**
 		 * Date time at the time the user was created.
 		 */
@@ -83,7 +85,7 @@ export const usersTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the user.
+		 * Foreign key reference to the id of the user who created the user.
 		 */
 		creatorId: uuid("creator_id").references((): AnyPgColumn => usersTable.id, {
 			onDelete: "set null",
@@ -96,7 +98,9 @@ export const usersTable = pgTable(
 		/**
 		 * Primary education grade of the user.
 		 */
-		educationGrade: userEducationGradeEnum("education_grade"),
+		educationGrade: text("education_grade", {
+			enum: userEducationGradeEnum.options,
+		}),
 		/**
 		 * Email address of the user.
 		 */
@@ -104,7 +108,9 @@ export const usersTable = pgTable(
 		/**
 		 * Employment status of the user.
 		 */
-		employmentStatus: userEmploymentStatusEnum("employment_status"),
+		employmentStatus: text("employment_status", {
+			enum: userEmploymentStatusEnum.options,
+		}),
 		/**
 		 * The phone number to use to communicate with the user at their home.
 		 */
@@ -120,7 +126,9 @@ export const usersTable = pgTable(
 		/**
 		 * Marital status of the user.
 		 */
-		maritalStatus: userMaritalStatusEnum("marital_status"),
+		maritalStatus: text("marital_status", {
+			enum: userMaritalStatusEnum.options,
+		}),
 		/**
 		 * The phone number to use to communicate with the user on their mobile phone.
 		 */
@@ -132,7 +140,9 @@ export const usersTable = pgTable(
 		/**
 		 * The sex assigned to the user at their birth.
 		 */
-		natalSex: userNatalSexEnum("natal_sex"),
+		natalSex: text("natal_sex", {
+			enum: userNatalSexEnum.options,
+		}),
 		/**
 		 * Cryptographic hash of the password of the user to sign in to the application.
 		 */
@@ -144,7 +154,9 @@ export const usersTable = pgTable(
 		/**
 		 * Role assigned to the user.
 		 */
-		role: userRoleEnum("role").notNull(),
+		role: text("role", {
+			enum: userRoleEnum.options,
+		}).notNull(),
 		/**
 		 * Name of the state the user resides in within their country.
 		 */
