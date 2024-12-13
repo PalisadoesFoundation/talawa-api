@@ -3,5 +3,5 @@ import { builder } from "~/src/graphql/builder";
 
 export const UserEmploymentStatus = builder.enumType("UserEmploymentStatus", {
 	description: "",
-	values: userEmploymentStatusEnum.enumValues,
+	values: userEmploymentStatusEnum.options,
 });

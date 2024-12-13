@@ -4,7 +4,7 @@
 export { advertisementAttachmentTypeEnum } from "./enums/advertisementAttachmentType";
 export { advertisementTypeEnum } from "./enums/advertisementType";
 export { agendaItemTypeEnum } from "./enums/agendaItemType";
-export { commmentVoteTypeEnum } from "./enums/commentVoteType";
+export { commentVoteTypeEnum } from "./enums/commentVoteType";
 export { eventAttachmentTypeEnum } from "./enums/eventAttachmentType";
 export { eventAttendeeRegistrationInviteStatusEnum } from "./enums/eventAttendeeRegistrationInviteStatus";
 export { familyMembershipRoleEnum } from "./enums/familyMembershipRole";

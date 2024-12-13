@@ -1,9 +1,6 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
- * Possible variants of the type of votes on a post.
+ * Possible variants of the type of a vote on a post.
  */
-export const postVoteTypeEnum = pgEnum("post_vote_type", [
-	"down_vote",
-	"up_vote",
-]);
+export const postVoteTypeEnum = z.enum(["down_vote", "up_vote"]);

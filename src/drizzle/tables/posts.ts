@@ -29,7 +29,7 @@ export const postsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the post.
+		 * Foreign key reference to the id of the user who created the post.
 		 */
 		creatorId: uuid("creator_id")
 			.notNull()

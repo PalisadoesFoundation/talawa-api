@@ -1,9 +1,9 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
  * Possible variants of the martial status(if applicable) of a user.
  */
-export const userMaritalStatusEnum = pgEnum("user_marital_status", [
+export const userMaritalStatusEnum = z.enum([
 	"divorced",
 	"engaged",
 	"married",

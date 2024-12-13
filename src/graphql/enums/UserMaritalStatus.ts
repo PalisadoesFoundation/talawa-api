@@ -3,5 +3,5 @@ import { builder } from "~/src/graphql/builder";
 
 export const UserMaritalStatus = builder.enumType("UserMaritalStatus", {
 	description: "",
-	values: userMaritalStatusEnum.enumValues,
+	values: userMaritalStatusEnum.options,
 });

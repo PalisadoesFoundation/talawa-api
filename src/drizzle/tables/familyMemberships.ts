@@ -3,6 +3,7 @@ import {
 	index,
 	pgTable,
 	primaryKey,
+	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
@@ -40,7 +41,9 @@ export const familyMembershipsTable = pgTable(
 				onUpdate: "cascade",
 			}),
 
-		role: familyMembershipRoleEnum("role").notNull(),
+		role: text("role", {
+			enum: familyMembershipRoleEnum.options,
+		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",

@@ -1,9 +1,9 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
- * Possible variants of education grade(if applicable) of a user.
+ * Possible variants of the education grade(if applicable) of a user.
  */
-export const userEducationGradeEnum = pgEnum("user_education_grade", [
+export const userEducationGradeEnum = z.enum([
 	"grade_1",
 	"grade_2",
 	"grade_3",

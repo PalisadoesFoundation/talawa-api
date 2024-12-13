@@ -58,7 +58,9 @@ export const agendaItemsTable = pgTable(
 				onUpdate: "cascade",
 			}),
 
-		type: agendaItemTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: agendaItemTypeEnum.options,
+		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",

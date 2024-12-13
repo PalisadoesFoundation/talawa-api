@@ -20,7 +20,9 @@ export const venueAttachmentsTable = pgTable(
 			onUpdate: "cascade",
 		}),
 
-		type: venueAttachmentTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: venueAttachmentTypeEnum.options,
+		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",

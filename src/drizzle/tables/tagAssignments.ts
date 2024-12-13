@@ -36,7 +36,7 @@ export const tagAssignmentsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the tag assignment.
+		 * Foreign key reference to the id of the user who created the tag assignment.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",

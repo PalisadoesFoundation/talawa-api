@@ -49,7 +49,9 @@ export const recurrencesTable = pgTable(
 
 		seperationCount: integer("seperation_count"),
 
-		type: recurrenceTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: recurrenceTypeEnum.options,
+		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",

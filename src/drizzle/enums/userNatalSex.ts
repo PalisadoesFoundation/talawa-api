@@ -1,10 +1,6 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
  * Possible variants of the sex assigned to a user at birth.
  */
-export const userNatalSexEnum = pgEnum("user_natal_sex", [
-	"female",
-	"intersex",
-	"male",
-]);
+export const userNatalSexEnum = z.enum(["female", "intersex", "male"]);

@@ -42,7 +42,9 @@ export const eventAttachmentsTable = pgTable(
 
 		uri: text("uri", {}).notNull(),
 
-		type: eventAttachmentTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: eventAttachmentTypeEnum.options,
+		}).notNull(),
 	},
 	(self) => [
 		index().on(self.eventId),
