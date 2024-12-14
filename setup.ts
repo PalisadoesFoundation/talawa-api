@@ -5,7 +5,7 @@ import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
 import type { ExecException } from "child_process";
-import { exec } from "child_process";
+import { exec, spawn } from "child_process";
 import { MongoClient } from "mongodb";
 import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import {
@@ -460,6 +460,63 @@ export async function mongoDB(): Promise<void> {
     console.error(err);
     abort();
   }
+}
+
+/*
+  For Docker setup
+*/
+
+async function runDockerComposeWithLogs(): Promise<void> {
+  // Check if Docker daemon is running
+  try {
+    await new Promise((resolve, reject) => {
+      const dockerCheck = spawn(
+        process.platform === "win32" ? "docker.exe" : "docker",
+        ["info"],
+        { stdio: "ignore" },
+      );
+      dockerCheck.on("error", reject);
+      dockerCheck.on("close", (code) =>
+        code === 0
+          ? resolve(null)
+          : reject(new Error("Docker daemon not running")),
+      );
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Docker daemon is not running. Please start Docker and try again. Details: ${errorMessage}`,
+    );
+  }
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      dockerCompose.kill();
+      reject(new Error("Docker compose operation timed out after 5 minutes"));
+    }, 300000);
+
+    const dockerCompose = spawn(
+      process.platform === "win32" ? "docker-compose.exe" : "docker-compose",
+      ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"],
+      { stdio: "inherit" },
+    );
+
+    dockerCompose.on("error", (error) => {
+      clearTimeout(timeout);
+      console.error("Error running docker-compose:", error);
+      reject(error);
+    });
+
+    dockerCompose.on("close", (code) => {
+      clearTimeout(timeout);
+      if (code === 0) {
+        console.log("Docker Compose completed successfully.");
+        resolve();
+      } else {
+        reject(new Error(`Docker Compose exited with code ${code}`));
+      }
+    });
+  });
 }
 
 //Get recaptcha details
@@ -917,7 +974,7 @@ async function main(): Promise<void> {
     type: "confirm",
     name: "isDockerInstallation",
     message: "Are you setting up this project using Docker?",
-    default: false,
+    default: process.env.MONGO ? false : true,
   });
 
   if (isDockerInstallation) {
@@ -1181,6 +1238,64 @@ async function main(): Promise<void> {
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉",
   );
+
+  const { shouldStartDockerContainers } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldStartDockerContainers",
+    message: "Do you want to start the Docker containers now?",
+    default: true,
+  });
+
+  const { shouldImportSampleData } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldImportSampleData",
+    message:
+      "Do you want to import Talawa sample data for testing and evaluation purposes?",
+    default: true,
+  });
+
+  if (isDockerInstallation) {
+    if (shouldStartDockerContainers) {
+      console.log("Starting docker container...");
+      try {
+        await runDockerComposeWithLogs();
+        console.log("Docker containers have been built successfully!");
+        // Wait for mongoDB to be ready
+        console.log("Waiting for mongoDB to be ready...");
+        let isConnected = false;
+        const maxRetries = 30; // 30 seconds timeout
+        let retryCount = 0;
+        while (!isConnected) {
+          if (retryCount >= maxRetries) {
+            throw new Error(
+              "Timed out waiting for MongoDB to be ready after 30 seconds",
+            );
+          }
+          try {
+            const client = new MongoClient(process.env.MONGO_DB_URL as string);
+            await client.connect();
+            await client.db().command({ ping: 1 });
+            client.close();
+            isConnected = true;
+            console.log("MongoDB is ready!");
+          } catch (err) {
+            const error = err instanceof Error ? err.message : String(err);
+            console.log(
+              `Waiting for MongoDB to be ready... Retry ${retryCount + 1}/${maxRetries}. Details: ${error}`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            retryCount++;
+          }
+        }
+
+        if (shouldImportSampleData) {
+          await importData();
+        }
+      } catch (err) {
+        console.log("Some error occurred: " + err);
+      }
+    }
+  }
 }
 
 main();
