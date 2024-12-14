@@ -67,15 +67,19 @@ export const types = gql`
     createdBy: User
     updatedBy: User
   }
+
   # Action Item for a ActionItemCategory
   type ActionItem {
     _id: ID!
-    assignee: User
+    assignee: EventVolunteer
+    assigneeGroup: EventVolunteerGroup
+    assigneeUser: User
+    assigneeType: String!
     assigner: User
     actionItemCategory: ActionItemCategory
     preCompletionNotes: String
     postCompletionNotes: String
-    allotedHours: Float
+    allottedHours: Float
     assignmentDate: Date!
     dueDate: Date!
     completionDate: Date!
@@ -252,19 +256,34 @@ export const types = gql`
     feedback: [Feedback!]!
     averageFeedbackScore: Float
     agendaItems: [AgendaItem]
+    volunteers: [EventVolunteer]
+    volunteerGroups: [EventVolunteerGroup]
   }
 
   type EventVolunteer {
     _id: ID!
-    createdAt: DateTime!
+    user: User!
     creator: User
     event: Event
-    group: EventVolunteerGroup
-    isAssigned: Boolean
-    isInvited: Boolean
-    response: String
-    user: User!
+    groups: [EventVolunteerGroup]
+    hasAccepted: Boolean!
+    isPublic: Boolean!
+    hoursVolunteered: Float!
+    assignments: [ActionItem]
+    hoursHistory: [HoursHistory]
+    createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  type HoursHistory {
+    hours: Float!
+    date: Date!
+  }
+
+  type VolunteerRank {
+    rank: Int!
+    user: User!
+    hoursVolunteered: Float!
   }
 
   type EventAttendee {
@@ -283,14 +302,28 @@ export const types = gql`
 
   type EventVolunteerGroup {
     _id: ID!
-    createdAt: DateTime!
     creator: User
     event: Event
     leader: User!
     name: String
+    description: String
+    createdAt: DateTime!
     updatedAt: DateTime!
     volunteers: [EventVolunteer]
     volunteersRequired: Int
+    assignments: [ActionItem]
+  }
+
+  type VolunteerMembership {
+    _id: ID!
+    status: String!
+    volunteer: EventVolunteer!
+    event: Event!
+    group: EventVolunteerGroup
+    createdBy: User
+    updatedBy: User
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type Feedback {
@@ -300,6 +333,30 @@ export const types = gql`
     review: String
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  type File {
+    _id: ID!
+    fileName: String!
+    mimeType: String!
+    size: Int!
+    hash: Hash!
+    uri: String!
+    referenceCount: Int!
+    metadata: FileMetadata!
+    encryption: Boolean!
+    archived: Boolean!
+    visibility: FileVisibility!
+    backupStatus: String!
+    status: Status!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    archivedAt: DateTime
+  }
+
+  type FileMetadata {
+    objectKey: String!
+    bucketName: String!
   }
 
   type Fund {
@@ -346,6 +403,11 @@ export const types = gql`
     updatedAt: DateTime!
     organization: Organization!
     admins: [User!]!
+  }
+
+  type Hash {
+    value: String!
+    algorithm: String!
   }
 
   type Language {
@@ -423,6 +485,8 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagWhereInput
+      sortedBy: UserTagSortedByInput
     ): UserTagsConnection
     posts(
       after: String
@@ -509,8 +573,7 @@ export const types = gql`
     createdAt: DateTime!
     creator: User
     updatedAt: DateTime!
-    imageUrl: URL
-    videoUrl: URL
+    file: File
     organization: Organization!
     likedBy: [User]
     comments: [Comment]
@@ -588,6 +651,7 @@ export const types = gql`
     firstName: String!
     gender: Gender
     image: String
+    file: File
     joinedOrganizations: [Organization]
     lastName: String!
     maritalStatus: MaritalStatus
@@ -595,6 +659,7 @@ export const types = gql`
     phone: UserPhone
     membershipRequests: [MembershipRequest]
     registeredEvents: [Event]
+    eventsAttended: [Event]
     pluginCreationAllowed: Boolean!
     tagsAssignedWith(
       after: String
@@ -663,6 +728,10 @@ export const types = gql`
     """
     parentTag: UserTag
     """
+    A field to traverse the ancestor tags of this UserTag.
+    """
+    ancestorTags: [UserTag]
+    """
     A connection field to traverse a list of UserTag this UserTag is a
     parent to.
     """
@@ -671,6 +740,8 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagWhereInput
+      sortedBy: UserTagSortedByInput
     ): UserTagsConnection
     """
     A connection field to traverse a list of User this UserTag is assigned
@@ -681,6 +752,8 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagUsersAssignedToWhereInput
+      sortedBy: UserTagUsersAssignedToSortedByInput
     ): UsersConnection
 
     """
@@ -692,6 +765,7 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
+      where: UserTagUsersToAssignToWhereInput
     ): UsersConnection
   }
 

@@ -139,6 +139,10 @@ export const mutations = gql`
 
     createVenue(data: VenueInput!): Venue @auth
 
+    createVolunteerMembership(
+      data: VolunteerMembershipInput!
+    ): VolunteerMembership! @auth
+
     deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
 
     deleteAgendaCategory(id: ID!): ID! @auth
@@ -309,8 +313,11 @@ export const mutations = gql`
 
     updateEventVolunteerGroup(
       id: ID!
-      data: UpdateEventVolunteerGroupInput
+      data: UpdateEventVolunteerGroupInput!
     ): EventVolunteerGroup! @auth
+
+    updateVolunteerMembership(id: ID!, status: String!): VolunteerMembership!
+      @auth
 
     updateFundraisingCampaign(
       id: ID!

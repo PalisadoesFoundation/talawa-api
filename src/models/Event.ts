@@ -7,6 +7,7 @@ import type { InterfaceEventVolunteerGroup } from "./EventVolunteerGroup";
 import type { InterfaceRecurrenceRule } from "./RecurrenceRule";
 import type { InterfaceAgendaItem } from "./AgendaItem";
 import type { InterfaceChat } from "./Chat";
+import type { InterfaceEventVolunteer } from "./EventVolunteer";
 
 /**
  * Represents a document for an event in the MongoDB database.
@@ -38,6 +39,7 @@ export interface InterfaceEvent {
   startTime: string | undefined;
   title: string;
   updatedAt: Date;
+  volunteers: PopulatedDoc<InterfaceEventVolunteer & Document>[];
   volunteerGroups: PopulatedDoc<InterfaceEventVolunteerGroup & Document>[];
   agendaItems: PopulatedDoc<InterfaceAgendaItem & Document>[];
   chat: PopulatedDoc<InterfaceChat & Document>;
@@ -68,6 +70,7 @@ export interface InterfaceEvent {
  * @param admins - Array of admins for the event.
  * @param organization - Reference to the organization hosting the event.
  * @param volunteerGroups - Array of volunteer groups associated with the event.
+ * @param volunteers - Array of volunteers associated with the event.
  * @param createdAt - Timestamp of when the event was created.
  * @param updatedAt - Timestamp of when the event was last updated.
  */
@@ -185,6 +188,14 @@ const eventSchema = new Schema(
       ref: "Chat",
       required: false,
     },
+    volunteers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "EventVolunteer",
+        required: true,
+        default: [],
+      },
+    ],
     volunteerGroups: [
       {
         type: Schema.Types.ObjectId,

@@ -2,9 +2,7 @@ import type { UserTagResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfaceOrganizationTagUser } from "../../models";
 import { OrganizationTagUser } from "../../models";
 import {
-  getCommonGraphQLConnectionFilter,
-  getCommonGraphQLConnectionSort,
-  parseGraphQLConnectionArguments,
+  parseGraphQLConnectionArgumentsWithSortedByAndWhere,
   transformToDefaultGraphQLConnection,
   type DefaultGraphQLArgumentError,
   type ParseGraphQLConnectionCursorArguments,
@@ -13,6 +11,12 @@ import {
 import { GraphQLError } from "graphql";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import type { Types } from "mongoose";
+import {
+  getUserTagGraphQLConnectionFilter,
+  getUserTagGraphQLConnectionSort,
+  parseUserTagSortedBy,
+  parseUserTagWhere,
+} from "../../utilities/userTagsPaginationUtils";
 
 /**
  * Resolver function for the `childTags` field of a `UserTag`.
@@ -26,8 +30,8 @@ import type { Types } from "mongoose";
  * @see OrganizationTagUser - The OrganizationTagUser model used to interact with the organization tag users collection in the database.
  * @see parseGraphQLConnectionArguments - The function used to parse the GraphQL connection arguments (filter, sort, pagination).
  * @see transformToDefaultGraphQLConnection - The function used to transform the list of child tags into a connection object.
- * @see getCommonGraphQLConnectionFilter - The function used to get the common filter object for the GraphQL connection.
- * @see getCommonGraphQLConnectionSort - The function used to get the common sort object for the GraphQL connection.
+ * @see getGraphQLConnectionFilter - The function used to get the common filter object for the GraphQL connection.
+ * @see getGraphQLConnectionSort - The function used to get the common sort object for the GraphQL connection.
  * @see MAXIMUM_FETCH_LIMIT - The maximum number of child tags that can be fetched in a single request.
  * @see GraphQLError - The error class used to throw GraphQL errors.
  * @see UserTagResolvers - The type definition for the resolvers of the UserTag fields.
@@ -37,14 +41,20 @@ export const childTags: UserTagResolvers["childTags"] = async (
   parent,
   args,
 ) => {
+  const parseWhereResult = parseUserTagWhere(args.where);
+  const parseSortedByResult = parseUserTagSortedBy(args.sortedBy);
+
   const parseGraphQLConnectionArgumentsResult =
-    await parseGraphQLConnectionArguments({
+    await parseGraphQLConnectionArgumentsWithSortedByAndWhere({
       args,
-      parseCursor: (args) =>
+      parseSortedByResult,
+      parseWhereResult,
+      parseCursor: /* c8 ignore start */ (args) =>
         parseCursor({
           ...args,
           parentTagId: parent._id,
         }),
+      /* c8 ignore stop */
       maximumLimit: MAXIMUM_FETCH_LIMIT,
     });
 
@@ -59,18 +69,27 @@ export const childTags: UserTagResolvers["childTags"] = async (
 
   const { parsedArgs } = parseGraphQLConnectionArgumentsResult;
 
-  const filter = getCommonGraphQLConnectionFilter({
+  const objectListFilter = getUserTagGraphQLConnectionFilter({
     cursor: parsedArgs.cursor,
     direction: parsedArgs.direction,
+    sortById: parsedArgs.sort.sortById,
+    nameStartsWith: parsedArgs.filter.nameStartsWith,
   });
 
-  const sort = getCommonGraphQLConnectionSort({
+  // don't use _id as a filter in while counting the documents
+  // _id is only used for pagination
+  const totalCountFilter = Object.fromEntries(
+    Object.entries(objectListFilter).filter(([key]) => key !== "_id"),
+  );
+
+  const sort = getUserTagGraphQLConnectionSort({
     direction: parsedArgs.direction,
+    sortById: parsedArgs.sort.sortById,
   });
 
   const [objectList, totalCount] = await Promise.all([
     OrganizationTagUser.find({
-      ...filter,
+      ...objectListFilter,
       parentTagId: parent._id,
     })
       .sort(sort)
@@ -78,6 +97,7 @@ export const childTags: UserTagResolvers["childTags"] = async (
       .lean()
       .exec(),
     OrganizationTagUser.find({
+      ...totalCountFilter,
       parentTagId: parent._id,
     })
       .countDocuments()

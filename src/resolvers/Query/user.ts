@@ -43,7 +43,6 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
   return {
     user: {
       ...user,
-      image: user?.image ? `${context.apiRootUrl}${user.image}` : null,
       organizationsBlockedBy: [],
     },
     appUserProfile: userAppProfile,

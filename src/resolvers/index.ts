@@ -21,7 +21,6 @@ import { Comment } from "./Comment";
 import { Chat } from "./Chat";
 import { ChatMessage } from "./ChatMessage";
 import { Event } from "./Event";
-import { EventVolunteer } from "./EventVolunteer";
 import { Feedback } from "./Feedback";
 import { Fund } from "./Fund";
 import { MembershipRequest } from "./MembershipRequest";
@@ -51,7 +50,6 @@ const resolvers: Resolvers = {
   Chat,
   ChatMessage,
   Event,
-  EventVolunteer,
   Feedback,
   Fund,
   UserFamily,
@@ -86,8 +84,6 @@ const resolversComposition = {
   "Mutation.blockPluginCreationBySuperadmin": [currentUserExists()],
   "Mutation.createComment": [currentUserExists()],
   "Mutation.createChat": [currentUserExists()],
-  "Mutation.createDirectChat": [currentUserExists()],
-  "Mutation.createGroupChat": [currentUserExists()],
   "Mutation.createOrganization": [currentUserExists()],
   "Mutation.createVenue": [currentUserExists()],
   "Mutation.deleteVenue": [currentUserExists()],

@@ -1,38 +1,29 @@
 import type mongoose from "mongoose";
-import { Types } from "mongoose";
-import type { MutationUpdateEventVolunteerArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import {
-  USER_NOT_FOUND_ERROR,
-  EventVolunteerResponse,
-  EVENT_VOLUNTEER_NOT_FOUND_ERROR,
-  EVENT_VOLUNTEER_INVITE_USER_MISTMATCH,
-} from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
-import type {
-  TestEventType,
-  TestEventVolunteerType,
-} from "../../helpers/events";
-import { createTestEventAndVolunteer } from "../../helpers/events";
-import { createTestUser } from "../../helpers/user";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import type { TestEventVolunteerType } from "../../helpers/events";
+import type { TestUserType } from "../../helpers/user";
+import { createVolunteerAndActions } from "../../helpers/volunteers";
+import type { InterfaceEventVolunteer } from "../../../src/models";
+import { updateEventVolunteer } from "../../../src/resolvers/Mutation/updateEventVolunteer";
+import { EVENT_VOLUNTEER_INVITE_USER_MISTMATCH } from "../../../src/constants";
+import { requestContext } from "../../../src/libraries";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testEvent: TestEventType;
-let testEventVolunteer: TestEventVolunteerType;
+let testUser1: TestUserType;
+let testUser2: TestUserType;
+let testEventVolunteer1: TestEventVolunteerType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestEventAndVolunteer();
-  testEvent = temp[2];
-  testEventVolunteer = temp[3];
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message,
+  );
+  const [, , user1, user2, volunteer1] = await createVolunteerAndActions();
+
+  testUser1 = user1;
+  testUser2 = user2;
+  testEventVolunteer1 = volunteer1;
 });
 
 afterAll(async () => {
@@ -40,161 +31,55 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> updateEventVolunteer", () => {
-  afterEach(() => {
-    vi.doUnmock("../../../src/constants");
-    vi.resetModules();
-  });
-  it(`throws NotFoundError if no user exists with _id === context.userId `, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
+  it(`throws error if context.userId !== volunteer._id`, async () => {
     try {
-      const args: MutationUpdateEventVolunteerArgs = {
-        id: testEventVolunteer?._id,
-        data: {
-          response: EventVolunteerResponse.YES,
+      (await updateEventVolunteer?.(
+        {},
+        {
+          id: testEventVolunteer1?._id,
+          data: {
+            isPublic: false,
+          },
         },
-      };
-
-      const context = { userId: new Types.ObjectId().toString() };
-
-      const { updateEventVolunteer: updateEventVolunteerResolver } =
-        await import("../../../src/resolvers/Mutation/updateEventVolunteer");
-
-      await updateEventVolunteerResolver?.({}, args, context);
+        { userId: testUser2?._id.toString() },
+      )) as unknown as InterfaceEventVolunteer[];
     } catch (error: unknown) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-  });
-
-  it(`throws NotFoundError if no event volunteer exists with _id === args.id`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationUpdateEventVolunteerArgs = {
-        id: new Types.ObjectId().toString(),
-        data: {
-          response: EventVolunteerResponse.YES,
-        },
-      };
-
-      const context = { userId: testEventVolunteer?.userId };
-
-      const { updateEventVolunteer: updateEventVolunteerResolver } =
-        await import("../../../src/resolvers/Mutation/updateEventVolunteer");
-
-      await updateEventVolunteerResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toHaveBeenLastCalledWith(
-        EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE,
-      );
-      expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-  });
-
-  it(`throws ConflictError if userId of volunteer is not equal to context.userId `, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationUpdateEventVolunteerArgs = {
-        id: testEventVolunteer?._id,
-        data: {
-          response: EventVolunteerResponse.YES,
-        },
-      };
-
-      const testUser2 = await createTestUser();
-      const context = { userId: testUser2?._id };
-      const { updateEventVolunteer: updateEventVolunteerResolver } =
-        await import("../../../src/resolvers/Mutation/updateEventVolunteer");
-
-      await updateEventVolunteerResolver?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toHaveBeenLastCalledWith(
         EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE,
       );
-      expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_INVITE_USER_MISTMATCH.MESSAGE}`,
-      );
     }
   });
 
-  it(`updates the Event Volunteer with _id === args.id and returns it`, async () => {
-    const args: MutationUpdateEventVolunteerArgs = {
-      id: testEventVolunteer?._id,
-      data: {
-        isAssigned: true,
-        response: EventVolunteerResponse.YES,
-        isInvited: true,
-        eventId: testEvent?._id,
-      },
-    };
-
-    const context = { userId: testEventVolunteer?.userId };
-
-    const { updateEventVolunteer: updateEventVolunteerResolver } = await import(
-      "../../../src/resolvers/Mutation/updateEventVolunteer"
-    );
-
-    const updatedEventVolunteer = await updateEventVolunteerResolver?.(
+  it(`data remains same if no values are updated`, async () => {
+    const updatedVolunteer = (await updateEventVolunteer?.(
       {},
-      args,
-      context,
-    );
-
-    expect(updatedEventVolunteer).toEqual(
-      expect.objectContaining({
-        isAssigned: true,
-        response: EventVolunteerResponse.YES,
-        eventId: testEvent?._id,
-        isInvited: true,
-      }),
+      {
+        id: testEventVolunteer1?._id,
+        data: {},
+      },
+      { userId: testUser1?._id.toString() },
+    )) as unknown as InterfaceEventVolunteer;
+    expect(updatedVolunteer.isPublic).toEqual(testEventVolunteer1?.isPublic);
+    expect(updatedVolunteer.hasAccepted).toEqual(
+      testEventVolunteer1?.hasAccepted,
     );
   });
 
-  it(`updates the Event Volunteer with _id === args.id, even if args.data is empty object`, async () => {
-    const t = await createTestEventAndVolunteer();
-    testEventVolunteer = t[3];
-    const args: MutationUpdateEventVolunteerArgs = {
-      id: testEventVolunteer?._id,
-      data: {},
-    };
-
-    const context = { userId: testEventVolunteer?.userId };
-
-    const { updateEventVolunteer: updateEventVolunteerResolver } = await import(
-      "../../../src/resolvers/Mutation/updateEventVolunteer"
-    );
-
-    const updatedEventVolunteer = await updateEventVolunteerResolver?.(
+  it(`updates EventVolunteer`, async () => {
+    const updatedVolunteer = (await updateEventVolunteer?.(
       {},
-      args,
-      context,
-    );
-
-    expect(updatedEventVolunteer).toEqual(
-      expect.objectContaining({
-        isAssigned: testEventVolunteer?.isAssigned,
-        response: testEventVolunteer?.response,
-        eventId: testEventVolunteer?.eventId,
-        isInvited: testEventVolunteer?.isInvited,
-      }),
-    );
+      {
+        id: testEventVolunteer1?._id,
+        data: {
+          isPublic: false,
+          hasAccepted: false,
+          assignments: [],
+        },
+      },
+      { userId: testUser1?._id.toString() },
+    )) as unknown as InterfaceEventVolunteer;
+    expect(updatedVolunteer.isPublic).toEqual(false);
+    expect(updatedVolunteer.hasAccepted).toEqual(false);
+    expect(updatedVolunteer.assignments).toEqual([]);
   });
 });

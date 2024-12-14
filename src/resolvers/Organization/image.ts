@@ -12,13 +12,9 @@ import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
  * @see OrganizationResolvers - The type definition for the resolvers of the Organization fields.
  *
  */
-export const image: OrganizationResolvers["image"] = (
-  parent,
-  _args,
-  context,
-) => {
+export const image: OrganizationResolvers["image"] = (parent) => {
   if (parent.image) {
-    return `${context.apiRootUrl}${parent.image}`;
+    return parent.image;
   }
   return null;
 };

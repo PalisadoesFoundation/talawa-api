@@ -14,6 +14,7 @@ import type {
   PledgeWhereInput,
   ActionItemCategoryWhereInput,
   ChatWhereInput,
+  EventVolunteerWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
 /**
@@ -46,6 +47,7 @@ export const getWhere = <T = unknown>(
             PledgeWhereInput &
             VenueWhereInput &
             ChatWhereInput
+            EventVolunteerWhereInput
         >
       >
     | undefined,
@@ -773,21 +775,18 @@ export const getWhere = <T = unknown>(
     };
   }
 
-  // Returns objects where volunteerId is present in volunteers list
-  if (where.volunteerId) {
-    wherePayload = {
-      ...wherePayload,
-      volunteers: {
-        $in: [where.volunteerId],
-      },
-    };
-  }
-
   // Returns object with provided is_disabled condition
   if (where.is_disabled !== undefined) {
     wherePayload = {
       ...wherePayload,
       isDisabled: where.is_disabled,
+    };
+  }
+
+  if (where.hasAccepted !== undefined) {
+    wherePayload = {
+      ...wherePayload,
+      hasAccepted: where.hasAccepted,
     };
   }
 

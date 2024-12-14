@@ -15,6 +15,6 @@ import type { EventResolvers } from "../../types/generatedGraphQLTypes";
  */
 export const actionItems: EventResolvers["actionItems"] = async (parent) => {
   return await ActionItem.find({
-    eventId: parent._id,
+    event: parent._id,
   }).lean();
 };

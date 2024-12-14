@@ -78,7 +78,7 @@ export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
     }
   });
 
-  // add createdDirectChatMessage to directChat
+  // add createdChatMessage to Chat
   await Chat.updateOne(
     {
       _id: chat._id,

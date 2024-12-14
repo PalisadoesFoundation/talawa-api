@@ -6,6 +6,7 @@ import {
   USER_NOT_FOUND_ERROR,
   EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  EVENT_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -22,6 +23,7 @@ import { createTestEvent } from "../../helpers/events";
 import { EventVolunteer, EventVolunteerGroup } from "../../../src/models";
 import { createTestUser } from "../../helpers/user";
 import type { TestEventVolunteerGroupType } from "./createEventVolunteer.spec";
+import { removeEventVolunteerGroup } from "../../../src/resolvers/Mutation/removeEventVolunteerGroup";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -31,23 +33,27 @@ let testGroup: TestEventVolunteerGroupType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message,
+  );
   testUser = await createTestUser();
   [eventAdminUser, , testEvent] = await createTestEvent();
 
   testGroup = await EventVolunteerGroup.create({
-    creatorId: eventAdminUser?._id,
-    eventId: testEvent?._id,
-    leaderId: eventAdminUser?._id,
+    creator: eventAdminUser?._id,
+    event: testEvent?._id,
+    leader: eventAdminUser?._id,
     name: "Test group",
   });
 
   await EventVolunteer.create({
-    creatorId: eventAdminUser?._id,
-    userId: testUser?._id,
-    eventId: testEvent?._id,
-    groupId: testGroup._id,
-    isInvited: true,
-    isAssigned: false,
+    creator: eventAdminUser?._id,
+    user: testUser?._id,
+    event: testEvent?._id,
+    groups: [testGroup._id],
+    hasAccepted: false,
+    isPublic: false,
   });
 });
 
@@ -61,12 +67,6 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
     vi.resetModules();
   });
   it(`throws NotFoundError if no user exists with _id === context.userId `, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
     try {
       const args: MutationUpdateEventVolunteerArgs = {
         id: testGroup?._id,
@@ -74,27 +74,20 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
 
       const context = { userId: new Types.ObjectId().toString() };
 
-      const { removeEventVolunteerGroup: removeEventVolunteerGroupResolver } =
+      const { removeEventVolunteerGroup: removeEventVolunteerGroup } =
         await import(
           "../../../src/resolvers/Mutation/removeEventVolunteerGroup"
         );
 
-      await removeEventVolunteerGroupResolver?.({}, args, context);
+      await removeEventVolunteerGroup?.({}, args, context);
     } catch (error: unknown) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`,
+        `${USER_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
 
   it(`throws NotFoundError if no event volunteer group exists with _id === args.id`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
     try {
       const args: MutationUpdateEventVolunteerArgs = {
         id: new Types.ObjectId().toString(),
@@ -102,29 +95,15 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
 
       const context = { userId: testUser?._id };
 
-      const { removeEventVolunteerGroup: removeEventVolunteerGroupResolver } =
-        await import(
-          "../../../src/resolvers/Mutation/removeEventVolunteerGroup"
-        );
-
-      await removeEventVolunteerGroupResolver?.({}, args, context);
+      await removeEventVolunteerGroup?.({}, args, context);
     } catch (error: unknown) {
-      expect(spy).toHaveBeenLastCalledWith(
-        EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE,
-      );
       expect((error as Error).message).toEqual(
-        `Translated ${EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE}`,
+        `${EVENT_VOLUNTEER_GROUP_NOT_FOUND_ERROR.MESSAGE}`,
       );
     }
   });
 
   it(`throws UnauthorizedError if current user is not an event admin`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
     try {
       const args: MutationUpdateEventVolunteerArgs = {
         id: testGroup?._id,
@@ -132,16 +111,10 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
 
       const context = { userId: testUser?._id };
 
-      const { removeEventVolunteerGroup: removeEventVolunteerGroupResolver } =
-        await import(
-          "../../../src/resolvers/Mutation/removeEventVolunteerGroup"
-        );
-
-      await removeEventVolunteerGroupResolver?.({}, args, context);
+      await removeEventVolunteerGroup?.({}, args, context);
     } catch (error: unknown) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`,
       );
     }
   });
@@ -152,10 +125,8 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
     };
 
     const context = { userId: eventAdminUser?._id };
-    const { removeEventVolunteerGroup: removeEventVolunteerGroupResolver } =
-      await import("../../../src/resolvers/Mutation/removeEventVolunteerGroup");
 
-    const deletedVolunteerGroup = await removeEventVolunteerGroupResolver?.(
+    const deletedVolunteerGroup = await removeEventVolunteerGroup?.(
       {},
       args,
       context,
@@ -164,11 +135,34 @@ describe("resolvers -> Mutation -> removeEventVolunteerGroup", () => {
     expect(deletedVolunteerGroup).toEqual(
       expect.objectContaining({
         _id: testGroup?._id,
-        leaderId: testGroup?.leaderId,
+        leader: testGroup?.leader,
         name: testGroup?.name,
-        creatorId: testGroup?.creatorId,
-        eventId: testGroup?.eventId,
+        creator: testGroup?.creator,
+        event: testGroup?.event,
       }),
     );
+  });
+
+  it(`throws NotFoundError if volunteerGroup.event doesn't exist`, async () => {
+    try {
+      const newGrp = await EventVolunteerGroup.create({
+        creator: eventAdminUser?._id,
+        event: new Types.ObjectId(),
+        leader: eventAdminUser?._id,
+        name: "Test group",
+      });
+
+      const args: MutationUpdateEventVolunteerArgs = {
+        id: newGrp?._id.toString(),
+      };
+
+      const context = { userId: eventAdminUser?._id };
+
+      await removeEventVolunteerGroup?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(
+        `${EVENT_NOT_FOUND_ERROR.MESSAGE}`,
+      );
+    }
   });
 });

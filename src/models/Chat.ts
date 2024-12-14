@@ -110,11 +110,11 @@ const chatSchema = new Schema(
   },
 );
 
-// Add logging middleware for directChatSchema
+// Add logging middleware for Chat
 createLoggingMiddleware(chatSchema, "Chat");
 
 /**
- * Retrieves or creates the Mongoose model for DirectChat.
+ * Retrieves or creates the Mongoose model for Chat.
  * Prevents Mongoose OverwriteModelError during testing.
  */
 const chatModel = (): Model<InterfaceChat> =>
