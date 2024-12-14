@@ -301,10 +301,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        users: actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-      - users: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22.x'
 
@@ -324,13 +324,13 @@ jobs:
           docker-compose -f docker-compose.dev.yaml down -v || true
 
           # Verify docker-compose file exists
-          if [! -f "docker-compose.dev.yaml"]; then 
+          if [ ! -f "docker-compose.dev.yaml" ]; then 
             echo "Error: docker-compose.dev.yaml not found"
             exit 1
           fi
 
           # Start containers
-          if ! docker-compose -f docker-compose.dev.yaml up -d --build; then
+          if ! timeout 300 docker-compose -f docker-compose.dev.yaml up -d --build; then
             echo "Failed to start containers"
             docker-compose -f docker-compose.dev.yaml logs
             exit 1
@@ -352,7 +352,7 @@ jobs:
 
           echo "Waiting for Redis..."
           timeout=30
-          until docker-compose -f docker-compose.dev.yaml exec -T redis-stack-server redis-cli ping >dev/null 2>&1 || [ $timemout -eq 0]; do
+          until docker-compose -f docker-compose.dev.yaml exec -T redis-stack-server redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
           sleep 1
           ((timeout--))
           done
