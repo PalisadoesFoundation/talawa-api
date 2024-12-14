@@ -319,13 +319,14 @@ jobs:
             ${{ runner.os }}-docker-check-
 
       - name: Check if Talawa API starts in Docker
-        run : | 
+        run: |
           # Ensure no containers are running
           docker-compose -f docker-compose.dev.yaml down -v || true
 
           # Verify docker-compose file exists
-          if [ ! -f "docker-compose.dev.yaml" ]; then 
+          if [ ! -f "docker-compose.dev.yaml" ]; then
             echo "Error: docker-compose.dev.yaml not found"
+            docker-compose -f docker-compose.dev.yaml logs
             exit 1
           fi
 
@@ -341,7 +342,7 @@ jobs:
           timeout=30
           until docker-compose -f docker-compose.dev.yaml exec -T mongodb mongo --eval "db.runCommand('ping').ok">/dev/null 2>&1 || [ $timeout -eq 0 ]; do
           sleep 1
-          ((timeout--))
+           ((timeout--))
           done
           if [ $timeout -eq 0 ]; then
             echo "Error: MongoDB failed to start within timeout"
@@ -351,27 +352,27 @@ jobs:
           fi
 
           echo "Waiting for Redis..."
-          timeout=30
-          until docker-compose -f docker-compose.dev.yaml exec -T redis-stack-server redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+           timeout=30
+           until docker-compose -f docker-compose.dev.yaml exec -T redis-stack-server redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
           sleep 1
           ((timeout--))
           done
           if[ $timeout -eq 0 ]; then
-            echo "Error: Redis failed to start within timeout"
+             echo "Error: Redis failed to start within timeout"
             docker-compose -f docker-compose.dev.yaml logs redis-stack-server
-            docker-compose -f docker-compose.dev.yaml down -v
-            exit 1
-          fi
+             docker-compose -f docker-compose.dev.yaml down -v
+             exit 1
+            fi
 
-          # Wait for TALAWA API to be healthy 
-          timeout=60
+            # Wait for TALAWA API to be healthy 
+            timeout=60
           until docker-compose -f docker-compose.dev.yaml exec -T talawa-api-dev curl -sf "http://localhost:4000/health" 2>&1 || [ $timeout -eq 0 ]; do
-              echo "Waiting for API to start... ($timeout seconds remaining)"
-              sleep 1
-              ((timeout--))
-            done
+            echo "Waiting for API to start... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+           done
 
-            if [ $timeout -eq 0 ]; then
+           if [ $timeout -eq 0 ]; then
               echo "Error: API failed to start within timeout"
               docker-compose -f docker-compose.dev.yaml logs
               docker-compose -f docker-compose.dev.yaml down -v
@@ -380,32 +381,31 @@ jobs:
 
             echo "API started successfully"
 
-        # Ensure cleanup runs even if the script fails
-        cleanup() {
-          local exit_code=$?
-          echo "Cleaning up containers..."
-          if ! docker-compose -f  docker-compose.dev.yaml down -v; then
-            echo "Warning: Failed to cleanup containers"
-          fi
-          exit $exit_code
-        }
-
-        trap cleanup EXIT
-  env:
-      HEALTH_CHECK_URL: http://localhost:4000
-      COMPOSE_PROJECT_NAME: pr-${{ github.event.pull_request.number }}
-      MONGO_DB_URL: mongodb://mongodb:27017/talawa-test-db
-      REDIS_HOST: redis-stack-server
-      REDIS_PORT: 6379
-      ACCESS_TOKEN_SECRET: ${{ github.event.repository.name }}_access_${{ github.sha }}
-      REFRESH_TOKEN_SECRET: ${{ github.event.repository.name }}_refresh_${{ github.sha }}
-      LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
-      COLORIZE_LOGS: "true"
-      LOG_LEVEL: "info"
-      RECAPTCHA_SITE_KEY: ${{secrets.RECAPTCHA_SITE_KEY}}
-      RECAPTCHA_SECRET_KEY: ${{secrets.RECAPTCHA_SECRET_KEY}}
-      MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
-      MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD}}
+          # Ensure cleanup runs even if the script fails
+          cleanup() {
+            local exit_code=$?
+            echo "Cleaning up containers..."
+            if ! docker-compose -f  docker-compose.dev.yaml down -v; then
+              echo "Warning: Failed to cleanup containers"
+            fi
+            exit $exit_code
+            }
+          trap cleanup EXIT
+    env:
+        HEALTH_CHECK_URL: http://localhost:4000
+        COMPOSE_PROJECT_NAME: pr-${{ github.event.pull_request.number }}
+        MONGO_DB_URL: mongodb://mongodb:27017/talawa-test-db
+        REDIS_HOST: redis-stack-server
+        REDIS_PORT: 6379
+        ACCESS_TOKEN_SECRET: ${{ secrets.GITHUB_TOKEN }}_${{ github.run_id }}_${{ github.run_number }}
+        REFRESH_TOKEN_SECRET: ${{ secrets.GITHUB_TOKEN }}_${{ github.run_id }}_${{ github.run_attempt }}
+        LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
+        COLORIZE_LOGS: "true"
+        LOG_LEVEL: "info"
+        RECAPTCHA_SITE_KEY: ${{secrets.RECAPTCHA_SITE_KEY}}
+        RECAPTCHA_SECRET_KEY: ${{secrets.RECAPTCHA_SECRET_KEY}}
+        MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
+        MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD}}
              
   JSDocs:
     if: ${{ github.actor != 'dependabot[bot]' }}
