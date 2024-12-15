@@ -1,6 +1,6 @@
 # Talawa API
 
-💬 Join the community on Slack. The link can be found in our [Palisadoes Foundation GitHub Home Page](https://github.com/PalisadoesFoundation)
+💬 Join the community on Slack from our [Palisadoes Foundation GitHub Home Page](https://github.com/PalisadoesFoundation)
 
 [![N|Solid](public/markdown/images/talawa-logo-lite-200x200.png)](https://github.com/PalisadoesFoundation/talawa-api)
 
