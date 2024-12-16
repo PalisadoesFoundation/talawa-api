@@ -52,24 +52,14 @@ builder.queryField("advertisement", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-				columns: {
-					role: true,
-				},
-				where: (fields, operators) => operators.eq(fields.id, currentUserId),
-			});
-
-			if (currentUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
+			const [currentUser, existingAdvertisement] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
 					},
-					message: "Only authenticated users can perform this action.",
-				});
-			}
-
-			const existingAdvertisement =
-				await ctx.drizzleClient.query.advertisementsTable.findFirst({
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.advertisementsTable.findFirst({
 					with: {
 						advertisementAttachmentsWhereAdvertisement: true,
 						organization: {
@@ -85,7 +75,17 @@ builder.queryField("advertisement", (t) =>
 					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.id),
+				}),
+			]);
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
 				});
+			}
 
 			if (existingAdvertisement === undefined) {
 				throw new TalawaGraphQLError({

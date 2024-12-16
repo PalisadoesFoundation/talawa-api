@@ -1,9 +1,6 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
- * Possible variants of the type of attachements of a post.
+ * Possible variants of the type of an attachement of a post.
  */
-export const postAttachmentTypeEnum = pgEnum("post_attachment_type", [
-	"image",
-	"video",
-]);
+export const postAttachmentTypeEnum = z.enum(["image", "video"]);

@@ -5,6 +5,6 @@ export const AdvertisementAttachmentType = builder.enumType(
 	"AdvertisementAttachmentType",
 	{
 		description: "",
-		values: advertisementAttachmentTypeEnum.enumValues,
+		values: advertisementAttachmentTypeEnum.options,
 	},
 );

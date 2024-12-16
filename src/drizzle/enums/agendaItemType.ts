@@ -1,6 +1,9 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
-export const agendaItemTypeEnum = pgEnum("agenda_item_type", [
+/**
+ * Possible variants of the type of an agenda item.
+ */
+export const agendaItemTypeEnum = z.enum([
 	"general",
 	"note",
 	"scripture",

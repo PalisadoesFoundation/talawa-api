@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { eventAttendeeRegistrationInviteStatusEnum } from "~/src/drizzle/enums/eventAttendeeRegistrationInviteStatus";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
@@ -7,7 +7,12 @@ import { usersTable } from "./users";
 export const eventAttendancesTable = pgTable(
 	"event_attendances",
 	{
-		attendeeId: uuid("attendee_id").references(() => usersTable.id),
+		attendeeId: uuid("attendee_id")
+			.notNull()
+			.references(() => usersTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		checkInAt: timestamp("check_in_at", {
 			mode: "date",
@@ -29,16 +34,21 @@ export const eventAttendancesTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		eventId: uuid("event_id")
 			.notNull()
-			.references(() => eventsTable.id),
+			.references(() => eventsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
-		inviteStatus:
-			eventAttendeeRegistrationInviteStatusEnum("invite_status").notNull(),
+		inviteStatus: text("invite_status", {
+			enum: eventAttendeeRegistrationInviteStatusEnum.options,
+		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
@@ -48,7 +58,10 @@ export const eventAttendancesTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 
-		updaterId: uuid("updater_id").references(() => usersTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 	},
 	(self) => [
 		index().on(self.attendeeId),

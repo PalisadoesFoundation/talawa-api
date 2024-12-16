@@ -2,16 +2,20 @@ import { relations, sql } from "drizzle-orm";
 import {
 	index,
 	pgTable,
+	text,
 	timestamp,
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { commmentVoteTypeEnum } from "~/src/drizzle/enums/commentVoteType";
+import { commentVoteTypeEnum } from "~/src/drizzle/enums/commentVoteType";
 import { commentsTable } from "./comments";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for comment votes.
+ */
 export const commentVotesTable = pgTable(
 	"comment_votes",
 	{
@@ -35,7 +39,7 @@ export const commentVotesTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the vote.
+		 * Foreign key reference to the id of the user who created the vote.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
@@ -48,7 +52,9 @@ export const commentVotesTable = pgTable(
 		/**
 		 * Type of the vote.
 		 */
-		type: commmentVoteTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: commentVoteTypeEnum.options,
+		}).notNull(),
 		/**
 		 * Date time at the time the vote was last updated.
 		 */

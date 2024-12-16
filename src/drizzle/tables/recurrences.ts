@@ -23,9 +23,10 @@ export const recurrencesTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		dayOfMonth: integer("day_of_month"),
 
@@ -33,7 +34,10 @@ export const recurrencesTable = pgTable(
 
 		eventId: uuid("event_id")
 			.notNull()
-			.references(() => eventsTable.id),
+			.references(() => eventsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		id: uuid("id").primaryKey().$default(uuidv7),
 
@@ -45,7 +49,9 @@ export const recurrencesTable = pgTable(
 
 		seperationCount: integer("seperation_count"),
 
-		type: recurrenceTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: recurrenceTypeEnum.options,
+		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
@@ -55,7 +61,10 @@ export const recurrencesTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 
-		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		weekOfMonth: integer("week_of_month"),
 	},

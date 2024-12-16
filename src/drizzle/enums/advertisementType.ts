@@ -1,10 +1,6 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
  * Possible variants of the type of an advertisement.
  */
-export const advertisementTypeEnum = pgEnum("advertisement_type", [
-	"banner",
-	"menu",
-	"pop_up",
-]);
+export const advertisementTypeEnum = z.enum(["banner", "menu", "pop_up"]);

@@ -5,6 +5,9 @@ import { advertisementAttachmentTypeEnum } from "~/src/drizzle/enums/advertiseme
 import { advertisementsTable } from "./advertisements";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for advertisement attachments.
+ */
 export const advertisementAttachmentsTable = pgTable(
 	"advertisement_attachments",
 	{
@@ -13,7 +16,10 @@ export const advertisementAttachmentsTable = pgTable(
 		 */
 		advertisementId: uuid("advertisement_id")
 			.notNull()
-			.references(() => advertisementsTable.id),
+			.references(() => advertisementsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 		/**
 		 * Date time at the time the attachment was created.
 		 */
@@ -25,16 +31,18 @@ export const advertisementAttachmentsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the attachment.
+		 * Foreign key reference to the id of the user who created the attachment.
 		 */
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
-
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 		/**
 		 * Type of the attachment.
 		 */
-		type: advertisementAttachmentTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: advertisementAttachmentTypeEnum.options,
+		}).notNull(),
 		/**
 		 * Date time at the time the attachment was last updated.
 		 */
@@ -48,7 +56,10 @@ export const advertisementAttachmentsTable = pgTable(
 		/**
 		 * Foreign key reference to the id of the user who last updated the attachment.
 		 */
-		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 		/**
 		 * URI to the attachment.
 		 */

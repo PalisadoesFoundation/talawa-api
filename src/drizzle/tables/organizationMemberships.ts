@@ -3,6 +3,7 @@ import {
 	index,
 	pgTable,
 	primaryKey,
+	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
@@ -11,6 +12,9 @@ import { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organization
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for organization memberships.
+ */
 export const organizationMembershipsTable = pgTable(
 	"organization_memberships",
 	{
@@ -25,7 +29,7 @@ export const organizationMembershipsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the organization membership.
+		 * Foreign key reference to the id of the user who created the organization membership.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
@@ -52,7 +56,9 @@ export const organizationMembershipsTable = pgTable(
 		/**
 		 * Role assigned to the user within the organization.
 		 */
-		role: organizationMembershipRoleEnum("role").notNull(),
+		role: text("role", {
+			enum: organizationMembershipRoleEnum.options,
+		}).notNull(),
 		/**
 		 * Date time at the time the organization membership was last updated.
 		 */

@@ -24,6 +24,7 @@ Comment.implement({
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a comment's creator id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",

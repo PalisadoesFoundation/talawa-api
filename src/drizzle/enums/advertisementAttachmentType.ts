@@ -1,9 +1,6 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
- * Possible variants of the type of attachements of an advertisement.
+ * Possible variants of the type of an attachement of an advertisement.
  */
-export const advertisementAttachmentTypeEnum = pgEnum(
-	"advertisement_attachment_type",
-	["image", "video"],
-);
+export const advertisementAttachmentTypeEnum = z.enum(["image", "video"]);

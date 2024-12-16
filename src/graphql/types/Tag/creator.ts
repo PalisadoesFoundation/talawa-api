@@ -77,6 +77,7 @@ Tag.implement({
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a user's creator id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",
