@@ -58,12 +58,11 @@ export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
 
   Object.keys(unseenMessagesByUsers).map((user: string) => {
     if (user !== context.userId) {
-      console.log("user", user, context.userId);
       unseenMessagesByUsers[user] += 1;
     }
   });
 
-  // add createdDirectChatMessage to directChat
+  // add createdChatMessage to Chat
   await Chat.updateOne(
     {
       _id: chat._id,

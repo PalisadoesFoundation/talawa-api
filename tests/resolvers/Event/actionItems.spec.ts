@@ -26,7 +26,7 @@ describe("resolvers -> Organization -> actionItems", () => {
       const actionItemsPayload = await actionItemsResolver?.(parent, {}, {});
 
       const actionItems = await ActionItem.find({
-        eventId: testEvent?._id,
+        event: testEvent?._id,
       }).lean();
 
       expect(actionItemsPayload).toEqual(actionItems);
