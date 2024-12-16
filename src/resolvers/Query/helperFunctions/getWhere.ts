@@ -46,7 +46,7 @@ export const getWhere = <T = unknown>(
             FundWhereInput &
             PledgeWhereInput &
             VenueWhereInput &
-            ChatWhereInput
+            ChatWhereInput &
             EventVolunteerWhereInput
         >
       >
