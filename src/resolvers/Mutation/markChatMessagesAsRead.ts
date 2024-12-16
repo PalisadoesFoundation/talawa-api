@@ -1,6 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceChat} from "../../models";
+import type { InterfaceChat } from "../../models";
 import { Chat, User } from "../../models";
 import {
   CHAT_NOT_FOUND_ERROR,
