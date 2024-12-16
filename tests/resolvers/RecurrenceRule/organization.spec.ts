@@ -54,6 +54,7 @@ describe("resolvers -> RecurrenceRule -> organization", () => {
         startDate,
         endDate,
         title: "newTitle",
+        createChat: true,
       },
       recurrenceRuleData: {
         recurrenceStartDate: startDate,

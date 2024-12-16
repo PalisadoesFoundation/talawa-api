@@ -8,7 +8,7 @@ import type { ChatResolvers } from "../../types/generatedGraphQLTypes";
 export const admins: ChatResolvers["users"] = async (parent) => {
   return await User.find({
     _id: {
-      $in: parent.users,
+      $in: parent.admins,
     },
   }).lean();
 };

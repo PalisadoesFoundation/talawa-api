@@ -65,6 +65,10 @@ beforeAll(async () => {
     isGroup: false,
     createdAt: "23456789",
     updatedAt: "23456789",
+    unseenMessagesByUsers: JSON.stringify({
+      [testUsers[0]?._id]: 0,
+      [testUsers[1]?._id]: 0,
+    }),
   });
 });
 
