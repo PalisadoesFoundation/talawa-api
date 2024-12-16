@@ -1192,7 +1192,7 @@ type Mutation {
   likePost(id: ID!): Post
   login(data: LoginInput!): AuthData!
   logout: Boolean!
-  markChatMessagesAsRead(chatId: ID!, userId: ID!): Chat
+  markChatMessagesAsRead(chatId: ID!, userId: ID!): Chat!
   otp(data: OTPInput!): OtpData!
   recaptcha(data: RecaptchaVerification!): Boolean!
   refreshToken(refreshToken: String!): ExtendSession!
@@ -1587,8 +1587,8 @@ type Query {
   getNoteById(id: ID!): Note!
   getPledgesByUserId(orderBy: PledgeOrderByInput, userId: ID!, where: PledgeWhereInput): [FundraisingCampaignPledge]
   getPlugins: [Plugin]
-  getUnreadChatsByUserId: [Chat]
   getRecurringEvents(baseRecurringEventId: ID!): [Event]
+  getUnreadChatsByUserId: [Chat]
   getUserTag(id: ID!): UserTag
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getVolunteerMembership(orderBy: VolunteerMembershipOrderByInput, where: VolunteerMembershipWhereInput!): [VolunteerMembership]!
@@ -2222,6 +2222,12 @@ input chatInput {
   isGroup: Boolean!
   name: String
   organizationId: ID
+  userIds: [ID!]!
+}
+
+input createGroupChatInput {
+  organizationId: ID!
+  title: String!
   userIds: [ID!]!
 }
 

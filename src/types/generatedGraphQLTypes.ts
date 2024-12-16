@@ -1279,7 +1279,7 @@ export type Mutation = {
   likePost?: Maybe<Post>;
   login: AuthData;
   logout: Scalars['Boolean']['output'];
-  markChatMessagesAsRead?: Maybe<Chat>;
+  markChatMessagesAsRead: Chat;
   otp: OtpData;
   recaptcha: Scalars['Boolean']['output'];
   refreshToken: ExtendSession;
@@ -2379,8 +2379,8 @@ export type Query = {
   getNoteById: Note;
   getPledgesByUserId?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
-  getUnreadChatsByUserId?: Maybe<Array<Maybe<Chat>>>;
   getRecurringEvents?: Maybe<Array<Maybe<Event>>>;
+  getUnreadChatsByUserId?: Maybe<Array<Maybe<Chat>>>;
   getUserTag?: Maybe<UserTag>;
   getVenueByOrgId?: Maybe<Array<Maybe<Venue>>>;
   getVolunteerMembership: Array<Maybe<VolunteerMembership>>;
@@ -3405,6 +3405,12 @@ export type ChatInput = {
   userIds: Array<Scalars['ID']['input']>;
 };
 
+export type CreateGroupChatInput = {
+  organizationId: Scalars['ID']['input'];
+  title: Scalars['String']['input'];
+  userIds: Array<Scalars['ID']['input']>;
+};
+
 export type CreateUserFamilyInput = {
   title: Scalars['String']['input'];
   userIds: Array<Scalars['ID']['input']>;
@@ -3721,6 +3727,7 @@ export type ResolversTypes = {
   VolunteerRankWhereInput: VolunteerRankWhereInput;
   WeekDays: WeekDays;
   chatInput: ChatInput;
+  createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
 };
 
@@ -3928,6 +3935,7 @@ export type ResolversParentTypes = {
   VolunteerRank: Omit<VolunteerRank, 'user'> & { user: ResolversParentTypes['User'] };
   VolunteerRankWhereInput: VolunteerRankWhereInput;
   chatInput: ChatInput;
+  createGroupChatInput: CreateGroupChatInput;
   createUserFamilyInput: CreateUserFamilyInput;
 };
 
@@ -4609,7 +4617,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   likePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationLikePostArgs, 'id'>>;
   login?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'data'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  markChatMessagesAsRead?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationMarkChatMessagesAsReadArgs, 'chatId' | 'userId'>>;
+  markChatMessagesAsRead?: Resolver<ResolversTypes['Chat'], ParentType, ContextType, RequireFields<MutationMarkChatMessagesAsReadArgs, 'chatId' | 'userId'>>;
   otp?: Resolver<ResolversTypes['OtpData'], ParentType, ContextType, RequireFields<MutationOtpArgs, 'data'>>;
   recaptcha?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRecaptchaArgs, 'data'>>;
   refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
@@ -4864,8 +4872,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getNoteById?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<QueryGetNoteByIdArgs, 'id'>>;
   getPledgesByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType, RequireFields<QueryGetPledgesByUserIdArgs, 'userId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
-  getUnreadChatsByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   getRecurringEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, RequireFields<QueryGetRecurringEventsArgs, 'baseRecurringEventId'>>;
+  getUnreadChatsByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   getUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<QueryGetUserTagArgs, 'id'>>;
   getVenueByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Venue']>>>, ParentType, ContextType, RequireFields<QueryGetVenueByOrgIdArgs, 'orgId'>>;
   getVolunteerMembership?: Resolver<Array<Maybe<ResolversTypes['VolunteerMembership']>>, ParentType, ContextType, RequireFields<QueryGetVolunteerMembershipArgs, 'where'>>;

@@ -255,7 +255,7 @@ export const mutations = gql`
       replyTo: ID
     ): ChatMessage! @auth
 
-    markChatMessagesAsRead(chatId: ID!, userId: ID!): Chat @auth
+    markChatMessagesAsRead(chatId: ID!, userId: ID!): Chat! @auth
 
     signUp(data: UserInput!, file: String): AuthData!
 

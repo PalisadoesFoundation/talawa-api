@@ -1,5 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceChat} from "../../models";
 import { Chat, User } from "../../models";
 import {
   CHAT_NOT_FOUND_ERROR,
@@ -77,7 +78,15 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
       {
         new: true,
       },
-    );
+    ).lean();
 
-    return updatedChat;
+    if (!updatedChat) {
+      throw new errors.NotFoundError(
+        requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+        CHAT_NOT_FOUND_ERROR.CODE,
+        CHAT_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    return updatedChat as InterfaceChat;
   };
