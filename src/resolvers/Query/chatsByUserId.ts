@@ -26,7 +26,6 @@ export const chatsByUserId: QueryResolvers["chatsByUserId"] = async (
 
   const chats = await Chat.find({
     users: args.id,
-
   })
     .sort(sort)
     .lean();
