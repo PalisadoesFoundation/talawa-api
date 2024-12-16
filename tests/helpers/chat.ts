@@ -26,6 +26,9 @@ export const createTestChat = async (): Promise<
       createdAt: new Date(),
       updatedAt: new Date(),
       admins: [testUser._id],
+      unseenMessagesByUsers: JSON.stringify({
+        [testUser._id]: 0,
+      }),
     });
 
     return [testUser, testOrganization, testChat];
