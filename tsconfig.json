@@ -7,6 +7,6 @@
     "strict": true /* Enable all strict type-checking options. */,
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "resolveJsonModule": true /* Allow to import JSON files */,
-    "noUncheckedSideEffectImports": true /* Checks if module's path exists */,
+    "noUncheckedSideEffectImports": true /* Checks if module's path exists. */
   }
 }
