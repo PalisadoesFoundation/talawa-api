@@ -496,8 +496,10 @@ async function runDockerComposeWithLogs(): Promise<void> {
     }, 300000);
 
     const dockerCompose = spawn(
-      process.platform === "win32" ? "docker-compose.exe" : "docker-compose",
-      ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"],
+      process.platform === "win32" ? "docker-compose.exe" : "docker",
+      process.platform === "win32"
+        ? ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"]
+        : ["compose", "-f", "docker-compose.dev.yaml", "up", "--build", "-d"],
       { stdio: "inherit" },
     );
 
