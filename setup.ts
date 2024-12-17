@@ -5,7 +5,7 @@ import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
 import type { ExecException } from "child_process";
-import { exec, spawn } from "child_process";
+import { exec, spawn, execSync } from "child_process";
 import { MongoClient } from "mongodb";
 import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import {
@@ -466,6 +466,24 @@ export async function mongoDB(): Promise<void> {
   For Docker setup
 */
 
+function getDockerComposeCommand(): { command: string; args: string[] } {
+  let dockerComposeCmd = "docker-compose"; // Default to v1
+  let args = ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"];
+
+  try {
+    // Test if 'docker compose' works (v2)
+    execSync("docker compose version", { stdio: "ignore" });
+    dockerComposeCmd = "docker";
+    args = ["compose", ...args.slice(0)]; // Prefix 'compose' for v2
+  } catch (error) {
+    console.log(error);
+    dockerComposeCmd =
+      process.platform === "win32" ? "docker-compose.exe" : "docker-compose";
+  }
+
+  return { command: dockerComposeCmd, args };
+}
+
 async function runDockerComposeWithLogs(): Promise<void> {
   // Check if Docker daemon is running
   try {
@@ -490,18 +508,13 @@ async function runDockerComposeWithLogs(): Promise<void> {
   }
 
   return new Promise((resolve, reject) => {
+    const { command, args } = getDockerComposeCommand();
+
+    const dockerCompose = spawn(command, args, { stdio: "inherit" });
     const timeout = setTimeout(() => {
       dockerCompose.kill();
       reject(new Error("Docker compose operation timed out after 5 minutes"));
     }, 300000);
-
-    const dockerCompose = spawn(
-      process.platform === "win32" ? "docker-compose.exe" : "docker",
-      process.platform === "win32"
-        ? ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"]
-        : ["compose", "-f", "docker-compose.dev.yaml", "up", "--build", "-d"],
-      { stdio: "inherit" },
-    );
 
     dockerCompose.on("error", (error) => {
       clearTimeout(timeout);
