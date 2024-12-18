@@ -474,7 +474,7 @@ function getDockerComposeCommand(): { command: string; args: string[] } {
     // Test if 'docker compose' works (v2)
     execSync("docker compose version", { stdio: "ignore" });
     dockerComposeCmd = "docker";
-    args = ["compose", ...args.slice(0)]; // Prefix 'compose' for v2
+    args = ["compose", ...args]; // Prefix 'compose' for v2
   } catch (error) {
     console.log(error);
     dockerComposeCmd =
@@ -484,6 +484,7 @@ function getDockerComposeCommand(): { command: string; args: string[] } {
   return { command: dockerComposeCmd, args };
 }
 
+const DOCKER_COMPOSE_TIMEOUT_MS = 300000;
 async function runDockerComposeWithLogs(): Promise<void> {
   // Check if Docker daemon is running
   try {
@@ -497,32 +498,47 @@ async function runDockerComposeWithLogs(): Promise<void> {
       dockerCheck.on("close", (code) =>
         code === 0
           ? resolve(null)
-          : reject(new Error("Docker daemon not running")),
+          : reject(
+              new Error(
+                "Docker daemon not running. Please ensure Docker Desktop is running and try again.",
+              ),
+            ),
       );
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
-      `Docker daemon is not running. Please start Docker and try again. Details: ${errorMessage}`,
+      `Docker daemon check failed. Please ensure:
+       1. Docker Desktop is installed and running
+       2. You have necessary permissions
+       3. Docker service is healthy
+       Details: ${errorMessage}`,
     );
   }
 
   return new Promise((resolve, reject) => {
     const { command, args } = getDockerComposeCommand();
+    let isCompleted = false;
 
     const dockerCompose = spawn(command, args, { stdio: "inherit" });
+
     const timeout = setTimeout(() => {
+      if (isCompleted) return;
       dockerCompose.kill();
       reject(new Error("Docker compose operation timed out after 5 minutes"));
-    }, 300000);
+    }, DOCKER_COMPOSE_TIMEOUT_MS);
 
     dockerCompose.on("error", (error) => {
+      if (isCompleted) return;
+      isCompleted = true;
       clearTimeout(timeout);
       console.error("Error running docker-compose:", error);
       reject(error);
     });
 
     dockerCompose.on("close", (code) => {
+      if (isCompleted) return;
+      isCompleted = true;
       clearTimeout(timeout);
       if (code === 0) {
         console.log("Docker Compose completed successfully.");
