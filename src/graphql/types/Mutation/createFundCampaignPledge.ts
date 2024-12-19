@@ -80,7 +80,10 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 										columns: {},
 										with: {
 											organizationMembershipsWhereOrganization: {
-												columns: { memberId: true, role: true },
+												columns: {
+													memberId: true,
+													role: true,
+												},
 												where: (fields, operators) =>
 													operators.inArray(fields.memberId, [
 														currentUserId,
