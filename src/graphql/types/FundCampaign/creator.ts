@@ -101,7 +101,7 @@ FundCampaign.implement({
 				// Creator id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingUser === undefined) {
 					ctx.log.error(
-						"Postgres select operation returned an empty array for a user's creator id that isn't null.",
+						"Postgres select operation returned an empty array for a fund campaign's creator id that isn't null.",
 					);
 					throw new TalawaGraphQLError({
 						extensions: {

@@ -1,11 +1,11 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
-import { Fund } from "./Fund";
+import { Chat } from "./Chat";
 
-Fund.implement({
+Chat.implement({
 	fields: (t) => ({
 		updater: t.field({
-			description: "User who last updated the fund.",
+			description: "User who last updated the chat.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -20,6 +20,13 @@ Fund.implement({
 
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 					with: {
+						chatMembershipsWhereMember: {
+							columns: {
+								role: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.chatId, parent.id),
+						},
 						organizationMembershipsWhereMember: {
 							columns: {
 								role: true,
@@ -42,11 +49,15 @@ Fund.implement({
 
 				const currentUserOrganizationMembership =
 					currentUser.organizationMembershipsWhereMember[0];
+				const currentUserChatMembership =
+					currentUser.chatMembershipsWhereMember[0];
 
 				if (
 					currentUser.role !== "administrator" &&
 					(currentUserOrganizationMembership === undefined ||
-						currentUserOrganizationMembership.role !== "administrator")
+						(currentUserOrganizationMembership.role !== "administrator" &&
+							(currentUserChatMembership === undefined ||
+								currentUserChatMembership.role !== "administrator")))
 				) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -75,7 +86,7 @@ Fund.implement({
 				// Updater id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingUser === undefined) {
 					ctx.log.error(
-						"Postgres select operation returned an empty array for a fund's updater id that isn't null.",
+						"Postgres select operation returned an empty array for a chat's updater id that isn't null.",
 					);
 					throw new TalawaGraphQLError({
 						extensions: {

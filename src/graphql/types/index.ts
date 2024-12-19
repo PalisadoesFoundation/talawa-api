@@ -1,6 +1,7 @@
 import "./Advertisement/index";
 import "./AdvertisementAttachment/index";
 import "./AuthenticationPayload";
+import "./Chat/index";
 import "./Comment/index";
 import "./Fund/index";
 import "./FundCampaign/index";

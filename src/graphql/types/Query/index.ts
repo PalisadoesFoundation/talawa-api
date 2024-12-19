@@ -1,5 +1,6 @@
 import "./Query";
 import "./advertisement";
+import "./chat";
 import "./comment";
 import "./currentUser";
 import "./fund";
