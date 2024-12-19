@@ -78,6 +78,40 @@ CREATE TABLE "agenda_sections" (
 	"updater_id" uuid
 );
 --> statement-breakpoint
+CREATE TABLE "chat_memberships" (
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid,
+	"chat_id" uuid NOT NULL,
+	"member_id" uuid NOT NULL,
+	"role" text NOT NULL,
+	"updated_at" timestamp (3) with time zone,
+	"updater_id" uuid,
+	CONSTRAINT "chat_memberships_chat_id_member_id_pk" PRIMARY KEY("chat_id","member_id")
+);
+--> statement-breakpoint
+CREATE TABLE "chat_messages" (
+	"body" text NOT NULL,
+	"chat_id" uuid NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"parent_chat_message_id" uuid,
+	"updated_at" timestamp (3) with time zone
+);
+--> statement-breakpoint
+CREATE TABLE "chats" (
+	"avatar_uri" text,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid,
+	"description" text,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"organization_id" uuid NOT NULL,
+	"updated_at" timestamp (3) with time zone,
+	"updater_id" uuid,
+	CONSTRAINT "chats_name_unique" UNIQUE("name")
+);
+--> statement-breakpoint
 CREATE TABLE "comment_votes" (
 	"comment_id" uuid NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
@@ -405,6 +439,16 @@ ALTER TABLE "agenda_sections" ADD CONSTRAINT "agenda_sections_creator_id_users_i
 ALTER TABLE "agenda_sections" ADD CONSTRAINT "agenda_sections_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "agenda_sections" ADD CONSTRAINT "agenda_sections_parent_section_id_agenda_sections_id_fk" FOREIGN KEY ("parent_section_id") REFERENCES "public"."agenda_sections"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "agenda_sections" ADD CONSTRAINT "agenda_sections_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "chat_memberships" ADD CONSTRAINT "chat_memberships_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "chat_memberships" ADD CONSTRAINT "chat_memberships_chat_id_chats_id_fk" FOREIGN KEY ("chat_id") REFERENCES "public"."chats"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "chat_memberships" ADD CONSTRAINT "chat_memberships_member_id_users_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "chat_memberships" ADD CONSTRAINT "chat_memberships_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "chat_messages" ADD CONSTRAINT "chat_messages_chat_id_chats_id_fk" FOREIGN KEY ("chat_id") REFERENCES "public"."chats"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "chat_messages" ADD CONSTRAINT "chat_messages_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "chat_messages" ADD CONSTRAINT "chat_messages_parent_chat_message_id_chat_messages_id_fk" FOREIGN KEY ("parent_chat_message_id") REFERENCES "public"."chat_messages"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "chats" ADD CONSTRAINT "chats_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "chats" ADD CONSTRAINT "chats_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "chats" ADD CONSTRAINT "chats_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_comment_id_comments_id_fk" FOREIGN KEY ("comment_id") REFERENCES "public"."comments"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_updated_id_users_id_fk" FOREIGN KEY ("updated_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
@@ -519,6 +563,19 @@ CREATE INDEX "agenda_sections_event_id_index" ON "agenda_sections" USING btree (
 CREATE INDEX "agenda_sections_name_index" ON "agenda_sections" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "agenda_sections_parent_section_id_index" ON "agenda_sections" USING btree ("parent_section_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "agenda_sections_event_id_name_index" ON "agenda_sections" USING btree ("event_id","name");--> statement-breakpoint
+CREATE INDEX "chat_memberships_chat_id_index" ON "chat_memberships" USING btree ("chat_id");--> statement-breakpoint
+CREATE INDEX "chat_memberships_created_at_index" ON "chat_memberships" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "chat_memberships_creator_id_index" ON "chat_memberships" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX "chat_memberships_member_id_index" ON "chat_memberships" USING btree ("member_id");--> statement-breakpoint
+CREATE INDEX "chat_memberships_role_index" ON "chat_memberships" USING btree ("role");--> statement-breakpoint
+CREATE INDEX "chat_messages_chat_id_index" ON "chat_messages" USING btree ("chat_id");--> statement-breakpoint
+CREATE INDEX "chat_messages_created_at_index" ON "chat_messages" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "chat_messages_creator_id_index" ON "chat_messages" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX "chat_messages_parent_chat_message_id_index" ON "chat_messages" USING btree ("parent_chat_message_id");--> statement-breakpoint
+CREATE INDEX "chats_creator_id_index" ON "chats" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX "chats_name_index" ON "chats" USING btree ("name");--> statement-breakpoint
+CREATE INDEX "chats_organization_id_index" ON "chats" USING btree ("organization_id");--> statement-breakpoint
+CREATE INDEX "chats_updater_id_index" ON "chats" USING btree ("updater_id");--> statement-breakpoint
 CREATE INDEX "comment_votes_comment_id_index" ON "comment_votes" USING btree ("comment_id");--> statement-breakpoint
 CREATE INDEX "comment_votes_creator_id_index" ON "comment_votes" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "comment_votes_type_index" ON "comment_votes" USING btree ("type");--> statement-breakpoint

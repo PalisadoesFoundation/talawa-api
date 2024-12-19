@@ -22,6 +22,9 @@ import { actionsTable } from "./actions";
 import { advertisementAttachmentsTable } from "./advertisementAttachments";
 import { advertisementsTable } from "./advertisements";
 import { agendaSectionsTable } from "./agendaSections";
+import { chatMembershipsTable } from "./chatMemberships";
+import { chatMessagesTable } from "./chatMessages";
+import { chatsTable } from "./chats";
 import { commentVotesTable } from "./commentVotes";
 import { commentsTable } from "./comments";
 import { eventAttachmentsTable } from "./eventAttachments";
@@ -256,6 +259,42 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	 */
 	agendaSectionsWhereUpdater: many(agendaSectionsTable, {
 		relationName: "agenda_sections.updater_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `chats` table.
+	 */
+	chatsWhereCreator: many(chatsTable, {
+		relationName: "chats.creator_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `chats` table.
+	 */
+	chatsWhereUpdater: many(chatsTable, {
+		relationName: "chats.updater_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `chat_memberships` table.
+	 */
+	chatMembershipsWhereCreator: many(chatMembershipsTable, {
+		relationName: "chat_memberships.creator_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `chat_memberships` table.
+	 */
+	chatMembershipsWhereMember: many(chatMembershipsTable, {
+		relationName: "chat_memberships.member_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `chat_memberships` table.
+	 */
+	chatMembershipsWhereUpdater: many(chatMembershipsTable, {
+		relationName: "chat_memberships.updater_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `chat_messages` table.
+	 */
+	chatMessagesWhereCreator: many(chatMessagesTable, {
+		relationName: "chat_messages.creator_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `comments` table.

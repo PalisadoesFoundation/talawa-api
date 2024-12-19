@@ -6,6 +6,7 @@ import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2C
 import { actionCategoriesTable } from "./actionCategories";
 import { actionsTable } from "./actions";
 import { advertisementsTable } from "./advertisements";
+import { chatsTable } from "./chats";
 import { familiesTable } from "./families";
 import { fundsTable } from "./funds";
 import { organizationMembershipsTable } from "./organizationMemberships";
@@ -120,6 +121,12 @@ export const organizationsTableRelations = relations(
 		 */
 		advertisementsWhereOrganization: many(advertisementsTable, {
 			relationName: "advertisements.organization_id:organizations.id",
+		}),
+		/**
+		 * One to many relationship from `organizations` table to `chats` table.
+		 */
+		chatsWhereOrganization: many(chatsTable, {
+			relationName: "chats.organization_id:organizations.id",
 		}),
 		/**
 		 * Many to one relationship from `organizations` table to `users` table.

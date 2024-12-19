@@ -44,6 +44,15 @@ export {
 	agendaSectionsTableRelations,
 } from "./tables/agendaSections";
 export {
+	chatMembershipsTable,
+	chatMembershipsTableRelations,
+} from "./tables/chatMemberships";
+export {
+	chatMessagesTable,
+	chatMessagesTableRelations,
+} from "./tables/chatMessages";
+export { chatsTable, chatsTableRelations } from "./tables/chats";
+export {
 	commentVotesTable,
 	commentVotesTableRelations,
 } from "./tables/commentVotes";
