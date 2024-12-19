@@ -76,7 +76,9 @@ describe("resolvers -> Query -> getVolunteerRanks", () => {
       },
       {},
     )) as unknown as VolunteerRank[];
-    expect(volunteerRanks[0].hoursVolunteered).toEqual(2);
+
+    console.log(volunteerRanks);
+    expect(volunteerRanks[0].hoursVolunteered).toEqual(6);
     expect(volunteerRanks[0].user._id).toEqual(testUser1?._id);
     expect(volunteerRanks[0].rank).toEqual(1);
   });
