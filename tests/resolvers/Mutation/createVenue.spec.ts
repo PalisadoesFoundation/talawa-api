@@ -198,19 +198,19 @@ describe("resolvers -> Mutation -> createVenue", () => {
           },
         },
       );
-      
+
       const args: MutationCreateVenueArgs = {
         data: {
           capacity: 10,
-          name: undefined as unknown as string, 
+          name: undefined as unknown as string,
           organizationId: testOrganization?.id,
         },
       };
-  
+
       const context = {
         userId: testUser?.id,
       };
-  
+
       const { createVenue } = await import(
         "../../../src/resolvers/Mutation/createVenue"
       );
@@ -223,7 +223,7 @@ describe("resolvers -> Mutation -> createVenue", () => {
       }
     }
   });
-  
+
   it(`throws InputValidationError if the venue name is null`, async () => {
     try {
       await Organization.findByIdAndUpdate(
@@ -236,19 +236,19 @@ describe("resolvers -> Mutation -> createVenue", () => {
           },
         },
       );
-      
+
       const args: MutationCreateVenueArgs = {
         data: {
           capacity: 10,
-          name: null as unknown as string, 
+          name: null as unknown as string,
           organizationId: testOrganization?.id,
         },
       };
-  
+
       const context = {
         userId: testUser?.id,
       };
-  
+
       const { createVenue } = await import(
         "../../../src/resolvers/Mutation/createVenue"
       );
