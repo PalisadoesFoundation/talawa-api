@@ -2,7 +2,12 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { chatById } from "../../../src/resolvers/Query/chatById";
-import { createTestChat, type TestChatType } from "../../helpers/chat";
+import {
+  createTestChat,
+  createTestChatMessage,
+  createTestChatWithImage,
+  type TestChatType,
+} from "../../helpers/chat";
 import { connect, disconnect } from "../../helpers/db";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testChat: TestChatType;
@@ -21,7 +26,7 @@ describe("resolvers->Query->chatById", () => {
     const args = {
       id: testChat?._id?.toString() ?? "",
     };
-    const chatByIdPayload = await chatById?.({}, args, {});
+    const chatByIdPayload = await chatById?.({}, args, { apiRootUrl: "" });
     expect(chatByIdPayload).toEqual(testChat?.toObject());
   });
   it(`throws chat not found if chat not found for args.id`, async () => {
@@ -33,5 +38,21 @@ describe("resolvers->Query->chatById", () => {
     } catch (error: unknown) {
       expect((error as Error).message).toEqual("Chat not found");
     }
+  });
+  it(`returns a group chat with image`, async () => {
+    const [, , chat] = await createTestChatWithImage();
+    const args = {
+      id: chat?._id?.toString() ?? "",
+    };
+    const chatByIdPayload = await chatById?.({}, args, { apiRootUrl: "" });
+    expect(chatByIdPayload).toEqual(chat?.toObject());
+  });
+  it(`returns a chat which contains media in chat messages`, async () => {
+    const [, , chat] = await createTestChatMessage();
+    const args = {
+      id: chat?._id?.toString() ?? "",
+    };
+    const chatByIdPayload = await chatById?.({}, args, { apiRootUrl: "" });
+    expect(chatByIdPayload).toEqual(chat?.toObject());
   });
 });

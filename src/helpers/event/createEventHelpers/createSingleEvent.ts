@@ -1,5 +1,5 @@
 import type mongoose from "mongoose";
-import type { InterfaceEvent } from "../../../models";
+import type { InterfaceChat, InterfaceEvent } from "../../../models";
 import { AppUserProfile, Event, EventAttendee, User } from "../../../models";
 import type { MutationCreateEventArgs } from "../../../types/generatedGraphQLTypes";
 import { cacheEvents } from "../../../services/EventCache/cacheEvents";
@@ -31,6 +31,7 @@ export const createSingleEvent = async (
   creatorId: string,
   organizationId: string,
   session: mongoose.ClientSession,
+  chat: InterfaceChat | null,
 ): Promise<InterfaceEvent> => {
   // Create the single event in the database
   const createdEvent = await Event.create(
@@ -40,6 +41,7 @@ export const createSingleEvent = async (
         creatorId,
         admins: [creatorId],
         organization: organizationId,
+        chat: chat?._id,
       },
     ],
     { session },

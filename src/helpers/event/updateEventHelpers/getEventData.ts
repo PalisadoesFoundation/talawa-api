@@ -31,12 +31,14 @@ export const getEventData = (
     longitude: event.longitude,
     creatorId: event.creatorId,
     organizationId: event.organization,
+    chat: event.chat,
   };
 
   // Step 2: Update the current data with the input data (if provided).
   const updatedEventData: InterfaceRecurringEvent = {
     ...eventCurrentData,
     ...(updateEventInputData as Partial<InterfaceRecurringEvent>),
+    createChat: event.chat ? true : false,
   };
 
   return updatedEventData;

@@ -274,6 +274,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         recurring: true,
         startDate,
         title: "newTitle",
+        createChat: true,
       },
       recurrenceRuleData: {
         recurrenceStartDate: startDate,
@@ -902,6 +903,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         recurring: true,
         startDate,
         title: "newTitle",
+        createChat: true,
       },
       recurrenceRuleData: {
         recurrenceStartDate: startDate,
@@ -1075,6 +1077,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
           recurring: true,
           startDate,
           title: "newTitle",
+          createChat: false,
         },
         recurrenceRuleData: {
           recurrenceStartDate: startDate,
