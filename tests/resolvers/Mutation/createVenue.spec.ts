@@ -186,6 +186,82 @@ describe("resolvers -> Mutation -> createVenue", () => {
     }
   });
 
+  it(`throws InputValidationError if the venue name is undefined`, async () => {
+    try {
+      await Organization.findByIdAndUpdate(
+        {
+          _id: testOrganization?._id,
+        },
+        {
+          $push: {
+            admins: [testUser?.id],
+          },
+        },
+      );
+      
+      const args: MutationCreateVenueArgs = {
+        data: {
+          capacity: 10,
+          name: undefined as unknown as string, 
+          organizationId: testOrganization?.id,
+        },
+      };
+  
+      const context = {
+        userId: testUser?.id,
+      };
+  
+      const { createVenue } = await import(
+        "../../../src/resolvers/Mutation/createVenue"
+      );
+      await createVenue?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(VENUE_NAME_MISSING_ERROR.MESSAGE);
+      } else {
+        fail(`Expected InputValidationError, but got ${error}`);
+      }
+    }
+  });
+  
+  it(`throws InputValidationError if the venue name is null`, async () => {
+    try {
+      await Organization.findByIdAndUpdate(
+        {
+          _id: testOrganization?._id,
+        },
+        {
+          $push: {
+            admins: [testUser?.id],
+          },
+        },
+      );
+      
+      const args: MutationCreateVenueArgs = {
+        data: {
+          capacity: 10,
+          name: null as unknown as string, 
+          organizationId: testOrganization?.id,
+        },
+      };
+  
+      const context = {
+        userId: testUser?.id,
+      };
+  
+      const { createVenue } = await import(
+        "../../../src/resolvers/Mutation/createVenue"
+      );
+      await createVenue?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(VENUE_NAME_MISSING_ERROR.MESSAGE);
+      } else {
+        fail(`Expected InputValidationError, but got ${error}`);
+      }
+    }
+  });
+
   it(`throws ConflictError if a venue with same place already exists in the organization`, async () => {
     try {
       const args: MutationCreateVenueArgs = {
