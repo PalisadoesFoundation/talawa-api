@@ -107,12 +107,8 @@ jobs:
         uses: tj-actions/changed-files@v44
         with:
           files: |
-            .github/**
-            .husky/**
-            scripts/**
+            .github/**  
             .env.sample
-            .dockerignore
-            .node-version
             tsconfig.json
             .gitignore
             .eslintrc.json
@@ -122,18 +118,9 @@ jobs:
             vite.config.ts
             CODEOWNERS
             LICENSE
-            docker-compose.dev.yaml
-            docker-compose.prod.yaml
-            setup.ts
-            schema.graphql
-            .coderabbit.yaml
-            CODE_OF_CONDUCT.md
-            CONTRIBUTING.md
-            DOCUMENTATION.md
-            INSTALLATION.md
-            ISSUE_GUIDELINES.md
-            PR_GUIDELINES.md
             README.md
+
+
 
       - name: List all changed unauthorized files
         if: steps.changed-unauth-files.outputs.any_changed == 'true' || steps.changed-unauth-files.outputs.any_deleted == 'true'
