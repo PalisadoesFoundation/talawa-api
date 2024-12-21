@@ -318,6 +318,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-docker-check-
 
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
       - name: Check if Talawa API starts in Docker
         run: |
           # Ensure no containers are running
