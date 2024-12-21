@@ -1,7 +1,9 @@
+// This file is to be used to define the types for making the usage of event based publish/subscribe module used in the graphql resolvers type-safe.
 import type { Readable } from "node:stream";
+import type { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
 
 /**
- * Type of the publish and subscribe module used for publishing and subscribing to talawa api events.
+ * Type of the publish and subscribe module used for publishing and subscribing to talawa events.
  */
 export type PubSub = {
 	/**
@@ -22,15 +24,11 @@ export type PubSub = {
 	): Promise<Readable & AsyncIterableIterator<PubSubPublishArgsByKey[TKey]>>;
 };
 
-// This file is to be used to define the types for making the event based publish/subscribe module used in the graphql resolvers type-safe.
-
-type EventIdentifier = string;
-
-type EventPayload = unknown;
+type PrimaryKey = string;
 
 /**
- * Type of the talawa api events to be published or subscribed to and the values they will resolve to. `EventIdentifier` and `EventPayload` are placeholder values to showcase the usage of this type. This would need to be manually maintained and extended with additional event identifiers and corresponding payloads as more graphql subscriptions are added to talawa api. More information at this link: {@link https://the-guild.dev/graphql/yoga-server/docs/features/subscriptions#topics}
+ * Map of talawa events where the keys represent identifiers of the events and the values represent the corresponding payloads of the events. More information at this link: {@link https://the-guild.dev/graphql/yoga-server/docs/features/subscriptions#topics}
  */
 export type PubSubPublishArgsByKey = {
-	[key: EventIdentifier]: EventPayload;
+	[key: `chats.${PrimaryKey}:chat_messages::create`]: ChatMessage;
 };

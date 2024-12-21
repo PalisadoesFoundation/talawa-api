@@ -1,32 +1,33 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import {
-	QueryUserInput,
-	queryUserInputSchema,
-} from "~/src/graphql/inputs/QueryUserInput";
-import { User } from "~/src/graphql/types/User/User";
+	SubscriptionChatMessageCreateInput,
+	subscriptionChatMessageCreateInputSchema,
+} from "~/src/graphql/inputs/SubscriptionChatMessageCreateInput";
+import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
-const queryUserArgumentsSchema = z.object({
-	input: queryUserInputSchema,
+const subscriptionChatMessageCreateArgumentsSchema = z.object({
+	input: subscriptionChatMessageCreateInputSchema,
 });
 
-builder.queryField("user", (t) =>
+builder.subscriptionField("chatMessageCreate", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
 				description: "",
 				required: true,
-				type: QueryUserInput,
+				type: SubscriptionChatMessageCreateInput,
 			}),
 		},
-		description: "Query field to read a user.",
-		resolve: async (_parent, args, ctx) => {
+		description:
+			"Subscription field to subscribe to the event of creation of a chat message.",
+		subscribe: async (_parent, args, ctx) => {
 			const {
+				success,
 				data: parsedArgs,
 				error,
-				success,
-			} = queryUserArgumentsSchema.safeParse(args);
+			} = subscriptionChatMessageCreateArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -41,12 +42,13 @@ builder.queryField("user", (t) =>
 				});
 			}
 
-			const user = await ctx.drizzleClient.query.usersTable.findFirst({
+			const existingChat = await ctx.drizzleClient.query.chatsTable.findFirst({
+				columns: {},
 				where: (fields, operators) =>
 					operators.eq(fields.id, parsedArgs.input.id),
 			});
 
-			if (user === undefined) {
+			if (existingChat === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -60,8 +62,11 @@ builder.queryField("user", (t) =>
 				});
 			}
 
-			return user;
+			return await ctx.pubsub.subscribe(
+				`chats.${parsedArgs.input.id}:chat_messages::create`,
+			);
 		},
-		type: User,
+		resolve: (parent) => parent,
+		type: ChatMessage,
 	}),
 );
