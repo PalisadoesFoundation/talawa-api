@@ -3,6 +3,7 @@ import {
 	index,
 	pgTable,
 	primaryKey,
+	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
@@ -21,17 +22,28 @@ export const familyMembershipsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		familyId: uuid("family_id")
 			.notNull()
-			.references(() => familiesTable.id),
+			.references(() => familiesTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
-		memberId: uuid("member_id").references(() => usersTable.id),
+		memberId: uuid("member_id")
+			.notNull()
+			.references(() => usersTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
-		role: familyMembershipRoleEnum("role").notNull(),
+		role: text("role", {
+			enum: familyMembershipRoleEnum.options,
+		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
@@ -41,7 +53,10 @@ export const familyMembershipsTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 
-		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 	},
 	(self) => [
 		primaryKey({

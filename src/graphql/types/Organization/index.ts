@@ -1,6 +1,8 @@
 import "./Organization";
 import "./advertisements";
+import "./chats";
 import "./creator";
+import "./funds";
 import "./members";
 import "./pinnedPosts";
 import "./pinnedPostsCount";

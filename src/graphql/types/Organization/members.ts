@@ -56,7 +56,7 @@ Organization.implement({
 		members: t.connection(
 			{
 				description:
-					"Organization field to read the members of the organization by traversing through them using a graphql connection.",
+					"GraphQL connection to traverse through the users that are members of the organization.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,

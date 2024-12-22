@@ -6,6 +6,7 @@ import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2C
 import { actionCategoriesTable } from "./actionCategories";
 import { actionsTable } from "./actions";
 import { advertisementsTable } from "./advertisements";
+import { chatsTable } from "./chats";
 import { familiesTable } from "./families";
 import { fundsTable } from "./funds";
 import { organizationMembershipsTable } from "./organizationMemberships";
@@ -35,7 +36,9 @@ export const organizationsTable = pgTable(
 		/**
 		 * Country code of the country the organization exists in.
 		 */
-		countryCode: iso3166Alpha2CountryCodeEnum("country_code"),
+		countryCode: text("country_code", {
+			enum: iso3166Alpha2CountryCodeEnum.options,
+		}),
 		/**
 		 * Date time at the time the organization was created.
 		 */
@@ -47,7 +50,7 @@ export const organizationsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the user.
+		 * Foreign key reference to the id of the user who created the user.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
@@ -118,6 +121,12 @@ export const organizationsTableRelations = relations(
 		 */
 		advertisementsWhereOrganization: many(advertisementsTable, {
 			relationName: "advertisements.organization_id:organizations.id",
+		}),
+		/**
+		 * One to many relationship from `organizations` table to `chats` table.
+		 */
+		chatsWhereOrganization: many(chatsTable, {
+			relationName: "chats.organization_id:organizations.id",
 		}),
 		/**
 		 * Many to one relationship from `organizations` table to `users` table.

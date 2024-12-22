@@ -21,13 +21,17 @@ export const venueBookingsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		eventId: uuid("event_id")
 			.notNull()
-			.references(() => eventsTable.id),
+			.references(() => eventsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
@@ -37,11 +41,17 @@ export const venueBookingsTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 
-		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		venueId: uuid("venue_id")
 			.notNull()
-			.references(() => venuesTable.id),
+			.references(() => venuesTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 	},
 	(self) => [
 		primaryKey({

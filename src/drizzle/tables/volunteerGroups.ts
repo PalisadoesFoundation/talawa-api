@@ -24,17 +24,24 @@ export const volunteerGroupsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		eventId: uuid("event_id")
 			.notNull()
-			.references(() => eventsTable.id, {}),
+			.references(() => eventsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		id: uuid("id").primaryKey().$default(uuidv7),
 
-		leaderId: uuid("leader_id").references(() => usersTable.id),
+		leaderId: uuid("leader_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		maxVolunteerCount: integer("max_volunteer_count").notNull(),
 
@@ -48,7 +55,10 @@ export const volunteerGroupsTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 
-		updaterId: uuid("updater_id").references(() => usersTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 	},
 	(self) => [
 		index().on(self.createdAt),

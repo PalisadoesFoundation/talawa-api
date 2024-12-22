@@ -25,6 +25,7 @@ export const eventsTable = pgTable(
 	{
 		baseRecurringEventId: uuid("base_recurring_event_id").references(
 			(): AnyPgColumn => eventsTable.id,
+			{},
 		),
 
 		createdAt: timestamp("created_at", {
@@ -35,9 +36,10 @@ export const eventsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		description: text("description"),
 
@@ -65,7 +67,10 @@ export const eventsTable = pgTable(
 
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsTable.id),
+			.references(() => organizationsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		startDate: date("start_date", {
 			mode: "date",
@@ -81,7 +86,10 @@ export const eventsTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 
-		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 	},
 	(self) => [
 		index().on(self.createdAt),

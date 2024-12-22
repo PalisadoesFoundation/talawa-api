@@ -1,7 +1,12 @@
 import "./Advertisement/index";
 import "./AdvertisementAttachment/index";
 import "./AuthenticationPayload";
+import "./Chat/index";
+import "./ChatMessage/index";
 import "./Comment/index";
+import "./Fund/index";
+import "./FundCampaign/index";
+import "./FundCampaignPledge/index";
 import "./Mutation/index";
 import "./Organization/index";
 import "./Post/index";

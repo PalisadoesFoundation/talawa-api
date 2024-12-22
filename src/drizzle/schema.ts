@@ -4,11 +4,12 @@
 export { advertisementAttachmentTypeEnum } from "./enums/advertisementAttachmentType";
 export { advertisementTypeEnum } from "./enums/advertisementType";
 export { agendaItemTypeEnum } from "./enums/agendaItemType";
-export { commmentVoteTypeEnum } from "./enums/commentVoteType";
+export { commentVoteTypeEnum } from "./enums/commentVoteType";
 export { eventAttachmentTypeEnum } from "./enums/eventAttachmentType";
 export { eventAttendeeRegistrationInviteStatusEnum } from "./enums/eventAttendeeRegistrationInviteStatus";
 export { familyMembershipRoleEnum } from "./enums/familyMembershipRole";
 export { iso3166Alpha2CountryCodeEnum } from "./enums/iso3166Alpha2CountryCode";
+export { iso4217CurrencyCodeEnum } from "./enums/iso4217CurrencyCode";
 export { organizationMembershipRoleEnum } from "./enums/organizationMembershipRole";
 export { postAttachmentTypeEnum } from "./enums/postAttachmentType";
 export { postVoteTypeEnum } from "./enums/postVoteType";
@@ -43,6 +44,15 @@ export {
 	agendaSectionsTableRelations,
 } from "./tables/agendaSections";
 export {
+	chatMembershipsTable,
+	chatMembershipsTableRelations,
+} from "./tables/chatMemberships";
+export {
+	chatMessagesTable,
+	chatMessagesTableRelations,
+} from "./tables/chatMessages";
+export { chatsTable, chatsTableRelations } from "./tables/chats";
+export {
 	commentVotesTable,
 	commentVotesTableRelations,
 } from "./tables/commentVotes";
@@ -62,9 +72,9 @@ export {
 	familyMembershipsTableRelations,
 } from "./tables/familyMemberships";
 export {
-	fundraisingCampaignsTable,
-	fundraisingCampaignsTableRelations,
-} from "./tables/fundraisingCampaigns";
+	fundCampaignsTable,
+	fundCampaignsTableRelations,
+} from "./tables/fundCampaigns";
 export { fundsTable, fundsTableRelations } from "./tables/funds";
 export {
 	organizationMembershipsTable,
@@ -74,7 +84,10 @@ export {
 	organizationsTable,
 	organizationsTableRelations,
 } from "./tables/organizations";
-export { pledgesTable, pledgesTableRelations } from "./tables/pledges";
+export {
+	fundCampaignPledgesTable,
+	fundCampaignPledgesTableRelations,
+} from "./tables/fundCampaignPledges";
 export {
 	postAttachmentsTable,
 	postAttachmentsTableRelations,

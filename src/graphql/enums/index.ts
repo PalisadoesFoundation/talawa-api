@@ -1,7 +1,9 @@
 import "./AdvertisementAttachmentType";
 import "./AdvertisementType";
+import "./ChatMembershipRole";
 import "./CommentVoteType";
 import "./Iso3166Alpha2CountryCode";
+import "./Iso4217CurrencyCode";
 import "./OrganizationMembershipRole";
 import "./PostAttachmentType";
 import "./PostVoteType";

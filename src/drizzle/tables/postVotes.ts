@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import {
 	index,
 	pgTable,
+	text,
 	timestamp,
 	uniqueIndex,
 	uuid,
@@ -12,6 +13,9 @@ import { postVoteTypeEnum } from "~/src/drizzle/enums/postVoteType";
 import { postsTable } from "./posts";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for post votes.
+ */
 export const postVotesTable = pgTable(
 	"post_votes",
 	{
@@ -26,7 +30,7 @@ export const postVotesTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the vote.
+		 * Foreign key reference to the id of the user who created the vote.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
@@ -48,7 +52,9 @@ export const postVotesTable = pgTable(
 		/**
 		 * Type of the vote.
 		 */
-		type: postVoteTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: postVoteTypeEnum.options,
+		}).notNull(),
 		/**
 		 * Date time at the time the vote was last updated.
 		 */

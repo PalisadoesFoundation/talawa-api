@@ -15,7 +15,8 @@ builder.queryField("user", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "Input required to read a user.",
+				description: "",
+				required: true,
 				type: QueryUserInput,
 			}),
 		},

@@ -1,7 +1,12 @@
 import "./Query";
 import "./advertisement";
+import "./chat";
+import "./chatMessage";
 import "./comment";
 import "./currentUser";
+import "./fund";
+import "./fundCampaign";
+import "./fundCampaignPledge";
 import "./organization";
 import "./post";
 import "./renewAuthenticationToken";

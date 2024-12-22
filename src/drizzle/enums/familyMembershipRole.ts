@@ -1,9 +1,9 @@
-import { pgEnum } from "drizzle-orm/pg-core";
+import { z } from "zod";
 
 /**
- * Possible variants of role in the family(if applicable) of a user.
+ * Possible variants of the role of a user in a family(if applicable).
  */
-export const familyMembershipRoleEnum = pgEnum("family_membership_role", [
+export const familyMembershipRoleEnum = z.enum([
 	"adult",
 	"child",
 	"head_of_household",

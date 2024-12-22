@@ -1,5 +1,5 @@
 {
-  "id": "2740ad03-f2e6-4c20-a0f3-4b7ec7dc5cdf",
+  "id": "a8e07722-2e42-4db6-b5db-028d15632891",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -19,7 +19,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "description": {
           "name": "description",
@@ -143,8 +143,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "action_categories_organization_id_organizations_id_fk": {
           "name": "action_categories_organization_id_organizations_id_fk",
@@ -156,8 +156,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "action_categories_updater_id_users_id_fk": {
           "name": "action_categories_updater_id_users_id_fk",
@@ -169,8 +169,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -218,7 +218,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -387,8 +387,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "actions_category_id_action_categories_id_fk": {
           "name": "actions_category_id_action_categories_id_fk",
@@ -400,8 +400,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "actions_creator_id_users_id_fk": {
           "name": "actions_creator_id_users_id_fk",
@@ -413,8 +413,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "actions_event_id_events_id_fk": {
           "name": "actions_event_id_events_id_fk",
@@ -426,8 +426,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "actions_organization_id_organizations_id_fk": {
           "name": "actions_organization_id_organizations_id_fk",
@@ -439,8 +439,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "actions_updater_id_users_id_fk": {
           "name": "actions_updater_id_users_id_fk",
@@ -452,8 +452,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -483,12 +483,11 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "type": {
           "name": "type",
-          "type": "advertisement_attachment_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -569,8 +568,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "advertisement_attachments_creator_id_users_id_fk": {
           "name": "advertisement_attachments_creator_id_users_id_fk",
@@ -582,8 +581,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "advertisement_attachments_updater_id_users_id_fk": {
           "name": "advertisement_attachments_updater_id_users_id_fk",
@@ -595,8 +594,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -672,8 +671,7 @@
         },
         "type": {
           "name": "type",
-          "type": "advertisement_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         }
@@ -838,7 +836,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "description": {
           "name": "description",
@@ -890,8 +888,7 @@
         },
         "type": {
           "name": "type",
-          "type": "agenda_item_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -1055,8 +1052,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "agenda_items_event_id_events_id_fk": {
           "name": "agenda_items_event_id_events_id_fk",
@@ -1068,8 +1065,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "agenda_items_section_id_agenda_sections_id_fk": {
           "name": "agenda_items_section_id_agenda_sections_id_fk",
@@ -1081,8 +1078,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "agenda_items_updater_id_users_id_fk": {
           "name": "agenda_items_updater_id_users_id_fk",
@@ -1094,8 +1091,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1119,7 +1116,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -1267,8 +1264,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "agenda_sections_event_id_events_id_fk": {
           "name": "agenda_sections_event_id_events_id_fk",
@@ -1280,8 +1277,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "agenda_sections_parent_section_id_agenda_sections_id_fk": {
           "name": "agenda_sections_parent_section_id_agenda_sections_id_fk",
@@ -1306,12 +1303,539 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.chat_memberships": {
+      "name": "chat_memberships",
+      "schema": "",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chat_id": {
+          "name": "chat_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updater_id": {
+          "name": "updater_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "chat_memberships_chat_id_index": {
+          "name": "chat_memberships_chat_id_index",
+          "columns": [
+            {
+              "expression": "chat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "chat_memberships_created_at_index": {
+          "name": "chat_memberships_created_at_index",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "chat_memberships_creator_id_index": {
+          "name": "chat_memberships_creator_id_index",
+          "columns": [
+            {
+              "expression": "creator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "chat_memberships_member_id_index": {
+          "name": "chat_memberships_member_id_index",
+          "columns": [
+            {
+              "expression": "member_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "chat_memberships_role_index": {
+          "name": "chat_memberships_role_index",
+          "columns": [
+            {
+              "expression": "role",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "chat_memberships_creator_id_users_id_fk": {
+          "name": "chat_memberships_creator_id_users_id_fk",
+          "tableFrom": "chat_memberships",
+          "tableTo": "users",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "chat_memberships_chat_id_chats_id_fk": {
+          "name": "chat_memberships_chat_id_chats_id_fk",
+          "tableFrom": "chat_memberships",
+          "tableTo": "chats",
+          "columnsFrom": [
+            "chat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "chat_memberships_member_id_users_id_fk": {
+          "name": "chat_memberships_member_id_users_id_fk",
+          "tableFrom": "chat_memberships",
+          "tableTo": "users",
+          "columnsFrom": [
+            "member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "chat_memberships_updater_id_users_id_fk": {
+          "name": "chat_memberships_updater_id_users_id_fk",
+          "tableFrom": "chat_memberships",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updater_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "chat_memberships_chat_id_member_id_pk": {
+          "name": "chat_memberships_chat_id_member_id_pk",
+          "columns": [
+            "chat_id",
+            "member_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.chat_messages": {
+      "name": "chat_messages",
+      "schema": "",
+      "columns": {
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chat_id": {
+          "name": "chat_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "parent_chat_message_id": {
+          "name": "parent_chat_message_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "chat_messages_chat_id_index": {
+          "name": "chat_messages_chat_id_index",
+          "columns": [
+            {
+              "expression": "chat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "chat_messages_created_at_index": {
+          "name": "chat_messages_created_at_index",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "chat_messages_creator_id_index": {
+          "name": "chat_messages_creator_id_index",
+          "columns": [
+            {
+              "expression": "creator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "chat_messages_parent_chat_message_id_index": {
+          "name": "chat_messages_parent_chat_message_id_index",
+          "columns": [
+            {
+              "expression": "parent_chat_message_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "chat_messages_chat_id_chats_id_fk": {
+          "name": "chat_messages_chat_id_chats_id_fk",
+          "tableFrom": "chat_messages",
+          "tableTo": "chats",
+          "columnsFrom": [
+            "chat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "chat_messages_creator_id_users_id_fk": {
+          "name": "chat_messages_creator_id_users_id_fk",
+          "tableFrom": "chat_messages",
+          "tableTo": "users",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "chat_messages_parent_chat_message_id_chat_messages_id_fk": {
+          "name": "chat_messages_parent_chat_message_id_chat_messages_id_fk",
+          "tableFrom": "chat_messages",
+          "tableTo": "chat_messages",
+          "columnsFrom": [
+            "parent_chat_message_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.chats": {
+      "name": "chats",
+      "schema": "",
+      "columns": {
+        "avatar_uri": {
+          "name": "avatar_uri",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updater_id": {
+          "name": "updater_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "chats_creator_id_index": {
+          "name": "chats_creator_id_index",
+          "columns": [
+            {
+              "expression": "creator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "chats_name_index": {
+          "name": "chats_name_index",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "chats_organization_id_index": {
+          "name": "chats_organization_id_index",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "chats_updater_id_index": {
+          "name": "chats_updater_id_index",
+          "columns": [
+            {
+              "expression": "updater_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "chats_creator_id_users_id_fk": {
+          "name": "chats_creator_id_users_id_fk",
+          "tableFrom": "chats",
+          "tableTo": "users",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "chats_organization_id_organizations_id_fk": {
+          "name": "chats_organization_id_organizations_id_fk",
+          "tableFrom": "chats",
+          "tableTo": "organizations",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "chats_updater_id_users_id_fk": {
+          "name": "chats_updater_id_users_id_fk",
+          "tableFrom": "chats",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updater_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "chats_name_unique": {
+          "name": "chats_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1347,8 +1871,7 @@
         },
         "type": {
           "name": "type",
-          "type": "comment_vote_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -1637,7 +2160,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -1665,8 +2188,7 @@
         },
         "type": {
           "name": "type",
-          "type": "event_attachment_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         }
@@ -1729,8 +2251,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "event_attachments_event_id_events_id_fk": {
           "name": "event_attachments_event_id_events_id_fk",
@@ -1742,8 +2264,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "event_attachments_updater_id_users_id_fk": {
           "name": "event_attachments_updater_id_users_id_fk",
@@ -1755,8 +2277,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1773,7 +2295,7 @@
           "name": "attendee_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "check_in_at": {
           "name": "check_in_at",
@@ -1798,7 +2320,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -1808,8 +2330,7 @@
         },
         "invite_status": {
           "name": "invite_status",
-          "type": "event_attendee_registration_invite_status",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -1944,8 +2465,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "event_attendances_creator_id_users_id_fk": {
           "name": "event_attendances_creator_id_users_id_fk",
@@ -1957,8 +2478,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "event_attendances_event_id_events_id_fk": {
           "name": "event_attendances_event_id_events_id_fk",
@@ -1970,8 +2491,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "event_attendances_updater_id_users_id_fk": {
           "name": "event_attendances_updater_id_users_id_fk",
@@ -1983,8 +2504,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2014,7 +2535,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "description": {
           "name": "description",
@@ -2199,8 +2720,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "events_organization_id_organizations_id_fk": {
           "name": "events_organization_id_organizations_id_fk",
@@ -2212,8 +2733,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "events_updater_id_users_id_fk": {
           "name": "events_updater_id_users_id_fk",
@@ -2225,8 +2746,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2250,7 +2771,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "id": {
           "name": "id",
@@ -2377,8 +2898,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "families_organization_id_organizations_id_fk": {
           "name": "families_organization_id_organizations_id_fk",
@@ -2390,8 +2911,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "families_updater_id_users_id_fk": {
           "name": "families_updater_id_users_id_fk",
@@ -2403,8 +2924,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2428,7 +2949,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "family_id": {
           "name": "family_id",
@@ -2440,12 +2961,11 @@
           "name": "member_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "role": {
           "name": "role",
-          "type": "family_membership_role",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -2535,8 +3055,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "family_memberships_family_id_families_id_fk": {
           "name": "family_memberships_family_id_families_id_fk",
@@ -2548,8 +3068,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "family_memberships_member_id_users_id_fk": {
           "name": "family_memberships_member_id_users_id_fk",
@@ -2561,8 +3081,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "family_memberships_updater_id_users_id_fk": {
           "name": "family_memberships_updater_id_users_id_fk",
@@ -2574,8 +3094,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -2592,8 +3112,211 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.fundraising_campaigns": {
-      "name": "fundraising_campaigns",
+    "public.fund_campaign_pledges": {
+      "name": "fund_campaign_pledges",
+      "schema": "",
+      "columns": {
+        "amount": {
+          "name": "amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "campaign_id": {
+          "name": "campaign_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pledger_id": {
+          "name": "pledger_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updater_id": {
+          "name": "updater_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "fund_campaign_pledges_campaign_id_index": {
+          "name": "fund_campaign_pledges_campaign_id_index",
+          "columns": [
+            {
+              "expression": "campaign_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "fund_campaign_pledges_created_at_index": {
+          "name": "fund_campaign_pledges_created_at_index",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "fund_campaign_pledges_creator_id_index": {
+          "name": "fund_campaign_pledges_creator_id_index",
+          "columns": [
+            {
+              "expression": "creator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "fund_campaign_pledges_pledger_id_index": {
+          "name": "fund_campaign_pledges_pledger_id_index",
+          "columns": [
+            {
+              "expression": "pledger_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "fund_campaign_pledges_campaign_id_pledger_id_index": {
+          "name": "fund_campaign_pledges_campaign_id_pledger_id_index",
+          "columns": [
+            {
+              "expression": "campaign_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "pledger_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fund_campaign_pledges_campaign_id_fund_campaigns_id_fk": {
+          "name": "fund_campaign_pledges_campaign_id_fund_campaigns_id_fk",
+          "tableFrom": "fund_campaign_pledges",
+          "tableTo": "fund_campaigns",
+          "columnsFrom": [
+            "campaign_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "fund_campaign_pledges_creator_id_users_id_fk": {
+          "name": "fund_campaign_pledges_creator_id_users_id_fk",
+          "tableFrom": "fund_campaign_pledges",
+          "tableTo": "users",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "fund_campaign_pledges_pledger_id_users_id_fk": {
+          "name": "fund_campaign_pledges_pledger_id_users_id_fk",
+          "tableFrom": "fund_campaign_pledges",
+          "tableTo": "users",
+          "columnsFrom": [
+            "pledger_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "fund_campaign_pledges_updater_id_users_id_fk": {
+          "name": "fund_campaign_pledges_updater_id_users_id_fk",
+          "tableFrom": "fund_campaign_pledges",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updater_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.fund_campaigns": {
+      "name": "fund_campaigns",
       "schema": "",
       "columns": {
         "created_at": {
@@ -2606,6 +3329,12 @@
         "creator_id": {
           "name": "creator_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "currency_code": {
+          "name": "currency_code",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -2659,8 +3388,8 @@
         }
       },
       "indexes": {
-        "fundraising_campaigns_created_at_index": {
-          "name": "fundraising_campaigns_created_at_index",
+        "fund_campaigns_created_at_index": {
+          "name": "fund_campaigns_created_at_index",
           "columns": [
             {
               "expression": "created_at",
@@ -2674,8 +3403,8 @@
           "method": "btree",
           "with": {}
         },
-        "fundraising_campaigns_creator_id_index": {
-          "name": "fundraising_campaigns_creator_id_index",
+        "fund_campaigns_creator_id_index": {
+          "name": "fund_campaigns_creator_id_index",
           "columns": [
             {
               "expression": "creator_id",
@@ -2689,8 +3418,8 @@
           "method": "btree",
           "with": {}
         },
-        "fundraising_campaigns_end_at_index": {
-          "name": "fundraising_campaigns_end_at_index",
+        "fund_campaigns_end_at_index": {
+          "name": "fund_campaigns_end_at_index",
           "columns": [
             {
               "expression": "end_at",
@@ -2704,8 +3433,8 @@
           "method": "btree",
           "with": {}
         },
-        "fundraising_campaigns_fund_id_index": {
-          "name": "fundraising_campaigns_fund_id_index",
+        "fund_campaigns_fund_id_index": {
+          "name": "fund_campaigns_fund_id_index",
           "columns": [
             {
               "expression": "fund_id",
@@ -2719,8 +3448,8 @@
           "method": "btree",
           "with": {}
         },
-        "fundraising_campaigns_name_index": {
-          "name": "fundraising_campaigns_name_index",
+        "fund_campaigns_name_index": {
+          "name": "fund_campaigns_name_index",
           "columns": [
             {
               "expression": "name",
@@ -2734,8 +3463,8 @@
           "method": "btree",
           "with": {}
         },
-        "fundraising_campaigns_start_at_index": {
-          "name": "fundraising_campaigns_start_at_index",
+        "fund_campaigns_start_at_index": {
+          "name": "fund_campaigns_start_at_index",
           "columns": [
             {
               "expression": "start_at",
@@ -2748,12 +3477,33 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "fund_campaigns_fund_id_name_index": {
+          "name": "fund_campaigns_fund_id_name_index",
+          "columns": [
+            {
+              "expression": "fund_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
-        "fundraising_campaigns_creator_id_users_id_fk": {
-          "name": "fundraising_campaigns_creator_id_users_id_fk",
-          "tableFrom": "fundraising_campaigns",
+        "fund_campaigns_creator_id_users_id_fk": {
+          "name": "fund_campaigns_creator_id_users_id_fk",
+          "tableFrom": "fund_campaigns",
           "tableTo": "users",
           "columnsFrom": [
             "creator_id"
@@ -2761,12 +3511,12 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
-        "fundraising_campaigns_fund_id_funds_id_fk": {
-          "name": "fundraising_campaigns_fund_id_funds_id_fk",
-          "tableFrom": "fundraising_campaigns",
+        "fund_campaigns_fund_id_funds_id_fk": {
+          "name": "fund_campaigns_fund_id_funds_id_fk",
+          "tableFrom": "fund_campaigns",
           "tableTo": "funds",
           "columnsFrom": [
             "fund_id"
@@ -2774,12 +3524,12 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
-        "fundraising_campaigns_updater_id_users_id_fk": {
-          "name": "fundraising_campaigns_updater_id_users_id_fk",
-          "tableFrom": "fundraising_campaigns",
+        "fund_campaigns_updater_id_users_id_fk": {
+          "name": "fund_campaigns_updater_id_users_id_fk",
+          "tableFrom": "fund_campaigns",
           "tableTo": "users",
           "columnsFrom": [
             "updater_id"
@@ -2787,21 +3537,12 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "fundraising_campaigns_fund_id_name_unique": {
-          "name": "fundraising_campaigns_fund_id_name_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "fund_id",
-            "name"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -2821,7 +3562,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "id": {
           "name": "id",
@@ -2829,20 +3570,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "is_archived": {
-          "name": "is_archived",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_default": {
-          "name": "is_default",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_tax_deductibe": {
-          "name": "is_tax_deductibe",
+        "is_tax_deductible": {
+          "name": "is_tax_deductible",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true
@@ -2932,6 +3661,27 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "funds_name_organization_id_index": {
+          "name": "funds_name_organization_id_index",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -2945,8 +3695,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "funds_organization_id_organizations_id_fk": {
           "name": "funds_organization_id_organizations_id_fk",
@@ -2958,8 +3708,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "funds_updater_id_users_id_fk": {
           "name": "funds_updater_id_users_id_fk",
@@ -2971,21 +3721,12 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "funds_name_organization_id_unique": {
-          "name": "funds_name_organization_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "name",
-            "organization_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -3021,8 +3762,7 @@
         },
         "role": {
           "name": "role",
-          "type": "organization_membership_role",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -3208,8 +3948,7 @@
         },
         "country_code": {
           "name": "country_code",
-          "type": "iso_3166_alpha_2_country_code",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -3358,236 +4097,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.pledges": {
-      "name": "pledges",
-      "schema": "",
-      "columns": {
-        "amount": {
-          "name": "amount",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "creator_id": {
-          "name": "creator_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "end_at": {
-          "name": "end_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "fundraising_campaign_id": {
-          "name": "fundraising_campaign_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "is_include_family": {
-          "name": "is_include_family",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "pledger_id": {
-          "name": "pledger_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "start_at": {
-          "name": "start_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updater_id": {
-          "name": "updater_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "pledges_created_at_index": {
-          "name": "pledges_created_at_index",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "pledges_creator_id_index": {
-          "name": "pledges_creator_id_index",
-          "columns": [
-            {
-              "expression": "creator_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "pledges_end_at_index": {
-          "name": "pledges_end_at_index",
-          "columns": [
-            {
-              "expression": "end_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "pledges_fundraising_campaign_id_index": {
-          "name": "pledges_fundraising_campaign_id_index",
-          "columns": [
-            {
-              "expression": "fundraising_campaign_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "pledges_pledger_id_index": {
-          "name": "pledges_pledger_id_index",
-          "columns": [
-            {
-              "expression": "pledger_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "pledges_start_at_index": {
-          "name": "pledges_start_at_index",
-          "columns": [
-            {
-              "expression": "start_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "pledges_creator_id_users_id_fk": {
-          "name": "pledges_creator_id_users_id_fk",
-          "tableFrom": "pledges",
-          "tableTo": "users",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "pledges_fundraising_campaign_id_fundraising_campaigns_id_fk": {
-          "name": "pledges_fundraising_campaign_id_fundraising_campaigns_id_fk",
-          "tableFrom": "pledges",
-          "tableTo": "fundraising_campaigns",
-          "columnsFrom": [
-            "fundraising_campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "pledges_pledger_id_users_id_fk": {
-          "name": "pledges_pledger_id_users_id_fk",
-          "tableFrom": "pledges",
-          "tableTo": "users",
-          "columnsFrom": [
-            "pledger_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "pledges_updater_id_users_id_fk": {
-          "name": "pledges_updater_id_users_id_fk",
-          "tableFrom": "pledges",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updater_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.post_attachments": {
       "name": "post_attachments",
       "schema": "",
@@ -3603,7 +4112,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "post_id": {
           "name": "post_id",
@@ -3613,8 +4122,7 @@
         },
         "type": {
           "name": "type",
-          "type": "post_attachment_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -3695,8 +4203,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "post_attachments_post_id_posts_id_fk": {
           "name": "post_attachments_post_id_posts_id_fk",
@@ -3708,8 +4216,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "post_attachments_updater_id_users_id_fk": {
           "name": "post_attachments_updater_id_users_id_fk",
@@ -3721,8 +4229,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -3762,8 +4270,7 @@
         },
         "type": {
           "name": "type",
-          "type": "post_vote_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -4073,7 +4580,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "day_of_month": {
           "name": "day_of_month",
@@ -4125,8 +4632,7 @@
         },
         "type": {
           "name": "type",
-          "type": "recurrence_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -4207,8 +4713,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "recurrences_event_id_events_id_fk": {
           "name": "recurrences_event_id_events_id_fk",
@@ -4220,8 +4726,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "recurrences_updater_id_users_id_fk": {
           "name": "recurrences_updater_id_users_id_fk",
@@ -4233,8 +4739,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -4616,8 +5122,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "tags_updater_id_users_id_fk": {
           "name": "tags_updater_id_users_id_fk",
@@ -4669,8 +5175,7 @@
         },
         "country_code": {
           "name": "country_code",
-          "type": "iso_3166_alpha_2_country_code",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -4695,8 +5200,7 @@
         },
         "education_grade": {
           "name": "education_grade",
-          "type": "user_education_grade",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -4708,8 +5212,7 @@
         },
         "employment_status": {
           "name": "employment_status",
-          "type": "user_employment_status",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -4733,8 +5236,7 @@
         },
         "marital_status": {
           "name": "marital_status",
-          "type": "user_marital_status",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -4752,8 +5254,7 @@
         },
         "natal_sex": {
           "name": "natal_sex",
-          "type": "user_natal_sex",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -4771,8 +5272,7 @@
         },
         "role": {
           "name": "role",
-          "type": "user_role",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -4905,12 +5405,11 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "type": {
           "name": "type",
-          "type": "venue_attachment_type",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -4997,8 +5496,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "venue_attachments_updater_id_users_id_fk": {
           "name": "venue_attachments_updater_id_users_id_fk",
@@ -5010,8 +5509,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "venue_attachments_venue_id_venues_id_fk": {
           "name": "venue_attachments_venue_id_venues_id_fk",
@@ -5023,8 +5522,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -5048,7 +5547,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -5148,8 +5647,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "venue_bookings_event_id_events_id_fk": {
           "name": "venue_bookings_event_id_events_id_fk",
@@ -5161,8 +5660,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "venue_bookings_updater_id_users_id_fk": {
           "name": "venue_bookings_updater_id_users_id_fk",
@@ -5174,8 +5673,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "venue_bookings_venue_id_venues_id_fk": {
           "name": "venue_bookings_venue_id_venues_id_fk",
@@ -5187,8 +5686,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -5226,7 +5725,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "description": {
           "name": "description",
@@ -5359,8 +5858,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "venues_organization_id_organizations_id_fk": {
           "name": "venues_organization_id_organizations_id_fk",
@@ -5372,8 +5871,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "venues_updater_id_users_id_fk": {
           "name": "venues_updater_id_users_id_fk",
@@ -5385,8 +5884,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -5416,7 +5915,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "group_id": {
           "name": "group_id",
@@ -5426,8 +5925,7 @@
         },
         "invite_status": {
           "name": "invite_status",
-          "type": "volunteer_group_assignment_invite_status",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -5502,8 +6000,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "volunteer_group_assignments_creator_id_users_id_fk": {
           "name": "volunteer_group_assignments_creator_id_users_id_fk",
@@ -5515,8 +6013,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "volunteer_group_assignments_group_id_volunteer_groups_id_fk": {
           "name": "volunteer_group_assignments_group_id_volunteer_groups_id_fk",
@@ -5528,8 +6026,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "volunteer_group_assignments_updater_id_users_id_fk": {
           "name": "volunteer_group_assignments_updater_id_users_id_fk",
@@ -5541,8 +6039,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -5574,7 +6072,7 @@
           "name": "creator_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "event_id": {
           "name": "event_id",
@@ -5728,8 +6226,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "volunteer_groups_event_id_events_id_fk": {
           "name": "volunteer_groups_event_id_events_id_fk",
@@ -5741,8 +6239,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "volunteer_groups_leader_id_users_id_fk": {
           "name": "volunteer_groups_leader_id_users_id_fk",
@@ -5754,8 +6252,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         },
         "volunteer_groups_updater_id_users_id_fk": {
           "name": "volunteer_groups_updater_id_users_id_fk",
@@ -5767,8 +6265,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -5778,436 +6276,7 @@
       "isRLSEnabled": false
     }
   },
-  "enums": {
-    "public.advertisement_attachment_type": {
-      "name": "advertisement_attachment_type",
-      "schema": "public",
-      "values": [
-        "image",
-        "video"
-      ]
-    },
-    "public.advertisement_type": {
-      "name": "advertisement_type",
-      "schema": "public",
-      "values": [
-        "banner",
-        "menu",
-        "pop_up"
-      ]
-    },
-    "public.agenda_item_type": {
-      "name": "agenda_item_type",
-      "schema": "public",
-      "values": [
-        "general",
-        "note",
-        "scripture",
-        "song"
-      ]
-    },
-    "public.comment_vote_type": {
-      "name": "comment_vote_type",
-      "schema": "public",
-      "values": [
-        "down_vote",
-        "up_vote"
-      ]
-    },
-    "public.event_attachment_type": {
-      "name": "event_attachment_type",
-      "schema": "public",
-      "values": [
-        "image",
-        "video"
-      ]
-    },
-    "public.event_attendee_registration_invite_status": {
-      "name": "event_attendee_registration_invite_status",
-      "schema": "public",
-      "values": [
-        "accepted",
-        "declined",
-        "no_response"
-      ]
-    },
-    "public.family_membership_role": {
-      "name": "family_membership_role",
-      "schema": "public",
-      "values": [
-        "adult",
-        "child",
-        "head_of_household",
-        "spouse"
-      ]
-    },
-    "public.iso_3166_alpha_2_country_code": {
-      "name": "iso_3166_alpha_2_country_code",
-      "schema": "public",
-      "values": [
-        "ad",
-        "ae",
-        "af",
-        "ag",
-        "ai",
-        "al",
-        "am",
-        "ao",
-        "aq",
-        "ar",
-        "as",
-        "at",
-        "au",
-        "aw",
-        "ax",
-        "az",
-        "ba",
-        "bb",
-        "bd",
-        "be",
-        "bf",
-        "bg",
-        "bh",
-        "bi",
-        "bj",
-        "bl",
-        "bm",
-        "bn",
-        "bo",
-        "bq",
-        "br",
-        "bs",
-        "bt",
-        "bv",
-        "bw",
-        "by",
-        "bz",
-        "ca",
-        "cc",
-        "cd",
-        "cf",
-        "cg",
-        "ch",
-        "ci",
-        "ck",
-        "cl",
-        "cm",
-        "cn",
-        "co",
-        "cr",
-        "cu",
-        "cv",
-        "cw",
-        "cx",
-        "cy",
-        "cz",
-        "de",
-        "dj",
-        "dk",
-        "dm",
-        "do",
-        "dz",
-        "ec",
-        "ee",
-        "eg",
-        "eh",
-        "er",
-        "es",
-        "et",
-        "fi",
-        "fj",
-        "fk",
-        "fm",
-        "fo",
-        "fr",
-        "ga",
-        "gb",
-        "gd",
-        "ge",
-        "gf",
-        "gg",
-        "gh",
-        "gi",
-        "gl",
-        "gm",
-        "gn",
-        "gp",
-        "gq",
-        "gr",
-        "gs",
-        "gt",
-        "gu",
-        "gw",
-        "gy",
-        "hk",
-        "hm",
-        "hn",
-        "hr",
-        "ht",
-        "hu",
-        "id",
-        "ie",
-        "il",
-        "im",
-        "in",
-        "io",
-        "iq",
-        "ir",
-        "is",
-        "it",
-        "je",
-        "jm",
-        "jo",
-        "jp",
-        "ke",
-        "kg",
-        "kh",
-        "ki",
-        "km",
-        "kn",
-        "kp",
-        "kr",
-        "kw",
-        "ky",
-        "kz",
-        "la",
-        "lb",
-        "lc",
-        "li",
-        "lk",
-        "lr",
-        "ls",
-        "lt",
-        "lu",
-        "lv",
-        "ly",
-        "ma",
-        "mc",
-        "md",
-        "me",
-        "mf",
-        "mg",
-        "mh",
-        "mk",
-        "ml",
-        "mm",
-        "mn",
-        "mo",
-        "mp",
-        "mq",
-        "mr",
-        "ms",
-        "mt",
-        "mu",
-        "mv",
-        "mw",
-        "mx",
-        "my",
-        "mz",
-        "na",
-        "nc",
-        "ne",
-        "nf",
-        "ng",
-        "ni",
-        "nl",
-        "no",
-        "np",
-        "nr",
-        "nu",
-        "nz",
-        "om",
-        "pa",
-        "pe",
-        "pf",
-        "pg",
-        "ph",
-        "pk",
-        "pl",
-        "pm",
-        "pn",
-        "pr",
-        "ps",
-        "pt",
-        "pw",
-        "py",
-        "qa",
-        "re",
-        "ro",
-        "rs",
-        "ru",
-        "rw",
-        "sa",
-        "sb",
-        "sc",
-        "sd",
-        "se",
-        "sg",
-        "sh",
-        "si",
-        "sj",
-        "sk",
-        "sl",
-        "sm",
-        "sn",
-        "so",
-        "sr",
-        "ss",
-        "st",
-        "sv",
-        "sx",
-        "sy",
-        "sz",
-        "tc",
-        "td",
-        "tf",
-        "tg",
-        "th",
-        "tj",
-        "tk",
-        "tl",
-        "tm",
-        "tn",
-        "to",
-        "tr",
-        "tt",
-        "tv",
-        "tw",
-        "tz",
-        "ua",
-        "ug",
-        "um",
-        "us",
-        "uy",
-        "uz",
-        "va",
-        "vc",
-        "ve",
-        "vg",
-        "vi",
-        "vn",
-        "vu",
-        "wf",
-        "ws",
-        "ye",
-        "yt",
-        "za",
-        "zm",
-        "zw"
-      ]
-    },
-    "public.organization_membership_role": {
-      "name": "organization_membership_role",
-      "schema": "public",
-      "values": [
-        "administrator",
-        "regular"
-      ]
-    },
-    "public.post_attachment_type": {
-      "name": "post_attachment_type",
-      "schema": "public",
-      "values": [
-        "image",
-        "video"
-      ]
-    },
-    "public.post_vote_type": {
-      "name": "post_vote_type",
-      "schema": "public",
-      "values": [
-        "down_vote",
-        "up_vote"
-      ]
-    },
-    "public.recurrence_type": {
-      "name": "recurrence_type",
-      "schema": "public",
-      "values": [
-        "daily",
-        "monthly",
-        "weekly",
-        "yearly"
-      ]
-    },
-    "public.user_education_grade": {
-      "name": "user_education_grade",
-      "schema": "public",
-      "values": [
-        "grade_1",
-        "grade_2",
-        "grade_3",
-        "grade_4",
-        "grade_5",
-        "grade_6",
-        "grade_7",
-        "grade_8",
-        "grade_9",
-        "grade_10",
-        "grade_11",
-        "grade_12",
-        "graduate",
-        "kg",
-        "no_grade",
-        "pre_kg"
-      ]
-    },
-    "public.user_employment_status": {
-      "name": "user_employment_status",
-      "schema": "public",
-      "values": [
-        "full_time",
-        "part_time",
-        "unemployed"
-      ]
-    },
-    "public.user_marital_status": {
-      "name": "user_marital_status",
-      "schema": "public",
-      "values": [
-        "divorced",
-        "engaged",
-        "married",
-        "seperated",
-        "single",
-        "widowed"
-      ]
-    },
-    "public.user_natal_sex": {
-      "name": "user_natal_sex",
-      "schema": "public",
-      "values": [
-        "female",
-        "intersex",
-        "male"
-      ]
-    },
-    "public.user_role": {
-      "name": "user_role",
-      "schema": "public",
-      "values": [
-        "administrator",
-        "regular"
-      ]
-    },
-    "public.venue_attachment_type": {
-      "name": "venue_attachment_type",
-      "schema": "public",
-      "values": [
-        "image",
-        "video"
-      ]
-    },
-    "public.volunteer_group_assignment_invite_status": {
-      "name": "volunteer_group_assignment_invite_status",
-      "schema": "public",
-      "values": [
-        "accepted",
-        "declined",
-        "no_response"
-      ]
-    }
-  },
+  "enums": {},
   "schemas": {},
   "sequences": {},
   "roles": {},

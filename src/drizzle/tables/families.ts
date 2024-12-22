@@ -23,9 +23,10 @@ export const familiesTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id")
-			.references(() => usersTable.id, {})
-			.notNull(),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 
 		id: uuid("id").primaryKey().$default(uuidv7),
 
@@ -33,7 +34,10 @@ export const familiesTable = pgTable(
 
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsTable.id),
+			.references(() => organizationsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
@@ -43,7 +47,10 @@ export const familiesTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 
-		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
+		}),
 	},
 	(self) => [
 		index().on(self.createdAt),

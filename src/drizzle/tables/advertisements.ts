@@ -14,6 +14,9 @@ import { advertisementAttachmentsTable } from "./advertisementAttachments";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
+/**
+ * Drizzle orm postgres table definition for advertisements.
+ */
 export const advertisementsTable = pgTable(
 	"advertisements",
 	{
@@ -28,7 +31,7 @@ export const advertisementsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the advertisement.
+		 * Foreign key reference to the id of the user who created the advertisement.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
@@ -91,7 +94,9 @@ export const advertisementsTable = pgTable(
 		/**
 		 * Type of the attachment.
 		 */
-		type: advertisementTypeEnum("type").notNull(),
+		type: text("type", {
+			enum: advertisementTypeEnum.options,
+		}).notNull(),
 	},
 	(self) => [
 		index().on(self.creatorId),

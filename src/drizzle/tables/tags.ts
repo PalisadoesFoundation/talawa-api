@@ -32,7 +32,7 @@ export const tagsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the tag.
+		 * Foreign key reference to the id of the user who created the tag.
 		 */
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
@@ -64,10 +64,7 @@ export const tagsTable = pgTable(
 		 */
 		parentTagId: uuid("parent_tag_id").references(
 			(): AnyPgColumn => tagsTable.id,
-			{
-				onDelete: "cascade",
-				onUpdate: "cascade",
-			},
+			{},
 		),
 		/**
 		 * Date time at the time the tag was last updated.

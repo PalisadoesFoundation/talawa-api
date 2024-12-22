@@ -22,17 +22,20 @@ import { actionsTable } from "./actions";
 import { advertisementAttachmentsTable } from "./advertisementAttachments";
 import { advertisementsTable } from "./advertisements";
 import { agendaSectionsTable } from "./agendaSections";
+import { chatMembershipsTable } from "./chatMemberships";
+import { chatMessagesTable } from "./chatMessages";
+import { chatsTable } from "./chats";
 import { commentVotesTable } from "./commentVotes";
 import { commentsTable } from "./comments";
 import { eventAttachmentsTable } from "./eventAttachments";
 import { eventsTable } from "./events";
 import { familiesTable } from "./families";
 import { familyMembershipsTable } from "./familyMemberships";
-import { fundraisingCampaignsTable } from "./fundraisingCampaigns";
+import { fundCampaignPledgesTable } from "./fundCampaignPledges";
+import { fundCampaignsTable } from "./fundCampaigns";
 import { fundsTable } from "./funds";
 import { organizationMembershipsTable } from "./organizationMemberships";
 import { organizationsTable } from "./organizations";
-import { pledgesTable } from "./pledges";
 import { postAttachmentsTable } from "./postAttachments";
 import { postVotesTable } from "./postVotes";
 import { postsTable } from "./posts";
@@ -71,7 +74,9 @@ export const usersTable = pgTable(
 		/**
 		 * Country code of the country the user is a citizen of.
 		 */
-		countryCode: iso3166Alpha2CountryCodeEnum("country_code"),
+		countryCode: text("country_code", {
+			enum: iso3166Alpha2CountryCodeEnum.options,
+		}),
 		/**
 		 * Date time at the time the user was created.
 		 */
@@ -83,7 +88,7 @@ export const usersTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Foreign key reference to the id of the user who first created the user.
+		 * Foreign key reference to the id of the user who created the user.
 		 */
 		creatorId: uuid("creator_id").references((): AnyPgColumn => usersTable.id, {
 			onDelete: "set null",
@@ -96,7 +101,9 @@ export const usersTable = pgTable(
 		/**
 		 * Primary education grade of the user.
 		 */
-		educationGrade: userEducationGradeEnum("education_grade"),
+		educationGrade: text("education_grade", {
+			enum: userEducationGradeEnum.options,
+		}),
 		/**
 		 * Email address of the user.
 		 */
@@ -104,7 +111,9 @@ export const usersTable = pgTable(
 		/**
 		 * Employment status of the user.
 		 */
-		employmentStatus: userEmploymentStatusEnum("employment_status"),
+		employmentStatus: text("employment_status", {
+			enum: userEmploymentStatusEnum.options,
+		}),
 		/**
 		 * The phone number to use to communicate with the user at their home.
 		 */
@@ -114,13 +123,15 @@ export const usersTable = pgTable(
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
 		/**
-		 * Boolean field to tell whether the user has verified their email or not.
+		 * Boolean to tell whether the user has verified their email or not.
 		 */
 		isEmailAddressVerified: boolean("is_email_address_verified").notNull(),
 		/**
 		 * Marital status of the user.
 		 */
-		maritalStatus: userMaritalStatusEnum("marital_status"),
+		maritalStatus: text("marital_status", {
+			enum: userMaritalStatusEnum.options,
+		}),
 		/**
 		 * The phone number to use to communicate with the user on their mobile phone.
 		 */
@@ -132,7 +143,9 @@ export const usersTable = pgTable(
 		/**
 		 * The sex assigned to the user at their birth.
 		 */
-		natalSex: userNatalSexEnum("natal_sex"),
+		natalSex: text("natal_sex", {
+			enum: userNatalSexEnum.options,
+		}),
 		/**
 		 * Cryptographic hash of the password of the user to sign in to the application.
 		 */
@@ -144,7 +157,9 @@ export const usersTable = pgTable(
 		/**
 		 * Role assigned to the user.
 		 */
-		role: userRoleEnum("role").notNull(),
+		role: text("role", {
+			enum: userRoleEnum.options,
+		}).notNull(),
 		/**
 		 * Name of the state the user resides in within their country.
 		 */
@@ -246,6 +261,42 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 		relationName: "agenda_sections.updater_id:users.id",
 	}),
 	/**
+	 * One to many relationship from `users` table to `chats` table.
+	 */
+	chatsWhereCreator: many(chatsTable, {
+		relationName: "chats.creator_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `chats` table.
+	 */
+	chatsWhereUpdater: many(chatsTable, {
+		relationName: "chats.updater_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `chat_memberships` table.
+	 */
+	chatMembershipsWhereCreator: many(chatMembershipsTable, {
+		relationName: "chat_memberships.creator_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `chat_memberships` table.
+	 */
+	chatMembershipsWhereMember: many(chatMembershipsTable, {
+		relationName: "chat_memberships.member_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `chat_memberships` table.
+	 */
+	chatMembershipsWhereUpdater: many(chatMembershipsTable, {
+		relationName: "chat_memberships.updater_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `chat_messages` table.
+	 */
+	chatMessagesWhereCreator: many(chatMessagesTable, {
+		relationName: "chat_messages.creator_id:users.id",
+	}),
+	/**
 	 * One to many relationship from `users` table to `comments` table.
 	 */
 	commentsWhereCreator: many(commentsTable, {
@@ -332,16 +383,16 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 		relationName: "family_memberships.updater_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `fundraising_campaigns` table.
+	 * One to many relationship from `users` table to `fund_campaigns` table.
 	 */
-	fundraisingCampaignsWhereCreator: many(fundraisingCampaignsTable, {
-		relationName: "fundraising_campaigns.creator_id:users.id",
+	fundCampaignsWhereCreator: many(fundCampaignsTable, {
+		relationName: "fund_campaigns.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `fundraising_campaigns` table.
+	 * One to many relationship from `users` table to `fund_campaigns` table.
 	 */
-	fundraisingCampaignsWhereUpdater: many(fundraisingCampaignsTable, {
-		relationName: "fundraising_campaigns.updater_id:users.id",
+	fundCampaignsWhereUpdater: many(fundCampaignsTable, {
+		relationName: "fund_campaigns.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `funds` table.
@@ -386,22 +437,22 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 		relationName: "organization_memberships.updater_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `pledges` table.
+	 * One to many relationship from `users` table to `fund_campaign_pledges` table.
 	 */
-	pledgesWhereCreator: many(pledgesTable, {
-		relationName: "pledges.creator_id:users.id",
+	fundCampaignPledgesWhereCreator: many(fundCampaignPledgesTable, {
+		relationName: "fund_campaign_pledges.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `pledges` table.
+	 * One to many relationship from `users` table to `fund_campaign_pledges` table.
 	 */
-	pledgesWherePledger: many(pledgesTable, {
-		relationName: "pledges.pledger_id:users.id",
+	fundCampaignPledgesWherePledger: many(fundCampaignPledgesTable, {
+		relationName: "fund_campaign_pledges.pledger_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `pledges` table.
+	 * One to many relationship from `users` table to `fund_campaign_pledges` table.
 	 */
-	pledgesWhereUpdater: many(pledgesTable, {
-		relationName: "pledges.updater_id:users.id",
+	fundCampaignPledgesWhereUpdater: many(fundCampaignPledgesTable, {
+		relationName: "fund_campaign_pledges.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `posts` table.
