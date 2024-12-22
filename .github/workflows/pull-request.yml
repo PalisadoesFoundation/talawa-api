@@ -368,7 +368,7 @@ jobs:
           sleep 1
           ((timeout--))
           done
-          if[ $timeout -eq 0 ]; then
+          if [ $timeout -eq 0 ]; then
              echo "Error: Redis failed to start within timeout"
             docker-compose -f docker-compose.dev.yaml logs redis-stack-server
              docker-compose -f docker-compose.dev.yaml down -v
