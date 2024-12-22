@@ -144,6 +144,5 @@ export const removeMember: MutationResolvers["removeMember"] = async (
       },
     },
   );
-
   return organization ?? ({} as InterfaceOrganization);
 };

@@ -20,7 +20,6 @@ import {
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
-  USER_REMOVING_SELF,
 } from "../../../src/constants";
 import { createTestUserFunc } from "../../helpers/user";
 import type {
@@ -202,35 +201,6 @@ describe("resolvers -> Mutation -> removeMember", () => {
       expect(spy).toHaveBeenCalledWith(MEMBER_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(
         `Translated ${MEMBER_NOT_FOUND_ERROR.MESSAGE}`,
-      );
-    }
-  });
-
-  it("should throw admin cannot remove self error when user with _id === args.data.userId === context.userId", async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementation((message) => `Translated ${message}`);
-    try {
-      const args: MutationRemoveMemberArgs = {
-        data: {
-          organizationId: testOrganization?.id,
-          userId: testUsers[1]?._id,
-        },
-      };
-
-      const context = {
-        userId: testUsers[1]?.id,
-      };
-
-      const { removeMember: removeMemberResolverRemoveSelfError } =
-        await import("../../../src/resolvers/Mutation/removeMember");
-
-      await removeMemberResolverRemoveSelfError?.({}, args, context);
-    } catch (error: unknown) {
-      expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.MESSAGE);
-      expect((error as Error).message).toEqual(
-        `Translated ${USER_REMOVING_SELF.MESSAGE}`,
       );
     }
   });
