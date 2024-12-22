@@ -344,8 +344,9 @@ jobs:
 
           # Wait for MongoDB and Redis to be ready
           echo "Waiting for MongoDB..."
-          timeout=120
-          until docker-compose -f docker-compose.dev.yaml exec -T mongodb mongo --eval "db.runCommand('ping').ok">/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+          timeout=30
+          until docker-compose -f docker-compose.dev.yaml exec -T mongodb mongosh --eval "db.runCommand({ ping: 1 }).ok">/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+          echo "Waiting for MongoDB to be ready..."
           sleep 1
            ((timeout--))
           done
@@ -356,7 +357,6 @@ jobs:
             echo "Shutting down services..."
             docker-compose -f docker-compose.dev.yaml down -v
             exit 1
-          fi
 
           else
             echo "MongoDB is ready!"
