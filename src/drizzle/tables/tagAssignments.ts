@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	pgTable,
@@ -51,23 +51,6 @@ export const tagAssignmentsTable = pgTable(
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
-		/**
-		 * Date time at the time the tag assignment was last updated.
-		 */
-		updatedAt: timestamp("updated_at", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		})
-			.$defaultFn(() => sql`${null}`)
-			.$onUpdate(() => new Date()),
-		/**
-		 * Foreign key reference to the id of the user who last updated the tag assignment.
-		 */
-		updaterId: uuid("updater_id").references(() => usersTable.id, {
-			onDelete: "set null",
-			onUpdate: "cascade",
-		}),
 	},
 	(self) => [
 		index().on(self.assigneeId),
@@ -106,14 +89,6 @@ export const tagAssignmentsTableRelations = relations(
 			fields: [tagAssignmentsTable.tagId],
 			references: [tagsTable.id],
 			relationName: "tag_assignments.tag_id:tags.id",
-		}),
-		/**
-		 * Many to one relationship from `tag_assignments` table to `users` table.
-		 */
-		updater: one(usersTable, {
-			fields: [tagAssignmentsTable.updaterId],
-			references: [usersTable.id],
-			relationName: "tag_assignments.updater_id:users.id",
 		}),
 	}),
 );

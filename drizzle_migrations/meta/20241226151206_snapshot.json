@@ -1,5 +1,5 @@
 {
-  "id": "a8e07722-2e42-4db6-b5db-028d15632891",
+  "id": "e0fa5b89-21dc-4ac2-87f0-3b7b62f49312",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -821,6 +821,218 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.agenda_folders": {
+      "name": "agenda_folders",
+      "schema": "",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "is_agenda_item_folder": {
+          "name": "is_agenda_item_folder",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_folder_id": {
+          "name": "parent_folder_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updater_id": {
+          "name": "updater_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "agenda_folders_created_at_index": {
+          "name": "agenda_folders_created_at_index",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agenda_folders_creator_id_index": {
+          "name": "agenda_folders_creator_id_index",
+          "columns": [
+            {
+              "expression": "creator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agenda_folders_event_id_index": {
+          "name": "agenda_folders_event_id_index",
+          "columns": [
+            {
+              "expression": "event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agenda_folders_is_agenda_item_folder_index": {
+          "name": "agenda_folders_is_agenda_item_folder_index",
+          "columns": [
+            {
+              "expression": "is_agenda_item_folder",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agenda_folders_name_index": {
+          "name": "agenda_folders_name_index",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "agenda_folders_parent_folder_id_index": {
+          "name": "agenda_folders_parent_folder_id_index",
+          "columns": [
+            {
+              "expression": "parent_folder_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "agenda_folders_creator_id_users_id_fk": {
+          "name": "agenda_folders_creator_id_users_id_fk",
+          "tableFrom": "agenda_folders",
+          "tableTo": "users",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "agenda_folders_event_id_events_id_fk": {
+          "name": "agenda_folders_event_id_events_id_fk",
+          "tableFrom": "agenda_folders",
+          "tableTo": "events",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "agenda_folders_parent_folder_id_agenda_folders_id_fk": {
+          "name": "agenda_folders_parent_folder_id_agenda_folders_id_fk",
+          "tableFrom": "agenda_folders",
+          "tableTo": "agenda_folders",
+          "columnsFrom": [
+            "parent_folder_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "agenda_folders_updater_id_users_id_fk": {
+          "name": "agenda_folders_updater_id_users_id_fk",
+          "tableFrom": "agenda_folders",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updater_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.agenda_items": {
       "name": "agenda_items",
       "schema": "",
@@ -850,8 +1062,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "event_id": {
-          "name": "event_id",
+        "folder_id": {
+          "name": "folder_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -871,18 +1083,6 @@
         "name": {
           "name": "name",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "position": {
-          "name": "position",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "section_id": {
-          "name": "section_id",
-          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -936,41 +1136,26 @@
           "method": "btree",
           "with": {}
         },
+        "agenda_items_folder_id_index": {
+          "name": "agenda_items_folder_id_index",
+          "columns": [
+            {
+              "expression": "folder_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "agenda_items_name_index": {
           "name": "agenda_items_name_index",
           "columns": [
             {
               "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agenda_items_position_index": {
-          "name": "agenda_items_position_index",
-          "columns": [
-            {
-              "expression": "position",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agenda_items_section_id_index": {
-          "name": "agenda_items_section_id_index",
-          "columns": [
-            {
-              "expression": "section_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -995,50 +1180,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "agenda_items_event_id_position_index": {
-          "name": "agenda_items_event_id_position_index",
-          "columns": [
-            {
-              "expression": "event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "position",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"agenda_items\".\"section_id\" is null",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agenda_items_position_section_id_index": {
-          "name": "agenda_items_position_section_id_index",
-          "columns": [
-            {
-              "expression": "position",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "section_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"agenda_items\".\"section_id\" is not null",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -1055,25 +1196,12 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
-        "agenda_items_event_id_events_id_fk": {
-          "name": "agenda_items_event_id_events_id_fk",
+        "agenda_items_folder_id_agenda_folders_id_fk": {
+          "name": "agenda_items_folder_id_agenda_folders_id_fk",
           "tableFrom": "agenda_items",
-          "tableTo": "events",
+          "tableTo": "agenda_folders",
           "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "agenda_items_section_id_agenda_sections_id_fk": {
-          "name": "agenda_items_section_id_agenda_sections_id_fk",
-          "tableFrom": "agenda_items",
-          "tableTo": "agenda_sections",
-          "columnsFrom": [
-            "section_id"
+            "folder_id"
           ],
           "columnsTo": [
             "id"
@@ -1084,218 +1212,6 @@
         "agenda_items_updater_id_users_id_fk": {
           "name": "agenda_items_updater_id_users_id_fk",
           "tableFrom": "agenda_items",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updater_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.agenda_sections": {
-      "name": "agenda_sections",
-      "schema": "",
-      "columns": {
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "creator_id": {
-          "name": "creator_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "event_id": {
-          "name": "event_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "parent_section_id": {
-          "name": "parent_section_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updater_id": {
-          "name": "updater_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "agenda_sections_created_at_index": {
-          "name": "agenda_sections_created_at_index",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agenda_sections_creator_id_index": {
-          "name": "agenda_sections_creator_id_index",
-          "columns": [
-            {
-              "expression": "creator_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agenda_sections_event_id_index": {
-          "name": "agenda_sections_event_id_index",
-          "columns": [
-            {
-              "expression": "event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agenda_sections_name_index": {
-          "name": "agenda_sections_name_index",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agenda_sections_parent_section_id_index": {
-          "name": "agenda_sections_parent_section_id_index",
-          "columns": [
-            {
-              "expression": "parent_section_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agenda_sections_event_id_name_index": {
-          "name": "agenda_sections_event_id_name_index",
-          "columns": [
-            {
-              "expression": "event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "agenda_sections_creator_id_users_id_fk": {
-          "name": "agenda_sections_creator_id_users_id_fk",
-          "tableFrom": "agenda_sections",
-          "tableTo": "users",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
-        "agenda_sections_event_id_events_id_fk": {
-          "name": "agenda_sections_event_id_events_id_fk",
-          "tableFrom": "agenda_sections",
-          "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "agenda_sections_parent_section_id_agenda_sections_id_fk": {
-          "name": "agenda_sections_parent_section_id_agenda_sections_id_fk",
-          "tableFrom": "agenda_sections",
-          "tableTo": "agenda_sections",
-          "columnsFrom": [
-            "parent_section_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "agenda_sections_updater_id_users_id_fk": {
-          "name": "agenda_sections_updater_id_users_id_fk",
-          "tableFrom": "agenda_sections",
           "tableTo": "users",
           "columnsFrom": [
             "updater_id"
@@ -2168,6 +2084,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp (3) with time zone",
@@ -2182,12 +2104,6 @@
         },
         "uri": {
           "name": "uri",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -2328,12 +2244,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "invite_status": {
-          "name": "invite_status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp (3) with time zone",
@@ -2437,21 +2347,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "event_attendances_invite_status_index": {
-          "name": "event_attendances_invite_status_index",
-          "columns": [
-            {
-              "expression": "invite_status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -2518,12 +2413,6 @@
       "name": "events",
       "schema": "",
       "columns": {
-        "base_recurring_event_id": {
-          "name": "base_recurring_event_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3) with time zone",
@@ -2543,58 +2432,16 @@
           "primaryKey": false,
           "notNull": false
         },
-        "end_date": {
-          "name": "end_date",
-          "type": "date",
+        "end_at": {
+          "name": "end_at",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
-          "notNull": false
-        },
-        "end_time": {
-          "name": "end_time",
-          "type": "time",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true
-        },
-        "is_all_day": {
-          "name": "is_all_day",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_base_recurring_event": {
-          "name": "is_base_recurring_event",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_private": {
-          "name": "is_private",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_recurring": {
-          "name": "is_recurring",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_recurring_exception": {
-          "name": "is_recurring_exception",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_registerable": {
-          "name": "is_registerable",
-          "type": "boolean",
-          "primaryKey": false,
           "notNull": true
         },
         "name": {
@@ -2609,17 +2456,11 @@
           "primaryKey": false,
           "notNull": true
         },
-        "start_date": {
-          "name": "start_date",
-          "type": "date",
+        "start_at": {
+          "name": "start_at",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true
-        },
-        "start_time": {
-          "name": "start_time",
-          "type": "time",
-          "primaryKey": false,
-          "notNull": false
         },
         "updated_at": {
           "name": "updated_at",
@@ -2665,6 +2506,21 @@
           "method": "btree",
           "with": {}
         },
+        "events_end_at_index": {
+          "name": "events_end_at_index",
+          "columns": [
+            {
+              "expression": "end_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "events_name_index": {
           "name": "events_name_index",
           "columns": [
@@ -2694,22 +2550,24 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "events_start_at_index": {
+          "name": "events_start_at_index",
+          "columns": [
+            {
+              "expression": "start_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
-        "events_base_recurring_event_id_events_id_fk": {
-          "name": "events_base_recurring_event_id_events_id_fk",
-          "tableFrom": "events",
-          "tableTo": "events",
-          "columnsFrom": [
-            "base_recurring_event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "events_creator_id_users_id_fk": {
           "name": "events_creator_id_users_id_fk",
           "tableFrom": "events",
@@ -4565,190 +4423,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.recurrences": {
-      "name": "recurrences",
-      "schema": "",
-      "columns": {
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "creator_id": {
-          "name": "creator_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "day_of_month": {
-          "name": "day_of_month",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "day_of_week": {
-          "name": "day_of_week",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "event_id": {
-          "name": "event_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "max_count": {
-          "name": "max_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "month_of_year": {
-          "name": "month_of_year",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rrule_string": {
-          "name": "rrule_string",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "seperation_count": {
-          "name": "seperation_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updater_id": {
-          "name": "updater_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "week_of_month": {
-          "name": "week_of_month",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "recurrences_created_at_index": {
-          "name": "recurrences_created_at_index",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "recurrences_creator_id_index": {
-          "name": "recurrences_creator_id_index",
-          "columns": [
-            {
-              "expression": "creator_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "recurrences_event_id_index": {
-          "name": "recurrences_event_id_index",
-          "columns": [
-            {
-              "expression": "event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "recurrences_creator_id_users_id_fk": {
-          "name": "recurrences_creator_id_users_id_fk",
-          "tableFrom": "recurrences",
-          "tableTo": "users",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
-        "recurrences_event_id_events_id_fk": {
-          "name": "recurrences_event_id_events_id_fk",
-          "tableFrom": "recurrences",
-          "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "recurrences_updater_id_users_id_fk": {
-          "name": "recurrences_updater_id_users_id_fk",
-          "tableFrom": "recurrences",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updater_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.tag_assignments": {
       "name": "tag_assignments",
       "schema": "",
@@ -4777,18 +4451,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updater_id": {
-          "name": "updater_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -4892,19 +4554,6 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "cascade"
-        },
-        "tag_assignments_updater_id_users_id_fk": {
-          "name": "tag_assignments_updater_id_users_id_fk",
-          "tableFrom": "tag_assignments",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updater_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -4916,6 +4565,197 @@
           ]
         }
       },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tag_folders": {
+      "name": "tag_folders",
+      "schema": "",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_folder_id": {
+          "name": "parent_folder_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updater_id": {
+          "name": "updater_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "tag_folders_created_at_index": {
+          "name": "tag_folders_created_at_index",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tag_folders_creator_id_index": {
+          "name": "tag_folders_creator_id_index",
+          "columns": [
+            {
+              "expression": "creator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tag_folders_name_index": {
+          "name": "tag_folders_name_index",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tag_folders_organization_id_index": {
+          "name": "tag_folders_organization_id_index",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tag_folders_parent_folder_id_index": {
+          "name": "tag_folders_parent_folder_id_index",
+          "columns": [
+            {
+              "expression": "parent_folder_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "tag_folders_creator_id_users_id_fk": {
+          "name": "tag_folders_creator_id_users_id_fk",
+          "tableFrom": "tag_folders",
+          "tableTo": "users",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "tag_folders_organization_id_organizations_id_fk": {
+          "name": "tag_folders_organization_id_organizations_id_fk",
+          "tableFrom": "tag_folders",
+          "tableTo": "organizations",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "tag_folders_parent_folder_id_tag_folders_id_fk": {
+          "name": "tag_folders_parent_folder_id_tag_folders_id_fk",
+          "tableFrom": "tag_folders",
+          "tableTo": "tag_folders",
+          "columnsFrom": [
+            "parent_folder_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "tag_folders_updater_id_users_id_fk": {
+          "name": "tag_folders_updater_id_users_id_fk",
+          "tableFrom": "tag_folders",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updater_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -4938,16 +4778,16 @@
           "primaryKey": false,
           "notNull": false
         },
+        "folder_id": {
+          "name": "folder_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true
-        },
-        "is_folder": {
-          "name": "is_folder",
-          "type": "boolean",
-          "primaryKey": false,
           "notNull": true
         },
         "name": {
@@ -4961,12 +4801,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
-        },
-        "parent_tag_id": {
-          "name": "parent_tag_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         },
         "updated_at": {
           "name": "updated_at",
@@ -4987,21 +4821,6 @@
           "columns": [
             {
               "expression": "creator_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "tags_is_folder_index": {
-          "name": "tags_is_folder_index",
-          "columns": [
-            {
-              "expression": "is_folder",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -5042,30 +4861,9 @@
           "method": "btree",
           "with": {}
         },
-        "tags_parent_tag_id_index": {
-          "name": "tags_parent_tag_id_index",
+        "tags_name_organization_id_index": {
+          "name": "tags_name_organization_id_index",
           "columns": [
-            {
-              "expression": "parent_tag_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "tags_is_folder_name_organization_id_index": {
-          "name": "tags_is_folder_name_organization_id_index",
-          "columns": [
-            {
-              "expression": "is_folder",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
             {
               "expression": "name",
               "isExpression": false,
@@ -5099,6 +4897,19 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
+        "tags_folder_id_tag_folders_id_fk": {
+          "name": "tags_folder_id_tag_folders_id_fk",
+          "tableFrom": "tags",
+          "tableTo": "tag_folders",
+          "columnsFrom": [
+            "folder_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
         "tags_organization_id_organizations_id_fk": {
           "name": "tags_organization_id_organizations_id_fk",
           "tableFrom": "tags",
@@ -5111,19 +4922,6 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "cascade"
-        },
-        "tags_parent_tag_id_tags_id_fk": {
-          "name": "tags_parent_tag_id_tags_id_fk",
-          "tableFrom": "tags",
-          "tableTo": "tags",
-          "columnsFrom": [
-            "parent_tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
         },
         "tags_updater_id_users_id_fk": {
           "name": "tags_updater_id_users_id_fk",
@@ -5555,18 +5353,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updater_id": {
-          "name": "updater_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "venue_id": {
           "name": "venue_id",
           "type": "uuid",
@@ -5663,19 +5449,6 @@
           "onDelete": "cascade",
           "onUpdate": "cascade"
         },
-        "venue_bookings_updater_id_users_id_fk": {
-          "name": "venue_bookings_updater_id_users_id_fk",
-          "tableFrom": "venue_bookings",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updater_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
         "venue_bookings_venue_id_venues_id_fk": {
           "name": "venue_bookings_venue_id_venues_id_fk",
           "tableFrom": "venue_bookings",
@@ -5708,12 +5481,6 @@
       "name": "venues",
       "schema": "",
       "columns": {
-        "capacity": {
-          "name": "capacity",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3) with time zone",

@@ -1,27 +1,6 @@
 // THIS FILE IS ONLY MEANT FOR IMPORTING/EXPORTING MODULES THAT ARE REQUIRED FOR DRIZZLE RELATIONAL QUERY BUILDING AND DRIZZLE DATABASE MIGRATIONS TO WORK.
 // MAKE SURE TO NOT MISS ANY OF THE MODULES THAT ARE DIRECTLY CONCERNED WITH DRIZZLE DATABASE MIGRATIONS. FAILING TO DO SO WILL RESULT IN INCORRECT DRIZZLE DATABASE MIGRATIONS BEING GENERATED.
 
-export { advertisementAttachmentTypeEnum } from "./enums/advertisementAttachmentType";
-export { advertisementTypeEnum } from "./enums/advertisementType";
-export { agendaItemTypeEnum } from "./enums/agendaItemType";
-export { commentVoteTypeEnum } from "./enums/commentVoteType";
-export { eventAttachmentTypeEnum } from "./enums/eventAttachmentType";
-export { eventAttendeeRegistrationInviteStatusEnum } from "./enums/eventAttendeeRegistrationInviteStatus";
-export { familyMembershipRoleEnum } from "./enums/familyMembershipRole";
-export { iso3166Alpha2CountryCodeEnum } from "./enums/iso3166Alpha2CountryCode";
-export { iso4217CurrencyCodeEnum } from "./enums/iso4217CurrencyCode";
-export { organizationMembershipRoleEnum } from "./enums/organizationMembershipRole";
-export { postAttachmentTypeEnum } from "./enums/postAttachmentType";
-export { postVoteTypeEnum } from "./enums/postVoteType";
-export { recurrenceTypeEnum } from "./enums/recurrenceType";
-export { userEducationGradeEnum } from "./enums/userEducationGrade";
-export { userEmploymentStatusEnum } from "./enums/userEmploymentStatus";
-export { userMaritalStatusEnum } from "./enums/userMaritalStatus";
-export { userNatalSexEnum } from "./enums/userNatalSex";
-export { userRoleEnum } from "./enums/userRole";
-export { venueAttachmentTypeEnum } from "./enums/venueAttachmentType";
-export { volunteerGroupAssignmentInviteStatusEnum } from "./enums/volunteerGroupAssignmentInviteStatus";
-
 export {
 	actionCategoriesTable,
 	actionCategoriesTableRelations,
@@ -40,9 +19,9 @@ export {
 	agendaItemsTableRelations,
 } from "./tables/agendaItems";
 export {
-	agendaSectionsTable,
-	agendaSectionsTableRelations,
-} from "./tables/agendaSections";
+	agendaFoldersTable,
+	agendaFoldersTableRelations,
+} from "./tables/agendaFolders";
 export {
 	chatMembershipsTable,
 	chatMembershipsTableRelations,
@@ -95,13 +74,10 @@ export {
 export { postVotesTable, postVotesTableRelations } from "./tables/postVotes";
 export { postsTable, postsTableRelations } from "./tables/posts";
 export {
-	recurrencesTable,
-	recurrencesTableRelations,
-} from "./tables/recurrences";
-export {
 	tagAssignmentsTable,
 	tagAssignmentsTableRelations,
 } from "./tables/tagAssignments";
+export { tagFoldersTable, tagFoldersTableRelations } from "./tables/tagFolders";
 export { tagsTable, tagsTableRelations } from "./tables/tags";
 export { usersTable, usersTableRelations } from "./tables/users";
 export {

@@ -53,12 +53,33 @@ builder.mutationField("deleteTag", (t) =>
 			}
 
 			const currentUserId = ctx.currentClient.user.id;
-			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-				columns: {
-					role: true,
-				},
-				where: (fields, operators) => operators.eq(fields.id, currentUserId),
-			});
+			const [currentUser, existingTag] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.tagsTable.findFirst({
+					columns: {},
+					with: {
+						organization: {
+							columns: {},
+							with: {
+								organizationMembershipsWhereOrganization: {
+									columns: {
+										role: true,
+									},
+									where: (fields, operators) =>
+										operators.eq(fields.memberId, currentUserId),
+								},
+							},
+						},
+					},
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.id),
+				}),
+			]);
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
@@ -68,23 +89,6 @@ builder.mutationField("deleteTag", (t) =>
 					message: "Only authenticated users can perform this action.",
 				});
 			}
-
-			const existingTag = await ctx.drizzleClient.query.tagsTable.findFirst({
-				columns: {},
-				with: {
-					organization: {
-						columns: {},
-						with: {
-							organizationMembershipsWhereOrganization: {
-								where: (fields, operators) =>
-									operators.eq(fields.memberId, currentUserId),
-							},
-						},
-					},
-				},
-				where: (fields, operators) =>
-					operators.eq(fields.id, parsedArgs.input.id),
-			});
 
 			if (existingTag === undefined) {
 				throw new TalawaGraphQLError({

@@ -7,10 +7,12 @@ import { actionCategoriesTable } from "./actionCategories";
 import { actionsTable } from "./actions";
 import { advertisementsTable } from "./advertisements";
 import { chatsTable } from "./chats";
+import { eventsTable } from "./events";
 import { familiesTable } from "./families";
 import { fundsTable } from "./funds";
 import { organizationMembershipsTable } from "./organizationMemberships";
 import { postsTable } from "./posts";
+import { tagFoldersTable } from "./tagFolders";
 import { tagsTable } from "./tags";
 import { usersTable } from "./users";
 import { venuesTable } from "./venues";
@@ -137,6 +139,12 @@ export const organizationsTableRelations = relations(
 			relationName: "organizations.creator_id:users.id",
 		}),
 		/**
+		 * One to many relationship from `organizations` table to `events` table.
+		 */
+		eventsWhereOrganization: many(eventsTable, {
+			relationName: "events.organization_id:organizations.id",
+		}),
+		/**
 		 * One to many relationship from `organizations` table to `families` table.
 		 */
 		familiesWhereOrganization: many(familiesTable, {
@@ -169,6 +177,12 @@ export const organizationsTableRelations = relations(
 		 */
 		tagsWhereOrganization: many(tagsTable, {
 			relationName: "organizations.id:tags.organization_id",
+		}),
+		/**
+		 * One to many relationship from `organizations` table to `tag_folders` table.
+		 */
+		tagFoldersWhereOrganization: many(tagFoldersTable, {
+			relationName: "organizations.id:tag_folders.organization_id",
 		}),
 		/**
 		 * Many to one relationship from `organizations` table to `users` table.
