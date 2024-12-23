@@ -4,21 +4,29 @@ services:
   mongodb:
     image: mongo:latest
     ports:
-      - 27017:27017
+      - "27017:27017"
     volumes:
       - mongodb-data:/data/db
     networks:
       - talawa-network
-
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: "0.5" # Limits MongoDB to 50% of one CPU
   redis-stack-server:
     image: redis/redis-stack-server:latest
     ports:
-      - 6379:6379
+      - "6379:6379"
     volumes:
       - redis-data:/data/redis
     networks:
       - talawa-network
-
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.25" # Limits Redis to 25% of one CPU
   minio:
     image: minio/minio
     ports:
@@ -32,7 +40,11 @@ services:
       - minio-data:/data
     networks:
       - talawa-network
-
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "0.5" # Limits MinIO to 50% of one CPU
   talawa-api-dev:
     build:
       context: .
@@ -41,14 +53,21 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
-      - mongodb
       - redis-stack-server
       - minio
     environment:
-      - MONGO_DB_URL=mongodb://mongodb:27017
+      - MONGO_DB_URL=mongodb://mongodb:27017/talawa-api
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
-
+    ports:
+      - "4000:4000"
+    networks:
+      - talawa-network
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: "1.0" # Limits Talawa API to one full CPU core
   caddy:
     image: caddy/caddy:2.2.1-alpine
     container_name: caddy-service
@@ -57,11 +76,17 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - $PWD/Caddyfile:/etc/caddy/Caddyfile
       - $PWD/site:/srv
       - caddy_data:/data
       - caddy_config:/config
-
+    networks:
+      - talawa-network
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.25" # Limits Caddy to 25% of one CPU
 volumes:
   mongodb-data:
   redis-data:
