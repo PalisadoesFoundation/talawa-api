@@ -354,7 +354,7 @@ jobs:
             echo "Error: MongoDB failed to start within timeout"
             echo "Fetching MongoDB logs..."
             docker-compose -f docker-compose.dev.yaml logs mongodb
-            echo "Shutting down services..."
+            echo "Shutting down MongoDB..."
             docker-compose -f docker-compose.dev.yaml down -v
             exit 1
 
@@ -370,10 +370,15 @@ jobs:
           done
           if [ $timeout -eq 0 ]; then
              echo "Error: Redis failed to start within timeout"
+             echo "Fetching Redis logs..."
             docker-compose -f docker-compose.dev.yaml logs redis-stack-server
+            echo "Shutting down Redis..."
              docker-compose -f docker-compose.dev.yaml down -v
              exit 1
-            fi
+             
+          else
+            echo "Redis is ready!"
+          fi
 
             # Wait for TALAWA API to be healthy 
             timeout=60
