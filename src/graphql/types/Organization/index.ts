@@ -2,6 +2,7 @@ import "./Organization";
 import "./advertisements";
 import "./chats";
 import "./creator";
+import "./events";
 import "./funds";
 import "./members";
 import "./pinnedPosts";

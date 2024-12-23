@@ -4,6 +4,8 @@ import "./AuthenticationPayload";
 import "./Chat/index";
 import "./ChatMessage/index";
 import "./Comment/index";
+import "./Event/index";
+import "./EventAttachment/index";
 import "./Fund/index";
 import "./FundCampaign/index";
 import "./FundCampaignPledge/index";

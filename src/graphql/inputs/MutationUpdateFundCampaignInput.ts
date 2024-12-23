@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { fundCampaignsTableInsertSchema } from "~/src/drizzle/tables/fundCampaigns";
 import { builder } from "~/src/graphql/builder";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
 
 export const mutationUpdateFundCampaignInputSchema = z
 	.object({
@@ -19,9 +20,9 @@ export const mutationUpdateFundCampaignInputSchema = z
 		}
 
 		if (
-			remainingArg.endAt !== undefined &&
-			remainingArg.startAt !== undefined &&
-			remainingArg.endAt.getTime() <= remainingArg.startAt.getTime()
+			isNotNullish(remainingArg.endAt) &&
+			isNotNullish(remainingArg.startAt) &&
+			remainingArg.endAt <= remainingArg.startAt
 		) {
 			ctx.addIssue({
 				code: "custom",

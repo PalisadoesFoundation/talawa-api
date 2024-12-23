@@ -4,6 +4,7 @@ import "./chat";
 import "./chatMessage";
 import "./comment";
 import "./currentUser";
+import "./event";
 import "./fund";
 import "./fundCampaign";
 import "./fundCampaignPledge";

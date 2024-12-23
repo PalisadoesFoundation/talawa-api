@@ -1,28 +1,28 @@
 import { z } from "zod";
-import { advertisementAttachmentsTable } from "~/src/drizzle/tables/advertisementAttachments";
-import { advertisementsTable } from "~/src/drizzle/tables/advertisements";
+import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
+import { eventsTable } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
 import {
-	MutationCreateAdvertisementInput,
-	mutationCreateAdvertisementInputSchema,
-} from "~/src/graphql/inputs/MutationCreateAdvertisementInput";
-import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
+	MutationCreateEventInput,
+	mutationCreateEventInputSchema,
+} from "~/src/graphql/inputs/MutationCreateEventInput";
+import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
-const mutationCreateAdvertisementArgumentsSchema = z.object({
-	input: mutationCreateAdvertisementInputSchema,
+const mutationCreateEventArgumentsSchema = z.object({
+	input: mutationCreateEventInputSchema,
 });
 
-builder.mutationField("createAdvertisement", (t) =>
+builder.mutationField("createEvent", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
 				description: "",
 				required: true,
-				type: MutationCreateAdvertisementInput,
+				type: MutationCreateEventInput,
 			}),
 		},
-		description: "Mutation field to create an advertisement.",
+		description: "Mutation field to create an event.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -37,7 +37,7 @@ builder.mutationField("createAdvertisement", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationCreateAdvertisementArgumentsSchema.safeParse(args);
+			} = mutationCreateEventArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -59,29 +59,17 @@ builder.mutationField("createAdvertisement", (t) =>
 					columns: {
 						role: true,
 					},
-					with: {
-						organizationMembershipsWhereMember: {
-							columns: {
-								role: true,
-							},
-							where: (fields, operators) =>
-								operators.eq(
-									fields.organizationId,
-									parsedArgs.input.organizationId,
-								),
-						},
-					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
 					columns: {},
 					with: {
-						advertisementsWhereOrganization: {
+						organizationMembershipsWhereOrganization: {
 							columns: {
-								type: true,
+								role: true,
 							},
 							where: (fields, operators) =>
-								operators.eq(fields.name, parsedArgs.input.name),
+								operators.eq(fields.memberId, currentUserId),
 						},
 					},
 					where: (fields, operators) =>
@@ -112,27 +100,8 @@ builder.mutationField("createAdvertisement", (t) =>
 				});
 			}
 
-			const existingAdvertisementWithName =
-				existingOrganization.advertisementsWhereOrganization[0];
-
-			if (existingAdvertisementWithName !== undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action_on_arguments_associated_resources",
-						issues: [
-							{
-								argumentPath: ["input", "name"],
-								message: "This name is not available.",
-							},
-						],
-					},
-					message:
-						"This action is forbidden on the resources associated to the provided arguments.",
-				});
-			}
-
 			const currentUserOrganizationMembership =
-				currentUser.organizationMembershipsWhereMember[0];
+				existingOrganization.organizationMembershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -154,8 +123,8 @@ builder.mutationField("createAdvertisement", (t) =>
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [createdAdvertisement] = await tx
-					.insert(advertisementsTable)
+				const [createdEvent] = await tx
+					.insert(eventsTable)
 					.values({
 						creatorId: currentUserId,
 						description: parsedArgs.input.description,
@@ -163,12 +132,11 @@ builder.mutationField("createAdvertisement", (t) =>
 						name: parsedArgs.input.name,
 						organizationId: parsedArgs.input.organizationId,
 						startAt: parsedArgs.input.startAt,
-						type: parsedArgs.input.type,
 					})
 					.returning();
 
-				// Inserted advertisement not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-				if (createdAdvertisement === undefined) {
+				// Inserted event not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+				if (createdEvent === undefined) {
 					ctx.log.error(
 						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 					);
@@ -182,28 +150,28 @@ builder.mutationField("createAdvertisement", (t) =>
 				}
 
 				if (parsedArgs.input.attachments !== undefined) {
-					const createdAdvertisementAttachments = await tx
-						.insert(advertisementAttachmentsTable)
+					const createdEventAttachments = await tx
+						.insert(eventAttachmentsTable)
 						.values(
 							parsedArgs.input.attachments.map((attachment) => ({
-								advertisementId: createdAdvertisement.id,
 								creatorId: currentUserId,
+								eventId: createdEvent.id,
 								type: attachment.type,
 								uri: attachment.uri,
 							})),
 						)
 						.returning();
 
-					return Object.assign(createdAdvertisement, {
-						attachments: createdAdvertisementAttachments,
+					return Object.assign(createdEvent, {
+						attachments: createdEventAttachments,
 					});
 				}
 
-				return Object.assign(createdAdvertisement, {
+				return Object.assign(createdEvent, {
 					attachments: [],
 				});
 			});
 		},
-		type: Advertisement,
+		type: Event,
 	}),
 );
