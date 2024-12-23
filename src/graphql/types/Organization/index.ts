@@ -8,6 +8,7 @@ import "./pinnedPosts";
 import "./pinnedPostsCount";
 import "./posts";
 import "./postsCount";
+import "./tagFolders";
 import "./tags";
 import "./updatedAt";
 import "./updater";

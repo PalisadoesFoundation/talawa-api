@@ -12,4 +12,5 @@ import "./post";
 import "./renewAuthenticationToken";
 import "./signIn";
 import "./tag";
+import "./tagFolder";
 import "./user";
