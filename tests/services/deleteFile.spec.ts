@@ -15,29 +15,29 @@ vi.mock("../../src/models", () => ({
   },
 }));
 
-vi.mock("../../src/REST/controllers/minio", () => ({
+vi.mock("../../src/REST/services/minio", () => ({
   deleteFile: vi.fn(),
 }));
 
-describe("src -> REST -> services -> file -> deleteFile", () => {
-  const objectKey = "test/file/path";
-  const fileId = "12345";
-  let serverRunning = false;
+const objectKey = "test/file/path";
+const fileId = "12345";
+let serverRunning = false;
 
-  // Wait for server status check before running tests
-  beforeAll(async () => {
-    try {
-      serverRunning = await isMinioRunning();
-    } catch (error) {
-      console.error("Error checking MinIO server status:", error);
-      serverRunning = false;
-    }
-  });
+beforeAll(async () => {
+  try {
+    serverRunning = await isMinioRunning();
+  } catch (error) {
+    console.error("Error checking MinIO server status:", error);
+  }
+});
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+// Clear mocks before each test
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
+// Generic file tests
+describe("File deletion logic", () => {
   it("should return success:false and message if file is not found", async () => {
     vi.mocked(File.findOne).mockResolvedValueOnce(null);
 
@@ -67,42 +67,6 @@ describe("src -> REST -> services -> file -> deleteFile", () => {
     expect(mockFile.save).toHaveBeenCalled();
   });
 
-  // Use describe block with a dynamic condition
-  describe("MinIO server integration tests", () => {
-    beforeEach(async () => {
-      serverRunning = await isMinioRunning();
-    });
-
-    it("should delete the file from the database and storage if reference count is 1", async () => {
-      // Skip this test if server is not running
-      if (!serverRunning) {
-        console.log("Skipping MinIO test - server not running");
-        return;
-      }
-
-      const mockFile = {
-        referenceCount: 1,
-        _id: fileId,
-        id: fileId,
-      };
-      vi.mocked(File.findOne).mockResolvedValueOnce(mockFile);
-
-      const deleteFileFromBucketSpy = vi.spyOn(minioServices, "deleteFile");
-
-      const result = await deleteFile(objectKey, fileId);
-
-      expect(result).toEqual({
-        success: true,
-        message: "File deleted successfully",
-      });
-      expect(File.deleteOne).toHaveBeenCalledWith({ _id: fileId });
-      expect(deleteFileFromBucketSpy).toHaveBeenCalledWith(
-        BUCKET_NAME,
-        objectKey,
-      );
-    });
-  });
-
   it("should handle errors and return an error message", async () => {
     const mockError = new Error("Deletion failed");
     vi.mocked(File.findOne).mockRejectedValueOnce(mockError);
@@ -118,6 +82,40 @@ describe("src -> REST -> services -> file -> deleteFile", () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       "Error deleting file:",
       mockError,
+    );
+  });
+});
+
+// MinIO-specific tests
+describe("MinIO server integration tests", () => {
+  beforeAll(async () => {
+    serverRunning = await isMinioRunning();
+  });
+
+  it("should delete the file from the database and storage if reference count is 1", async () => {
+    if (!serverRunning) {
+      return; // Skip the test if the server isn't running
+    }
+
+    const mockFile = {
+      referenceCount: 1,
+      _id: fileId,
+      id: fileId,
+    };
+    vi.mocked(File.findOne).mockResolvedValueOnce(mockFile);
+
+    const deleteFileFromBucketSpy = vi.spyOn(minioServices, "deleteFile");
+
+    const result = await deleteFile(objectKey, fileId);
+
+    expect(result).toEqual({
+      success: true,
+      message: "File deleted successfully",
+    });
+    expect(File.deleteOne).toHaveBeenCalledWith({ _id: fileId });
+    expect(deleteFileFromBucketSpy).toHaveBeenCalledWith(
+      BUCKET_NAME,
+      objectKey,
     );
   });
 });
