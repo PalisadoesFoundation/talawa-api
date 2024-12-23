@@ -382,7 +382,7 @@ jobs:
 
             # Wait for TALAWA API to be healthy 
             timeout=60
-          until docker-compose -f docker-compose.dev.yaml exec -T talawa-api-dev curl -sf "http://localhost:4000/health" 2>&1 || [ $timeout -eq 0 ]; do
+          until docker-compose -f docker-compose.dev.yaml exec -T talawa-api-dev curl -sf "http://localhost:4000/graphql" 2>&1 || [ $timeout -eq 0 ]; do
             echo "Waiting for API to start... ($timeout seconds remaining)"
             sleep 1
             ((timeout--))
