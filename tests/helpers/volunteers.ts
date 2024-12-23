@@ -158,7 +158,7 @@ export const createVolunteerAndActions = async (): Promise<
     hoursHistory: [
       {
         hours: 2,
-        date: yesterday,
+        date: today,
       },
       {
         hours: 4,
@@ -186,7 +186,7 @@ export const createVolunteerAndActions = async (): Promise<
     hoursHistory: [
       {
         hours: 1,
-        date: yesterday,
+        date: today,
       },
       {
         hours: 2,
