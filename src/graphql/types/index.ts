@@ -18,3 +18,5 @@ import "./Subscription/index";
 import "./Tag/index";
 import "./TagFolder/index";
 import "./User/index";
+import "./Venue/index";
+import "./VenueAttachment/index";

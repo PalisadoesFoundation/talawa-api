@@ -13,3 +13,4 @@ import "./tagFolders";
 import "./tags";
 import "./updatedAt";
 import "./updater";
+import "./venues";

@@ -13,3 +13,4 @@ import "./UserEmploymentStatus";
 import "./UserMaritalStatus";
 import "./UserNatalSex";
 import "./UserRole";
+import "./VenueAttachmentType";
