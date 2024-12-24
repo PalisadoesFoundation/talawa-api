@@ -4,3 +4,4 @@ import "./creator";
 import "./organization";
 import "./updatedAt";
 import "./updater";
+import "./venues";

@@ -6,6 +6,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
 import { venuesTable } from "./venues";
@@ -92,3 +93,6 @@ export const venueBookingsTableRelations = relations(
 		}),
 	}),
 );
+
+export const venueBookingsTableInsertSchema =
+	createInsertSchema(venueBookingsTable);
