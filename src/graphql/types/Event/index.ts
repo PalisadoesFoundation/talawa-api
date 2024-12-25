@@ -1,4 +1,5 @@
 import "./Event";
+import "./agendaFolders";
 import "./createdAt";
 import "./creator";
 import "./organization";
