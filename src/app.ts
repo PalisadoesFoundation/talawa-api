@@ -9,6 +9,8 @@ import requestLogger from "morgan";
 import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
 import routes from "./REST/routes";
+import path from "path";
+const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 
 import * as enLocale from "../locales/en.json";
 import * as hiLocale from "../locales/hi.json";
@@ -48,7 +50,7 @@ const corsOptions: cors.CorsOptions = {
 
 // Configure i18n settings
 i18n.configure({
-  directory: `${__dirname}/../locales`,
+  directory: `${dirname}/../locales`,
   staticCatalog: {
     en: enLocale,
     hi: hiLocale,

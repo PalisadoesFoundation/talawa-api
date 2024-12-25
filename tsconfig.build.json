@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES6" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    "module": "ES6", // Change this line
+    "target": "ES2016" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "module": "ES2020", // Change this line
     "moduleResolution": "node",
     "rootDir": "./src" /* Specify the root folder within your source files. */,
     "outDir": "./build" /* Specify an output folder for all emitted files. */,

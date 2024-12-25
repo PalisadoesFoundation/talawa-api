@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 import yargs from "yargs";
 import { connect } from "../db";
 import {
@@ -26,7 +27,7 @@ interface InterfaceArgs {
  */
 async function listSampleData(): Promise<void> {
   try {
-    const sampleDataPath = path.join(__dirname, "../../sample_data");
+    const sampleDataPath = path.join(dirname, "../../sample_data");
     const files = await fs.readdir(sampleDataPath);
 
     console.log("Sample Data Files:\n");
@@ -108,7 +109,7 @@ async function insertCollections(collections: string[]): Promise<void> {
     // Insert data into each specified collection
     for (const collection of collections) {
       const data = await fs.readFile(
-        path.join(__dirname, `../../sample_data/${collection}.json`),
+        path.join(dirname, `../../sample_data/${collection}.json`),
         "utf8",
       );
       const docs = JSON.parse(data) as Record<string, unknown>[];
