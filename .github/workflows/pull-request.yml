@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-          persist-crendetials: true
+          persist-credentials: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -99,7 +99,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-          persist-crendetials: true
+          persist-credentials: true
 
       
       - name: Get Changed Unauthorized files
@@ -154,7 +154,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-          persist-crendetials: true
+          persist-credentials: true
         
       - name: Get changed files
         id: changed-files
@@ -255,29 +255,6 @@ jobs:
   
       - name: Run the tests
         run: npm run test
-      
-      - name: Start the development server 
-        run: |
-          npm run dev &
-          echo "Development server started..."
-
-      - name: Check server status
-        run: |
-          if curl -f 'http://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
-            echo "Server is up and healthy"
-          else
-            echo "Server is down"
-            exit 1 
-          fi
-      - name: Check Apollo Server status
-        run: |
-          if curl -f 'http://localhost:4000/graphql?query=%7B__typename%7D' \
-          -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
-            echo "Apollo Server is up"
-          else
-            echo "Server is down"
-            exit 1 
-          fi
 
       - name: Import Sample Data
         run: npm run import:sample-data  
@@ -295,6 +272,98 @@ jobs:
         with:
           path: './coverage/lcov.info'
           min_coverage: 95.0
+          
+  Test-Builds:
+    name: Test Development and Production Builds
+    runs-on: ubuntu-latest
+    needs: Test-Application
+    strategy:
+      matrix:
+        node-version: [22.x]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test Development Build
+        run: |
+          echo "Testing development build..."
+          npm run dev &
+          sleep 10
+          if curl -f 'http://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
+            echo "Development server is up and healthy"
+          else
+            echo "Development server is down"
+            exit 1
+          fi
+      
+      - name: Check Apollo Server status for development
+        run: |
+          if curl -f 'http://localhost:4000/graphql?query=%7B__typename%7D' \
+          -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
+            echo "Apollo Server is up"
+          else
+            echo "Server is down"
+            exit 1 
+          fi
+      
+      - name: Stop the Development Server
+        run: |
+          echo "Stopping development server..."
+          kill $DEV_PID || echo "No dev process found."
+
+      - name: Generate key.pem and cert.pem for production build
+        run: |
+          echo "Generating key.pem..."
+          openssl genrsa -out key.pem 2048
+          echo "Generating cert.pem..."
+          openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+
+      - name: Test Production Build
+        run: |
+          echo "Building and testing production build..."
+          npm run build
+          npm run prod &
+          sleep 10
+          if curl -f 'https://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
+            echo "Production server is up and healthy"
+          else
+            echo "Production server is down"
+            exit 1
+          fi
+
+      - name: Check Apollo Server status for production
+        run: |
+          if curl -f 'https://localhost:4000/graphql?query=%7B__typename%7D' \
+          -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
+            echo "Apollo Server is up"
+          else
+            echo "Server is down"
+            exit 1 
+          fi
+
+      - name: Stop the Production Server
+        run: |
+          echo "Stopping production server..."
+          kill $PROD_PID || echo "No prod process found."
+
+      - name: Clean up Background Processes
+        run: |
+          echo "Cleaning up background processes..."
+          pkill -f "npm run dev" || echo "No dev process found."
+          pkill -f "npm run prod" || echo "No prod process found."
+
+      - name: Delete key.pem and cert.pem
+        run: |
+          echo "Deleting key.pem and cert.pem..."
+          rm -f key.pem cert.pem
           
   JSDocs:
     if: ${{ github.actor != 'dependabot[bot]' }}
