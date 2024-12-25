@@ -5,7 +5,7 @@
   "description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
   "main": "./build/server.js",
   "scripts": {
-    "build": "tsc --pretty --project tsconfig.build.json && node fix-imports.mjs && node fix-imports-mongoose.mjs && node fix-imports-graphql.mjs && node fix-imports-rrule.mjs && node fix-dirname.mjs",
+    "build": "tsc --pretty --project tsconfig.build.json && node ./fix-imports/fix-imports.mjs && node ./fix-imports/fix-imports-mongoose.mjs && node ./fix-imports/fix-imports-graphql.mjs && node ./fix-imports/fix-imports-rrule.mjs && node ./fix-imports/fix-dirname.mjs",
     "dev": "concurrently \"nodemon --exec tsx ./src/index.ts\" \"graphql-codegen --watch\"",
     "minio:check": "tsc ./src/minioInstallationCheck.ts --outDir ./build && node ./build/minioInstallationCheck.js",
     "dev:with-minio": "concurrently \"npm run minio:check\" \"nodemon --exec tsx ./src/index.ts\" \"graphql-codegen --watch\"",

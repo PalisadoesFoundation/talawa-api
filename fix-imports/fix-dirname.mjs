@@ -33,7 +33,7 @@ ${dirnameDeclaration}${content}`;
           }
           
           await fs.writeFile(filePath, content, 'utf8');
-          console.log(`Updated ${filePath}`);
+          console.log(`Updated __dirname in ${filePath}`);
         }
       }
     }

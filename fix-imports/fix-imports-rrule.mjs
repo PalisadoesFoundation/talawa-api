@@ -2,11 +2,11 @@ import fs from 'fs/promises';
 import path from 'path';
 
 const directoryPath = './build';
-const oldImport = `import { Schema, model, models } from "mongoose";`;
-const oldImport2 = `import { Schema, model, models, } from "mongoose";`;
-const oldImport3 = `import mongoose, { model, models } from "mongoose"`;
-const newImport = `import mongoose from 'mongoose';
-const { Schema, model, models } = mongoose;`;
+const oldImport = `import { Frequency, rrulestr } from "rrule";`;
+const oldImport2 = `import { rrulestr } from "rrule";`;
+// const oldImport3 = `import mongoose, { model, models } from "mongoose"`;
+const newImport = `import rrule from "rrule";
+const { Frequency, rrulestr } = rrule;`;
 
 async function replaceImports(dir) {
   try {
@@ -22,10 +22,10 @@ async function replaceImports(dir) {
         let content = await fs.readFile(filePath, 'utf8');
         
         // Correct the condition to check both oldImport and oldImport2
-        if (content.includes(oldImport) || content.includes(oldImport2) || content.includes(oldImport3)) {
-          content = content.replace(oldImport, newImport).replace(oldImport2, newImport).replace(oldImport3, newImport);
+        if (content.includes(oldImport) || content.includes(oldImport2)) {
+          content = content.replace(oldImport, newImport).replace(oldImport2, newImport);
           await fs.writeFile(filePath, content, 'utf8');
-          console.log(`Updated imports in ${filePath}`);
+          console.log(`Updated rrule imports in ${filePath}`);
         }
       }
     }

@@ -41,4 +41,4 @@ function fixImports(dir) {
 }
 
 fixImports(directory);
-console.log('All imports fixed!');
+console.log('Added index.js and .js extention to imports');

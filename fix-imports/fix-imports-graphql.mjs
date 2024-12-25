@@ -21,7 +21,7 @@ async function replaceImports(dir) {
         if (content.includes(oldImport)) {
           content = content.replace(oldImport, newImport);
           await fs.writeFile(filePath, content, 'utf8');
-          console.log(`Updated imports in ${filePath}`);
+          console.log(`Updated graphql import in ${filePath}`);
         }
       }
     }
