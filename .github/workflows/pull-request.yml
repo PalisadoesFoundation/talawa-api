@@ -279,7 +279,7 @@ jobs:
     needs: Test-Application
     strategy:
       matrix:
-        node-version: [21.x]
+        node-version: [20.x]
     services:
       mongo:
         image: mongo:4.4
@@ -356,7 +356,7 @@ jobs:
       - name: Generate SSL Certificates for Production
         run: |
           echo "Generating SSL certificates for production..."
-          openssl req -x509 -nodes -days 1 -newkey rsa:2048 -keyout key.pem -out cert.pem -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+          npm run generate:ssl-private-key
 
       - name: Build Production Build
         run: |
