@@ -89,6 +89,7 @@ jobs:
         for FILE in ${CHANGED_FILES}; do
           echo "$FILE"
         done
+        echo "To override this, apply the 'ignore-sensitive-files-pr' label"
         exit 1
   run_tests:
     name: Run tests for talawa api
