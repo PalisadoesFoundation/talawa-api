@@ -1,11 +1,11 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
-import { AgendaFolder } from "./AgendaFolder";
+import { AgendaItem } from "./AgendaItem";
 
-AgendaFolder.implement({
+AgendaItem.implement({
 	fields: (t) => ({
-		creator: t.field({
-			description: "User who created the agenda folder.",
+		updater: t.field({
+			description: "User who last updated the agenda item.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -18,25 +18,30 @@ AgendaFolder.implement({
 
 				const currentUserId = ctx.currentClient.user.id;
 
-				const [currentUser, existingEvent] = await Promise.all([
+				const [currentUser, existingAgendaFolder] = await Promise.all([
 					ctx.drizzleClient.query.usersTable.findFirst({
 						where: (fields, operators) =>
 							operators.eq(fields.id, currentUserId),
 					}),
-					ctx.drizzleClient.query.eventsTable.findFirst({
+					ctx.drizzleClient.query.agendaFoldersTable.findFirst({
 						columns: {},
 						where: (fields, operators) =>
-							operators.eq(fields.id, parent.eventId),
+							operators.eq(fields.id, parent.folderId),
 						with: {
-							organization: {
+							event: {
 								columns: {},
 								with: {
-									organizationMembershipsWhereOrganization: {
-										columns: {
-											role: true,
+									organization: {
+										columns: {},
+										with: {
+											organizationMembershipsWhereOrganization: {
+												columns: {
+													role: true,
+												},
+												where: (fields, operators) =>
+													operators.eq(fields.memberId, currentUserId),
+											},
 										},
-										where: (fields, operators) =>
-											operators.eq(fields.memberId, currentUserId),
 									},
 								},
 							},
@@ -53,10 +58,10 @@ AgendaFolder.implement({
 					});
 				}
 
-				// Event id existing but the associated event not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
-				if (existingEvent === undefined) {
+				// Folder id existing but the associated agenda folder not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				if (existingAgendaFolder === undefined) {
 					ctx.log.error(
-						"Postgres select operation returned an empty array for an agenda folder's event id that isn't null.",
+						"Postgres select operation returned an empty array for an agenda item's folder id that isn't null.",
 					);
 
 					throw new TalawaGraphQLError({
@@ -68,7 +73,7 @@ AgendaFolder.implement({
 				}
 
 				const currentUserOrganizationMembership =
-					existingEvent.organization
+					existingAgendaFolder.event.organization
 						.organizationMembershipsWhereOrganization[0];
 
 				if (
@@ -84,26 +89,26 @@ AgendaFolder.implement({
 					});
 				}
 
-				if (parent.creatorId === null) {
+				if (parent.updaterId === null) {
 					return null;
 				}
 
-				if (parent.creatorId === currentUserId) {
+				if (parent.updaterId === currentUserId) {
 					return currentUser;
 				}
 
-				const creatorId = parent.creatorId;
+				const updaterId = parent.updaterId;
 
 				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst(
 					{
-						where: (fields, operators) => operators.eq(fields.id, creatorId),
+						where: (fields, operators) => operators.eq(fields.id, updaterId),
 					},
 				);
 
-				// Creator id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Updater id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingUser === undefined) {
 					ctx.log.error(
-						"Postgres select operation returned an empty array for an agenda folder's creator id that isn't null.",
+						"Postgres select operation returned an empty array for an agenda item's updater id that isn't null.",
 					);
 
 					throw new TalawaGraphQLError({

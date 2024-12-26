@@ -1,6 +1,7 @@
 import "./Advertisement/index";
 import "./AdvertisementAttachment/index";
 import "./AgendaFolder/index";
+import "./AgendaItem/index";
 import "./AuthenticationPayload";
 import "./Chat/index";
 import "./ChatMessage/index";

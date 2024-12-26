@@ -1,5 +1,6 @@
 import "./AdvertisementAttachmentType";
 import "./AdvertisementType";
+import "./AgendaItemType";
 import "./ChatMembershipRole";
 import "./CommentVoteType";
 import "./EventAttachmentType";
