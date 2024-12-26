@@ -2,7 +2,6 @@ import cls from "cls-hooked";
 // No type defintions available for package 'cls-bluebird'
 // @ts-expect-error--ts-ignore
 import clsBluebird from "cls-bluebird";
-// import { customAlphabet } from "nanoid";
 import type { NextFunction, Request, Response } from "express";
 
 // Alphabets used in the custom nanoid function
@@ -12,7 +11,6 @@ const alphabets = "0123456789abcdefghijklmnopqrstuvwxyz";
  * Custom nanoid function to generate a unique 10 characters request ID
  * using the characters in the alphabets variable.
  */
-// const nanoid = customAlphabet(alphabets, 10);
 
 /**
  * Namespace for request tracing to maintain context across asynchronous operations.
