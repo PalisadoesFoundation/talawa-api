@@ -366,6 +366,7 @@ jobs:
       - name: Test Production Build
         run: |
           echo "Testing production build..."
+          lsof -ti:4000 | xargs kill -9 || echo "No process found."
           NODE_ENV=production npm run prod &
           PROD_PID=$!
           sleep 10
