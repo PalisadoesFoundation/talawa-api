@@ -40,7 +40,6 @@ build
 data/**
 
 serviceAccountKey.json
-certs/*
 cert.pem
 key.pem
 csr.pem
