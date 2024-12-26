@@ -87,7 +87,6 @@
     "jsonwebtoken": "^9.0.0",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
-    "markdown-toc": "^1.2.0",
     "mongodb": "^6.8.0",
     "mongoose": "^8.3.2",
     "mongoose-paginate-v2": "^1.8.3",

@@ -8,7 +8,7 @@ const markdownFiles = fs
   .filter((file) => file.endsWith(".md"));
 
 markdownFiles.forEach((file) => {
-  const command = `markdown-toc -i "${file}" --bullets "-"`;
+  const command = `npx markdown-toc -i "${file}" --bullets "-"`;
   execSync(command, { stdio: "inherit" });
 });
 console.log("Table of contents updated successfully.");
