@@ -8,7 +8,8 @@ import type mongoose from "mongoose";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-const testOrganization: TestOrganizationType = null as any;
+const testOrganization: TestOrganizationType =
+  {} as unknown as TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

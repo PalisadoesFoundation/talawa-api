@@ -322,9 +322,11 @@ jobs:
       - name: Generate Secrets
         run: |
           echo "Generating secrets..."
-          echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
-          echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
-          echo "SERVER_PORT=4000" >> $GITHUB_ENV
+          {
+            echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)"
+            echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)"
+            echo "SERVER_PORT=4000"
+          } >> "$GITHUB_ENV"
 
       - name: Check MongoDB and Redis Availability
         run: |
