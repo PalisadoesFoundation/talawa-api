@@ -2,7 +2,7 @@ import cls from "cls-hooked";
 // No type defintions available for package 'cls-bluebird'
 // @ts-expect-error--ts-ignore
 import clsBluebird from "cls-bluebird";
-import { customAlphabet } from "nanoid";
+// import { customAlphabet } from "nanoid";
 import type { NextFunction, Request, Response } from "express";
 
 // Alphabets used in the custom nanoid function
@@ -12,7 +12,7 @@ const alphabets = "0123456789abcdefghijklmnopqrstuvwxyz";
  * Custom nanoid function to generate a unique 10 characters request ID
  * using the characters in the alphabets variable.
  */
-const nanoid = customAlphabet(alphabets, 10);
+// const nanoid = customAlphabet(alphabets, 10);
 
 /**
  * Namespace for request tracing to maintain context across asynchronous operations.
@@ -32,6 +32,10 @@ export const tracingIdHeaderName = "X-Tracing-Id";
  */
 const tracingIdContextKeyName = "tracingId";
 
+const getNanoid = async () => {
+  const { customAlphabet } = await import("nanoid");
+  return customAlphabet(alphabets, 10);
+};
 /**
  * Sets the tracing ID in the namespace context.
  * @param tracingId - The tracing ID to set.
@@ -59,14 +63,15 @@ export const middleware = () => {
     requestTracingNamespace.bindEmitter(req);
     requestTracingNamespace.bindEmitter(res);
 
-    const tracingId = req.header(tracingIdHeaderName) || nanoid();
-    // We need to set header to ensure API gateway which proxies request, forwards the header as well
-    req.headers[tracingIdHeaderName] = tracingId;
-    res.header(tracingIdHeaderName, tracingId); // Adding tracing ID to response headers
+    getNanoid().then((nanoid) => {
+      const tracingId = req.header(tracingIdHeaderName) || nanoid();
+      req.headers[tracingIdHeaderName] = tracingId;
+      res.header(tracingIdHeaderName, tracingId);
 
-    requestTracingNamespace.run(() => {
-      setTracingId(tracingId);
-      next();
+      requestTracingNamespace.run(() => {
+        setTracingId(tracingId);
+        next();
+      });
     });
   };
 };
@@ -82,8 +87,13 @@ export const trace = async <T>(
   tracingId: string,
   method: () => T,
 ): Promise<void> => {
-  await requestTracingNamespace.runAndReturn<T>(() => {
-    setTracingId(tracingId || nanoid());
-    return method();
-  });
+  try {
+    const nanoid = await getNanoid();
+    await requestTracingNamespace.runAndReturn<T>(() => {
+      setTracingId(tracingId || nanoid());
+      return method();
+    });
+  } catch (error) {
+    throw error;
+  }
 };
