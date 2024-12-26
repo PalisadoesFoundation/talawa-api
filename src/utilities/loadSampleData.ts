@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 import { connect } from "../db";
 import {
   ActionItemCategory,
@@ -84,7 +85,7 @@ async function insertCollections(collections: string[]): Promise<void> {
     // Connect to MongoDB database
     await connect();
 
-    const { format } = yargs
+    const { format } = yargs(hideBin(process.argv))
       .options({
         items: {
           alias: "i",
@@ -215,7 +216,7 @@ const collections = [
 ];
 
 // Check if specific collections need to be inserted
-const { items: argvItems } = yargs
+const { items: argvItems } = yargs(hideBin(process.argv))
   .options({
     items: {
       alias: "i",
