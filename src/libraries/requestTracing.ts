@@ -3,6 +3,7 @@ import cls from "cls-hooked";
 // @ts-expect-error--ts-ignore
 import clsBluebird from "cls-bluebird";
 import type { NextFunction, Request, Response } from "express";
+import { error } from "console";
 
 // Alphabets used in the custom nanoid function
 const alphabets = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -70,7 +71,10 @@ export const middleware = () => {
         setTracingId(tracingId);
         next();
       });
-    });
+    })
+    .catch((error)=>{
+      next(error);
+    })
   };
 };
 
