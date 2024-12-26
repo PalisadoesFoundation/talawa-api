@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const fs = require("fs");
+import fs from "fs";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { execSync } = require("child_process");
+import { execSync } from "child_process";
 
 const markdownFiles = fs
   .readdirSync("./")
