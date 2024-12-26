@@ -54,6 +54,7 @@ const httpServer =
 
 const server = new ApolloServer({
   schema,
+  introspection: true,
   formatError: (
     error: GraphQLFormattedError,
   ): { message: string; status: number; data: string[] } => {
