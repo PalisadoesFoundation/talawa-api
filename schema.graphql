@@ -83,6 +83,98 @@ The `BigInt` scalar type represents non-fractional signed whole numeric values.
 """
 scalar BigInt
 
+type Chat {
+  """URI to the avatar of the chat."""
+  avatarURI: String
+
+  """Date time at the time the chat was created."""
+  createdAt: DateTime
+
+  """User who created the chat."""
+  creator: User
+
+  """Custom information about the chat."""
+  description: String
+
+  """Global identifier of the chat."""
+  id: ID!
+
+  """
+  GraphQL connection to traverse through the users that are members of the chat.
+  """
+  members(after: String, before: String, first: Int, last: Int): ChatMembersConnection
+
+  """
+  GraphQL connection to traverse through the chat messages that are associated to the chat.
+  """
+  messages(after: String, before: String, first: Int, last: Int): ChatMessagesConnection
+
+  """Name of the chat."""
+  name: String
+
+  """Organization which the chat is associated to."""
+  organization: Organization
+
+  """Date time at the time the chat was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the chat."""
+  updater: User
+}
+
+""""""
+type ChatMembersConnection {
+  edges: [ChatMembersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type ChatMembersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+""""""
+enum ChatMembershipRole {
+  administrator
+  regular
+}
+
+type ChatMessage {
+  """Body of the chat message."""
+  body: String
+
+  """Chat which the chat message belongs to."""
+  chat: Chat
+
+  """Date time at the time the chat message was created."""
+  createdAt: DateTime
+
+  """User who created the chat message."""
+  creator: User
+
+  """Global identifier of the chat message."""
+  id: ID!
+
+  """Parent chat message of the chat message."""
+  parentChatMessage: ChatMessage
+
+  """Date time at the time the chat message was last updated."""
+  updatedAt: DateTime
+}
+
+""""""
+type ChatMessagesConnection {
+  edges: [ChatMessagesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type ChatMessagesConnectionEdge {
+  cursor: String!
+  node: ChatMessage
+}
+
 type Comment {
   """Body of the comment."""
   body: String
@@ -733,6 +825,15 @@ type Mutation {
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
 
+  """Mutation field to create a chat."""
+  createChat(input: MutationCreateChatInput!): Chat
+
+  """Mutation field to create a chat membership."""
+  createChatMembership(input: MutationCreateChatMembershipInput!): Chat
+
+  """Mutation field to create a chat message."""
+  createChatMessage(input: MutationCreateChatMessageInput!): ChatMessage
+
   """Mutation field to create a comment."""
   createComment(input: MutationCreateCommentInput!): Comment
 
@@ -771,6 +872,15 @@ type Mutation {
 
   """Mutation field to delete an advertisement."""
   deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
+
+  """Mutation field to delete a chat."""
+  deleteChat(input: MutationDeleteChatInput!): Chat
+
+  """Mutation field to delete a chat membership."""
+  deleteChatMembership(input: MutationDeleteChatMembershipInput!): Chat
+
+  """Mutation field to delete a chat message."""
+  deleteChatMessage(input: MutationDeleteChatMessageInput!): ChatMessage
 
   """Mutation field to delete a comment."""
   deleteComment(input: MutationDeleteCommentInput!): Comment
@@ -819,6 +929,15 @@ type Mutation {
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
+
+  """Mutation field to update a chat."""
+  updateChat(input: MutationUpdateChatInput!): Chat
+
+  """Mutation field to update a chat membership."""
+  updateChatMembership(input: MutationUpdateChatMembershipInput!): Chat
+
+  """Mutation field to update a chat message."""
+  updateChatMessage(input: MutationUpdateChatMessageInput!): ChatMessage
 
   """Mutation field to update a comment."""
   updateComment(input: MutationUpdateCommentInput!): Comment
@@ -885,6 +1004,45 @@ input MutationCreateAdvertisementInput {
 
   """Type of the advertisement."""
   type: AdvertisementType!
+}
+
+""""""
+input MutationCreateChatInput {
+  """URI to the avatar of the chat."""
+  avatarURI: String
+
+  """Custom information about the chat."""
+  description: String
+
+  """Name of the chat."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+}
+
+""""""
+input MutationCreateChatMembershipInput {
+  """Global identifier of the associated chat."""
+  chatId: ID!
+
+  """Global identifier of the associated user."""
+  memberId: ID!
+
+  """Role assigned to the user within the chat."""
+  role: ChatMembershipRole
+}
+
+""""""
+input MutationCreateChatMessageInput {
+  """Body of the chat message."""
+  body: String!
+
+  """Global identifier of the associated chat."""
+  chatId: ID!
+
+  """Global identifier of the associated parent chat message."""
+  parentChatMessageId: ID!
 }
 
 """"""
@@ -1107,6 +1265,27 @@ input MutationDeleteAdvertisementInput {
 }
 
 """"""
+input MutationDeleteChatInput {
+  """Global identifier of the chat."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteChatMembershipInput {
+  """Global identifier of the associated chat."""
+  chatId: ID!
+
+  """Global identifier of the associated user."""
+  memberId: ID!
+}
+
+""""""
+input MutationDeleteChatMessageInput {
+  """Global identifier of the chat message."""
+  id: ID!
+}
+
+""""""
 input MutationDeleteCommentInput {
   """Global identifier of the comment."""
   id: ID!
@@ -1264,6 +1443,42 @@ input MutationUpdateAdvertisementInput {
 
   """Type of the advertisement."""
   type: AdvertisementType
+}
+
+""""""
+input MutationUpdateChatInput {
+  """URI to the avatar of the chat."""
+  avatarURI: String
+
+  """Custom information about the chat."""
+  description: String
+
+  """Global identifier of the chat."""
+  id: ID!
+
+  """Name of the chat."""
+  name: String
+}
+
+""""""
+input MutationUpdateChatMembershipInput {
+  """Global identifier of the associated chat."""
+  chatId: ID!
+
+  """Global identifier of the associated user."""
+  memberId: ID!
+
+  """Role assigned to the user within the chat."""
+  role: ChatMembershipRole!
+}
+
+""""""
+input MutationUpdateChatMessageInput {
+  """Body of the chat message."""
+  body: String!
+
+  """Global identifier of the chat message."""
+  id: ID!
 }
 
 """"""
@@ -1544,6 +1759,11 @@ type Organization {
   """URI to the avatar of the organization."""
   avatarURI: String
 
+  """
+  GraphQL connection to traverse through the chats that are associated to the organization.
+  """
+  chats(after: String, before: String, first: Int, last: Int): OrganizationChatsConnection
+
   """Name of the city where the organization exists in."""
   city: String
 
@@ -1619,6 +1839,18 @@ type OrganizationAdvertisementsConnection {
 type OrganizationAdvertisementsConnectionEdge {
   cursor: String!
   node: Advertisement
+}
+
+""""""
+type OrganizationChatsConnection {
+  edges: [OrganizationChatsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationChatsConnectionEdge {
+  cursor: String!
+  node: Chat
 }
 
 """"""
@@ -1822,6 +2054,12 @@ type Query {
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
 
+  """Query field to read a chat."""
+  chat(input: QueryChatInput!): Chat
+
+  """Query field to read a chat message."""
+  chatMessage(input: QueryChatMessageInput!): ChatMessage
+
   """Query field to read a comment."""
   comment(input: QueryCommentInput!): Comment
 
@@ -1861,15 +2099,24 @@ type Query {
   tag(input: QueryTagInput!): Tag
 
   """Query field to read a user."""
-  user(
-    """Input required to read a user."""
-    input: QueryUserInput
-  ): User
+  user(input: QueryUserInput!): User
 }
 
 """"""
 input QueryAdvertisementInput {
   """Global id of the advertisement."""
+  id: String!
+}
+
+""""""
+input QueryChatInput {
+  """Global id of the chat."""
+  id: String!
+}
+
+""""""
+input QueryChatMessageInput {
+  """Global id of the chat message."""
   id: String!
 }
 
@@ -1927,6 +2174,19 @@ input QueryTagInput {
 """"""
 input QueryUserInput {
   """Global id of the user."""
+  id: String!
+}
+
+type Subscription {
+  """
+  Subscription field to subscribe to the event of creation of a chat message.
+  """
+  chatMessageCreate(input: SubscriptionChatMessageCreateInput!): ChatMessage
+}
+
+""""""
+input SubscriptionChatMessageCreateInput {
+  """Global id of the chat."""
   id: String!
 }
 

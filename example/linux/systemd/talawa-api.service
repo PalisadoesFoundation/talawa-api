@@ -1,0 +1,39 @@
+[Unit]
+# Description of the service
+Description=Talawa-API Service
+
+# Ensure the service starts after the network is available
+After=network.target
+
+[Service]
+# The type of service. 'simple' means the service will start immediately.
+Type=simple
+
+# The command to start the service. This points to the Talawa-api.sh script.
+ExecStart=/home/purnendu/Development/talawa-api/example/linux/systemd/Talawa-api.sh
+
+# The working directory for the service.
+WorkingDirectory=/home/purnendu/Development/talawa-api
+
+# Restart the service automatically if it stops.
+Restart=always
+
+# The delay before restarting the service.
+RestartSec=5
+
+# The user to run the service as. You can find your username by running 'whoami'.
+User=purnendu
+
+# The group to run the service as. Usually, this is the same as the username.
+Group=purnendu
+
+# Redirects the output and error to the systemd journal and console.
+StandardOutput=journal+console
+StandardError=journal+console
+
+# Sets the maximum number of open files.
+LimitNOFILE=65535
+
+[Install]
+# Specifies the target to which the service should be added. 'multi-user.target' means the service will start in multi-user mode.
+WantedBy=multi-user.target
