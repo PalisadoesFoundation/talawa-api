@@ -40,8 +40,6 @@ build
 data/**
 
 serviceAccountKey.json
-cert.pem
-key.pem
 csr.pem
 
 # MacOS

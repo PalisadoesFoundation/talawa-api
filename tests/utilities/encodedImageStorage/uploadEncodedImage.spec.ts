@@ -24,6 +24,15 @@ function generateRandomString(size: number): string {
   return result;
 }
 
+vi.mock("fs", async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...actual,
+    existsSync: vi.fn(),
+    mkdir: vi.fn(),
+  };
+});
+
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 });
@@ -190,15 +199,6 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
     } catch (error: unknown) {
       console.log(error);
     }
-  });
-
-  vi.mock("fs", async (importOriginal) => {
-    const actual = (await importOriginal()) as Record<string, unknown>;
-    return {
-      ...actual,
-      existsSync: vi.fn(),
-      mkdir: vi.fn(),
-    };
   });
 
   it("should create the 'images' directory if it does not exist", async () => {

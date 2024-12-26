@@ -10,6 +10,15 @@ import { INVALID_FILE_TYPE } from "../../../src/constants";
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testPreviousVideoPath: string; // Update variable name for video
 
+vi.mock("fs", async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...actual,
+    existsSync: vi.fn(),
+    mkdir: vi.fn(),
+  };
+});
+
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 });
@@ -145,15 +154,6 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
     } catch (error: unknown) {
       console.log(error);
     }
-  });
-
-  vi.mock("fs", async (importOriginal) => {
-    const actual = (await importOriginal()) as Record<string, unknown>;
-    return {
-      ...actual,
-      existsSync: vi.fn(),
-      mkdir: vi.fn(),
-    };
   });
 
   it("should create the 'videos' directory if it doesn't exist", async () => {

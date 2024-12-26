@@ -370,10 +370,8 @@ jobs:
 
       - name: Generate key.pem and cert.pem for production build
         run: |
-          echo "Generating key.pem..."
-          openssl genrsa -out key.pem 2048
-          echo "Generating cert.pem..."
-          openssl req -new -x509 -key key.pem -out cert.pem -days 365 -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+          echo "Generating key.pem and cert.pem"
+          openssl req -x509 -nodes -days 1 -newkey rsa:2048 -keyout key.pem -out cert.pem -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
 
       - name: Test Production Build
         run: |
@@ -390,7 +388,7 @@ jobs:
 
       - name: Check Apollo Server status for production
         run: |
-          if curl -f 'https://localhost:4000/graphql?query=%7B__typename%7D' \
+          if curl -f -k 'https://localhost:4000/graphql?query=%7B__typename%7D' \
           -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
             echo "Apollo Server is up"
           else
@@ -404,12 +402,14 @@ jobs:
           kill $PROD_PID || echo "No prod process found."
 
       - name: Clean up Background Processes
+        if: always()
         run: |
           echo "Cleaning up background processes..."
           pkill -f "npm run dev" || echo "No dev process found."
           pkill -f "npm run prod" || echo "No prod process found."
 
       - name: Delete key.pem and cert.pem
+        if: always()
         run: |
           echo "Deleting key.pem and cert.pem..."
           rm -f key.pem cert.pem
