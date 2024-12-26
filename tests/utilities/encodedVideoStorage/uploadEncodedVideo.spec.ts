@@ -102,21 +102,24 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
   });
 
   it("should not create new video but return the pointer to that binary data and not delete the previous video", async () => {
+    const existsSyncMock = vi.fn();
     const vid = "data:video/mp4;base64,NEW_VIDEO_BASE64_DATA_HERE"; // Replace with new valid video data
 
     const previousVideoPath = await uploadEncodedVideo(vid, null);
 
     const fileName = await uploadEncodedVideo(vid, previousVideoPath);
     expect(fileName).equals(previousVideoPath);
+    existsSyncMock.mockReturnValue(true);
+    const prevVideoExists = existsSyncMock(
+      path.join(__dirname, "../../../".concat(fileName)),
+    );
 
-    let prevVideoExists;
-    if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
-      prevVideoExists = true;
+    expect(prevVideoExists).toBe(true);
+    if (prevVideoExists) {
       fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
         if (err) throw err;
       });
     }
-    expect(prevVideoExists).toBe(true);
   });
 
   it("should create new video and return the pointer to that binary data and decrease the previous video count", async () => {
@@ -142,5 +145,33 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
     } catch (error: unknown) {
       console.log(error);
     }
+  });
+
+  vi.mock("fs", async (importOriginal) => {
+    const actual = (await importOriginal()) as Record<string, unknown>;
+    return {
+      ...actual,
+      existsSync: vi.fn(),
+      mkdir: vi.fn(),
+    };
+  });
+
+  it("should create the 'videos' directory if it doesn't exist", async () => {
+    const existsSyncMock = vi.mocked(fs.existsSync);
+    const mkdirMock = vi.mocked(fs.mkdir);
+    const vid = "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE";
+
+    await uploadEncodedVideo(vid, null);
+
+    expect(existsSyncMock).toHaveBeenCalledWith(
+      path.join(__dirname, "../../../videos"),
+    );
+    expect(mkdirMock).toHaveBeenCalledWith(
+      path.join(__dirname, "../../../videos"),
+      expect.any(Function),
+    );
+
+    existsSyncMock.mockRestore();
+    mkdirMock.mockRestore();
   });
 });

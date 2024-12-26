@@ -344,7 +344,7 @@ jobs:
       - name: Test Development Build
         run: |
           echo "Testing development build..."
-          npm run dev &
+          NODE_ENV=development npm run dev &
           sleep 10
           if curl -f 'http://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
             echo "Development server is up and healthy"
@@ -378,8 +378,8 @@ jobs:
       - name: Test Production Build
         run: |
           echo "Building and testing production build..."
-          npm run build
-          npm run prod &
+          NODE_ENV=production npm run build
+          NODE_ENV=production npm run prod &
           sleep 10
           if curl -f 'https://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
             echo "Production server is up and healthy"
