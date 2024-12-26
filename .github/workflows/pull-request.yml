@@ -279,7 +279,7 @@ jobs:
     needs: Test-Application
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x]
     services:
       mongo:
         image: mongo:4.4
@@ -351,7 +351,19 @@ jobs:
             kill $DEV_PID
             exit 1
           fi
-          kill $DEV_PID
+      
+      - name: Check Apollo Server for development
+        run: |
+          echo "Checking Apollo server for development..."
+          if curl -f 'http://localhost:4000/graphql?query=%7B__typename%7D' \
+            -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
+            echo "Apollo server is up and healthy"
+          else
+            echo "Apollo server is down"
+            exit 1
+          fi
+          echo "Stopping development server..."
+          kill -9 $DEV_PID || echo "Process already stopped."
 
       - name: Generate SSL Certificates for Production
         run: |

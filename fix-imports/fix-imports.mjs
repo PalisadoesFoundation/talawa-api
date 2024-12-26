@@ -27,7 +27,7 @@ function fixImports(dir) {
 
           // Add assert for JSON files
           if (path.endsWith('.json')) {
-            return `from '${path}' assert { type: 'json' }`;
+            return `from '${path}' with { type: 'json' }`;
           }
 
           // If the file or directory doesn't exist, leave the import unchanged
