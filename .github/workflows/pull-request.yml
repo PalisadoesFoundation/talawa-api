@@ -381,7 +381,7 @@ jobs:
           npm run build
           npm run prod &
           sleep 10
-          if curl -f 'https://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
+          if curl -f -k 'https://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
             echo "Production server is up and healthy"
           else
             echo "Production server is down"
