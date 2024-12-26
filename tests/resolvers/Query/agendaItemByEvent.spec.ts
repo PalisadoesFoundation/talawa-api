@@ -8,7 +8,7 @@ import type mongoose from "mongoose";
 import type { TestEventType } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testEvent: TestEventType;
+const testEvent: TestEventType = null as any;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
