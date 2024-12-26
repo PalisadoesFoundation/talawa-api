@@ -324,7 +324,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: '21.x'
 
       - name: Generate Access Token Secret
         run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
@@ -373,13 +373,16 @@ jobs:
           echo "Generating key.pem and cert.pem"
           npm run generate:ssl-private-key
 
+      - name: Build production build
+        run: |
+          echo "Building production build..."
+          NODE_ENV=production npm run build
+
       - name: Test Production Build
         run: |
-          echo "Building and testing production build..."
-          NODE_ENV=production npm run build
           NODE_ENV=production npm run prod &
           sleep 10
-          if curl --tlsv1.2 -f -k 'https://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
+          if curl -f -k 'https://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
             echo "Production server is up and healthy"
           else
             echo "Production server is down"
@@ -388,7 +391,7 @@ jobs:
 
       - name: Check Apollo Server status for production
         run: |
-          if curl --tlsv1.2 -f -k 'https://localhost:4000/graphql?query=%7B__typename%7D' \
+          if curl -f -k 'https://localhost:4000/graphql?query=%7B__typename%7D' \
           -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
             echo "Apollo Server is up"
           else
