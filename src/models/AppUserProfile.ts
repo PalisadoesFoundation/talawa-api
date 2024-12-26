@@ -1,5 +1,7 @@
 import type { PaginateModel, PopulatedDoc, Types } from "mongoose";
-import { Schema, model, models } from "mongoose";
+import mongoose from "mongoose";
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { Schema, model, models } = mongoose;
 import mongoosePaginate from "mongoose-paginate-v2";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceOrganization } from "./Organization";

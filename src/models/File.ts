@@ -1,6 +1,8 @@
 // Import third-party modules
 import { v4 as uuidv4 } from "uuid";
-import { Schema, model, models } from "mongoose";
+import mongoose from "mongoose";
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { Schema, model, models } = mongoose;
 import type { Types, Model } from "mongoose";
 
 // Interface definition for a file document
