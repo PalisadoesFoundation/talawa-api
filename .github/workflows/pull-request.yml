@@ -379,7 +379,7 @@ jobs:
           NODE_ENV=production npm run build
           NODE_ENV=production npm run prod &
           sleep 10
-          if curl -f -k 'https://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
+          if curl --tlsv1.2 -f -k 'https://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
             echo "Production server is up and healthy"
           else
             echo "Production server is down"
@@ -388,7 +388,7 @@ jobs:
 
       - name: Check Apollo Server status for production
         run: |
-          if curl -f -k 'https://localhost:4000/graphql?query=%7B__typename%7D' \
+          if curl --tlsv1.2 -f -k 'https://localhost:4000/graphql?query=%7B__typename%7D' \
           -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
             echo "Apollo Server is up"
           else
