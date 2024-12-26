@@ -363,21 +363,23 @@ jobs:
           echo "Building production build..."
           NODE_ENV=production npm run build
 
-      - name: Test Production Build
-        run: |
-          echo "Testing production build..."
-          lsof -ti:4000 | xargs kill -9 || echo "No process found."
-          NODE_ENV=production npm run prod &
-          PROD_PID=$!
-          sleep 10
-          if curl -f -k https://localhost:4000 | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
-            echo "Production server is up and healthy"
-          else
-            echo "Production server is down"
-            kill $PROD_PID
-            exit 1
-          fi
-          kill $PROD_PID
+          - name: Test Production Build
+          run: |
+            echo "Testing production build..."
+            lsof -ti:4000 | xargs -r kill -9 || echo "No process was using port 4000."
+            NODE_ENV=production npm run prod &
+            PROD_PID=$!
+            echo "Waiting for server to stabilize..."
+            sleep 10
+            if curl -f -k https://localhost:4000 | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
+              echo "Production server is up and healthy."
+            else
+              echo "Production server is down. Cleaning up..."
+              kill -9 $PROD_PID || echo "Process already stopped."
+              exit 1
+            fi
+            echo "Stopping production server..."
+            kill -9 $PROD_PID || echo "Process already stopped."
 
       - name: Check Apollo Server for Production
         run: |
