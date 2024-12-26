@@ -85,13 +85,9 @@ export const trace = async <T>(
   tracingId: string,
   method: () => T,
 ): Promise<void> => {
-  try {
     const nanoid = await getNanoid();
     await requestTracingNamespace.runAndReturn<T>(() => {
       setTracingId(tracingId || nanoid());
       return method();
     });
-  } catch (error) {
-    throw error;
-  }
 };
