@@ -279,7 +279,7 @@ jobs:
     needs: Test-Application
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [21.x]
     services:
       mongo:
         image: mongo:4.4
@@ -303,19 +303,9 @@ jobs:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      RECAPTCHA_SITE_KEY: ${{secrets.RECAPTCHA_SITE_KEY}}
-      RECAPTCHA_SECRET_KEY: ${{secrets.RECAPTCHA_SECRET_KEY}}
-      MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
-      MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD}}
-      IS_SMTP: ""
-      SMTP_HOST: ""
-      SMTP_PASSWORD: ""
-      SMTP_USERNAME: ""
       LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
       COLORIZE_LOGS: "true"
       LOG_LEVEL: "info"
-      # ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-      # REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
     steps:
       - name: Checkout repository
@@ -324,99 +314,89 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '21.x'
-
-      - name: Generate Access Token Secret
-        run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
-
-      - name: Generate Refresh Token Secret
-        run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
-      
-      - name: Set up SERVER_PORT env
-        run: echo "SERVER_PORT=4000" >> $GITHUB_ENV
-
-      - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+          node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Generate Secrets
+        run: |
+          echo "Generating secrets..."
+          echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+          echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+          echo "SERVER_PORT=4000" >> $GITHUB_ENV
+
+      - name: Check MongoDB and Redis Availability
+        run: |
+          echo "Checking MongoDB and Redis availability..."
+          for i in {1..10}; do
+            if nc -z localhost 27017 && nc -z localhost 6379; then
+              echo "MongoDB and Redis are available!"
+              break
+            fi
+            echo "Waiting for MongoDB and Redis..."
+            sleep 5
+          done
 
       - name: Test Development Build
         run: |
           echo "Testing development build..."
           NODE_ENV=development npm run dev &
+          DEV_PID=$!
           sleep 10
-          if curl -f 'http://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
+          if curl -f http://localhost:4000 | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
             echo "Development server is up and healthy"
           else
             echo "Development server is down"
+            kill $DEV_PID
             exit 1
           fi
-      
-      - name: Check Apollo Server status for development
-        run: |
-          if curl -f 'http://localhost:4000/graphql?query=%7B__typename%7D' \
-          -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
-            echo "Apollo Server is up"
-          else
-            echo "Server is down"
-            exit 1 
-          fi
-      
-      - name: Stop the Development Server
-        run: |
-          echo "Stopping development server..."
-          kill $DEV_PID || echo "No dev process found."
+          kill $DEV_PID
 
-      - name: Generate key.pem and cert.pem for production build
+      - name: Generate SSL Certificates for Production
         run: |
-          echo "Generating key.pem and cert.pem"
-          npm run generate:ssl-private-key
+          echo "Generating SSL certificates for production..."
+          openssl req -x509 -nodes -days 1 -newkey rsa:2048 -keyout key.pem -out cert.pem -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
 
-      - name: Build production build
+      - name: Build Production Build
         run: |
           echo "Building production build..."
           NODE_ENV=production npm run build
 
       - name: Test Production Build
         run: |
+          echo "Testing production build..."
           NODE_ENV=production npm run prod &
+          PROD_PID=$!
           sleep 10
-          if curl -f -k 'https://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
+          if curl -f -k https://localhost:4000 | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
             echo "Production server is up and healthy"
           else
             echo "Production server is down"
+            kill $PROD_PID
+            exit 1
+          fi
+          kill $PROD_PID
+
+      - name: Check Apollo Server for Production
+        run: |
+          echo "Checking Apollo server for production..."
+          if curl -f -k 'https://localhost:4000/graphql?query=%7B__typename%7D' \
+            -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
+            echo "Apollo server is up and healthy"
+          else
+            echo "Apollo server is down"
             exit 1
           fi
 
-      - name: Check Apollo Server status for production
-        run: |
-          if curl -f -k 'https://localhost:4000/graphql?query=%7B__typename%7D' \
-          -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
-            echo "Apollo Server is up"
-          else
-            echo "Server is down"
-            exit 1 
-          fi
-
-      - name: Stop the Production Server
-        run: |
-          echo "Stopping production server..."
-          kill $PROD_PID || echo "No prod process found."
-
-      - name: Clean up Background Processes
+      - name: Clean Up Resources
         if: always()
         run: |
-          echo "Cleaning up background processes..."
+          echo "Cleaning up background processes and temporary files..."
           pkill -f "npm run dev" || echo "No dev process found."
           pkill -f "npm run prod" || echo "No prod process found."
-
-      - name: Delete key.pem and cert.pem
-        if: always()
-        run: |
-          echo "Deleting key.pem and cert.pem..."
           rm -f key.pem cert.pem
-          
+            
   JSDocs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: 'JSDocs comments and pipeline'
