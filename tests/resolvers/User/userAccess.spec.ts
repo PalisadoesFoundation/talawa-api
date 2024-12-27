@@ -35,13 +35,23 @@ beforeAll(async () => {
     if (!superAdminUser?.id)
       throw new Error("Failed to create super admin user");
 
+    // Make sure we're using the correct ObjectId for the member
     const org = await Organization.create({
       creatorId: adminUser?.id,
+      // Ensure we're using the MongoDB _id, not the string id
       members: [anotherTestUser?._id],
       admins: [adminUser?.id],
       name: "Test Organization",
       description: "A test organization for user query testing",
     });
+
+    // Verify the member was added correctly
+    await Organization.findByIdAndUpdate(
+      org._id,
+      { $addToSet: { members: anotherTestUser?._id } },
+      { new: true },
+    );
+
     if (!org) throw new Error("Failed to create organization");
 
     const profile = await AppUserProfile.create({
@@ -114,6 +124,7 @@ describe("user Query", () => {
   });
 
   // Test case 3: Admin access scenario
+  // Test case 3: Admin access scenario
   it("allows an admin to access another user's data within the same organization", async () => {
     expect.assertions(2);
     const args = {
@@ -126,7 +137,12 @@ describe("user Query", () => {
     };
 
     const org = await Organization.findOne({ admins: adminUser?.id });
-    expect(org?.members).toContain(anotherTestUser?._id);
+
+    // Convert ObjectIds to strings for comparison
+    const memberIds = org?.members.map((id) => id.toString());
+    const testUserId = anotherTestUser?._id?.toString();
+
+    expect(memberIds).toContain(testUserId);
 
     const result = await userResolver?.({}, args, context);
 
