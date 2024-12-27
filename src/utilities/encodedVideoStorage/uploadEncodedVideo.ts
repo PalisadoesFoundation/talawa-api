@@ -6,6 +6,7 @@ import { errors, requestContext } from "../../libraries";
 import { INVALID_FILE_TYPE } from "../../constants";
 import { EncodedVideo } from "../../models/EncodedVideo";
 import path from "path";
+const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 import { deletePreviousVideo } from "./deletePreviousVideo";
 
 /**
@@ -81,8 +82,8 @@ export const uploadEncodedVideo = async (
   const buf = Buffer.from(data, "base64");
 
   // Create a 'videos' directory if it doesn't exist
-  if (!fs.existsSync(path.join(__dirname, "../../../videos"))) {
-    fs.mkdir(path.join(__dirname, "../../../videos"), (error) => {
+  if (!fs.existsSync(path.join(dirname, "../../../videos"))) {
+    fs.mkdir(path.join(dirname, "../../../videos"), (error) => {
       if (error) {
         throw error;
       }
@@ -90,7 +91,7 @@ export const uploadEncodedVideo = async (
   }
 
   // Write the video data to the file system
-  await writeFile(path.join(__dirname, "../../../" + id), buf);
+  await writeFile(path.join(dirname, "../../../" + id), buf);
 
   // Return the fileName of the uploaded video
   return uploadedEncodedVideo.fileName;
