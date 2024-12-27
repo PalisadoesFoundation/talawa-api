@@ -14,7 +14,7 @@ DEV_PATH="src/index.ts"
 PROD_PATH="dist/index.js"
 
 # Change to the project directory .give your path
-cd /home/purnendu/Development/talawa-api || exit 1
+cd /usr/local/talawa-api || exit 1
 
 # Load environment variables from .env file
 export "$(grep -v '^#' .env | xargs)"

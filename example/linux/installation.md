@@ -30,10 +30,10 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
    
      ```bash
      # Change to the project directory
-     cd /home/purnendu/Development/talawa-api
+     cd /usr/local/talawa-api
 
      # Define log file
-     LOG_FILE="/home/purnendu/Development/talawa-api/example/linux/talawa-api.log"
+     LOG_FILE="/var/log/talawa-api.log"
      ```
 
 ## Commands to Follow in Sequence
@@ -59,8 +59,8 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 7. **Restart the Talawa API Service:**:
    sudo systemctl restart talawa-api.service
 
-8. **Also, you can see direct log stored in /talawa-api/example/linux/talawa-api.log :**
+8. **Also, you can see direct log stored in /talawa-api/example/linux/talawa-api.log :**:
     cat pathOfLogFile
-    
+
 
     

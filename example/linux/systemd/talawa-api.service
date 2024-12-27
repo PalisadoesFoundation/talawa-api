@@ -10,10 +10,10 @@ After=network.target
 Type=simple
 
 # The command to start the service. This points to the Talawa-api.sh script.
-ExecStart=/home/purnendu/Development/talawa-api/example/linux/systemd/Talawa-api.sh
+ExecStart=/usr/local/talawa-api/example/linux/systemd/Talawa-api.sh
 
 # The working directory for the service.
-WorkingDirectory=/home/purnendu/Development/talawa-api
+WorkingDirectory=/usr/local/talawa-api
 
 # Restart the service automatically if it stops.
 Restart=always
