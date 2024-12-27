@@ -20,7 +20,7 @@ cd /usr/local/talawa-api || exit 1
 export "$(grep -v '^#' .env | xargs)"
 
 # Define log file give your path
-LOG_FILE="/var/log//talawa-api.log"
+LOG_FILE="/var/log/talawa-api.log"
 
 # Ensure the log file exists
 sudo touch $LOG_FILE

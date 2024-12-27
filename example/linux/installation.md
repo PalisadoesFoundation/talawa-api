@@ -59,8 +59,8 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 7. **Restart the Talawa API Service:**:
    sudo systemctl restart talawa-api.service
 
-8. **Also, you can see direct log stored in /talawa-api/example/linux/talawa-api.log :**:
-    cat pathOfLogFile
+8. **Also, you can see direct log stored in /var/log/talawa-api.log :**:
+   sudo cat /var/log/talawa-api.log
 
 
     
