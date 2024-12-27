@@ -5,12 +5,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     && mkdir -p /etc/apt/keyrings \
     && curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | tee /etc/apt/keyrings/mongodb.asc \
-    && chmod 644 /etc/apt/keyrings/mongodb.asc \
-    && echo "deb [signed-by=/etc/apt/keyrings/mongodb.asc] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" > /etc/apt/sources.list.d/mongodb-org-8.0.list \
-    && apt-get update
+    && chmod 644 /etc/apt/keyrings/mongodb.asc
 
-RUN curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
-    gpg --batch --yes --dearmor -o /usr/share/keyrings/mongodb-server-8.0.gpg
+RUN echo "deb [signed-by=/etc/apt/keyrings/mongodb.asc] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" > /etc/apt/sources.list.d/mongodb-org-8.0.list
 
 RUN apt-get update && apt-get install -y mongodb-org
 
