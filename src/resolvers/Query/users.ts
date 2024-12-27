@@ -7,7 +7,7 @@ import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
 /**
- * This query will fetch all the users in specified order from the database .
+ * This query will fetch all the users in specified order from the database.
  * @param _parent-
  * @param args - An object that contains relevant data to perform the query.
  * @param context-
