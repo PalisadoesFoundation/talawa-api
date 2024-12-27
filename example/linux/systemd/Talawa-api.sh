@@ -14,16 +14,16 @@ DEV_PATH="src/index.ts"
 PROD_PATH="dist/index.js"
 
 # Change to the project directory .give your path
-cd /home/purnendu/Development/talawa-api
+cd /home/purnendu/Development/talawa-api || exit 1
 
 # Load environment variables from .env file
-export $(grep -v '^#' .env | xargs)
+export "$(grep -v '^#' .env | xargs)"
 
 # Define log file give your path
-LOG_FILE="/home/purnendu/Development/talawa-api/example/linux/talawa-api.log"
+LOG_FILE="/var/log//talawa-api.log"
 
 # Ensure the log file exists
-touch $LOG_FILE
+sudo touch $LOG_FILE
 
 # Debugging: Output environment variables
 {

@@ -27,6 +27,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 
 4. **Edit the `Talawa-api.sh` Script**:
    - Edit the `Talawa-api.sh` script to set the project directory and log file path:
+   
      ```bash
      # Change to the project directory
      cd /home/purnendu/Development/talawa-api
@@ -58,5 +59,8 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 7. **Restart the Talawa API Service:**:
    sudo systemctl restart talawa-api.service
 
-8. **Also u can see direct log stored in /talawa-api/example/linux/talawa-api.log :**
+8. **Also, you can see direct log stored in /talawa-api/example/linux/talawa-api.log :**
     cat pathOfLogFile
+    
+
+    

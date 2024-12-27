@@ -32,7 +32,7 @@ StandardOutput=journal+console
 StandardError=journal+console
 
 # Sets the maximum number of open files.
-LimitNOFILE=65535
+LimitNOFILE=1024
 
 [Install]
 # Specifies the target to which the service should be added. 'multi-user.target' means the service will start in multi-user mode.
