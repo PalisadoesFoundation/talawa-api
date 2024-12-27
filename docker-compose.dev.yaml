@@ -4,8 +4,18 @@ services:
       context: .
       dockerfile: Dockerfile.mongo
     container_name: mongo
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "'db.runCommand(\"ping\").ok'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+           memory: 1G
     ports:
-      - "27017:27017"
+     - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/var/lib/mongodb 
     networks:
