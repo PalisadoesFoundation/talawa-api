@@ -399,7 +399,6 @@ jobs:
       RECAPTCHA_SECRET_KEY: ${{secrets.RECAPTCHA_SECRET_KEY}}
       MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
       MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD}}
-=======
           
   Test-Builds:
     name: Test Development and Production Builds
