@@ -323,9 +323,9 @@ jobs:
           echo "Waiting for MongoDB..."
           timeout=30
           until docker-compose -f docker-compose.dev.yaml exec -T mongodb mongosh --eval "db.runCommand({ ping: 1 }).ok">/dev/null 2>&1 || [ $timeout -eq 0 ]; do
-          echo "Waiting for MongoDB to be ready..."
-          sleep 1
-           ((timeout--))
+            echo "Waiting for MongoDB to be ready..."
+            sleep 1
+            ((timeout--))
           done
           if [ $timeout -eq 0 ]; then
             echo "Error: MongoDB failed to start within timeout"
@@ -340,18 +340,18 @@ jobs:
           fi
 
           echo "Waiting for Redis..."
-           timeout=30
-           until docker-compose -f docker-compose.dev.yaml exec -T redis-stack-server redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
-          sleep 1
-          ((timeout--))
+          timeout=30
+          until docker-compose -f docker-compose.dev.yaml exec -T redis-stack-server redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            sleep 1
+            ((timeout--))
           done
           if [ $timeout -eq 0 ]; then
-             echo "Error: Redis failed to start within timeout"
-             echo "Fetching Redis logs..."
+            echo "Error: Redis failed to start within timeout"
+            echo "Fetching Redis logs..."
             docker-compose -f docker-compose.dev.yaml logs redis-stack-server
             echo "Shutting down Redis..."
-             docker-compose -f docker-compose.dev.yaml down -v
-             exit 1
+            docker-compose -f docker-compose.dev.yaml down -v
+            exit 1
              
           else
             echo "Redis is ready!"
