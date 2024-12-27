@@ -433,7 +433,15 @@ jobs:
       LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
       COLORIZE_LOGS: "true"
       LOG_LEVEL: "info"
-          node-version: ${{ matrix.node-version }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
         run: npm ci
