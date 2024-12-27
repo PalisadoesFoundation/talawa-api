@@ -56,12 +56,26 @@ services:
       - REDIS_PORT=6379
     networks:
       - talawa-network
+  caddy:
+    image: caddy/caddy:2.2.1-alpine
+    container_name: caddy-service
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - $PWD/site:/srv
+      - caddy_data:/data
+      - caddy_config:/config
     
 
 volumes:
   redis-data:
   minio-data:
   mongo_data:
+  caddy_data:
+  caddy_config:
 
 networks:
   talawa-network:
