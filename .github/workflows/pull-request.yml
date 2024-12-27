@@ -310,7 +310,6 @@ jobs:
           # Verify docker-compose file exists
           if [ ! -f "docker-compose.dev.yaml" ]; then
             echo "Error: docker-compose.dev.yaml not found"
-            docker-compose -f docker-compose.dev.yaml logs
             exit 1
           fi
 
@@ -324,7 +323,7 @@ jobs:
           # Wait for MongoDB and Redis to be ready
           echo "Waiting for MongoDB..."
           timeout=30
-          until docker-compose -f docker-compose.dev.yaml exec -T mongodb mongosh --eval "db.runCommand({ ping: 1 }).ok">/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+          until docker-compose -f docker-compose.dev.yaml exec -T mongo mongosh --eval "db.runCommand({ ping: 1 }).ok">/dev/null 2>&1 || [ $timeout -eq 0 ]; do
             echo "Waiting for MongoDB to be ready..."
             sleep 1
             ((timeout--))

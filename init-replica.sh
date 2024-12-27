@@ -3,18 +3,25 @@
 
 mongod --replSet rs0 --dbpath /var/lib/mongodb --bind_ip_all &
 
-# Wait for MongoDB to start
-sleep 10
+until mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
+  echo "Waiting for MongoDB to be ready..."
+  sleep 2
+done
 
-# Initialize the replica set
-mongosh --eval '
+if ! mongosh --eval '
   rs.initiate({
     _id: "rs0",
     members: [
       { _id: 0, host: "mongo:27017" }
     ]
-  })
-'
+  })' >/dev/null 2>&1; then
+  echo "Failed to initialize replica set"
+  exti 1
+fi
 
-# Keep container running
+until mongosh --eval 'rs.status().ok' | grep -q 1; do  
+  echo "Waiting for replica set to be ready..." 
+  sleep 2
+done
+
 tail -f /dev/null
