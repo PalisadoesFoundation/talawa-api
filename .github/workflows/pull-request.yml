@@ -274,8 +274,10 @@ jobs:
           min_coverage: 95.0
 
   Docker-Check:
+    name: Docker Check
     needs: Test-Application
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -334,7 +336,6 @@ jobs:
             echo "Shutting down MongoDB..."
             docker-compose -f docker-compose.dev.yaml down -v
             exit 1
-
           else
             echo "MongoDB is ready!"
           fi
@@ -351,28 +352,27 @@ jobs:
             docker-compose -f docker-compose.dev.yaml logs redis-stack-server
             echo "Shutting down Redis..."
             docker-compose -f docker-compose.dev.yaml down -v
-            exit 1
-             
+            exit 1    
           else
             echo "Redis is ready!"
           fi
 
-            # Wait for TALAWA API to be healthy 
-            timeout=60
+          # Wait for TALAWA API to be healthy 
+          timeout=60
           until docker-compose -f docker-compose.dev.yaml exec -T talawa-api-dev curl -v -X OPTIONS "http://talawa-api-dev:4000/graphql" 2>&1 || [ $timeout -eq 0 ]; do
             echo "Waiting for API to start... ($timeout seconds remaining)"
             sleep 1
             ((timeout--))
-           done
+          done
 
-           if [ $timeout -eq 0 ]; then
-              echo "Error: API failed to start within timeout"
-              docker-compose -f docker-compose.dev.yaml logs
-              docker-compose -f docker-compose.dev.yaml down -v
-              exit 1
-            fi
+          if [ $timeout -eq 0 ]; then
+            echo "Error: API failed to start within timeout"
+            docker-compose -f docker-compose.dev.yaml logs
+            docker-compose -f docker-compose.dev.yaml down -v
+            exit 1
+          fi
 
-            echo "API started successfully"
+          echo "API started successfully"
 
           # Ensure cleanup runs even if the script fails
           cleanup() {
