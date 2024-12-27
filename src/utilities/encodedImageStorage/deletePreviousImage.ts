@@ -1,5 +1,6 @@
 import { unlink } from "fs/promises";
 import path from "path";
+const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 import { EncodedImage } from "../../models/EncodedImage";
 
 /**
@@ -17,7 +18,7 @@ export const deletePreviousImage = async (
   // Check if the image exists and its numberOfUses is 1
   if (imageToBeDeleted?.numberOfUses === 1) {
     // Delete the image file from the file system
-    await unlink(path.join(__dirname, "../../../" + imageToBeDeleted.fileName));
+    await unlink(path.join(dirname, "../../../" + imageToBeDeleted.fileName));
 
     // Delete the EncodedImage document from the database
     await EncodedImage.deleteOne({

@@ -1,5 +1,7 @@
 import { addYears } from "date-fns";
-import { Frequency, rrulestr } from "rrule";
+import rrule from "rrule";
+//eslint-disable-next-line @typescript-eslint/naming-convention
+const { Frequency, rrulestr } = rrule;
 import type { RRule } from "rrule";
 import {
   RECURRING_EVENT_INSTANCES_DAILY_LIMIT,
