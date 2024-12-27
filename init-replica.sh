@@ -24,4 +24,4 @@ until mongosh --eval 'rs.status().ok' | grep -q 1; do
   sleep 2
 done
 
-tail -f /dev/null
+wait $MONGOD_PID
