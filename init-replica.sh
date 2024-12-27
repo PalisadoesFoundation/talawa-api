@@ -16,7 +16,6 @@ if ! mongosh --eval '
     ]
   })' >/dev/null 2>&1; then
   echo "Failed to initialize replica set"
-  exti 1
 fi
 
 until mongosh --eval 'rs.status().ok' | grep -q 1; do  
