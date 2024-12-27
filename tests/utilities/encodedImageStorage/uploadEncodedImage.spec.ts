@@ -24,6 +24,15 @@ function generateRandomString(size: number): string {
   return result;
 }
 
+vi.mock("fs", async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...actual,
+    existsSync: vi.fn(),
+    mkdir: vi.fn(),
+  };
+});
+
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 });
@@ -140,6 +149,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
   });
 
   it("should not create new image but return the pointer to that binary data and not delete the previous image", async () => {
+    const existsSyncMock = vi.fn();
     const img =
       "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA" +
       "AAADUlEQVR42mN858n7HwAFtgJFXAJi7wAAAABJRU5ErkJggg==";
@@ -147,16 +157,20 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
     const previousImagePath = await uploadEncodedImage(img, null);
 
     const fileName = await uploadEncodedImage(img, previousImagePath);
-    expect(fileName).equals(previousImagePath);
+    expect(fileName).toEqual(previousImagePath);
 
-    let prevImageExists;
-    if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
-      prevImageExists = true;
+    existsSyncMock.mockReturnValue(true);
+    const prevImageExists = existsSyncMock(
+      path.join(__dirname, "../../../".concat(fileName)),
+    );
+
+    expect(prevImageExists).toBe(true);
+
+    if (prevImageExists) {
       fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
         if (err) throw err;
       });
     }
-    expect(prevImageExists).toBe(true);
   });
 
   it("should create new image and return the pointer to that binary data and decrease the previous image count", async () => {
@@ -185,5 +199,31 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
     } catch (error: unknown) {
       console.log(error);
     }
+  });
+
+  it("should create the 'images' directory if it does not exist", async () => {
+    const existsSyncMock = vi.mocked(fs.existsSync);
+    const mkdirMock = vi.mocked(fs.mkdir);
+
+    // Simulate the 'images' directory not existing
+    existsSyncMock.mockReturnValue(false);
+
+    const img =
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0" +
+      "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
+      "3gAAAABJRU5ErkJggg==";
+
+    const fileName = await uploadEncodedImage(img, null);
+
+    expect(existsSyncMock).toHaveBeenCalledWith(
+      path.join(__dirname, "../../../images"),
+    );
+
+    expect(mkdirMock).toHaveBeenCalledWith(
+      path.join(__dirname, "../../../images"),
+      expect.any(Function),
+    );
+
+    expect(fileName).not.toBe(null);
   });
 });

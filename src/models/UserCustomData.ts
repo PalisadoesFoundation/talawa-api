@@ -1,5 +1,6 @@
 import type { Model } from "mongoose";
-import mongoose, { model, models } from "mongoose";
+import mongoose from "mongoose";
+const { model, models } = mongoose;
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 /**
