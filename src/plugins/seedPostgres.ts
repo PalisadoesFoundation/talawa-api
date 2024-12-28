@@ -16,21 +16,35 @@ import { usersTable, usersTableInsertSchema } from "~/src/drizzle/tables/users";
  * fastify.register(seedDatabasePlugin, {});
  */
 const plugin: FastifyPluginAsync = async (fastify) => {
-	const existingAdministrator =
-		await fastify.drizzleClient.query.usersTable.findFirst({
-			columns: {
-				role: true,
-			},
-			where: (fields, operators) =>
-				operators.eq(
-					fields.emailAddress,
-					fastify.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				),
-		});
-
 	fastify.log.info(
 		"Checking if the administrator already exists in the database.",
 	);
+
+	let existingAdministrator:
+		| Pick<typeof usersTable.$inferSelect, "role">
+		| undefined;
+
+	try {
+		existingAdministrator =
+			await fastify.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) =>
+					operators.eq(
+						fields.emailAddress,
+						fastify.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					),
+			});
+	} catch (error) {
+		throw new Error(
+			"Failed to check if the administrator already exists in the database.",
+			{
+				cause: error,
+			},
+		);
+	}
+
 	if (existingAdministrator !== undefined) {
 		fastify.log.info(
 			"Administrator already exists in the database. Skipping, the administrator creation.",
@@ -39,6 +53,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 		fastify.log.info(
 			"Administrator does not exist in the database. Creating the administrator.",
 		);
+
 		const userId = uuidv7();
 		const input: z.infer<typeof usersTableInsertSchema> = {
 			creatorId: userId,
@@ -52,9 +67,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 			role: "administrator",
 		};
 
-		await fastify.drizzleClient
-			.insert(usersTable)
-			.values(usersTableInsertSchema.parse(input));
+		try {
+			await fastify.drizzleClient
+				.insert(usersTable)
+				.values(usersTableInsertSchema.parse(input));
+		} catch (error) {
+			throw new Error("Failed to create the administrator in the database.", {
+				cause: error,
+			});
+		}
 
 		fastify.log.info("Successfully created the administrator in the database.");
 	}

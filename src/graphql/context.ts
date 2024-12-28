@@ -1,6 +1,4 @@
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type { FastifyBaseLogger } from "fastify";
-import type * as drizzleSchema from "~/src/drizzle/schema";
+import type { FastifyInstance } from "fastify";
 import type { usersTable } from "~/src/drizzle/tables/users";
 import type { PubSub } from "./pubsub";
 
@@ -42,11 +40,13 @@ export type CurrentClient =
  */
 export type ExplicitGraphQLContext = {
 	currentClient: CurrentClient;
-	drizzleClient: PostgresJsDatabase<typeof drizzleSchema>;
-	log: FastifyBaseLogger;
+	drizzleClient: FastifyInstance["drizzleClient"];
+	envConfig: Pick<FastifyInstance["envConfig"], "API_BASE_URL">;
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
 	};
+	log: FastifyInstance["log"];
+	minio: FastifyInstance["minio"];
 };
 
 /**

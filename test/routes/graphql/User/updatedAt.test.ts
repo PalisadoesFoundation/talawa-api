@@ -211,10 +211,6 @@ suite("User field updatedAt", () => {
 					},
 				);
 
-				console.log("====================");
-				console.log(userUpdatedAtResult.errors);
-				console.log("====================");
-
 				expect(userUpdatedAtResult.data.user?.updatedAt).toEqual(null);
 				expect(userUpdatedAtResult.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([

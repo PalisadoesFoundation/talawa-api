@@ -12,6 +12,9 @@ services:
       # https://docs.docker.com/reference/compose-file/build/#target
       target: devcontainer
     depends_on:
+      minio:
+        condition: service_healthy
+        required: true
       postgres:
         condition: service_healthy
         required: true
@@ -102,6 +105,28 @@ services:
       - source: cloudbeaver_data
         target: /opt/cloudbeaver/workspace
         type: volume
+  minio:
+    # https://docs.docker.com/reference/compose-file/services/#ports
+    ports:
+      - host_ip: ${MINIO_API_MAPPED_HOST_IP:?error}
+        name: minio_api
+        published: ${MINIO_API_MAPPED_PORT:?error}
+        target: 9000
+      - host_ip: ${MINIO_CONSOLE_MAPPED_HOST_IP:?error}
+        name: minio_console
+        published: ${MINIO_CONSOLE_MAPPED_PORT:?error}
+        target: 9001
+  minio_test:
+    # https://docs.docker.com/reference/compose-file/services/#ports
+    ports:
+      - host_ip: ${MINIO_TEST_API_MAPPED_HOST_IP:?error}
+        name: minio_api
+        published: ${MINIO_TEST_API_MAPPED_PORT:?error}
+        target: 9000
+      - host_ip: ${MINIO_TEST_CONSOLE_MAPPED_HOST_IP:?error}
+        name: minio_console
+        published: ${MINIO_TEST_CONSOLE_MAPPED_PORT:?error}
+        target: 9001
   postgres:
     # https://docs.docker.com/reference/compose-file/services/#ports
     ports:
