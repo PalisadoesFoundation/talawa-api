@@ -4,7 +4,7 @@ import { User, Organization, AppUserProfile } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { FundraisingCampaignPledge } from "../../../src/models/FundraisingCampaignPledge";
@@ -199,5 +199,56 @@ describe("user Query", () => {
       organizationsBlockedBy: [],
       image: user?.image ? `${BASE_URL}${user.image}` : null,
     });
+  });
+
+  it("throws NotFoundError when the specified user ID does not exist", async () => {
+    expect.assertions(2);
+    const nonExistentUserId = new Types.ObjectId().toString();
+    const args = {
+      id: nonExistentUserId,
+    };
+
+    const context = {
+      userId: new Types.ObjectId().toString(),
+    };
+
+    if (typeof userResolver === "function") {
+      try {
+        await userResolver({}, args, context);
+      } catch (error: unknown) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+      }
+    } else {
+      throw new Error("userResolver is not defined");
+    }
+  });
+
+  it("throws NotFoundError when fetching user profile and user is null", async () => {
+    expect.assertions(2);
+    const args = {
+      id: new Types.ObjectId().toString(),
+    };
+
+    const context = {
+      userId: new Types.ObjectId().toString(),
+    };
+
+    // Mock User.findById to return null
+    vi.spyOn(User, "findById").mockResolvedValueOnce(null);
+
+    if (typeof userResolver === "function") {
+      try {
+        await userResolver({}, args, context);
+      } catch (error: unknown) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+      }
+    } else {
+      throw new Error("userResolver is not defined");
+    }
+
+    // Restore original implementation
+    vi.restoreAllMocks();
   });
 });
