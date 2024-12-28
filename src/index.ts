@@ -44,8 +44,8 @@ const httpServer =
   process.env.NODE_ENV === "production"
     ? https.createServer(
         {
-          key: fs.readFileSync(path.join(dirname, "../key.pem")),
-          cert: fs.readFileSync(path.join(dirname, "../cert.pem")),
+          key: fs.readFileSync(path.join(dirname, "../certs/key.pem")),
+          cert: fs.readFileSync(path.join(dirname, "../certs/cert.pem")),
         },
         // :{}
         app,
@@ -54,6 +54,7 @@ const httpServer =
 
 const server = new ApolloServer({
   schema,
+  introspection: true,
   formatError: (
     error: GraphQLFormattedError,
   ): { message: string; status: number; data: string[] } => {
