@@ -52,6 +52,16 @@ export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
     updatedAt: now,
   });
 
+  const unseenMessagesByUsers = JSON.parse(
+    chat.unseenMessagesByUsers as unknown as string,
+  );
+
+  Object.keys(unseenMessagesByUsers).map((user: string) => {
+    if (user !== context.userId) {
+      unseenMessagesByUsers[user] += 1;
+    }
+  });
+
   // add createdChatMessage to Chat
   await Chat.updateOne(
     {
@@ -60,6 +70,10 @@ export const sendMessageToChat: MutationResolvers["sendMessageToChat"] = async (
     {
       $push: {
         messages: createdChatMessage._id,
+      },
+      $set: {
+        unseenMessagesByUsers: JSON.stringify(unseenMessagesByUsers),
+        updatedAt: now,
       },
     },
   );

@@ -1,5 +1,6 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Chat } from "../../models";
+import type { SortOrder } from "mongoose";
 /**
  * This query will fetch all the Chats for the current user from the database.
  * @param _parent-
@@ -13,9 +14,20 @@ export const chatsByUserId: QueryResolvers["chatsByUserId"] = async (
   _parent,
   args,
 ) => {
+  const sort = {
+    updatedAt: -1,
+  } as
+    | string
+    | { [key: string]: SortOrder | { $meta: unknown } }
+    | [string, SortOrder][]
+    | null
+    | undefined;
+
   const chats = await Chat.find({
     users: args.id,
-  }).lean();
+  })
+    .sort(sort)
+    .lean();
 
-  return chats || [];
+  return chats;
 };

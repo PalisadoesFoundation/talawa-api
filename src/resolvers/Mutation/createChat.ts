@@ -36,10 +36,6 @@ export const createChat: MutationResolvers["createChat"] = async (
     }
   }
 
-  // const userExists = (await User.exists({
-  //   _id: { $in: args.data.userIds },
-  // })) as unknown as string[];
-
   const userExists = await User.find({
     _id: { $in: args.data.userIds },
   }).lean();
@@ -54,6 +50,13 @@ export const createChat: MutationResolvers["createChat"] = async (
 
   const now = new Date();
 
+  const unseenMessagesByUsers = JSON.stringify(
+    args.data.userIds.reduce((unseenMessages: Record<string, number>, user) => {
+      unseenMessages[user] = 0;
+      return unseenMessages;
+    }, {}),
+  );
+
   const chatPayload = args.data.isGroup
     ? {
         isGroup: args.data.isGroup,
@@ -65,6 +68,7 @@ export const createChat: MutationResolvers["createChat"] = async (
         createdAt: now,
         updatedAt: now,
         image: args.data.image,
+        unseenMessagesByUsers,
       }
     : {
         creatorId: context.userId,
@@ -72,6 +76,7 @@ export const createChat: MutationResolvers["createChat"] = async (
         isGroup: args.data.isGroup,
         createdAt: now,
         updatedAt: now,
+        unseenMessagesByUsers,
       };
 
   const createdChat = await Chat.create(chatPayload);
