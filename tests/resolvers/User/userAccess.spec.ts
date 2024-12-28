@@ -251,4 +251,27 @@ describe("user Query", () => {
     // Restore original implementation
     vi.restoreAllMocks();
   });
+
+  it("throws NotFoundError when fetching user profile and user is null", async () => {
+    expect.assertions(2);
+
+    const args = { id: new Types.ObjectId().toString() };
+    const context = { userId: new Types.ObjectId().toString() };
+
+    // Mock User.findById to return null
+    vi.spyOn(User, "findById").mockResolvedValueOnce(null);
+
+    if (typeof userResolver === "function") {
+      try {
+        await userResolver({}, args, context);
+      } catch (error: unknown) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+      }
+    } else {
+      throw new Error("userResolver is undefined");
+    }
+
+    vi.restoreAllMocks();
+  });
 });
