@@ -111,7 +111,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
   }
 
   // Check if the venue name provided is an empty string.
-  if (!args.data?.name ?? "") {
+  if (!(args.data?.name ?? "")) {
     throw new errors.InputValidationError(
       requestContext.translate(VENUE_NAME_MISSING_ERROR.MESSAGE),
       VENUE_NAME_MISSING_ERROR.CODE,

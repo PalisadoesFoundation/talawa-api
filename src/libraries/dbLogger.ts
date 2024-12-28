@@ -27,10 +27,18 @@ if (LOG && LOG_PATH) {
     level: "info",
     format: winston.format.printf((logEntry) => {
       let logMessage = `timestamp=${logEntry.timestamp}, model=${logEntry.model}, type=${logEntry.type}`;
-      if (logEntry.update && logEntry.update.length > 0) {
+      if (
+        logEntry.update &&
+        typeof logEntry.update === "string" &&
+        logEntry.update.length > 0
+      ) {
         logMessage += `, update=${logEntry.update}`;
       }
-      if (logEntry.query && logEntry.query.length > 0) {
+      if (
+        logEntry.query &&
+        typeof logEntry.query === "string" &&
+        logEntry.query.length > 0
+      ) {
         logMessage += `, query=${logEntry.query}`;
       }
       return logMessage;

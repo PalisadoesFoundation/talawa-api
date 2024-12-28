@@ -5,7 +5,6 @@ import {
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
-  USER_REMOVING_SELF,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceOrganization } from "../../models";
@@ -13,7 +12,6 @@ import { Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { adminCheck } from "../../utilities";
 /**
  * This function enables to remove a member.
  * @param _parent - parent of current request
@@ -29,7 +27,6 @@ import { adminCheck } from "../../utilities";
 export const removeMember: MutationResolvers["removeMember"] = async (
   _parent,
   args,
-  context,
 ) => {
   let organization: InterfaceOrganization;
 
@@ -55,13 +52,6 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     );
   }
 
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
-
-  // Checks whether current user making the request is an admin of organization.
-  await adminCheck(context.userId, organization);
-
   const user = await User.findOne({
     _id: args.data.userId,
   }).lean();
@@ -84,15 +74,6 @@ export const removeMember: MutationResolvers["removeMember"] = async (
       requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
       MEMBER_NOT_FOUND_ERROR.CODE,
       MEMBER_NOT_FOUND_ERROR.PARAM,
-    );
-  }
-
-  // Check if the current user is removing self
-  if (user._id.equals(currentUser?._id)) {
-    throw new errors.ConflictError(
-      requestContext.translate(USER_REMOVING_SELF.MESSAGE),
-      USER_REMOVING_SELF.CODE,
-      USER_REMOVING_SELF.PARAM,
     );
   }
 
@@ -163,6 +144,5 @@ export const removeMember: MutationResolvers["removeMember"] = async (
       },
     },
   );
-
   return organization ?? ({} as InterfaceOrganization);
 };
