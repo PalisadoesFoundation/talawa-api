@@ -21,7 +21,7 @@ Restart=always
 # The delay before restarting the service.
 RestartSec=5
 
-# The user to run the service as. You can find your username by running 'whoami'.Create a user named talawa for better understanding and Security
+# The user to run the service as. You can find your username by running 'whoami'.Create a user named `talawa` for better understanding and Security
 User=talawa
 
 # The group to run the service as. Usually, this is the same as the username.

@@ -126,7 +126,7 @@ if [ ! -f ".env" ]; then
   echo "Error: '.env' file not found. Exiting." | tee -a "$LOG_FILE"
   exit 1
 fi
-echo ".env file found in "$pwd" directory. Proceeding..." | tee -a "$LOG_FILE"
+echo ".env file found in $pwd directory. Proceeding..." | tee -a "$LOG_FILE"
 
 # Load environment variables from .env file securely
 while IFS= read -r line || [ -n "$line" ]; do
@@ -146,10 +146,10 @@ echo "Environment variable 'NODE_ENV' is set to '$NODE_ENV'. Proceeding..." | te
   # Check the value of NODE_ENV and execute the corresponding command
   if [ "$NODE_ENV" == "development" ]; then
       echo "Starting Talawa API in development mode..." | tee -a "$LOG_FILE"
-      exec $TSX_PATH $DEV_PATH
+      exec "$TSX_PATH" "$DEV_PATH"
   elif [ "$NODE_ENV" == "production" ]; then
       echo "Starting Talawa API in production mode..." | tee -a "$LOG_FILE"
-      exec $TSX_PATH $PROD_PATH
+      exec "$TSX_PATH" "$PROD_PATH"
   else
       echo "NODE_ENV is not set to a valid value. Please set it to 'development' or 'production'. Exiting." | tee -a "$LOG_FILE"
       exit 1
