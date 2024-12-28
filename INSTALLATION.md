@@ -15,7 +15,7 @@ This document provides instructions on how to set up and start a running instanc
   - [Install node.js](#install-nodejs)
   - [Install TypeScript](#install-typescript)
   - [Install Required Packages](#install-required-packages)
-- [Installation Using Devpod](#install-using-devpod)
+ - [Installation Using Devpod](#install-using-devpod) 
 - [Installation Using Docker](#installation-using-docker)
   - [Run the Talawa-API Setup](#run-the-talawa-api-setup)
   - [Install the Docker Application](#install-the-docker-application)
@@ -158,14 +158,13 @@ This document provides instructions on how to set up and start a running instanc
     - [User Accounts and Organizations:](#user-accounts-and-organizations)
     - [Posts](#posts)
     - [Events](#events)
-- [Running Talawa-API in development](#running-talawa-api-in-development)
+- [Running Talawa-API](#running-talawa-api)
 - [How to Access the Talawa-API URL](#how-to-access-the-talawa-api-url)
   - [For Talawa-API Developers](#for-talawa-api-developers)
   - [For Mobile App Developers](#for-mobile-app-developers)
     - [On Android Virtual Device](#on-android-virtual-device)
     - [On a Real Mobile Device](#on-a-real-mobile-device)
   - [For Talawa-Admin Developers](#for-talawa-admin-developers)
-  - [Running Talawa-API in production](#running-talawa-api-in-production)
 - [Accessing MongoDB](#accessing-mongodb)
   - [Managing MongoDB using the MongoDB Compass GUI](#managing-mongodb-using-the-mongodb-compass-gui)
   - [Managing MongoDB using the VSCode extension](#managing-mongodb-using-the-vscode-extension)
@@ -314,7 +313,6 @@ We have created a setup script to make configuring Talawa-API easier.
 ```
 npm run setup
 ```
-
 # Install Using Devpod
 
 This guide provides a step-by-step guide to setting up a Talawa-Api server using Devpod.
@@ -322,17 +320,14 @@ This guide provides a step-by-step guide to setting up a Talawa-Api server using
 ## Setting Up Talawa-Api with Devpod (CLI Version)
 
 1. **Install Devpod CLI**:
-
    - Download and install the Devpod CLI from [Devpod CLI Installation Guide](https://devpod.sh/docs/getting-started/install#optional-install-devpod-cli).
 
 2. **Add a Provider**:
-
    - Use Docker or a compatible provider like Podman or Colima.
    - Install Docker from their [official documentation](https://docs.docker.com/engine/install/).
    - Add a provider using the CLI by following [this guide](https://devpod.sh/docs/getting-started/quickstart-devpod-cli#add-a-provider).
 
 3. **Create a Workspace**:
-
    - Run the following command in your terminal to start the workspace:
      ```bash
      devpod up https://github.com/PalisadoesFoundation/talawa-api@develop
@@ -340,7 +335,6 @@ This guide provides a step-by-step guide to setting up a Talawa-Api server using
    - For more information on creating a workspace, refer to the [Devpod CLI workspace guide](https://devpod.sh/docs/developing-in-workspaces/create-a-workspace#git-repository).
 
 4. **Select Your IDE**:
-
    - To choose your ide refer to [Devpod CLI ide guide](https://devpod.sh/docs/developing-in-workspaces/connect-to-a-workspace#vs-code)
 
 5. **Set Up Talawa-Api**:
@@ -356,17 +350,14 @@ This guide provides a step-by-step guide to setting up a Talawa-Api server using
 ## Setting Up Talawa-Api with Devpod (GUI Version)
 
 1. **Install Devpod GUI Application**:
-
    - Download and install the Devpod GUI from [Devpod GUI Installation Guide](https://devpod.sh/docs/getting-started/install).
 
 2. **Add a Provider**:
-
    - Use Docker or a compatible provider like Podman or Colima.
    - Install Docker from their [official documentation](https://docs.docker.com/engine/install/).
    - Add a provider using the GUI app by following [this guide](https://devpod.sh/docs/getting-started/quickstart-vscode#add-a-provider).
 
 3. **Create a Workspace**:
-
    - Open the Devpod GUI application.
    - Start a new workspace by entering the following URL in the GUI:
      ```
@@ -375,7 +366,6 @@ This guide provides a step-by-step guide to setting up a Talawa-Api server using
    - For more information on starting a workspace in the GUI, refer to [this guide](https://devpod.sh/docs/getting-started/quickstart-vscode#start-a-workspace-with-vs-code).
 
 4. **Select Your IDE**:
-
    - In the Devpod GUI, select your desired IDE from the available options.
 
 5. **Set Up Talawa-Api**:
@@ -387,6 +377,8 @@ This guide provides a step-by-step guide to setting up a Talawa-Api server using
      ```bash
      npm run dev
      ```
+
+
 
 ## Install the Docker Application
 
@@ -1086,7 +1078,7 @@ There is one post inside the `The Unity Foundation`
 
 There is one event inside the `The Unity Foundation`
 
-# Running Talawa-API in development
+# Running Talawa-API
 
 Talawa-api development server runs two processes simultaneously in the background. They are:
 
@@ -1171,40 +1163,6 @@ The Organization URL for Talawa mobile app developers to use is:
 ```
 http://localhost:4000/graphql/
 ```
-
-## Running Talawa-API in production
-
-To run Talawa-API in production, follow these steps:
-
-1. **Build the Project**: Build the project for production:
-
-   ```
-   npm run build
-   ```
-
-2. **Generate SSL Certificates**: Generate SSL certificates for secure communication. You can run the following command or generate one yourself using OpenSSL and add them to the certs directory.
-
-   ```
-   npm run generate:ssl-private-key
-   ```
-
-3. **Start the Server**: Start the server in production mode:
-
-   ```
-   npm run prod
-   ```
-
-4. **Verify the Server**: Verify that the server is running by accessing the following URLs in your browser:
-
-   ```
-   https://localhost:4000/
-   ```
-
-   The graphQL endpoint for handling `queries` and `mutations` is this:
-
-   ```
-   https://localhost:4000/graphql/
-   ```
 
 # Accessing MongoDB
 
