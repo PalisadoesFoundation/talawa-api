@@ -1,5 +1,6 @@
 import { createWriteStream } from "fs";
 import path from "path";
+const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 import { nanoid } from "nanoid";
 import { logger } from "../libraries";
 import { imageAlreadyInDbCheck } from "./imageAlreadyInDbCheck";
@@ -37,7 +38,7 @@ export const uploadImage = async (
     createReadStream()
       .pipe(
         createWriteStream(
-          path.join(__dirname, "../../images", `/${id}-${filename}`),
+          path.join(dirname, "../../images", `/${id}-${filename}`),
         ),
       )
       .on("close", resolve)

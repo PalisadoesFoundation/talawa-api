@@ -5,7 +5,7 @@ import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
 import type { ExecException } from "child_process";
-import { exec, spawn } from "child_process";
+import { exec, spawn, execSync } from "child_process";
 import { MongoClient } from "mongodb";
 import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
 import {
@@ -466,6 +466,25 @@ export async function mongoDB(): Promise<void> {
   For Docker setup
 */
 
+function getDockerComposeCommand(): { command: string; args: string[] } {
+  let dockerComposeCmd = "docker-compose"; // Default to v1
+  let args = ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"];
+
+  try {
+    // Test if 'docker compose' works (v2)
+    execSync("docker compose version", { stdio: "ignore" });
+    dockerComposeCmd = "docker";
+    args = ["compose", ...args]; // Prefix 'compose' for v2
+  } catch (error) {
+    console.log(error);
+    dockerComposeCmd =
+      process.platform === "win32" ? "docker-compose.exe" : "docker-compose";
+  }
+
+  return { command: dockerComposeCmd, args };
+}
+
+const DOCKER_COMPOSE_TIMEOUT_MS = 300000;
 async function runDockerComposeWithLogs(): Promise<void> {
   // Check if Docker daemon is running
   try {
@@ -479,35 +498,47 @@ async function runDockerComposeWithLogs(): Promise<void> {
       dockerCheck.on("close", (code) =>
         code === 0
           ? resolve(null)
-          : reject(new Error("Docker daemon not running")),
+          : reject(
+              new Error(
+                "Docker daemon not running. Please ensure Docker Desktop is running and try again.",
+              ),
+            ),
       );
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
-      `Docker daemon is not running. Please start Docker and try again. Details: ${errorMessage}`,
+      `Docker daemon check failed. Please ensure:
+       1. Docker Desktop is installed and running
+       2. You have necessary permissions
+       3. Docker service is healthy
+       Details: ${errorMessage}`,
     );
   }
 
   return new Promise((resolve, reject) => {
+    const { command, args } = getDockerComposeCommand();
+    let isCompleted = false;
+
+    const dockerCompose = spawn(command, args, { stdio: "inherit" });
+
     const timeout = setTimeout(() => {
+      if (isCompleted) return;
       dockerCompose.kill();
       reject(new Error("Docker compose operation timed out after 5 minutes"));
-    }, 300000);
-
-    const dockerCompose = spawn(
-      process.platform === "win32" ? "docker-compose.exe" : "docker-compose",
-      ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"],
-      { stdio: "inherit" },
-    );
+    }, DOCKER_COMPOSE_TIMEOUT_MS);
 
     dockerCompose.on("error", (error) => {
+      if (isCompleted) return;
+      isCompleted = true;
       clearTimeout(timeout);
       console.error("Error running docker-compose:", error);
       reject(error);
     });
 
     dockerCompose.on("close", (code) => {
+      if (isCompleted) return;
+      isCompleted = true;
       clearTimeout(timeout);
       if (code === 0) {
         console.log("Docker Compose completed successfully.");
