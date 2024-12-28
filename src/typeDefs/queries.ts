@@ -52,7 +52,11 @@ export const queries = gql`
 
     chatById(id: ID!): Chat!
 
-    chatsByUserId(id: ID!): [Chat]
+    chatsByUserId(id: ID!, where: ChatWhereInput): [Chat]
+
+    getUnreadChatsByUserId: [Chat]
+
+    getGroupChatsByUserId: [Chat]
 
     event(id: ID!): Event
 

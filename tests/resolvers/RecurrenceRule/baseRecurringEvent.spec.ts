@@ -55,6 +55,7 @@ describe("resolvers -> RecurrenceRule -> baseRecurringEvent", () => {
         startDate,
         endDate,
         title: "newTitle",
+        createChat: true,
       },
       recurrenceRuleData: {
         recurrenceStartDate: startDate,

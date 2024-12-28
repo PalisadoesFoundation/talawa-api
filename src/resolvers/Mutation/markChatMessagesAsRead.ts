@@ -1,17 +1,21 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceChat } from "../../models";
 import { Chat, User } from "../../models";
-import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import {
+  CHAT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
 /**
- /**
- * This function marks all messages as read for the current user in a chat.
+ * This function enables to send message to direct chat.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the direct chat exists.
  * 2. If the user exists
- * @returns Updated chat object.
+ * @returns Direct chat message.
  */
 export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"] =
   async (_parent, args, context) => {
@@ -27,9 +31,9 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
       );
     }
 
-    const currentUserExists = await User.exists({
+    const currentUserExists = !!(await User.exists({
       _id: context.userId,
-    }).lean();
+    }));
 
     if (!currentUserExists) {
       throw new errors.NotFoundError(
@@ -39,13 +43,28 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
       );
     }
 
+    //check if the user is member of the chat
+    const isMember = chat.users
+      .map((user) => user.toString())
+      .includes(context.userId);
+
+    if (!isMember) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM,
+      );
+    }
+
     const unseenMessagesByUsers = JSON.parse(
       chat.unseenMessagesByUsers as unknown as string,
     );
 
-    if (unseenMessagesByUsers[context.userId] !== undefined) {
-      unseenMessagesByUsers[context.userId] = 0;
-    }
+    Object.keys(unseenMessagesByUsers).map((user: string) => {
+      if (user === context.userId) {
+        unseenMessagesByUsers[user] = 0;
+      }
+    });
 
     const updatedChat = await Chat.findByIdAndUpdate(
       {
@@ -56,7 +75,18 @@ export const markChatMessagesAsRead: MutationResolvers["markChatMessagesAsRead"]
           unseenMessagesByUsers: JSON.stringify(unseenMessagesByUsers),
         },
       },
-    );
+      {
+        new: true,
+      },
+    ).lean();
 
-    return updatedChat;
+    if (!updatedChat) {
+      throw new errors.NotFoundError(
+        requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+        CHAT_NOT_FOUND_ERROR.CODE,
+        CHAT_NOT_FOUND_ERROR.PARAM,
+      );
+    }
+
+    return updatedChat as InterfaceChat;
   };

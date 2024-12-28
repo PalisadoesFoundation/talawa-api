@@ -11,8 +11,12 @@ import { CHAT_NOT_FOUND_ERROR } from "../../constants";
  * @remarks You can learn about GraphQL `Resolvers`
  * {@link https://www.apollographql.com/docs/apollo-server/data/resolvers/ | here}.
  */
-export const chatById: QueryResolvers["chatById"] = async (_parent, args) => {
-  const chat = await Chat.findById(args.id).lean();
+export const chatById: QueryResolvers["chatById"] = async (
+  _parent,
+  args,
+  context,
+) => {
+  let chat = await Chat.findById(args.id).lean();
 
   if (!chat) {
     throw new errors.NotFoundError(
@@ -20,6 +24,10 @@ export const chatById: QueryResolvers["chatById"] = async (_parent, args) => {
       CHAT_NOT_FOUND_ERROR.CODE,
       CHAT_NOT_FOUND_ERROR.PARAM,
     );
+  }
+
+  if (chat.isGroup && chat.image) {
+    chat = { ...chat, image: `${context.apiRootUrl}${chat.image}` };
   }
 
   return chat;

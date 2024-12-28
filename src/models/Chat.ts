@@ -13,6 +13,7 @@ export interface InterfaceChat {
   _id: Types.ObjectId;
   isGroup: boolean;
   name: string;
+  image: string;
   users: PopulatedDoc<InterfaceUser & Document>[];
   messages: PopulatedDoc<InterfaceChatMessage & Document>[];
   creatorId: PopulatedDoc<InterfaceUser & Document>;

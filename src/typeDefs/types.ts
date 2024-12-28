@@ -825,8 +825,21 @@ export const types = gql`
     chatMessageBelongsTo: Chat!
     replyTo: ChatMessage
     messageContent: String!
+    media: String
     sender: User!
     deletedBy: [User]
     updatedAt: DateTime!
+  }
+
+  input UpdateChatInput {
+    _id: ID!
+    name: String
+    image: String
+  }
+
+  input UpdateChatMessageInput {
+    chatId: ID!
+    messageContent: String!
+    messageId: ID!
   }
 `;
