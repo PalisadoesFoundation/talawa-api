@@ -4,63 +4,154 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 
 ## Prerequisites
 
-- Node.js (version 20.18.0 or current version the app is running on) (Ensure the Linux Node.js version matches the app version)
-- nvm (Node Version Manager)
-- tsx (TypeScript execution environment should be installed globally. Command : npm install -g tsx )
-- A Linux system with systemd
-- For development, first run manually to see if it is working. Check the `.env` file to ensure `NODE_ENV` is set to `development`.
-- For production, first build the app to generate the `dist` folder, then set `NODE_ENV` to `production`.
-- Ensure you provide the correct paths for each configuration to avoid errors.
-- The service dynamically starts the development and production server based on the `.env` configuration, so verify it before making any changes.
-- Always check the log files to identify errors.
+- **fnm** (Fast Version Manager)
+- **Node.js** (version specified in your Talawa API's `package.json`)
+- **tsx** (TypeScript execution environment, install globally with `npm install -g tsx`)
+- A Linux system with **systemd**
+- **Root access** or `sudo` privileges for service installation
+- **Dedicated system user** `talawa` for running the service (security best practice)
+- **MongoDB** installed and running (required for Talawa API)
+- **Redis** installed and running (required for Talawa API)
+- Proper file permissions on `/usr/local/talawa-api` directory . Where your talawa-api is installed.
+- For development:
+  - Ensure `.env` file sets `NODE_ENV=development`.
+  - Run the service manually to verify functionality.
+- For production:
+  - Build the app to generate the `dist` folder.
+  - Ensure `.env` file sets `NODE_ENV=production`.
+- **Log file setup**:
+  - Ensure a log file exists at `/var/log/talawa-api.log` with appropriate permissions and ownership.
+- Verify Node.js version in your system matches the version required by `package.json`.
+- Install `jq` for parsing JSON data (`sudo apt install jq` or equivalent).
 
 ## Steps
 
-1. **Create the Systemd Service File**:
-   - Create a file named `talawa-api.service` in the `/etc/systemd/system` directory. Ensure you have root privileges.
+### 1. Create a Dedicated System User
 
-2. **Edit the `talawa-api.service` File**:
-   - Modify the `talawa-api.service` file as required (e.g., `ExecStart`, `WorkingDirectory`, `User`, `Group`). You can find how to edit these fields in the `talawa-api.service` file located in `example/linux/systemd`.
+- Create a user named `talawa` for running the service:
+  ```bash
+  sudo adduser --system --no-create-home --group talawa
+  ```
+- Verify the user creation:
+  ```bash
+  id talawa
+  ```
 
-3. **Copy the Configuration**:
-   - Copy the text into the `talawa-api.service` file located in `/etc/systemd/system` and save it.
+### 2. Create the Systemd Service File
 
-4. **Edit the `Talawa-api.sh` Script**:
-   - Edit the `Talawa-api.sh` script to set the project directory and log file path:
-   
-     ```bash
-     # Change to the project directory
-     cd /usr/local/talawa-api
+- Create the `talawa-api.service` file in the `/etc/systemd/system/` directory with root privileges.
+- Update the following placeholders with actual paths:
+  - `ExecStart` (path to your `Talawa-api.sh` script).
+  - `WorkingDirectory` (root directory of your Talawa API project).
+- Refer to the example in `example/linux/systemd/talawa-api.service` for guidance.
+- Copy talawa-api.service edit the path name then paste it inside `/etc/systemd/system/`
+- Make sure `talawa-api.service` should be executable.
 
-     # Define log file
-     LOG_FILE="/var/log/talawa-api.log"
-     ```
+### 3. Set Up the `Talawa-api.sh` Script
 
-## Commands to Follow in Sequence
+- Edit the script to specify:
+  - **Project directory** (e.g., `/usr/local/talawa-api`)
+  - **Log file path** (e.g., `/var/log/talawa-api.log`)
+  - Ensure that the development (`src/index.ts`) and production (`dist/index.js`) paths are correctly set.
+  - Make sure `Talawa-api.sh` should be executable
 
-1. **Reload the Systemd Configuration**:
+### 4. Configure the Environment
+
+- Ensure the `.env` file exists in the project directory and contains the appropriate configuration.
+- Add the following environment variables:
+  - `NODE_ENV=development` or `NODE_ENV=production`.
+
+### 5. Verify Log File and Permissions
+
+- Create the log file if it does not exist:
+  ```bash
+  sudo touch /var/log/talawa-api.log
+  sudo chown talawa:talawa /var/log/talawa-api.log
+  sudo chmod 664 /var/log/talawa-api.log
+  ```
+- Ensure the log file owner matches the service user (e.g., `talawa`).
+
+### 6. Install Dependencies
+
+- Install required Node.js version with `fnm`:
+  ```bash
+  fnm install <node_version>
+  fnm use <node_version>
+  ```
+  Replace `<node_version>` with the version specified in `package.json` (`engines.node`).
+- Install dependencies:
+  ```bash
+  npm install
+  ```
+- Globally install `tsx` if not already installed:
+  ```bash
+  npm install -g tsx
+  ```
+- Install `jq`:
+  ```bash
+  sudo apt install jq
+  ```
+
+### 7. Enable and Start the Service
+
+1. Reload the systemd configuration:
+   ```bash
    sudo systemctl daemon-reload
-
-2. **Enable the Talawa API Service (required the first time):**:
+   ```
+2. Enable the service:
+   ```bash
    sudo systemctl enable talawa-api.service
-
-3. **Start the Talawa API Service:**:
+   ```
+3. Start the service:
+   ```bash
    sudo systemctl start talawa-api.service
+   ```
 
-4. **Check the Status of the Talawa API Service:**:
-   sudo systemctl status talawa-api.service
+### 8. Verify the Installation
 
-5. **View the Logs in Real-Time**:
-   sudo journalctl -u talawa-api.service -f
+- Check the status of the service:
+  ```bash
+  sudo systemctl status talawa-api.service
+  ```
+- View logs in real-time:
+  ```bash
+  sudo journalctl -u talawa-api.service -f
+  ```
+- Check for errors:
+  ```bash
+  sudo journalctl -u talawa-api.service -p err
+  ```
+- Verify the service configuration:
+  ```bash
+  sudo systemd-analyze verify talawa-api.service
+  ```
+- Verify service dependencies:
+  ```bash
+  sudo systemctl list-dependencies talawa-api.service
+  ```
 
-6. **Stop the Talawa API Service:**:
-   sudo systemctl stop talawa-api.service
+## Notes
 
-7. **Restart the Talawa API Service:**:
-   sudo systemctl restart talawa-api.service
+- Ensure the `Talawa-api.sh` script has executable permissions:
+  ```bash
+  chmod +x /path/to/Talawa-api.sh
+  ```
+- Adjust `LimitNOFILE` and security-related settings in the `talawa-api.service` file as needed for your environment.
+- For production, ensure the `dist` folder exists by running:
+  ```bash
+  npm run build
+  ```
+- If you encounter any issues, refer to the logs in `/var/log/talawa-api.log` or use `journalctl`.
 
-8. **Also, you can see direct log stored in /var/log/talawa-api.log :**:
-   sudo cat /var/log/talawa-api.log
+### Additional Steps for Troubleshooting
 
-
-    
+1. Verify Node.js and `tsx` installation:
+   ```bash
+   node -v
+   tsx -v
+   ```
+2. Ensure MongoDB and Redis are running:
+   ```bash
+   sudo systemctl status mongod
+   sudo systemctl status redis
+   ```
