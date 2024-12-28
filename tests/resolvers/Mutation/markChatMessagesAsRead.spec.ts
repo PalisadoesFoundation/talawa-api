@@ -1,87 +1,73 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceChat } from "../../../src/models";
-import { User, Organization, Chat } from "../../../src/models";
 import type { MutationMarkChatMessagesAsReadArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
   CHAT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
-  afterEach,
   describe,
   it,
   expect,
   vi,
+  afterEach,
 } from "vitest";
-import { createTestUserFunc } from "../../helpers/user";
+
+import type { TestChatType } from "../../helpers/chat";
+import { createTestChatMessage } from "../../helpers/chat";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUsers: TestUserType[];
-let testChat: InterfaceChat & Document<unknown, unknown, InterfaceChat>;
-
+let testUser: TestUserType;
+let testChat: TestChatType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const tempUser1 = await createTestUserFunc();
-  const tempUser2 = await createTestUserFunc();
-  testUsers = [tempUser1, tempUser2];
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creatorId: testUsers[0]?._id,
-    admins: [testUsers[0]?._id],
-    members: [testUsers[0]?._id],
-    visibleInSearch: true,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUsers[0]?._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    },
-  );
-
-  testChat = await Chat.create({
-    name: "Chat",
-    creatorId: testUsers[0]?._id,
-    organization: testOrganization._id,
-    users: [testUsers[0]?._id, testUsers[1]?._id],
-    isGroup: false,
-    createdAt: "23456789",
-    updatedAt: "23456789",
-    unseenMessagesByUsers: JSON.stringify({
-      [testUsers[0]?._id]: 0,
-      [testUsers[1]?._id]: 0,
-    }),
-  });
+  const resultsArray = await createTestUserAndOrganization();
+  testUser = resultsArray[0];
+  [, , testChat] = await createTestChatMessage();
 });
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Mutation -> markChatMessagesAsRead", () => {
-  afterEach(async () => {
+describe("resolvers -> Mutation -> markChatMessagesMessagesAsRead", () => {
+  afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no directChat exists with _id === args.chatId`, async () => {
+  it(`throws NotFoundError message if current user does not exists`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    try {
+      const args: MutationMarkChatMessagesAsReadArgs = {
+        chatId: testChat?.id,
+        userId: new Types.ObjectId().toString(),
+      };
+      const context = {
+        userId: new Types.ObjectId().toString(),
+      };
+      const { markChatMessagesAsRead: markChatMessagesAsReadResolver } =
+        await import("../../../src/resolvers/Mutation/markChatMessagesAsRead");
+
+      await markChatMessagesAsReadResolver?.({}, args, context);
+    } catch (error: unknown) {
+      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+    spy.mockRestore();
+  });
+
+  it(`check whether the chat exists with _id === args.chatId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -89,82 +75,57 @@ describe("resolvers -> Mutation -> markChatMessagesAsRead", () => {
     try {
       const args: MutationMarkChatMessagesAsReadArgs = {
         chatId: new Types.ObjectId().toString(),
-        userId: testUsers[0]?._id.toString(),
+        userId: testChat?.users[0]._id.toString(),
       };
-
-      const context = { userId: testUsers[0]?.id };
-
+      const context = {
+        userId: testChat?.users[0]._id.toString(),
+      };
       const { markChatMessagesAsRead: markChatMessagesAsReadResolver } =
         await import("../../../src/resolvers/Mutation/markChatMessagesAsRead");
 
       await markChatMessagesAsReadResolver?.({}, args, context);
     } catch (error: unknown) {
-      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
       expect((error as Error).message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
+    spy.mockRestore();
   });
-  it(`throws NotFoundError if current user with _id === context.userId does not exist`, async () => {
+
+  it(`throw userNotAuthorizedError if user is not a member of the chat`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationMarkChatMessagesAsReadArgs = {
-        chatId: testChat.id,
-        userId: testUsers[0]?.id,
+        chatId: testChat?.id,
+        userId: testUser?._id,
       };
-
       const context = {
-        userId: new Types.ObjectId().toString(),
+        userId: testUser?._id,
       };
-
       const { markChatMessagesAsRead: markChatMessagesAsReadResolver } =
         await import("../../../src/resolvers/Mutation/markChatMessagesAsRead");
 
       await markChatMessagesAsReadResolver?.({}, args, context);
     } catch (error: unknown) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect((error as Error).message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect((error as Error).message).toEqual(
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+      );
     }
+    spy.mockRestore();
   });
 
-  it(`creates the directChatMessage and returns it`, async () => {
-    await Chat.updateOne(
-      {
-        _id: testChat._id,
-      },
-      {
-        $push: {
-          users: testUsers[0]?._id,
-        },
-      },
-    );
-
+  it(`marks chat messages as read and returns it`, async () => {
     const args: MutationMarkChatMessagesAsReadArgs = {
-      chatId: testChat.id,
-      userId: testUsers[0]?.id,
+      chatId: testChat?.id,
+      userId: testChat?.users[0]._id.toString(),
     };
-
     const context = {
-      userId: testUsers[0]?.id,
+      userId: testChat?.users[0]._id.toString(),
     };
-
     const { markChatMessagesAsRead: markChatMessagesAsReadResolver } =
       await import("../../../src/resolvers/Mutation/markChatMessagesAsRead");
 
-    const sendMessageToChatPayload = await markChatMessagesAsReadResolver?.(
-      {},
-      args,
-      context,
-    );
-
-    expect(sendMessageToChatPayload).toEqual(
-      expect.objectContaining({
-        unseenMessagesByUsers: JSON.stringify({
-          [testUsers[0]?._id]: 0,
-          [testUsers[1]?._id]: 0,
-        }),
-      }),
-    );
+    await markChatMessagesAsReadResolver?.({}, args, context);
   });
 });

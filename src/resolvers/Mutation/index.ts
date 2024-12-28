@@ -119,6 +119,9 @@ import { updateVolunteerMembership } from "./updateVolunteerMembership";
 import { createNote } from "./createNote";
 import { deleteNote } from "./deleteNote";
 import { updateNote } from "./updateNote";
+import { addUserToGroupChat } from "./addUserToGroupChat";
+import { updateChat } from "./updateChat";
+import { updateChatMessage } from "./updateChatMessage";
 
 export const Mutation: MutationResolvers = {
   acceptMembershipRequest,
@@ -241,4 +244,7 @@ export const Mutation: MutationResolvers = {
   createFundraisingCampaignPledge,
   removeFundraisingCampaignPledge,
   markChatMessagesAsRead,
+  addUserToGroupChat,
+  updateChat,
+  updateChatMessage,
 };
