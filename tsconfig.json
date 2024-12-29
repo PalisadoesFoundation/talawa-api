@@ -8,6 +8,7 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "resolveJsonModule": true /* Allow to import JSON files */,
     "moduleResolution": "node",
-    "noUncheckedSideEffectImports": true /* Checks if module's path exists. */
+    "noUncheckedSideEffectImports": true /* Checks if module's path exists. */,
+    "types": ["vitest"] /* Type declaration files to be included in compilation. */
   }
 }
