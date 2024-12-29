@@ -15,6 +15,7 @@ export interface InterfaceChatMessage {
   sender: PopulatedDoc<InterfaceUser & Document>;
   replyTo: PopulatedDoc<InterfaceChatMessage & Document>;
   messageContent: string;
+  media: string;
   status: string;
   deletedBy: PopulatedDoc<InterfaceUser & Document>[];
   createdAt: Date;
@@ -68,7 +69,11 @@ const chatMessageSchema = new Schema(
     },
     messageContent: {
       type: String,
-      required: true,
+      required: false,
+    },
+    media: {
+      type: String,
+      required: false,
     },
     status: {
       type: String,
