@@ -386,7 +386,7 @@ jobs:
     env:
       HEALTH_CHECK_URL: http://localhost:4000
       COMPOSE_PROJECT_NAME: pr-${{ github.event.pull_request.number }}
-      MONGO_DB_URL: mongodb://mongodb:27017/talawa-test-db
+      MONGO_DB_URL: mongodb://mongo:27017?replicaSet=rs0
       REDIS_HOST: redis-stack-server
       REDIS_PORT: 6379
       ACCESS_TOKEN_SECRET: ${{ secrets.GITHUB_TOKEN }}_${{ github.run_id }}_${{ github.run_number }}
