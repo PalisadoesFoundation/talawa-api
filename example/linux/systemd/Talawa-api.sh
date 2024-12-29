@@ -10,7 +10,7 @@ PROD_PATH="dist/index.js"
 # Check if the log file exists
 if [ ! -f "$LOG_FILE" ]; then
   echo "Error: Log file '$LOG_FILE' not found. Exiting." 
-  echo "Please create it first with the correct ownership and permissions, then rerurn."
+  echo "Please create it first with the correct ownership and permissions, then return."
   exit 1
 fi
 
@@ -84,7 +84,7 @@ echo "Installed Node.js version: $INSTALLED_NODE_VERSION" | tee -a "$LOG_FILE"
 echo "Target Node.js version: $TARGET_NODE_VERSION" | tee -a "$LOG_FILE"
 
 if [ "$INSTALLED_NODE_VERSION" != "$TARGET_NODE_VERSION" ]; then
-  echo "Error: Node.js version mismatch. Found $INSTALLED_NODE_VERSION, need $TARGET_NODE_VERSION". Exiting.| tee -a "$LOG_FILE"
+  echo "Error: Node.js version mismatch. Found $INSTALLED_NODE_VERSION, need $TARGET_NODE_VERSION". Exiting. | tee -a "$LOG_FILE"
   echo "First install the required Node.js version from package.json in system then proceed further. It should match system Node.js version and Talawa-api Node.js version v$TARGET_NODE_VERSION"  | tee -a "$LOG_FILE"
   exit 1
 fi
