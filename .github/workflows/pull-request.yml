@@ -308,8 +308,8 @@ jobs:
           docker-compose -f docker-compose.dev.yaml down -v || true
 
           # Verify docker-compose file exists
-          chmod +x scripts/docker_check.sh
-          ./scripts/docker_check.sh
+          chmod +x .github/workflows/scripts/docker_file_check.sh
+          ./.github/workflows/scripts/docker_file_check.sh
 
           # Start containers
           if ! timeout 300 docker-compose -f docker-compose.dev.yaml up -d --build; then
