@@ -1,5 +1,5 @@
 import type mongoose from "mongoose";
-import type { InterfaceEvent } from "../../../models";
+import type { InterfaceChat, InterfaceEvent } from "../../../models";
 import { Event } from "../../../models";
 import type { MutationCreateEventArgs } from "../../../types/generatedGraphQLTypes";
 import {
@@ -37,6 +37,7 @@ export const createRecurringEvent = async (
   creatorId: string,
   organizationId: string,
   session: mongoose.ClientSession,
+  chat: InterfaceChat | null,
 ): Promise<InterfaceEvent> => {
   // Extract event data and recurrence rule information from arguments
   const { data } = args;
@@ -69,6 +70,7 @@ export const createRecurringEvent = async (
         creatorId,
         admins: [creatorId],
         organization: organizationId,
+        chat: chat?._id,
       },
     ],
     { session }, // Use the provided session if available
