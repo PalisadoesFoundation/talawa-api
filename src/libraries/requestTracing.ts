@@ -30,7 +30,7 @@ export const tracingIdHeaderName = "X-Tracing-Id";
  */
 const tracingIdContextKeyName = "tracingId";
 
-const getNanoid = async () => {
+const getNanoid: () => Promise<() => string> = async () => {
   const { customAlphabet } = await import("nanoid");
   return customAlphabet(alphabets, 10);
 };
