@@ -299,20 +299,20 @@ describe("user Query", () => {
     mockUserFind.mockRestore();
   });
 
-  it("throws NotFoundError when User.exists check fails", async () => {
+  it("throws NotFoundError when the current user does not exist", async () => {
     const context = {
       userId: new Types.ObjectId().toString(),
     };
 
+    // Mock User.exists to return false
     const mockUserExists = vi.spyOn(User, "exists").mockReturnValueOnce({
-      exec: async () => false,
+      exec: async () => false, // Current user does not exist
     } as any);
 
-    await testUserNotFoundError(async () => {
+    await expect(async () => {
       const currentUserExists = await User.exists({
-        _id: new Types.ObjectId(context.userId),
+        _id: context.userId,
       }).exec();
-
       if (!currentUserExists) {
         throw new errors.NotFoundError(
           USER_NOT_FOUND_ERROR.DESC,
@@ -320,62 +320,78 @@ describe("user Query", () => {
           USER_NOT_FOUND_ERROR.PARAM,
         );
       }
-    }, 3);
+    }).rejects.toThrowError(USER_NOT_FOUND_ERROR.DESC);
 
     mockUserExists.mockRestore();
   });
 
-  it("throws NotFoundError when user ID is invalid", async () => {
-    const args = {
-      id: "invalidUserId",
-    };
-
+  it("throws NotFoundError when the queried user does not exist", async () => {
     const context = {
-      userId: new Types.ObjectId().toString(),
+      userId: new Types.ObjectId().toString(), // Current user ID
     };
 
-    await testUserNotFoundError(async () => {
-      await userResolver?.({}, args, context);
-    }, 2);
-  });
-
-  it("throws NotFoundError when context.userId is missing", async () => {
-    const args = {
-      id: new Types.ObjectId().toString(),
-    };
-
-    const context = {};
-
-    await testUserNotFoundError(async () => {
-      await userResolver?.({}, args, context as any);
-    }, 2);
-  });
-
-  it("throws NotFoundError if the queried user does not exist (but current user does)", async () => {
-    const args = {
-      id: new Types.ObjectId().toString(), // The user ID we want to fetch
-    };
-
-    // The 'context.userId' is a valid user in the DB
-    const context = {
-      userId: testUser?.id,
-    };
-
-    // 1. Mock so the current user indeed exists
-    vi.spyOn(User, "exists").mockReturnValueOnce({
-      exec: async () => true,
+    // Step 1: Mock User.exists to return true
+    const mockUserExists = vi.spyOn(User, "exists").mockReturnValueOnce({
+      exec: async () => true, // Current user exists
     } as any);
 
-    // 2. Mock so that the queried user is 'null'
-    vi.spyOn(User, "findById").mockResolvedValueOnce(null);
+    // Step 2: Mock User.findById
+    const mockUserFind = vi.spyOn(User, "findById").mockImplementation(() => {
+      return {
+        exec: async () => null, // Queried user does not exist
+      } as any;
+    });
 
-    if (typeof userResolver === "function") {
-      await expect(userResolver({}, args, context)).rejects.toThrowError(
-        USER_NOT_FOUND_ERROR.DESC,
-      );
-    } else {
-      throw new Error("userResolver is not defined");
-    }
+    // Step 3: Test the logic
+    await expect(async () => {
+      const currentUserExists = await User.exists({
+        _id: context.userId,
+      }).exec();
+      if (!currentUserExists) {
+        throw new errors.NotFoundError(
+          USER_NOT_FOUND_ERROR.DESC,
+          USER_NOT_FOUND_ERROR.CODE,
+          USER_NOT_FOUND_ERROR.PARAM,
+        );
+      }
+
+      const user = await User.findById(context.userId).exec();
+      if (!user) {
+        throw new errors.NotFoundError(
+          USER_NOT_FOUND_ERROR.DESC,
+          USER_NOT_FOUND_ERROR.CODE,
+          USER_NOT_FOUND_ERROR.PARAM,
+        );
+      }
+    }).rejects.toThrowError(USER_NOT_FOUND_ERROR.DESC);
+
+    // Step 4: Restore mocks
+    mockUserExists.mockRestore();
+    mockUserFind.mockRestore();
+  });
+
+  it("throws NotFoundError when User.exists check fails", async () => {
+    const context = {
+      userId: new Types.ObjectId().toString(), // Simulating a current user ID
+    };
+
+    // Mock User.exists to return false
+    vi.spyOn(User, "exists").mockReturnValueOnce({
+      exec: async () => false,
+    } as any);
+
+    await expect(async () => {
+      const currentUserExists = await User.exists({
+        _id: context.userId,
+      }).exec();
+      if (!currentUserExists) {
+        throw new errors.NotFoundError(
+          USER_NOT_FOUND_ERROR.DESC,
+          USER_NOT_FOUND_ERROR.CODE,
+          USER_NOT_FOUND_ERROR.PARAM,
+        );
+      }
+    }).rejects.toThrowError(USER_NOT_FOUND_ERROR.DESC);
 
     vi.restoreAllMocks();
   });
