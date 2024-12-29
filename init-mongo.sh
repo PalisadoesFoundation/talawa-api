@@ -50,4 +50,4 @@ mongosh --eval '
 '
 
 # Keep container running
-tail -f /dev/null
+wait $MONGOD_PID
