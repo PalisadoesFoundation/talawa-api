@@ -28,7 +28,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 
 ### 1. Create a Dedicated System User
 
-- Create a user named `talawa` for running the service(Don't confuse between `talawa` is user name and `talawa-api`is directory):
+- Create a user named `talawa` for running the service(Note: `talawa` is the system user, whereas `talawa-api` refers to the directory.):
   ```bash
   sudo adduser --system --no-create-home --group talawa
   ```
