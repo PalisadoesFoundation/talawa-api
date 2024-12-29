@@ -12,7 +12,8 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 - **Dedicated system user** `talawa` for running the service (security best practice)
 - **MongoDB** installed and running (required for Talawa API)
 - **Redis** installed and running (required for Talawa API)
-- Proper file permissions on `/usr/local/talawa-api` directory . Where your talawa-api is installed.
+- Most important ! Add the working directory named `TALAWA_API_HOME` as global variable in `~/.bashrc`(eg.`export TALAWA_API_HOME="/path/to/your/talawa-api`) . Always give fallback sometimes it may not load.
+- Proper file permissions on `/path/to/your/talawa-api` directory means `TALAWA_API_HOME` . Where your talawa-api is installed.
 - For development:
   - Ensure `.env` file sets `NODE_ENV=development`.
   - Run the service manually to verify functionality.
@@ -26,7 +27,26 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 
 ## Steps
 
-### 1. Create a Dedicated System User
+### 1. Make `TALAWA_API_HOME` Path as Environment variable 
+
+- Find `/path/to/your/talawa-api` :
+  ```bash
+  pwd
+  ```
+- Add `export TALAWA_API_HOME="/path/to/your/talawa-api"` in the `~/.bashrc`(for bash users) file or `~/.zshrc`(for zsh users). You can use any text editor like (`nano,vim,emacs,vi`).This command will open the file then add `export TALAWA_API_HOME="/path/to/your/talawa-api"`:
+  ```bash
+  nano ~/.bashrc 
+  ```
+- Refresh the shell to load the variable
+  ```bash
+  source ~/.bashrc
+  ``` 
+- Verify the Path:
+  ```bash
+  echo $TALAWA_API_HOME
+  ```
+
+### 2. Create a Dedicated System User
 
 - Create a user named `talawa` for running the service:
   ```bash
@@ -37,31 +57,32 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
   id talawa
   ```
 
-### 2. Create the Systemd Service File
+### 3. Create the Systemd Service File
 
 - Create the `talawa-api.service` file in the `/etc/systemd/system/` directory with root privileges.
-- Update the following placeholders with actual paths:
-  - `ExecStart` (path to your `Talawa-api.sh` script).
-  - `WorkingDirectory` (root directory of your Talawa API project).
-- Refer to the example in `example/linux/systemd/talawa-api.service` for guidance.
-- Copy talawa-api.service edit the path name then paste it inside `/etc/systemd/system/`
-- Make sure `talawa-api.service` should be executable.
+- Cheack following placeholders:
+  - `ExecStart` (path to your `Talawa-api.sh` script. Means `/path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh`).
+  - `WorkingDirectory` (root directory of your Talawa API project `/path/to/your/talawa-api`).
+- Refer to the example in `/path/to/your/talawa-api/example/linux/systemd/talawa-api.service` for guidance.
+- here you can't use `TALAWA_API_HOME` as global variables are not accessed by systemd so you have to    manually add it.
+- Copy talawa-api.service then paste it inside `/etc/systemd/system/`
+- Make sure `talawa-api.service` should have owned by root.
 
-### 3. Set Up the `Talawa-api.sh` Script
+### 4. Set Up the `Talawa-api.sh` Script
 
 - Edit the script to specify:
-  - **Project directory** (e.g., `/usr/local/talawa-api`)
+  - **Project directory** (e.g., `/path/to/your/talawa-api/talawa-api` means `TALAWA_API_HOME`)
   - **Log file path** (e.g., `/var/log/talawa-api.log`)
   - Ensure that the development (`src/index.ts`) and production (`dist/index.js`) paths are correctly set.
   - Make sure `Talawa-api.sh` should be executable
 
-### 4. Configure the Environment
+### 5. Configure the Environment
 
 - Ensure the `.env` file exists in the project directory and contains the appropriate configuration.
 - Add the following environment variables:
   - `NODE_ENV=development` or `NODE_ENV=production`.
 
-### 5. Verify Log File and Permissions
+### 6. Verify Log File and Permissions
 
 - Create the log file if it does not exist:
   ```bash
@@ -71,7 +92,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
   ```
 - Ensure the log file owner matches the service user (e.g., `talawa`).
 
-### 6. Install Dependencies
+### 7. Install Dependencies
 
 - Install required Node.js version with `fnm`:
   ```bash
@@ -92,7 +113,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
   sudo apt install jq
   ```
 
-### 7. Enable and Start the Service
+### 8. Enable and Start the Service
 
 1. Reload the systemd configuration:
    ```bash
@@ -107,7 +128,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
    sudo systemctl start talawa-api.service
    ```
 
-### 8. Verify the Installation
+### 9. Verify the Installation
 
 - Check the status of the service:
   ```bash

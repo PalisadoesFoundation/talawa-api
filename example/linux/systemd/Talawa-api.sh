@@ -1,7 +1,7 @@
-#!/bin/bash
+# Description: Talawa API startup script
 
-# Change to the project directory give your path
-PROJECT_DIR="/home/purnendu/Development/talawa-api"
+# Use environment variable for project path, with a default fallback(eg./path/to/your/talawa-api replace with original path if TALAWA_API_HOME will not set then it will use default path.Important ! always use fallback path)
+PROJECT_DIR="${TALAWA_API_HOME:-/path/to/your/talawa-api}"
 LOG_FILE="/var/log/talawa-api.log"
 DEV_PATH="src/index.ts"
 PROD_PATH="dist/index.js"
@@ -126,11 +126,11 @@ if [ ! -f ".env" ]; then
   echo "Error: '.env' file not found. Exiting." | tee -a "$LOG_FILE"
   exit 1
 fi
-echo ".env file found in $pwd directory. Proceeding..." | tee -a "$LOG_FILE"
+echo ".env file found in '$pwd' directory. Proceeding..." | tee -a "$LOG_FILE"
 
 # Load environment variables from .env file securely
 while IFS= read -r line || [ -n "$line" ]; do
-  if [[ ! "$line" =~ ^# && "$line" =~ = ]]; then
+  if [[ "$line" =~ ^NODE_ENV= ]]; then
     export "$line"
   fi
 done < .env

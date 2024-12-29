@@ -9,11 +9,14 @@ After=network.target
 # The type of service. 'simple' means the service will start immediately.
 Type=simple
 
-# The command to start the service. This points to the Talawa-api.sh script.User have to set it manually. Inside the talawa-api directory execute the command "pwd" to find the path.Then replace this with your original one (eg:/usr/local/talawa-api/example/linux/systemd/Talawa-api.sh -> /home/purnendu/development/talawa-api/example/linux/systemd/Talawa-api.sh)
-ExecStart=/usr/local/talawa-api/example/linux/systemd/Talawa-api.sh
+# Define the project directory directly in the service file
+Environment="TALAWA_API_HOME=/path/to/your/talawa-api"
 
-# The working directory for the service.User have to set it manually.Inside the talawa-api directory execute the command "pwd" to find the path.Then replace this with your original one (eg:/usr/local/talawa-api -> /home/purnendu/development/talawa-api)
-WorkingDirectory=/usr/local/talawa-api
+# The command to start the service. This points to the Talawa-api.sh script.Here you can't use TALAWA_API_HOME from shell (~/.bashrc) as systemd will not load any variable. That's why we have to manually add it.
+ExecStart="${TALAWA_API_HOME}/example/linux/systemd/Talawa-api.sh"
+
+# The working directory for the service.User have to export it.
+WorkingDirectory=${TALAWA_API_HOME}
 
 # Restart the service automatically if it stops.
 Restart=always
@@ -31,22 +34,27 @@ Group=talawa
 StandardOutput=journal+console
 StandardError=journal+console
 
-# Sets the maximum number of open files.Neither too much nor too less.
+# Sets the maximum number of open files. Adjust this value based on application requirements.
+# The current value of 15000 was determined based on the following considerations:
+# - Typical number of open files required by the application, including log files, database connections, and network sockets.
+# - Monitoring of current usage patterns using tools like 'lsof'(lsof -p <PID> | wc -l) and 'ulimit'.
+# - Allowing some buffer for peak usage scenarios.
+# Users should monitor the application and adjust this value if the demands change in the future.
 LimitNOFILE=15000
 
 # Security-related directives
 
 # Protect the system by making the root filesystem read-only for the service.
-# This prevents the service from modifying system-critical files, reducing the attack surface.
-ProtectSystem=strict
+# This prevents the service from modifying system-critical files, reducing the attack surface.Comment this because for this line the service have no permission to write in logfile.
+#ProtectSystem=strict
 
 # Prevent the service from accessing home directories of other users.
-# Only the necessary files in the service's user directory will be accessible.
-ProtectHome=yes
+# Only the necessary files in the service's user directory will be accessible.For now don't use it as our script is under the talawa user's directories so if we execute then it will give error.
+#ProtectHome=yes
 
 # Make the service's working directory read-only.
 # This is useful for protecting important directories from being altered by the service.
-ReadOnlyPaths=/usr/local/talawa-api
+ReadOnlyPaths=/path/to/your/talawa-api
 
 # Ensures the service and its child processes cannot gain new privileges.
 # This helps to prevent privilege escalation attacks.
