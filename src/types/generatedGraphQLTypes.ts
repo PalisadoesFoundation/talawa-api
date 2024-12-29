@@ -210,6 +210,10 @@ export type AgendaItem = {
   users?: Maybe<Array<Maybe<User>>>;
 };
 
+export type AgendaItemCategoryWhereInput = {
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type AgendaSection = {
   __typename?: 'AgendaSection';
   _id: Scalars['ID']['output'];
@@ -2463,6 +2467,7 @@ export type QueryAgendaItemByOrganizationArgs = {
 
 export type QueryAgendaItemCategoriesByOrganizationArgs = {
   organizationId: Scalars['ID']['input'];
+  where?: InputMaybe<AgendaItemCategoryWhereInput>;
 };
 
 
@@ -3510,6 +3515,7 @@ export type ResolversTypes = {
   AdvertisementsConnection: ResolverTypeWrapper<Omit<AdvertisementsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['AdvertisementEdge']>>> }>;
   AgendaCategory: ResolverTypeWrapper<InterfaceAgendaCategoryModel>;
   AgendaItem: ResolverTypeWrapper<InterfaceAgendaItemModel>;
+  AgendaItemCategoryWhereInput: AgendaItemCategoryWhereInput;
   AgendaSection: ResolverTypeWrapper<InterfaceAgendaSectionModel>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
@@ -3745,6 +3751,7 @@ export type ResolversParentTypes = {
   AdvertisementsConnection: Omit<AdvertisementsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['AdvertisementEdge']>>> };
   AgendaCategory: InterfaceAgendaCategoryModel;
   AgendaItem: InterfaceAgendaItemModel;
+  AgendaItemCategoryWhereInput: AgendaItemCategoryWhereInput;
   AgendaSection: InterfaceAgendaSectionModel;
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
