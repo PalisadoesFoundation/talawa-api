@@ -140,6 +140,10 @@ type AgendaItem {
   users: [User]
 }
 
+input AgendaItemCategoryWhereInput {
+  name_contains: String
+}
+
 type AgendaSection {
   _id: ID!
   createdAt: Date!
@@ -1556,7 +1560,7 @@ type Query {
   agendaCategory(id: ID!): AgendaCategory!
   agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
   agendaItemByOrganization(organizationId: ID!): [AgendaItem]
-  agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
+  agendaItemCategoriesByOrganization(organizationId: ID!, where: AgendaItemCategoryWhereInput): [AgendaCategory]
   chatById(id: ID!): Chat!
   chatsByUserId(id: ID!, where: ChatWhereInput): [Chat]
   checkAuth: User!
