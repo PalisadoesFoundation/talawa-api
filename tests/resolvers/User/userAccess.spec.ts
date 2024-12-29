@@ -350,4 +350,33 @@ describe("user Query", () => {
       await userResolver?.({}, args, context as any);
     }, 2);
   });
+
+  it("throws NotFoundError if the queried user does not exist (but current user does)", async () => {
+    const args = {
+      id: new Types.ObjectId().toString(), // The user ID we want to fetch
+    };
+
+    // The 'context.userId' is a valid user in the DB
+    const context = {
+      userId: testUser?.id,
+    };
+
+    // 1. Mock so the current user indeed exists
+    vi.spyOn(User, "exists").mockReturnValueOnce({
+      exec: async () => true,
+    } as any);
+
+    // 2. Mock so that the queried user is 'null'
+    vi.spyOn(User, "findById").mockResolvedValueOnce(null);
+
+    if (typeof userResolver === "function") {
+      await expect(userResolver({}, args, context)).rejects.toThrowError(
+        USER_NOT_FOUND_ERROR.DESC,
+      );
+    } else {
+      throw new Error("userResolver is not defined");
+    }
+
+    vi.restoreAllMocks();
+  });
 });
