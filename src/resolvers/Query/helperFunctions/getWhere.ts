@@ -15,6 +15,7 @@ import type {
   ActionItemCategoryWhereInput,
   ChatWhereInput,
   EventVolunteerWhereInput,
+  AgendaItemCategoryWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
 /**
@@ -42,6 +43,7 @@ export const getWhere = <T = unknown>(
             DonationWhereInput &
             ActionItemWhereInput &
             ActionItemCategoryWhereInput &
+            AgendaItemCategoryWhereInput &
             CampaignWhereInput &
             FundWhereInput &
             PledgeWhereInput &

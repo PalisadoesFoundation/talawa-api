@@ -95,6 +95,10 @@ export const inputs = gql`
     is_disabled: Boolean
   }
 
+  input AgendaItemCategoryWhereInput {
+    name_contains: String
+  }
+
   input CreateAgendaCategoryInput {
     name: String!
     description: String
