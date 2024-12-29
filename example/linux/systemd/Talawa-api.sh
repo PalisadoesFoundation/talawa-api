@@ -1,3 +1,4 @@
+#!/bin/bash
 # Description: Talawa API startup script
 
 # Use environment variable for project path, with a default fallback(eg./path/to/your/talawa-api replace with original path if TALAWA_API_HOME will not set then it will use default path.Important ! always use fallback path)
@@ -129,11 +130,13 @@ fi
 echo ".env file found in '$pwd' directory. Proceeding..." | tee -a "$LOG_FILE"
 
 # Load environment variables from .env file securely
-while IFS= read -r line || [ -n "$line" ]; do
-  if [[ "$line" =~ ^NODE_ENV= ]]; then
-    export "$line"
-  fi
-done < .env
+NODE_ENV=$(grep '^NODE_ENV=' .env | cut -d '=' -f2)
+if [ -n "$NODE_ENV" ]; then
+  export NODE_ENV
+else
+  echo "Error: NODE_ENV not found in .env file" | tee -a "$LOG_FILE"
+  exit 1
+fi
 
 # Check if NODE_ENV is set
 if [ -z "$NODE_ENV" ]; then
