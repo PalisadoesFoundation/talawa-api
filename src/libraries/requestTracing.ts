@@ -61,19 +61,20 @@ export const middleware = () => {
     requestTracingNamespace.bindEmitter(req);
     requestTracingNamespace.bindEmitter(res);
 
-    getNanoid().then((nanoid) => {
-      const tracingId = req.header(tracingIdHeaderName) || nanoid();
-      req.headers[tracingIdHeaderName] = tracingId;
-      res.header(tracingIdHeaderName, tracingId);
+    getNanoid()
+      .then((nanoid) => {
+        const tracingId = req.header(tracingIdHeaderName) || nanoid();
+        req.headers[tracingIdHeaderName] = tracingId;
+        res.header(tracingIdHeaderName, tracingId);
 
-      requestTracingNamespace.run(() => {
-        setTracingId(tracingId);
-        next();
+        requestTracingNamespace.run(() => {
+          setTracingId(tracingId);
+          next();
+        });
+      })
+      .catch((error) => {
+        next(error);
       });
-    })
-    .catch((error)=>{
-      next(error);
-    })
   };
 };
 
@@ -88,9 +89,9 @@ export const trace = async <T>(
   tracingId: string,
   method: () => T,
 ): Promise<void> => {
-    const nanoid = await getNanoid();
-    await requestTracingNamespace.runAndReturn<T>(() => {
-      setTracingId(tracingId || nanoid());
-      return method();
-    });
+  const nanoid = await getNanoid();
+  await requestTracingNamespace.runAndReturn<T>(() => {
+    setTracingId(tracingId || nanoid());
+    return method();
+  });
 };
