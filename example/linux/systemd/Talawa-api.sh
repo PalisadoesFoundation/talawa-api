@@ -1,8 +1,8 @@
 #!/bin/bash
 # Description: Talawa API startup script
 
-# Use environment variable for project path, with a default fallback(eg./path/to/your/talawa-api replace with original path if TALAWA_API_HOME will not set then it will use default path.Important ! always use fallback path)
-PROJECT_DIR="${TALAWA_API_HOME:-/path/to/your/talawa-api}"
+# Don't use environment variables in this script, as when the script will run by systemd, it will not have access to the environment variables of the user.I have tried setting the environment variables in the systemd service file but it didn't work. So, directly use the absolute paths in the script.)
+PROJECT_DIR="/path/to/your/talawa-api"
 LOG_FILE="/var/log/talawa-api.log"
 DEV_PATH="src/index.ts"
 PROD_PATH="dist/index.js"
@@ -127,7 +127,7 @@ if [ ! -f ".env" ]; then
   echo "Error: '.env' file not found. Exiting." | tee -a "$LOG_FILE"
   exit 1
 fi
-echo ".env file found in '$pwd' directory. Proceeding..." | tee -a "$LOG_FILE"
+echo ".env file found in '$(pwd)' directory. Proceeding..." | tee -a "$LOG_FILE"
 
 # Load environment variables from .env file securely
 NODE_ENV=$(grep '^NODE_ENV=' .env | cut -d '=' -f2)

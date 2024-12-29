@@ -9,11 +9,11 @@ After=network.target
 # The type of service. 'simple' means the service will start immediately.
 Type=simple
 
-# The command to start the service. This points to the Talawa-api.sh script.Here you can't use TALAWA_API_HOME from shell (~/.bashrc) as systemd will not load any variable. That's why we have to manually add it.
-ExecStart="${TALAWA_API_HOME}/example/linux/systemd/Talawa-api.sh"
+# The command to start the service. This points to the Talawa-api.sh script.Here you can't use TALAWA_API_HOME from shell (~/.bashrc) as systemd will not load any variable. That's why we have to manually add it.Always use absolute path.
+ExecStart="/path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh"
 
 # The working directory for the service.User have to export it.
-WorkingDirectory=${TALAWA_API_HOME}
+WorkingDirectory=/path/to/your/talawa-api
 
 # Restart the service automatically if it stops.
 Restart=always
@@ -21,7 +21,7 @@ Restart=always
 # The delay before restarting the service.
 RestartSec=5
 
-# The user to run the service as. You can find your username by running 'whoami'.Create a user named `talawa` for better understanding and Security
+# The user to run the service as. You can find your username by running 'whoami'.Create a user named `talawa` for better understanding and Security.First create a user and group named 'talawa' for better Security. 
 User=talawa
 
 # The group to run the service as. Usually, this is the same as the username.
