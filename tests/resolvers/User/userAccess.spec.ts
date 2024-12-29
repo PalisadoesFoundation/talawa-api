@@ -17,6 +17,29 @@ let adminUser: TestUserType;
 let superAdminUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
+async function testUserNotFoundError(
+  testFn: () => Promise<void>,
+  expectedAssertions: number,
+): Promise<void> {
+  expect.assertions(expectedAssertions);
+
+  try {
+    await testFn();
+  } catch (error: unknown) {
+    if (error instanceof errors.NotFoundError) {
+      expect(error).toBeInstanceOf(errors.NotFoundError);
+      expect(error.message).toBe(USER_NOT_FOUND_ERROR.DESC);
+      if (expectedAssertions > 2) {
+        expect(error.code).toBe(USER_NOT_FOUND_ERROR.CODE);
+      }
+    } else {
+      throw new Error(
+        `Expected error of type NotFoundError, but received: ${error}`,
+      );
+    }
+  }
+}
+
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
@@ -239,56 +262,6 @@ describe("user Query", () => {
   });
 
   it("throws NotFoundError when the specified user ID does not exist", async () => {
-    expect.assertions(2);
-
-    const context = {
-      userId: new Types.ObjectId().toString(),
-    };
-
-    if (typeof userResolver === "function") {
-      const mockUserExists = vi.spyOn(User, "exists").mockReturnValueOnce({
-        exec: async () => false,
-      } as any);
-
-      const mockUserFind = vi.spyOn(User, "findById").mockResolvedValue(null);
-
-      const currentUserExists = await User.exists({
-        _id: new Types.ObjectId(context.userId),
-      }).exec();
-
-      if (!currentUserExists) {
-        const error = new errors.NotFoundError(
-          USER_NOT_FOUND_ERROR.DESC,
-          USER_NOT_FOUND_ERROR.CODE,
-          USER_NOT_FOUND_ERROR.PARAM,
-        );
-        expect(error).toBeInstanceOf(errors.NotFoundError);
-        expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
-
-        mockUserExists.mockRestore();
-        mockUserFind.mockRestore();
-      } else {
-        const user = await User.findById(new Types.ObjectId(context.userId));
-        if (!user) {
-          const error = new errors.NotFoundError(
-            USER_NOT_FOUND_ERROR.DESC,
-            USER_NOT_FOUND_ERROR.CODE,
-            USER_NOT_FOUND_ERROR.PARAM,
-          );
-          expect(error).toBeInstanceOf(errors.NotFoundError);
-          expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
-
-          mockUserExists.mockRestore();
-          mockUserFind.mockRestore();
-        }
-      }
-    } else {
-      throw new Error("userResolver is not defined");
-    }
-  });
-  it("throws NotFoundError when User.exists check fails", async () => {
-    expect.assertions(3);
-
     const context = {
       userId: new Types.ObjectId().toString(),
     };
@@ -297,32 +270,62 @@ describe("user Query", () => {
       exec: async () => false,
     } as any);
 
-    if (typeof userResolver === "function") {
+    const mockUserFind = vi.spyOn(User, "findById").mockResolvedValue(null);
+
+    await testUserNotFoundError(async () => {
       const currentUserExists = await User.exists({
         _id: new Types.ObjectId(context.userId),
       }).exec();
 
       if (!currentUserExists) {
-        const error = new errors.NotFoundError(
+        throw new errors.NotFoundError(
           USER_NOT_FOUND_ERROR.DESC,
           USER_NOT_FOUND_ERROR.CODE,
           USER_NOT_FOUND_ERROR.PARAM,
         );
-
-        expect(error).toBeInstanceOf(errors.NotFoundError);
-        expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
-        expect(error.code).toEqual(USER_NOT_FOUND_ERROR.CODE);
       }
-    } else {
-      throw new Error("userResolver is not defined");
-    }
+
+      const user = await User.findById(new Types.ObjectId(context.userId));
+      if (!user) {
+        throw new errors.NotFoundError(
+          USER_NOT_FOUND_ERROR.DESC,
+          USER_NOT_FOUND_ERROR.CODE,
+          USER_NOT_FOUND_ERROR.PARAM,
+        );
+      }
+    }, 3);
+
+    mockUserExists.mockRestore();
+    mockUserFind.mockRestore();
+  });
+
+  it("throws NotFoundError when User.exists check fails", async () => {
+    const context = {
+      userId: new Types.ObjectId().toString(),
+    };
+
+    const mockUserExists = vi.spyOn(User, "exists").mockReturnValueOnce({
+      exec: async () => false,
+    } as any);
+
+    await testUserNotFoundError(async () => {
+      const currentUserExists = await User.exists({
+        _id: new Types.ObjectId(context.userId),
+      }).exec();
+
+      if (!currentUserExists) {
+        throw new errors.NotFoundError(
+          USER_NOT_FOUND_ERROR.DESC,
+          USER_NOT_FOUND_ERROR.CODE,
+          USER_NOT_FOUND_ERROR.PARAM,
+        );
+      }
+    }, 3);
 
     mockUserExists.mockRestore();
   });
 
   it("throws NotFoundError when user ID is invalid", async () => {
-    expect.assertions(2);
-
     const args = {
       id: "invalidUserId",
     };
@@ -331,40 +334,20 @@ describe("user Query", () => {
       userId: new Types.ObjectId().toString(),
     };
 
-    if (typeof userResolver === "function") {
-      try {
-        await userResolver({}, args, context);
-      } catch (error: unknown) {
-        expect(error).toBeInstanceOf(errors.NotFoundError);
-        expect((error as errors.NotFoundError).message).toEqual(
-          USER_NOT_FOUND_ERROR.DESC,
-        );
-      }
-    } else {
-      throw new Error("userResolver is not defined");
-    }
+    await testUserNotFoundError(async () => {
+      await userResolver?.({}, args, context);
+    }, 2);
   });
 
   it("throws NotFoundError when context.userId is missing", async () => {
-    expect.assertions(2);
-
     const args = {
       id: new Types.ObjectId().toString(),
     };
 
     const context = {};
 
-    if (typeof userResolver === "function") {
-      try {
-        await userResolver({}, args, context as any); // Cast to any for missing userId
-      } catch (error: unknown) {
-        expect(error).toBeInstanceOf(errors.NotFoundError);
-        expect((error as errors.NotFoundError).message).toEqual(
-          USER_NOT_FOUND_ERROR.DESC,
-        );
-      }
-    } else {
-      throw new Error("userResolver is not defined");
-    }
+    await testUserNotFoundError(async () => {
+      await userResolver?.({}, args, context as any);
+    }, 2);
   });
 });
