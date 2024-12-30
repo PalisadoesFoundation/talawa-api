@@ -24,6 +24,27 @@ vi.mock("../../../src/models/FundraisingCampaignPledge", () => ({
   },
 }));
 
+type AdditionalUserFields = {
+  createdAt?: Date;
+  updatedAt?: Date;
+  isAdmin?: boolean;
+  isSuperAdmin?: boolean;
+  blocked?: boolean;
+  role?: string;
+  userType?: string;
+  appLanguageCode?: string;
+  pluginCreationAllowed?: boolean;
+  adminApproved?: boolean;
+  adminFor?: mongoose.Types.ObjectId[];
+  memberOf?: mongoose.Types.ObjectId[];
+  createdOrganizations?: mongoose.Types.ObjectId[];
+  joinedOrganizations?: mongoose.Types.ObjectId[];
+  registeredEvents?: mongoose.Types.ObjectId[];
+  eventAdmin?: mongoose.Types.ObjectId[];
+  createdEvents?: mongoose.Types.ObjectId[];
+  tokenVersion?: number;
+};
+
 type UserType = {
   _id: mongoose.Types.ObjectId;
   email: string;
@@ -31,8 +52,7 @@ type UserType = {
   lastName?: string;
   image?: string | null;
   organizationsBlockedBy: string[];
-  [key: string]: any;
-};
+} & AdditionalUserFields;
 
 type ResolverReturnType = {
   user: UserType;
