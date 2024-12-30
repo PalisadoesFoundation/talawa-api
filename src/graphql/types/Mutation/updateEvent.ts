@@ -71,7 +71,9 @@ builder.mutationField("updateEvent", (t) =>
 					with: {
 						eventAttachmentsWhereEvent: true,
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {

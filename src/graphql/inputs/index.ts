@@ -1,7 +1,3 @@
-import "./CreateAdvertisementAttachmentInput";
-import "./CreateEventAttachmentInput";
-import "./CreatePostAttachmentInput";
-import "./CreateVenueAttachmentInput";
 import "./MutationCreateAdvertisementInput";
 import "./MutationCreateAgendaFolderInput";
 import "./MutationCreateAgendaItemInput";

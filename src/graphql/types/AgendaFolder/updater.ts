@@ -24,12 +24,16 @@ AgendaFolder.implement({
 							operators.eq(fields.id, currentUserId),
 					}),
 					ctx.drizzleClient.query.eventsTable.findFirst({
-						columns: {},
+						columns: {
+							startAt: true,
+						},
 						where: (fields, operators) =>
 							operators.eq(fields.id, parent.eventId),
 						with: {
 							organization: {
-								columns: {},
+								columns: {
+									countryCode: true,
+								},
 								with: {
 									organizationMembershipsWhereOrganization: {
 										columns: {

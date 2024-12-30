@@ -62,16 +62,24 @@ builder.queryField("agendaItem", (t) =>
 				ctx.drizzleClient.query.agendaItemsTable.findFirst({
 					with: {
 						folder: {
-							columns: {},
+							columns: {
+								isAgendaItemFolder: true,
+							},
 							with: {
 								event: {
-									columns: {},
+									columns: {
+										startAt: true,
+									},
 									with: {
 										organization: {
-											columns: {},
+											columns: {
+												countryCode: true,
+											},
 											with: {
 												organizationMembershipsWhereOrganization: {
-													columns: {},
+													columns: {
+														role: true,
+													},
 													where: (fields, operators) =>
 														operators.eq(fields.memberId, currentUserId),
 												},

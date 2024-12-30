@@ -62,7 +62,9 @@ builder.mutationField("createTag", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
-					columns: {},
+					columns: {
+						countryCode: true,
+					},
 					with: {
 						organizationMembershipsWhereOrganization: {
 							columns: {
@@ -72,7 +74,9 @@ builder.mutationField("createTag", (t) =>
 								operators.eq(fields.memberId, currentUserId),
 						},
 						tagsWhereOrganization: {
-							columns: {},
+							columns: {
+								updaterId: true,
+							},
 							where: (fields, operators) =>
 								operators.and(
 									operators.eq(fields.name, parsedArgs.input.name),

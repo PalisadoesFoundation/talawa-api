@@ -31,10 +31,14 @@ AgendaItem.implement({
 							operators.eq(fields.id, parent.folderId),
 						with: {
 							event: {
-								columns: {},
+								columns: {
+									startAt: true,
+								},
 								with: {
 									organization: {
-										columns: {},
+										columns: {
+											countryCode: true,
+										},
 										with: {
 											organizationMembershipsWhereOrganization: {
 												columns: {

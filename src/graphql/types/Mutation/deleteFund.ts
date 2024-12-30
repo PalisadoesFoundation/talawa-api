@@ -62,10 +62,14 @@ builder.mutationField("deleteFund", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.fundsTable.findFirst({
-					columns: {},
+					columns: {
+						isTaxDeductible: true,
+					},
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {

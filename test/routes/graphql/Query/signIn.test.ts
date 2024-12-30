@@ -35,7 +35,7 @@ suite("Query field signIn", () => {
 					},
 					variables: {
 						input: {
-							emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 							password: "password",
 						},
 					},
@@ -64,8 +64,8 @@ suite("Query field signIn", () => {
 				const result = await mercuriusClient.query(Query_signIn, {
 					variables: {
 						input: {
-							emailAddress: `email${faker.string.nanoid()}@email.com`,
-							password: `password${faker.string.nanoid()}`,
+							emailAddress: `email${faker.string.ulid()}@email.com`,
+							password: `password${faker.string.ulid()}`,
 						},
 					},
 				});
@@ -105,7 +105,7 @@ suite("Query field signIn", () => {
 						input: {
 							emailAddress:
 								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: `password${faker.string.nanoid()}`,
+							password: `password${faker.string.ulid()}`,
 						},
 					},
 				});

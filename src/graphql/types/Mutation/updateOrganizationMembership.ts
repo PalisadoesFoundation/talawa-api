@@ -67,7 +67,9 @@ builder.mutationField("updateOrganizationMembership", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {},
+					columns: {
+						role: true,
+					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.memberId),
 				}),

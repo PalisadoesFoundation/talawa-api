@@ -62,7 +62,9 @@ builder.mutationField("deleteChat", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.chatsTable.findFirst({
-					columns: {},
+					columns: {
+						avatarMimeType: true,
+					},
 					with: {
 						chatMembershipsWhereChat: {
 							columns: {
@@ -72,7 +74,9 @@ builder.mutationField("deleteChat", (t) =>
 								operators.eq(fields.memberId, currentUserId),
 						},
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -152,6 +156,8 @@ builder.mutationField("deleteChat", (t) =>
 					message: "Something went wrong. Please try again.",
 				});
 			}
+
+			// TODO: Deletion of directly or indirectly associated minio objects.
 
 			return deletedChat;
 		},

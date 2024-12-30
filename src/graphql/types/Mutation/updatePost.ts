@@ -70,7 +70,9 @@ builder.mutationField("updatePost", (t) =>
 					with: {
 						postAttachmentsWherePost: true,
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {

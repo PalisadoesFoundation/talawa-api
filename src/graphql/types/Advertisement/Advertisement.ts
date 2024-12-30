@@ -38,7 +38,7 @@ Advertisement.implement({
 			type: "DateTime",
 		}),
 		type: t.expose("type", {
-			description: "Type of the attachment.",
+			description: "Mime type of the attachment.",
 			type: AdvertisementType,
 		}),
 	}),

@@ -43,7 +43,9 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 			}
 
 			const existingChat = await ctx.drizzleClient.query.chatsTable.findFirst({
-				columns: {},
+				columns: {
+					avatarMimeType: true,
+				},
 				where: (fields, operators) =>
 					operators.eq(fields.id, parsedArgs.input.id),
 			});

@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import { actionCategoriesTable } from "./actionCategories";
 import { actionsTable } from "./actions";
@@ -28,9 +29,15 @@ export const organizationsTable = pgTable(
 		 */
 		address: text("address"),
 		/**
-		 * URI to the avatar of the organization.
+		 * Mime type of the avatar of the organization.
 		 */
-		avatarURI: text("avatar_uri"),
+		avatarMimeType: text("avatar_mime_type", {
+			enum: imageMimeTypeEnum.options,
+		}),
+		/**
+		 * Primary unique identifier of the organziation's avatar.
+		 */
+		avatarName: text("avatar_name"),
 		/**
 		 * Name of the city where organization exists in.
 		 */
@@ -205,7 +212,7 @@ export const organizationsTableInsertSchema = createInsertSchema(
 	organizationsTable,
 	{
 		address: (schema) => schema.address.min(1).max(1024),
-		avatarURI: (schema) => schema.avatarURI.min(1),
+		avatarName: (schema) => schema.avatarName.min(1),
 		city: (schema) => schema.city.min(1).max(64),
 		description: (schema) => schema.description.min(1).max(2048),
 		name: (schema) => schema.name.min(1).max(256),

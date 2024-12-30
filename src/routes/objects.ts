@@ -4,15 +4,15 @@ import { Type } from "@sinclair/typebox";
 import { type BucketItemStat, InvalidObjectNameError } from "minio";
 
 /**
- * This fastify route plugin is used to initialize a `/objects/:identifier` endpoint on the fastify server for clients to fetch objects from the minio server.
+ * This fastify route plugin is used to initialize a `/objects/:name` endpoint on the fastify server for clients to fetch objects from the minio server.
  */
 export const objects: FastifyPluginAsyncTypebox = async (fastify) => {
 	fastify.get(
-		"/objects/:identifier",
+		"/objects/:name",
 		{
 			schema: {
 				params: Type.Object({
-					identifier: Type.String({
+					name: Type.String({
 						maxLength: 36,
 						minLength: 1,
 					}),
@@ -20,27 +20,29 @@ export const objects: FastifyPluginAsyncTypebox = async (fastify) => {
 			},
 		},
 		async (request, reply) => {
-			const { identifier } = request.params;
+			const { name } = request.params;
 
 			let readableStream: Readable;
 			let objectStat: BucketItemStat;
 
 			try {
 				[readableStream, objectStat] = await Promise.all([
-					fastify.minio.client.getObject(fastify.minio.bucketName, identifier),
-					fastify.minio.client.statObject(fastify.minio.bucketName, identifier),
+					fastify.minio.client.getObject(fastify.minio.bucketName, name),
+					fastify.minio.client.statObject(fastify.minio.bucketName, name),
 				]);
 			} catch (error) {
 				fastify.log.error(
 					error,
-					`Error encountered while fetching the object with the identifier "${identifier}" from the minio server.`,
+					`Error encountered while fetching the object with the name "${name}" from the minio server.`,
 				);
 
 				if (error instanceof InvalidObjectNameError) {
 					return reply.status(404).send({
-						message: `No object found with the identifier "${identifier}".`,
+						message: `No object found with the name "${name}".`,
 					});
 				}
+
+				console.log(error);
 
 				return reply.status(500).send({
 					message: "Something went wrong. Please try again later.",
@@ -49,7 +51,7 @@ export const objects: FastifyPluginAsyncTypebox = async (fastify) => {
 
 			reply.headers({
 				// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition
-				"content-disposition": `inline; filename=${identifier}`,
+				"content-disposition": `inline; filename=${name}`,
 				// https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types
 				"content-type":
 					"content-type" in objectStat.metaData &&

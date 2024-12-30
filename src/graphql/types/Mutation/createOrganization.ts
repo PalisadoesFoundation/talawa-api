@@ -1,4 +1,7 @@
+import type { FileUpload } from "graphql-upload-minimal";
+import { ulid } from "ulidx";
 import { z } from "zod";
+import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -6,10 +9,43 @@ import {
 	mutationCreateOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationCreateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateOrganizationArgumentsSchema = z.object({
-	input: mutationCreateOrganizationInputSchema,
+	input: mutationCreateOrganizationInputSchema.transform(async (arg, ctx) => {
+		let avatar:
+			| (FileUpload & {
+					mimetype: z.infer<typeof imageMimeTypeEnum>;
+			  })
+			| null
+			| undefined;
+
+		if (isNotNullish(arg.avatar)) {
+			const rawAvatar = await arg.avatar;
+			const { data, success } = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
+
+			if (!success) {
+				ctx.addIssue({
+					code: "custom",
+					path: ["avatar"],
+					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
+				});
+			} else {
+				return {
+					...arg,
+					avatar: Object.assign(rawAvatar, {
+						mimetype: data,
+					}),
+				};
+			}
+		}
+
+		return {
+			...arg,
+			avatar,
+		};
+	}),
 });
 
 builder.mutationField("createOrganization", (t) =>
@@ -36,7 +72,7 @@ builder.mutationField("createOrganization", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationCreateOrganizationArgumentsSchema.safeParse(args);
+			} = await mutationCreateOrganizationArgumentsSchema.safeParseAsync(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -100,35 +136,59 @@ builder.mutationField("createOrganization", (t) =>
 				});
 			}
 
-			const [createdOrganization] = await ctx.drizzleClient
-				.insert(organizationsTable)
-				.values({
-					address: parsedArgs.input.address,
-					avatarURI: parsedArgs.input.avatarURI,
-					city: parsedArgs.input.city,
-					countryCode: parsedArgs.input.countryCode,
-					description: parsedArgs.input.description,
-					creatorId: currentUserId,
-					name: parsedArgs.input.name,
-					postalCode: parsedArgs.input.postalCode,
-					state: parsedArgs.input.state,
-				})
-				.returning();
+			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
+			let avatarName: string;
 
-			// Inserted organization not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-			if (createdOrganization === undefined) {
-				ctx.log.error(
-					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-				);
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-					message: "Something went wrong. Please try again.",
-				});
+			if (isNotNullish(parsedArgs.input.avatar)) {
+				avatarName = ulid();
+				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
 
-			return createdOrganization;
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [createdOrganization] = await tx
+					.insert(organizationsTable)
+					.values({
+						address: parsedArgs.input.address,
+						avatarMimeType,
+						avatarName,
+						city: parsedArgs.input.city,
+						countryCode: parsedArgs.input.countryCode,
+						description: parsedArgs.input.description,
+						creatorId: currentUserId,
+						name: parsedArgs.input.name,
+						postalCode: parsedArgs.input.postalCode,
+						state: parsedArgs.input.state,
+					})
+					.returning();
+
+				// Inserted organization not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+				if (createdOrganization === undefined) {
+					ctx.log.error(
+						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+					);
+
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again.",
+					});
+				}
+
+				if (isNotNullish(parsedArgs.input.avatar)) {
+					await ctx.minio.client.putObject(
+						ctx.minio.bucketName,
+						avatarName,
+						parsedArgs.input.avatar.createReadStream(),
+						undefined,
+						{
+							"content-type": parsedArgs.input.avatar.mimetype,
+						},
+					);
+				}
+
+				return createdOrganization;
+			});
 		},
 		type: Organization,
 	}),

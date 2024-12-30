@@ -15,7 +15,6 @@ export const Mutation_createUser =
         authenticationToken
         user {
             address
-            avatarURI
             birthDate
             city
             countryCode
@@ -43,7 +42,6 @@ export const Mutation_deleteCurrentUser =
 	gql(`mutation Mutation_deleteCurrentUser {
     deleteCurrentUser {
         address
-        avatarURI
         birthDate
         city
         countryCode
@@ -70,7 +68,6 @@ export const Mutation_deleteUser =
 	gql(`mutation Mutation_deleteUser($input: MutationDeleteUserInput!) {
     deleteUser(input: $input) {
         address
-        avatarURI
         birthDate
         city
         countryCode
@@ -99,7 +96,6 @@ export const Mutation_signUp =
         authenticationToken
         user {
             address
-            avatarURI
             birthDate
             city
             countryCode
@@ -127,7 +123,6 @@ export const Mutation_updateCurrentUser =
 	gql(`mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
     updateCurrentUser(input: $input) {
         address
-        avatarURI
         birthDate
         city
         countryCode
@@ -154,7 +149,6 @@ export const Mutation_updateUser =
 	gql(`mutation Mutation_updateUser($input: MutationUpdateUserInput!) {
     updateUser(input: $input) {
         address
-        avatarURI
         birthDate
         city
         countryCode
@@ -180,7 +174,6 @@ export const Mutation_updateUser =
 export const Query_currentUser = gql(`query Query_currentUser {
     currentUser {
         address
-        avatarURI
         birthDate
         city
         countryCode
@@ -213,7 +206,6 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
         authenticationToken
         user {
             address
-            avatarURI
             birthDate
             city
             countryCode
@@ -240,7 +232,6 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
 export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
     user(input: $input) {
         address
-        avatarURI
         birthDate
         city
         countryCode
@@ -268,7 +259,6 @@ export const Query_user_creator =
     user(input: $input) {
         creator {
             address
-            avatarURI
             birthDate
             city
             countryCode
@@ -304,7 +294,6 @@ export const Query_user_updater =
     user(input: $input) {
         updater {
             address
-            avatarURI
             birthDate
             city
             countryCode

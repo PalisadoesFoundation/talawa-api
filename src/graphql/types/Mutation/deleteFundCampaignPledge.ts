@@ -67,13 +67,19 @@ builder.mutationField("deleteFundCampaignPledge", (t) =>
 					},
 					with: {
 						campaign: {
-							columns: {},
+							columns: {
+								startAt: true,
+							},
 							with: {
 								fund: {
-									columns: {},
+									columns: {
+										isTaxDeductible: true,
+									},
 									with: {
 										organization: {
-											columns: {},
+											columns: {
+												countryCode: true,
+											},
 											with: {
 												organizationMembershipsWhereOrganization: {
 													columns: {

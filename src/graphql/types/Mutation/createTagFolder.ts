@@ -62,7 +62,9 @@ builder.mutationField("createTagFolder", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
-					columns: {},
+					columns: {
+						countryCode: true,
+					},
 					with: {
 						organizationMembershipsWhereOrganization: {
 							columns: {

@@ -68,7 +68,9 @@ builder.mutationField("deletePost", (t) =>
 					with: {
 						postAttachmentsWherePost: true,
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -146,6 +148,8 @@ builder.mutationField("deletePost", (t) =>
 					message: "Something went wrong. Please try again.",
 				});
 			}
+
+			// TODO: Deletion of directly or indirectly associated minio objects.
 
 			return Object.assign(deletedPost, {
 				attachments: existingPost.postAttachmentsWherePost,

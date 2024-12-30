@@ -31,10 +31,10 @@ CREATE TABLE "advertisement_attachments" (
 	"advertisement_id" uuid NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
-	"type" text NOT NULL,
+	"mime_type" text NOT NULL,
+	"name" text NOT NULL,
 	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid,
-	"uri" text NOT NULL
+	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE "advertisements" (
@@ -99,7 +99,8 @@ CREATE TABLE "chat_messages" (
 );
 --> statement-breakpoint
 CREATE TABLE "chats" (
-	"avatar_uri" text,
+	"avatar_mime_type" text,
+	"avatar_name" text,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
 	"description" text,
@@ -135,10 +136,10 @@ CREATE TABLE "event_attachments" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
 	"event_id" uuid NOT NULL,
-	"type" text NOT NULL,
+	"mime_type" text NOT NULL,
+	"name" text NOT NULL,
 	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid,
-	"uri" text NOT NULL
+	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE "event_attendances" (
@@ -236,7 +237,8 @@ CREATE TABLE "organization_memberships" (
 --> statement-breakpoint
 CREATE TABLE "organizations" (
 	"address" text,
-	"avatar_uri" text,
+	"avatar_mime_type" text,
+	"avatar_name" text,
 	"city" text,
 	"country_code" text,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
@@ -255,10 +257,10 @@ CREATE TABLE "post_attachments" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
 	"post_id" uuid NOT NULL,
-	"type" text NOT NULL,
+	"mime_type" text NOT NULL,
+	"name" text NOT NULL,
 	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid,
-	"uri" text NOT NULL
+	"updater_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE "post_votes" (
@@ -314,7 +316,8 @@ CREATE TABLE "tags" (
 --> statement-breakpoint
 CREATE TABLE "users" (
 	"address" text,
-	"avatar_uri" text,
+	"avatar_mime_type" text,
+	"avatar_name" text,
 	"birth_date" date,
 	"city" text,
 	"country_code" text,
@@ -344,10 +347,10 @@ CREATE TABLE "users" (
 CREATE TABLE "venue_attachments" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
-	"type" text NOT NULL,
+	"mime_type" text NOT NULL,
+	"name" text NOT NULL,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
-	"uri" text NOT NULL,
 	"venue_id" uuid NOT NULL
 );
 --> statement-breakpoint

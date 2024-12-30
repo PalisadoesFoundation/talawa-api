@@ -62,11 +62,15 @@ builder.mutationField("deleteEvent", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.eventsTable.findFirst({
-					columns: {},
+					columns: {
+						startAt: true,
+					},
 					with: {
 						eventAttachmentsWhereEvent: true,
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -142,6 +146,8 @@ builder.mutationField("deleteEvent", (t) =>
 					message: "Something went wrong. Please try again.",
 				});
 			}
+
+			// TODO: Deletion of directly or indirectly associated minio objects.
 
 			return Object.assign(deletedEvent, {
 				attachments: existingEvent.eventAttachmentsWhereEvent,

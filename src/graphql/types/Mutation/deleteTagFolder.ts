@@ -61,10 +61,14 @@ builder.mutationField("deleteTagFolder", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.tagFoldersTable.findFirst({
-					columns: {},
+					columns: {
+						updaterId: true,
+					},
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {

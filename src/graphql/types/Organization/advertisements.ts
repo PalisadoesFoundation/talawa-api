@@ -87,7 +87,9 @@ Organization.implement({
 							},
 							with: {
 								organizationMembershipsWhereMember: {
-									columns: {},
+									columns: {
+										role: true,
+									},
 									where: (fields, operators) =>
 										operators.eq(fields.organizationId, parent.id),
 								},

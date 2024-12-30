@@ -1,7 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { postAttachmentTypeEnum } from "~/src/drizzle/enums/postAttachmentType";
+import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
 import { postsTable } from "./posts";
 import { usersTable } from "./users";
 
@@ -38,11 +38,15 @@ export const postAttachmentsTable = pgTable(
 				onUpdate: "cascade",
 			}),
 		/**
-		 * Type of the attachment.
+		 * Mime type of the attachment.
 		 */
-		type: text("type", {
-			enum: postAttachmentTypeEnum.options,
+		mimeType: text("mime_type", {
+			enum: postAttachmentMimeTypeEnum.options,
 		}).notNull(),
+		/**
+		 * Identifier name of the attachment.
+		 */
+		name: text("name", {}).notNull(),
 		/**
 		 * Foreign key reference to the id of the user who last updated the attachment.
 		 */
@@ -60,10 +64,6 @@ export const postAttachmentsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
-		/**
-		 * URI to the attachment.
-		 */
-		uri: text("uri", {}).notNull(),
 	},
 	(self) => [
 		index().on(self.createdAt),
@@ -105,6 +105,6 @@ export const postAttachmentsTableRelations = relations(
 export const postAttachmentsTableInsertSchema = createInsertSchema(
 	postAttachmentsTable,
 	{
-		uri: (schema) => schema.uri.min(1),
+		name: (schema) => schema.name.min(1),
 	},
 );

@@ -62,11 +62,15 @@ builder.mutationField("deleteAdvertisement", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.advertisementsTable.findFirst({
-					columns: {},
+					columns: {
+						type: true,
+					},
 					with: {
 						advertisementAttachmentsWhereAdvertisement: true,
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -143,6 +147,8 @@ builder.mutationField("deleteAdvertisement", (t) =>
 					message: "Something went wrong. Please try again.",
 				});
 			}
+
+			// TODO: Deletion of directly or indirectly associated minio objects.
 
 			return Object.assign(deletedAdvertisement, {
 				attachments:

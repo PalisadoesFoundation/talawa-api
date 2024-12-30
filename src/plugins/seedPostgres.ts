@@ -5,7 +5,7 @@ import { uuidv7 } from "uuidv7";
 import type { z } from "zod";
 import { usersTable, usersTableInsertSchema } from "~/src/drizzle/tables/users";
 
-// TODO:- Will be replaced with a different implementation in the future.
+// TODO: Will be replaced with a different implementation in the future.
 
 /**
  * This plugin handles seeding the database with data at the startup time of the talawa api.

@@ -28,13 +28,19 @@ FundCampaignPledge.implement({
 							operators.eq(fields.id, currentUserId),
 					}),
 					ctx.drizzleClient.query.fundCampaignsTable.findFirst({
-						columns: {},
+						columns: {
+							currencyCode: true,
+						},
 						with: {
 							fund: {
-								columns: {},
+								columns: {
+									isTaxDeductible: true,
+								},
 								with: {
 									organization: {
-										columns: {},
+										columns: {
+											countryCode: true,
+										},
 										with: {
 											organizationMembershipsWhereOrganization: {
 												columns: {

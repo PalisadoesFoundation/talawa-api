@@ -75,7 +75,9 @@ builder.mutationField("updateChatMembership", (t) =>
 								]),
 						},
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -91,7 +93,9 @@ builder.mutationField("updateChatMembership", (t) =>
 						operators.eq(fields.id, parsedArgs.input.chatId),
 				}),
 				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {},
+					columns: {
+						role: true,
+					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.memberId),
 				}),

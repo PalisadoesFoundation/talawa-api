@@ -1,3 +1,4 @@
+import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { usersTableInsertSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
@@ -9,6 +10,8 @@ import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 
 export const mutationSignUpInputSchema = usersTableInsertSchema
 	.omit({
+		avatarMimeType: true,
+		avatarName: true,
 		createdAt: true,
 		creatorId: true,
 		id: true,
@@ -19,6 +22,7 @@ export const mutationSignUpInputSchema = usersTableInsertSchema
 		updaterId: true,
 	})
 	.extend({
+		avatar: z.custom<Promise<FileUpload>>().nullish(),
 		confirmedPassword: z.string().min(1).max(64),
 		password: z.string().min(1).max(64),
 	})
@@ -47,8 +51,9 @@ export const MutationSignUpInput = builder
 			address: t.string({
 				description: "Address of the user.",
 			}),
-			avatarURI: t.string({
-				description: "URI to the avatar of the user.",
+			avatar: t.field({
+				description: "Avatar of the user.",
+				type: "Upload",
 			}),
 			birthDate: t.field({
 				description: "Date of birth of the user.",

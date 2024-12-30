@@ -99,6 +99,8 @@ builder.mutationField("deleteOrganization", (t) =>
 				});
 			}
 
+			// TODO: Deletion of directly or indirectly associated minio objects.
+
 			return deletedOrganization;
 		},
 		type: Organization,

@@ -71,7 +71,9 @@ builder.queryField("tagFolder", (t) =>
 				await ctx.drizzleClient.query.tagFoldersTable.findFirst({
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {

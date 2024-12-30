@@ -73,10 +73,14 @@ builder.mutationField("updateAgendaItem", (t) =>
 							},
 							with: {
 								event: {
-									columns: {},
+									columns: {
+										startAt: true,
+									},
 									with: {
 										organization: {
-											columns: {},
+											columns: {
+												countryCode: true,
+											},
 											with: {
 												organizationMembershipsWhereOrganization: {
 													columns: {

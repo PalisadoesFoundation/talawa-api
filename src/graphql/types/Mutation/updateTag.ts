@@ -68,7 +68,9 @@ builder.mutationField("updateTag", (t) =>
 					},
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -157,7 +159,9 @@ builder.mutationField("updateTag", (t) =>
 
 				const existingTagWithName =
 					await ctx.drizzleClient.query.tagsTable.findFirst({
-						columns: {},
+						columns: {
+							updaterId: true,
+						},
 						where: (fields, operators) =>
 							operators.and(
 								operators.eq(fields.name, name),

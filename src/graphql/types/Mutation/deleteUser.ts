@@ -114,6 +114,8 @@ builder.mutationField("deleteUser", (t) =>
 				});
 			}
 
+			// TODO: Deletion of directly or indirectly associated minio objects.
+
 			return deletedUser;
 		},
 		type: User,
