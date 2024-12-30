@@ -28,7 +28,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 
 ### 1. Create a Dedicated System User
 
-- Create a user named `talawa` for running the service(Note: `talawa` is the system user, whereas `talawa-api` refers to the directory.):
+- Create a user named `talawa` for running the service:
   ```bash
   sudo adduser --system --no-create-home --group talawa
   ```
@@ -44,7 +44,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
   - `ExecStart` (path to your `Talawa-api.sh` script: `/path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh`)
   - `WorkingDirectory` (root directory of your Talawa API project: `/path/to/your/talawa-api`)
   - `ReadOnlyPaths` (root directory of your Talawa API project: `/path/to/your/talawa-api`)
-  - `User, Group` (make sure to create user named `talawa`)
+  - `User, Group` (use the `talawa` user and group created earlier)
 - Refer to the example in `/path/to/your/talawa-api/example/linux/systemd/talawa-api.service` for guidance
 - Copy `talawa-api.service` then paste it inside `/etc/systemd/system/`
 - Make sure `talawa-api.service` is owned by root
@@ -73,7 +73,43 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
   ```
 - Ensure the log file owner matches the service user (e.g., `talawa`)
 
-### 6. Install Dependencies
+### 6. Set Up Log Rotation
+
+- Create a new logrotate configuration file for Talawa API:
+  ```bash
+  sudo nano /etc/logrotate.d/talawa-api
+  ```
+
+- Add the following configuration:
+  ```plaintext
+  /var/log/talawa-api.log {
+      su talawa talawa
+      weekly
+      rotate 4
+      compress
+      missingok
+      notifempty
+      create 664 talawa talawa
+      postrotate
+          systemctl restart talawa-api.service > /dev/null 2>&1 || true
+      endscript
+  }
+  ```
+
+- Verify logrotate setup:
+  ```bash
+  sudo logrotate -f /etc/logrotate.d/talawa-api
+  sudo logrotate -v /etc/logrotate.conf
+  sudo logrotate -d /etc/logrotate.conf
+
+  ```
+- -f for forced rotation, -v for verbose rotation, -d for debuging mode rotation.
+- To confirm log rotation, check the rotated logs:
+  ```bash
+  ls -la /var/log/talawa-api.log*
+  ```
+
+### 7. Install Dependencies
 
 - Install required Node.js version with `fnm`:
   ```bash
@@ -94,7 +130,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
   sudo apt install jq
   ```
 
-### 7. Enable and Start the Service
+### 8. Enable and Start the Service
 
 1. Reload the systemd configuration:
    ```bash
@@ -109,7 +145,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
    sudo systemctl start talawa-api.service
    ```
 
-### 8. Verify the Installation
+### 9. Verify the Installation
 
 - Check the status of the service:
   ```bash
