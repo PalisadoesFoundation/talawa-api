@@ -74,7 +74,7 @@ jobs:
         if: steps.changed_files.outputs.any_changed == 'true'
         env:
           CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
-        run: npx eslint ${CHANGED_FILES} --max-warnings=1500 && python .github/workflows/eslint_disable_check.py
+        run: npx eslint ${CHANGED_FILES} --max-warnings=1500
 
       - name: Check for formatting errors
         run: npm run format:check
@@ -177,10 +177,50 @@ jobs:
           echo "- Source branch may be incorrect please use develop as source branch."
           exit 1
 
+  Check-ESlint-Disable:
+    name: Check for eslint-disable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
+      - name: Run Python script
+        run: |
+          python .github/workflows/eslint_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+
+  Check-Code-Coverage-Disable:
+    name: Check for code coverage disable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
+      - name: Run Python script
+        run: |
+          python .github/workflows/code_coverage_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }} 
+
   Test-Application:
     name: Testing Application
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
+    needs: [Code-Quality-Checks, Check-Eslint-Disable, Check-Code-Coverage-Disable]
     strategy:
       matrix:
         node-version: [22.x]
