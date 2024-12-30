@@ -4,7 +4,7 @@ import { builder } from "~/src/graphql/builder";
 
 export const mutationUpdateTagInputSchema = tagsTableInsertSchema
 	.pick({
-		parentTagId: true,
+		folderId: true,
 	})
 	.extend({
 		id: tagsTableInsertSchema.shape.id.unwrap(),
@@ -25,15 +25,15 @@ export const MutationUpdateTagInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
+			folderId: t.id({
+				description: "Global identifier of associated tag folder.",
+			}),
 			id: t.id({
 				description: "Global identifier of the tag.",
 				required: true,
 			}),
 			name: t.string({
 				description: "Name of the tag.",
-			}),
-			parentTagId: t.id({
-				description: "Global identifier of associated parent tag.",
 			}),
 		}),
 	});

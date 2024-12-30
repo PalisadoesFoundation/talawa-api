@@ -1,15 +1,16 @@
-import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
+import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
 import type { z } from "zod";
 import { tagsTable, tagsTableInsertSchema } from "~/src/drizzle/tables/tags";
+import { Tag } from "~/src/graphql/types/Tag/Tag";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
-import { Tag } from "./Tag";
+import { TagFolder } from "./TagFolder";
 
-const childTagsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
+const tagsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
 		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
@@ -36,31 +37,21 @@ const childTagsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	});
 
 const cursorSchema = tagsTableInsertSchema.pick({
-	isFolder: true,
 	name: true,
 });
 
-Tag.implement({
+TagFolder.implement({
 	fields: (t) => ({
-		childTags: t.connection(
+		tags: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the tags that have the tag as their parent tag.",
+					"GraphQL connection to traverse through the tags associated to the tag folder.",
 				resolve: async (parent, args, ctx) => {
-					if (!ctx.currentClient.isAuthenticated) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthenticated",
-							},
-							message: "Only authenticated users can perform this action.",
-						});
-					}
-
 					const {
 						data: parsedArgs,
 						error,
 						success,
-					} = childTagsArgumentsSchema.safeParse(args);
+					} = tagsArgumentsSchema.safeParse(args);
 
 					if (!success) {
 						throw new TalawaGraphQLError({
@@ -75,53 +66,11 @@ Tag.implement({
 						});
 					}
 
-					const currentUserId = ctx.currentClient.user.id;
-
-					const currentUser =
-						await ctx.drizzleClient.query.usersTable.findFirst({
-							with: {
-								organizationMembershipsWhereMember: {
-									columns: {
-										role: true,
-									},
-									where: (fields, operators) =>
-										operators.eq(fields.organizationId, parent.organizationId),
-								},
-							},
-							where: (fields, operators) =>
-								operators.eq(fields.id, currentUserId),
-						});
-
-					if (currentUser === undefined) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthenticated",
-							},
-							message: "Only authenticated users can perform this action.",
-						});
-					}
-
-					const currentUserOrganizationMembership =
-						currentUser.organizationMembershipsWhereMember[0];
-
-					if (
-						currentUser.role !== "administrator" &&
-						(currentUserOrganizationMembership === undefined ||
-							currentUserOrganizationMembership.role !== "administrator")
-					) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthorized_action",
-							},
-							message: "You are not authorized to perform this action.",
-						});
-					}
-
 					const { cursor, isInversed, limit } = parsedArgs;
 
 					const orderBy = isInversed
-						? [asc(tagsTable.isFolder), asc(tagsTable.name)]
-						: [desc(tagsTable.isFolder), desc(tagsTable.name)];
+						? [desc(tagsTable.name)]
+						: [asc(tagsTable.name)];
 
 					let where: SQL | undefined;
 
@@ -134,23 +83,16 @@ Tag.implement({
 										.from(tagsTable)
 										.where(
 											and(
-												eq(tagsTable.parentTagId, parent.id),
-												eq(tagsTable.isFolder, cursor.isFolder),
 												eq(tagsTable.name, cursor.name),
+												eq(tagsTable.organizationId, parent.id),
 											),
 										),
 								),
-								eq(tagsTable.parentTagId, parent.id),
-								or(
-									and(
-										eq(tagsTable.isFolder, cursor.isFolder),
-										gt(tagsTable.name, cursor.name),
-									),
-									gt(tagsTable.isFolder, cursor.isFolder),
-								),
+								eq(tagsTable.organizationId, parent.id),
+								lt(tagsTable.name, cursor.name),
 							);
 						} else {
-							where = eq(tagsTable.parentTagId, parent.id);
+							where = eq(tagsTable.organizationId, parent.id);
 						}
 					} else {
 						if (cursor !== undefined) {
@@ -161,23 +103,16 @@ Tag.implement({
 										.from(tagsTable)
 										.where(
 											and(
-												eq(tagsTable.parentTagId, parent.id),
-												eq(tagsTable.isFolder, cursor.isFolder),
 												eq(tagsTable.name, cursor.name),
+												eq(tagsTable.organizationId, parent.id),
 											),
 										),
 								),
-								eq(tagsTable.parentTagId, parent.id),
-								or(
-									and(
-										eq(tagsTable.isFolder, cursor.isFolder),
-										lt(tagsTable.name, cursor.name),
-									),
-									lt(tagsTable.isFolder, cursor.isFolder),
-								),
+								eq(tagsTable.organizationId, parent.id),
+								gt(tagsTable.name, cursor.name),
 							);
 						} else {
-							where = eq(tagsTable.parentTagId, parent.id);
+							where = eq(tagsTable.organizationId, parent.id);
 						}
 					}
 
@@ -206,7 +141,6 @@ Tag.implement({
 						createCursor: (tag) =>
 							Buffer.from(
 								JSON.stringify({
-									isFolder: tag.isFolder,
 									name: tag.name,
 								}),
 							).toString("base64url"),

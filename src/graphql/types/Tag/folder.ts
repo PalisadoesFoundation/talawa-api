@@ -1,10 +1,11 @@
+import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Tag } from "./Tag";
 
 Tag.implement({
 	fields: (t) => ({
-		parentTagFolder: t.field({
-			description: "Parent tag of the tag.",
+		folder: t.field({
+			description: "Tag folder the tag is associated to.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -55,20 +56,21 @@ Tag.implement({
 					});
 				}
 
-				if (parent.parentTagId === null) {
+				if (parent.folderId === null) {
 					return null;
 				}
 
-				const parentTagId = parent.parentTagId;
+				const folderId = parent.folderId;
 
-				const existingTag = await ctx.drizzleClient.query.tagsTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, parentTagId),
-				});
+				const existingFolder =
+					await ctx.drizzleClient.query.tagFoldersTable.findFirst({
+						where: (fields, operators) => operators.eq(fields.id, folderId),
+					});
 
-				// Parent tag id existing but the associated tag not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
-				if (existingTag === undefined) {
+				// Folder id existing but the associated tag folder not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				if (existingFolder === undefined) {
 					ctx.log.error(
-						"Postgres select operation returned an empty array for a tag's parent tag id that isn't null.",
+						"Postgres select operation returned an empty array for a tag's folder id that isn't null.",
 					);
 
 					throw new TalawaGraphQLError({
@@ -79,9 +81,9 @@ Tag.implement({
 					});
 				}
 
-				return existingTag;
+				return existingFolder;
 			},
-			type: Tag,
+			type: TagFolder,
 		}),
 	}),
 });

@@ -5,7 +5,7 @@ import { Tag } from "./Tag";
 Tag.implement({
 	fields: (t) => ({
 		organization: t.field({
-			description: "Organization which the tag belongs to.",
+			description: "Organization the tag is associated to.",
 			resolve: async (parent, _args, ctx) => {
 				const existingOrganization =
 					await ctx.drizzleClient.query.organizationsTable.findFirst({

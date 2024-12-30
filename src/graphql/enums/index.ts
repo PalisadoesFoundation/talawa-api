@@ -1,7 +1,9 @@
 import "./AdvertisementAttachmentType";
 import "./AdvertisementType";
+import "./AgendaItemType";
 import "./ChatMembershipRole";
 import "./CommentVoteType";
+import "./EventAttachmentType";
 import "./Iso3166Alpha2CountryCode";
 import "./Iso4217CurrencyCode";
 import "./OrganizationMembershipRole";
@@ -12,3 +14,4 @@ import "./UserEmploymentStatus";
 import "./UserMaritalStatus";
 import "./UserNatalSex";
 import "./UserRole";
+import "./VenueAttachmentType";

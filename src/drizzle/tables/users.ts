@@ -21,13 +21,15 @@ import { actionCategoriesTable } from "./actionCategories";
 import { actionsTable } from "./actions";
 import { advertisementAttachmentsTable } from "./advertisementAttachments";
 import { advertisementsTable } from "./advertisements";
-import { agendaSectionsTable } from "./agendaSections";
+import { agendaFoldersTable } from "./agendaFolders";
+import { agendaItemsTable } from "./agendaItems";
 import { chatMembershipsTable } from "./chatMemberships";
 import { chatMessagesTable } from "./chatMessages";
 import { chatsTable } from "./chats";
 import { commentVotesTable } from "./commentVotes";
 import { commentsTable } from "./comments";
 import { eventAttachmentsTable } from "./eventAttachments";
+import { eventAttendancesTable } from "./eventAttendances";
 import { eventsTable } from "./events";
 import { familiesTable } from "./families";
 import { familyMembershipsTable } from "./familyMemberships";
@@ -40,6 +42,7 @@ import { postAttachmentsTable } from "./postAttachments";
 import { postVotesTable } from "./postVotes";
 import { postsTable } from "./posts";
 import { tagAssignmentsTable } from "./tagAssignments";
+import { tagFoldersTable } from "./tagFolders";
 import { tagsTable } from "./tags";
 import { venueAttachmentsTable } from "./venueAttachments";
 import { venueBookingsTable } from "./venueBookings";
@@ -249,16 +252,28 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 		relationName: "advertisements.updater_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `agenda_sections` table.
+	 * One to many relationship from `users` table to `agenda_folders` table.
 	 */
-	agendaSectionsWhereCreator: many(agendaSectionsTable, {
-		relationName: "agenda_sections.creator_id:users.id",
+	agendaFoldersWhereCreator: many(agendaFoldersTable, {
+		relationName: "agenda_folders.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `agenda_sections` table.
+	 * One to many relationship from `users` table to `agenda_folders` table.
 	 */
-	agendaSectionsWhereUpdater: many(agendaSectionsTable, {
-		relationName: "agenda_sections.updater_id:users.id",
+	agendaFoldersWhereUpdater: many(agendaFoldersTable, {
+		relationName: "agenda_folders.updater_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `agenda_items` table.
+	 */
+	agendaItemsWhereCreator: many(agendaItemsTable, {
+		relationName: "agenda_items.creator_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `agenda_items` table.
+	 */
+	agendaItemsWhereUpdater: many(agendaItemsTable, {
+		relationName: "agenda_items.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `chats` table.
@@ -351,6 +366,24 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	 */
 	eventAttachmentsWhereUpdater: many(eventAttachmentsTable, {
 		relationName: "event_attachments.updater_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `event_attendances` table.
+	 */
+	eventAttendancesWhereAttendee: many(eventAttendancesTable, {
+		relationName: "event_attendances.attendee_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `event_attendances` table.
+	 */
+	eventAttendancesWhereCreator: many(eventAttendancesTable, {
+		relationName: "event_attendances.creator_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `event_attendances` table.
+	 */
+	eventAttendancesWhereUpdater: many(eventAttendancesTable, {
+		relationName: "event_attendances.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `families` table.
@@ -491,6 +524,18 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 		relationName: "post_votes.updater_id:users.id",
 	}),
 	/**
+	 * One to many relationship from `users` table to `tag_folders` table.
+	 */
+	tagFoldersWhereCreator: many(tagFoldersTable, {
+		relationName: "tag_folders.creator_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `tag_folders` table.
+	 */
+	tagFoldersWhereUpdater: many(tagFoldersTable, {
+		relationName: "tag_folders.updater_id:users.id",
+	}),
+	/**
 	 * One to many relationship from `users` table to `tags` table.
 	 */
 	tagsWhereCreator: many(tagsTable, {
@@ -513,12 +558,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	 */
 	tagAssignmentsWhereCreator: many(tagAssignmentsTable, {
 		relationName: "tag_assignments.creator_id:users.id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `tag_assignments` table.
-	 */
-	tagAssignmentsWhereUpdater: many(tagAssignmentsTable, {
-		relationName: "tag_assignments.updater_id:users.id",
 	}),
 	/**
 	 * Many to one relationship from `users` table to `users` table.
@@ -557,12 +596,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	 */
 	venueBookingsWhereCreator: many(venueBookingsTable, {
 		relationName: "users.id:venue_bookings.creator_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `venue_bookings` table.
-	 */
-	venueBookingsWhereUpdater: many(venueBookingsTable, {
-		relationName: "users.id:venue_bookings.updater_id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `volunteer_groups` table.

@@ -12,9 +12,6 @@ Tag.implement({
 			description: "Global identifier of the tag.",
 			nullable: false,
 		}),
-		isFolder: t.exposeBoolean("isFolder", {
-			description: "Boolean to tell if the tag is to be used as a tag folder.",
-		}),
 		name: t.exposeString("name", {
 			description: "Name of the tag.",
 		}),
