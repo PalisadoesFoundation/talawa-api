@@ -1,7 +1,8 @@
 #!/bin/bash
+# filepath: /path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh
 # Description: Talawa API startup script
 
-# Don't use environment variables in this script, as when the script will run by systemd, it will not have access to the environment variables of the user.I have tried setting the environment variables in the systemd service file but it didn't work. So, directly use the absolute paths in the script.)
+# Don't use environment variables in this script, as when the script will run by systemd, it will not have access to the environment variables of the user. I have tried setting the environment variables in the systemd service file but it didn't work. So, directly use the absolute paths in the script.
 PROJECT_DIR="/path/to/your/talawa-api"
 LOG_FILE="/var/log/talawa-api.log"
 DEV_PATH="src/index.ts"
@@ -33,6 +34,7 @@ if [ ! -w "$LOG_FILE" ] || [ ! -r "$LOG_FILE" ]; then
   echo "Change permissions and try again."
   exit 1
 fi
+
 echo "-------------------------------***************------------------------------------" | tee -a "$LOG_FILE"
 echo "------------------------------>Talawa-API Logs<-----------------------------------" | tee -a "$LOG_FILE"
 echo "------------------------------>Current session date: $(date)" | tee -a "$LOG_FILE" 
@@ -62,7 +64,7 @@ echo "package.json is present in $(pwd). Proceeding..." | tee -a "$LOG_FILE"
 if ! command -v jq >/dev/null 2>&1; then
   echo "Error: 'jq' is not installed on this system. Exiting." | tee -a "$LOG_FILE"
   echo "It is required to parse the Node.js version from package.json." | tee -a "$LOG_FILE"
-  echo "Please install 'jq' manually, then rerurn to the script." | tee -a "$LOG_FILE"
+  echo "Please install 'jq' manually, then return to the script." | tee -a "$LOG_FILE"
   exit 1
 fi
 
@@ -84,8 +86,8 @@ echo "Installed Node.js version: $INSTALLED_NODE_VERSION" | tee -a "$LOG_FILE"
 echo "Target Node.js version: $TARGET_NODE_VERSION" | tee -a "$LOG_FILE"
 
 if [ "$INSTALLED_NODE_VERSION" != "$TARGET_NODE_VERSION" ]; then
-  echo "Error: Node.js version mismatch. Found $INSTALLED_NODE_VERSION, need $TARGET_NODE_VERSION". Exiting." | tee -a "$LOG_FILE"
-  echo "First install the required Node.js version from package.json in system then proceed further. It should match system Node.js version and Talawa-api Node.js version "$TARGET_NODE_VERSION"  | tee -a "$LOG_FILE"
+  echo "Error: Node.js version mismatch. Found $INSTALLED_NODE_VERSION, need $TARGET_NODE_VERSION. Exiting." | tee -a "$LOG_FILE"
+  echo "First install the required Node.js version from package.json in system then proceed further. It should match system Node.js version and Talawa-api Node.js version v$TARGET_NODE_VERSION"  | tee -a "$LOG_FILE"
   exit 1
 fi
 
@@ -145,16 +147,15 @@ if [ -z "$NODE_ENV" ]; then
 fi
 
 echo "Environment variable 'NODE_ENV' is set to '$NODE_ENV'. Proceeding..." | tee -a "$LOG_FILE"
-{
-  # Check the value of NODE_ENV and execute the corresponding command
-  if [ "$NODE_ENV" == "development" ]; then
-      echo "Starting Talawa API in development mode..." | tee -a "$LOG_FILE"
-      exec "$TSX_PATH" "$DEV_PATH"
-  elif [ "$NODE_ENV" == "production" ]; then
-      echo "Starting Talawa API in production mode..." | tee -a "$LOG_FILE"
-      exec "$TSX_PATH" "$PROD_PATH"
-  else
-      echo "NODE_ENV is not set to a valid value. Please set it to 'development' or 'production'. Exiting." | tee -a "$LOG_FILE"
-      exit 1
-  fi
-} 2>&1 | tee -a "$LOG_FILE"
+
+# Check the value of NODE_ENV and execute the corresponding command
+if [ "$NODE_ENV" == "development" ]; then
+    echo "Starting Talawa API in development mode..." | tee -a "$LOG_FILE"
+    exec "$TSX_PATH" "$DEV_PATH"
+elif [ "$NODE_ENV" == "production" ]; then
+    echo "Starting Talawa API in production mode..." | tee -a "$LOG_FILE"
+    exec "$TSX_PATH" "$PROD_PATH"
+else
+    echo "NODE_ENV is not set to a valid value. Please set it to 'development' or 'production'. Exiting." | tee -a "$LOG_FILE"
+    exit 1
+fi

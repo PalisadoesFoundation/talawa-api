@@ -29,10 +29,12 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 ### 1. Create a Dedicated System User
 
 - Create a user named `talawa` for running the service:
+  
   ```bash
   sudo adduser --system --no-create-home --group talawa
   ```
 - Verify the user creation:
+  
   ```bash
   id talawa
   ```
@@ -66,6 +68,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 ### 5. Verify Log File and Permissions
 
 - Create the log file if it does not exist:
+  
   ```bash
   sudo touch /var/log/talawa-api.log
   sudo chown talawa:talawa /var/log/talawa-api.log
@@ -76,6 +79,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 ### 6. Set Up Log Rotation
 
 - Create a new logrotate configuration file for Talawa API:
+  
   ```bash
   sudo nano /etc/logrotate.d/talawa-api
   ```
@@ -90,6 +94,12 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
       missingok
       notifempty
       create 664 talawa talawa
+      # Prevent symlink attacks
+      nolinkasym
+      # Delete old versions of log files
+      delaycompress
+      # Don't rotate empty log files
+      notifempty
       postrotate
           systemctl restart talawa-api.service > /dev/null 2>&1 || true
       endscript
@@ -97,6 +107,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
   ```
 
 - Verify logrotate setup:
+  
   ```bash
   sudo logrotate -f /etc/logrotate.d/talawa-api
   sudo logrotate -v /etc/logrotate.conf
@@ -105,6 +116,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
   ```
 - -f for forced rotation, -v for verbose rotation, -d for debuging mode rotation.
 - To confirm log rotation, check the rotated logs:
+  
   ```bash
   ls -la /var/log/talawa-api.log*
   ```
@@ -112,20 +124,24 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 ### 7. Install Dependencies
 
 - Install required Node.js version with `fnm`:
+  
   ```bash
   fnm install <node_version>
   fnm use <node_version>
   ```
   Replace `<node_version>` with the version specified in `package.json` (`engines.node`)
 - Install dependencies:
+  
   ```bash
   npm install
   ```
 - Globally install `tsx` if not already installed:
+  
   ```bash
   npm install -g tsx
   ```
 - Install `jq`:
+  
   ```bash
   sudo apt install jq
   ```
@@ -133,14 +149,17 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 ### 8. Enable and Start the Service
 
 1. Reload the systemd configuration:
+   
    ```bash
    sudo systemctl daemon-reload
    ```
 2. Enable the service:
+   
    ```bash
    sudo systemctl enable talawa-api.service
    ```
 3. Start the service:
+   
    ```bash
    sudo systemctl start talawa-api.service
    ```
@@ -148,22 +167,27 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 ### 9. Verify the Installation
 
 - Check the status of the service:
+  
   ```bash
   sudo systemctl status talawa-api.service
   ```
 - View logs in real-time:
+  
   ```bash
   sudo journalctl -u talawa-api.service -f
   ```
 - Check for errors:
+  
   ```bash
   sudo journalctl -u talawa-api.service -p err
   ```
 - Verify the service configuration:
+  
   ```bash
   sudo systemd-analyze verify talawa-api.service
   ```
 - Verify service dependencies:
+  
   ```bash
   sudo systemctl list-dependencies talawa-api.service
   ```
@@ -171,25 +195,30 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 ## Notes
 
 - Ensure the `Talawa-api.sh` script has executable permissions:
+  
   ```bash
   chmod +x /path/to/Talawa-api.sh
   ```
 - Adjust `LimitNOFILE` and security-related settings in the `talawa-api.service` file as needed for your environment
 - For production, ensure the `dist` folder exists by running:
+  
   ```bash
   npm run build
   ```
 - If you encounter any issues, refer to the logs in `/var/log/talawa-api.log` or use `journalctl`
-- Don't try to create a global variable to store paths for use in both systemd service and script files. Global variables (like `/path/to/your/talawa-api`) will not work properly as systemd services run in a separate environment. While there are various suggested solutions (using `/etc/environment`, `/etc/default/`, or `Environment` and `EnvironmentFile` directives), these approaches can complicate service execution and are not recommended
+- Don't try to create a global variable to store paths for use in both systemd service and script files. Global variables (like `/path/to/your/talawa-api`) will not work properly as systemd services run in a separate environment. While there are various suggested solutions (using `/etc/environment`, `/etc/default/`, or `Environment` and `EnvironmentFile` directives), these approaches can complicate service execution and are not recommended. 
+- While systemd supports environment variables through EnvironmentFile and Environment directives, using absolute paths in both the service file and script ensures consistent behavior across different environments and makes debugging easier.
 
 ### Additional Steps for Troubleshooting
 
 1. Verify Node.js and `tsx` installation:
+   
    ```bash
    node -v
    tsx -v
    ```
 2. Ensure MongoDB and Redis are running:
+   
    ```bash
    sudo systemctl status mongod
    sudo systemctl status redis
