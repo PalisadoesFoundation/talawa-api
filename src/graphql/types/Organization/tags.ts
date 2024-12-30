@@ -1,4 +1,4 @@
-import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
+import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
 import type { z } from "zod";
 import { tagsTable, tagsTableInsertSchema } from "~/src/drizzle/tables/tags";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
@@ -37,7 +37,6 @@ const tagsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	});
 
 const cursorSchema = tagsTableInsertSchema.pick({
-	isFolder: true,
 	name: true,
 });
 
@@ -121,10 +120,11 @@ Organization.implement({
 					const { cursor, isInversed, limit } = parsedArgs;
 
 					const orderBy = isInversed
-						? [asc(tagsTable.isFolder), asc(tagsTable.name)]
-						: [desc(tagsTable.isFolder), desc(tagsTable.name)];
+						? [desc(tagsTable.name)]
+						: [asc(tagsTable.name)];
 
 					let where: SQL | undefined;
+
 					if (isInversed) {
 						if (cursor !== undefined) {
 							where = and(
@@ -134,20 +134,13 @@ Organization.implement({
 										.from(tagsTable)
 										.where(
 											and(
-												eq(tagsTable.isFolder, cursor.isFolder),
 												eq(tagsTable.name, cursor.name),
 												eq(tagsTable.organizationId, parent.id),
 											),
 										),
 								),
 								eq(tagsTable.organizationId, parent.id),
-								or(
-									and(
-										eq(tagsTable.isFolder, cursor.isFolder),
-										gt(tagsTable.name, cursor.name),
-									),
-									gt(tagsTable.isFolder, cursor.isFolder),
-								),
+								lt(tagsTable.name, cursor.name),
 							);
 						} else {
 							where = eq(tagsTable.organizationId, parent.id);
@@ -161,20 +154,13 @@ Organization.implement({
 										.from(tagsTable)
 										.where(
 											and(
-												eq(tagsTable.isFolder, cursor.isFolder),
 												eq(tagsTable.name, cursor.name),
 												eq(tagsTable.organizationId, parent.id),
 											),
 										),
 								),
 								eq(tagsTable.organizationId, parent.id),
-								or(
-									and(
-										eq(tagsTable.isFolder, cursor.isFolder),
-										lt(tagsTable.name, cursor.name),
-									),
-									lt(tagsTable.isFolder, cursor.isFolder),
-								),
+								gt(tagsTable.name, cursor.name),
 							);
 						} else {
 							where = eq(tagsTable.organizationId, parent.id);
@@ -206,7 +192,6 @@ Organization.implement({
 						createCursor: (tag) =>
 							Buffer.from(
 								JSON.stringify({
-									isFolder: tag.isFolder,
 									name: tag.name,
 								}),
 							).toString("base64url"),

@@ -1,8 +1,7 @@
 import "./Tag";
-import "./childTags";
 import "./createdAt";
 import "./creator";
+import "./folder";
 import "./organization";
-import "./parentTag";
 import "./updatedAt";
 import "./updater";

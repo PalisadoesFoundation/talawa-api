@@ -25,10 +25,10 @@ export const mutationCreateAdvertisementInputSchema =
 				.optional(),
 		})
 		.superRefine((arg, ctx) => {
-			if (arg.endAt.getTime() <= arg.startAt.getTime()) {
+			if (arg.endAt <= arg.startAt) {
 				ctx.addIssue({
 					code: "custom",
-					message: `Must be greater than the value: ${arg.endAt}`,
+					message: `Must be greater than the value: ${arg.startAt.toISOString()}`,
 					path: ["endAt"],
 				});
 			}

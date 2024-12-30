@@ -2,6 +2,7 @@ import type { z } from "zod";
 import { advertisementsTableInsertSchema } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
 
 export const mutationUpdateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
@@ -24,9 +25,9 @@ export const mutationUpdateAdvertisementInputSchema =
 			}
 
 			if (
-				remainingArg.endAt !== undefined &&
-				remainingArg.startAt !== undefined &&
-				remainingArg.endAt.getTime() <= remainingArg.startAt.getTime()
+				isNotNullish(remainingArg.endAt) &&
+				isNotNullish(remainingArg.startAt) &&
+				remainingArg.endAt <= remainingArg.startAt
 			) {
 				ctx.addIssue({
 					code: "custom",

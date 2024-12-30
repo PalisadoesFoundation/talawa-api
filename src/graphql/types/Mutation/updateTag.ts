@@ -64,7 +64,6 @@ builder.mutationField("updateTag", (t) =>
 				}),
 				ctx.drizzleClient.query.tagsTable.findFirst({
 					columns: {
-						isFolder: true,
 						organizationId: true,
 					},
 					with: {
@@ -72,6 +71,9 @@ builder.mutationField("updateTag", (t) =>
 							columns: {},
 							with: {
 								organizationMembershipsWhereOrganization: {
+									columns: {
+										role: true,
+									},
 									where: (fields, operators) =>
 										operators.eq(fields.memberId, currentUserId),
 								},
@@ -106,25 +108,24 @@ builder.mutationField("updateTag", (t) =>
 				});
 			}
 
-			if (isNotNullish(parsedArgs.input.parentTagId)) {
-				const parentTagId = parsedArgs.input.parentTagId;
+			if (isNotNullish(parsedArgs.input.folderId)) {
+				const folderId = parsedArgs.input.folderId;
 
-				const existingParentTag =
+				const existingTagFolder =
 					await ctx.drizzleClient.query.tagsTable.findFirst({
 						columns: {
-							isFolder: true,
 							organizationId: true,
 						},
-						where: (fields, operators) => operators.eq(fields.id, parentTagId),
+						where: (fields, operators) => operators.eq(fields.id, folderId),
 					});
 
-				if (existingParentTag === undefined) {
+				if (existingTagFolder === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "arguments_associated_resources_not_found",
 							issues: [
 								{
-									argumentPath: ["input", "parentTagId"],
+									argumentPath: ["input", "folderId"],
 								},
 							],
 						},
@@ -133,31 +134,15 @@ builder.mutationField("updateTag", (t) =>
 					});
 				}
 
-				if (existingParentTag.organizationId !== existingTag.organizationId) {
+				if (existingTagFolder.organizationId !== existingTag.organizationId) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "forbidden_action_on_arguments_associated_resources",
 							issues: [
 								{
-									argumentPath: ["input", "parentTagId"],
+									argumentPath: ["input", "folderId"],
 									message:
 										"This tag does not belong to the associated organization.",
-								},
-							],
-						},
-						message:
-							"This action is forbidden on the resources associated to the provided arguments.",
-					});
-				}
-
-				if (existingParentTag.isFolder !== true) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "parentTagId"],
-									message: "This must be a tag folder.",
 								},
 							],
 						},
@@ -175,7 +160,6 @@ builder.mutationField("updateTag", (t) =>
 						columns: {},
 						where: (fields, operators) =>
 							operators.and(
-								operators.eq(fields.isFolder, existingTag.isFolder),
 								operators.eq(fields.name, name),
 								operators.eq(fields.organizationId, existingTag.organizationId),
 							),
@@ -223,14 +207,14 @@ builder.mutationField("updateTag", (t) =>
 			const [updatedTag] = await ctx.drizzleClient
 				.update(tagsTable)
 				.set({
-					parentTagId: parsedArgs.input.parentTagId,
+					folderId: parsedArgs.input.folderId,
 					name: parsedArgs.input.name,
 					updaterId: currentUserId,
 				})
 				.where(eq(tagsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Updated tag not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
+			// Updated tag not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
 			if (updatedTag === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

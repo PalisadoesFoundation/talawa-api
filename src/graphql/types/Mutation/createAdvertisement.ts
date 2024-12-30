@@ -172,6 +172,7 @@ builder.mutationField("createAdvertisement", (t) =>
 					ctx.log.error(
 						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",

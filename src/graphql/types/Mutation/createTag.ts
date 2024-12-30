@@ -54,39 +54,39 @@ builder.mutationField("createTag", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingOrganization, existingTag] =
-				await Promise.all([
-					ctx.drizzleClient.query.usersTable.findFirst({
-						columns: {
-							role: true,
-						},
-						where: (fields, operators) =>
-							operators.eq(fields.id, currentUserId),
-					}),
-					ctx.drizzleClient.query.organizationsTable.findFirst({
-						columns: {},
-						with: {
-							organizationMembershipsWhereOrganization: {
-								where: (fields, operators) =>
-									operators.eq(fields.memberId, currentUserId),
+			const [currentUser, existingOrganization] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.organizationsTable.findFirst({
+					columns: {},
+					with: {
+						organizationMembershipsWhereOrganization: {
+							columns: {
+								role: true,
 							},
+							where: (fields, operators) =>
+								operators.eq(fields.memberId, currentUserId),
 						},
-						where: (fields, operators) =>
-							operators.eq(fields.id, parsedArgs.input.organizationId),
-					}),
-					ctx.drizzleClient.query.tagsTable.findFirst({
-						columns: {},
-						where: (fields, operators) =>
-							operators.and(
-								operators.eq(fields.isFolder, parsedArgs.input.isFolder),
-								operators.eq(fields.name, parsedArgs.input.name),
-								operators.eq(
-									fields.organizationId,
-									parsedArgs.input.organizationId,
+						tagsWhereOrganization: {
+							columns: {},
+							where: (fields, operators) =>
+								operators.and(
+									operators.eq(fields.name, parsedArgs.input.name),
+									operators.eq(
+										fields.organizationId,
+										parsedArgs.input.organizationId,
+									),
 								),
-							),
-					}),
-				]);
+						},
+					},
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.organizationId),
+				}),
+			]);
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
@@ -111,7 +111,9 @@ builder.mutationField("createTag", (t) =>
 				});
 			}
 
-			if (existingTag !== undefined) {
+			const existingTagWithName = existingOrganization.tagsWhereOrganization[0];
+
+			if (existingTagWithName !== undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "forbidden_action_on_arguments_associated_resources",
@@ -127,25 +129,24 @@ builder.mutationField("createTag", (t) =>
 				});
 			}
 
-			if (isNotNullish(parsedArgs.input.parentTagId)) {
-				const parentTagId = parsedArgs.input.parentTagId;
+			if (isNotNullish(parsedArgs.input.folderId)) {
+				const folderId = parsedArgs.input.folderId;
 
-				const existingParentTag =
-					await ctx.drizzleClient.query.tagsTable.findFirst({
+				const existingTagFolder =
+					await ctx.drizzleClient.query.tagFoldersTable.findFirst({
 						columns: {
-							isFolder: true,
 							organizationId: true,
 						},
-						where: (fields, operators) => operators.eq(fields.id, parentTagId),
+						where: (fields, operators) => operators.eq(fields.id, folderId),
 					});
 
-				if (existingParentTag === undefined) {
+				if (existingTagFolder === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "arguments_associated_resources_not_found",
 							issues: [
 								{
-									argumentPath: ["input", "parentTagId"],
+									argumentPath: ["input", "folderId"],
 								},
 							],
 						},
@@ -155,32 +156,16 @@ builder.mutationField("createTag", (t) =>
 				}
 
 				if (
-					existingParentTag.organizationId !== parsedArgs.input.organizationId
+					existingTagFolder.organizationId !== parsedArgs.input.organizationId
 				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "forbidden_action_on_arguments_associated_resources",
 							issues: [
 								{
-									argumentPath: ["input", "parentTagId"],
+									argumentPath: ["input", "folderId"],
 									message:
 										"This tag does not belong to the associated organization.",
-								},
-							],
-						},
-						message:
-							"This action is forbidden on the resources associated to the provided arguments.",
-					});
-				}
-
-				if (existingParentTag.isFolder !== true) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "parentTagId"],
-									message: "This must be a tag folder.",
 								},
 							],
 						},
@@ -216,8 +201,7 @@ builder.mutationField("createTag", (t) =>
 				.insert(tagsTable)
 				.values({
 					creatorId: currentUserId,
-					isFolder: parsedArgs.input.isFolder,
-					parentTagId: parsedArgs.input.parentTagId,
+					folderId: parsedArgs.input.folderId,
 					name: parsedArgs.input.name,
 					organizationId: parsedArgs.input.organizationId,
 				})
@@ -228,6 +212,7 @@ builder.mutationField("createTag", (t) =>
 				ctx.log.error(
 					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 				);
+
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
