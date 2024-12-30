@@ -9,7 +9,7 @@ After=network.target
 # The type of service. 'simple' means the service will start immediately.
 Type=simple
 
-# The command to start the service. This points to the Talawa-api.sh script.Here you can't use TALAWA_API_HOME from shell (~/.bashrc) as systemd will not load any variable. That's why we have to manually add it.Always use absolute path.
+# The command to start the service. This points to the Talawa-api.sh script.Here you can't use any global variables as systemd will not load any variable. That's why we have to manually add it.Always use absolute path.
 ExecStart=/path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh
 
 # The working directory for the service.User have to export it.
