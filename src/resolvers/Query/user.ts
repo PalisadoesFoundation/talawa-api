@@ -13,6 +13,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
  * @param context-
  * @returns An object that contains user data. If the user is not found then it throws a `NotFoundError` error.
  */
+
 export const user: QueryResolvers["user"] = async (_parent, args, context) => {
   // Check if the current user exists in the system
   const currentUserExists = !!(await User.exists({
@@ -44,6 +45,7 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
     );
   }
 
+  // Fetch the user data from the database based on the provided ID (args.id)
   // Fetch the user data from the database based on the provided ID (args.id)
   const user: InterfaceUser = (await User.findById(
     args.id,
