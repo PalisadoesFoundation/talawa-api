@@ -3,7 +3,7 @@
 # Description: Talawa API startup script
 
 # Don't use environment variables in this script, as when the script will run by systemd, it will not have access to the environment variables of the user. I have tried setting the environment variables in the systemd service file but it didn't work. So, directly use the absolute paths in the script.
-PROJECT_DIR="/path/to/your/talawa-api"
+PROJECT_DIR="/home/purnendu/Development/talawa-api"
 LOG_FILE="/var/log/talawa-api.log"
 DEV_PATH="src/index.ts"
 PROD_PATH="dist/index.js"
@@ -111,6 +111,17 @@ fi
 
 echo "'tsx' is installed and executable at '$TSX_PATH'. Proceeding..." | tee -a "$LOG_FILE"
 
+# Define the path to the node executable dynamically
+NODE_PATH=$(which node)
+
+# Check if the NODE_PATH is valid
+if [ ! -x "$NODE_PATH" ]; then
+  echo "Error: Path for 'node' is not found or not executable. Verify it is properly installed. Exiting." | tee -a "$LOG_FILE"
+  exit 1
+fi
+
+echo "'node' is installed and executable at '$NODE_PATH'. Proceeding..." | tee -a "$LOG_FILE"
+
 # Validate paths for development and production
 if [ ! -f "$DEV_PATH" ]; then
   echo "Error: Development path '$DEV_PATH' not found. Exiting." | tee -a "$LOG_FILE"
@@ -154,7 +165,7 @@ if [ "$NODE_ENV" == "development" ]; then
     exec "$TSX_PATH" "$DEV_PATH"
 elif [ "$NODE_ENV" == "production" ]; then
     echo "Starting Talawa API in production mode..." | tee -a "$LOG_FILE"
-    exec "$TSX_PATH" "$PROD_PATH"
+    exec "$NODE_PATH" "$PROD_PATH"
 else
     echo "NODE_ENV is not set to a valid value. Please set it to 'development' or 'production'. Exiting." | tee -a "$LOG_FILE"
     exit 1

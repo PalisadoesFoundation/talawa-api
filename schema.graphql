@@ -67,6 +67,116 @@ enum AdvertisementType {
   pop_up
 }
 
+type AgendaFolder {
+  """
+  GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
+  """
+  childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
+
+  """Date time at the time the agenda folder was last created."""
+  createdAt: DateTime
+
+  """User who created the agenda folder."""
+  creator: User
+
+  """Event associated to the agenda folder."""
+  event: Event
+
+  """Global identifier of the agenda folder."""
+  id: ID!
+
+  """
+  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
+  """
+  isAgendaItemFolder: Boolean
+
+  """
+  GraphQL connection to traverse through the agenda item associated to the agenda folder.
+  """
+  items(after: String, before: String, first: Int, last: Int): AgendaFolderItemsConnection
+
+  """Name of the agenda folder."""
+  name: String
+
+  """Agenda folder that is a parent folder to the agenda folder."""
+  parentFolder: AgendaFolder
+
+  """Date time at the time the agenda folder was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda folder."""
+  updater: User
+}
+
+""""""
+type AgendaFolderChildFoldersConnection {
+  edges: [AgendaFolderChildFoldersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderChildFoldersConnectionEdge {
+  cursor: String!
+  node: AgendaFolder
+}
+
+""""""
+type AgendaFolderItemsConnection {
+  edges: [AgendaFolderItemsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderItemsConnectionEdge {
+  cursor: String!
+  node: AgendaItem
+}
+
+type AgendaItem {
+  """Date time at the time the agenda item was last created."""
+  createdAt: DateTime
+
+  """User who created the agenda item."""
+  creator: User
+
+  """Custom information about the agenda item."""
+  description: String
+
+  """Duration of the agenda item."""
+  duration: String
+
+  """Agenda folder associated to the agenda item."""
+  event: AgendaFolder
+
+  """Global identifier of the agenda item."""
+  id: ID!
+
+  """
+  Key of the agenda item if it's type is "song". More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  """
+  key: String
+
+  """Name of the agenda item."""
+  name: String
+
+  """Type of the agenda item."""
+  type: AgendaItemType
+
+  """Date time at the time the agenda item was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda item."""
+  updater: User
+}
+
+""""""
+enum AgendaItemType {
+  general
+  note
+  scripture
+  song
+}
+
 """"""
 type AuthenticationPayload {
   """
@@ -258,6 +368,99 @@ scalar DateTime
 A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
 """
 scalar EmailAddress
+
+type Event {
+  """
+  GraphQL connection to traverse through the agenda folders associated to the event.
+  """
+  agendaFolders(after: String, before: String, first: Int, last: Int): EventAgendaFoldersConnection
+
+  """Array of attachments."""
+  attachments: [EventAttachment!]
+
+  """Date time at the time the event was created."""
+  createdAt: DateTime
+
+  """User who created the event."""
+  creator: User
+
+  """Custom information about the event."""
+  description: String
+
+  """Date time at the time the event ends at."""
+  endAt: DateTime
+
+  """Global identifier of the event."""
+  id: ID!
+
+  """Name of the event."""
+  name: String
+
+  """Organization associated to the event."""
+  organization: Organization
+
+  """Date time at the time the event starts at."""
+  startAt: DateTime
+
+  """Date time at the time the event was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the event."""
+  updater: User
+
+  """
+  GraphQL connection to traverse through the venues that are associated to the event.
+  """
+  venues(after: String, before: String, first: Int, last: Int): EventVenuesConnection
+}
+
+""""""
+type EventAgendaFoldersConnection {
+  edges: [EventAgendaFoldersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type EventAgendaFoldersConnectionEdge {
+  cursor: String!
+  node: AgendaFolder
+}
+
+""""""
+type EventAttachment {
+  """Type of the attachment."""
+  type: EventAttachmentType
+
+  """URI to the attachment."""
+  uri: String
+}
+
+""""""
+input EventAttachmentInput {
+  """Type of the attachment."""
+  type: EventAttachmentType!
+
+  """URI to the attachment."""
+  uri: String!
+}
+
+""""""
+enum EventAttachmentType {
+  image
+  video
+}
+
+""""""
+type EventVenuesConnection {
+  edges: [EventVenuesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type EventVenuesConnectionEdge {
+  cursor: String!
+  node: Venue
+}
 
 type Fund {
   """
@@ -825,6 +1028,12 @@ type Mutation {
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
 
+  """Mutation field to create an agenda folder."""
+  createAgendaFolder(input: MutationCreateAgendaFolderInput!): AgendaFolder
+
+  """Mutation field to create an agenda item."""
+  createAgendaItem(input: MutationCreateAgendaItemInput!): AgendaItem
+
   """Mutation field to create a chat."""
   createChat(input: MutationCreateChatInput!): Chat
 
@@ -839,6 +1048,9 @@ type Mutation {
 
   """Mutation field to create a comment vote."""
   createCommentVote(input: MutationCreateCommentVoteInput!): Comment
+
+  """Mutation field to create an event."""
+  createEvent(input: MutationCreateEventInput!): Event
 
   """Mutation field to create a fund."""
   createFund(input: MutationCreateFundInput!): Fund
@@ -864,14 +1076,29 @@ type Mutation {
   """Mutation field to create a tag."""
   createTag(input: MutationCreateTagInput!): Tag
 
+  """Mutation field to create a tag folder."""
+  createTagFolder(input: MutationCreateTagFolderInput!): TagFolder
+
   """Mutation field to create a user."""
   createUser(
     """Input required to create a user."""
     input: MutationCreateUserInput!
   ): AuthenticationPayload
 
+  """Mutation field to create a venue."""
+  createVenue(input: MutationCreateVenueInput!): Venue
+
+  """Mutation field to create a venue booking."""
+  createVenueBooking(input: MutationCreateVenueBookingInput!): Venue
+
   """Mutation field to delete an advertisement."""
   deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
+
+  """Mutation field to delete an agenda folder."""
+  deleteAgendaFolder(input: MutationDeleteAgendaFolderInput!): AgendaFolder
+
+  """Mutation field to delete an agenda item."""
+  deleteAgendaItem(input: MutationDeleteAgendaItemInput!): AgendaItem
 
   """Mutation field to delete a chat."""
   deleteChat(input: MutationDeleteChatInput!): Chat
@@ -890,6 +1117,9 @@ type Mutation {
 
   """Mutation field to delete the current user."""
   deleteCurrentUser: User
+
+  """Mutation field to delete an event."""
+  deleteEvent(input: MutationDeleteEventInput!): Event
 
   """Mutation field to delete a fund."""
   deleteFund(input: MutationDeleteFundInput!): Fund
@@ -915,11 +1145,20 @@ type Mutation {
   """Mutation field to delete a tag."""
   deleteTag(input: MutationDeleteTagInput!): Tag
 
+  """Mutation field to delete a tagFolder."""
+  deleteTagFolder(input: MutationDeleteTagFolderInput!): TagFolder
+
   """Mutation field to delete a user."""
   deleteUser(
     """Input required to delete a user."""
     input: MutationDeleteUserInput!
   ): User
+
+  """Mutation field to delete a venue."""
+  deleteVenue(input: MutationDeleteVenueInput!): Venue
+
+  """Mutation field to delete an venue booking."""
+  deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
 
   """Mutation field to sign up to talawa."""
   signUp(
@@ -929,6 +1168,12 @@ type Mutation {
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
+
+  """Mutation field to update an agenda folder."""
+  updateAgendaFolder(input: MutationUpdateAgendaFolderInput!): AgendaFolder
+
+  """Mutation field to update an agenda item."""
+  updateAgendaItem(input: MutationUpdateAgendaItemInput!): AgendaItem
 
   """Mutation field to update a chat."""
   updateChat(input: MutationUpdateChatInput!): Chat
@@ -950,6 +1195,9 @@ type Mutation {
     """Input required to update the current user."""
     input: MutationUpdateCurrentUserInput!
   ): User
+
+  """Mutation field to update an event."""
+  updateEvent(input: MutationUpdateEventInput!): Event
 
   """Mutation field to update a fund."""
   updateFund(input: MutationUpdateFundInput!): Fund
@@ -975,11 +1223,17 @@ type Mutation {
   """Mutation field to update a tag."""
   updateTag(input: MutationUpdateTagInput!): Tag
 
+  """Mutation field to update a tag folder."""
+  updateTagFolder(input: MutationUpdateTagFolderInput!): TagFolder
+
   """Mutation field to update a user."""
   updateUser(
     """Input required to update a user."""
     input: MutationUpdateUserInput!
   ): User
+
+  """Mutation field to update a venue."""
+  updateVenue(input: MutationUpdateVenueInput!): Venue
 }
 
 """"""
@@ -1004,6 +1258,50 @@ input MutationCreateAdvertisementInput {
 
   """Type of the advertisement."""
   type: AdvertisementType!
+}
+
+""""""
+input MutationCreateAgendaFolderInput {
+  """Global identifier of the event the agenda folder is associated to."""
+  eventId: ID!
+
+  """
+  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
+  """
+  isAgendaItemFolder: Boolean!
+
+  """Name of the agenda folder."""
+  name: String!
+
+  """
+  Global identifier of the agenda folder the agenda folder is associated to.
+  """
+  parentFolderId: ID
+}
+
+""""""
+input MutationCreateAgendaItemInput {
+  """Custom information about the agenda item."""
+  description: String
+
+  """Duration of the agenda item."""
+  duration: String
+
+  """
+  Global identifier of the agenda folder the agenda item is associated to.
+  """
+  folderId: ID!
+
+  """
+  Key of the agenda item if it's type is "song". More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  """
+  key: String
+
+  """Name of the agenda item."""
+  name: String!
+
+  """Type of the agenda item."""
+  type: AgendaItemType!
 }
 
 """"""
@@ -1061,6 +1359,27 @@ input MutationCreateCommentVoteInput {
 
   """Type of the vote."""
   type: CommentVoteType!
+}
+
+""""""
+input MutationCreateEventInput {
+  """Attachments of the event."""
+  attachments: [EventAttachmentInput!]
+
+  """Custom information about the event."""
+  description: String
+
+  """Date time at the time the event ends at."""
+  endAt: DateTime!
+
+  """Name of the event."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+
+  """Date time at the time the event starts at."""
+  startAt: DateTime!
 }
 
 """"""
@@ -1177,18 +1496,27 @@ input MutationCreatePostVoteInput {
 }
 
 """"""
-input MutationCreateTagInput {
-  """Boolean to tell if the tag is to be used as a tag folder."""
-  isFolder: Boolean!
-
+input MutationCreateTagFolderInput {
   """Name of the tag."""
   name: String!
 
   """Global identifier of the associated organization."""
   organizationId: ID!
 
-  """Global identifier of the parent tag."""
-  parentTagId: ID
+  """Global identifier of the associated parent tag folder."""
+  parentFolderId: ID
+}
+
+""""""
+input MutationCreateTagInput {
+  """Global identifier of the associated tag folder."""
+  folderId: ID
+
+  """Name of the tag."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
 }
 
 """"""
@@ -1259,8 +1587,44 @@ input MutationCreateUserInput {
 }
 
 """"""
+input MutationCreateVenueBookingInput {
+  """Global identifier of the associated event."""
+  eventId: ID!
+
+  """Global identifier of the associated venue."""
+  venueId: ID!
+}
+
+""""""
+input MutationCreateVenueInput {
+  """Attachments of the venue."""
+  attachments: [VenueAttachmentInput!]
+
+  """Custom information about the venue."""
+  description: String
+
+  """Name of the venue."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+}
+
+""""""
 input MutationDeleteAdvertisementInput {
   """Global identifier of the advertisement."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteAgendaFolderInput {
+  """Global identifier of the agenda folder."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteAgendaItemInput {
+  """Global identifier of the agenda item."""
   id: ID!
 }
 
@@ -1298,6 +1662,12 @@ input MutationDeleteCommentVoteInput {
 
   """Global identifier of the user who voted."""
   creatorId: ID!
+}
+
+""""""
+input MutationDeleteEventInput {
+  """Global identifier of the event."""
+  id: ID!
 }
 
 """"""
@@ -1349,6 +1719,12 @@ input MutationDeletePostVoteInput {
 }
 
 """"""
+input MutationDeleteTagFolderInput {
+  """Global identifier of the tag folder."""
+  id: ID!
+}
+
+""""""
 input MutationDeleteTagInput {
   """Global identifier of the tag."""
   id: ID!
@@ -1357,6 +1733,21 @@ input MutationDeleteTagInput {
 """"""
 input MutationDeleteUserInput {
   """Global identifier of the user."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteVenueBookingInput {
+  """Global identifier of the associated event."""
+  eventId: ID!
+
+  """Global identifier of the associated venue."""
+  venueId: ID!
+}
+
+""""""
+input MutationDeleteVenueInput {
+  """Global identifier of the venue."""
   id: ID!
 }
 
@@ -1443,6 +1834,43 @@ input MutationUpdateAdvertisementInput {
 
   """Type of the advertisement."""
   type: AdvertisementType
+}
+
+""""""
+input MutationUpdateAgendaFolderInput {
+  """Global identifier of the agenda folder."""
+  id: ID!
+
+  """Name of the agenda folder."""
+  name: String
+
+  """
+  Global identifier of the agenda folder the agenda folder is associated to.
+  """
+  parentFolderId: ID
+}
+
+""""""
+input MutationUpdateAgendaItemInput {
+  """Custom information about the agenda item."""
+  description: String
+
+  """Duration of the agenda item."""
+  duration: String
+
+  """Global identifier of the associated agenda folder."""
+  folderId: ID
+
+  """Global identifier of the agenda item."""
+  id: ID!
+
+  """
+  Key of the agenda item if it's type is "song". More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  """
+  key: String
+
+  """Name of the agenda item."""
+  name: String
 }
 
 """"""
@@ -1561,6 +1989,24 @@ input MutationUpdateCurrentUserInput {
 }
 
 """"""
+input MutationUpdateEventInput {
+  """Custom information about the event."""
+  description: String
+
+  """Date time at the time the event ends at."""
+  endAt: DateTime
+
+  """Global identifier of the event."""
+  id: ID!
+
+  """Name of the event."""
+  name: String
+
+  """Date time at the time the event starts at."""
+  startAt: DateTime
+}
+
+""""""
 input MutationUpdateFundCampaignInput {
   """Date time at the time the fund campaign ends at."""
   endAt: DateTime
@@ -1666,15 +2112,27 @@ input MutationUpdatePostVoteInput {
 }
 
 """"""
+input MutationUpdateTagFolderInput {
+  """Global identifier of the tag folder."""
+  id: ID!
+
+  """Name of the tag folder."""
+  name: String
+
+  """Global identifier of associated parent tag folder."""
+  parentFolderId: ID
+}
+
+""""""
 input MutationUpdateTagInput {
+  """Global identifier of associated tag folder."""
+  folderId: ID
+
   """Global identifier of the tag."""
   id: ID!
 
   """Name of the tag."""
   name: String
-
-  """Global identifier of associated parent tag."""
-  parentTagId: ID
 }
 
 """"""
@@ -1747,6 +2205,18 @@ input MutationUpdateUserInput {
   workPhoneNumber: PhoneNumber
 }
 
+""""""
+input MutationUpdateVenueInput {
+  """Custom information about the venue."""
+  description: String
+
+  """Global identifier of the venue."""
+  id: ID!
+
+  """Name of the venue."""
+  name: String
+}
+
 type Organization {
   """Address of the organization."""
   address: String
@@ -1778,6 +2248,11 @@ type Organization {
 
   """Custom information about the organization."""
   description: String
+
+  """
+  GraphQL connection to traverse through the events associated to the organization.
+  """
+  events(after: String, before: String, first: Int, last: Int): OrganizationEventsConnection
 
   """
   GraphQL connection to traverse through the funds that are associated to the organization.
@@ -1818,6 +2293,11 @@ type Organization {
   state: String
 
   """
+  GraphQL connection to traverse through the tag folders associated to the organization.
+  """
+  tagFolders(after: String, before: String, first: Int, last: Int): OrganizationTagFoldersConnection
+
+  """
   GraphQL connection to traverse through the tags associated to the organization.
   """
   tags(after: String, before: String, first: Int, last: Int): OrganizationTagsConnection
@@ -1827,6 +2307,11 @@ type Organization {
 
   """User who last updated the organization."""
   updater: User
+
+  """
+  GraphQL connection to traverse through the venues associated to the organization.
+  """
+  venues(after: String, before: String, first: Int, last: Int): OrganizationVenuesConnection
 }
 
 """"""
@@ -1851,6 +2336,18 @@ type OrganizationChatsConnection {
 type OrganizationChatsConnectionEdge {
   cursor: String!
   node: Chat
+}
+
+""""""
+type OrganizationEventsConnection {
+  edges: [OrganizationEventsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationEventsConnectionEdge {
+  cursor: String!
+  node: Event
 }
 
 """"""
@@ -1908,6 +2405,18 @@ type OrganizationPostsConnectionEdge {
 }
 
 """"""
+type OrganizationTagFoldersConnection {
+  edges: [OrganizationTagFoldersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationTagFoldersConnectionEdge {
+  cursor: String!
+  node: TagFolder
+}
+
+""""""
 type OrganizationTagsConnection {
   edges: [OrganizationTagsConnectionEdge]
   pageInfo: PageInfo!
@@ -1917,6 +2426,18 @@ type OrganizationTagsConnection {
 type OrganizationTagsConnectionEdge {
   cursor: String!
   node: Tag
+}
+
+""""""
+type OrganizationVenuesConnection {
+  edges: [OrganizationVenuesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationVenuesConnectionEdge {
+  cursor: String!
+  node: Venue
 }
 
 type PageInfo {
@@ -2054,6 +2575,12 @@ type Query {
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
 
+  """Query field to read an agenda folder."""
+  agendaFolder(input: QueryAgendaFolderInput!): AgendaFolder
+
+  """Query field to read an agenda item."""
+  agendaItem(input: QueryAgendaItemInput!): AgendaItem
+
   """Query field to read a chat."""
   chat(input: QueryChatInput!): Chat
 
@@ -2065,6 +2592,9 @@ type Query {
 
   """Query field to read a user."""
   currentUser: User
+
+  """Query field to read an event."""
+  event(input: QueryEventInput!): Event
 
   """Query field to read a fund."""
   fund(input: QueryFundInput!): Fund
@@ -2098,13 +2628,31 @@ type Query {
   """Query field to read a tag."""
   tag(input: QueryTagInput!): Tag
 
+  """Query field to read a tag folder."""
+  tagFolder(input: QueryTagFolderInput!): TagFolder
+
   """Query field to read a user."""
   user(input: QueryUserInput!): User
+
+  """Query field to read a venue."""
+  venue(input: QueryVenueInput!): Venue
 }
 
 """"""
 input QueryAdvertisementInput {
   """Global id of the advertisement."""
+  id: String!
+}
+
+""""""
+input QueryAgendaFolderInput {
+  """Global id of the agenda folder."""
+  id: String!
+}
+
+""""""
+input QueryAgendaItemInput {
+  """Global id of the agenda item."""
   id: String!
 }
 
@@ -2123,6 +2671,12 @@ input QueryChatMessageInput {
 """"""
 input QueryCommentInput {
   """Global id of the comment."""
+  id: String!
+}
+
+""""""
+input QueryEventInput {
+  """Global id of the event."""
   id: String!
 }
 
@@ -2166,6 +2720,12 @@ input QuerySignInInput {
 }
 
 """"""
+input QueryTagFolderInput {
+  """Global id of the tag folder."""
+  id: String!
+}
+
+""""""
 input QueryTagInput {
   """Global id of the tag."""
   id: String!
@@ -2174,6 +2734,12 @@ input QueryTagInput {
 """"""
 input QueryUserInput {
   """Global id of the user."""
+  id: String!
+}
+
+""""""
+input QueryVenueInput {
+  """Global id of the venue."""
   id: String!
 }
 
@@ -2191,31 +2757,23 @@ input SubscriptionChatMessageCreateInput {
 }
 
 type Tag {
-  """
-  GraphQL connection to traverse through the tags that have the tag as their parent tag.
-  """
-  childTags(after: String, before: String, first: Int, last: Int): TagChildTagsConnection
-
   """Date time at the time the tag was created."""
   createdAt: DateTime
 
   """User who created the tag."""
   creator: User
 
+  """Tag folder the tag is associated to."""
+  folder: TagFolder
+
   """Global identifier of the tag."""
   id: ID!
-
-  """Boolean to tell if the tag is to be used as a tag folder."""
-  isFolder: Boolean
 
   """Name of the tag."""
   name: String
 
-  """Organization which the tag belongs to."""
+  """Organization the tag is associated to."""
   organization: Organization
-
-  """Parent tag of the tag."""
-  parentTagFolder: Tag
 
   """Date time at the time the tag was last updated."""
   updatedAt: DateTime
@@ -2224,14 +2782,62 @@ type Tag {
   updater: User
 }
 
+type TagFolder {
+  """
+  GraphQL connection to traverse through the tag folders that have the tag folder as their parent folder.
+  """
+  childFolders(after: String, before: String, first: Int, last: Int): TagFolderChildFoldersConnection
+
+  """Date time at the time the tag folder was created."""
+  createdAt: DateTime
+
+  """User who created the tag folder."""
+  creator: User
+
+  """Global identifier of the tag folder."""
+  id: ID!
+
+  """Name of the tag folder."""
+  name: String
+
+  """Organization which the tag folder is associated to."""
+  organization: Organization
+
+  """Parent folder of the tag folder."""
+  parentFolder: TagFolder
+
+  """
+  GraphQL connection to traverse through the tags associated to the tag folder.
+  """
+  tags(after: String, before: String, first: Int, last: Int): TagFolderTagsConnection
+
+  """Date time at the time the tag folder was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the tag folder."""
+  updater: User
+}
+
 """"""
-type TagChildTagsConnection {
-  edges: [TagChildTagsConnectionEdge]
+type TagFolderChildFoldersConnection {
+  edges: [TagFolderChildFoldersConnectionEdge]
   pageInfo: PageInfo!
 }
 
 """"""
-type TagChildTagsConnectionEdge {
+type TagFolderChildFoldersConnectionEdge {
+  cursor: String!
+  node: TagFolder
+}
+
+""""""
+type TagFolderTagsConnection {
+  edges: [TagFolderTagsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
 }
@@ -2379,4 +2985,71 @@ type UserOrganizationsWhereMemberConnectionEdge {
 enum UserRole {
   administrator
   regular
+}
+
+type Venue {
+  """Date time at the time the venue was created."""
+  createdAt: DateTime
+
+  """User who created the venue."""
+  creator: User
+
+  """Custom information about the venue."""
+  description: String
+
+  """
+  GraphQL connection to traverse through the events associated to the venue.
+  """
+  events(after: String, before: String, first: Int, last: Int): VenueEventsConnection
+
+  """Global identifier of the venue."""
+  id: ID!
+
+  """Name of the venue."""
+  name: String
+
+  """Organization associated to the venue."""
+  organization: Organization
+
+  """Date time at the time the venue was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the venue."""
+  updater: User
+}
+
+""""""
+type VenueAttachment {
+  """Type of the attachment."""
+  type: VenueAttachmentType
+
+  """URI to the attachment."""
+  uri: String
+}
+
+""""""
+input VenueAttachmentInput {
+  """Type of the attachment."""
+  type: VenueAttachmentType!
+
+  """URI to the attachment."""
+  uri: String!
+}
+
+""""""
+enum VenueAttachmentType {
+  image
+  video
+}
+
+""""""
+type VenueEventsConnection {
+  edges: [VenueEventsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type VenueEventsConnectionEdge {
+  cursor: String!
+  node: Event
 }
