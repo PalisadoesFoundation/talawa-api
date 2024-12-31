@@ -132,25 +132,32 @@ builder.mutationField("deleteEvent", (t) =>
 				});
 			}
 
-			const [deletedEvent] = await ctx.drizzleClient
-				.delete(eventsTable)
-				.where(eq(eventsTable.id, parsedArgs.input.id))
-				.returning();
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [deletedEvent] = await tx
+					.delete(eventsTable)
+					.where(eq(eventsTable.id, parsedArgs.input.id))
+					.returning();
 
-			// Deleted event not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
-			if (deletedEvent === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-					message: "Something went wrong. Please try again.",
+				// Deleted event not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
+				if (deletedEvent === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again.",
+					});
+				}
+
+				await ctx.minio.client.removeObjects(
+					ctx.minio.bucketName,
+					existingEvent.eventAttachmentsWhereEvent.map(
+						(attachment) => attachment.name,
+					),
+				);
+
+				return Object.assign(deletedEvent, {
+					attachments: existingEvent.eventAttachmentsWhereEvent,
 				});
-			}
-
-			// TODO: Deletion of directly or indirectly associated minio objects.
-
-			return Object.assign(deletedEvent, {
-				attachments: existingEvent.eventAttachmentsWhereEvent,
 			});
 		},
 		type: Event,

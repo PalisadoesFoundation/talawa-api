@@ -134,25 +134,32 @@ builder.mutationField("deletePost", (t) =>
 				}
 			}
 
-			const [deletedPost] = await ctx.drizzleClient
-				.delete(postsTable)
-				.where(eq(postsTable.id, parsedArgs.input.id))
-				.returning();
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [deletedPost] = await tx
+					.delete(postsTable)
+					.where(eq(postsTable.id, parsedArgs.input.id))
+					.returning();
 
-			// Deleted post not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation.
-			if (deletedPost === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-					message: "Something went wrong. Please try again.",
+				// Deleted post not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation.
+				if (deletedPost === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again.",
+					});
+				}
+
+				await ctx.minio.client.removeObjects(
+					ctx.minio.bucketName,
+					existingPost.postAttachmentsWherePost.map(
+						(attachment) => attachment.name,
+					),
+				);
+
+				return Object.assign(deletedPost, {
+					attachments: existingPost.postAttachmentsWherePost,
 				});
-			}
-
-			// TODO: Deletion of directly or indirectly associated minio objects.
-
-			return Object.assign(deletedPost, {
-				attachments: existingPost.postAttachmentsWherePost,
 			});
 		},
 		type: Post,

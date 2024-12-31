@@ -63,7 +63,7 @@ builder.mutationField("deleteChat", (t) =>
 				}),
 				ctx.drizzleClient.query.chatsTable.findFirst({
 					columns: {
-						avatarMimeType: true,
+						avatarName: true,
 					},
 					with: {
 						chatMembershipsWhereChat: {
@@ -142,24 +142,31 @@ builder.mutationField("deleteChat", (t) =>
 				});
 			}
 
-			const [deletedChat] = await ctx.drizzleClient
-				.delete(chatsTable)
-				.where(eq(chatsTable.id, parsedArgs.input.id))
-				.returning();
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [deletedChat] = await tx
+					.delete(chatsTable)
+					.where(eq(chatsTable.id, parsedArgs.input.id))
+					.returning();
 
-			// Deleted chat not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
-			if (deletedChat === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-					message: "Something went wrong. Please try again.",
-				});
-			}
+				// Deleted chat not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
+				if (deletedChat === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again.",
+					});
+				}
 
-			// TODO: Deletion of directly or indirectly associated minio objects.
+				if (existingChat.avatarName !== null) {
+					await ctx.minio.client.removeObject(
+						ctx.minio.bucketName,
+						existingChat.avatarName,
+					);
+				}
 
-			return deletedChat;
+				return deletedChat;
+			});
 		},
 		type: Chat,
 	}),

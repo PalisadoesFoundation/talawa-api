@@ -17,13 +17,16 @@ builder.mutationField("deleteCurrentUser", (t) =>
 				});
 			}
 
-			const [deletedCurrentUser] = await ctx.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, ctx.currentClient.user.id))
-				.returning();
+			const currentUserId = ctx.currentClient.user.id;
 
-			// Deleted user not being returned means that either it was deleted or its `id` column was changed by an external entity before this update operation which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
-			if (deletedCurrentUser === undefined) {
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					avatarName: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthenticated",
@@ -32,9 +35,31 @@ builder.mutationField("deleteCurrentUser", (t) =>
 				});
 			}
 
-			// TODO: Deletion of directly or indirectly associated minio objects.
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [deletedCurrentUser] = await tx
+					.delete(usersTable)
+					.where(eq(usersTable.id, currentUserId))
+					.returning();
 
-			return deletedCurrentUser;
+				// Deleted user not being returned means that either it was deleted or its `id` column was changed by an external entity before this update operation which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
+				if (deletedCurrentUser === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+						message: "Only authenticated users can perform this action.",
+					});
+				}
+
+				if (currentUser.avatarName !== null) {
+					await ctx.minio.client.removeObject(
+						ctx.minio.bucketName,
+						currentUser.avatarName,
+					);
+				}
+
+				return deletedCurrentUser;
+			});
 		},
 		type: User,
 	}),
