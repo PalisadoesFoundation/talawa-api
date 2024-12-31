@@ -26,6 +26,7 @@ jobs:
         name: Check base branch
         run: |
           echo "Pull requests are only allowed against the 'develop-postgres' branch. Please refer to the pull request guidelines."
+          echo "Error: Close this PR and try again."
           exit 1 
  
   check_code_quality:
