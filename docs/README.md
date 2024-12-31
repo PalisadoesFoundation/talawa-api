@@ -8,20 +8,22 @@ This document provides instructions on how to set up and start a running instanc
 
 # Table of Contents
 
-<!-- /TOC -->
+<!-- TOC -->
 
-- [Developer-Docs Installation](#talawa-api-installation)
+- [Talawa API Documentation Website](#talawa-api-documentation-website)
+- [Installation](#installation)
 - [Table of Contents](#table-of-contents)
 - [Prerequisites for Developers](#prerequisites-for-developers)
-  - [Install node.js](#install-nodejs)
-  - [Install the Required Packages](#install-the-required-packages)
-    - [Install PNPM on Windows Using NPM](#install-pnpm-on-windows-using-npm)
-    - [Install PNPM on Windows Using msi File](#install-pnpm-on-windows-using-msi-file)
-    - [Install PNPM on macOS Using NPM](#install-pnpm-on-macos-using-npm)
-    - [Install PNPM on macOS Using Homebrew](#install-pnpm-on-macos-using-homebrew)
-    - [Install PNPM on Linux Using NPM](#install-pnpm-on-linux-using-npm)
+    - [Install the Required Packages](#install-the-required-packages)
+        - [Install PNPM on Windows Using NPM](#install-pnpm-on-windows-using-npm)
+        - [Install PNPM on Windows Using msi File](#install-pnpm-on-windows-using-msi-file)
+        - [Install PNPM on macOS Using NPM](#install-pnpm-on-macos-using-npm)
+        - [Install PNPM on macOS Using Homebrew](#install-pnpm-on-macos-using-homebrew)
+        - [Install PNPM on Linux Using NPM](#install-pnpm-on-linux-using-npm)
 - [Running the Development Server](#running-the-development-server)
 - [Building Static HTML Pages](#building-static-html-pages)
+
+<!-- /TOC -->
 
 # Prerequisites for Developers
 
@@ -154,7 +156,7 @@ To preview your changes as you edit the files, you can run a local development s
 The command to run the server is:
 
 ```console
-$ pnpm start
+pnpm start
 ```
 
 By default, a browser window will open at http://localhost:3000.
