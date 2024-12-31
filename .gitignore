@@ -792,3 +792,6 @@ FodyWeavers.xsd
 package-lock.json
 yarn.lock
 ./test/routes/graphql/gql.tada.d.ts
+
+# FNM
+# .node-version
