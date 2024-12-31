@@ -171,9 +171,9 @@ jobs:
     if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.base.ref == 'develop-postgres' }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v4
         with:
-          node-version: 22
+          version: 9
           cache: pnpm
           cache-dependency-path: 'docs/'
       # Run Docusaurus in the ./docs directory
