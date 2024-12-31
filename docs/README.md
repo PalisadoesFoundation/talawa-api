@@ -15,11 +15,11 @@ This document provides instructions on how to set up and start a running instanc
 - [Prerequisites for Developers](#prerequisites-for-developers)
   - [Install node.js](#install-nodejs)
   - [Install the Required Packages](#install-the-required-packages)
-    - [Install Yarn on Windows Using NPM](#install-pnpm-on-windows-using-npm)
-    - [Install Yarn on Windows Using msi File](#install-pnpm-on-windows-using-msi-file)
-    - [Install Yarn on macOS Using NPM](#install-pnpm-on-macos-using-npm)
-    - [Install Yarn on macOS Using Homebrew](#install-pnpm-on-macos-using-homebrew)
-    - [Install Yarn on Linux Using NPM](#install-pnpm-on-linux-using-npm)
+    - [Install PNPM on Windows Using NPM](#install-pnpm-on-windows-using-npm)
+    - [Install PNPM on Windows Using msi File](#install-pnpm-on-windows-using-msi-file)
+    - [Install PNPM on macOS Using NPM](#install-pnpm-on-macos-using-npm)
+    - [Install PNPM on macOS Using Homebrew](#install-pnpm-on-macos-using-homebrew)
+    - [Install PNPM on Linux Using NPM](#install-pnpm-on-linux-using-npm)
 - [Running the Development Server](#running-the-development-server)
 - [Building Static HTML Pages](#building-static-html-pages)
 
@@ -51,40 +51,40 @@ $ cd talawa-api
 $ pnpm add docusaurus
 ```
 
-### Install Yarn on Windows Using NPM
+### Install PNPM on Windows Using NPM
 
-NPM (Node Package Manager) is a package manager included with the Node.js installation. It is used for developing and sharing JavaScript code, but it also provides another method of installing Yarn
+NPM (Node Package Manager) is a package manager included with the Node.js installation. It is used for developing and sharing JavaScript code, but it also provides another method of installing PNPM
 
 1. [Download the Node Windows installer](https://nodejs.org/en/download/)
 1. After choosing the path, double-click to install. Then give access to run the application
-1. Install Yarn by running the following command
+1. Install PNPM by running the following command
 
 ```terminal
 $ npm install --global pnpm
 ```
 
-4. Check Yarn installation
+4. Check PNPM installation
 
 ```terminal
 $ pnpm -version
 ```
 
-### Install Yarn on Windows Using msi File
+### Install PNPM on Windows Using msi File
 
-Here’s how to install the Yarn package manager on Windows
+Here’s how to install the PNPM package manager on Windows
 
-1. [Download the Yarn Windows installer](https://classic.pnpmpkg.com/en/docs/install#windows-stable)
+1. [Download the PNPM Windows installer](https://classic.pnpmpkg.com/en/docs/install#windows-stable)
 1. After choosing the path, double-click to install. Then give access to run the application
 
-1. Check Yarn installation
+1. Check PNPM installation
 
 ```terminal
 $ pnpm -version
 ```
 
-### Install Yarn on macOS Using NPM
+### Install PNPM on macOS Using NPM
 
-The .pkg installer can be used to install Yarn on macOS. Using the .pkg installer also helps resolve dependencies since it does not require a command line to install Node.js
+The .pkg installer can be used to install PNPM on macOS. Using the .pkg installer also helps resolve dependencies since it does not require a command line to install Node.js
 
 1. [Click on the macOS Installer option to download the .pkg installer](https://nodejs.org/en/download/)
 2. Run the Node.js installer
@@ -95,31 +95,31 @@ $ node -v
 $ npm -v
 ```
 
-4. Run the following command to install Yarn
+4. Run the following command to install PNPM
 
 ```terminal
 $ sudo npm install --global pnpm
 ```
 
-5. Verify Yarn Installation
+5. Verify PNPM Installation
 
 ```terminal
 $ pnpm --version
 ```
 
-### Install Yarn on macOS Using Homebrew
+### Install PNPM on macOS Using Homebrew
 
-One of the easiest way to install Yarn on macOS is to use the command line installer
+One of the easiest way to install PNPM on macOS is to use the command line installer
 
-1. Install Yarn by running the given command in your terminal
+1. Install PNPM by running the given command in your terminal
 
 ```terminal
 $ brew install pnpm
 ```
 
-### Install Yarn on Linux Using NPM
+### Install PNPM on Linux Using NPM
 
-Installing Yarn on Linux through NPM can be done via command line installer, this doesn't automatically install Node.js
+Installing PNPM on Linux through NPM can be done via command line installer, this doesn't automatically install Node.js
 
 1. Run the following command in your terminal to install Node and NPM respectively. [Confirm your Linux distro and it's command prompt](https://classic.pnpmpkg.com/lang/en/docs/install/#debian-stable)
 
@@ -135,7 +135,7 @@ $ node -v
 $ npm -v
 ```
 
-3. Install Yarn with the following command
+3. Install PNPM with the following command
 
 ```terminal
 npm install --global pnpm
@@ -154,8 +154,6 @@ To preview your changes as you edit the files, you can run a local development s
 The command to run the server is:
 
 ```console
-$ pnpm run start
-OR
 $ pnpm start
 ```
 

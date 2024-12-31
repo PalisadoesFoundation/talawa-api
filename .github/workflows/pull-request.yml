@@ -8,6 +8,13 @@
 #
 ##############################################################################
 ##############################################################################
+
+name: Pull request workflow
+on:
+  pull_request:
+    branches:
+      - "**"
+
 jobs:
   check_base_branch:
     # only run the job if the pull request actor is not dependabot
@@ -159,7 +166,7 @@ jobs:
   Test-Docusaurus-Deployment:
     name: Test Deployment to https://docs-api.talawa.io
     runs-on: ubuntu-latest
-    needs: [Docker-Start-Check, Start-App-Without-Docker]
+    needs: [Run-Tests]
     # Run only if the develop-postgres branch and not dependabot    
     if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.base.ref == 'develop-postgres' }}
     steps:
@@ -176,9 +183,3 @@ jobs:
       - name: Test building the website
         working-directory: ./docs
         run: pnpm build
-        
-name: Pull request workflow
-on:
-  pull_request:
-    branches:
-      - "**"

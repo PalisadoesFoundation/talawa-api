@@ -14,7 +14,7 @@ name: PUSH Workflow - Website Deployment
 on:
   push:
     branches:
-      - 'develop-postgres'   
+      - 'develop-postgres'
       
 env:
   CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
@@ -53,5 +53,12 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "gh-actions"
           pnpm install --frozen-lockfile
+          if [ $? -ne 0 ]; then
+            echo "Failed to install dependencies"
+            exit 1
+          fi
           pnpm deploy
- 
+          if [ $? -ne 0 ]; then
+            echo "Deployment failed"
+            exit 1
+          fi
