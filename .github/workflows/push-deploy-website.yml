@@ -36,11 +36,12 @@ jobs:
       url: https://docs-api.talawa.io
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v4
         with:
-          node-version: 22
           cache: pnpm
-          cache-dependency-path: 'docs/'
+          cache-dependency-path: |
+            docs/pnpm-lock.yaml
+            docs/package.json
       - uses: actions/cache@v3
         with:
           path: docs/.docusaurus
