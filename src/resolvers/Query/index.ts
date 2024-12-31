@@ -51,6 +51,8 @@ import { getEventAttendeesByEventId } from "./getEventAttendeesByEventId";
 import { getVenueByOrgId } from "./getVenueByOrgId";
 import { getAllNotesForAgendaItem } from "./getAllNotesForAgendaItem";
 import { getNoteById } from "./getNoteById";
+import { getUnreadChatsByUserId } from "./getUnreadChatsByUserId";
+import { getGroupChatsByUserId } from "./getGroupChatsByUserId";
 import { eventsAttendedByUser } from "./eventsAttendedByUser";
 import { getRecurringEvents } from "./getRecurringEvents";
 import { getVolunteerMembership } from "./getVolunteerMembership";
@@ -110,6 +112,8 @@ export const Query: QueryResolvers = {
   getEventAttendee,
   getEventAttendeesByEventId,
   getVenueByOrgId,
+  getUnreadChatsByUserId,
+  getGroupChatsByUserId,
   eventsAttendedByUser,
   getVolunteerMembership,
   getVolunteerRanks,
