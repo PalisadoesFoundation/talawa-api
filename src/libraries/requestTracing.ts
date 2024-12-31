@@ -60,7 +60,6 @@ export const middleware = () => {
   return (req: Request, res: Response, next: NextFunction): void => {
     requestTracingNamespace.bindEmitter(req);
     requestTracingNamespace.bindEmitter(res);
-
     getNanoid()
       .then((nanoid) => {
         const tracingId = req.header(tracingIdHeaderName) || nanoid();
@@ -75,6 +74,7 @@ export const middleware = () => {
       .catch((error) => {
         next(error);
       });
+      next();
   };
 };
 

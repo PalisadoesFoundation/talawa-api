@@ -27,7 +27,15 @@ describe("middleware -> requestContext", () => {
     context = requestTracingNamespace.createContext();
     requestTracingNamespace.enter(context);
   });
-
+  it("test requestContext Middleware", () => {
+    middleware()(
+      mockRequest as Request,
+      mockResponse as Response,
+      nextFunction as NextFunction,
+    );
+    expect(nextFunction).toBeCalledTimes(1);
+  });
+  
   it("basic storing and retrieving the key value pair", () => {
     requestTracingNamespace.set(tracingIdContextKeyName, "value");
     const response = requestTracingNamespace.get(tracingIdContextKeyName);
