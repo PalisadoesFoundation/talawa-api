@@ -5,6 +5,9 @@ import { ApplicationError } from "./applicationError";
  * and is used to handle situations where a requested resource is not found.
  */
 export class NotFoundError extends ApplicationError {
+  code: string | null;
+  param: string | null;
+
   /**
    * Creates an instance of NotFoundError.
    * @param message - The error message. Defaults to "Not Found".
@@ -28,5 +31,8 @@ export class NotFoundError extends ApplicationError {
       },
     ];
     super(errorJson, 404, message);
+
+    this.code = code; // Ensure the code is directly accessible
+    this.param = param; // Ensure the param is directly accessible
   }
 }
