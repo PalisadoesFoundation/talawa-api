@@ -1,5 +1,7 @@
 import type { PopulatedDoc, Types, Document, Model } from "mongoose";
-import { Schema, model, models } from "mongoose";
+import mongoose from "mongoose";
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { Schema, model, models } = mongoose;
 import type { InterfaceUser } from "./User";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 import type { InterfaceChat } from "./Chat";
@@ -13,6 +15,7 @@ export interface InterfaceChatMessage {
   sender: PopulatedDoc<InterfaceUser & Document>;
   replyTo: PopulatedDoc<InterfaceChatMessage & Document>;
   messageContent: string;
+  media: string;
   status: string;
   deletedBy: PopulatedDoc<InterfaceUser & Document>[];
   createdAt: Date;
@@ -66,7 +69,11 @@ const chatMessageSchema = new Schema(
     },
     messageContent: {
       type: String,
-      required: true,
+      required: false,
+    },
+    media: {
+      type: String,
+      required: false,
     },
     status: {
       type: String,

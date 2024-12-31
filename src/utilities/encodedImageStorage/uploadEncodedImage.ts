@@ -6,6 +6,7 @@ import { errors, requestContext } from "../../libraries";
 import { IMAGE_SIZE_LIMIT_KB, INVALID_FILE_TYPE } from "../../constants";
 import { EncodedImage } from "../../models/EncodedImage";
 import path from "path";
+const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 import { deletePreviousImage } from "./deletePreviousImage";
 
 /**
@@ -126,8 +127,8 @@ export const uploadEncodedImage = async (
   const buf = Buffer.from(data, "base64");
 
   // Create an 'images' directory if it doesn't exist
-  if (!fs.existsSync(path.join(__dirname, "../../../images"))) {
-    fs.mkdir(path.join(__dirname, "../../../images"), (err) => {
+  if (!fs.existsSync(path.join(dirname, "../../../images"))) {
+    fs.mkdir(path.join(dirname, "../../../images"), (err) => {
       if (err) {
         throw err;
       }
@@ -135,7 +136,7 @@ export const uploadEncodedImage = async (
   }
 
   // Write the image data to the file system
-  await writeFile(path.join(__dirname, "../../../" + id), buf);
+  await writeFile(path.join(dirname, "../../../" + id), buf);
 
   // Return the fileName of the uploaded image
   return uploadedEncodedImage.fileName;

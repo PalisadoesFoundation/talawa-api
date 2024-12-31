@@ -12,6 +12,7 @@ import { useServer } from "graphql-ws/lib/use/ws";
 import http from "http";
 import https from "https";
 import path from "path";
+const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 import { WebSocketServer } from "ws";
 import app from "./app";
 import { logIssues } from "./checks";
@@ -43,8 +44,8 @@ const httpServer =
   process.env.NODE_ENV === "production"
     ? https.createServer(
         {
-          key: fs.readFileSync(path.join(__dirname, "../key.pem")),
-          cert: fs.readFileSync(path.join(__dirname, "../cert.pem")),
+          key: fs.readFileSync(path.join(dirname, "../certs/key.pem")),
+          cert: fs.readFileSync(path.join(dirname, "../certs/cert.pem")),
         },
         // :{}
         app,
@@ -53,6 +54,7 @@ const httpServer =
 
 const server = new ApolloServer({
   schema,
+  introspection: true,
   formatError: (
     error: GraphQLFormattedError,
   ): { message: string; status: number; data: string[] } => {
@@ -75,9 +77,9 @@ const server = new ApolloServer({
     ApolloServerPluginLandingPageLocalDefault({ embed: true }),
     ApolloServerPluginDrainHttpServer({ httpServer }),
     {
-      async serverWillStart() {
+      async serverWillStart(): Promise<{ drainServer(): Promise<void> }> {
         return {
-          async drainServer() {
+          async drainServer(): Promise<void> {
             await serverCleanup.dispose();
           },
         };

@@ -13,7 +13,9 @@ import type {
   CampaignWhereInput,
   PledgeWhereInput,
   ActionItemCategoryWhereInput,
+  ChatWhereInput,
   EventVolunteerWhereInput,
+  AgendaItemCategoryWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
 /**
@@ -41,10 +43,12 @@ export const getWhere = <T = unknown>(
             DonationWhereInput &
             ActionItemWhereInput &
             ActionItemCategoryWhereInput &
+            AgendaItemCategoryWhereInput &
             CampaignWhereInput &
             FundWhereInput &
             PledgeWhereInput &
             VenueWhereInput &
+            ChatWhereInput &
             EventVolunteerWhereInput
         >
       >
@@ -300,6 +304,13 @@ export const getWhere = <T = unknown>(
     wherePayload = {
       ...wherePayload,
       nameOfUser: { $regex: where.name_of_user_contains, $options: "i" },
+    };
+  }
+
+  if (where.name) {
+    wherePayload = {
+      ...wherePayload,
+      name: { $regex: where.name, $options: "i" },
     };
   }
 

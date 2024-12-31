@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-          persist-crendetials: true
+          persist-credentials: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -74,7 +74,7 @@ jobs:
         if: steps.changed_files.outputs.any_changed == 'true'
         env:
           CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
-        run: npx eslint ${CHANGED_FILES} --max-warnings=1500 && python .github/workflows/eslint_disable_check.py
+        run: npx eslint ${CHANGED_FILES} --max-warnings=1500
 
       - name: Check for formatting errors
         run: npm run format:check
@@ -88,6 +88,7 @@ jobs:
           echo "Source Branch ${{ github.event.pull_request.head.ref }}"
           echo "Target Branch ${{ github.event.pull_request.base.ref }}"
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
+          echo "Error: Close this PR and try again."          
           exit 1
 
   Check-Sensitive-Files:
@@ -99,7 +100,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-          persist-crendetials: true
+          persist-credentials: true
 
       
       - name: Get Changed Unauthorized files
@@ -154,7 +155,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-          persist-crendetials: true
+          persist-credentials: true
         
       - name: Get changed files
         id: changed-files
@@ -177,10 +178,50 @@ jobs:
           echo "- Source branch may be incorrect please use develop as source branch."
           exit 1
 
+  Check-ESlint-Disable:
+    name: Check for eslint-disable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
+      - name: Run Python script
+        run: |
+          python .github/workflows/eslint_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+
+  Check-Code-Coverage-Disable:
+    name: Check for code coverage disable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
+      - name: Run Python script
+        run: |
+          python .github/workflows/code_coverage_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }} 
+
   Test-Application:
     name: Testing Application
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
+    needs: [Code-Quality-Checks, Check-Eslint-Disable, Check-Code-Coverage-Disable]
     strategy:
       matrix:
         node-version: [22.x]
@@ -255,29 +296,6 @@ jobs:
   
       - name: Run the tests
         run: npm run test
-      
-      - name: Start the development server 
-        run: |
-          npm run dev &
-          echo "Development server started..."
-
-      - name: Check server status
-        run: |
-          if curl -f 'http://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
-            echo "Server is up and healthy"
-          else
-            echo "Server is down"
-            exit 1 
-          fi
-      - name: Check Apollo Server status
-        run: |
-          if curl -f 'http://localhost:4000/graphql?query=%7B__typename%7D' \
-          -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
-            echo "Apollo Server is up"
-          else
-            echo "Server is down"
-            exit 1 
-          fi
 
       - name: Import Sample Data
         run: npm run import:sample-data  
@@ -296,6 +314,147 @@ jobs:
           path: './coverage/lcov.info'
           min_coverage: 95.0
           
+  Test-Builds:
+    name: Test Development and Production Builds
+    runs-on: ubuntu-latest
+    needs: Test-Application
+    strategy:
+      matrix:
+        node-version: [22.x]
+    services:
+      mongo:
+        image: mongo:4.4
+        options: >-
+          --health-cmd mongo
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:6.0
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 6379:6379
+    env:
+      MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
+      COLORIZE_LOGS: "true"
+      LOG_LEVEL: "info"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Secrets
+        run: |
+          echo "Generating secrets..."
+          {
+            echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)"
+            echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)"
+            echo "SERVER_PORT=4000"
+          } >> "$GITHUB_ENV"
+
+      - name: Check MongoDB and Redis Availability
+        run: |
+          echo "Checking MongoDB and Redis availability..."
+          for i in {1..10}; do
+            if nc -z localhost 27017 && nc -z localhost 6379; then
+              echo "MongoDB and Redis are available!"
+              break
+            fi
+            echo "Waiting for MongoDB and Redis..."
+            sleep 5
+          done
+
+      - name: Test Development Build
+        run: |
+          echo "Testing development build..."
+          NODE_ENV=development npm run dev &
+          DEV_PID=$!
+          sleep 10
+          if curl -f http://localhost:4000 | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
+            echo "Development server is up and healthy"
+          else
+            echo "Development server is down"
+            kill $DEV_PID
+            exit 1
+          fi
+      
+      - name: Check Apollo Server for development
+        run: |
+          echo "Checking Apollo server for development..."
+          if curl -f 'http://localhost:4000/graphql?query=%7B__typename%7D' \
+            -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
+            echo "Apollo server is up and healthy"
+          else
+            echo "Apollo server is down"
+            exit 1
+          fi
+          echo "Stopping development server..."
+          kill -9 $DEV_PID || echo "Process already stopped."
+
+      - name: Generate SSL Certificates for Production
+        run: |
+          echo "Generating SSL certificates for production..."
+          npm run generate:ssl-private-key
+
+      - name: Build Production Build
+        run: |
+          echo "Building production build..."
+          NODE_ENV=production npm run build
+
+      - name: Test Production Build
+        run: |
+          echo "Testing production build..."
+          lsof -ti:4000 | xargs -r kill -9 || echo "No process was using port 4000."
+          NODE_ENV=production SERVER_PORT=4001 npm run prod &
+          PROD_PID=$!
+          echo "Waiting for server to stabilize..."
+          sleep 10
+          if curl -f -k https://localhost:4001 | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
+            echo "Production server is up and healthy."
+          else
+            echo "Production server is down. Cleaning up..."
+            kill -9 $PROD_PID || echo "Process already stopped."
+            exit 1
+          fi
+
+      - name: Check Apollo Server for Production
+        run: |
+          echo "Checking Apollo server for production..."
+          if curl -f -k 'https://localhost:4001/graphql?query=%7B__typename%7D' \
+            -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
+            echo "Apollo server is up and healthy"
+          else
+            echo "Apollo server is down"
+            exit 1
+          fi
+          echo "Stopping production server..."
+          kill -9 $PROD_PID || echo "Process already stopped."
+
+      - name: Clean Up Resources
+        if: always()
+        run: |
+          echo "Cleaning up background processes and temporary files..."
+          pkill -f "npm run dev" || echo "No dev process found."
+          pkill -f "npm run prod" || echo "No prod process found."
+          rm -f key.pem cert.pem
+            
   JSDocs:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: 'JSDocs comments and pipeline'

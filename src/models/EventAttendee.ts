@@ -1,5 +1,12 @@
-import type { PopulatedDoc, Document, Model } from "mongoose";
-import { Schema, model, models } from "mongoose";
+import type {
+  PopulatedDoc,
+  Document,
+  Model,
+  Schema as MongooseSchema,
+} from "mongoose";
+import mongoose from "mongoose";
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { Schema, model, models } = mongoose;
 import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceCheckIn } from "./CheckIn";
@@ -10,7 +17,7 @@ import { createLoggingMiddleware } from "../libraries/dbLogger";
  * Interface representing a document for an event attendee in MongoDB.
  */
 export interface InterfaceEventAttendee {
-  _id: Schema.Types.ObjectId;
+  _id: MongooseSchema.Types.ObjectId;
   userId: PopulatedDoc<InterfaceUser & Document>;
   eventId: PopulatedDoc<InterfaceEvent & Document>;
   checkInId: PopulatedDoc<InterfaceCheckIn & Document> | null;

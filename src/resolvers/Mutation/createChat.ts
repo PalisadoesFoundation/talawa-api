@@ -5,6 +5,7 @@ import {
 import { errors, requestContext } from "../../libraries";
 import { Chat, Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to create a chat.
  * @param _parent - parent of current request
@@ -36,10 +37,6 @@ export const createChat: MutationResolvers["createChat"] = async (
     }
   }
 
-  // const userExists = (await User.exists({
-  //   _id: { $in: args.data.userIds },
-  // })) as unknown as string[];
-
   const userExists = await User.find({
     _id: { $in: args.data.userIds },
   }).lean();
@@ -54,6 +51,20 @@ export const createChat: MutationResolvers["createChat"] = async (
 
   const now = new Date();
 
+  const unseenMessagesByUsers = JSON.stringify(
+    userExists.reduce((unseenMessages: Record<string, number>, user) => {
+      unseenMessages[user._id.toString()] = 0;
+      return unseenMessages;
+    }, {}),
+  );
+
+  let uploadMediaFile = null;
+
+  if (args.data.isGroup && args.data.image) {
+    uploadMediaFile = await uploadEncodedImage(args.data.image);
+    args.data.image = uploadMediaFile;
+  }
+
   const chatPayload = args.data.isGroup
     ? {
         isGroup: args.data.isGroup,
@@ -65,6 +76,7 @@ export const createChat: MutationResolvers["createChat"] = async (
         createdAt: now,
         updatedAt: now,
         image: args.data.image,
+        unseenMessagesByUsers,
       }
     : {
         creatorId: context.userId,
@@ -72,9 +84,10 @@ export const createChat: MutationResolvers["createChat"] = async (
         isGroup: args.data.isGroup,
         createdAt: now,
         updatedAt: now,
+        unseenMessagesByUsers,
       };
 
   const createdChat = await Chat.create(chatPayload);
 
-  return createdChat;
+  return createdChat.toObject();
 };
