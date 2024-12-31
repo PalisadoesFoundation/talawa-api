@@ -8,6 +8,13 @@
 #
 ##############################################################################
 ##############################################################################
+
+name: Pull request workflow
+on:
+  pull_request:
+    branches:
+      - "**"
+
 jobs:
   check_base_branch:
     # only run the job if the pull request actor is not dependabot
@@ -20,6 +27,7 @@ jobs:
         run: |
           echo "Pull requests are only allowed against the 'develop-postgres' branch. Please refer to the pull request guidelines."
           exit 1 
+ 
   check_code_quality:
     name: Checking code quality
     runs-on: ubuntu-latest
@@ -30,8 +38,7 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check type errors
         run: docker container run talawa_api pnpm check_code_quality
-
-
+ 
   check_eslint_disable:
     name: Check for eslint-disable
     runs-on: ubuntu-latest
@@ -82,6 +89,7 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check gql tada
         run: docker container run talawa_api pnpm check_gql_tada
+ 
   check_drizzle_migrations:
     name: Check drizzle migration files
     runs-on: ubuntu-latest
@@ -92,6 +100,7 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check drizzle migrations
         run: docker container run --env-file ./envFiles/.env.ci talawa_api pnpm check_drizzle_migrations
+ 
   check_type_errors:
     name: Check type errors
     runs-on: ubuntu-latest
@@ -102,9 +111,10 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check type errors
         run: docker container run talawa_api pnpm check_type_errors
-  check_unauthorized_file_changes:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Check if there are unauthorized file changes
+
+  Check-Sensitive-Files:
+    if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.pull_request.labels.*.name, 'ignore-sensitive-files-pr') }}
+    name: Checks if sensitive files have been changed without authorization
     runs-on: ubuntu-latest
     steps:
     - name: Checkout this repository
@@ -122,6 +132,12 @@ jobs:
           LICENSE
           tsconfig.json
           vitest.config.ts
+          pnpm-lock.yaml
+          package.json
+          .nojekyll
+          docs/docusaurus.config.ts
+          docs/sidebar*
+          CNAME
     - env:
         CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
       if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
@@ -133,7 +149,8 @@ jobs:
         done
         echo "To override this, apply the 'ignore-sensitive-files-pr' label"
         exit 1
-  run_tests:
+ 
+  Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
     steps:
@@ -145,8 +162,25 @@ jobs:
         run: docker compose build
       - name: Run tests
         run: docker compose up --exit-code-from api
-name: Pull request workflow
-on:
-  pull_request:
-    branches:
-      - "**"
+
+  Test-Docusaurus-Deployment:
+    name: Test Deployment to https://docs-api.talawa.io
+    runs-on: ubuntu-latest
+    needs: [Run-Tests]
+    # Run only if the develop-postgres branch and not dependabot    
+    if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.base.ref == 'develop-postgres' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          cache: pnpm
+          cache-dependency-path: |
+            docs/pnpm-lock.yaml
+            docs/package.json
+      # Run Docusaurus in the ./docs directory
+      - name: Install dependencies
+        working-directory: ./docs
+        run: pnpm install --frozen-lockfile
+      - name: Test building the website
+        working-directory: ./docs
+        run: pnpm build
