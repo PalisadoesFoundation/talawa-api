@@ -29,7 +29,7 @@ jobs:
       # This "name" has to be the repos' branch that contains 
       # the current active website. There must be an entry for
       # the same branch in the PalisadoesFoundation's
-      # "Code and automation > Environments > gigithub-pages"
+      # "Code and automation > Environments > github-pages"
       # menu. The branch "name" must match the branch in the 
       # "on.push.branches" section at the top of this file
       name: develop-postgres
@@ -41,6 +41,12 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: 'docs/'
+      - uses: actions/cache@v3
+        with:
+          path: docs/.docusaurus
+          key: docusaurus-${{ hashFiles('docs/**') }}
+          restore-keys: |
+            docusaurus-
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_GITHUB_PAGES }}

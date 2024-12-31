@@ -3,6 +3,10 @@
 
 # Production
 /build
+/.docusaurus-debug.log
+/build-stats.json
+docs/.docusaurus-debug.log
+docs/build-stats.json
 
 # Generated files
 .docusaurus
