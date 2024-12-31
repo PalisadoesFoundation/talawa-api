@@ -86,6 +86,7 @@ import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
 import { saveFcmToken } from "./saveFcmToken";
 import { sendMembershipRequest } from "./sendMembershipRequest";
 import { sendMessageToChat } from "./sendMessageToChat";
+import { markChatMessagesAsRead } from "./markChatMessagesAsRead";
 import { signUp } from "./signUp";
 import { togglePostPin } from "./togglePostPin";
 import { unassignUserTag } from "./unassignUserTag";
@@ -118,6 +119,9 @@ import { updateVolunteerMembership } from "./updateVolunteerMembership";
 import { createNote } from "./createNote";
 import { deleteNote } from "./deleteNote";
 import { updateNote } from "./updateNote";
+import { addUserToGroupChat } from "./addUserToGroupChat";
+import { updateChat } from "./updateChat";
+import { updateChatMessage } from "./updateChatMessage";
 
 export const Mutation: MutationResolvers = {
   acceptMembershipRequest,
@@ -239,4 +243,8 @@ export const Mutation: MutationResolvers = {
   updateFundraisingCampaignPledge,
   createFundraisingCampaignPledge,
   removeFundraisingCampaignPledge,
+  markChatMessagesAsRead,
+  addUserToGroupChat,
+  updateChat,
+  updateChatMessage,
 };

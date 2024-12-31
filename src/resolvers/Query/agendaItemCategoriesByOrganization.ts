@@ -1,5 +1,6 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { AgendaCategoryModel } from "../../models";
+import { getWhere } from "./helperFunctions/getWhere";
 /**
  * This query will fetch all categories for the organization from database.
  * @param _parent-
@@ -8,7 +9,9 @@ import { AgendaCategoryModel } from "../../models";
  */
 export const agendaItemCategoriesByOrganization: QueryResolvers["agendaItemCategoriesByOrganization"] =
   async (_parent, args) => {
+    const where = getWhere(args.where);
     return await AgendaCategoryModel.find({
       organizationId: args.organizationId,
+      ...where,
     }).lean();
   };

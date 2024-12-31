@@ -1,6 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
 import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 import { connect } from "../db";
 import {
   ActionItemCategory,
@@ -15,6 +17,8 @@ import {
 } from "../models";
 import { RecurrenceRule } from "../models/RecurrenceRule";
 
+const dirname: string = path.dirname(fileURLToPath(import.meta.url));
+
 interface InterfaceArgs {
   items?: string;
   format?: boolean;
@@ -24,9 +28,9 @@ interface InterfaceArgs {
 /**
  * Lists sample data files and their document counts in the sample_data directory.
  */
-async function listSampleData(): Promise<void> {
+export async function listSampleData(): Promise<void> {
   try {
-    const sampleDataPath = path.join(__dirname, "../../sample_data");
+    const sampleDataPath = path.resolve(dirname, "../../sample_data");
     const files = await fs.readdir(sampleDataPath);
 
     console.log("Sample Data Files:\n");
@@ -39,7 +43,7 @@ async function listSampleData(): Promise<void> {
     );
 
     for (const file of files) {
-      const filePath = path.join(sampleDataPath, file);
+      const filePath = path.resolve(sampleDataPath, file);
       const stats = await fs.stat(filePath);
       if (stats.isFile()) {
         const data = await fs.readFile(filePath, "utf8");
@@ -83,7 +87,7 @@ async function insertCollections(collections: string[]): Promise<void> {
     // Connect to MongoDB database
     await connect();
 
-    const { format } = yargs
+    const { format } = yargs(hideBin(process.argv))
       .options({
         items: {
           alias: "i",
@@ -108,7 +112,7 @@ async function insertCollections(collections: string[]): Promise<void> {
     // Insert data into each specified collection
     for (const collection of collections) {
       const data = await fs.readFile(
-        path.join(__dirname, `../../sample_data/${collection}.json`),
+        path.resolve(dirname, `../../sample_data/${collection}.json`),
         "utf8",
       );
       const docs = JSON.parse(data) as Record<string, unknown>[];
@@ -214,7 +218,7 @@ const collections = [
 ];
 
 // Check if specific collections need to be inserted
-const { items: argvItems } = yargs
+const { items: argvItems } = yargs(hideBin(process.argv))
   .options({
     items: {
       alias: "i",

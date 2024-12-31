@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 import { connect, disconnect } from "../db";
 import { AppUserProfile, Organization, User } from "../models";
 
@@ -15,7 +16,7 @@ export async function loadDefaultOrganiation(dbName?: string): Promise<void> {
 
     // Read and insert default user data
     const userData = await fs.readFile(
-      path.join(__dirname, `../../sample_data/defaultUser.json`),
+      path.join(dirname, `../../sample_data/defaultUser.json`),
       "utf8",
     );
     const userDocs = JSON.parse(userData) as Record<string, unknown>[];
@@ -23,7 +24,7 @@ export async function loadDefaultOrganiation(dbName?: string): Promise<void> {
 
     // Read and insert default app user profile data
     const appUserData = await fs.readFile(
-      path.join(__dirname, `../../sample_data/defaultAppUserProfile.json`),
+      path.join(dirname, `../../sample_data/defaultAppUserProfile.json`),
       "utf8",
     );
     const appUserDocs = JSON.parse(appUserData) as Record<string, unknown>[];
@@ -31,7 +32,7 @@ export async function loadDefaultOrganiation(dbName?: string): Promise<void> {
 
     // Read and insert default organization data
     const organizationData = await fs.readFile(
-      path.join(__dirname, `../../sample_data/defaultOrganization.json`),
+      path.join(dirname, `../../sample_data/defaultOrganization.json`),
       "utf8",
     );
     const organizationDocs = JSON.parse(organizationData) as Record<

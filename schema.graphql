@@ -140,6 +140,10 @@ type AgendaItem {
   users: [User]
 }
 
+input AgendaItemCategoryWhereInput {
+  name_contains: String
+}
+
 type AgendaSection {
   _id: ID!
   createdAt: Date!
@@ -210,6 +214,7 @@ type Chat {
   messages: [ChatMessage]
   name: String
   organization: Organization
+  unseenMessagesByUsers: JSON
   updatedAt: DateTime!
   users: [User!]!
 }
@@ -219,10 +224,16 @@ type ChatMessage {
   chatMessageBelongsTo: Chat!
   createdAt: DateTime!
   deletedBy: [User]
+  media: String
   messageContent: String!
   replyTo: ChatMessage
   sender: User!
   updatedAt: DateTime!
+}
+
+input ChatWhereInput {
+  name_contains: String
+  user: UserWhereInput
 }
 
 type CheckIn {
@@ -705,6 +716,7 @@ input EventAttendeeInput {
 
 input EventInput {
   allDay: Boolean!
+  createChat: Boolean!
   description: String!
   endDate: Date!
   endTime: Time
@@ -1135,6 +1147,7 @@ type Mutation {
   addPledgeToFundraisingCampaign(campaignId: ID!, pledgeId: ID!): FundraisingCampaignPledge!
   addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
+  addUserToGroupChat(chatId: ID!, userId: ID!): Chat
   addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
   assignToUserTags(input: TagActionsInput!): UserTag
   assignUserTag(input: ToggleUserTagAssignInput!): User
@@ -1183,6 +1196,7 @@ type Mutation {
   likePost(id: ID!): Post
   login(data: LoginInput!): AuthData!
   logout: Boolean!
+  markChatMessagesAsRead(chatId: ID!, userId: ID!): Chat!
   otp(data: OTPInput!): OtpData!
   recaptcha(data: RecaptchaVerification!): Boolean!
   refreshToken(refreshToken: String!): ExtendSession!
@@ -1216,7 +1230,7 @@ type Mutation {
   revokeRefreshTokenForUser: Boolean!
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
-  sendMessageToChat(chatId: ID!, messageContent: String!, replyTo: ID): ChatMessage!
+  sendMessageToChat(chatId: ID!, media: String, messageContent: String, replyTo: ID): ChatMessage!
   signUp(data: UserInput!, file: String): AuthData!
   togglePostPin(id: ID!, title: String): Post!
   unassignUserTag(input: ToggleUserTagAssignInput!): User
@@ -1230,6 +1244,8 @@ type Mutation {
   updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
   updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
   updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
+  updateChat(input: UpdateChatInput!): Chat!
+  updateChatMessage(input: UpdateChatMessageInput!): ChatMessage!
   updateCommunity(data: UpdateCommunityInput!): Boolean!
   updateEvent(data: UpdateEventInput!, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
   updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
@@ -1544,9 +1560,9 @@ type Query {
   agendaCategory(id: ID!): AgendaCategory!
   agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
   agendaItemByOrganization(organizationId: ID!): [AgendaItem]
-  agendaItemCategoriesByOrganization(organizationId: ID!): [AgendaCategory]
+  agendaItemCategoriesByOrganization(organizationId: ID!, where: AgendaItemCategoryWhereInput): [AgendaCategory]
   chatById(id: ID!): Chat!
-  chatsByUserId(id: ID!): [Chat]
+  chatsByUserId(id: ID!, where: ChatWhereInput): [Chat]
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
@@ -1571,10 +1587,12 @@ type Query {
   getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
   getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
   getFundraisingCampaigns(campaignOrderby: CampaignOrderByInput, pledgeOrderBy: PledgeOrderByInput, where: CampaignWhereInput): [FundraisingCampaign]!
+  getGroupChatsByUserId: [Chat]
   getNoteById(id: ID!): Note!
   getPledgesByUserId(orderBy: PledgeOrderByInput, userId: ID!, where: PledgeWhereInput): [FundraisingCampaignPledge]
   getPlugins: [Plugin]
   getRecurringEvents(baseRecurringEventId: ID!): [Event]
+  getUnreadChatsByUserId: [Chat]
   getUserTag(id: ID!): UserTag
   getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
   getVolunteerMembership(orderBy: VolunteerMembershipOrderByInput, where: VolunteerMembershipWhereInput!): [VolunteerMembership]!
@@ -1768,6 +1786,18 @@ input UpdateAgendaSectionInput {
   description: String
   relatedEvent: ID
   sequence: Int
+}
+
+input UpdateChatInput {
+  _id: ID!
+  image: String
+  name: String
+}
+
+input UpdateChatMessageInput {
+  chatId: ID!
+  messageContent: String!
+  messageId: ID!
 }
 
 input UpdateCommunityInput {
@@ -2196,6 +2226,12 @@ input chatInput {
   isGroup: Boolean!
   name: String
   organizationId: ID
+  userIds: [ID!]!
+}
+
+input createGroupChatInput {
+  organizationId: ID!
+  title: String!
   userIds: [ID!]!
 }
 

@@ -9,6 +9,8 @@ import requestLogger from "morgan";
 import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
 import routes from "./REST/routes";
+import path from "path";
+const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 
 import * as enLocale from "../locales/en.json";
 import * as hiLocale from "../locales/hi.json";
@@ -40,6 +42,11 @@ const corsOptions: cors.CorsOptions = {
         next(null, true); // Allow only specific origin in production
         return;
       }
+      // Allow Apollo Studio origin in production (not recommended)
+      // if (origin === talawaAdmin || 'https://studio.apollographql.com') {
+      //   next(null, true); // Allow only specific origin in production
+      //   return;
+      // }
     }
     next(new Error("Unauthorized")); // Reject other origins
   },
@@ -48,7 +55,7 @@ const corsOptions: cors.CorsOptions = {
 
 // Configure i18n settings
 i18n.configure({
-  directory: `${__dirname}/../locales`,
+  directory: `${dirname}/../locales`,
   staticCatalog: {
     en: enLocale,
     hi: hiLocale,
@@ -72,6 +79,27 @@ app.use(
       process.env.NODE_ENV === "production" ? undefined : false, // Disable CSP in development
   }),
 );
+
+//CSP for enanling apollo studio in production (not recomended)
+// app.use(
+//   helmet({
+//     contentSecurityPolicy:
+//       process.env.NODE_ENV === "production" ?
+//       { directives: {
+//         defaultSrc: ["'self'"],
+//         scriptSrc: ["'self'", "https://embeddable-sandbox.cdn.apollographql.com", "'sha256-re40XLANveVRexrfJ7w6v/uj7jDvS6f6xqyQSyRX1BA='"],
+//         imgSrc: ["'self'", "https://apollo-server-landing-page.cdn.apollographql.com"],
+//         styleSrc: ["'self'", "https://fonts.googleapis.com", "'sha256-5QyABUjdmOYLVrXzoSJZXjbcKqg/kKy9soFgH4oAXxw='", "'sha256-sahCik3ezlU05wSUKtxwCuRYcIbm4ref7BN4VRGpRak='"],
+//         frameSrc: ["'self'", "https://sandbox.embed.apollographql.com", "https://studio.apollographql.com"],
+//         frameAncestors: ["'self'", "sandbox.embed.apollographql.com", "embeddable-sandbox.netlify.app", "https://studio.apollographql.com"],
+//         connectSrc: ["'self'", "https://your-graphql-api-url.com"],
+//         fontSrc: ["'self'", "https://fonts.gstatic.com"],
+//         objectSrc: ["'none'"],
+//         manifestSrc: ["'self'", "https://apollo-server-landing-page.cdn.apollographql.com"],
+//       }, }
+//       : false, // Disable CSP in development
+//   }),
+// );
 
 // Sanitize data to prevent MongoDB operator injection
 app.use(mongoSanitize());

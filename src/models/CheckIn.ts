@@ -1,10 +1,10 @@
+import mongoose from "mongoose";
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { Schema, model, models } = mongoose;
 import {
-  Schema,
-  model,
   type PopulatedDoc,
   type Types,
   type Document,
-  models,
   type Model,
 } from "mongoose";
 import { type InterfaceEventAttendee } from "./EventAttendee";
