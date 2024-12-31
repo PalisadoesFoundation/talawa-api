@@ -794,4 +794,4 @@ yarn.lock
 ./test/routes/graphql/gql.tada.d.ts
 
 # FNM
-# .node-version
+.node-version
