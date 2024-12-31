@@ -42,8 +42,6 @@ export const objects: FastifyPluginAsyncTypebox = async (fastify) => {
 					});
 				}
 
-				console.log(error);
-
 				return reply.status(500).send({
 					message: "Something went wrong. Please try again later.",
 				});

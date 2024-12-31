@@ -59,8 +59,6 @@ suite("Mutation field updateUser", () => {
 					},
 				);
 
-				console.log(createUserResult);
-
 				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
 
 				const updateUserResult = await mercuriusClient.mutate(
