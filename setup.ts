@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-imports */
 import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -7,31 +6,31 @@ import path from "path";
 import type { ExecException } from "child_process";
 import { exec, spawn, execSync } from "child_process";
 import { MongoClient } from "mongodb";
-import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "@constants";
 import {
   askForMongoDBUrl,
   checkConnection,
   checkExistingMongoDB,
-} from "./src/setup/MongoDB";
-import { askToKeepValues } from "./src/setup/askToKeepValues";
-import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
-import { isValidEmail } from "./src/setup/isValidEmail";
-import { validateRecaptcha } from "./src/setup/reCaptcha";
+} from "@setup/MongoDB";
+import { askToKeepValues } from "@setup/askToKeepValues";
+import { getNodeEnvironment } from "@setup/getNodeEnvironment";
+import { isValidEmail } from "@setup/isValidEmail";
+import { validateRecaptcha } from "@setup/reCaptcha";
 import {
   askForRedisUrl,
   checkExistingRedis,
   checkRedisConnection,
-} from "./src/setup/redisConfiguration";
+} from "@setup/redisConfiguration";
 import {
   setImageUploadSize,
   validateImageFileSize,
-} from "./src/setup/setImageUploadSize";
-import { askForSuperAdminEmail } from "./src/setup/superAdmin";
-import { updateEnvVariable } from "./src/setup/updateEnvVariable";
-import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
-import { loadDefaultOrganiation } from "./src/utilities/loadDefaultOrg";
-import { isMinioInstalled } from "./src/setup/isMinioInstalled";
-import { installMinio } from "./src/setup/installMinio";
+} from "@setup/setImageUploadSize";
+import { askForSuperAdminEmail } from "@setup/superAdmin";
+import { updateEnvVariable } from "@setup/updateEnvVariable";
+import { verifySmtpConnection } from "@setup/verifySmtpConnection";
+import { loadDefaultOrganiation } from "@utilities/loadDefaultOrg";
+import { isMinioInstalled } from "@setup/isMinioInstalled";
+import { installMinio } from "@setup/installMinio";
 
 dotenv.config();
 
